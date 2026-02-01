@@ -102,114 +102,132 @@ function BookSlider() {
         useMouseEvents={true}
         onFlip={handleFlip}
       >
-        {/* Cover Page - Luxurious Hardback */}
-        <div className="relative rounded-lg overflow-hidden flex items-center justify-center"
+        {/* Cover Page - Dark Leather Style */}
+        <div className="relative rounded-lg flex items-center justify-center h-full w-full"
           style={{
-            background: 'linear-gradient(145deg, #8B4513 0%, #5D2E0C 30%, #3D1E08 70%, #2A1506 100%)',
-            boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(139,69,19,0.3)',
-            opacity: '1 !important' as any,
-            visibility: 'visible',
-            pointerEvents: 'auto',
+            background: 'linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 30%, #0f0f0f 70%, #0a0a0a 100%)',
+            boxShadow: 'inset 0 0 80px rgba(0,0,0,0.8), inset 0 0 30px rgba(40,40,40,0.2)',
           }}
         >
-          {/* Leather texture overlay */}
-          <div className="absolute inset-0 opacity-30"
+          {/* Dark leather texture overlay */}
+          <div className="absolute inset-0 opacity-40"
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
             }}
           />
           
-          {/* Gold border frame */}
-          <div className="absolute inset-3 border-2 rounded-sm"
+          {/* Subtle grain overlay */}
+          <div className="absolute inset-0 opacity-20"
             style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.5' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E")`,
+            }}
+          />
+          
+          {/* Gold border frame - inset more to prevent clipping */}
+          <div className="absolute border rounded"
+            style={{
+              top: '16px',
+              right: '16px',
+              bottom: '16px',
+              left: '16px',
+              borderWidth: '2px',
               borderColor: '#D4AF37',
-              boxShadow: '0 0 10px rgba(212,175,55,0.3), inset 0 0 10px rgba(212,175,55,0.1)',
+              boxShadow: '0 0 15px rgba(212,175,55,0.25), inset 0 0 15px rgba(212,175,55,0.08)',
             }}
           />
           
-          {/* Ornate corner - Top Left */}
-          <div className="absolute top-4 left-4 w-12 h-12">
-            <svg viewBox="0 0 50 50" className="w-full h-full" style={{ color: '#D4AF37' }}>
-              <path d="M5 5 L5 20 Q5 5 20 5 L5 5" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M8 8 L8 15 Q8 8 15 8" fill="none" stroke="currentColor" strokeWidth="1"/>
-              <circle cx="12" cy="12" r="2" fill="currentColor"/>
-            </svg>
-          </div>
+          {/* Inner decorative border */}
+          <div className="absolute border rounded-sm"
+            style={{
+              top: '24px',
+              right: '24px',
+              bottom: '24px',
+              left: '24px',
+              borderWidth: '1px',
+              borderColor: 'rgba(212,175,55,0.4)',
+            }}
+          />
           
-          {/* Ornate corner - Top Right */}
-          <div className="absolute top-4 right-4 w-12 h-12">
-            <svg viewBox="0 0 50 50" className="w-full h-full" style={{ color: '#D4AF37' }}>
-              <path d="M45 5 L45 20 Q45 5 30 5 L45 5" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M42 8 L42 15 Q42 8 35 8" fill="none" stroke="currentColor" strokeWidth="1"/>
-              <circle cx="38" cy="12" r="2" fill="currentColor"/>
-            </svg>
-          </div>
+          {/* Corner flourishes - Top Left */}
+          <svg className="absolute" style={{ top: '20px', left: '20px', width: '40px', height: '40px', color: '#D4AF37' }} viewBox="0 0 40 40">
+            <path d="M4 4 L4 16 M4 4 L16 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="4" cy="4" r="2" fill="currentColor"/>
+            <path d="M8 8 L8 14 M8 8 L14 8" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
+          </svg>
           
-          {/* Ornate corner - Bottom Left */}
-          <div className="absolute bottom-4 left-4 w-12 h-12">
-            <svg viewBox="0 0 50 50" className="w-full h-full" style={{ color: '#D4AF37' }}>
-              <path d="M5 45 L5 30 Q5 45 20 45 L5 45" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M8 42 L8 35 Q8 42 15 42" fill="none" stroke="currentColor" strokeWidth="1"/>
-              <circle cx="12" cy="38" r="2" fill="currentColor"/>
-            </svg>
-          </div>
+          {/* Corner flourishes - Top Right */}
+          <svg className="absolute" style={{ top: '20px', right: '20px', width: '40px', height: '40px', color: '#D4AF37' }} viewBox="0 0 40 40">
+            <path d="M36 4 L36 16 M36 4 L24 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="36" cy="4" r="2" fill="currentColor"/>
+            <path d="M32 8 L32 14 M32 8 L26 8" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
+          </svg>
           
-          {/* Ornate corner - Bottom Right */}
-          <div className="absolute bottom-4 right-4 w-12 h-12">
-            <svg viewBox="0 0 50 50" className="w-full h-full" style={{ color: '#D4AF37' }}>
-              <path d="M45 45 L45 30 Q45 45 30 45 L45 45" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M42 42 L42 35 Q42 42 35 42" fill="none" stroke="currentColor" strokeWidth="1"/>
-              <circle cx="38" cy="38" r="2" fill="currentColor"/>
-            </svg>
-          </div>
+          {/* Corner flourishes - Bottom Left */}
+          <svg className="absolute" style={{ bottom: '20px', left: '20px', width: '40px', height: '40px', color: '#D4AF37' }} viewBox="0 0 40 40">
+            <path d="M4 36 L4 24 M4 36 L16 36" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="4" cy="36" r="2" fill="currentColor"/>
+            <path d="M8 32 L8 26 M8 32 L14 32" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
+          </svg>
+          
+          {/* Corner flourishes - Bottom Right */}
+          <svg className="absolute" style={{ bottom: '20px', right: '20px', width: '40px', height: '40px', color: '#D4AF37' }} viewBox="0 0 40 40">
+            <path d="M36 36 L36 24 M36 36 L24 36" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="36" cy="36" r="2" fill="currentColor"/>
+            <path d="M32 32 L32 26 M32 32 L26 32" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
+          </svg>
           
           {/* Top decorative flourish */}
-          <div className="absolute top-8 left-1/2 -translate-x-1/2">
-            <svg viewBox="0 0 120 30" className="w-24 h-6" style={{ color: '#D4AF37' }}>
-              <path d="M60 15 Q45 5 30 15 Q15 25 0 15" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M60 15 Q75 5 90 15 Q105 25 120 15" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <circle cx="60" cy="15" r="3" fill="currentColor"/>
+          <div className="absolute left-1/2 -translate-x-1/2" style={{ top: '36px' }}>
+            <svg viewBox="0 0 100 20" style={{ width: '80px', height: '16px', color: '#D4AF37' }}>
+              <path d="M50 10 Q35 2 20 10 Q10 16 0 10" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M50 10 Q65 2 80 10 Q90 16 100 10" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <circle cx="50" cy="10" r="2.5" fill="currentColor"/>
+              <circle cx="20" cy="10" r="1.5" fill="currentColor" opacity="0.6"/>
+              <circle cx="80" cy="10" r="1.5" fill="currentColor" opacity="0.6"/>
             </svg>
           </div>
           
           {/* Bottom decorative flourish */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-            <svg viewBox="0 0 120 30" className="w-24 h-6" style={{ color: '#D4AF37' }}>
-              <path d="M60 15 Q45 25 30 15 Q15 5 0 15" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M60 15 Q75 25 90 15 Q105 5 120 15" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <circle cx="60" cy="15" r="3" fill="currentColor"/>
+          <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: '36px' }}>
+            <svg viewBox="0 0 100 20" style={{ width: '80px', height: '16px', color: '#D4AF37' }}>
+              <path d="M50 10 Q35 18 20 10 Q10 4 0 10" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M50 10 Q65 18 80 10 Q90 4 100 10" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <circle cx="50" cy="10" r="2.5" fill="currentColor"/>
+              <circle cx="20" cy="10" r="1.5" fill="currentColor" opacity="0.6"/>
+              <circle cx="80" cy="10" r="1.5" fill="currentColor" opacity="0.6"/>
             </svg>
           </div>
           
           {/* Center content */}
-          <div className="relative z-10 text-center p-8">
+          <div className="relative z-10 text-center px-10">
             {/* Title with embossed gold effect */}
             <h1 
-              className="text-3xl font-serif font-bold mb-4 tracking-wider"
+              className="text-3xl font-bold mb-3 tracking-widest uppercase"
               style={{
                 color: '#D4AF37',
-                textShadow: '0 1px 0 #B8960C, 0 2px 0 #8B7209, 0 3px 4px rgba(0,0,0,0.5)',
-                fontFamily: 'Georgia, serif',
+                textShadow: '0 1px 0 #B8960C, 0 2px 0 #8B7209, 0 3px 6px rgba(0,0,0,0.7)',
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                letterSpacing: '0.2em',
               }}
             >
               Portfolio
             </h1>
             
             {/* Decorative divider */}
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-8 h-px" style={{ background: 'linear-gradient(90deg, transparent, #D4AF37)' }}/>
-              <svg viewBox="0 0 20 20" className="w-4 h-4" style={{ color: '#D4AF37' }}>
-                <path d="M10 2 L12 8 L18 10 L12 12 L10 18 L8 12 L2 10 L8 8 Z" fill="currentColor"/>
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <div style={{ width: '40px', height: '1px', background: 'linear-gradient(90deg, transparent, #D4AF37)' }}/>
+              <svg viewBox="0 0 16 16" style={{ width: '12px', height: '12px', color: '#D4AF37' }}>
+                <path d="M8 1 L9.5 6.5 L15 8 L9.5 9.5 L8 15 L6.5 9.5 L1 8 L6.5 6.5 Z" fill="currentColor"/>
               </svg>
-              <div className="w-8 h-px" style={{ background: 'linear-gradient(90deg, #D4AF37, transparent)' }}/>
+              <div style={{ width: '40px', height: '1px', background: 'linear-gradient(90deg, #D4AF37, transparent)' }}/>
             </div>
             
             <p 
               className="text-sm tracking-wide"
               style={{
-                color: '#C9A227',
-                textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                fontFamily: 'Georgia, serif',
+                color: '#B8960C',
+                textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                fontFamily: 'Georgia, "Times New Roman", serif',
                 fontStyle: 'italic',
               }}
             >
@@ -219,9 +237,17 @@ function BookSlider() {
           
           {/* Spine shadow effect */}
           <div 
-            className="absolute left-0 top-0 bottom-0 w-3"
+            className="absolute left-0 top-0 bottom-0 w-4"
             style={{
-              background: 'linear-gradient(90deg, rgba(0,0,0,0.4) 0%, transparent 100%)',
+              background: 'linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 100%)',
+            }}
+          />
+          
+          {/* Subtle edge highlight */}
+          <div 
+            className="absolute right-0 top-0 bottom-0 w-1"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 100%)',
             }}
           />
         </div>
