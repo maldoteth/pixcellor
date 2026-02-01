@@ -153,7 +153,11 @@ export default function IntroAnimation() {
         const handleWheel = (e: WheelEvent) => {
             e.preventDefault();
 
-            const newScroll = Math.min(Math.max(scrollRef.current + e.deltaY, 0), MAX_SCROLL);
+            // Apply 5x multiplier on mobile for faster scrolling (both directions)
+            const isMobile = window.innerWidth < 768;
+            const scrollDelta = isMobile ? e.deltaY * 5 : e.deltaY;
+
+            const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
         };
