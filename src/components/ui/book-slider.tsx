@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import MobileBookSlider from "./mobile-book-slider";
 
 // Import portfolio screenshots
+import firstClassAgencyImg from '@/assets/portfolio/first-class-agency.png';
 import dehubImg from '@/assets/portfolio/dehub.png';
 import lastChadStandingImg from '@/assets/portfolio/last-chad-standing.png';
 import holderChatImg from '@/assets/portfolio/holder-chat.png';
@@ -12,7 +13,14 @@ import secDigitalImg from '@/assets/portfolio/sec-digital.png';
 import delabsImg from '@/assets/portfolio/delabs.png';
 import fanSiteImg from '@/assets/portfolio/fan-site.png';
 import theponziImg from '@/assets/portfolio/theponzi.png';
+
 const portfolioData = [
+  {
+    name: "First Class Agency",
+    url: "firstclassagencytiktok.com",
+    description: "Award-winning TikTok Creator Network Agency offering expert management and daily coaching.",
+    screenshot: firstClassAgencyImg
+  },
   {
     name: "DeHub",
     url: "dehub.io",
