@@ -281,21 +281,7 @@ export default function IntroAnimation() {
                     <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8">
                         From quick websites in a day, to full stack turn key solutions. Whatever you need, we're here to help.
                     </p>
-                    <motion.div
-                        initial={{ y: "100vh", opacity: 0 }}
-                        animate={{ 
-                            y: morphValue >= 0.9 ? 0 : "100vh", 
-                            opacity: morphValue >= 0.9 ? 1 : 0 
-                        }}
-                        transition={{
-                            type: "spring",
-                            stiffness: 50,
-                            damping: 15,
-                            delay: 0.3,
-                        }}
-                    >
-                        <BookSlider />
-                    </motion.div>
+                    <BookSlider />
                 </motion.div>
 
                 {/* Main Container */}
