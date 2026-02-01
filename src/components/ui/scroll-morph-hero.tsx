@@ -257,7 +257,7 @@ export default function IntroAnimation() {
                         transition={{ duration: 1 }}
                         className="text-2xl font-medium tracking-tight text-foreground md:text-4xl"
                     >
-                        Pixcellor
+                        Pixcellor<sup className="text-xs align-super">™</sup>
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
