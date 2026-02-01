@@ -6,6 +6,7 @@ import { MessageSquare } from "lucide-react";
 import BookSlider from "./book-slider";
 import Footer from "@/components/Footer";
 import ContactModal from "@/components/ContactModal";
+import logo from "@/assets/logo.png";
 
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
@@ -266,6 +267,14 @@ export default function IntroAnimation() {
 
                 {/* Intro Text (Fades out) */}
                 <div className="absolute z-0 flex flex-col items-center justify-center text-center pointer-events-none top-1/2 -translate-y-1/2">
+                    <motion.img
+                        src={logo}
+                        alt="Pixcellor Logo"
+                        initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
+                        animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2, scale: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
+                        transition={{ duration: 0.8 }}
+                        className="w-16 h-16 md:w-24 md:h-24 lg:w-28 lg:h-28 mb-4"
+                    />
                     <motion.h1
                         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2, y: 0, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
