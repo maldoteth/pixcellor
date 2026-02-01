@@ -109,7 +109,7 @@ All colors MUST be HSL.
 .stf__item:first-child,
 .stf__item:first-child > div {
   opacity: 1 !important;
-  background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 30%, #0f0f0f 70%, #0a0a0a 100%) !important;
+  background: linear-gradient(160deg, #1f1f1f 0%, #141414 40%, #0a0a0a 100%) !important;
 }
 
 .stf__item:first-child::before,
