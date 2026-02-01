@@ -1,4 +1,5 @@
 /// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,11 +53,60 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, clientId, conversationId } = await req.json();
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     if (!apiKey) {
       throw new Error("LOVABLE_API_KEY not configured");
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    let currentConversationId = conversationId;
+
+    // Get or create conversation
+    if (!currentConversationId && clientId) {
+      console.log("Looking for existing conversation for client:", clientId);
+      
+      // Check for existing conversation
+      const { data: existingConv } = await supabase
+        .from("chat_conversations")
+        .select("id")
+        .eq("client_id", clientId)
+        .single();
+
+      if (existingConv) {
+        currentConversationId = existingConv.id;
+        console.log("Found existing conversation:", currentConversationId);
+      } else {
+        // Create new conversation
+        const { data: newConv, error: convError } = await supabase
+          .from("chat_conversations")
+          .insert({ client_id: clientId })
+          .select("id")
+          .single();
+
+        if (convError) {
+          console.error("Error creating conversation:", convError);
+        } else {
+          currentConversationId = newConv.id;
+          console.log("Created new conversation:", currentConversationId);
+        }
+      }
+    }
+
+    // If there are user messages, save the last one
+    if (currentConversationId && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === "user") {
+        console.log("Saving user message:", lastMessage.content.substring(0, 50));
+        await supabase.from("chat_messages").insert({
+          conversation_id: currentConversationId,
+          role: "user",
+          content: lastMessage.content,
+        });
+      }
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -85,8 +135,18 @@ Deno.serve(async (req) => {
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content || "I'd love to help! Could you tell me a bit about your project?";
 
+    // Save assistant reply
+    if (currentConversationId) {
+      console.log("Saving assistant reply:", reply.substring(0, 50));
+      await supabase.from("chat_messages").insert({
+        conversation_id: currentConversationId,
+        role: "assistant",
+        content: reply,
+      });
+    }
+
     return new Response(
-      JSON.stringify({ reply }),
+      JSON.stringify({ reply, conversationId: currentConversationId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {

@@ -32,13 +32,27 @@ const glassStyle = {
   `,
 };
 
+// Generate or retrieve a unique client ID for this browser
+const getClientId = (): string => {
+  const storageKey = "pixcellor_chat_client_id";
+  let clientId = localStorage.getItem(storageKey);
+  if (!clientId) {
+    clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem(storageKey, clientId);
+  }
+  return clientId;
+};
+
 export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const clientId = useRef(getClientId());
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -48,22 +62,64 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     scrollToBottom();
   }, [messages]);
 
-  // Start conversation when chat opens
+  // Load chat history when chat opens
   useEffect(() => {
     if (isOpen && !hasStarted) {
-      startConversation();
+      loadChatHistory();
     }
   }, [isOpen, hasStarted]);
+
+  const loadChatHistory = async () => {
+    setIsLoadingHistory(true);
+    try {
+      // Find existing conversation
+      const { data: conv } = await supabase
+        .from("chat_conversations")
+        .select("id")
+        .eq("client_id", clientId.current)
+        .single();
+
+      if (conv) {
+        setConversationId(conv.id);
+        
+        // Load messages
+        const { data: msgs } = await supabase
+          .from("chat_messages")
+          .select("role, content")
+          .eq("conversation_id", conv.id)
+          .order("created_at", { ascending: true });
+
+        if (msgs && msgs.length > 0) {
+          setMessages(msgs as Message[]);
+          setHasStarted(true);
+        } else {
+          // No messages, start fresh
+          startConversation();
+        }
+      } else {
+        // No existing conversation, start fresh
+        startConversation();
+      }
+    } catch (error) {
+      console.error("Error loading chat history:", error);
+      startConversation();
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
 
   const startConversation = async () => {
     setHasStarted(true);
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("sales-chat", {
-        body: { messages: [] },
+        body: { messages: [], clientId: clientId.current },
       });
       if (error) throw error;
       setMessages([{ role: "assistant", content: data.reply }]);
+      if (data.conversationId) {
+        setConversationId(data.conversationId);
+      }
     } catch (error) {
       console.error("Error starting chat:", error);
       setMessages([{ role: "assistant", content: "Hey there! 👋 I'm Alex from Pixcellor. What kind of project are you thinking about?" }]);
@@ -83,10 +139,17 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
 
     try {
       const { data, error } = await supabase.functions.invoke("sales-chat", {
-        body: { messages: newMessages },
+        body: { 
+          messages: newMessages, 
+          clientId: clientId.current,
+          conversationId 
+        },
       });
       if (error) throw error;
       setMessages([...newMessages, { role: "assistant", content: data.reply }]);
+      if (data.conversationId && !conversationId) {
+        setConversationId(data.conversationId);
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages([...newMessages, { role: "assistant", content: "Sorry, I had a hiccup! Could you try that again?" }]);
@@ -130,50 +193,58 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.map((msg, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[80%] px-3 py-2 rounded-sm text-sm ${
-                msg.role === "user"
-                  ? "text-white"
-                  : "text-white/90"
-              }`}
-              style={{
-                background: msg.role === "user" 
-                  ? "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)"
-                  : "rgba(255,255,255,0.08)",
-                border: msg.role === "user" 
-                  ? "1px solid rgba(255,255,255,0.2)"
-                  : "1px solid rgba(255,255,255,0.1)",
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              {msg.content}
-            </div>
-          </motion.div>
-        ))}
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex justify-start"
-          >
-            <div 
-              className="px-4 py-2 rounded-sm"
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                border: "1px solid rgba(255,255,255,0.1)",
-              }}
-            >
-              <Loader2 className="w-4 h-4 animate-spin text-white/50" />
-            </div>
-          </motion.div>
+        {isLoadingHistory ? (
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="w-6 h-6 animate-spin text-white/50" />
+          </div>
+        ) : (
+          <>
+            {messages.map((msg, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[80%] px-3 py-2 rounded-sm text-sm ${
+                    msg.role === "user"
+                      ? "text-white"
+                      : "text-white/90"
+                  }`}
+                  style={{
+                    background: msg.role === "user" 
+                      ? "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)"
+                      : "rgba(255,255,255,0.08)",
+                    border: msg.role === "user" 
+                      ? "1px solid rgba(255,255,255,0.2)"
+                      : "1px solid rgba(255,255,255,0.1)",
+                    backdropFilter: "blur(10px)",
+                  }}
+                >
+                  {msg.content}
+                </div>
+              </motion.div>
+            ))}
+            {isLoading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-start"
+              >
+                <div 
+                  className="px-4 py-2 rounded-sm"
+                  style={{
+                    background: "rgba(255,255,255,0.1)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <Loader2 className="w-4 h-4 animate-spin text-white/50" />
+                </div>
+              </motion.div>
+            )}
+          </>
         )}
         <div ref={messagesEndRef} />
       </div>
