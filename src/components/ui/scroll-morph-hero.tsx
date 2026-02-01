@@ -248,18 +248,6 @@ export default function IntroAnimation() {
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-background overflow-hidden">
-            {/* SVG Filter for pixelation effect */}
-            <svg className="absolute w-0 h-0" aria-hidden="true">
-                <defs>
-                    <filter id="pixelate" x="0" y="0">
-                        <feFlood x="2" y="2" height="1" width="1" />
-                        <feComposite width="5" height="5" />
-                        <feTile result="tiled" />
-                        <feComposite in="SourceGraphic" in2="tiled" operator="in" />
-                        <feMorphology operator="dilate" radius="2.5" />
-                    </filter>
-                </defs>
-            </svg>
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
@@ -269,10 +257,6 @@ export default function IntroAnimation() {
                         animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2, y: 0, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
                         transition={{ duration: 1 }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground"
-                        style={{
-                            textShadow: '0 0 1px currentColor',
-                            filter: 'url(#pixelate)',
-                        }}
                     >
                         Pixcellor<sup className="text-xs md:text-base lg:text-lg align-super">™</sup>
                     </motion.h1>
@@ -281,10 +265,6 @@ export default function IntroAnimation() {
                         animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 0.5 - morphValue } : { opacity: 0 }}
                         transition={{ duration: 1, delay: 0.2 }}
                         className="mt-4 text-xs md:text-sm lg:text-base font-bold tracking-[0.2em] text-muted-foreground"
-                        style={{
-                            textShadow: '0 0 1px currentColor',
-                            filter: 'url(#pixelate)',
-                        }}
                     >
                         The Digital Builders
                     </motion.p>
