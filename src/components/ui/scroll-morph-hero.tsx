@@ -2,11 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
-import { MessageSquare } from "lucide-react";
 import BookSlider from "./book-slider";
-import Footer from "@/components/Footer";
-import ContactModal from "@/components/ContactModal";
-import logo from "@/assets/logo.png";
 
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
@@ -35,7 +31,6 @@ interface FlipCardProps {
     total: number;
     phase: AnimationPhase;
     target: { x: number; y: number; rotation: number; scale: number; opacity: number };
-    onContactClick: () => void;
 }
 
 // --- FlipCard Component ---
@@ -47,7 +42,6 @@ function FlipCard({
     index,
     phase,
     target,
-    onContactClick,
 }: FlipCardProps) {
     return (
         <motion.div
@@ -93,12 +87,13 @@ function FlipCard({
 
                 {/* Back Face */}
                 <div
-                    className="absolute inset-0 h-full w-full overflow-hidden rounded-xl shadow-lg bg-card flex flex-col items-center justify-center p-4 border border-border cursor-pointer"
+                    className="absolute inset-0 h-full w-full overflow-hidden rounded-xl shadow-lg bg-card flex flex-col items-center justify-center p-4 border border-border"
                     style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-                    onClick={onContactClick}
                 >
-                    <MessageSquare className="h-5 w-5 text-primary mb-1" />
-                    <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest">Contact</p>
+                    <div className="text-center">
+                        <p className="text-[8px] font-bold text-primary uppercase tracking-widest mb-1">View</p>
+                        <p className="text-xs font-medium text-foreground">Details</p>
+                    </div>
                 </div>
             </motion.div>
         </motion.div>
@@ -121,7 +116,6 @@ const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * 
 export default function IntroAnimation() {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-    const [contactOpen, setContactOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // --- Container Size ---
@@ -267,14 +261,6 @@ export default function IntroAnimation() {
 
                 {/* Intro Text (Fades out) */}
                 <div className="absolute z-0 flex flex-col items-center justify-center text-center pointer-events-none top-1/2 -translate-y-1/2">
-                    <motion.img
-                        src={logo}
-                        alt="Pixcellor Logo"
-                        initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
-                        animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2, scale: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
-                        transition={{ duration: 0.8 }}
-                        className="w-16 h-16 md:w-24 md:h-24 lg:w-28 lg:h-28 mb-4"
-                    />
                     <motion.h1
                         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2, y: 0, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
@@ -375,21 +361,11 @@ export default function IntroAnimation() {
                                 total={TOTAL_IMAGES}
                                 phase={introPhase}
                                 target={target}
-                                onContactClick={() => setContactOpen(true)}
                             />
                         );
                     })}
                 </div>
             </div>
-
-            {/* Footer */}
-            <Footer onGoToTop={() => {
-                scrollRef.current = 0;
-                virtualScroll.set(0);
-            }} />
-
-            {/* Contact Modal */}
-            <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
         </div>
     );
 }
