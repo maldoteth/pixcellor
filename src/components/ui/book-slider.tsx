@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import HTMLFlipBook from "react-pageflip";
+import { motion } from "framer-motion";
 
 // Import portfolio screenshots
 import dehubImg from '@/assets/portfolio/dehub.png';
@@ -56,17 +57,7 @@ const portfolioData = [
 
 function BookSlider() {
   const [isOpened, setIsOpened] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const bookRef = useRef<any>(null);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const handleFlip = (e: any) => {
     if (e.data > 0) {
@@ -76,41 +67,43 @@ function BookSlider() {
     }
   };
 
-  // Calculate offset - only apply on desktop
-  const offsetStyle = !isMobile ? {
-    transform: isOpened ? 'translateX(0)' : 'translateX(-141.5px)',
-    transition: 'transform 0.6s ease-out'
-  } : {};
-
   return (
-    <div 
+    <motion.div 
       className="flex items-center justify-center w-full"
-      style={offsetStyle}
+      animate={{ 
+        x: isOpened ? 0 : -141.5 
+      }}
+      transition={{ 
+        type: "spring", 
+        stiffness: 80, 
+        damping: 20,
+        duration: 0.6
+      }}
     >
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
-        width={isMobile ? 280 : 300}
-        height={isMobile ? 380 : 400}
-        size="fixed"
-        minWidth={isMobile ? 260 : 250}
-        maxWidth={isMobile ? 320 : 400}
-        minHeight={isMobile ? 340 : 350}
-        maxHeight={isMobile ? 420 : 500}
+        width={300}
+        height={400}
+        size="stretch"
+        minWidth={250}
+        maxWidth={400}
+        minHeight={350}
+        maxHeight={500}
         showCover={true}
-        mobileScrollSupport={false}
+        mobileScrollSupport={true}
         className="shadow-2xl"
         style={{}}
         startPage={0}
-        drawShadow={!isMobile}
-        flippingTime={isMobile ? 600 : 1000}
+        drawShadow={true}
+        flippingTime={1000}
         usePortrait={true}
         startZIndex={0}
-        autoSize={false}
-        maxShadowOpacity={isMobile ? 0.3 : 0.5}
-        showPageCorners={!isMobile}
+        autoSize={true}
+        maxShadowOpacity={0.5}
+        showPageCorners={true}
         disableFlipByClick={false}
-        swipeDistance={isMobile ? 50 : 30}
+        swipeDistance={30}
         clickEventForward={true}
         useMouseEvents={true}
         onFlip={handleFlip}
@@ -272,7 +265,7 @@ function BookSlider() {
           </div>
         ))}
       </HTMLFlipBook>
-    </div>
+    </motion.div>
   );
 }
 
