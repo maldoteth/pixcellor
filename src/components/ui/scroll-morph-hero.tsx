@@ -2,7 +2,10 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
+import { MessageSquare } from "lucide-react";
 import BookSlider from "./book-slider";
+import Footer from "@/components/Footer";
+import ContactModal from "@/components/ContactModal";
 
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
@@ -31,6 +34,7 @@ interface FlipCardProps {
     total: number;
     phase: AnimationPhase;
     target: { x: number; y: number; rotation: number; scale: number; opacity: number };
+    onContactClick: () => void;
 }
 
 // --- FlipCard Component ---
@@ -42,6 +46,7 @@ function FlipCard({
     index,
     phase,
     target,
+    onContactClick,
 }: FlipCardProps) {
     return (
         <motion.div
@@ -87,13 +92,12 @@ function FlipCard({
 
                 {/* Back Face */}
                 <div
-                    className="absolute inset-0 h-full w-full overflow-hidden rounded-xl shadow-lg bg-card flex flex-col items-center justify-center p-4 border border-border"
+                    className="absolute inset-0 h-full w-full overflow-hidden rounded-xl shadow-lg bg-card flex flex-col items-center justify-center p-4 border border-border cursor-pointer"
                     style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+                    onClick={onContactClick}
                 >
-                    <div className="text-center">
-                        <p className="text-[8px] font-bold text-primary uppercase tracking-widest mb-1">View</p>
-                        <p className="text-xs font-medium text-foreground">Details</p>
-                    </div>
+                    <MessageSquare className="h-5 w-5 text-primary mb-1" />
+                    <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest">Contact</p>
                 </div>
             </motion.div>
         </motion.div>
@@ -116,6 +120,7 @@ const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * 
 export default function IntroAnimation() {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+    const [contactOpen, setContactOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // --- Container Size ---
@@ -361,11 +366,21 @@ export default function IntroAnimation() {
                                 total={TOTAL_IMAGES}
                                 phase={introPhase}
                                 target={target}
+                                onContactClick={() => setContactOpen(true)}
                             />
                         );
                     })}
                 </div>
             </div>
+
+            {/* Footer */}
+            <Footer onGoToTop={() => {
+                scrollRef.current = 0;
+                virtualScroll.set(0);
+            }} />
+
+            {/* Contact Modal */}
+            <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
         </div>
     );
 }
