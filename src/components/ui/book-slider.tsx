@@ -65,7 +65,7 @@ function BookSlider() {
     <motion.div 
       className="flex items-center justify-center w-full"
       animate={{ 
-        x: isOpened ? 0 : -145 
+        x: isOpened ? 0 : -142.5 
       }}
       transition={{ 
         type: "spring", 
