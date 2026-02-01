@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState, useRef } from 'react'
 import HTMLFlipBook from "react-pageflip";
+import { motion } from "framer-motion";
 
 const portfolioData = [
   {
@@ -47,10 +48,32 @@ const portfolioData = [
 ];
 
 function BookSlider() {
+  const [isOpened, setIsOpened] = useState(false);
+  const bookRef = useRef<any>(null);
+
+  const handleFlip = (e: any) => {
+    // When flipping away from cover (page 0), mark as opened
+    if (e.data > 0 && !isOpened) {
+      setIsOpened(true);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-center w-full">
+    <motion.div 
+      className="flex items-center justify-center w-full"
+      animate={{ 
+        x: isOpened ? 80 : 0 
+      }}
+      transition={{ 
+        type: "spring", 
+        stiffness: 80, 
+        damping: 20,
+        duration: 0.6
+      }}
+    >
       {/* @ts-ignore */}
       <HTMLFlipBook
+        ref={bookRef}
         width={300}
         height={400}
         size="stretch"
@@ -74,6 +97,7 @@ function BookSlider() {
         swipeDistance={30}
         clickEventForward={true}
         useMouseEvents={true}
+        onFlip={handleFlip}
       >
         {/* Cover Page */}
         <div className="bg-gradient-to-br from-primary to-primary/70 rounded-lg flex items-center justify-center">
@@ -126,7 +150,7 @@ function BookSlider() {
           </div>
         ))}
       </HTMLFlipBook>
-    </div>
+    </motion.div>
   );
 }
 
