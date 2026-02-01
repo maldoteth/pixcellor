@@ -6,6 +6,7 @@ import BookSlider from "./book-slider";
 
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
+import logoIcon from '@/assets/logo-icon.png';
 import ui2 from '@/assets/hero/ui-2.png';
 import ui3 from '@/assets/hero/ui-3.png';
 import ui4 from '@/assets/hero/ui-4.png';
@@ -257,6 +258,14 @@ export default function IntroAnimation() {
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-background overflow-hidden">
+            {/* Logo - Mobile: center, Desktop/Tablet: left */}
+            <div className="absolute top-6 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 z-20">
+                <img 
+                    src={logoIcon} 
+                    alt="Pixcellor" 
+                    className="w-10 h-10 md:w-12 md:h-12"
+                />
+            </div>
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
