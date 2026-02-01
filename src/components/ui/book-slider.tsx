@@ -2,48 +2,56 @@ import React, { useState, useRef } from 'react'
 import HTMLFlipBook from "react-pageflip";
 import { motion } from "framer-motion";
 
+// Import portfolio screenshots
+import dehubImg from '@/assets/portfolio/dehub.png';
+import holderChatImg from '@/assets/portfolio/holder-chat.png';
+import secDigitalImg from '@/assets/portfolio/sec-digital.png';
+import delabsImg from '@/assets/portfolio/delabs.png';
+import fanSiteImg from '@/assets/portfolio/fan-site.png';
+import theponziImg from '@/assets/portfolio/theponzi.png';
+
 const portfolioData = [
   {
     name: "DeHub",
     url: "dehub.io",
     description: "A decentralized hub platform for Web3 communities and digital assets.",
-    ogImage: "https://dehub.io/og-image.png"
+    screenshot: dehubImg
   },
   {
     name: "Last Chad Standing",
     url: "lastchadstandin.com",
     description: "An exciting competitive platform where only the strongest survive.",
-    ogImage: "https://lastchadstandin.com/og-image.png"
+    screenshot: null // Site currently unavailable
   },
   {
     name: "Holder Chat",
     url: "holder.chat",
     description: "Token-gated communication platform for crypto holders and communities.",
-    ogImage: "https://holder.chat/og-image.png"
+    screenshot: holderChatImg
   },
   {
     name: "SEC Digital",
     url: "sec.digital",
     description: "Digital security solutions and blockchain infrastructure services.",
-    ogImage: "https://sec.digital/og-image.png"
+    screenshot: secDigitalImg
   },
   {
     name: "DeLabs UK",
     url: "delabs.co.uk",
     description: "Innovative development laboratory building cutting-edge digital solutions.",
-    ogImage: "https://delabs.co.uk/og-image.png"
+    screenshot: delabsImg
   },
   {
     name: "Fan Site",
     url: "fan.site",
     description: "Create and manage fan communities with powerful engagement tools.",
-    ogImage: "https://fan.site/og-image.png"
+    screenshot: fanSiteImg
   },
   {
     name: "The Ponzi",
     url: "theponzi.lol",
     description: "A satirical take on crypto culture with gamified experiences.",
-    ogImage: "https://theponzi.lol/og-image.png"
+    screenshot: theponziImg
   }
 ];
 
@@ -52,11 +60,9 @@ function BookSlider() {
   const bookRef = useRef<any>(null);
 
   const handleFlip = (e: any) => {
-    // When flipping away from cover (page 0), mark as opened
     if (e.data > 0) {
       setIsOpened(true);
     } else if (e.data === 0) {
-      // Back to cover, mark as closed
       setIsOpened(false);
     }
   };
@@ -103,7 +109,7 @@ function BookSlider() {
         onFlip={handleFlip}
       >
         {/* Cover Page - Dark Leather Style */}
-        <div className="relative rounded-lg flex items-center justify-center h-full w-full"
+        <div className="relative flex items-center justify-center h-full w-full"
           style={{
             background: 'linear-gradient(160deg, #1f1f1f 0%, #141414 40%, #0a0a0a 100%)',
             boxShadow: 'inset 0 0 100px rgba(0,0,0,0.9)',
@@ -117,7 +123,7 @@ function BookSlider() {
           />
           
           {/* Outer gold border frame */}
-          <div className="absolute border-2 rounded"
+          <div className="absolute border-2"
             style={{
               top: '12px',
               right: '12px',
@@ -129,7 +135,7 @@ function BookSlider() {
           />
           
           {/* Inner gold border frame */}
-          <div className="absolute border rounded-sm"
+          <div className="absolute border"
             style={{
               top: '20px',
               right: '20px',
@@ -140,7 +146,7 @@ function BookSlider() {
             }}
           />
           
-          {/* Corner accents - matching the bottom style */}
+          {/* Corner accents */}
           <svg className="absolute" style={{ top: '16px', left: '16px', width: '24px', height: '24px', color: '#C9A227' }} viewBox="0 0 24 24">
             <path d="M2 2 L2 10 M2 2 L10 2" fill="none" stroke="currentColor" strokeWidth="2"/>
           </svg>
@@ -154,7 +160,7 @@ function BookSlider() {
             <path d="M22 22 L22 14 M22 22 L14 22" fill="none" stroke="currentColor" strokeWidth="2"/>
           </svg>
           
-          {/* Center content - properly contained */}
+          {/* Center content */}
           <div className="relative z-10 text-center flex flex-col items-center justify-center h-full px-8 py-12">
             {/* Top flourish */}
             <svg viewBox="0 0 80 16" style={{ width: '60px', height: '12px', color: '#C9A227', marginBottom: '16px' }}>
@@ -218,21 +224,22 @@ function BookSlider() {
         {portfolioData.map((site) => (
           <div 
             key={site.url}
-            className="bg-card border border-border rounded-lg overflow-hidden"
+            className="bg-card border border-border overflow-hidden"
           >
             <div className="h-full flex flex-col">
-              {/* OG Image */}
+              {/* Screenshot */}
               <div className="h-40 bg-muted overflow-hidden">
-                <img
-                  src={site.ogImage}
-                  alt={site.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback to a gradient placeholder if image fails
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/20', 'to-secondary');
-                  }}
-                />
+                {site.screenshot ? (
+                  <img
+                    src={site.screenshot}
+                    alt={site.name}
+                    className="w-full h-full object-cover object-top"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center">
+                    <span className="text-muted-foreground text-sm">Coming Soon</span>
+                  </div>
+                )}
               </div>
               
               {/* Content */}

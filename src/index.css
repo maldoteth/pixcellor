@@ -116,3 +116,12 @@ All colors MUST be HSL.
 .stf__item:first-child::after {
   opacity: 0 !important;
 }
+
+/* Remove rounded corners from book pages */
+.stf__item {
+  border-radius: 0 !important;
+}
+
+.stf__item > div {
+  border-radius: 0 !important;
+}
