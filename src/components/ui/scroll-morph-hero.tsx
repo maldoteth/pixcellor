@@ -275,11 +275,10 @@ export default function IntroAnimation() {
                     className="absolute top-[10%] z-10 flex flex-col items-center justify-center text-center pointer-events-none px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
-                        You Dream it, We Build it
+                        Pixcellor
                     </h2>
                     <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed">
-                        Discover a world where technology meets creativity. <br className="hidden md:block" />
-                        Scroll through our curated collection of innovations designed to shape the future.
+                        The Digital Builders
                     </p>
                 </motion.div>
 
