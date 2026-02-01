@@ -3,6 +3,7 @@ import HTMLFlipBook from "react-pageflip";
 
 // Import portfolio screenshots
 import dehubImg from '@/assets/portfolio/dehub.png';
+import lastChadStandingImg from '@/assets/portfolio/last-chad-standing.png';
 import holderChatImg from '@/assets/portfolio/holder-chat.png';
 import secDigitalImg from '@/assets/portfolio/sec-digital.png';
 import delabsImg from '@/assets/portfolio/delabs.png';
@@ -20,7 +21,7 @@ const portfolioData = [
     name: "Last Chad Standing",
     url: "lastchadstandin.com",
     description: "An exciting competitive platform where only the strongest survive.",
-    screenshot: null
+    screenshot: lastChadStandingImg
   },
   {
     name: "Holder Chat",
