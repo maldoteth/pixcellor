@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import HTMLFlipBook from "react-pageflip";
 import { motion } from "framer-motion";
 
@@ -57,7 +57,17 @@ const portfolioData = [
 
 function BookSlider() {
   const [isOpened, setIsOpened] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const bookRef = useRef<any>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleFlip = (e: any) => {
     if (e.data > 0) {
@@ -67,11 +77,16 @@ function BookSlider() {
     }
   };
 
+  // Mobile: same size, no offset. Desktop/Tablet: 50% bigger with centering offset
+  const bookWidth = isMobile ? 300 : 450;
+  const bookHeight = isMobile ? 400 : 600;
+  const closedOffset = isMobile ? 0 : -(bookWidth / 2);
+
   return (
     <motion.div 
       className="flex items-center justify-center w-full"
       animate={{ 
-        x: isOpened ? 0 : -141.5 
+        x: isOpened ? 0 : closedOffset 
       }}
       transition={{ 
         type: "spring", 
@@ -83,13 +98,13 @@ function BookSlider() {
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
-        width={300}
-        height={400}
+        width={bookWidth}
+        height={bookHeight}
         size="stretch"
-        minWidth={250}
-        maxWidth={400}
-        minHeight={350}
-        maxHeight={500}
+        minWidth={isMobile ? 250 : 375}
+        maxWidth={isMobile ? 350 : 525}
+        minHeight={isMobile ? 350 : 525}
+        maxHeight={isMobile ? 450 : 675}
         showCover={true}
         mobileScrollSupport={true}
         className="shadow-2xl"
@@ -171,7 +186,7 @@ function BookSlider() {
             
             {/* Title */}
             <h1 
-              className="text-2xl font-bold tracking-widest uppercase mb-2"
+              className="text-2xl md:text-3xl font-bold tracking-widest uppercase mb-2"
               style={{
                 color: '#C9A227',
                 textShadow: '0 2px 4px rgba(0,0,0,0.8)',
@@ -193,7 +208,7 @@ function BookSlider() {
             
             {/* Subtitle */}
             <p 
-              className="text-xs tracking-wider"
+              className="text-xs md:text-sm tracking-wider"
               style={{
                 color: '#9A7B20',
                 textShadow: '0 1px 2px rgba(0,0,0,0.6)',
@@ -228,7 +243,7 @@ function BookSlider() {
           >
             <div className="h-full flex flex-col">
               {/* Screenshot */}
-              <div className="h-40 bg-muted overflow-hidden">
+              <div className="h-40 md:h-60 bg-muted overflow-hidden">
                 {site.screenshot ? (
                   <img
                     src={site.screenshot}
@@ -243,20 +258,20 @@ function BookSlider() {
               </div>
               
               {/* Content */}
-              <div className="flex-1 flex flex-col justify-center p-6">
+              <div className="flex-1 flex flex-col justify-center p-4 md:p-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-bold text-foreground mb-1">
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-1">
                     {site.name}
                   </h2>
                   <a 
                     href={`https://${site.url}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary text-sm mb-3 hover:underline inline-block"
+                    className="text-primary text-sm md:text-base mb-3 hover:underline inline-block"
                   >
                     {site.url}
                   </a>
-                  <p className="text-muted-foreground text-sm leading-relaxed mt-3">
+                  <p className="text-muted-foreground text-sm md:text-base leading-relaxed mt-3">
                     {site.description}
                   </p>
                 </div>
