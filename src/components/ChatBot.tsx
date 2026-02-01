@@ -102,7 +102,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     }
   };
 
-  const ChatContent = () => (
+  const chatContent = (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div 
@@ -113,7 +113,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
       >
         <div className="flex items-center gap-3">
           <div 
-            className="w-10 h-10 rounded-full flex items-center justify-center"
+            className="w-10 h-10 rounded-sm flex items-center justify-center"
             style={{
               background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)",
               border: "1px solid rgba(255,255,255,0.2)",
@@ -139,10 +139,10 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${
+              className={`max-w-[80%] px-3 py-2 rounded-sm text-sm ${
                 msg.role === "user"
-                  ? "rounded-br-md text-white"
-                  : "rounded-bl-md text-white/90"
+                  ? "text-white"
+                  : "text-white/90"
               }`}
               style={{
                 background: msg.role === "user" 
@@ -165,7 +165,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             className="flex justify-start"
           >
             <div 
-              className="px-4 py-2 rounded-2xl rounded-bl-md"
+              className="px-4 py-2 rounded-sm"
               style={{
                 background: "rgba(255,255,255,0.1)",
                 border: "1px solid rgba(255,255,255,0.1)",
@@ -187,7 +187,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
-            className="flex-1 rounded-full px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
+            className="flex-1 rounded-sm px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
             style={{
               background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(255,255,255,0.1)",
@@ -196,7 +196,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
           <button
             onClick={sendMessage}
             disabled={!input.trim() || isLoading}
-            className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
+            className="w-10 h-10 rounded-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
             style={{
               background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)",
               border: "1px solid rgba(255,255,255,0.2)",
@@ -211,10 +211,10 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
 
   return (
     <>
-      {/* Chat Toggle Button - Liquid Glass Bubble */}
+      {/* Chat Toggle Button - Square Glass */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed z-50 w-16 h-16 rounded-full flex items-center justify-center group bottom-6 right-6"
+        className="fixed z-50 w-16 h-16 rounded-sm flex items-center justify-center group bottom-6 right-6"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         style={{
@@ -229,9 +229,9 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
           `,
         }}
       >
-        {/* Inner glow ring */}
+        {/* Inner glow */}
         <div 
-          className="absolute inset-1 rounded-full opacity-60"
+          className="absolute inset-1 rounded-sm opacity-60"
           style={{
             background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)",
           }}
@@ -239,7 +239,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
         
         {/* Animated shimmer */}
         <motion.div
-          className="absolute inset-0 rounded-full overflow-hidden"
+          className="absolute inset-0 rounded-sm overflow-hidden"
           animate={{
             background: [
               "linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)",
@@ -278,7 +278,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
         {/* Pulse ring effect when closed */}
         {!isOpen && (
           <motion.div
-            className="absolute inset-0 rounded-full"
+            className="absolute inset-0 rounded-sm"
             style={{
               border: "2px solid rgba(255,255,255,0.3)",
             }}
@@ -305,7 +305,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             <DrawerHeader className="sr-only">
               <DrawerTitle>Chat with Alex</DrawerTitle>
             </DrawerHeader>
-            <ChatContent />
+            {chatContent}
           </DrawerContent>
         </Drawer>
       ) : (
@@ -327,7 +327,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
                   background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 30%)",
                 }}
               />
-              <ChatContent />
+              {chatContent}
             </motion.div>
           )}
         </AnimatePresence>
