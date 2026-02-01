@@ -102,12 +102,125 @@ function BookSlider() {
         useMouseEvents={true}
         onFlip={handleFlip}
       >
-        {/* Cover Page */}
-        <div className="bg-gradient-to-br from-primary to-primary/70 rounded-lg flex items-center justify-center">
-          <div className="text-center p-8">
-            <h1 className="text-3xl font-bold text-primary-foreground mb-4">Portfolio</h1>
-            <p className="text-primary-foreground/80 text-sm">Flip to explore our work</p>
+        {/* Cover Page - Luxurious Hardback */}
+        <div className="relative rounded-lg overflow-hidden flex items-center justify-center"
+          style={{
+            background: 'linear-gradient(145deg, #8B4513 0%, #5D2E0C 30%, #3D1E08 70%, #2A1506 100%)',
+            boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(139,69,19,0.3)',
+          }}
+        >
+          {/* Leather texture overlay */}
+          <div className="absolute inset-0 opacity-30"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+            }}
+          />
+          
+          {/* Gold border frame */}
+          <div className="absolute inset-3 border-2 rounded-sm"
+            style={{
+              borderColor: '#D4AF37',
+              boxShadow: '0 0 10px rgba(212,175,55,0.3), inset 0 0 10px rgba(212,175,55,0.1)',
+            }}
+          />
+          
+          {/* Ornate corner - Top Left */}
+          <div className="absolute top-4 left-4 w-12 h-12">
+            <svg viewBox="0 0 50 50" className="w-full h-full" style={{ color: '#D4AF37' }}>
+              <path d="M5 5 L5 20 Q5 5 20 5 L5 5" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M8 8 L8 15 Q8 8 15 8" fill="none" stroke="currentColor" strokeWidth="1"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
           </div>
+          
+          {/* Ornate corner - Top Right */}
+          <div className="absolute top-4 right-4 w-12 h-12">
+            <svg viewBox="0 0 50 50" className="w-full h-full" style={{ color: '#D4AF37' }}>
+              <path d="M45 5 L45 20 Q45 5 30 5 L45 5" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M42 8 L42 15 Q42 8 35 8" fill="none" stroke="currentColor" strokeWidth="1"/>
+              <circle cx="38" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          
+          {/* Ornate corner - Bottom Left */}
+          <div className="absolute bottom-4 left-4 w-12 h-12">
+            <svg viewBox="0 0 50 50" className="w-full h-full" style={{ color: '#D4AF37' }}>
+              <path d="M5 45 L5 30 Q5 45 20 45 L5 45" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M8 42 L8 35 Q8 42 15 42" fill="none" stroke="currentColor" strokeWidth="1"/>
+              <circle cx="12" cy="38" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          
+          {/* Ornate corner - Bottom Right */}
+          <div className="absolute bottom-4 right-4 w-12 h-12">
+            <svg viewBox="0 0 50 50" className="w-full h-full" style={{ color: '#D4AF37' }}>
+              <path d="M45 45 L45 30 Q45 45 30 45 L45 45" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M42 42 L42 35 Q42 42 35 42" fill="none" stroke="currentColor" strokeWidth="1"/>
+              <circle cx="38" cy="38" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          
+          {/* Top decorative flourish */}
+          <div className="absolute top-8 left-1/2 -translate-x-1/2">
+            <svg viewBox="0 0 120 30" className="w-24 h-6" style={{ color: '#D4AF37' }}>
+              <path d="M60 15 Q45 5 30 15 Q15 25 0 15" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M60 15 Q75 5 90 15 Q105 25 120 15" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <circle cx="60" cy="15" r="3" fill="currentColor"/>
+            </svg>
+          </div>
+          
+          {/* Bottom decorative flourish */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+            <svg viewBox="0 0 120 30" className="w-24 h-6" style={{ color: '#D4AF37' }}>
+              <path d="M60 15 Q45 25 30 15 Q15 5 0 15" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M60 15 Q75 25 90 15 Q105 5 120 15" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <circle cx="60" cy="15" r="3" fill="currentColor"/>
+            </svg>
+          </div>
+          
+          {/* Center content */}
+          <div className="relative z-10 text-center p-8">
+            {/* Title with embossed gold effect */}
+            <h1 
+              className="text-3xl font-serif font-bold mb-4 tracking-wider"
+              style={{
+                color: '#D4AF37',
+                textShadow: '0 1px 0 #B8960C, 0 2px 0 #8B7209, 0 3px 4px rgba(0,0,0,0.5)',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              Portfolio
+            </h1>
+            
+            {/* Decorative divider */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-8 h-px" style={{ background: 'linear-gradient(90deg, transparent, #D4AF37)' }}/>
+              <svg viewBox="0 0 20 20" className="w-4 h-4" style={{ color: '#D4AF37' }}>
+                <path d="M10 2 L12 8 L18 10 L12 12 L10 18 L8 12 L2 10 L8 8 Z" fill="currentColor"/>
+              </svg>
+              <div className="w-8 h-px" style={{ background: 'linear-gradient(90deg, #D4AF37, transparent)' }}/>
+            </div>
+            
+            <p 
+              className="text-sm tracking-wide"
+              style={{
+                color: '#C9A227',
+                textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                fontFamily: 'Georgia, serif',
+                fontStyle: 'italic',
+              }}
+            >
+              Flip to explore our work
+            </p>
+          </div>
+          
+          {/* Spine shadow effect */}
+          <div 
+            className="absolute left-0 top-0 bottom-0 w-3"
+            style={{
+              background: 'linear-gradient(90deg, rgba(0,0,0,0.4) 0%, transparent 100%)',
+            }}
+          />
         </div>
 
         {portfolioData.map((site) => (
