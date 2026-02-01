@@ -167,7 +167,11 @@ export default function IntroAnimation() {
             const deltaY = touchStartY - touchY;
             touchStartY = touchY;
 
-            const newScroll = Math.min(Math.max(scrollRef.current + deltaY, 0), MAX_SCROLL);
+            // Apply 4x multiplier on mobile for faster scrolling
+            const isMobile = window.innerWidth < 768;
+            const scrollDelta = isMobile ? deltaY * 4 : deltaY;
+
+            const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
         };
