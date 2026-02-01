@@ -14,6 +14,13 @@ import ui6 from '@/assets/hero/ui-6.png';
 import ui7 from '@/assets/hero/ui-7.png';
 import ui8 from '@/assets/hero/ui-8.png';
 import ui9 from '@/assets/hero/ui-9.png';
+import ui10 from '@/assets/hero/ui-10.png';
+import ui11 from '@/assets/hero/ui-11.png';
+import ui12 from '@/assets/hero/ui-12.png';
+import ui13 from '@/assets/hero/ui-13.png';
+import ui14 from '@/assets/hero/ui-14.png';
+import ui15 from '@/assets/hero/ui-15.png';
+import ui16 from '@/assets/hero/ui-16.png';
 
 // --- Types ---
 export type AnimationPhase = "scatter" | "line" | "circle" | "bottom-strip";
@@ -97,11 +104,10 @@ function FlipCard({
 const TOTAL_IMAGES = 20;
 const MAX_SCROLL = 3000;
 
-// UI Template Images (repeated to fill 20 slots)
+// UI Template Images (16 unique + 4 repeated to fill 20 slots)
 const IMAGES = [
-    ui1, ui2, ui3, ui4, ui5, ui6, ui7, ui8, ui9,
-    ui1, ui2, ui3, ui4, ui5, ui6, ui7, ui8, ui9,
-    ui1, ui2
+    ui1, ui2, ui3, ui4, ui5, ui6, ui7, ui8, ui9, ui10,
+    ui11, ui12, ui13, ui14, ui15, ui16, ui1, ui2, ui3, ui4
 ];
 
 // Helper for linear interpolation
