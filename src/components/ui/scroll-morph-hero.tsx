@@ -257,7 +257,7 @@ export default function IntroAnimation() {
                         transition={{ duration: 1 }}
                         className="text-2xl font-medium tracking-tight text-foreground md:text-4xl"
                     >
-                        The future is built on AI.
+                        Your Digital World Partners
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
@@ -275,7 +275,7 @@ export default function IntroAnimation() {
                     className="absolute top-[10%] z-10 flex flex-col items-center justify-center text-center pointer-events-none px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
-                        Explore Our Vision
+                        You Dream it, We Build it
                     </h2>
                     <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed">
                         Discover a world where technology meets creativity. <br className="hidden md:block" />
