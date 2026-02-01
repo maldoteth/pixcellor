@@ -84,13 +84,45 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
 
   return (
     <>
-      {/* Chat Toggle Button */}
+      {/* Chat Toggle Button - Liquid Glass Bubble */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
+        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full flex items-center justify-center group"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
+        style={{
+          background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          boxShadow: `
+            0 8px 32px rgba(0,0,0,0.3),
+            inset 0 1px 1px rgba(255,255,255,0.3),
+            inset 0 -1px 1px rgba(0,0,0,0.1),
+            0 0 40px rgba(147,51,234,0.15)
+          `,
+        }}
       >
+        {/* Inner glow ring */}
+        <div 
+          className="absolute inset-1 rounded-full opacity-60"
+          style={{
+            background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)",
+          }}
+        />
+        
+        {/* Animated shimmer */}
+        <motion.div
+          className="absolute inset-0 rounded-full overflow-hidden"
+          animate={{
+            background: [
+              "linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)",
+              "linear-gradient(45deg, transparent 100%, rgba(255,255,255,0.1) 150%, transparent 200%)",
+            ],
+          }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        />
+        
         <AnimatePresence mode="wait">
           {isOpen ? (
             <motion.div
@@ -99,8 +131,9 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: 90, opacity: 0 }}
               transition={{ duration: 0.2 }}
+              className="relative z-10"
             >
-              <X className="w-6 h-6" />
+              <X className="w-6 h-6 text-white drop-shadow-lg" />
             </motion.div>
           ) : (
             <motion.div
@@ -109,11 +142,31 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: -90, opacity: 0 }}
               transition={{ duration: 0.2 }}
+              className="relative z-10"
             >
-              <MessageCircle className="w-6 h-6" />
+              <MessageCircle className="w-6 h-6 text-white drop-shadow-lg" />
             </motion.div>
           )}
         </AnimatePresence>
+        
+        {/* Pulse ring effect when closed */}
+        {!isOpen && (
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            style={{
+              border: "2px solid rgba(255,255,255,0.3)",
+            }}
+            animate={{
+              scale: [1, 1.3, 1.5],
+              opacity: [0.6, 0.3, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeOut",
+            }}
+          />
+        )}
       </motion.button>
 
       {/* Chat Window */}
