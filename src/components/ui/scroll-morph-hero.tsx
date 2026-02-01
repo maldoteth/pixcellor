@@ -4,6 +4,17 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
 import BookSlider from "./book-slider";
 
+// Import hero UI images
+import ui1 from '@/assets/hero/ui-1.png';
+import ui2 from '@/assets/hero/ui-2.png';
+import ui3 from '@/assets/hero/ui-3.png';
+import ui4 from '@/assets/hero/ui-4.png';
+import ui5 from '@/assets/hero/ui-5.png';
+import ui6 from '@/assets/hero/ui-6.png';
+import ui7 from '@/assets/hero/ui-7.png';
+import ui8 from '@/assets/hero/ui-8.png';
+import ui9 from '@/assets/hero/ui-9.png';
+
 // --- Types ---
 export type AnimationPhase = "scatter" | "line" | "circle" | "bottom-strip";
 
@@ -16,8 +27,8 @@ interface FlipCardProps {
 }
 
 // --- FlipCard Component ---
-const IMG_WIDTH = 60;
-const IMG_HEIGHT = 85;
+const IMG_WIDTH = 70;
+const IMG_HEIGHT = 70;
 
 function FlipCard({
     src,
@@ -86,28 +97,11 @@ function FlipCard({
 const TOTAL_IMAGES = 20;
 const MAX_SCROLL = 3000;
 
-// Mobile UI Template Screenshots
+// UI Template Images (repeated to fill 20 slots)
 const IMAGES = [
-    "https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=300&q=80", // Mobile app UI
-    "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=300&q=80", // Phone interface
-    "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=300&q=80", // App screen
-    "https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?w=300&q=80", // Mobile mockup
-    "https://images.unsplash.com/photo-1601972599720-36938d4ecd31?w=300&q=80", // App design
-    "https://images.unsplash.com/photo-1618761714954-0b8cd0026356?w=300&q=80", // UI screen
-    "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&q=80", // Mobile design
-    "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=300&q=80", // UX wireframe
-    "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=300&q=80", // Dashboard mobile
-    "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300&q=80", // Tablet interface
-    "https://images.unsplash.com/photo-1559028012-481c04fa702d?w=300&q=80", // UI design
-    "https://images.unsplash.com/photo-1517292987719-0369a794ec0f?w=300&q=80", // App prototype
-    "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=300&q=80", // Smart device
-    "https://images.unsplash.com/photo-1522125670776-3c7abb882bc2?w=300&q=80", // Mobile screen
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80", // App layout
-    "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=300&q=80", // Phone app
-    "https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=300&q=80", // UI components
-    "https://images.unsplash.com/photo-1600267185393-e158a98703de?w=300&q=80", // Design system
-    "https://images.unsplash.com/photo-1558655146-d09347e92766?w=300&q=80", // Mobile prototype
-    "https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=300&q=80", // UI template
+    ui1, ui2, ui3, ui4, ui5, ui6, ui7, ui8, ui9,
+    ui1, ui2, ui3, ui4, ui5, ui6, ui7, ui8, ui9,
+    ui1, ui2
 ];
 
 // Helper for linear interpolation
