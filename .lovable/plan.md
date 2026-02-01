@@ -1,12 +1,16 @@
 
 
-## Fix Mobile Scrolling Speed
+## Fix Mobile Scroll-Up Speed
 
-The site uses a virtual scroll system for the hero animation that requires scrolling through 3000 "virtual pixels" to complete the animation. On mobile, each swipe only moves by the actual pixel distance of your finger movement (1:1 ratio), making it painfully slow.
+The mobile scroll speed fix was only partially applied. While scrolling **down** works with the 5x multiplier, scrolling **up** remains slow. 
+
+### The Problem
+
+After reviewing the code, I found the issue: the **wheel event handler** doesn't have the mobile multiplier applied. On mobile browsers, wheel events can still fire (especially on iOS Safari or devices with trackpad-like interactions), bypassing the touch-based multiplier entirely.
 
 ### The Solution
 
-Add a **mobile scroll multiplier** that amplifies each swipe gesture, so one swipe covers more virtual scroll distance. This gives mobile users a faster, more natural scrolling experience while keeping desktop behavior the same.
+Apply the same mobile scroll multiplier to the **wheel event handler** so both scroll mechanisms are fast in both directions.
 
 ---
 
@@ -14,25 +18,25 @@ Add a **mobile scroll multiplier** that amplifies each swipe gesture, so one swi
 
 **File: `src/components/ui/scroll-morph-hero.tsx`**
 
-In the touch handling logic (around lines 165-173), I'll add a multiplier that increases the scroll speed on mobile:
+Update the wheel event handler (lines 153-159) to include the mobile multiplier:
 
 ```text
-Current behavior:
-  - Each swipe moves scroll by deltaY pixels (1:1)
-  - 3000px total ÷ ~100px per swipe = ~30 swipes needed
+Current (no multiplier on wheel):
+  const newScroll = Math.min(Math.max(scrollRef.current + e.deltaY, 0), MAX_SCROLL);
 
-New behavior:
-  - On mobile (< 768px width): multiply deltaY by 4-5x
-  - 3000px total ÷ ~400-500px per swipe = ~6-8 swipes needed
+New (multiplier applied on mobile):
+  const isMobile = window.innerWidth < 768;
+  const scrollDelta = isMobile ? e.deltaY * 5 : e.deltaY;
+  const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
 ```
 
-The multiplier will be applied conditionally based on screen width, so desktop/iPad users with mouse wheels or trackpads keep their current smooth experience.
+This ensures that any scroll input on mobile (whether touch-based or wheel-based) gets the 5x speed boost in both directions.
 
 ---
 
 ### Technical Details
 
-1. Detect if the device is mobile using `window.innerWidth < 768`
-2. Apply a multiplier (approximately 4x) to the touch move delta on mobile only
-3. The wheel event (desktop) remains unchanged
+1. Add mobile detection to the wheel event handler (`window.innerWidth < 768`)
+2. Apply the same 5x multiplier to `e.deltaY` on mobile devices
+3. This mirrors the existing touch handler logic for consistency
 
