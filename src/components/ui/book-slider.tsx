@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import HTMLFlipBook from "react-pageflip";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileBookSlider from "./mobile-book-slider";
 
 // Import portfolio screenshots
 import dehubImg from '@/assets/portfolio/dehub.png';
@@ -22,7 +23,7 @@ const portfolioData = [
     name: "Last Chad Standing",
     url: "lastchadstandin.com",
     description: "An exciting competitive platform where only the strongest survive.",
-    screenshot: null // Site currently unavailable
+    screenshot: null
   },
   {
     name: "Holder Chat",
@@ -61,9 +62,7 @@ function BookSlider() {
   const [isOpened, setIsOpened] = useState(false);
   const bookRef = useRef<any>(null);
 
-  // On mobile, consider it always "opened" since we skip the cover
   const handleFlip = (e: any) => {
-    if (isMobile) return; // No cover animation on mobile
     if (e.data > 0) {
       setIsOpened(true);
     } else if (e.data === 0) {
@@ -71,11 +70,17 @@ function BookSlider() {
     }
   };
 
+  // Mobile uses completely separate component
+  if (isMobile) {
+    return <MobileBookSlider />;
+  }
+
+  // Desktop/Tablet version with cover and animation
   return (
     <motion.div 
       className="flex items-center justify-center w-full"
       animate={{ 
-        x: isMobile ? 0 : (isOpened ? 0 : -141.5)
+        x: isOpened ? 0 : -141.5 
       }}
       transition={{ 
         type: "spring", 
@@ -94,11 +99,11 @@ function BookSlider() {
         maxWidth={400}
         minHeight={350}
         maxHeight={500}
-        showCover={!isMobile}
+        showCover={true}
         mobileScrollSupport={true}
         className="shadow-2xl"
         style={{}}
-        startPage={isMobile ? 0 : 0}
+        startPage={0}
         drawShadow={true}
         flippingTime={1000}
         usePortrait={true}
