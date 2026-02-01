@@ -1,48 +1,48 @@
 import React from 'react'
 import HTMLFlipBook from "react-pageflip";
 
-const pokemonData = [
+const portfolioData = [
   {
-    id: "006",
-    name: "Charizard",
-    types: ["Fire", "Flying"],
-    description: "Flies in search of strong opponents. Breathes extremely hot fire that melts anything, but never uses it on weaker foes."
+    name: "DeHub",
+    url: "dehub.io",
+    description: "A decentralized hub platform for Web3 communities and digital assets.",
+    ogImage: "https://dehub.io/og-image.png"
   },
   {
-    id: "025",
-    name: "Pikachu",
-    types: ["Electric"],
-    description: "When Pikachu meet, they touch tails to exchange electricity as a greeting."
+    name: "Last Chad Standing",
+    url: "lastchadstandin.com",
+    description: "An exciting competitive platform where only the strongest survive.",
+    ogImage: "https://lastchadstandin.com/og-image.png"
   },
   {
-    id: "125",
-    name: "Electabuzz",
-    types: ["Electric"],
-    description: "Often kept at power plants to regulate electricity. Competes with others to attract lightning during storms."
+    name: "Holder Chat",
+    url: "holder.chat",
+    description: "Token-gated communication platform for crypto holders and communities.",
+    ogImage: "https://holder.chat/og-image.png"
   },
   {
-    id: "185",
-    name: "Sudowoodo",
-    types: ["Rock"],
-    description: "Despite looking like a tree, its body is more like rock. Hates water and hides when it rains."
+    name: "SEC Digital",
+    url: "sec.digital",
+    description: "Digital security solutions and blockchain infrastructure services.",
+    ogImage: "https://sec.digital/og-image.png"
   },
   {
-    id: "448",
-    name: "Lucario",
-    types: ["Fighting", "Steel"],
-    description: "Can read thoughts and movements by sensing others' aura. No foe can hide from Lucario."
+    name: "DeLabs UK",
+    url: "delabs.co.uk",
+    description: "Innovative development laboratory building cutting-edge digital solutions.",
+    ogImage: "https://delabs.co.uk/og-image.png"
   },
   {
-    id: "658",
-    name: "Greninja",
-    types: ["Water", "Dark"],
-    description: "Creates throwing stars from compressed water that can slice through metal when thrown at high speed."
+    name: "Fan Site",
+    url: "fan.site",
+    description: "Create and manage fan communities with powerful engagement tools.",
+    ogImage: "https://fan.site/og-image.png"
   },
   {
-    id: "491",
-    name: "Darkrai",
-    types: ["Dark"],
-    description: "A legendary Pokémon that appears on moonless nights, putting people to sleep and giving them nightmares."
+    name: "The Ponzi",
+    url: "theponzi.lol",
+    description: "A satirical take on crypto culture with gamified experiences.",
+    ogImage: "https://theponzi.lol/og-image.png"
   }
 ];
 
@@ -78,44 +78,47 @@ function BookSlider() {
         {/* Cover Page */}
         <div className="bg-gradient-to-br from-primary to-primary/70 rounded-lg flex items-center justify-center">
           <div className="text-center p-8">
-            <h1 className="text-3xl font-bold text-primary-foreground mb-4">Pokédex</h1>
-            <p className="text-primary-foreground/80 text-sm">Flip to explore</p>
+            <h1 className="text-3xl font-bold text-primary-foreground mb-4">Portfolio</h1>
+            <p className="text-primary-foreground/80 text-sm">Flip to explore our work</p>
           </div>
         </div>
 
-        {pokemonData.map((pokemon) => (
+        {portfolioData.map((site) => (
           <div 
-            key={pokemon.id}
+            key={site.url}
             className="bg-card border border-border rounded-lg overflow-hidden"
           >
-            <div className="h-full flex flex-col p-6">
-              <div className="flex-1 flex flex-col justify-center">
-                <div className="text-center mb-4">
-                  <img
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${parseInt(pokemon.id)}.png`}
-                    alt={pokemon.name}
-                    className="w-32 h-32 mx-auto object-contain"
-                  />
-                </div>
+            <div className="h-full flex flex-col">
+              {/* OG Image */}
+              <div className="h-40 bg-muted overflow-hidden">
+                <img
+                  src={site.ogImage}
+                  alt={site.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to a gradient placeholder if image fails
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/20', 'to-secondary');
+                  }}
+                />
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 flex flex-col justify-center p-6">
                 <div className="text-center">
                   <h2 className="text-xl font-bold text-foreground mb-1">
-                    {pokemon.name}
+                    {site.name}
                   </h2>
-                  <p className="text-muted-foreground text-sm mb-3">
-                    #{pokemon.id}
-                  </p>
-                  <div className="flex justify-center gap-2 mb-4">
-                    {pokemon.types.map((type) => (
-                      <span
-                        key={type}
-                        className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-xs font-medium"
-                      >
-                        {type}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {pokemon.description}
+                  <a 
+                    href={`https://${site.url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary text-sm mb-3 hover:underline inline-block"
+                  >
+                    {site.url}
+                  </a>
+                  <p className="text-muted-foreground text-sm leading-relaxed mt-3">
+                    {site.description}
                   </p>
                 </div>
               </div>
