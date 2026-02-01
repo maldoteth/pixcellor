@@ -1,42 +1,54 @@
 
+## Add Pixcellor "P" Logo to Page Header
 
-## Fix Mobile Scroll-Up Speed
-
-The mobile scroll speed fix was only partially applied. While scrolling **down** works with the 5x multiplier, scrolling **up** remains slow. 
-
-### The Problem
-
-After reviewing the code, I found the issue: the **wheel event handler** doesn't have the mobile multiplier applied. On mobile browsers, wheel events can still fire (especially on iOS Safari or devices with trackpad-like interactions), bypassing the touch-based multiplier entirely.
-
-### The Solution
-
-Apply the same mobile scroll multiplier to the **wheel event handler** so both scroll mechanisms are fast in both directions.
+Add the provided "P" logo image to the top of the page with responsive positioning - centered on mobile, left-aligned on desktop/tablet.
 
 ---
 
-### What Will Change
+### Implementation Steps
+
+**Step 1: Copy the logo image to project assets**
+
+Copy the uploaded logo from `user-uploads://Screenshot_2026-02-01_043730-3.png` to `src/assets/logo-icon.png`
+
+---
+
+**Step 2: Add logo to the hero component**
 
 **File: `src/components/ui/scroll-morph-hero.tsx`**
 
-Update the wheel event handler (lines 153-159) to include the mobile multiplier:
+Add the logo as a fixed-position element at the top of the page:
 
-```text
-Current (no multiplier on wheel):
-  const newScroll = Math.min(Math.max(scrollRef.current + e.deltaY, 0), MAX_SCROLL);
-
-New (multiplier applied on mobile):
-  const isMobile = window.innerWidth < 768;
-  const scrollDelta = isMobile ? e.deltaY * 5 : e.deltaY;
-  const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
+1. Import the logo asset at the top of the file:
+```typescript
+import logoIcon from '@/assets/logo-icon.png';
 ```
 
-This ensures that any scroll input on mobile (whether touch-based or wheel-based) gets the 5x speed boost in both directions.
+2. Add a logo container with responsive positioning just inside the main container (around line 259-260):
+```tsx
+{/* Logo - Mobile: center, Desktop/Tablet: left */}
+<div className="absolute top-6 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 z-20">
+  <img 
+    src={logoIcon} 
+    alt="Pixcellor" 
+    className="w-10 h-10 md:w-12 md:h-12"
+  />
+</div>
+```
 
 ---
 
-### Technical Details
+### Responsive Behavior
 
-1. Add mobile detection to the wheel event handler (`window.innerWidth < 768`)
-2. Apply the same 5x multiplier to `e.deltaY` on mobile devices
-3. This mirrors the existing touch handler logic for consistency
+| Device | Position | Alignment |
+|--------|----------|-----------|
+| Mobile (< 768px) | Top center | Horizontally centered using `left-1/2 -translate-x-1/2` |
+| Tablet/Desktop (≥ 768px) | Top left | Left-aligned with `md:left-6 md:translate-x-0` |
 
+---
+
+### Technical Notes
+
+- The logo uses `z-20` to ensure it stays above the animated cards
+- Sizing is `40x40px` on mobile, `48x48px` on desktop for good visibility
+- The logo maintains its square aspect ratio to match the sharp-edged design system
