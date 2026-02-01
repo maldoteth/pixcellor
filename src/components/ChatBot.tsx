@@ -2,6 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 interface Message {
   role: "user" | "assistant";
@@ -13,12 +20,26 @@ interface ChatBotProps {
   setIsOpen: (open: boolean) => void;
 }
 
+const glassStyle = {
+  background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%)",
+  backdropFilter: "blur(24px)",
+  WebkitBackdropFilter: "blur(24px)",
+  border: "1px solid rgba(255,255,255,0.15)",
+  boxShadow: `
+    0 8px 32px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.2),
+    inset 0 -1px 1px rgba(0,0,0,0.1),
+    0 0 60px rgba(147,51,234,0.1)
+  `,
+};
+
 export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -82,12 +103,121 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     }
   };
 
+  const ChatContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div 
+        className="px-4 py-3 border-b border-white/10"
+        style={{
+          background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <div 
+            className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg, rgba(147,51,234,0.4) 0%, rgba(147,51,234,0.2) 100%)",
+              border: "1px solid rgba(147,51,234,0.3)",
+            }}
+          >
+            <MessageCircle className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-white text-sm">Alex from Pixcellor</h3>
+            <p className="text-xs text-white/50">Usually replies instantly</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {messages.map((msg, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${
+                msg.role === "user"
+                  ? "rounded-br-md text-white"
+                  : "rounded-bl-md text-white/90"
+              }`}
+              style={{
+                background: msg.role === "user" 
+                  ? "linear-gradient(135deg, rgba(147,51,234,0.5) 0%, rgba(147,51,234,0.3) 100%)"
+                  : "rgba(255,255,255,0.1)",
+                border: msg.role === "user" 
+                  ? "1px solid rgba(147,51,234,0.4)"
+                  : "1px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              {msg.content}
+            </div>
+          </motion.div>
+        ))}
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex justify-start"
+          >
+            <div 
+              className="px-4 py-2 rounded-2xl rounded-bl-md"
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              <Loader2 className="w-4 h-4 animate-spin text-white/50" />
+            </div>
+          </motion.div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input */}
+      <div className="p-3 border-t border-white/10">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your message..."
+            className="flex-1 rounded-full px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            style={{
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+          />
+          <button
+            onClick={sendMessage}
+            disabled={!input.trim() || isLoading}
+            className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
+            style={{
+              background: "linear-gradient(135deg, rgba(147,51,234,0.6) 0%, rgba(147,51,234,0.4) 100%)",
+              border: "1px solid rgba(147,51,234,0.4)",
+            }}
+          >
+            <Send className="w-4 h-4 text-white" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       {/* Chat Toggle Button - Liquid Glass Bubble */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full flex items-center justify-center group"
+        className={`fixed z-50 w-16 h-16 rounded-full flex items-center justify-center group ${
+          isMobile ? "top-4 left-1/2 -translate-x-1/2" : "top-6 left-6"
+        }`}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         style={{
@@ -169,87 +299,43 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
         )}
       </motion.button>
 
-      {/* Chat Window */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 z-50 w-[350px] h-[500px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+      {/* Mobile: Drawer */}
+      {isMobile ? (
+        <Drawer open={isOpen} onOpenChange={setIsOpen}>
+          <DrawerContent 
+            className="h-[85vh] border-white/10"
+            style={glassStyle}
           >
-            {/* Header */}
-            <div className="bg-primary/10 px-4 py-3 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                  <MessageCircle className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground text-sm">Alex from Pixcellor</h3>
-                  <p className="text-xs text-muted-foreground">Usually replies instantly</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {messages.map((msg, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-muted text-foreground rounded-bl-md"
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-                </motion.div>
-              ))}
-              {isLoading && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex justify-start"
-                >
-                  <div className="bg-muted px-4 py-2 rounded-2xl rounded-bl-md">
-                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                  </div>
-                </motion.div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <div className="p-3 border-t border-border">
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Type your message..."
-                  className="flex-1 bg-muted rounded-full px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-                <button
-                  onClick={sendMessage}
-                  disabled={!input.trim() || isLoading}
-                  className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <DrawerHeader className="sr-only">
+              <DrawerTitle>Chat with Alex</DrawerTitle>
+            </DrawerHeader>
+            <ChatContent />
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        /* Desktop: Floating Window */
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="fixed top-24 left-6 z-50 w-[380px] h-[520px] rounded-3xl flex flex-col overflow-hidden"
+              style={glassStyle}
+            >
+              {/* Decorative inner glow */}
+              <div 
+                className="absolute inset-0 rounded-3xl pointer-events-none"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 30%)",
+                }}
+              />
+              <ChatContent />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
     </>
   );
 }
