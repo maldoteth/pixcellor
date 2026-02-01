@@ -86,28 +86,28 @@ function FlipCard({
 const TOTAL_IMAGES = 20;
 const MAX_SCROLL = 3000;
 
-// Unsplash Images
+// Mobile UI Template Screenshots
 const IMAGES = [
-    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300&q=80",
-    "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=300&q=80",
-    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=300&q=80",
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&q=80",
-    "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=300&q=80",
-    "https://images.unsplash.com/photo-1506765515384-028b60a970df?w=300&q=80",
-    "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&q=80",
-    "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=300&q=80",
-    "https://images.unsplash.com/photo-1500485035595-cbe6f645feb1?w=300&q=80",
-    "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&q=80",
-    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300&q=80",
-    "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=300&q=80",
-    "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=300&q=80",
-    "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=300&q=80",
-    "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=300&q=80",
-    "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=300&q=80",
-    "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=300&q=80",
-    "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=300&q=80",
-    "https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?w=300&q=80",
-    "https://images.unsplash.com/photo-1496568816309-51d7c20e3b21?w=300&q=80",
+    "https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=300&q=80", // Mobile app UI
+    "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=300&q=80", // Phone interface
+    "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=300&q=80", // App screen
+    "https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?w=300&q=80", // Mobile mockup
+    "https://images.unsplash.com/photo-1601972599720-36938d4ecd31?w=300&q=80", // App design
+    "https://images.unsplash.com/photo-1618761714954-0b8cd0026356?w=300&q=80", // UI screen
+    "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&q=80", // Mobile design
+    "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=300&q=80", // UX wireframe
+    "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=300&q=80", // Dashboard mobile
+    "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300&q=80", // Tablet interface
+    "https://images.unsplash.com/photo-1559028012-481c04fa702d?w=300&q=80", // UI design
+    "https://images.unsplash.com/photo-1517292987719-0369a794ec0f?w=300&q=80", // App prototype
+    "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=300&q=80", // Smart device
+    "https://images.unsplash.com/photo-1522125670776-3c7abb882bc2?w=300&q=80", // Mobile screen
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80", // App layout
+    "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=300&q=80", // Phone app
+    "https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=300&q=80", // UI components
+    "https://images.unsplash.com/photo-1600267185393-e158a98703de?w=300&q=80", // Design system
+    "https://images.unsplash.com/photo-1558655146-d09347e92766?w=300&q=80", // Mobile prototype
+    "https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=300&q=80", // UI template
 ];
 
 // Helper for linear interpolation
