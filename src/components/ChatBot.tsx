@@ -215,9 +215,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
       {/* Chat Toggle Button - Liquid Glass Bubble */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed z-50 w-16 h-16 rounded-full flex items-center justify-center group ${
-          isMobile ? "top-4 left-1/2 -translate-x-1/2" : "top-6 left-6"
-        }`}
+        className="fixed z-50 w-16 h-16 rounded-full flex items-center justify-center group bottom-6 right-6"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         style={{
