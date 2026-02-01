@@ -65,7 +65,7 @@ function BookSlider() {
     <motion.div 
       className="flex items-center justify-center w-full"
       animate={{ 
-        x: isOpened ? 0 : -142.5 
+        x: isOpened ? 0 : -141.5 
       }}
       transition={{ 
         type: "spring", 
@@ -103,10 +103,13 @@ function BookSlider() {
         onFlip={handleFlip}
       >
         {/* Cover Page - Luxurious Hardback */}
-        <div className="relative rounded-lg overflow-hidden flex items-center justify-center"
+        <div className="relative rounded-lg overflow-hidden flex items-center justify-center backface-visibility-hidden"
           style={{
             background: 'linear-gradient(145deg, #8B4513 0%, #5D2E0C 30%, #3D1E08 70%, #2A1506 100%)',
             boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(139,69,19,0.3)',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            opacity: 1,
           }}
         >
           {/* Leather texture overlay */}
