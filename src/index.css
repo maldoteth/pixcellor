@@ -125,3 +125,21 @@ All colors MUST be HSL.
 .stf__item > div {
   border-radius: 0 !important;
 }
+
+/* Disable hover effects on mobile for react-pageflip */
+@media (max-width: 767px) {
+  .stf__block,
+  .stf__item {
+    pointer-events: auto !important;
+  }
+  
+  /* Disable page corner hover effect on mobile */
+  .stf__corner {
+    display: none !important;
+  }
+  
+  /* Prevent hover state interference */
+  .stf__item:hover {
+    transform: none !important;
+  }
+}
