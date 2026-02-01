@@ -163,13 +163,14 @@ export default function IntroAnimation() {
             touchStartY = e.touches[0].clientY;
         };
         const handleTouchMove = (e: TouchEvent) => {
+            e.preventDefault();
             const touchY = e.touches[0].clientY;
             const deltaY = touchStartY - touchY;
             touchStartY = touchY;
 
-            // Apply 4x multiplier on mobile for faster scrolling
+            // Apply 5x multiplier on mobile for faster scrolling (both directions)
             const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? deltaY * 4 : deltaY;
+            const scrollDelta = isMobile ? deltaY * 5 : deltaY;
 
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
