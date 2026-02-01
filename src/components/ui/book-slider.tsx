@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import HTMLFlipBook from "react-pageflip";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { motion } from "framer-motion";
 
 // Import portfolio screenshots
@@ -56,10 +57,13 @@ const portfolioData = [
 ];
 
 function BookSlider() {
+  const isMobile = useIsMobile();
   const [isOpened, setIsOpened] = useState(false);
   const bookRef = useRef<any>(null);
 
+  // On mobile, consider it always "opened" since we skip the cover
   const handleFlip = (e: any) => {
+    if (isMobile) return; // No cover animation on mobile
     if (e.data > 0) {
       setIsOpened(true);
     } else if (e.data === 0) {
@@ -71,7 +75,7 @@ function BookSlider() {
     <motion.div 
       className="flex items-center justify-center w-full"
       animate={{ 
-        x: isOpened ? 0 : -141.5 
+        x: isMobile ? 0 : (isOpened ? 0 : -141.5)
       }}
       transition={{ 
         type: "spring", 
@@ -90,11 +94,11 @@ function BookSlider() {
         maxWidth={400}
         minHeight={350}
         maxHeight={500}
-        showCover={true}
+        showCover={!isMobile}
         mobileScrollSupport={true}
         className="shadow-2xl"
         style={{}}
-        startPage={0}
+        startPage={isMobile ? 0 : 0}
         drawShadow={true}
         flippingTime={1000}
         usePortrait={true}
