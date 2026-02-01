@@ -28,8 +28,7 @@ const glassStyle = {
   boxShadow: `
     0 8px 32px rgba(0,0,0,0.4),
     inset 0 1px 1px rgba(255,255,255,0.2),
-    inset 0 -1px 1px rgba(0,0,0,0.1),
-    0 0 60px rgba(147,51,234,0.1)
+    inset 0 -1px 1px rgba(0,0,0,0.1)
   `,
 };
 
@@ -116,8 +115,8 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
           <div 
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{
-              background: "linear-gradient(135deg, rgba(147,51,234,0.4) 0%, rgba(147,51,234,0.2) 100%)",
-              border: "1px solid rgba(147,51,234,0.3)",
+              background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)",
+              border: "1px solid rgba(255,255,255,0.2)",
             }}
           >
             <MessageCircle className="w-5 h-5 text-white" />
@@ -147,10 +146,10 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
               }`}
               style={{
                 background: msg.role === "user" 
-                  ? "linear-gradient(135deg, rgba(147,51,234,0.5) 0%, rgba(147,51,234,0.3) 100%)"
-                  : "rgba(255,255,255,0.1)",
+                  ? "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)"
+                  : "rgba(255,255,255,0.08)",
                 border: msg.role === "user" 
-                  ? "1px solid rgba(147,51,234,0.4)"
+                  ? "1px solid rgba(255,255,255,0.2)"
                   : "1px solid rgba(255,255,255,0.1)",
                 backdropFilter: "blur(10px)",
               }}
@@ -188,7 +187,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
-            className="flex-1 rounded-full px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            className="flex-1 rounded-full px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
             style={{
               background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(255,255,255,0.1)",
@@ -199,8 +198,8 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             disabled={!input.trim() || isLoading}
             className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
             style={{
-              background: "linear-gradient(135deg, rgba(147,51,234,0.6) 0%, rgba(147,51,234,0.4) 100%)",
-              border: "1px solid rgba(147,51,234,0.4)",
+              background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)",
+              border: "1px solid rgba(255,255,255,0.2)",
             }}
           >
             <Send className="w-4 h-4 text-white" />
@@ -226,8 +225,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
           boxShadow: `
             0 8px 32px rgba(0,0,0,0.3),
             inset 0 1px 1px rgba(255,255,255,0.3),
-            inset 0 -1px 1px rgba(0,0,0,0.1),
-            0 0 40px rgba(147,51,234,0.15)
+            inset 0 -1px 1px rgba(0,0,0,0.1)
           `,
         }}
       >
@@ -319,7 +317,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="fixed top-24 left-6 z-50 w-[380px] h-[520px] rounded-3xl flex flex-col overflow-hidden"
+              className="fixed bottom-24 right-6 z-50 w-[380px] h-[520px] rounded-3xl flex flex-col overflow-hidden"
               style={glassStyle}
             >
               {/* Decorative inner glow */}
