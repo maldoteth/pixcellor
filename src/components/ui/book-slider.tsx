@@ -53,8 +53,11 @@ function BookSlider() {
 
   const handleFlip = (e: any) => {
     // When flipping away from cover (page 0), mark as opened
-    if (e.data > 0 && !isOpened) {
+    if (e.data > 0) {
       setIsOpened(true);
+    } else if (e.data === 0) {
+      // Back to cover, mark as closed
+      setIsOpened(false);
     }
   };
 
@@ -62,7 +65,7 @@ function BookSlider() {
     <motion.div 
       className="flex items-center justify-center w-full"
       animate={{ 
-        x: isOpened ? 80 : 0 
+        x: isOpened ? 0 : -80 
       }}
       transition={{ 
         type: "spring", 
