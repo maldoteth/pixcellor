@@ -104,3 +104,15 @@ All colors MUST be HSL.
     perspective: 1000px;
   }
 }
+
+/* Force portfolio book cover to never be transparent */
+.stf__item:first-child,
+.stf__item:first-child > div {
+  opacity: 1 !important;
+  background: linear-gradient(145deg, #8B4513 0%, #5D2E0C 30%, #3D1E08 70%, #2A1506 100%) !important;
+}
+
+.stf__item:first-child::before,
+.stf__item:first-child::after {
+  opacity: 0 !important;
+}
