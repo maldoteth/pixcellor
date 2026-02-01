@@ -257,7 +257,7 @@ export default function IntroAnimation() {
                         transition={{ duration: 1 }}
                         className="text-2xl font-medium tracking-tight text-foreground md:text-4xl"
                     >
-                        Your Digital World Partners
+                        Pixcellor
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
@@ -265,7 +265,7 @@ export default function IntroAnimation() {
                         transition={{ duration: 1, delay: 0.2 }}
                         className="mt-4 text-xs font-bold tracking-[0.2em] text-muted-foreground"
                     >
-                        SCROLL TO EXPLORE
+                        The Digital Builders
                     </motion.p>
                 </div>
 
