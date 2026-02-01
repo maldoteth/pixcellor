@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
+import BookSlider from "./book-slider";
 
 // --- Types ---
 export type AnimationPhase = "scatter" | "line" | "circle" | "bottom-strip";
@@ -272,14 +273,15 @@ export default function IntroAnimation() {
                 {/* Arc Active Content (Fades in) */}
                 <motion.div
                     style={{ opacity: contentOpacity, y: contentY }}
-                    className="absolute top-[10%] z-10 flex flex-col items-center justify-center text-center pointer-events-none px-4"
+                    className="absolute top-[5%] z-10 flex flex-col items-center justify-center text-center pointer-events-auto px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
                         You Dream It - We Build It
                     </h2>
-                    <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed">
+                    <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8">
                         From quick websites in a day, to full stack turn key solutions. Whatever you need, we're here to help.
                     </p>
+                    <BookSlider />
                 </motion.div>
 
                 {/* Main Container */}
