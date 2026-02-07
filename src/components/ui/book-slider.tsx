@@ -265,14 +265,16 @@ function BookSlider() {
                   <h2 className="text-xl font-bold text-foreground mb-1">
                     {site.name}
                   </h2>
-                  <a 
-                    href={`https://${site.url}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary text-sm mb-3 hover:underline inline-block"
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      window.open(`https://${site.url}`, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="text-primary text-sm mb-3 hover:underline inline-block cursor-pointer"
                   >
                     {site.url}
-                  </a>
+                  </button>
                   <p className="text-muted-foreground text-sm leading-relaxed mt-3">
                     {site.description}
                   </p>

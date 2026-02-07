@@ -121,14 +121,16 @@ function MobileBookSlider() {
                   <h2 className="text-lg font-bold text-foreground mb-1">
                     {site.name}
                   </h2>
-                  <a 
-                    href={`https://${site.url}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary text-xs mb-2 hover:underline inline-block"
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      window.open(`https://${site.url}`, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="text-primary text-xs mb-2 hover:underline inline-block cursor-pointer"
                   >
                     {site.url}
-                  </a>
+                  </button>
                   <p className="text-muted-foreground text-xs leading-relaxed mt-2">
                     {site.description}
                   </p>
