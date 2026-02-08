@@ -282,7 +282,7 @@ function BookSlider() {
                   >
                     {site.url}
                   </button>
-                  <p className="text-muted-foreground text-sm leading-relaxed mt-3">
+                  <p className="text-muted-foreground text-sm leading-relaxed mt-3 line-clamp-3">
                     {site.description}
                   </p>
                 </div>
