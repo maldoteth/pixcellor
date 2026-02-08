@@ -138,7 +138,7 @@ function MobileBookSlider() {
                   >
                     {site.url}
                   </button>
-                  <p className="text-muted-foreground text-xs leading-relaxed mt-2">
+                  <p className="text-muted-foreground text-xs leading-relaxed mt-2 line-clamp-3">
                     {site.description}
                   </p>
                 </div>
