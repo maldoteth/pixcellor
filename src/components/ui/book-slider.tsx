@@ -19,55 +19,55 @@ const portfolioData = [
   {
     name: "First Class Agency",
     url: "firstclassagencytiktok.com",
-    description: "Award-winning TikTok Creator Network Agency offering expert management and daily coaching.",
+    description: "Award-winning TikTok Creator Network Agency offering expert management, daily coaching, and growth strategies for content creators.",
     screenshot: firstClassAgencyImg
   },
   {
     name: "DeHub",
     url: "dehub.io",
-    description: "A decentralized hub platform for Web3 communities and digital assets.",
+    description: "A decentralized hub platform connecting Web3 communities, managing digital assets, and powering on-chain collaboration tools.",
     screenshot: dehubImg
   },
   {
     name: "Last Chad Standing",
     url: "lastchadstandin.com",
-    description: "An exciting competitive platform where only the strongest survive.",
+    description: "An exciting competitive elimination platform where players battle through challenges and only the strongest survive.",
     screenshot: lastChadStandingImg
   },
   {
     name: "Holder Chat",
     url: "holder.chat",
-    description: "Token-gated communication platform for crypto holders and communities.",
+    description: "Token-gated communication platform enabling crypto holders and communities to connect, discuss, and collaborate securely.",
     screenshot: holderChatImg
   },
   {
     name: "SEC Digital",
     url: "sec.digital",
-    description: "Digital security solutions and blockchain infrastructure services.",
+    description: "Digital security solutions providing blockchain infrastructure services, smart contract auditing, and compliance tools.",
     screenshot: secDigitalImg
   },
   {
     name: "DeLabs UK",
     url: "delabs.co.uk",
-    description: "Innovative development laboratory building cutting-edge digital solutions.",
+    description: "Innovative development laboratory building cutting-edge digital solutions, from web applications to blockchain integrations.",
     screenshot: delabsImg
   },
   {
     name: "Fan Site",
     url: "fan.site",
-    description: "Create and manage fan communities with powerful engagement tools.",
+    description: "Create and manage fan communities with powerful engagement tools, monetization features, and custom branding options.",
     screenshot: fanSiteImg
   },
   {
     name: "The Ponzi",
     url: "theponzi.lol",
-    description: "A satirical take on crypto culture with gamified experiences.",
+    description: "A satirical take on crypto culture featuring gamified experiences, community-driven content, and interactive storytelling.",
     screenshot: theponziImg
   },
   {
     name: "DHBScan",
     url: "dhbscan.com",
-    description: "Comprehensive token analytics dashboard with revenue sharing, buyback tracking, and multi-chain supply data.",
+    description: "Comprehensive token analytics dashboard with revenue sharing, buyback tracking, and multi-chain supply data insights.",
     screenshot: dhbscanImg
   }
 ];
