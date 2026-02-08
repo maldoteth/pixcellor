@@ -79,10 +79,10 @@ function MobileBookSlider() {
         maxHeight={380}
         showCover={false}
         mobileScrollSupport={true}
-        className="shadow-2xl"
+        className=""
         style={{}}
         startPage={0}
-        drawShadow={true}
+        drawShadow={false}
         flippingTime={800}
         usePortrait={true}
         startZIndex={0}
