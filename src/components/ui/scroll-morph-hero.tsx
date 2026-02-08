@@ -257,18 +257,7 @@ export default function IntroAnimation() {
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
 
     return (
-        <div ref={containerRef} className="relative w-full h-full bg-background overflow-hidden">
-            {/* Logo - Mobile: center, Desktop/Tablet: left */}
-            <button 
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="absolute top-6 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 z-20 cursor-pointer"
-            >
-                <img 
-                    src={logoIcon} 
-                    alt="Pixcellor" 
-                    className="w-10 h-10 md:w-12 md:h-12"
-                />
-            </button>
+        <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
