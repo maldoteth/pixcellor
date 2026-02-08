@@ -10,6 +10,7 @@ import secDigitalImg from '@/assets/portfolio/sec-digital.png';
 import delabsImg from '@/assets/portfolio/delabs.png';
 import fanSiteImg from '@/assets/portfolio/fan-site.png';
 import theponziImg from '@/assets/portfolio/theponzi.png';
+import dhbscanImg from '@/assets/portfolio/dhbscan.png';
 
 const portfolioData = [
   {
@@ -59,6 +60,12 @@ const portfolioData = [
     url: "theponzi.lol",
     description: "A satirical take on crypto culture with gamified experiences.",
     screenshot: theponziImg
+  },
+  {
+    name: "DHBScan",
+    url: "dhbscan.com",
+    description: "Comprehensive token analytics dashboard with revenue sharing, buyback tracking, and multi-chain supply data.",
+    screenshot: dhbscanImg
   }
 ];
 
