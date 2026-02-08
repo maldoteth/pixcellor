@@ -258,6 +258,19 @@ export default function IntroAnimation() {
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
+            {/* Logo - fades out with intro text */}
+            <motion.div
+                animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2 } : introPhase === "circle" ? { opacity: 0 } : { opacity: 1 }}
+                initial={{ opacity: 0 }}
+                transition={{ duration: 1 }}
+                className="absolute top-6 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 z-20 pointer-events-none"
+            >
+                <img 
+                    src={logoIcon} 
+                    alt="Pixcellor" 
+                    className="w-10 h-10 md:w-12 md:h-12"
+                />
+            </motion.div>
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
