@@ -27,7 +27,7 @@ const portfolioData = [
   },
   {
     name: "Last Chad Standing",
-    url: "lastchadstandin.com",
+    url: "lastchadstanding.com",
     description: "Competitive elimination platform where players battle and only the strongest survive.",
     screenshot: lastChadStandingImg
   },
