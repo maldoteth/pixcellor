@@ -10,7 +10,7 @@ import gpayLogo from "@/assets/gpay-logo.png";
 const PACKAGES = {
   fullWorks: {
     name: "Full Works",
-    price: "£150",
+    price: "£100",
     rrp: "£500",
     priceId: "price_1TJrSfBtUjwejeUwWd3YoFVy",
     mode: "payment" as const,
@@ -206,7 +206,7 @@ function DesktopCards() {
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
-        <div className="mb-1 text-3xl font-extrabold text-foreground">£150</div>
+        <div className="mb-1 text-3xl font-extrabold text-foreground">£100</div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP £500</p>
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
@@ -425,7 +425,7 @@ function MobileCards() {
         <div className="relative z-10 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-1">
-          <span className="text-3xl font-extrabold text-foreground">£150</span>
+          <span className="text-3xl font-extrabold text-foreground">£100</span>
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP £500</p>
         <ul className="space-y-2 flex-1 mb-4">
