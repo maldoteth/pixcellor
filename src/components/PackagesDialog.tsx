@@ -190,7 +190,7 @@ function DesktopCards() {
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: -6 }}
         animate={{ opacity: 1, y: 0, rotate: -6 }}
-        transition={{ type: "spring", duration: 0.5 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
         className="relative z-10 w-[302px] rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] transition-transform hover:scale-105 overflow-hidden"
         style={{
           boxShadow: `
@@ -231,7 +231,7 @@ function DesktopCards() {
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 60, rotate: 0 }}
         animate={{ opacity: 1, y: -20, rotate: 0 }}
-        transition={{ type: "spring", duration: 0.7 }}
+        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
         className="relative z-20 w-[336px] scale-110 rounded-3xl border-2 border-foreground/30 bg-background/80 px-10 py-14 shadow-xl transition-transform hover:scale-[1.12] overflow-hidden"
         style={{
           boxShadow: `
@@ -320,7 +320,7 @@ function DesktopCards() {
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: 6 }}
         animate={{ opacity: 1, y: 0, rotate: 6 }}
-        transition={{ type: "spring", duration: 0.6 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
         className="relative z-10 w-[302px] rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] transition-transform hover:scale-105 overflow-hidden"
         style={{
           boxShadow: `
