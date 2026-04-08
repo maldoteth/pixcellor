@@ -283,13 +283,13 @@ export default function IntroAnimation() {
                         transition={{ duration: 1 }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground"
                     >
-                        <img src={pixcellorWordmark} alt="Pixcellor™" className="h-8 md:h-20 lg:h-16 w-auto" style={{ filter: "brightness(0) invert(1)" }} />
+                        <img src={pixcellorWordmark} alt="Pixcellor™" className="h-11 md:h-[6.8rem] lg:h-[5.4rem] w-auto" style={{ filter: "brightness(0) invert(1)" }} />
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 0.5 - morphValue } : { opacity: 0 }}
                         transition={{ duration: 1, delay: 0.2 }}
-                        className="mt-4 text-xs md:text-sm lg:text-base font-bold tracking-[0.2em] text-muted-foreground"
+                        className="mt-1 text-xs md:text-sm lg:text-base font-bold tracking-[0.2em] text-muted-foreground"
                     >
                         The Digital Builders
                     </motion.p>
