@@ -179,6 +179,7 @@ All colors MUST be HSL.
   left: -10%;
   background: radial-gradient(circle, hsl(0 0% 100%) 0%, hsl(0 0% 70%) 50%, transparent 70%);
   animation-duration: 14s;
+  --blob-sensitivity: 40px;
 }
 
 .lava-blob-2 {
