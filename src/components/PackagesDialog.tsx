@@ -81,7 +81,7 @@ export default function PackagesDialog() {
           <MobileCards />
         </DialogContent>
       ) : (
-        <DialogContent className="max-w-[100vw] w-screen h-screen border-none bg-transparent p-0 shadow-none [&>button]:hidden [&~*]:hidden" style={{ background: "transparent" }}>
+        <DialogContent className="max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none [&>button]:hidden sm:rounded-none" style={{ background: "transparent" }}>
           <DesktopCards />
         </DialogContent>
       )}
