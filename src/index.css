@@ -127,45 +127,54 @@ All colors MUST be HSL.
 
 /* Metallic shimmer border animation for pricing cards */
 @keyframes shimmer-border {
-  0%, 90%, 100% {
+  0%, 100% {
     border-color: rgba(255,255,255,0.15);
     box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1);
   }
-  93% {
+  50% {
     border-color: rgba(255,255,255,0.5);
     box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1), 0 0 15px rgba(255,255,255,0.15), inset 0 0 15px rgba(255,255,255,0.05);
   }
-  96% {
-    border-color: rgba(255,255,255,0.15);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1);
-  }
 }
 
-@keyframes shimmer-sweep {
-  0%, 85%, 100% {
+/* Single sweep: sits idle then sweeps once */
+@keyframes shimmer-sweep-seq {
+  0%, 100% {
     opacity: 0;
     transform: translateX(-100%) skewX(-15deg);
   }
-  92% {
+  10% {
+    opacity: 0;
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  40% {
     opacity: 1;
     transform: translateX(0%) skewX(-15deg);
   }
-  98% {
+  70% {
     opacity: 0;
     transform: translateX(100%) skewX(-15deg);
   }
 }
 
+/* Card 1: border glows at 0-1.2s, sweep at 0-1.2s
+   Card 2: border glows at 1.2-2.4s, sweep at 1.2-2.4s  
+   Card 3: border glows at 2.4-3.6s, sweep at 2.4-3.6s
+   Total cycle: 5s (3.6s action + 1.4s pause) */
+
 .shimmer-card {
-  animation: shimmer-border 6s ease-in-out infinite;
+  animation: shimmer-border 1.67s ease-in-out 0s infinite;
+  animation-duration: 5s;
 }
-
 .shimmer-card-delay-1 {
-  animation: shimmer-border 6s ease-in-out 2s infinite;
+  animation: shimmer-border 1.67s ease-in-out 0s infinite;
+  animation-duration: 5s;
+  animation-delay: 1.67s;
 }
-
 .shimmer-card-delay-2 {
-  animation: shimmer-border 6s ease-in-out 4s infinite;
+  animation: shimmer-border 1.67s ease-in-out 0s infinite;
+  animation-duration: 5s;
+  animation-delay: 3.33s;
 }
 
 .shimmer-sweep {
@@ -192,15 +201,18 @@ All colors MUST be HSL.
     rgba(255,255,255,0.08) 60%,
     transparent 100%
   );
-  animation: shimmer-sweep 6s ease-in-out infinite;
+  animation: shimmer-sweep-seq 5s ease-in-out infinite;
 }
 
-.shimmer-card:hover .shimmer-sweep::after,
-.shimmer-card-delay-1:hover .shimmer-sweep::after,
-.shimmer-card-delay-2:hover .shimmer-sweep::after {
-  animation: shimmer-sweep-hover 0.6s ease-out forwards;
+.shimmer-sweep-delay-1::after {
+  animation: shimmer-sweep-seq 5s ease-in-out 1.67s infinite;
 }
 
+.shimmer-sweep-delay-2::after {
+  animation: shimmer-sweep-seq 5s ease-in-out 3.33s infinite;
+}
+
+/* Hover shimmer */
 @keyframes shimmer-sweep-hover {
   0% {
     opacity: 0;
@@ -214,23 +226,11 @@ All colors MUST be HSL.
     transform: translateX(100%) skewX(-15deg);
   }
 }
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255,255,255,0.08) 40%,
-    rgba(255,255,255,0.18) 50%,
-    rgba(255,255,255,0.08) 60%,
-    transparent 100%
-  );
-  animation: shimmer-sweep 6s ease-in-out infinite;
-}
 
-.shimmer-sweep-delay-1::after {
-  animation: shimmer-sweep 6s ease-in-out 2s infinite;
-}
-
-.shimmer-sweep-delay-2::after {
-  animation: shimmer-sweep 6s ease-in-out 4s infinite;
+.shimmer-card:hover .shimmer-sweep::after,
+.shimmer-card-delay-1:hover .shimmer-sweep::after,
+.shimmer-card-delay-2:hover .shimmer-sweep::after {
+  animation: shimmer-sweep-hover 0.6s ease-out forwards;
 }
 
 /* Lava lamp gradient animation for pricing cards */
