@@ -73,11 +73,9 @@ function PaymentMethodIcons() {
         <text x="24" y="18" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="currentColor" className="text-foreground">AMEX</text>
       </svg>
       {/* Apple Pay */}
-      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
-        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
-        <text x="16" y="20" textAnchor="middle" fontSize="13" fontWeight="400" fill="currentColor" className="text-foreground">&#xF8FF;</text>
-        <text x="33" y="20" textAnchor="middle" fontSize="9.5" fontWeight="600" fill="currentColor" className="text-foreground">Pay</text>
-      </svg>
+      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 rounded flex items-center justify-center" style={{ background: "rgba(255,255,255,0.05)" }}>
+        <img src={applePayLogo} alt="Apple Pay" className="h-4 md:h-3.5 w-auto invert opacity-100" style={{ filter: "invert(1)" }} />
+      </div>
       {/* Google Pay */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
         <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
