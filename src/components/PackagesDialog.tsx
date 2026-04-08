@@ -93,6 +93,7 @@ export default function PackagesDialog() {
 function DesktopCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
+  const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
 
   const buy = async (priceId: string, mode: string, key: string) => {
     setLoading(key);
@@ -164,8 +165,37 @@ function DesktopCards() {
           Most Popular
         </motion.div>
         <div className="mb-2 text-lg font-bold text-primary">Elite</div>
-        <div className="mb-1 text-5xl font-black text-foreground">£500</div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP £2,500</p>
+        
+        {/* Billing toggle */}
+        <div className="flex items-center gap-2 mb-3">
+          <button
+            onClick={() => setEliteBilling("one-time")}
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+              eliteBilling === "one-time"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            One-time
+          </button>
+          <button
+            onClick={() => setEliteBilling("monthly")}
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+              eliteBilling === "monthly"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Monthly
+          </button>
+        </div>
+
+        <div className="mb-1 text-5xl font-black text-foreground">
+          {eliteBilling === "one-time" ? "£500" : "£60/mo"}
+        </div>
+        <p className="text-xs text-muted-foreground line-through mb-4">
+          {eliteBilling === "one-time" ? "RRP £2,500" : "RRP £250/mo"}
+        </p>
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -175,11 +205,19 @@ function DesktopCards() {
           ))}
         </ul>
         <button
-          onClick={() => buy(PACKAGES.elite.priceId, PACKAGES.elite.mode, "elite")}
+          onClick={() =>
+            buy(
+              eliteBilling === "one-time"
+                ? PACKAGES.elite.priceId
+                : PACKAGES.elite.monthlyPriceId,
+              eliteBilling === "one-time" ? "payment" : "subscription",
+              "elite"
+            )
+          }
           disabled={!!loading}
           className="w-full rounded-md bg-primary py-2.5 font-bold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading === "elite" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buy Now"}
+          {loading === "elite" ? <Loader2 className="w-4 h-4 animate-spin" /> : eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
         </button>
       </motion.div>
 
@@ -264,6 +302,7 @@ function DesktopCards() {
 function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
+  const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
 
   const buy = async (priceId: string, mode: string, key: string) => {
     setLoading(key);
@@ -308,10 +347,36 @@ function MobileCards() {
           Most Popular
         </span>
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
-        <div className="mt-3 mb-1">
-          <span className="text-3xl font-extrabold text-foreground">£500</span>
+        <div className="flex items-center gap-2 mt-2 mb-3">
+          <button
+            onClick={() => setEliteBilling("one-time")}
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+              eliteBilling === "one-time"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            One-time
+          </button>
+          <button
+            onClick={() => setEliteBilling("monthly")}
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+              eliteBilling === "monthly"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Monthly
+          </button>
         </div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP £2,500</p>
+        <div className="mb-1">
+          <span className="text-3xl font-extrabold text-foreground">
+            {eliteBilling === "one-time" ? "£500" : "£60/mo"}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground line-through mb-4">
+          {eliteBilling === "one-time" ? "RRP £2,500" : "RRP £250/mo"}
+        </p>
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -321,11 +386,19 @@ function MobileCards() {
           ))}
         </ul>
         <button
-          onClick={() => buy(PACKAGES.elite.priceId, PACKAGES.elite.mode, "elite")}
+          onClick={() =>
+            buy(
+              eliteBilling === "one-time"
+                ? PACKAGES.elite.priceId
+                : PACKAGES.elite.monthlyPriceId,
+              eliteBilling === "one-time" ? "payment" : "subscription",
+              "elite"
+            )
+          }
           disabled={!!loading}
           className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading === "elite" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buy Now"}
+          {loading === "elite" ? <Loader2 className="w-4 h-4 animate-spin" /> : eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
         </button>
       </div>
 
