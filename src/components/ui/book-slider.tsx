@@ -153,60 +153,20 @@ function BookSlider() {
             }}
           />
           
-          {/* Outer gold border frame */}
-          <div className="absolute border-2"
+          {/* Subtle border frame */}
+          <div className="absolute"
             style={{
-              top: '12px',
-              right: '12px',
-              bottom: '12px',
-              left: '12px',
-              borderColor: '#C9A227',
-              boxShadow: '0 0 20px rgba(201,162,39,0.15)',
+              top: '12px', right: '12px', bottom: '12px', left: '12px',
+              border: '1px solid rgba(255,255,255,0.15)',
             }}
           />
-          
-          {/* Inner gold border frame */}
-          <div className="absolute border"
-            style={{
-              top: '20px',
-              right: '20px',
-              bottom: '20px',
-              left: '20px',
-              borderWidth: '1px',
-              borderColor: 'rgba(201,162,39,0.5)',
-            }}
-          />
-          
-          {/* Corner accents */}
-          <svg className="absolute" style={{ top: '16px', left: '16px', width: '24px', height: '24px', color: '#C9A227' }} viewBox="0 0 24 24">
-            <path d="M2 2 L2 10 M2 2 L10 2" fill="none" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          <svg className="absolute" style={{ top: '16px', right: '16px', width: '24px', height: '24px', color: '#C9A227' }} viewBox="0 0 24 24">
-            <path d="M22 2 L22 10 M22 2 L14 2" fill="none" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          <svg className="absolute" style={{ bottom: '16px', left: '16px', width: '24px', height: '24px', color: '#C9A227' }} viewBox="0 0 24 24">
-            <path d="M2 22 L2 14 M2 22 L10 22" fill="none" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          <svg className="absolute" style={{ bottom: '16px', right: '16px', width: '24px', height: '24px', color: '#C9A227' }} viewBox="0 0 24 24">
-            <path d="M22 22 L22 14 M22 22 L14 22" fill="none" stroke="currentColor" strokeWidth="2"/>
-          </svg>
           
           {/* Center content */}
           <div className="relative z-10 text-center flex flex-col items-center justify-center h-full px-8 py-12">
-            {/* Top flourish */}
-            <svg viewBox="0 0 80 16" style={{ width: '60px', height: '12px', color: '#C9A227', marginBottom: '16px' }}>
-              <path d="M40 8 Q28 2 16 8 Q8 12 0 8" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M40 8 Q52 2 64 8 Q72 12 80 8" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <circle cx="40" cy="8" r="2" fill="currentColor"/>
-            </svg>
-            
-            {/* Title */}
             <h1 
-              className="text-2xl font-bold tracking-widest uppercase mb-2"
+              className="text-2xl font-bold tracking-widest uppercase mb-2 text-foreground"
               style={{
-                color: '#C9A227',
                 textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-                fontFamily: 'Georgia, "Times New Roman", serif',
                 letterSpacing: '0.25em',
               }}
             >
@@ -215,41 +175,15 @@ function BookSlider() {
             
             {/* Divider */}
             <div className="flex items-center justify-center gap-2 my-3">
-              <div style={{ width: '30px', height: '1px', background: 'linear-gradient(90deg, transparent, #C9A227)' }}/>
-              <svg viewBox="0 0 12 12" style={{ width: '8px', height: '8px', color: '#C9A227' }}>
-                <path d="M6 0 L7 5 L12 6 L7 7 L6 12 L5 7 L0 6 L5 5 Z" fill="currentColor"/>
-              </svg>
-              <div style={{ width: '30px', height: '1px', background: 'linear-gradient(90deg, #C9A227, transparent)' }}/>
+              <div style={{ width: '30px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4))' }}/>
+              <div className="w-1.5 h-1.5 bg-foreground/40 rotate-45" />
+              <div style={{ width: '30px', height: '1px', background: 'linear-gradient(90deg, rgba(255,255,255,0.4), transparent)' }}/>
             </div>
             
-            {/* Subtitle */}
-            <p 
-              className="text-xs tracking-wider"
-              style={{
-                color: '#9A7B20',
-                textShadow: '0 1px 2px rgba(0,0,0,0.6)',
-                fontFamily: 'Georgia, "Times New Roman", serif',
-                fontStyle: 'italic',
-              }}
-            >
+            <p className="text-xs tracking-wider text-muted-foreground italic">
               Flip to explore our work
             </p>
-            
-            {/* Bottom flourish */}
-            <svg viewBox="0 0 80 16" style={{ width: '60px', height: '12px', color: '#C9A227', marginTop: '16px' }}>
-              <path d="M40 8 Q28 14 16 8 Q8 4 0 8" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M40 8 Q52 14 64 8 Q72 4 80 8" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-              <circle cx="40" cy="8" r="2" fill="currentColor"/>
-            </svg>
           </div>
-          
-          {/* Spine shadow effect */}
-          <div 
-            className="absolute left-0 top-0 bottom-0 w-3"
-            style={{
-              background: 'linear-gradient(90deg, rgba(0,0,0,0.5) 0%, transparent 100%)',
-            }}
-          />
         </div>
 
         {portfolioData.map((site) => (
