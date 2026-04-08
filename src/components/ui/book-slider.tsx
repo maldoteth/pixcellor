@@ -93,7 +93,7 @@ function BookSlider() {
   // Desktop/Tablet version with cover and animation
   return (
     <motion.div 
-      className="flex items-center justify-center w-full"
+      className="flex items-center justify-center w-full cursor-pointer"
       animate={{ 
         x: isOpened ? 0 : -141.1 
       }}
