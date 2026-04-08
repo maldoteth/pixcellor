@@ -1,9 +1,10 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Lock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import applePayLogo from "@/assets/apple-pay.png";
 
 const PACKAGES = {
   fullWorks: {
@@ -53,6 +54,51 @@ async function handleCheckout(priceId: string, mode: string) {
   if (data?.url) window.location.href = data.url;
 }
 
+function PaymentMethodIcons() {
+  return (
+    <div className="flex items-center justify-center gap-3.5 mt-2 opacity-30">
+      {/* Visa */}
+      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
+        <text x="24" y="20" textAnchor="middle" fontSize="12" fontWeight="bold" fontStyle="italic" fill="currentColor" className="text-foreground">VISA</text>
+      </svg>
+      {/* Mastercard */}
+      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
+        <circle cx="20" cy="16" r="8" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <circle cx="28" cy="16" r="8" fill="currentColor" className="text-foreground" opacity="0.3"/>
+      </svg>
+      {/* Amex */}
+      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
+        <text x="24" y="18" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="currentColor" className="text-foreground">AMEX</text>
+      </svg>
+      {/* Apple Pay */}
+      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 rounded flex items-center justify-center" style={{ background: "rgba(255,255,255,0.05)" }}>
+        <img src={applePayLogo} alt="Apple Pay" className="h-4 md:h-3.5 w-auto invert opacity-100" style={{ filter: "invert(1)" }} />
+      </div>
+      {/* Google Pay */}
+      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
+        <text x="24" y="20" textAnchor="middle" fontSize="11" fontWeight="600" fill="currentColor" className="text-foreground">G Pay</text>
+      </svg>
+    </div>
+  );
+}
+
+function StripeBadge() {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="flex items-center justify-center gap-1.5 mt-3 opacity-40">
+        <Lock className="w-3 h-3 text-foreground" />
+        <span className="text-[10px] text-foreground tracking-wide">Powered by</span>
+        <span className="text-[10px] font-bold text-foreground tracking-wide">Stripe</span>
+      </div>
+      <PaymentMethodIcons />
+    </div>
+  );
+}
+
 export default function PackagesDialog() {
   const isMobile = useIsMobile();
 
@@ -75,11 +121,12 @@ export default function PackagesDialog() {
       </DialogTrigger>
 
       {isMobile ? (
-        <DialogContent className="max-w-4xl bg-background border-border/50 p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <DialogContent className="max-w-4xl bg-transparent border-none p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-foreground text-center mb-6">
+            <DialogTitle className="text-2xl font-bold text-foreground text-center mb-2">
               Our Packages
             </DialogTitle>
+            <StripeBadge />
           </DialogHeader>
           <MobileCards />
         </DialogContent>
@@ -97,9 +144,10 @@ function GlassBuyButton({ onClick, disabled, loading, label }: { onClick: () => 
     <button
       onClick={onClick}
       disabled={disabled}
-      className="w-full rounded-sm py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 flex items-center justify-center gap-2 relative"
+      className="w-full rounded-sm py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 flex items-center justify-center gap-2 relative overflow-hidden group"
       style={glassButtonStyle}
     >
+      <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : label}
     </button>
   );
@@ -201,7 +249,7 @@ function DesktopCards() {
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="absolute top-[29px] left-1/2 -translate-x-1/2 rounded-sm border border-foreground/30 bg-foreground px-5 py-1 text-xs font-extrabold text-background shadow z-20"
+          className="absolute top-[29px] left-1/2 -translate-x-1/2 rounded-sm border border-foreground/30 bg-foreground px-4 py-1 text-xs font-extrabold text-background shadow z-20 uppercase tracking-wider"
         >
           Most Popular
         </motion.div>
@@ -246,6 +294,7 @@ function DesktopCards() {
             </li>
           ))}
         </ul>
+        <div className="mt-[18px]">
         <GlassBuyButton
           onClick={() =>
             buy(
@@ -260,6 +309,8 @@ function DesktopCards() {
           loading={loading === "elite"}
           label={eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
         />
+        </div>
+        <StripeBadge />
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
 

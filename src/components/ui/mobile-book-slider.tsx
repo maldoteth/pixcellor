@@ -1,4 +1,5 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import HTMLFlipBook from "react-pageflip";
 
 // Import portfolio screenshots
@@ -71,9 +72,15 @@ const portfolioData = [
 
 function MobileBookSlider() {
   const bookRef = useRef<any>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const totalPages = portfolioData.length;
+
+  const handleFlip = (e: any) => {
+    setCurrentPage(e.data);
+  };
 
   return (
-    <div className="flex items-center justify-center w-full cursor-pointer">
+    <div className="flex flex-col items-center justify-center w-full cursor-pointer">
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
@@ -100,6 +107,7 @@ function MobileBookSlider() {
         swipeDistance={20}
         clickEventForward={true}
         useMouseEvents={true}
+        onFlip={handleFlip}
       >
         {portfolioData.map((site) => (
           <div 
@@ -147,6 +155,29 @@ function MobileBookSlider() {
           </div>
         ))}
       </HTMLFlipBook>
+
+      {/* Navigation arrows */}
+      <div className="flex items-center gap-6 mt-4">
+        <button
+          onClick={() => bookRef.current?.pageFlip()?.flipPrev()}
+          className={`p-2 rounded-sm transition ${currentPage === 0 ? 'opacity-20' : 'opacity-60 hover:opacity-100'}`}
+          disabled={currentPage === 0}
+          aria-label="Previous page"
+        >
+          <ChevronLeft className="w-5 h-5 text-foreground" />
+        </button>
+        <span className="text-xs text-muted-foreground">
+          {currentPage + 1} / {totalPages}
+        </span>
+        <button
+          onClick={() => bookRef.current?.pageFlip()?.flipNext()}
+          className={`p-2 rounded-sm transition ${currentPage >= totalPages - 1 ? 'opacity-20' : 'opacity-60 hover:opacity-100'}`}
+          disabled={currentPage >= totalPages - 1}
+          aria-label="Next page"
+        >
+          <ChevronRight className="w-5 h-5 text-foreground" />
+        </button>
+      </div>
     </div>
   );
 }

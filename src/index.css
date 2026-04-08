@@ -165,11 +165,15 @@ All colors MUST be HSL.
   opacity: 0.08;
   animation: lava-morph 12s ease-in-out infinite;
   pointer-events: none;
-  transform: translate(
-    calc(var(--mouse-x, 0) * var(--blob-sensitivity, 30px)),
-    calc(var(--mouse-y, 0) * var(--blob-sensitivity, 30px))
-  );
-  transition: transform 0.4s ease-out;
+}
+
+@media (min-width: 768px) {
+  .lava-blob {
+    translate:
+      calc(var(--mouse-x, 0) * var(--blob-sensitivity, 30px))
+      calc(var(--mouse-y, 0) * var(--blob-sensitivity, 30px));
+    transition: translate 0.4s ease-out;
+  }
 }
 
 .lava-blob-1 {
