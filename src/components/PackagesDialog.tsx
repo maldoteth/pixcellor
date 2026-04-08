@@ -29,7 +29,7 @@ const PACKAGES = {
     monthlyPriceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
     yearlyPriceId: "price_1TJrbOBtUjwejeUwOhhNyliQ",
     mode: "subscription" as const,
-    features: ["Your own tech department", "Sites, apps & everything you need"],
+    features: ["Your own tech department", "Sites, apps, all needs."],
   },
 };
 
