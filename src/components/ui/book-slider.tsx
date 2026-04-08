@@ -135,14 +135,21 @@ function BookSlider() {
         {/* Cover Page - Dark Leather Style */}
         <div className="relative flex items-center justify-center h-full w-full"
           style={{
-            background: 'linear-gradient(160deg, #1f1f1f 0%, #141414 40%, #0a0a0a 100%)',
-            boxShadow: 'inset 0 0 100px rgba(0,0,0,0.9)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: `
+              0 8px 32px rgba(0,0,0,0.3),
+              inset 0 1px 1px rgba(255,255,255,0.3),
+              inset 0 -1px 1px rgba(0,0,0,0.1)
+            `,
           }}
         >
-          {/* Dark leather texture overlay */}
-          <div className="absolute inset-0 opacity-30"
+          {/* Inner glow overlay */}
+          <div className="absolute inset-1 opacity-60 pointer-events-none"
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)',
             }}
           />
           
