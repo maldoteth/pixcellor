@@ -149,7 +149,7 @@ function DesktopCards() {
         <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
@@ -226,7 +226,7 @@ function DesktopCards() {
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
@@ -302,12 +302,12 @@ function DesktopCards() {
         <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
           {PACKAGES.retainer.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
           <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+            <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
             {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save £2,400)"}
           </li>
         </ul>
@@ -364,7 +364,7 @@ function MobileCards() {
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
@@ -422,7 +422,7 @@ function MobileCards() {
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
@@ -485,12 +485,12 @@ function MobileCards() {
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.retainer.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
           <li className="flex items-start gap-2 text-sm text-muted-foreground">
-            <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+            <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
             {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save £2,400)"}
           </li>
         </ul>
