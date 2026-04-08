@@ -42,12 +42,28 @@ export default function PackagesDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="mb-6 border-primary/50 text-primary hover:bg-primary/10 hover:text-primary font-semibold px-8 py-3 text-base rounded-full"
+        <button
+          className="mb-6 px-8 py-3 rounded-sm text-base font-semibold text-foreground flex items-center justify-center relative"
+          style={{
+            background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            boxShadow: `
+              0 8px 32px rgba(0,0,0,0.3),
+              inset 0 1px 1px rgba(255,255,255,0.3),
+              inset 0 -1px 1px rgba(0,0,0,0.1)
+            `,
+          }}
         >
+          <div
+            className="absolute inset-1 rounded-sm opacity-60 pointer-events-none"
+            style={{
+              background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)",
+            }}
+          />
           Packages
-        </Button>
+        </button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl bg-card/95 backdrop-blur-xl border-border/50 p-6 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
