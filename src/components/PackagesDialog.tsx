@@ -128,7 +128,7 @@ function DesktopCards() {
         initial={{ opacity: 0, y: 40, rotate: -6 }}
         animate={{ opacity: 1, y: 0, rotate: -6 }}
         transition={{ type: "spring", duration: 0.5 }}
-        className="relative z-10 w-72 rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] transition-transform hover:scale-105 overflow-hidden"
+        className="shimmer-card relative z-10 w-72 rounded-2xl border border-border/40 bg-background px-8 py-10 transition-transform hover:scale-105 overflow-hidden"
         style={{
           boxShadow: `
             0 8px 32px rgba(0,0,0,0.3),
@@ -137,6 +137,7 @@ function DesktopCards() {
           `,
         }}
       >
+        <div className="shimmer-sweep" />
         {/* Lava lamp blobs */}
         <div className="lava-blob lava-blob-1" />
         <div className="lava-blob lava-blob-2" />
@@ -167,7 +168,7 @@ function DesktopCards() {
         initial={{ opacity: 0, y: 60, rotate: 0 }}
         animate={{ opacity: 1, y: -20, rotate: 0 }}
         transition={{ type: "spring", duration: 0.7 }}
-        className="relative z-20 w-80 scale-110 rounded-3xl border-2 border-foreground/30 bg-background/80 px-10 py-14 shadow-xl transition-transform hover:scale-[1.12] overflow-hidden"
+        className="shimmer-card-delay-1 relative z-20 w-80 scale-110 rounded-3xl border-2 border-foreground/30 bg-background/80 px-10 py-14 shadow-xl transition-transform hover:scale-[1.12] overflow-hidden"
         style={{
           boxShadow: `
             0 12px 40px rgba(0,0,0,0.4),
@@ -177,6 +178,7 @@ function DesktopCards() {
           `,
         }}
       >
+        <div className="shimmer-sweep shimmer-sweep-delay-1" />
         {/* Lava lamp blobs - featured */}
         <div className="lava-blob lava-blob-featured-1" />
         <div className="lava-blob lava-blob-featured-2" />
@@ -251,7 +253,7 @@ function DesktopCards() {
         initial={{ opacity: 0, y: 40, rotate: 6 }}
         animate={{ opacity: 1, y: 0, rotate: 6 }}
         transition={{ type: "spring", duration: 0.6 }}
-        className="relative z-10 w-72 rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] transition-transform hover:scale-105 overflow-hidden"
+        className="shimmer-card-delay-2 relative z-10 w-72 rounded-2xl border border-border/40 bg-background px-8 py-10 transition-transform hover:scale-105 overflow-hidden"
         style={{
           boxShadow: `
             0 8px 32px rgba(0,0,0,0.3),
@@ -260,8 +262,8 @@ function DesktopCards() {
           `,
         }}
       >
+        <div className="shimmer-sweep shimmer-sweep-delay-2" />
         {/* Lava lamp blobs */}
-        <div className="lava-blob lava-blob-1" />
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
@@ -348,7 +350,8 @@ function MobileCards() {
   return (
     <div className="grid grid-cols-1 gap-4">
       {/* Full Works */}
-      <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+      <div className="shimmer-card rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="shimmer-sweep" />
         <div className="lava-blob lava-blob-1" />
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
@@ -376,7 +379,8 @@ function MobileCards() {
       </div>
 
       {/* Elite */}
-      <div className="rounded-xl p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10 relative overflow-hidden">
+      <div className="shimmer-card-delay-1 rounded-xl p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10 relative overflow-hidden">
+        <div className="shimmer-sweep shimmer-sweep-delay-1" />
         <div className="lava-blob lava-blob-featured-1" />
         <div className="lava-blob lava-blob-featured-2" />
         <div className="lava-blob lava-blob-featured-3" />
@@ -441,7 +445,8 @@ function MobileCards() {
       </div>
 
       {/* Retainer */}
-      <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+      <div className="shimmer-card-delay-2 rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="shimmer-sweep shimmer-sweep-delay-2" />
         <div className="lava-blob lava-blob-1" />
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
