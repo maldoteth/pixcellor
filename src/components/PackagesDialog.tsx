@@ -81,7 +81,7 @@ function PaymentMethodIcons() {
       {/* Google Pay */}
       <svg viewBox="0 0 48 32" className="w-8 h-5" fill="none">
         <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
-        <text x="24" y="18" textAnchor="middle" fontSize="7" fontWeight="600" fill="currentColor" className="text-foreground">G Pay</text>
+        <text x="24" y="20" textAnchor="middle" fontSize="11" fontWeight="600" fill="currentColor" className="text-foreground">G Pay</text>
       </svg>
     </div>
   );
