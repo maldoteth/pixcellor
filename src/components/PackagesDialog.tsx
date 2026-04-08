@@ -8,17 +8,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 const PACKAGES = {
   fullWorks: {
     name: "Full Works",
-    price: "$100",
-    rrp: "$500",
+    price: "£100",
+    rrp: "£500",
     priceId: "price_1TJrFRBtUjwejeUw6dsMwxNd",
     mode: "payment" as const,
     features: ["Modern, super fast website", "Clean, professional design", "1 year maintenance included"],
   },
   elite: {
     name: "Elite",
-    price: "$500",
-    rrp: "$2,500",
+    price: "£500",
+    rrp: "£2,500",
     priceId: "price_1TJrFiBtUjwejeUww5rkVJfN",
+    monthlyPriceId: "price_1TJrFiBtUjwejeUww5rkVJfN",
     mode: "payment" as const,
     featured: true,
     features: ["Animated, interactive cutting edge site", "1 year maintenance included", "Unlimited edits", "SEO & AEO optimisation"],
@@ -121,8 +122,8 @@ function DesktopCards() {
         }}
       >
         <div className="mb-2 text-lg font-bold text-primary">Full Works</div>
-        <div className="mb-1 text-3xl font-extrabold text-foreground">$100</div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP $500</p>
+        <div className="mb-1 text-3xl font-extrabold text-foreground">£100</div>
+        <p className="text-xs text-muted-foreground line-through mb-4">RRP £500</p>
         <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -163,8 +164,8 @@ function DesktopCards() {
           Most Popular
         </motion.div>
         <div className="mb-2 text-lg font-bold text-primary">Elite</div>
-        <div className="mb-1 text-5xl font-black text-foreground">$500</div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP $2,500</p>
+        <div className="mb-1 text-5xl font-black text-foreground">£500</div>
+        <p className="text-xs text-muted-foreground line-through mb-4">RRP £2,500</p>
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -223,10 +224,10 @@ function DesktopCards() {
         </div>
 
         <div className="mb-1 text-3xl font-extrabold text-foreground">
-          {retainerBilling === "monthly" ? "$1,200/mo" : "$12,000/yr"}
+          {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">
-          RRP {retainerBilling === "monthly" ? "$3,600/mo" : "$36,000/yr"}
+          RRP {retainerBilling === "monthly" ? "£3,600/mo" : "£36,000/yr"}
         </p>
         <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
           {PACKAGES.retainer.features.map((f) => (
@@ -237,7 +238,7 @@ function DesktopCards() {
           ))}
           <li className="flex items-start gap-2">
             <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save $2,400)"}
+            {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save £2,400)"}
           </li>
         </ul>
         <button
@@ -281,9 +282,9 @@ function MobileCards() {
       <div className="rounded-xl p-5 flex flex-col border border-border bg-background">
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-1">
-          <span className="text-3xl font-extrabold text-foreground">$100</span>
+          <span className="text-3xl font-extrabold text-foreground">£100</span>
         </div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP $500</p>
+        <p className="text-xs text-muted-foreground line-through mb-4">RRP £500</p>
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -308,9 +309,9 @@ function MobileCards() {
         </span>
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
         <div className="mt-3 mb-1">
-          <span className="text-3xl font-extrabold text-foreground">$500</span>
+          <span className="text-3xl font-extrabold text-foreground">£500</span>
         </div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP $2,500</p>
+        <p className="text-xs text-muted-foreground line-through mb-4">RRP £2,500</p>
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -355,11 +356,11 @@ function MobileCards() {
         </div>
         <div className="mb-1">
           <span className="text-3xl font-extrabold text-foreground">
-            {retainerBilling === "monthly" ? "$1,200/mo" : "$12,000/yr"}
+            {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
           </span>
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">
-          RRP {retainerBilling === "monthly" ? "$3,600/mo" : "$36,000/yr"}
+          RRP {retainerBilling === "monthly" ? "£3,600/mo" : "£36,000/yr"}
         </p>
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.retainer.features.map((f) => (
@@ -370,7 +371,7 @@ function MobileCards() {
           ))}
           <li className="flex items-start gap-2 text-sm text-muted-foreground">
             <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save $2,400)"}
+            {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save £2,400)"}
           </li>
         </ul>
         <button
