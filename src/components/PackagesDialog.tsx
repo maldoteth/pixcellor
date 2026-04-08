@@ -33,6 +33,18 @@ const PACKAGES = {
   },
 };
 
+const glassButtonStyle = {
+  background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  border: "1px solid rgba(255,255,255,0.2)",
+  boxShadow: `
+    0 8px 32px rgba(0,0,0,0.3),
+    inset 0 1px 1px rgba(255,255,255,0.3),
+    inset 0 -1px 1px rgba(0,0,0,0.1)
+  `,
+} as const;
+
 async function handleCheckout(priceId: string, mode: string) {
   const { data, error } = await supabase.functions.invoke("create-checkout", {
     body: { priceId, mode },
@@ -50,17 +62,7 @@ export default function PackagesDialog() {
         <button
           className="mb-6 px-8 py-3 rounded-sm text-base font-semibold text-foreground flex items-center justify-center relative"
           aria-label="View our web development packages and pricing"
-          style={{
-            background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            boxShadow: `
-              0 8px 32px rgba(0,0,0,0.3),
-              inset 0 1px 1px rgba(255,255,255,0.3),
-              inset 0 -1px 1px rgba(0,0,0,0.1)
-            `,
-          }}
+          style={glassButtonStyle}
         >
           <div
             className="absolute inset-1 rounded-sm opacity-60 pointer-events-none"
@@ -87,6 +89,19 @@ export default function PackagesDialog() {
         </DialogContent>
       )}
     </Dialog>
+  );
+}
+
+function GlassBuyButton({ onClick, disabled, loading, label }: { onClick: () => void; disabled: boolean; loading: boolean; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="w-full rounded-sm py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 flex items-center justify-center gap-2 relative"
+      style={glassButtonStyle}
+    >
+      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : label}
+    </button>
   );
 }
 
@@ -127,24 +142,23 @@ function DesktopCards() {
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
-        <div className="mb-2 text-lg font-bold text-primary">Full Works</div>
+        <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-1 text-3xl font-extrabold text-foreground">£100</div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP £500</p>
         <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
         </ul>
-        <button
+        <GlassBuyButton
           onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks")}
           disabled={!!loading}
-          className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {loading === "fullWorks" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buy Now"}
-        </button>
+          loading={loading === "fullWorks"}
+          label="Buy Now"
+        />
         </div>
       </motion.div>
 
@@ -153,11 +167,11 @@ function DesktopCards() {
         initial={{ opacity: 0, y: 60, rotate: 0 }}
         animate={{ opacity: 1, y: -20, rotate: 0 }}
         transition={{ type: "spring", duration: 0.7 }}
-        className="relative z-20 w-80 scale-110 rounded-3xl border-2 border-primary/50 bg-primary/5 px-10 py-14 shadow-xl transition-transform hover:scale-[1.12] overflow-hidden"
+        className="relative z-20 w-80 scale-110 rounded-3xl border-2 border-foreground/30 bg-background/80 px-10 py-14 shadow-xl transition-transform hover:scale-[1.12] overflow-hidden"
         style={{
           boxShadow: `
             0 12px 40px rgba(0,0,0,0.4),
-            0 0 30px hsl(210 100% 60% / 0.15),
+            0 0 30px rgba(255,255,255,0.08),
             inset 0 1px 2px rgba(255,255,255,0.2),
             inset 0 -1px 1px rgba(0,0,0,0.1)
           `,
@@ -170,12 +184,12 @@ function DesktopCards() {
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="absolute top-[29px] left-1/2 -translate-x-1/2 rounded-full border border-primary/30 bg-primary px-5 py-1 text-xs font-extrabold text-primary-foreground shadow z-20"
+          className="absolute top-[29px] left-1/2 -translate-x-1/2 rounded-full border border-foreground/30 bg-foreground px-5 py-1 text-xs font-extrabold text-background shadow z-20"
         >
           Most Popular
         </motion.div>
         <div className="relative z-10">
-        <div className="mb-2 text-lg font-bold text-primary">Elite</div>
+        <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
         
         {/* Billing toggle */}
         <div className="flex items-center gap-2 mb-3">
@@ -183,7 +197,7 @@ function DesktopCards() {
             onClick={() => setEliteBilling("one-time")}
             className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               eliteBilling === "one-time"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -193,7 +207,7 @@ function DesktopCards() {
             onClick={() => setEliteBilling("monthly")}
             className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               eliteBilling === "monthly"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -210,12 +224,12 @@ function DesktopCards() {
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
         </ul>
-        <button
+        <GlassBuyButton
           onClick={() =>
             buy(
               eliteBilling === "one-time"
@@ -226,10 +240,9 @@ function DesktopCards() {
             )
           }
           disabled={!!loading}
-          className="w-full rounded-md bg-primary py-2.5 font-bold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {loading === "elite" ? <Loader2 className="w-4 h-4 animate-spin" /> : eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
-        </button>
+          loading={loading === "elite"}
+          label={eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
+        />
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
 
@@ -252,7 +265,7 @@ function DesktopCards() {
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
-        <div className="mb-2 text-lg font-bold text-primary">Retainer</div>
+        <div className="mb-2 text-lg font-bold text-foreground">Retainer</div>
         
         {/* Billing toggle */}
         <div className="flex items-center gap-2 mb-3">
@@ -260,7 +273,7 @@ function DesktopCards() {
             onClick={() => setRetainerBilling("monthly")}
             className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               retainerBilling === "monthly"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -270,7 +283,7 @@ function DesktopCards() {
             onClick={() => setRetainerBilling("yearly")}
             className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               retainerBilling === "yearly"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -287,16 +300,16 @@ function DesktopCards() {
         <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
           {PACKAGES.retainer.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
           <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+            <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
             {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save £2,400)"}
           </li>
         </ul>
-        <button
+        <GlassBuyButton
           onClick={() =>
             buy(
               retainerBilling === "monthly"
@@ -307,10 +320,9 @@ function DesktopCards() {
             )
           }
           disabled={!!loading}
-          className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {loading === "retainer" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
-        </button>
+          loading={loading === "retainer"}
+          label="Subscribe"
+        />
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
     </div>
@@ -345,23 +357,22 @@ function MobileCards() {
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
         </ul>
-        <button
+        <GlassBuyButton
           onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks")}
           disabled={!!loading}
-          className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {loading === "fullWorks" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buy Now"}
-        </button>
+          loading={loading === "fullWorks"}
+          label="Buy Now"
+        />
       </div>
 
       {/* Elite */}
-      <div className="rounded-xl p-5 flex flex-col border border-primary bg-background ring-1 ring-primary/30">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">
+      <div className="rounded-xl p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-2">
           Most Popular
         </span>
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
@@ -370,7 +381,7 @@ function MobileCards() {
             onClick={() => setEliteBilling("one-time")}
             className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               eliteBilling === "one-time"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -380,7 +391,7 @@ function MobileCards() {
             onClick={() => setEliteBilling("monthly")}
             className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               eliteBilling === "monthly"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -398,12 +409,12 @@ function MobileCards() {
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
         </ul>
-        <button
+        <GlassBuyButton
           onClick={() =>
             buy(
               eliteBilling === "one-time"
@@ -414,10 +425,9 @@ function MobileCards() {
             )
           }
           disabled={!!loading}
-          className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {loading === "elite" ? <Loader2 className="w-4 h-4 animate-spin" /> : eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
-        </button>
+          loading={loading === "elite"}
+          label={eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
+        />
       </div>
 
       {/* Retainer */}
@@ -428,7 +438,7 @@ function MobileCards() {
             onClick={() => setRetainerBilling("monthly")}
             className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               retainerBilling === "monthly"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -438,7 +448,7 @@ function MobileCards() {
             onClick={() => setRetainerBilling("yearly")}
             className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               retainerBilling === "yearly"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -456,16 +466,16 @@ function MobileCards() {
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.retainer.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
           <li className="flex items-start gap-2 text-sm text-muted-foreground">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+            <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
             {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save £2,400)"}
           </li>
         </ul>
-        <button
+        <GlassBuyButton
           onClick={() =>
             buy(
               retainerBilling === "monthly"
@@ -476,10 +486,9 @@ function MobileCards() {
             )
           }
           disabled={!!loading}
-          className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {loading === "retainer" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
-        </button>
+          loading={loading === "retainer"}
+          label="Subscribe"
+        />
       </div>
     </div>
   );
