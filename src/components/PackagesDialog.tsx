@@ -53,6 +53,16 @@ async function handleCheckout(priceId: string, mode: string) {
   if (data?.url) window.open(data.url, "_blank");
 }
 
+function StripeBadge() {
+  return (
+    <div className="flex items-center justify-center gap-1.5 mt-3 opacity-40">
+      <Lock className="w-3 h-3 text-foreground" />
+      <span className="text-[10px] text-foreground tracking-wide">Powered by</span>
+      <span className="text-[10px] font-bold text-foreground tracking-wide">Stripe</span>
+    </div>
+  );
+}
+
 export default function PackagesDialog() {
   const isMobile = useIsMobile();
 
