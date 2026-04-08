@@ -8,6 +8,7 @@ import PackagesDialog from "@/components/PackagesDialog";
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
 import logoIcon from '@/assets/logo-icon.png';
+import pixcellorWordmark from '@/assets/pixcellor-wordmark.png';
 import ui2 from '@/assets/hero/ui-2.png';
 import ui3 from '@/assets/hero/ui-3.png';
 import ui4 from '@/assets/hero/ui-4.png';
@@ -282,7 +283,7 @@ export default function IntroAnimation() {
                         transition={{ duration: 1 }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground"
                     >
-                        Pixcellor<sup className="text-xs md:text-base lg:text-lg align-super">™</sup>
+                        <img src={pixcellorWordmark} alt="Pixcellor™" className="h-8 md:h-20 lg:h-16 w-auto" style={{ filter: "brightness(0) invert(1)" }} />
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
