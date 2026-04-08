@@ -91,6 +91,92 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_checkout_sessions: {
+        Row: {
+          amount_total: number | null
+          created_at: string
+          currency: string | null
+          customer_email: string | null
+          customer_id: string | null
+          id: string
+          metadata: Json
+          mode: string | null
+          payment_status: string | null
+          session_id: string
+          status: string | null
+          stripe_event_id: string
+          subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_total?: number | null
+          created_at?: string
+          currency?: string | null
+          customer_email?: string | null
+          customer_id?: string | null
+          id?: string
+          metadata?: Json
+          mode?: string | null
+          payment_status?: string | null
+          session_id: string
+          status?: string | null
+          stripe_event_id: string
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_total?: number | null
+          created_at?: string
+          currency?: string | null
+          customer_email?: string | null
+          customer_id?: string | null
+          id?: string
+          metadata?: Json
+          mode?: string | null
+          payment_status?: string | null
+          session_id?: string
+          status?: string | null
+          stripe_event_id?: string
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_checkout_sessions_stripe_event_fk"
+            columns: ["stripe_event_id"]
+            isOneToOne: false
+            referencedRelation: "stripe_events"
+            referencedColumns: ["stripe_event_id"]
+          },
+        ]
+      }
+      stripe_events: {
+        Row: {
+          checkout_session_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json
+          stripe_event_id: string
+        }
+        Insert: {
+          checkout_session_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          payload: Json
+          stripe_event_id: string
+        }
+        Update: {
+          checkout_session_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          stripe_event_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
