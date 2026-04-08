@@ -12,7 +12,7 @@ const PACKAGES = {
     rrp: "$500",
     priceId: "price_1TJrFRBtUjwejeUw6dsMwxNd",
     mode: "payment" as const,
-    features: ["Modern, super fast loading website", "Clean, professional design", "1 year maintenance included"],
+    features: ["Modern, super fast website", "Clean, professional design", "1 year maintenance included"],
   },
   elite: {
     name: "Elite",
