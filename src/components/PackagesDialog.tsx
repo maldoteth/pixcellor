@@ -224,7 +224,7 @@ function DesktopCards() {
         <ul className="mb-6 space-y-2 text-lg text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+              <Check className="w-5 h-5 text-foreground mt-1 shrink-0" />
               {f}
             </li>
           ))}
