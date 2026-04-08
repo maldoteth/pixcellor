@@ -57,29 +57,29 @@ function PaymentMethodIcons() {
   return (
     <div className="flex items-center justify-center gap-3.5 mt-2 opacity-30">
       {/* Visa */}
-      <svg viewBox="0 0 48 32" className="w-11 h-7" fill="none">
+      <svg viewBox="0 0 48 32" className="w-[3.1rem] h-[2rem] md:w-11 md:h-7" fill="none">
         <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
         <text x="24" y="20" textAnchor="middle" fontSize="12" fontWeight="bold" fontStyle="italic" fill="currentColor" className="text-foreground">VISA</text>
       </svg>
       {/* Mastercard */}
-      <svg viewBox="0 0 48 32" className="w-11 h-7" fill="none">
+      <svg viewBox="0 0 48 32" className="w-[3.1rem] h-[2rem] md:w-11 md:h-7" fill="none">
         <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
         <circle cx="20" cy="16" r="8" fill="currentColor" className="text-foreground" opacity="0.5"/>
         <circle cx="28" cy="16" r="8" fill="currentColor" className="text-foreground" opacity="0.3"/>
       </svg>
       {/* Amex */}
-      <svg viewBox="0 0 48 32" className="w-11 h-7" fill="none">
+      <svg viewBox="0 0 48 32" className="w-[3.1rem] h-[2rem] md:w-11 md:h-7" fill="none">
         <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
         <text x="24" y="18" textAnchor="middle" fontSize="8" fontWeight="bold" fill="currentColor" className="text-foreground">AMEX</text>
       </svg>
       {/* Apple Pay */}
-      <svg viewBox="0 0 48 32" className="w-11 h-7" fill="none">
+      <svg viewBox="0 0 48 32" className="w-[3.1rem] h-[2rem] md:w-11 md:h-7" fill="none">
         <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
         <path d="M16.2 10.8c-.4.5-1.1.9-1.7.8-.1-.7.2-1.4.6-1.8.4-.5 1.1-.8 1.6-.9.1.7-.2 1.4-.5 1.9zm.5 1c-.9-.1-1.7.5-2.2.5-.4 0-1.1-.5-1.8-.5-.9 0-1.8.5-2.3 1.4-1 1.7-.3 4.2.7 5.6.5.7 1 1.4 1.8 1.4.7 0 1-.5 1.8-.5s1.1.5 1.8.5c.8 0 1.2-.7 1.7-1.4.5-.8.7-1.5.7-1.6-.8-.3-1.4-1.3-1.4-2.5 0-1 .5-1.9 1.3-2.4-.5-.7-1.3-1-2.1-1z" fill="currentColor" className="text-foreground"/>
         <text x="31" y="19" textAnchor="middle" fontSize="8" fontWeight="600" fill="currentColor" className="text-foreground">Pay</text>
       </svg>
       {/* Google Pay */}
-      <svg viewBox="0 0 48 32" className="w-11 h-7" fill="none">
+      <svg viewBox="0 0 48 32" className="w-[3.1rem] h-[2rem] md:w-11 md:h-7" fill="none">
         <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
         <text x="24" y="20" textAnchor="middle" fontSize="11" fontWeight="600" fill="currentColor" className="text-foreground">G Pay</text>
       </svg>
