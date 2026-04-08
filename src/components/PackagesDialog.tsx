@@ -348,7 +348,10 @@ function MobileCards() {
   return (
     <div className="grid grid-cols-1 gap-4">
       {/* Full Works */}
-      <div className="rounded-xl p-5 flex flex-col border border-border bg-background">
+      <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-1">
           <span className="text-3xl font-extrabold text-foreground">£100</span>
