@@ -80,7 +80,7 @@ function MobileBookSlider() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full cursor-pointer">
+    <div className="flex flex-col items-center justify-center w-full cursor-pointer [&_.stf__parent]:border [&_.stf__parent]:border-white/30 [&_.stf__parent]:rounded-sm">
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
