@@ -8,17 +8,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 const PACKAGES = {
   fullWorks: {
     name: "Full Works",
-    price: "$100",
-    rrp: "$500",
+    price: "£100",
+    rrp: "£500",
     priceId: "price_1TJrFRBtUjwejeUw6dsMwxNd",
     mode: "payment" as const,
     features: ["Modern, super fast website", "Clean, professional design", "1 year maintenance included"],
   },
   elite: {
     name: "Elite",
-    price: "$500",
-    rrp: "$2,500",
+    price: "£500",
+    rrp: "£2,500",
     priceId: "price_1TJrFiBtUjwejeUww5rkVJfN",
+    monthlyPriceId: "price_1TJrFiBtUjwejeUww5rkVJfN",
     mode: "payment" as const,
     featured: true,
     features: ["Animated, interactive cutting edge site", "1 year maintenance included", "Unlimited edits", "SEO & AEO optimisation"],
