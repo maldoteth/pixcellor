@@ -106,13 +106,14 @@ All colors MUST be HSL.
 }
 
 /* Force portfolio book styles */
-.stf__item:first-child,
-.stf__item:first-child > div {
+.stf__item,
+.stf__item > div {
   opacity: 1 !important;
+  background-color: #0a0a0a !important;
 }
 
-.stf__item:first-child::before,
-.stf__item:first-child::after {
+.stf__item::before,
+.stf__item::after {
   opacity: 0 !important;
 }
 
