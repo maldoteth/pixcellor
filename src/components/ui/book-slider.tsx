@@ -136,12 +136,6 @@ function BookSlider() {
         <div className="relative flex items-center justify-center h-full w-full"
           style={{
             background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, #0a0a0a 100%), #0a0a0a',
-            border: '1px solid rgba(255,255,255,0.2)',
-            boxShadow: `
-              0 8px 32px rgba(0,0,0,0.3),
-              inset 0 1px 1px rgba(255,255,255,0.3),
-              inset 0 -1px 1px rgba(0,0,0,0.1)
-            `,
           }}
         >
           {/* Inner glow overlay */}
@@ -190,12 +184,6 @@ function BookSlider() {
             className="overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, #0a0a0a 100%), #0a0a0a',
-              border: '1px solid rgba(255,255,255,0.2)',
-              boxShadow: `
-                0 8px 32px rgba(0,0,0,0.3),
-                inset 0 1px 1px rgba(255,255,255,0.3),
-                inset 0 -1px 1px rgba(0,0,0,0.1)
-              `,
             }}
           >
             <div className="h-full flex flex-col">
