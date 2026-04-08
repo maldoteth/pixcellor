@@ -350,7 +350,8 @@ function MobileCards() {
   return (
     <div className="grid grid-cols-1 gap-4">
       {/* Full Works */}
-      <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+      <div className="shimmer-card rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="shimmer-sweep" />
         <div className="lava-blob lava-blob-1" />
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
