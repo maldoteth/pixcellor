@@ -43,6 +43,7 @@ export default function PackagesDialog() {
       <DialogTrigger asChild>
         <button
           className="mb-6 px-8 py-3 rounded-sm text-base font-semibold text-foreground flex items-center justify-center relative"
+          aria-label="View our web development packages and pricing"
           style={{
             background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
             backdropFilter: "blur(20px)",

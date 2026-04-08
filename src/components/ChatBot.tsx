@@ -286,6 +286,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed z-50 w-16 h-16 rounded-sm flex items-center justify-center group bottom-6 right-6"
+        aria-label="Open chat with Alex from Pixcellor"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         style={{
