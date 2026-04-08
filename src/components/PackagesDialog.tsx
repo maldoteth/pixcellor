@@ -437,10 +437,15 @@ function MobileCards() {
           loading={loading === "elite"}
           label={eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
         />
+        </div>
       </div>
 
       {/* Retainer */}
-      <div className="rounded-xl p-5 flex flex-col border border-border bg-background">
+      <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-foreground">Retainer</h3>
         <div className="flex items-center gap-2 mt-2 mb-3">
           <button
@@ -498,6 +503,7 @@ function MobileCards() {
           loading={loading === "retainer"}
           label="Subscribe"
         />
+        </div>
       </div>
     </div>
   );
