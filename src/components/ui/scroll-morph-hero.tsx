@@ -8,6 +8,7 @@ import PackagesDialog from "@/components/PackagesDialog";
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
 import logoIcon from '@/assets/logo-icon.png';
+import pixcellorWordmark from '@/assets/pixcellor-wordmark.png';
 import ui2 from '@/assets/hero/ui-2.png';
 import ui3 from '@/assets/hero/ui-3.png';
 import ui4 from '@/assets/hero/ui-4.png';
