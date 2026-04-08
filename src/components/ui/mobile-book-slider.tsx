@@ -73,7 +73,7 @@ function MobileBookSlider() {
   const bookRef = useRef<any>(null);
 
   return (
-    <div className="flex items-center justify-center w-full">
+    <div className="flex items-center justify-center w-full cursor-pointer">
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
