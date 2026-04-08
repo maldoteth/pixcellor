@@ -105,11 +105,10 @@ All colors MUST be HSL.
   }
 }
 
-/* Force portfolio book cover to never be transparent */
+/* Force portfolio book styles */
 .stf__item:first-child,
 .stf__item:first-child > div {
   opacity: 1 !important;
-  background: linear-gradient(160deg, #1f1f1f 0%, #141414 40%, #0a0a0a 100%) !important;
 }
 
 .stf__item:first-child::before,
@@ -124,4 +123,13 @@ All colors MUST be HSL.
 
 .stf__item > div {
   border-radius: 0 !important;
+}
+
+/* Glass border on all book page wrappers */
+.stf__item {
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.3),
+    inset 0 1px 1px rgba(255,255,255,0.3),
+    inset 0 -1px 1px rgba(0,0,0,0.1) !important;
 }
