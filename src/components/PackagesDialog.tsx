@@ -138,6 +138,8 @@ function DesktopCards() {
     <div className="flex items-center justify-center gap-6 h-full w-full">
       {/* Full Works - tilted left */}
       <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: -6 }}
         animate={{ opacity: 1, y: 0, rotate: -6 }}
         transition={{ type: "spring", duration: 0.5 }}
@@ -177,6 +179,8 @@ function DesktopCards() {
 
       {/* Elite - center, elevated */}
       <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 60, rotate: 0 }}
         animate={{ opacity: 1, y: -20, rotate: 0 }}
         transition={{ type: "spring", duration: 0.7 }}
@@ -261,6 +265,8 @@ function DesktopCards() {
 
       {/* Retainer - tilted right */}
       <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: 6 }}
         animate={{ opacity: 1, y: 0, rotate: 6 }}
         transition={{ type: "spring", duration: 0.6 }}
