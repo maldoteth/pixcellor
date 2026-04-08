@@ -23,7 +23,7 @@ const portfolioData = [
   {
     name: "DeHub",
     url: "dehub.io",
-    description: "Decentralized hub for Web3 communities, digital assets, and on-chain collaboration.",
+    description: "Full stack app, large scale YouTube and X alternative packed with features.",
     screenshot: dehubImg
   },
   {
