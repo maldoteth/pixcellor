@@ -247,7 +247,7 @@ function DesktopCards() {
             </li>
           ))}
         </ul>
-        <div className="mt-2">
+        <div className="mt-[18px]">
         <GlassBuyButton
           onClick={() =>
             buy(
