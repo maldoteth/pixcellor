@@ -75,8 +75,8 @@ function PaymentMethodIcons() {
       {/* Apple Pay */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
         <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
-        <path d="M16.2 10.8c-.4.5-1.1.9-1.7.8-.1-.7.2-1.4.6-1.8.4-.5 1.1-.8 1.6-.9.1.7-.2 1.4-.5 1.9zm.5 1c-.9-.1-1.7.5-2.2.5-.4 0-1.1-.5-1.8-.5-.9 0-1.8.5-2.3 1.4-1 1.7-.3 4.2.7 5.6.5.7 1 1.4 1.8 1.4.7 0 1-.5 1.8-.5s1.1.5 1.8.5c.8 0 1.2-.7 1.7-1.4.5-.8.7-1.5.7-1.6-.8-.3-1.4-1.3-1.4-2.5 0-1 .5-1.9 1.3-2.4-.5-.7-1.3-1-2.1-1z" fill="currentColor" className="text-foreground"/>
-        <text x="31" y="19" textAnchor="middle" fontSize="9.5" fontWeight="600" fill="currentColor" className="text-foreground">Pay</text>
+        <text x="16" y="20" textAnchor="middle" fontSize="13" fontWeight="400" fill="currentColor" className="text-foreground">&#xF8FF;</text>
+        <text x="33" y="20" textAnchor="middle" fontSize="9.5" fontWeight="600" fill="currentColor" className="text-foreground">Pay</text>
       </svg>
       {/* Google Pay */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
