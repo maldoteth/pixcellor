@@ -178,6 +178,7 @@ function DesktopCards() {
           `,
         }}
       >
+        <div className="shimmer-sweep shimmer-sweep-delay-1" />
         {/* Lava lamp blobs - featured */}
         <div className="lava-blob lava-blob-featured-1" />
         <div className="lava-blob lava-blob-featured-2" />
@@ -261,8 +262,8 @@ function DesktopCards() {
           `,
         }}
       >
+        <div className="shimmer-sweep shimmer-sweep-delay-2" />
         {/* Lava lamp blobs */}
-        <div className="lava-blob lava-blob-1" />
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
