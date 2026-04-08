@@ -53,12 +53,50 @@ async function handleCheckout(priceId: string, mode: string) {
   if (data?.url) window.open(data.url, "_blank");
 }
 
+function PaymentMethodIcons() {
+  return (
+    <div className="flex items-center justify-center gap-3 mt-2 opacity-30">
+      {/* Visa */}
+      <svg viewBox="0 0 48 32" className="w-8 h-5" fill="none">
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
+        <path d="M19.5 21h-3l1.9-11.5h3L19.5 21zm7.8-11.2c-.6-.2-1.5-.5-2.7-.5-3 0-5.1 1.5-5.1 3.7 0 1.6 1.5 2.5 2.6 3.1 1.2.6 1.6.9 1.6 1.4 0 .8-.9 1.1-1.8 1.1-1.2 0-1.9-.2-2.9-.6l-.4-.2-.4 2.5c.7.3 2.1.6 3.5.6 3.2 0 5.2-1.5 5.2-3.8 0-1.3-.8-2.3-2.5-3.1-1-.5-1.7-.9-1.7-1.4 0-.5.5-1 1.7-1 1 0 1.7.2 2.2.4l.3.1.4-2.3zm7.9-.3h-2.3c-.7 0-1.3.2-1.6.9L27 21h3.2l.6-1.7h3.9l.4 1.7H38l-2.8-11.5zm-3.5 7.4l1.2-3.2.4-1.1.2 1 .7 3.3h-2.5zM16.3 9.5l-2.8 7.8-.3-1.5c-.5-1.8-2.2-3.7-4-4.7l2.7 9.9h3.2l4.8-11.5h-3.6z" fill="currentColor" className="text-foreground"/>
+        <path d="M11.5 9.5H6.6l-.1.3c3.8.9 6.3 3.2 7.3 5.9l-1.1-5.3c-.2-.7-.7-.9-1.2-.9z" fill="currentColor" className="text-foreground" opacity="0.7"/>
+      </svg>
+      {/* Mastercard */}
+      <svg viewBox="0 0 48 32" className="w-8 h-5" fill="none">
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
+        <circle cx="20" cy="16" r="8" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <circle cx="28" cy="16" r="8" fill="currentColor" className="text-foreground" opacity="0.3"/>
+      </svg>
+      {/* Amex */}
+      <svg viewBox="0 0 48 32" className="w-8 h-5" fill="none">
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
+        <text x="24" y="18" textAnchor="middle" fontSize="8" fontWeight="bold" fill="currentColor" className="text-foreground">AMEX</text>
+      </svg>
+      {/* Apple Pay */}
+      <svg viewBox="0 0 48 32" className="w-8 h-5" fill="none">
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
+        <text x="24" y="18" textAnchor="middle" fontSize="7" fontWeight="600" fill="currentColor" className="text-foreground"> Pay</text>
+        <path d="M17.5 11c-.4.5-1 .8-1.6.8-.1-.6.2-1.3.5-1.7.4-.5 1-.8 1.5-.8.1.7-.2 1.3-.4 1.7zm.4.9c-.9 0-1.6.5-2 .5s-1-.5-1.7-.5c-.9 0-1.7.5-2.1 1.3-.9 1.5-.2 3.8.6 5.1.4.6.9 1.3 1.6 1.3.6 0 .9-.4 1.6-.4.7 0 .9.4 1.6.4.7 0 1.1-.7 1.5-1.3.5-.7.7-1.4.7-1.4-.7-.3-1.3-1.2-1.3-2.3 0-.9.5-1.8 1.2-2.1-.5-.6-1.2-1-1.9-1h.2z" fill="currentColor" className="text-foreground"/>
+      </svg>
+      {/* Google Pay */}
+      <svg viewBox="0 0 48 32" className="w-8 h-5" fill="none">
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
+        <text x="24" y="18" textAnchor="middle" fontSize="7" fontWeight="600" fill="currentColor" className="text-foreground">G Pay</text>
+      </svg>
+    </div>
+  );
+}
+
 function StripeBadge() {
   return (
-    <div className="flex items-center justify-center gap-1.5 mt-3 opacity-40">
-      <Lock className="w-3 h-3 text-foreground" />
-      <span className="text-[10px] text-foreground tracking-wide">Powered by</span>
-      <span className="text-[10px] font-bold text-foreground tracking-wide">Stripe</span>
+    <div className="flex flex-col items-center">
+      <div className="flex items-center justify-center gap-1.5 mt-3 opacity-40">
+        <Lock className="w-3 h-3 text-foreground" />
+        <span className="text-[10px] text-foreground tracking-wide">Powered by</span>
+        <span className="text-[10px] font-bold text-foreground tracking-wide">Stripe</span>
+      </div>
+      <PaymentMethodIcons />
     </div>
   );
 }
