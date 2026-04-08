@@ -352,6 +352,7 @@ function MobileCards() {
         <div className="lava-blob lava-blob-1" />
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-1">
           <span className="text-3xl font-extrabold text-foreground">£100</span>
@@ -371,7 +372,7 @@ function MobileCards() {
           loading={loading === "fullWorks"}
           label="Buy Now"
         />
-      </div>
+        </div>
 
       {/* Elite */}
       <div className="rounded-xl p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10">
