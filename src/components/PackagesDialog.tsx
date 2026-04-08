@@ -144,8 +144,8 @@ function DesktopCards() {
           className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading === "fullWorks" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buy Now"}
+        </button>
         </div>
-        </div>{/* close relative z-10 wrapper */}
       </motion.div>
 
       {/* Elite - center, elevated */}
