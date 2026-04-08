@@ -170,7 +170,7 @@ function DesktopCards() {
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="absolute -top-5 left-1/2 -translate-x-1/2 rounded-full border border-primary/30 bg-primary px-5 py-1 text-xs font-extrabold text-primary-foreground shadow z-20"
+          className="absolute top-[15px] left-1/2 -translate-x-1/2 rounded-full border border-primary/30 bg-primary px-5 py-1 text-xs font-extrabold text-primary-foreground shadow z-20"
         >
           Most Popular
         </motion.div>
