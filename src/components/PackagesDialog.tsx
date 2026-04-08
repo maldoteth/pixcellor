@@ -64,7 +64,7 @@ export default function PackagesDialog() {
           Packages
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl bg-card/95 backdrop-blur-xl border-border/50 p-6 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl bg-background border-border/50 p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-foreground text-center mb-6">
             Our Packages
@@ -76,8 +76,8 @@ export default function PackagesDialog() {
               key={pkg.name}
               className={`rounded-xl p-5 flex flex-col border ${
                 pkg.featured
-                  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                  : "border-border bg-secondary/30"
+                  ? "border-primary bg-background ring-1 ring-primary/30"
+                  : "border-border bg-background"
               }`}
             >
               {pkg.featured && (
