@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -13,6 +13,18 @@ import {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  packageCards?: PackageCard[];
+}
+
+interface PackageCard {
+  packageId: string;
+  billing: string;
+  name: string;
+  price: string;
+  rrp: string;
+  features: string[];
+  priceId: string;
+  mode: string;
 }
 
 interface ChatBotProps {
@@ -32,7 +44,6 @@ const glassStyle = {
   `,
 };
 
-// Generate or retrieve a unique client ID for this browser
 const getClientId = (): string => {
   const storageKey = "pixcellor_chat_client_id";
   let clientId = localStorage.getItem(storageKey);
@@ -42,6 +53,64 @@ const getClientId = (): string => {
   }
   return clientId;
 };
+
+function PackageCardUI({ card }: { card: PackageCard }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleBuy = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: card.priceId, mode: card.mode },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (e) {
+      console.error("Checkout error:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="rounded-sm p-3 mt-2 w-full"
+      style={{
+        background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
+        border: "1px solid rgba(255,255,255,0.2)",
+      }}
+    >
+      <div className="flex items-baseline justify-between mb-1">
+        <span className="text-white font-bold text-sm">{card.name}</span>
+        <span className="text-white/40 text-[10px] line-through">{card.rrp}</span>
+      </div>
+      <div className="text-white text-lg font-extrabold mb-2">{card.price}</div>
+      <ul className="space-y-1 mb-3">
+        {card.features.map((f) => (
+          <li key={f} className="flex items-start gap-1.5 text-white/70 text-[11px]">
+            <Check className="w-3 h-3 text-white/60 mt-0.5 shrink-0" />
+            {f}
+          </li>
+        ))}
+      </ul>
+      <button
+        onClick={handleBuy}
+        disabled={loading}
+        className="w-full rounded-sm py-1.5 text-xs font-semibold text-white hover:brightness-125 transition disabled:opacity-50 flex items-center justify-center gap-2 relative overflow-hidden group"
+        style={{
+          background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.08) 100%)",
+          border: "1px solid rgba(255,255,255,0.25)",
+        }}
+      >
+        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : card.mode === "subscription" ? "Subscribe" : "Buy Now"}
+      </button>
+    </motion.div>
+  );
+}
 
 export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -62,7 +131,6 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     scrollToBottom();
   }, [messages]);
 
-  // Load chat history when chat opens
   useEffect(() => {
     if (isOpen && !hasStarted) {
       loadChatHistory();
@@ -72,7 +140,6 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   const loadChatHistory = async () => {
     setIsLoadingHistory(true);
     try {
-      // Find existing conversation
       const { data: conv } = await supabase
         .from("chat_conversations")
         .select("id")
@@ -81,8 +148,6 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
 
       if (conv) {
         setConversationId(conv.id);
-        
-        // Load messages
         const { data: msgs } = await supabase
           .from("chat_messages")
           .select("role, content")
@@ -93,11 +158,9 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
           setMessages(msgs as Message[]);
           setHasStarted(true);
         } else {
-          // No messages, start fresh
           startConversation();
         }
       } else {
-        // No existing conversation, start fresh
         startConversation();
       }
     } catch (error) {
@@ -116,10 +179,10 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
         body: { messages: [], clientId: clientId.current },
       });
       if (error) throw error;
-      setMessages([{ role: "assistant", content: data.reply }]);
-      if (data.conversationId) {
-        setConversationId(data.conversationId);
-      }
+      const msg: Message = { role: "assistant", content: data.reply };
+      if (data.packageCards?.length) msg.packageCards = data.packageCards;
+      setMessages([msg]);
+      if (data.conversationId) setConversationId(data.conversationId);
     } catch (error) {
       console.error("Error starting chat:", error);
       setMessages([{ role: "assistant", content: "Hey there! 👋 I'm Alex from Pixcellor. What kind of project are you thinking about?" }]);
@@ -138,18 +201,16 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     setIsLoading(true);
 
     try {
+      // Send only role+content to the API
+      const apiMessages = newMessages.map(({ role, content }) => ({ role, content }));
       const { data, error } = await supabase.functions.invoke("sales-chat", {
-        body: { 
-          messages: newMessages, 
-          clientId: clientId.current,
-          conversationId 
-        },
+        body: { messages: apiMessages, clientId: clientId.current, conversationId },
       });
       if (error) throw error;
-      setMessages([...newMessages, { role: "assistant", content: data.reply }]);
-      if (data.conversationId && !conversationId) {
-        setConversationId(data.conversationId);
-      }
+      const assistantMsg: Message = { role: "assistant", content: data.reply };
+      if (data.packageCards?.length) assistantMsg.packageCards = data.packageCards;
+      setMessages([...newMessages, assistantMsg]);
+      if (data.conversationId && !conversationId) setConversationId(data.conversationId);
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages([...newMessages, { role: "assistant", content: "Sorry, I had a hiccup! Could you try that again?" }]);
@@ -205,7 +266,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
               >
                 <div
                   className={`max-w-[80%] px-3 py-2 rounded-sm text-sm ${
@@ -225,6 +286,14 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
                 >
                   {msg.content}
                 </div>
+                {/* Package cards */}
+                {msg.packageCards && msg.packageCards.length > 0 && (
+                  <div className="w-[80%] space-y-2">
+                    {msg.packageCards.map((card, j) => (
+                      <PackageCardUI key={`${card.packageId}-${j}`} card={card} />
+                    ))}
+                  </div>
+                )}
               </motion.div>
             ))}
             {isLoading && (
@@ -282,7 +351,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
 
   return (
     <>
-      {/* Chat Toggle Button - Square Glass */}
+      {/* Chat Toggle Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed z-50 w-16 h-16 rounded-sm flex items-center justify-center group bottom-6 right-6"
@@ -301,15 +370,12 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
           `,
         }}
       >
-        {/* Inner glow */}
         <div 
           className="absolute inset-1 rounded-sm opacity-60"
           style={{
             background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)",
           }}
         />
-        
-        {/* Animated shimmer */}
         <motion.div
           className="absolute inset-0 rounded-sm overflow-hidden"
           animate={{
@@ -320,49 +386,23 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
           }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
         />
-        
         <AnimatePresence mode="wait">
           {isOpen ? (
-            <motion.div
-              key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="relative z-10"
-            >
+            <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
               <X className="w-6 h-6 text-white drop-shadow-lg" />
             </motion.div>
           ) : (
-            <motion.div
-              key="chat"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="relative z-10"
-            >
+            <motion.div key="chat" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
               <MessageCircle className="w-6 h-6 text-white drop-shadow-lg" />
             </motion.div>
           )}
         </AnimatePresence>
-        
-        {/* Pulse ring effect when closed */}
         {!isOpen && (
           <motion.div
             className="absolute inset-0 rounded-sm"
-            style={{
-              border: "2px solid rgba(255,255,255,0.3)",
-            }}
-            animate={{
-              scale: [1, 1.3, 1.5],
-              opacity: [0.6, 0.3, 0],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeOut",
-            }}
+            style={{ border: "2px solid rgba(255,255,255,0.3)" }}
+            animate={{ scale: [1, 1.3, 1.5], opacity: [0.6, 0.3, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
           />
         )}
       </motion.button>
@@ -381,7 +421,6 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
           </DrawerContent>
         </Drawer>
       ) : (
-        /* Desktop: Floating Window */
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -392,7 +431,6 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
               className="fixed bottom-24 right-6 z-50 w-[380px] h-[520px] rounded-3xl flex flex-col overflow-hidden"
               style={glassStyle}
             >
-              {/* Decorative inner glow */}
               <div 
                 className="absolute inset-0 rounded-3xl pointer-events-none"
                 style={{
