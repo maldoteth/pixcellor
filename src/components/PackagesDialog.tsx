@@ -22,7 +22,7 @@ const PACKAGES = {
     monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
     mode: "payment" as const,
     featured: true,
-    features: ["Animated, interactive cutting edge site", "1 year maintenance included", "Unlimited edits", "SEO & AEO optimisation"],
+    features: ["Cutting edge website", "1 year maintenance included", "Unlimited edits", "SEO & AEO optimisation"],
   },
   retainer: {
     name: "Retainer",
