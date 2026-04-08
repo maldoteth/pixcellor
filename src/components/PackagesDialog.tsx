@@ -379,7 +379,8 @@ function MobileCards() {
       </div>
 
       {/* Elite */}
-      <div className="rounded-xl p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10 relative overflow-hidden">
+      <div className="shimmer-card-delay-1 rounded-xl p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10 relative overflow-hidden">
+        <div className="shimmer-sweep shimmer-sweep-delay-1" />
         <div className="lava-blob lava-blob-featured-1" />
         <div className="lava-blob lava-blob-featured-2" />
         <div className="lava-blob lava-blob-featured-3" />
@@ -444,7 +445,8 @@ function MobileCards() {
       </div>
 
       {/* Retainer */}
-      <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+      <div className="shimmer-card-delay-2 rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="shimmer-sweep shimmer-sweep-delay-2" />
         <div className="lava-blob lava-blob-1" />
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
