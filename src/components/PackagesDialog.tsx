@@ -376,7 +376,7 @@ function DesktopCards() {
           ))}
           <li className="flex items-start gap-2">
             <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-            {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save £2,400)"}
+            {retainerBilling === "monthly" ? "Daily turnarounds" : "Billed yearly (save £2,400)"}
           </li>
         </ul>
         <GlassBuyButton
@@ -556,7 +556,7 @@ function MobileCards() {
           ))}
           <li className="flex items-start gap-2 text-base text-muted-foreground">
             <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-            {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save £2,400)"}
+            {retainerBilling === "monthly" ? "Daily turnarounds" : "Billed yearly (save £2,400)"}
           </li>
         </ul>
         <GlassBuyButton
