@@ -4,6 +4,7 @@ import { Check, Loader2, Lock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import applePayLogo from "@/assets/apple-pay.png";
 
 const PACKAGES = {
   fullWorks: {
