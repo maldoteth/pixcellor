@@ -224,26 +224,26 @@ Deno.serve(async (req) => {
               let mode = "";
 
               if (pkgId === "fullWorks") {
-                priceId = pkg.priceId!;
+                priceId = (pkg as any).priceId;
                 price = pkg.price;
                 mode = "payment";
               } else if (pkgId === "elite") {
                 if (billing === "monthly") {
-                  priceId = pkg.monthlyPriceId!;
+                  priceId = (pkg as any).monthlyPriceId;
                   price = "£60/mo";
                   mode = "subscription";
                 } else {
-                  priceId = pkg.priceId!;
+                  priceId = (pkg as any).priceId;
                   price = "£500";
                   mode = "payment";
                 }
               } else if (pkgId === "retainer") {
                 if (billing === "yearly") {
-                  priceId = pkg.yearlyPriceId!;
+                  priceId = (pkg as any).yearlyPriceId;
                   price = "£12,000/yr";
                   mode = "subscription";
                 } else {
-                  priceId = pkg.monthlyPriceId!;
+                  priceId = (pkg as any).monthlyPriceId;
                   price = "£1,200/mo";
                   mode = "subscription";
                 }
