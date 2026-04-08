@@ -12,7 +12,7 @@ const PACKAGES = {
     rrp: "£500",
     priceId: "price_1TJrSfBtUjwejeUwWd3YoFVy",
     mode: "payment" as const,
-    features: ["Modern, super fast website", "Clean, professional design", "1 year maintenance included"],
+    features: ["Modern, super fast website", "Clean, professional design", "1 year maintenance"],
   },
   elite: {
     name: "Elite",
@@ -22,7 +22,7 @@ const PACKAGES = {
     monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
     mode: "payment" as const,
     featured: true,
-    features: ["Cutting edge website", "1 year maintenance included", "Unlimited edits", "SEO & AEO optimisation"],
+    features: ["Cutting edge website", "1 year maintenance", "Unlimited edits", "SEO & AEO optimisation"],
   },
   retainer: {
     name: "Retainer",
