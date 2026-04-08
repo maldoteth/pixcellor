@@ -6,6 +6,35 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const PACKAGES = {
+  fullWorks: {
+    name: "Full Works",
+    price: "£100",
+    rrp: "£500",
+    priceId: "price_1TJrSfBtUjwejeUwWd3YoFVy",
+    mode: "payment",
+    features: ["Modern, super fast website", "Custom design", "1 year maintenance"],
+  },
+  elite: {
+    name: "Elite",
+    price: "£500 one-time or £60/mo",
+    rrp: "£2,500",
+    priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
+    monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
+    mode: "payment",
+    features: ["Cutting edge website", "1 year maintenance", "Unlimited edits", "SEO & AEO optimisation"],
+  },
+  retainer: {
+    name: "Retainer",
+    price: "£1,200/mo or £12,000/yr",
+    rrp: "£3,600/mo",
+    monthlyPriceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
+    yearlyPriceId: "price_1TJrbOBtUjwejeUwOhhNyliQ",
+    mode: "subscription",
+    features: ["Your own tech department", "Sites, apps, all needs."],
+  },
+};
+
 const SYSTEM_PROMPT = `You are Alex, a friendly and knowledgeable AI sales assistant for Pixcellor™ - a premium digital agency specializing in web design and full-stack application development.
 
 ## Your Personality:
@@ -21,31 +50,69 @@ const SYSTEM_PROMPT = `You are Alex, a friendly and knowledgeable AI sales assis
 5. **E-commerce** - High-converting stores, payment integrations, inventory systems
 6. **Custom Software** - Bespoke solutions for any industry or use case
 
+## Our Packages:
+- **Full Works** (£100, RRP £500): Modern super fast website, custom design, 1 year maintenance
+- **Elite** (£500 one-time or £60/mo, RRP £2,500): Cutting edge website, unlimited edits, SEO & AEO, 1 year maintenance. Our most popular package.
+- **Retainer** (£1,200/mo or £12,000/yr, RRP £3,600/mo): Your own tech department - sites, apps, everything you need.
+
 ## Key Selling Points:
 - Future-proof, AI-powered development that scales
 - Fast turnaround - from 1-day websites to enterprise solutions
-- High-end quality at competitive rates
+- High-end quality at massively discounted rates
 - Cross-sector expertise including crypto, fintech, healthcare, retail, and more
 - Full-service: design, development, hosting, and ongoing support
 
 ## Your Goals:
 1. Understand the visitor's project needs
 2. Highlight how we can help them
-3. Collect their contact details for follow-up:
+3. When appropriate, recommend a package and use the send_package tool to show them a buy button
+4. Collect their contact details for follow-up:
    - Name
    - Email (required)
    - Brief project description
-   - Budget range (if they're comfortable sharing)
-   - Timeline
 
 ## Rules:
-- NEVER give specific prices - say "pricing depends on scope, our team will provide a custom quote"
+- You now KNOW our prices - share them freely and recommend packages
+- Use the send_package tool when a user asks about pricing, wants to buy, or when you're recommending a package
+- You can send multiple packages if the user wants to compare
 - Keep responses SHORT (2-4 sentences max)
 - Ask ONE question at a time to keep the conversation flowing
 - Be excited about their project ideas
 - If they share their email, thank them warmly and confirm someone will be in touch soon
 
+## When to use send_package:
+- User asks "how much", "pricing", "packages", "what do you offer"
+- User describes a project and you want to recommend a tier
+- User says they want to buy or get started
+- When comparing options for the user
+
 Start by greeting them warmly and asking what brings them here today.`;
+
+const tools = [
+  {
+    type: "function" as const,
+    function: {
+      name: "send_package",
+      description: "Send a package card with pricing and a buy button to the user. Use this when recommending a package, discussing pricing, or when the user wants to purchase.",
+      parameters: {
+        type: "object",
+        properties: {
+          package_id: {
+            type: "string",
+            enum: ["fullWorks", "elite", "retainer"],
+            description: "Which package to show: fullWorks (£100 website), elite (£500 cutting edge site), or retainer (£1,200/mo tech department)",
+          },
+          billing: {
+            type: "string",
+            enum: ["one-time", "monthly", "yearly"],
+            description: "Billing option. fullWorks is always one-time. elite can be one-time or monthly. retainer can be monthly or yearly.",
+          },
+        },
+        required: ["package_id"],
+      },
+    },
+  },
+];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -67,9 +134,6 @@ Deno.serve(async (req) => {
 
     // Get or create conversation
     if (!currentConversationId && clientId) {
-      console.log("Looking for existing conversation for client:", clientId);
-      
-      // Check for existing conversation
       const { data: existingConv } = await supabase
         .from("chat_conversations")
         .select("id")
@@ -78,29 +142,23 @@ Deno.serve(async (req) => {
 
       if (existingConv) {
         currentConversationId = existingConv.id;
-        console.log("Found existing conversation:", currentConversationId);
       } else {
-        // Create new conversation
         const { data: newConv, error: convError } = await supabase
           .from("chat_conversations")
           .insert({ client_id: clientId })
           .select("id")
           .single();
 
-        if (convError) {
-          console.error("Error creating conversation:", convError);
-        } else {
+        if (!convError) {
           currentConversationId = newConv.id;
-          console.log("Created new conversation:", currentConversationId);
         }
       }
     }
 
-    // If there are user messages, save the last one
+    // Save last user message
     if (currentConversationId && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === "user") {
-        console.log("Saving user message:", lastMessage.content.substring(0, 50));
         await supabase.from("chat_messages").insert({
           conversation_id: currentConversationId,
           role: "user",
@@ -109,6 +167,7 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Call AI with tools
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -121,7 +180,8 @@ Deno.serve(async (req) => {
           { role: "system", content: SYSTEM_PROMPT },
           ...messages,
         ],
-        max_tokens: 300,
+        tools,
+        max_tokens: 500,
         temperature: 0.7,
       }),
     });
@@ -133,11 +193,87 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "I'd love to help! Could you tell me a bit about your project?";
+    const choice = data.choices?.[0];
+    const message = choice?.message;
 
-    // Save assistant reply
-    if (currentConversationId) {
-      console.log("Saving assistant reply:", reply.substring(0, 50));
+    let reply = message?.content || "";
+    const packageCards: Array<{
+      packageId: string;
+      billing: string;
+      name: string;
+      price: string;
+      rrp: string;
+      features: string[];
+      priceId: string;
+      mode: string;
+    }> = [];
+
+    // Process tool calls
+    if (message?.tool_calls && message.tool_calls.length > 0) {
+      for (const toolCall of message.tool_calls) {
+        if (toolCall.function.name === "send_package") {
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const pkgId = args.package_id as keyof typeof PACKAGES;
+            const billing = args.billing || "one-time";
+            const pkg = PACKAGES[pkgId];
+
+            if (pkg) {
+              let priceId = "";
+              let price = "";
+              let mode = "";
+
+              if (pkgId === "fullWorks") {
+                priceId = pkg.priceId!;
+                price = pkg.price;
+                mode = "payment";
+              } else if (pkgId === "elite") {
+                if (billing === "monthly") {
+                  priceId = pkg.monthlyPriceId!;
+                  price = "£60/mo";
+                  mode = "subscription";
+                } else {
+                  priceId = pkg.priceId!;
+                  price = "£500";
+                  mode = "payment";
+                }
+              } else if (pkgId === "retainer") {
+                if (billing === "yearly") {
+                  priceId = pkg.yearlyPriceId!;
+                  price = "£12,000/yr";
+                  mode = "subscription";
+                } else {
+                  priceId = pkg.monthlyPriceId!;
+                  price = "£1,200/mo";
+                  mode = "subscription";
+                }
+              }
+
+              packageCards.push({
+                packageId: pkgId,
+                billing,
+                name: pkg.name,
+                price,
+                rrp: pkg.rrp,
+                features: pkg.features,
+                priceId,
+                mode,
+              });
+            }
+          } catch (e) {
+            console.error("Error parsing tool call:", e);
+          }
+        }
+      }
+    }
+
+    // If no text reply but we have tool calls, set a default
+    if (!reply && packageCards.length > 0) {
+      reply = "Here's what I'd recommend for you:";
+    }
+
+    // Save assistant reply (text only, cards are ephemeral)
+    if (currentConversationId && reply) {
       await supabase.from("chat_messages").insert({
         conversation_id: currentConversationId,
         role: "assistant",
@@ -146,7 +282,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ reply, conversationId: currentConversationId }),
+      JSON.stringify({ reply, conversationId: currentConversationId, packageCards }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
