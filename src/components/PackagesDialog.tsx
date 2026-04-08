@@ -75,7 +75,7 @@ export default function PackagesDialog() {
       </DialogTrigger>
 
       {isMobile ? (
-        <DialogContent className="max-w-4xl bg-background border-border/50 p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <DialogContent className="max-w-4xl bg-transparent border-none p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:text-foreground">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-foreground text-center mb-6">
               Our Packages
@@ -97,9 +97,10 @@ function GlassBuyButton({ onClick, disabled, loading, label }: { onClick: () => 
     <button
       onClick={onClick}
       disabled={disabled}
-      className="w-full rounded-sm py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 flex items-center justify-center gap-2 relative"
+      className="w-full rounded-sm py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 flex items-center justify-center gap-2 relative overflow-hidden group"
       style={glassButtonStyle}
     >
+      <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : label}
     </button>
   );
