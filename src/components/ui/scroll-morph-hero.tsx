@@ -269,7 +269,7 @@ export default function IntroAnimation() {
                 <img 
                     src={logoIcon} 
                     alt="Pixcellor" 
-                    className="w-10 h-10 md:w-12 md:h-12"
+                    className="w-[3.75rem] h-[3.75rem] md:w-12 md:h-12"
                 />
             </motion.div>
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
