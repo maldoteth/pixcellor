@@ -264,7 +264,7 @@ function DesktopCards() {
         <div className="flex items-center gap-2 mb-3">
           <button
             onClick={() => setEliteBilling("one-time")}
-            className={`text-xs px-3 py-1 rounded-sm transition font-semibold ${
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               eliteBilling === "one-time"
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -274,7 +274,7 @@ function DesktopCards() {
           </button>
           <button
             onClick={() => setEliteBilling("monthly")}
-            className={`text-xs px-3 py-1 rounded-sm transition font-semibold ${
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               eliteBilling === "monthly"
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -347,7 +347,7 @@ function DesktopCards() {
         <div className="flex items-center gap-2 mb-3">
           <button
             onClick={() => setRetainerBilling("monthly")}
-            className={`text-xs px-3 py-1 rounded-sm transition font-semibold ${
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               retainerBilling === "monthly"
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -357,7 +357,7 @@ function DesktopCards() {
           </button>
           <button
             onClick={() => setRetainerBilling("yearly")}
-            className={`text-xs px-3 py-1 rounded-sm transition font-semibold ${
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               retainerBilling === "yearly"
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -464,7 +464,7 @@ function MobileCards() {
         <div className="flex items-center gap-2 mt-2 mb-3">
           <button
             onClick={() => setEliteBilling("one-time")}
-            className={`text-xs px-3 py-1 rounded-sm transition font-semibold ${
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               eliteBilling === "one-time"
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -474,7 +474,7 @@ function MobileCards() {
           </button>
           <button
             onClick={() => setEliteBilling("monthly")}
-            className={`text-xs px-3 py-1 rounded-sm transition font-semibold ${
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               eliteBilling === "monthly"
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -526,7 +526,7 @@ function MobileCards() {
         <div className="flex items-center gap-2 mt-2 mb-3">
           <button
             onClick={() => setRetainerBilling("monthly")}
-            className={`text-xs px-3 py-1 rounded-sm transition font-semibold ${
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               retainerBilling === "monthly"
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -536,7 +536,7 @@ function MobileCards() {
           </button>
           <button
             onClick={() => setRetainerBilling("yearly")}
-            className={`text-xs px-3 py-1 rounded-sm transition font-semibold ${
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
               retainerBilling === "yearly"
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
