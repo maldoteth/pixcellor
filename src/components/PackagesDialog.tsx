@@ -1,7 +1,44 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+const PACKAGES = {
+  fullWorks: {
+    name: "Full Works",
+    price: "$100",
+    rrp: "$500",
+    priceId: "price_1TJrFRBtUjwejeUw6dsMwxNd",
+    mode: "payment" as const,
+    features: ["Modern, super fast loading website", "Clean, professional design", "1 year maintenance included"],
+  },
+  elite: {
+    name: "Elite",
+    price: "$500",
+    rrp: "$2,500",
+    priceId: "price_1TJrFiBtUjwejeUww5rkVJfN",
+    mode: "payment" as const,
+    featured: true,
+    features: ["Animated, interactive cutting edge site", "1 year maintenance included", "Unlimited edits", "SEO & AEO optimisation"],
+  },
+  retainer: {
+    name: "Retainer",
+    monthlyPriceId: "price_1TJrGDBtUjwejeUwCHvrxIvu",
+    yearlyPriceId: "price_1TJrGzBtUjwejeUwJY3cJNoh",
+    mode: "subscription" as const,
+    features: ["Your own tech department", "Sites, apps & everything you need"],
+  },
+};
+
+async function handleCheckout(priceId: string, mode: string) {
+  const { data, error } = await supabase.functions.invoke("create-checkout", {
+    body: { priceId, mode },
+  });
+  if (error) throw error;
+  if (data?.url) window.open(data.url, "_blank");
+}
 
 export default function PackagesDialog() {
   const isMobile = useIsMobile();
@@ -33,26 +70,42 @@ export default function PackagesDialog() {
           Packages
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl bg-background border-border/50 p-6 md:p-10 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-foreground text-center mb-8">
-            Our Packages
-          </DialogTitle>
-        </DialogHeader>
 
-        {isMobile ? (
+      {isMobile ? (
+        <DialogContent className="max-w-4xl bg-background border-border/50 p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-foreground text-center mb-6">
+              Our Packages
+            </DialogTitle>
+          </DialogHeader>
           <MobileCards />
-        ) : (
+        </DialogContent>
+      ) : (
+        <DialogContent className="max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none [&>button]:hidden sm:rounded-none" style={{ background: "transparent" }}>
           <DesktopCards />
-        )}
-      </DialogContent>
+        </DialogContent>
+      )}
     </Dialog>
   );
 }
 
 function DesktopCards() {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
+
+  const buy = async (priceId: string, mode: string, key: string) => {
+    setLoading(key);
+    try {
+      await handleCheckout(priceId, mode);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-center gap-6 py-8">
+    <div className="flex items-center justify-center gap-6 h-full w-full">
       {/* Full Works - tilted left */}
       <motion.div
         initial={{ opacity: 0, y: 40, rotate: -6 }}
@@ -71,22 +124,23 @@ function DesktopCards() {
         <div className="mb-1 text-3xl font-extrabold text-foreground">$100</div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP $500</p>
         <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
-          <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            Modern, super fast loading website
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            Clean, professional design
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            1 year maintenance included
-          </li>
+          {PACKAGES.fullWorks.features.map((f) => (
+            <li key={f} className="flex items-start gap-2">
+              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
         </ul>
+        <button
+          onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks")}
+          disabled={!!loading}
+          className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {loading === "fullWorks" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buy Now"}
+        </button>
       </motion.div>
 
-      {/* Elite - center, elevated, highlighted */}
+      {/* Elite - center, elevated */}
       <motion.div
         initial={{ opacity: 0, y: 60, rotate: 0 }}
         animate={{ opacity: 1, y: -20, rotate: 0 }}
@@ -112,23 +166,20 @@ function DesktopCards() {
         <div className="mb-1 text-5xl font-black text-foreground">$500</div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP $2,500</p>
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
-          <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            Animated, interactive cutting edge site
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            1 year maintenance included
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            Unlimited edits
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            SEO & AEO optimisation
-          </li>
+          {PACKAGES.elite.features.map((f) => (
+            <li key={f} className="flex items-start gap-2">
+              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
         </ul>
+        <button
+          onClick={() => buy(PACKAGES.elite.priceId, PACKAGES.elite.mode, "elite")}
+          disabled={!!loading}
+          className="w-full rounded-md bg-primary py-2.5 font-bold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {loading === "elite" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buy Now"}
+        </button>
       </motion.div>
 
       {/* Retainer - tilted right */}
@@ -146,83 +197,198 @@ function DesktopCards() {
         }}
       >
         <div className="mb-2 text-lg font-bold text-primary">Retainer</div>
-        <div className="mb-1 text-3xl font-extrabold text-foreground">$1,200/mo</div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP $3,600/mo</p>
+        
+        {/* Billing toggle */}
+        <div className="flex items-center gap-2 mb-3">
+          <button
+            onClick={() => setRetainerBilling("monthly")}
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+              retainerBilling === "monthly"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setRetainerBilling("yearly")}
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+              retainerBilling === "yearly"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Yearly
+          </button>
+        </div>
+
+        <div className="mb-1 text-3xl font-extrabold text-foreground">
+          {retainerBilling === "monthly" ? "$1,200/mo" : "$12,000/yr"}
+        </div>
+        <p className="text-xs text-muted-foreground line-through mb-4">
+          RRP {retainerBilling === "monthly" ? "$3,600/mo" : "$36,000/yr"}
+        </p>
         <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
+          {PACKAGES.retainer.features.map((f) => (
+            <li key={f} className="flex items-start gap-2">
+              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
           <li className="flex items-start gap-2">
             <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            Your own tech department
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            Sites, apps & everything you need
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            Billed monthly ($12,000/year)
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            RRP $36,000/year
+            {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save $2,400)"}
           </li>
         </ul>
+        <button
+          onClick={() =>
+            buy(
+              retainerBilling === "monthly"
+                ? PACKAGES.retainer.monthlyPriceId
+                : PACKAGES.retainer.yearlyPriceId,
+              PACKAGES.retainer.mode,
+              "retainer"
+            )
+          }
+          disabled={!!loading}
+          className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {loading === "retainer" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
+        </button>
       </motion.div>
     </div>
   );
 }
 
 function MobileCards() {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
+
+  const buy = async (priceId: string, mode: string, key: string) => {
+    setLoading(key);
+    try {
+      await handleCheckout(priceId, mode);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 gap-4">
-      {[
-        {
-          name: "Full Works",
-          price: "$100",
-          rrp: "$500",
-          features: ["Modern, super fast loading website", "Clean, professional design", "1 year maintenance included"],
-        },
-        {
-          name: "Elite",
-          price: "$500",
-          rrp: "$2,500",
-          featured: true,
-          features: ["Animated, interactive cutting edge site", "1 year maintenance included", "Unlimited edits", "SEO & AEO optimisation"],
-        },
-        {
-          name: "Retainer",
-          price: "$1,200/mo",
-          rrp: "$3,600/mo",
-          features: ["Your own tech department", "Sites, apps & everything you need", "Billed monthly ($12,000/year)", "RRP $36,000/year"],
-        },
-      ].map((pkg) => (
-        <div
-          key={pkg.name}
-          className={`rounded-xl p-5 flex flex-col border ${
-            pkg.featured
-              ? "border-primary bg-background ring-1 ring-primary/30"
-              : "border-border bg-background"
-          }`}
-        >
-          {pkg.featured && (
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">
-              Most Popular
-            </span>
-          )}
-          <h3 className="text-lg font-bold text-foreground">{pkg.name}</h3>
-          <div className="mt-3 mb-1">
-            <span className="text-3xl font-extrabold text-foreground">{pkg.price}</span>
-          </div>
-          <p className="text-xs text-muted-foreground line-through mb-4">RRP {pkg.rrp}</p>
-          <ul className="space-y-2 flex-1">
-            {pkg.features.map((f) => (
-              <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                {f}
-              </li>
-            ))}
-          </ul>
+      {/* Full Works */}
+      <div className="rounded-xl p-5 flex flex-col border border-border bg-background">
+        <h3 className="text-lg font-bold text-foreground">Full Works</h3>
+        <div className="mt-3 mb-1">
+          <span className="text-3xl font-extrabold text-foreground">$100</span>
         </div>
-      ))}
+        <p className="text-xs text-muted-foreground line-through mb-4">RRP $500</p>
+        <ul className="space-y-2 flex-1 mb-4">
+          {PACKAGES.fullWorks.features.map((f) => (
+            <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
+        </ul>
+        <button
+          onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks")}
+          disabled={!!loading}
+          className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {loading === "fullWorks" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buy Now"}
+        </button>
+      </div>
+
+      {/* Elite */}
+      <div className="rounded-xl p-5 flex flex-col border border-primary bg-background ring-1 ring-primary/30">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">
+          Most Popular
+        </span>
+        <h3 className="text-lg font-bold text-foreground">Elite</h3>
+        <div className="mt-3 mb-1">
+          <span className="text-3xl font-extrabold text-foreground">$500</span>
+        </div>
+        <p className="text-xs text-muted-foreground line-through mb-4">RRP $2,500</p>
+        <ul className="space-y-2 flex-1 mb-4">
+          {PACKAGES.elite.features.map((f) => (
+            <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
+        </ul>
+        <button
+          onClick={() => buy(PACKAGES.elite.priceId, PACKAGES.elite.mode, "elite")}
+          disabled={!!loading}
+          className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {loading === "elite" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buy Now"}
+        </button>
+      </div>
+
+      {/* Retainer */}
+      <div className="rounded-xl p-5 flex flex-col border border-border bg-background">
+        <h3 className="text-lg font-bold text-foreground">Retainer</h3>
+        <div className="flex items-center gap-2 mt-2 mb-3">
+          <button
+            onClick={() => setRetainerBilling("monthly")}
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+              retainerBilling === "monthly"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setRetainerBilling("yearly")}
+            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+              retainerBilling === "yearly"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Yearly
+          </button>
+        </div>
+        <div className="mb-1">
+          <span className="text-3xl font-extrabold text-foreground">
+            {retainerBilling === "monthly" ? "$1,200/mo" : "$12,000/yr"}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground line-through mb-4">
+          RRP {retainerBilling === "monthly" ? "$3,600/mo" : "$36,000/yr"}
+        </p>
+        <ul className="space-y-2 flex-1 mb-4">
+          {PACKAGES.retainer.features.map((f) => (
+            <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+              <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
+          <li className="flex items-start gap-2 text-sm text-muted-foreground">
+            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+            {retainerBilling === "monthly" ? "Billed monthly" : "Billed yearly (save $2,400)"}
+          </li>
+        </ul>
+        <button
+          onClick={() =>
+            buy(
+              retainerBilling === "monthly"
+                ? PACKAGES.retainer.monthlyPriceId
+                : PACKAGES.retainer.yearlyPriceId,
+              PACKAGES.retainer.mode,
+              "retainer"
+            )
+          }
+          disabled={!!loading}
+          className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {loading === "retainer" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
+        </button>
+      </div>
     </div>
   );
 }
