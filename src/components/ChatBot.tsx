@@ -370,7 +370,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
       {isMobile ? (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerContent 
-            className="h-[85vh] border-0 border-t-0"
+            className="h-[85vh] border-0 border-t-0 [&>div:first-child]:hidden"
             style={glassStyle}
           >
             <DrawerHeader className="sr-only">
