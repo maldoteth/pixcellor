@@ -189,9 +189,7 @@ function BookSlider() {
             key={site.url}
             className="overflow-hidden"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, #0a0a0a 100%), #0a0a0a',
               border: '1px solid rgba(255,255,255,0.2)',
               boxShadow: `
                 0 8px 32px rgba(0,0,0,0.3),
