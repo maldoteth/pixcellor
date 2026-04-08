@@ -1,4 +1,5 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import HTMLFlipBook from "react-pageflip";
 
 // Import portfolio screenshots
