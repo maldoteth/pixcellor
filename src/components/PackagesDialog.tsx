@@ -81,7 +81,7 @@ export default function PackagesDialog() {
           <MobileCards />
         </DialogContent>
       ) : (
-        <DialogContent className="max-w-[100vw] w-screen h-screen border-none bg-transparent p-0 shadow-none [&>button]:hidden" style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", background: "rgba(0,0,0,0.6)" }}>
+        <DialogContent className="max-w-[100vw] w-screen h-screen border-none bg-transparent p-0 shadow-none [&>button]:hidden [&~*]:hidden" style={{ background: "transparent" }}>
           <DesktopCards />
         </DialogContent>
       )}
