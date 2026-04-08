@@ -246,6 +246,7 @@ function DesktopCards() {
             </li>
           ))}
         </ul>
+        <div className="mt-2">
         <GlassBuyButton
           onClick={() =>
             buy(
@@ -260,6 +261,7 @@ function DesktopCards() {
           loading={loading === "elite"}
           label={eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
         />
+        </div>
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
 
