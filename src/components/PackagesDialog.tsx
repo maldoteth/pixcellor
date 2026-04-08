@@ -110,6 +110,19 @@ function DesktopCards() {
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
 
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    e.currentTarget.style.setProperty("--mouse-x", x.toString());
+    e.currentTarget.style.setProperty("--mouse-y", y.toString());
+  }, []);
+
+  const handleMouseLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.currentTarget.style.setProperty("--mouse-x", "0");
+    e.currentTarget.style.setProperty("--mouse-y", "0");
+  }, []);
+
   const buy = async (priceId: string, mode: string, key: string) => {
     setLoading(key);
     try {
