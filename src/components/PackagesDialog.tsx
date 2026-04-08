@@ -50,7 +50,7 @@ async function handleCheckout(priceId: string, mode: string) {
     body: { priceId, mode },
   });
   if (error) throw error;
-  if (data?.url) window.open(data.url, "_blank");
+  if (data?.url) window.location.href = data.url;
 }
 
 export default function PackagesDialog() {

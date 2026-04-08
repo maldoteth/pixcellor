@@ -15,16 +15,21 @@ serve(async (req) => {
     const { priceId, mode } = await req.json();
     
     if (!priceId) throw new Error("Missing priceId");
+    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeSecretKey) throw new Error("STRIPE_SECRET_KEY not configured");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2025-08-27.basil",
     });
+
+    const origin = req.headers.get("origin");
+    if (!origin) throw new Error("Missing request origin");
 
     const session = await stripe.checkout.sessions.create({
       line_items: [{ price: priceId, quantity: 1 }],
       mode: mode || "payment",
-      success_url: `${req.headers.get("origin")}/?payment=success`,
-      cancel_url: `${req.headers.get("origin")}/?payment=canceled`,
+      success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?payment=canceled`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
