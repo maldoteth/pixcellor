@@ -14,6 +14,7 @@ import delabsImg from '@/assets/portfolio/delabs.png';
 import fanSiteImg from '@/assets/portfolio/fan-site.png';
 import theponziImg from '@/assets/portfolio/theponzi.png';
 import dhbscanImg from '@/assets/portfolio/dhbscan.png';
+import tikupImg from '@/assets/portfolio/tikup.png';
 
 const portfolioData = [
   {
@@ -27,6 +28,12 @@ const portfolioData = [
     url: "dehub.io",
     description: "Full stack app, large scale YouTube and X alternative packed with features.",
     screenshot: dehubImg
+  },
+  {
+    name: "TikUp",
+    url: "tikup.xyz",
+    description: "Comprehensive TikTok live streaming toolkit integrated with TikTok APIs to help creators thrive on the app.",
+    screenshot: tikupImg
   },
   {
     name: "Last Chad Standing",
