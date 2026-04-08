@@ -9,7 +9,7 @@ const corsHeaders = {
 const PACKAGES = {
   fullWorks: {
     name: "Full Works",
-    price: "£100",
+    price: "£150",
     rrp: "£500",
     priceId: "price_1TJrSfBtUjwejeUwWd3YoFVy",
     mode: "payment",
@@ -51,7 +51,7 @@ const SYSTEM_PROMPT = `You are Alex, a friendly and knowledgeable AI sales assis
 6. **Custom Software** - Bespoke solutions for any industry or use case
 
 ## Our Packages:
-- **Full Works** (£100, RRP £500): Modern super fast website, custom design, 1 year maintenance
+- **Full Works** (£150, RRP £500): Modern super fast website, custom design, 1 year maintenance: Modern super fast website, custom design, 1 year maintenance
 - **Elite** (£500 one-time or £60/mo, RRP £2,500): Cutting edge website, unlimited edits, SEO & AEO, 1 year maintenance. Our most popular package.
 - **Retainer** (£1,200/mo or £12,000/yr, RRP £3,600/mo): Your own tech department - sites, apps, everything you need.
 
@@ -100,7 +100,7 @@ const tools = [
           package_id: {
             type: "string",
             enum: ["fullWorks", "elite", "retainer"],
-            description: "Which package to show: fullWorks (£100 website), elite (£500 cutting edge site), or retainer (£1,200/mo tech department)",
+            description: "Which package to show: fullWorks (£150 website), elite (£500 cutting edge site), or retainer (£1,200/mo tech department)",, elite (£500 cutting edge site), or retainer (£1,200/mo tech department)",
           },
           billing: {
             type: "string",
