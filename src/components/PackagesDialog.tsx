@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Lock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -53,6 +53,16 @@ async function handleCheckout(priceId: string, mode: string) {
   if (data?.url) window.open(data.url, "_blank");
 }
 
+function StripeBadge() {
+  return (
+    <div className="flex items-center justify-center gap-1.5 mt-3 opacity-40">
+      <Lock className="w-3 h-3 text-foreground" />
+      <span className="text-[10px] text-foreground tracking-wide">Powered by</span>
+      <span className="text-[10px] font-bold text-foreground tracking-wide">Stripe</span>
+    </div>
+  );
+}
+
 export default function PackagesDialog() {
   const isMobile = useIsMobile();
 
@@ -77,9 +87,10 @@ export default function PackagesDialog() {
       {isMobile ? (
         <DialogContent className="max-w-4xl bg-transparent border-none p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-foreground text-center mb-6">
+            <DialogTitle className="text-2xl font-bold text-foreground text-center mb-2">
               Our Packages
             </DialogTitle>
+            <StripeBadge />
           </DialogHeader>
           <MobileCards />
         </DialogContent>
@@ -263,6 +274,7 @@ function DesktopCards() {
           label={eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
         />
         </div>
+        <StripeBadge />
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
 
