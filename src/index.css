@@ -190,6 +190,7 @@ All colors MUST be HSL.
   background: radial-gradient(circle, hsl(0 0% 90%) 0%, hsl(0 0% 60%) 50%, transparent 70%);
   animation-duration: 10s;
   animation-delay: -4s;
+  --blob-sensitivity: -25px;
 }
 
 .lava-blob-3 {
@@ -200,6 +201,7 @@ All colors MUST be HSL.
   background: radial-gradient(circle, hsl(0 0% 100%) 0%, hsl(0 0% 50%) 50%, transparent 70%);
   animation-duration: 16s;
   animation-delay: -8s;
+  --blob-sensitivity: 20px;
 }
 
 .lava-blob-featured-1 {
@@ -210,6 +212,7 @@ All colors MUST be HSL.
   background: radial-gradient(circle, hsl(0 0% 100%) 0%, hsl(0 0% 80%) 50%, transparent 70%);
   animation-duration: 12s;
   opacity: 0.12;
+  --blob-sensitivity: 50px;
 }
 
 .lava-blob-featured-2 {
@@ -221,6 +224,7 @@ All colors MUST be HSL.
   animation-duration: 15s;
   animation-delay: -5s;
   opacity: 0.1;
+  --blob-sensitivity: -35px;
 }
 
 .lava-blob-featured-3 {
@@ -232,4 +236,5 @@ All colors MUST be HSL.
   animation-duration: 18s;
   animation-delay: -9s;
   opacity: 0.08;
+  --blob-sensitivity: 30px;
 }
