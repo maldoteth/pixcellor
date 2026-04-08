@@ -310,7 +310,7 @@ function DesktopCards() {
           label={eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
         />
         </div>
-        <StripeBadge />
+        <div className="mt-2.5"><StripeBadge /></div>
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
 
