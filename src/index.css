@@ -106,34 +106,21 @@ All colors MUST be HSL.
 }
 
 /* Force portfolio book styles */
-.stf__item,
+.stf__item {
+  opacity: 1 !important;
+  background-color: #0a0a0a !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
 .stf__item > div {
   opacity: 1 !important;
   background-color: #0a0a0a !important;
+  border-radius: 0 !important;
 }
 
 .stf__item::before,
 .stf__item::after {
   opacity: 0 !important;
-}
-
-/* Remove rounded corners from book pages */
-.stf__item {
-  border-radius: 0 !important;
-}
-
-.stf__item > div {
-  border-radius: 0 !important;
-}
-
-/* Remove library borders/shadows from book page wrappers only */
-.stf__item {
-  border: none !important;
-  box-shadow: none !important;
-}
-
-/* Allow inline styles on direct children (cover, pages) */
-.stf__item > div {
-  box-shadow: unset !important;
-  border: unset !important;
 }
