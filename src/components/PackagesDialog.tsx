@@ -92,7 +92,6 @@ export default function PackagesDialog() {
             </DialogTitle>
             <StripeBadge />
           </DialogHeader>
-          <div className="mt-4">
           <MobileCards />
         </DialogContent>
       ) : (
