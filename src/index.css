@@ -128,9 +128,6 @@ All colors MUST be HSL.
 
 /* Glass border on all book page wrappers */
 .stf__item {
-  border: 1px solid rgba(255,255,255,0.2) !important;
-  box-shadow:
-    0 8px 32px rgba(0,0,0,0.3),
-    inset 0 1px 1px rgba(255,255,255,0.3),
-    inset 0 -1px 1px rgba(0,0,0,0.1) !important;
+  border: none !important;
+  box-shadow: none !important;
 }
