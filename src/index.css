@@ -125,6 +125,11 @@ All colors MUST be HSL.
   opacity: 0 !important;
 }
 
+.stf__wrapper {
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 2px !important;
+}
+
 /* Lava lamp gradient animation for pricing cards */
 @keyframes lava-flow {
   0%, 100% {
