@@ -137,6 +137,7 @@ function DesktopCards() {
           `,
         }}
       >
+        <div className="shimmer-sweep" />
         {/* Lava lamp blobs */}
         <div className="lava-blob lava-blob-1" />
         <div className="lava-blob lava-blob-2" />
