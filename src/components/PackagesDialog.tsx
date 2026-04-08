@@ -113,7 +113,7 @@ function DesktopCards() {
         initial={{ opacity: 0, y: 40, rotate: -6 }}
         animate={{ opacity: 1, y: 0, rotate: -6 }}
         transition={{ type: "spring", duration: 0.5 }}
-        className="relative z-10 w-72 rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] transition-transform hover:scale-105"
+        className="relative z-10 w-72 rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] transition-transform hover:scale-105 overflow-hidden"
         style={{
           boxShadow: `
             0 8px 32px rgba(0,0,0,0.3),
@@ -122,6 +122,11 @@ function DesktopCards() {
           `,
         }}
       >
+        {/* Lava lamp blobs */}
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-primary">Full Works</div>
         <div className="mb-1 text-3xl font-extrabold text-foreground">£100</div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP £500</p>
