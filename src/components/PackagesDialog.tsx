@@ -87,10 +87,12 @@ export default function PackagesDialog() {
       {isMobile ? (
         <DialogContent className="max-w-4xl bg-transparent border-none p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-foreground text-center mb-6">
+            <DialogTitle className="text-2xl font-bold text-foreground text-center mb-2">
               Our Packages
             </DialogTitle>
+            <StripeBadge />
           </DialogHeader>
+          <div className="mt-4">
           <MobileCards />
         </DialogContent>
       ) : (
@@ -273,6 +275,7 @@ function DesktopCards() {
           label={eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
         />
         </div>
+        <StripeBadge />
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
 
