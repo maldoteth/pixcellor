@@ -283,7 +283,7 @@ export default function IntroAnimation() {
                         transition={{ duration: 1 }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground"
                     >
-                        <img src={pixcellorWordmark} alt="Pixcellor™" className="h-11 md:h-[6.8rem] lg:h-[5.4rem] w-auto" style={{ filter: "brightness(0) invert(1)" }} />
+                        <img src={pixcellorWordmark} alt="Pixcellor™" className="h-[3.6rem] md:h-[8.84rem] lg:h-[7rem] w-auto" style={{ filter: "brightness(0) invert(1)" }} />
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
