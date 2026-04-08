@@ -348,7 +348,11 @@ function MobileCards() {
   return (
     <div className="grid grid-cols-1 gap-4">
       {/* Full Works */}
-      <div className="rounded-xl p-5 flex flex-col border border-border bg-background">
+      <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-1">
           <span className="text-3xl font-extrabold text-foreground">£100</span>
@@ -368,10 +372,15 @@ function MobileCards() {
           loading={loading === "fullWorks"}
           label="Buy Now"
         />
+        </div>
       </div>
 
       {/* Elite */}
-      <div className="rounded-xl p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10">
+      <div className="rounded-xl p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10 relative overflow-hidden">
+        <div className="lava-blob lava-blob-featured-1" />
+        <div className="lava-blob lava-blob-featured-2" />
+        <div className="lava-blob lava-blob-featured-3" />
+        <div className="relative z-10 flex flex-col flex-1">
         <span className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-2">
           Most Popular
         </span>
@@ -428,10 +437,15 @@ function MobileCards() {
           loading={loading === "elite"}
           label={eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
         />
+        </div>
       </div>
 
       {/* Retainer */}
-      <div className="rounded-xl p-5 flex flex-col border border-border bg-background">
+      <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-foreground">Retainer</h3>
         <div className="flex items-center gap-2 mt-2 mb-3">
           <button
@@ -489,6 +503,7 @@ function MobileCards() {
           loading={loading === "retainer"}
           label="Subscribe"
         />
+        </div>
       </div>
     </div>
   );
