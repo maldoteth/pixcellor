@@ -13,7 +13,7 @@ const PACKAGES = {
     rrp: "£500",
     priceId: "price_1TJrSfBtUjwejeUwWd3YoFVy",
     mode: "payment",
-    features: ["Modern, super fast website", "Custom design", "1 year maintenance"],
+    features: ["Modern, super fast website", "1 year maintenance", "Custom design"],
   },
   elite: {
     name: "Elite",
