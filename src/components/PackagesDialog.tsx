@@ -76,8 +76,8 @@ function PaymentMethodIcons() {
       {/* Apple Pay */}
       <svg viewBox="0 0 48 32" className="w-8 h-5" fill="none">
         <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.15"/>
-        <text x="24" y="18" textAnchor="middle" fontSize="7" fontWeight="600" fill="currentColor" className="text-foreground"> Pay</text>
-        <path d="M17.5 11c-.4.5-1 .8-1.6.8-.1-.6.2-1.3.5-1.7.4-.5 1-.8 1.5-.8.1.7-.2 1.3-.4 1.7zm.4.9c-.9 0-1.6.5-2 .5s-1-.5-1.7-.5c-.9 0-1.7.5-2.1 1.3-.9 1.5-.2 3.8.6 5.1.4.6.9 1.3 1.6 1.3.6 0 .9-.4 1.6-.4.7 0 .9.4 1.6.4.7 0 1.1-.7 1.5-1.3.5-.7.7-1.4.7-1.4-.7-.3-1.3-1.2-1.3-2.3 0-.9.5-1.8 1.2-2.1-.5-.6-1.2-1-1.9-1h.2z" fill="currentColor" className="text-foreground"/>
+        <path d="M16.2 10.8c-.4.5-1.1.9-1.7.8-.1-.7.2-1.4.6-1.8.4-.5 1.1-.8 1.6-.9.1.7-.2 1.4-.5 1.9zm.5 1c-.9-.1-1.7.5-2.2.5-.4 0-1.1-.5-1.8-.5-.9 0-1.8.5-2.3 1.4-1 1.7-.3 4.2.7 5.6.5.7 1 1.4 1.8 1.4.7 0 1-.5 1.8-.5s1.1.5 1.8.5c.8 0 1.2-.7 1.7-1.4.5-.8.7-1.5.7-1.6-.8-.3-1.4-1.3-1.4-2.5 0-1 .5-1.9 1.3-2.4-.5-.7-1.3-1-2.1-1z" fill="currentColor" className="text-foreground"/>
+        <text x="31" y="19" textAnchor="middle" fontSize="8" fontWeight="600" fill="currentColor" className="text-foreground">Pay</text>
       </svg>
       {/* Google Pay */}
       <svg viewBox="0 0 48 32" className="w-8 h-5" fill="none">
