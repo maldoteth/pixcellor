@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -110,6 +110,19 @@ function DesktopCards() {
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
 
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    e.currentTarget.style.setProperty("--mouse-x", x.toString());
+    e.currentTarget.style.setProperty("--mouse-y", y.toString());
+  }, []);
+
+  const handleMouseLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.currentTarget.style.setProperty("--mouse-x", "0");
+    e.currentTarget.style.setProperty("--mouse-y", "0");
+  }, []);
+
   const buy = async (priceId: string, mode: string, key: string) => {
     setLoading(key);
     try {
@@ -125,6 +138,8 @@ function DesktopCards() {
     <div className="flex items-center justify-center gap-6 h-full w-full">
       {/* Full Works - tilted left */}
       <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: -6 }}
         animate={{ opacity: 1, y: 0, rotate: -6 }}
         transition={{ type: "spring", duration: 0.5 }}
@@ -164,6 +179,8 @@ function DesktopCards() {
 
       {/* Elite - center, elevated */}
       <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 60, rotate: 0 }}
         animate={{ opacity: 1, y: -20, rotate: 0 }}
         transition={{ type: "spring", duration: 0.7 }}
@@ -248,6 +265,8 @@ function DesktopCards() {
 
       {/* Retainer - tilted right */}
       <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: 6 }}
         animate={{ opacity: 1, y: 0, rotate: 6 }}
         transition={{ type: "spring", duration: 0.6 }}
