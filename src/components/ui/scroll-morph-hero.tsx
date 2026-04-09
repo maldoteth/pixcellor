@@ -262,7 +262,7 @@ export default function IntroAnimation() {
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
             {/* Subtle center stage light */}
             <div className="absolute inset-0 pointer-events-none z-0" style={{
-                background: 'radial-gradient(ellipse 60% 50% at 50% 50%, hsla(0,0%,100%,0.04) 0%, transparent 70%)',
+                background: 'radial-gradient(ellipse 60% 50% at 50% 50%, hsla(0,0%,100%,0.15) 0%, transparent 70%)',
             }} />
             {/* Logo - fades out with intro text */}
             <motion.div
