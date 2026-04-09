@@ -144,8 +144,24 @@ function MobileBookSlider() {
                 )}
               </div>
               
-              {/* Content */}
-              <div className="flex-1 flex flex-col justify-center p-5">
+              {/* Content with inline arrows */}
+              <div className="flex-1 flex flex-col justify-center p-5 relative">
+                {/* Nav arrows in top corners of text area */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); bookRef.current?.pageFlip()?.flipPrev(); }}
+                  className={`absolute top-2 left-2 p-1 transition ${currentPage === 0 ? 'opacity-0 pointer-events-none' : 'opacity-40 hover:opacity-80'}`}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="w-4 h-4 text-foreground" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); bookRef.current?.pageFlip()?.flipNext(); }}
+                  className={`absolute top-2 right-2 p-1 transition ${currentPage >= totalPages - 1 ? 'opacity-0 pointer-events-none' : 'opacity-40 hover:opacity-80'}`}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="w-4 h-4 text-foreground" />
+                </button>
+
                 <div className="text-center">
                   <h2 className="text-lg font-bold text-foreground mb-1">
                     {site.name}
@@ -169,29 +185,6 @@ function MobileBookSlider() {
           </div>
         ))}
       </HTMLFlipBook>
-
-      {/* Navigation arrows */}
-      <div className="flex items-center gap-6 mt-4">
-        <button
-          onClick={() => bookRef.current?.pageFlip()?.flipPrev()}
-          className={`p-2 rounded-sm transition ${currentPage === 0 ? 'opacity-20' : 'opacity-60 hover:opacity-100'}`}
-          disabled={currentPage === 0}
-          aria-label="Previous page"
-        >
-          <ChevronLeft className="w-5 h-5 text-foreground" />
-        </button>
-        <span className="text-xs text-muted-foreground">
-          {currentPage + 1} / {totalPages}
-        </span>
-        <button
-          onClick={() => bookRef.current?.pageFlip()?.flipNext()}
-          className={`p-2 rounded-sm transition ${currentPage >= totalPages - 1 ? 'opacity-20' : 'opacity-60 hover:opacity-100'}`}
-          disabled={currentPage >= totalPages - 1}
-          aria-label="Next page"
-        >
-          <ChevronRight className="w-5 h-5 text-foreground" />
-        </button>
-      </div>
     </div>
   );
 }
