@@ -284,7 +284,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
                     backdropFilter: "blur(10px)",
                   }}
                 >
-                  {msg.content}
+                  <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
                 </div>
                 {/* Package cards */}
                 {msg.packageCards && msg.packageCards.length > 0 && (
