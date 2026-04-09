@@ -60,8 +60,7 @@ const formatMessage = (text: string): string => {
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/\n/g, '<br />');
 };
-
-
+function PackageCardUI({ card }: { card: PackageCard }) {
   const [loading, setLoading] = useState(false);
 
   const handleBuy = async () => {
