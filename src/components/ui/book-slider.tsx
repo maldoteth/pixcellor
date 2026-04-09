@@ -37,6 +37,12 @@ const portfolioData = [
     screenshot: tikupImg
   },
   {
+    name: "Bricks",
+    url: "bricks.it.com",
+    description: "Construction recruitment, payroll and HR app utilising latest advancements in technology.",
+    screenshot: bricksImg
+  },
+  {
     name: "Last Chad Standing",
     url: "lastchadstanding.com",
     description: "Competitive elimination platform where players battle and only the strongest survive.",
