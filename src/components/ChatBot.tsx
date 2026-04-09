@@ -54,6 +54,12 @@ const getClientId = (): string => {
   return clientId;
 };
 
+const formatMessage = (text: string): string => {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br />');
+};
 function PackageCardUI({ card }: { card: PackageCard }) {
   const [loading, setLoading] = useState(false);
 
@@ -284,7 +290,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
                     backdropFilter: "blur(10px)",
                   }}
                 >
-                  {msg.content}
+                  <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
                 </div>
                 {/* Package cards */}
                 {msg.packageCards && msg.packageCards.length > 0 && (
