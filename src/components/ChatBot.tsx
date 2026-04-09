@@ -54,7 +54,14 @@ const getClientId = (): string => {
   return clientId;
 };
 
-function PackageCardUI({ card }: { card: PackageCard }) {
+const formatMessage = (text: string): string => {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br />');
+};
+
+
   const [loading, setLoading] = useState(false);
 
   const handleBuy = async () => {
