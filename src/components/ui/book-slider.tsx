@@ -15,6 +15,7 @@ import fanSiteImg from '@/assets/portfolio/fan-site.png';
 import theponziImg from '@/assets/portfolio/theponzi.png';
 import dhbscanImg from '@/assets/portfolio/dhbscan.png';
 import tikupImg from '@/assets/portfolio/tikup.png';
+import bricksImg from '@/assets/portfolio/bricks.png';
 
 const portfolioData = [
   {
@@ -34,6 +35,12 @@ const portfolioData = [
     url: "tikup.xyz",
     description: "Comprehensive TikTok live streaming toolkit integrated with TikTok APIs to help creators thrive on the app.",
     screenshot: tikupImg
+  },
+  {
+    name: "Bricks",
+    url: "bricks.it.com",
+    description: "Construction recruitment, payroll and HR app utilising latest advancements in technology.",
+    screenshot: bricksImg
   },
   {
     name: "Last Chad Standing",
