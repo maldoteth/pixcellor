@@ -31,7 +31,7 @@ const portfolioData = [
   {
     name: "TikUp",
     url: "tikup.xyz",
-    description: "Comprehensive TikTok live streaming toolkit integrated with TikTok APIs to help creators thrive.",
+    description: "TikTok live streaming toolkit integrated with TikTok APIs to help creators thrive.",
     screenshot: tikupImg
   },
   {
@@ -73,7 +73,7 @@ const portfolioData = [
   {
     name: "The Ponzi",
     url: "theponzi.lol",
-    description: "Satirical crypto culture platform with gamified experiences and community content.",
+    description: "Satirical crypto culture platform with gamified experiences and community.",
     screenshot: theponziImg
   },
   {
