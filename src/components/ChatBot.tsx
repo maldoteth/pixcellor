@@ -360,7 +360,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
       {/* Chat Toggle Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed z-50 w-16 h-16 rounded-sm flex items-center justify-center group bottom-6 right-6"
+        className={`fixed z-50 rounded-sm flex items-center justify-center group bottom-6 right-6 ${isMobile ? 'w-[52px] h-[52px]' : 'w-16 h-16'}`}
         aria-label="Open chat with Alex from Pixcellor"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
