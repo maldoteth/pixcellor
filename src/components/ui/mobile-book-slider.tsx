@@ -13,6 +13,7 @@ import fanSiteImg from '@/assets/portfolio/fan-site.png';
 import theponziImg from '@/assets/portfolio/theponzi.png';
 import dhbscanImg from '@/assets/portfolio/dhbscan.png';
 import tikupImg from '@/assets/portfolio/tikup.png';
+import bricksImg from '@/assets/portfolio/bricks.png';
 
 const portfolioData = [
   {
