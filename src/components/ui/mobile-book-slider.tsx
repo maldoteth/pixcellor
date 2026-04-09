@@ -31,7 +31,7 @@ const portfolioData = [
   {
     name: "TikUp",
     url: "tikup.xyz",
-    description: "Comprehensive TikTok live streaming toolkit integrated with TikTok APIs to help creators thrive on the app.",
+    description: "Comprehensive TikTok live streaming toolkit integrated with TikTok APIs to help creators thrive.",
     screenshot: tikupImg
   },
   {
