@@ -158,7 +158,7 @@ export default function IntroAnimation() {
 
             // Apply 5x multiplier on mobile for faster scrolling (both directions)
             const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? e.deltaY * 5 : e.deltaY;
+            const scrollDelta = isMobile ? e.deltaY * 12 : e.deltaY;
 
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
@@ -175,9 +175,8 @@ export default function IntroAnimation() {
             const deltaY = touchStartY - touchY;
             touchStartY = touchY;
 
-            // Apply 5x multiplier on mobile for faster scrolling (both directions)
             const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? deltaY * 5 : deltaY;
+            const scrollDelta = isMobile ? deltaY * 12 : deltaY;
 
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
