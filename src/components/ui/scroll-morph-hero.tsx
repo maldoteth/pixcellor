@@ -304,7 +304,7 @@ export default function IntroAnimation() {
                             e.stopPropagation();
                             e.preventDefault();
                             const start = scrollRef.current;
-                            const end = Math.min(Math.max(start + 1200, 1200), MAX_SCROLL);
+                            const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
                             console.log("[arrow-desktop] scroll", { start, end });
                             const duration = 1200;
                             const t0 = performance.now();
@@ -341,7 +341,7 @@ export default function IntroAnimation() {
                         e.stopPropagation();
                         e.preventDefault();
                         const start = scrollRef.current;
-                        const end = Math.min(Math.max(start + 1200, 1200), MAX_SCROLL);
+                        const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
                         console.log("[arrow] scroll", { start, end });
                         const duration = 1200;
                         const t0 = performance.now();
