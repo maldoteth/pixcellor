@@ -13,25 +13,25 @@ const PACKAGES = {
     rrp: "£500",
     priceId: "price_1TJrSfBtUjwejeUwWd3YoFVy",
     mode: "payment",
-    features: ["Modern, super fast website", "1 year maintenance", "Custom design"],
+    features: ["Industry leading website", "1 year maintenance", "Custom design", "Up to 3 pages"],
   },
   elite: {
     name: "Elite",
     price: "£500 one-time or £60/mo",
-    rrp: "£2,500",
+    rrp: "£2,500 (or £250/mo)",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
     mode: "payment",
-    features: ["Cutting edge website", "1 year maintenance", "Unlimited edits", "SEO & AEO optimisation"],
+    features: ["Cutting edge website", "1 year maintenance", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
   },
   retainer: {
     name: "Retainer",
     price: "£1,200/mo or £12,000/yr",
-    rrp: "£3,600/mo",
+    rrp: "£3,600/mo (or £36,000/yr)",
     monthlyPriceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
     yearlyPriceId: "price_1TJrbOBtUjwejeUwOhhNyliQ",
     mode: "subscription",
-    features: ["Your own tech department", "Websites or full apps"],
+    features: ["Your own tech department", "Websites or full apps", "Daily turnarounds (monthly) / Save £2,400 (yearly)"],
   },
 };
 
@@ -51,9 +51,9 @@ const SYSTEM_PROMPT = `You are Alex, a friendly and knowledgeable AI sales assis
 6. **Custom Software** - Bespoke solutions for any industry or use case
 
 ## Our Packages:
-- **Full Works** (£150, RRP £500): Modern super fast website, custom design, 1 year maintenance: Modern super fast website, custom design, 1 year maintenance
-- **Elite** (£500 one-time or £60/mo, RRP £2,500): Cutting edge website, unlimited edits, SEO & AEO, 1 year maintenance. Our most popular package.
-- **Retainer** (£1,200/mo or £12,000/yr, RRP £3,600/mo): Your own tech department - sites, apps, everything you need.
+- **Full Works** (£150, RRP £500): Industry leading website, custom design, up to 3 pages, 1 year maintenance.
+- **Elite** (£500 one-time or £60/mo, RRP £2,500 / £250/mo): Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, 1 year maintenance. Our most popular package.
+- **Retainer** (£1,200/mo or £12,000/yr, RRP £3,600/mo): Your own tech department - websites or full apps. Monthly includes daily turnarounds; yearly saves £2,400.
 
 ## Key Selling Points:
 - Future-proof, AI-powered development that scales
@@ -100,7 +100,7 @@ const tools = [
           package_id: {
             type: "string",
             enum: ["fullWorks", "elite", "retainer"],
-            description: "Which package to show: fullWorks (£150 website), elite (£500 cutting edge site), or retainer (£1,200/mo tech department)",, elite (£500 cutting edge site), or retainer (£1,200/mo tech department)",
+            description: "Which package to show: fullWorks (£150 website, up to 3 pages), elite (£500 or £60/mo, up to 10 pages, unlimited edits, SEO/AEO), or retainer (£1,200/mo or £12,000/yr tech department)",
           },
           billing: {
             type: "string",
