@@ -5,7 +5,7 @@ const Footer = () => {
     <footer className="w-full border-t border-white/10 bg-background/60 backdrop-blur-sm text-foreground py-3 px-4">
       <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[11px] md:text-xs text-foreground/70">
         <span className="font-medium text-foreground/90 w-full md:w-auto text-center">
-          Pixcellor™ c/o DeLabs LTD · 14204424
+          Pixcellor™ c/o DeLabs LTD<span className="hidden md:inline"> · 14204424</span>
         </span>
         <div className="flex items-center justify-center gap-x-4 flex-nowrap">
           <a
