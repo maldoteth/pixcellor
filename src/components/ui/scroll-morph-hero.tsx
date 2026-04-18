@@ -376,7 +376,7 @@ export default function IntroAnimation() {
                         bottom: "16px",
                         height: "64px",
                         width: "120px",
-                        pointerEvents: introPhase === "circle" && morphValue < 0.3 ? "auto" : "none",
+                        pointerEvents: "auto",
                         touchAction: "manipulation",
                         WebkitTapHighlightColor: "transparent",
                         filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))",
