@@ -137,7 +137,7 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
         <DialogContent className="max-w-4xl bg-transparent border-none p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:text-foreground">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-foreground text-center mb-2 -mt-[23px]">
-              Our Packages
+              Our Pricing
             </DialogTitle>
             <StripeBadge />
           </DialogHeader>
