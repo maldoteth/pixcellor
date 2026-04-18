@@ -119,7 +119,7 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <button
-          className="mb-6 px-8 py-3 rounded-sm text-base font-semibold text-foreground flex items-center justify-center relative w-[300px]"
+          className="mb-6 px-8 py-3 rounded-sm text-base font-semibold text-foreground flex items-center justify-center relative w-[285px]"
           aria-label="View our web development packages and pricing"
           style={glassButtonStyle}
         >
