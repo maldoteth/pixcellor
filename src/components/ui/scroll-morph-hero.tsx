@@ -261,9 +261,9 @@ export default function IntroAnimation() {
         let openTimer: ReturnType<typeof setTimeout> | null = null;
 
         const unsubscribe = smoothScrollRotate.on("change", (rot) => {
-            // Rotation goes from 0 -> 360 as scroll moves 600 -> 3000.
-            // Require the SMOOTHED rotation to fully complete before opening.
             if (rot >= 358) {
+                // Don't re-open if user manually dismissed while still at the end
+                if (dismissedAtEndRef.current) return;
                 if (!openTimer) {
                     openTimer = setTimeout(() => {
                         setPackagesOpen((prev) => (prev ? prev : true));
@@ -275,7 +275,10 @@ export default function IntroAnimation() {
                     clearTimeout(openTimer);
                     openTimer = null;
                 }
-                // Close when user scrolls back enough that rotation drops well below complete
+                // Once user scrolls back, clear the dismissal so it can re-trigger later
+                if (rot < 358) {
+                    dismissedAtEndRef.current = false;
+                }
                 if (rot <= 250) {
                     setPackagesOpen((prev) => (prev ? false : prev));
                 }
@@ -286,6 +289,14 @@ export default function IntroAnimation() {
             if (openTimer) clearTimeout(openTimer);
         };
     }, [smoothScrollRotate, introPhase]);
+
+    const handlePackagesOpenChange = (open: boolean) => {
+        setPackagesOpen(open);
+        // If user manually closed it while still at the end of scroll, mark as dismissed
+        if (!open && smoothScrollRotate.get() >= 358) {
+            dismissedAtEndRef.current = true;
+        }
+    };
 
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
