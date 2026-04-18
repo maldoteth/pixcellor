@@ -361,8 +361,9 @@ export default function IntroAnimation() {
                     aria-label="Scroll down"
                     className="md:hidden fixed left-1/2 -translate-x-1/2 z-40 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center"
                     style={{
-                        bottom: "32px",
-                        height: "52px",
+                        bottom: "16px",
+                        height: "64px",
+                        width: "96px",
                         filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))",
                     }}
                 >
@@ -370,7 +371,7 @@ export default function IntroAnimation() {
                         animate={{ y: [0, 4, 0] }}
                         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                     >
-                        <ChevronDown className="w-4 h-4" strokeWidth={2.25} />
+                        <ChevronDown className="w-5 h-5" strokeWidth={2.25} />
                     </motion.div>
                 </motion.button>
 
