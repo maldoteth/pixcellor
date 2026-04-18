@@ -170,10 +170,16 @@ export default function IntroAnimation() {
         };
 
         let touchStartY = 0;
+        const isInteractive = (target: EventTarget | null) => {
+            const el = target as HTMLElement | null;
+            return !!el?.closest('button, a, [role="button"], input, textarea, select');
+        };
         const handleTouchStart = (e: TouchEvent) => {
+            if (isInteractive(e.target)) return;
             touchStartY = e.touches[0].clientY;
         };
         const handleTouchMove = (e: TouchEvent) => {
+            if (isInteractive(e.target)) return;
             e.preventDefault();
             const touchY = e.touches[0].clientY;
             const deltaY = touchStartY - touchY;
@@ -188,7 +194,7 @@ export default function IntroAnimation() {
         };
 
         container.addEventListener("wheel", handleWheel, { passive: false });
-        container.addEventListener("touchstart", handleTouchStart, { passive: false });
+        container.addEventListener("touchstart", handleTouchStart, { passive: true });
         container.addEventListener("touchmove", handleTouchMove, { passive: false });
 
         return () => {
