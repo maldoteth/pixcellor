@@ -120,6 +120,7 @@ export default function IntroAnimation() {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
     const [packagesOpen, setPackagesOpen] = useState(false);
+    const dismissedAtEndRef = useRef(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // --- Container Size ---
