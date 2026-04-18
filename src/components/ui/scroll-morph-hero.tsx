@@ -256,17 +256,34 @@ export default function IntroAnimation() {
 
     // --- Auto-open Packages dialog at end of scroll, close when scrolling back up ---
     useEffect(() => {
-        const OPEN_THRESHOLD = MAX_SCROLL * 0.97;
-        const CLOSE_THRESHOLD = MAX_SCROLL * 0.85;
+        if (introPhase !== "circle") return;
+        const OPEN_THRESHOLD = MAX_SCROLL - 5; // must reach the very end
+        const CLOSE_THRESHOLD = MAX_SCROLL * 0.7;
+        let openTimer: ReturnType<typeof setTimeout> | null = null;
+
         const unsubscribe = virtualScroll.on("change", (v) => {
             if (v >= OPEN_THRESHOLD) {
-                setPackagesOpen((prev) => (prev ? prev : true));
-            } else if (v <= CLOSE_THRESHOLD) {
-                setPackagesOpen((prev) => (prev ? false : prev));
+                if (!openTimer) {
+                    openTimer = setTimeout(() => {
+                        setPackagesOpen((prev) => (prev ? prev : true));
+                        openTimer = null;
+                    }, 400);
+                }
+            } else {
+                if (openTimer) {
+                    clearTimeout(openTimer);
+                    openTimer = null;
+                }
+                if (v <= CLOSE_THRESHOLD) {
+                    setPackagesOpen((prev) => (prev ? false : prev));
+                }
             }
         });
-        return () => unsubscribe();
-    }, [virtualScroll]);
+        return () => {
+            unsubscribe();
+            if (openTimer) clearTimeout(openTimer);
+        };
+    }, [virtualScroll, introPhase]);
 
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
