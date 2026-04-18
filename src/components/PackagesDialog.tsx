@@ -24,7 +24,7 @@ const PACKAGES = {
     monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
     mode: "payment" as const,
     featured: true,
-    features: ["Cutting edge website", "1 year maintenance", "Unlimited edits", "SEO & AEO optimisation", "Up to 10 pages"],
+    features: ["Cutting edge website", "1 year maintenance", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
   },
   retainer: {
     name: "Retainer",
