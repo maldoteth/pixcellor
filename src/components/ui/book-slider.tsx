@@ -11,7 +11,7 @@ import lastChadStandingImg from '@/assets/portfolio/last-chad-standing.png';
 import holderChatImg from '@/assets/portfolio/holder-chat.png';
 import secDigitalImg from '@/assets/portfolio/sec-digital.png';
 import delabsImg from '@/assets/portfolio/delabs.png';
-import fanSiteImg from '@/assets/portfolio/fan-site.png';
+
 import theponziImg from '@/assets/portfolio/theponzi.png';
 import dhbscanImg from '@/assets/portfolio/dhbscan.png';
 import tikupImg from '@/assets/portfolio/tikup.png';
