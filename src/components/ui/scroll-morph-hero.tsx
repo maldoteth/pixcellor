@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import BookSlider from "./book-slider";
 import PackagesDialog from "@/components/PackagesDialog";
 import Footer from "@/components/Footer";
