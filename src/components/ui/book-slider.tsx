@@ -67,12 +67,6 @@ const portfolioData = [
     screenshot: delabsImg
   },
   {
-    name: "Fan Site",
-    url: "fan.site",
-    description: "Build and manage fan communities with engagement tools and custom branding.",
-    screenshot: fanSiteImg
-  },
-  {
     name: "The Ponzi",
     url: "theponzi.lol",
     description: "Satirical crypto culture platform with gamified experiences and community content.",
