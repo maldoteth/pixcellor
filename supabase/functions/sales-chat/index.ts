@@ -13,7 +13,7 @@ const PACKAGES = {
     rrp: "£500",
     priceId: "price_1TJrSfBtUjwejeUwWd3YoFVy",
     mode: "payment",
-    features: ["Industry leading website", "1 year maintenance", "Custom design", "Up to 3 pages"],
+    features: ["Industry leading website", "Lifetime guarantee", "Custom design", "Up to 3 pages"],
   },
   elite: {
     name: "Elite",
@@ -22,7 +22,7 @@ const PACKAGES = {
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
     mode: "payment",
-    features: ["Cutting edge website", "1 year maintenance", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
+    features: ["Cutting edge website", "Lifetime guarantee", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
   },
   retainer: {
     name: "Retainer",
@@ -51,8 +51,8 @@ const SYSTEM_PROMPT = `You are Alex, a friendly and knowledgeable AI sales assis
 6. **Custom Software** - Bespoke solutions for any industry or use case
 
 ## Our Packages:
-- **Full Works** (£150, RRP £500): Industry leading website, custom design, up to 3 pages, 1 year maintenance.
-- **Elite** (£500 one-time or £60/mo, RRP £2,500 / £250/mo): Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, 1 year maintenance. Our most popular package.
+- **Full Works** (£150, RRP £500): Industry leading website, custom design, up to 3 pages, lifetime guarantee.
+- **Elite** (£500 one-time or £60/mo, RRP £2,500 / £250/mo): Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, lifetime guarantee. Our most popular package.
 - **Retainer** (£1,200/mo or £12,000/yr, RRP £3,600/mo): Your own tech department - websites or full apps. Monthly includes daily turnarounds; yearly saves £2,400.
 
 ## Key Selling Points:
