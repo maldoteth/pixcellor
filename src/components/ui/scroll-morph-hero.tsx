@@ -254,6 +254,20 @@ export default function IntroAnimation() {
         };
     }, [smoothMorph, smoothScrollRotate, smoothMouseX]);
 
+    // --- Auto-open Packages dialog at end of scroll, close when scrolling back up ---
+    useEffect(() => {
+        const OPEN_THRESHOLD = MAX_SCROLL * 0.97;
+        const CLOSE_THRESHOLD = MAX_SCROLL * 0.85;
+        const unsubscribe = virtualScroll.on("change", (v) => {
+            if (v >= OPEN_THRESHOLD) {
+                setPackagesOpen((prev) => (prev ? prev : true));
+            } else if (v <= CLOSE_THRESHOLD) {
+                setPackagesOpen((prev) => (prev ? false : prev));
+            }
+        });
+        return () => unsubscribe();
+    }, [virtualScroll]);
+
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
