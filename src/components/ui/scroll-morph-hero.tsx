@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
 import BookSlider from "./book-slider";
 import PackagesDialog from "@/components/PackagesDialog";
+import Footer from "@/components/Footer";
 
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
@@ -433,6 +434,14 @@ export default function IntroAnimation() {
                     })}
                 </div>
             </div>
+
+            {/* Footer fades in with arc content */}
+            <motion.div
+                style={{ opacity: contentOpacity }}
+                className="absolute bottom-0 left-0 right-0 z-10 pointer-events-auto"
+            >
+                <Footer />
+            </motion.div>
         </div>
     );
 }
