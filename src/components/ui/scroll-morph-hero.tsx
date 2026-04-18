@@ -261,7 +261,7 @@ export default function IntroAnimation() {
         let openTimer: ReturnType<typeof setTimeout> | null = null;
 
         const unsubscribe = smoothScrollRotate.on("change", (rot) => {
-            if (rot >= 358) {
+            if (rot >= 355) {
                 // Don't re-open if user manually dismissed while still at the end
                 if (dismissedAtEndRef.current) return;
                 if (!openTimer) {
@@ -275,8 +275,9 @@ export default function IntroAnimation() {
                     clearTimeout(openTimer);
                     openTimer = null;
                 }
-                // Once user scrolls back, clear the dismissal so it can re-trigger later
-                if (rot < 358) {
+                // Re-arm only after user scrolls meaningfully back (large deadband
+                // so spring oscillation near the end doesn't clear the dismissal)
+                if (rot <= 300) {
                     dismissedAtEndRef.current = false;
                 }
                 if (rot <= 250) {
@@ -292,8 +293,9 @@ export default function IntroAnimation() {
 
     const handlePackagesOpenChange = (open: boolean) => {
         setPackagesOpen(open);
-        // If user manually closed it while still at the end of scroll, mark as dismissed
-        if (!open && smoothScrollRotate.get() >= 358) {
+        if (!open) {
+            // Mark dismissed and cancel any pending auto-open so it stays closed
+            // until user scrolls meaningfully back up
             dismissedAtEndRef.current = true;
         }
     };
