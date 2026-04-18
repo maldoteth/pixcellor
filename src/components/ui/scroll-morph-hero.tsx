@@ -277,19 +277,6 @@ export default function IntroAnimation() {
             <div className="absolute inset-0 pointer-events-none z-0" style={{
                 background: 'radial-gradient(ellipse 60% 50% at 50% 50%, hsla(0,0%,100%,0.15) 0%, transparent 70%)',
             }} />
-            {/* Logo - fades out with intro text (desktop only) */}
-            <motion.div
-                animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2 } : introPhase === "circle" ? { opacity: 0 } : { opacity: 1 }}
-                initial={{ opacity: 0 }}
-                transition={{ duration: 1 }}
-                className="hidden md:block absolute top-6 left-6 z-20 pointer-events-none"
-            >
-                <img 
-                    src={logoIcon} 
-                    alt="Pixcellor" 
-                    className="w-12 h-12"
-                />
-            </motion.div>
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
