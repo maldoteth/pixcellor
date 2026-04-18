@@ -256,41 +256,7 @@ export default function IntroAnimation() {
         };
     }, [smoothMorph, smoothScrollRotate, smoothMouseX]);
 
-    // --- Auto-open Packages dialog only after portfolio rotation fully completes ---
-    useEffect(() => {
-        if (introPhase !== "circle") return;
-        let openTimer: ReturnType<typeof setTimeout> | null = null;
-
-        const unsubscribe = smoothScrollRotate.on("change", (rot) => {
-            if (rot >= 355) {
-                // Don't re-open if user manually dismissed while still at the end
-                if (dismissedAtEndRef.current) return;
-                if (!openTimer) {
-                    openTimer = setTimeout(() => {
-                        setPackagesOpen((prev) => (prev ? prev : true));
-                        openTimer = null;
-                    }, 600);
-                }
-            } else {
-                if (openTimer) {
-                    clearTimeout(openTimer);
-                    openTimer = null;
-                }
-                // Re-arm only after user scrolls meaningfully back (large deadband
-                // so spring oscillation near the end doesn't clear the dismissal)
-                if (rot <= 300) {
-                    dismissedAtEndRef.current = false;
-                }
-                if (rot <= 250) {
-                    setPackagesOpen((prev) => (prev ? false : prev));
-                }
-            }
-        });
-        return () => {
-            unsubscribe();
-            if (openTimer) clearTimeout(openTimer);
-        };
-    }, [smoothScrollRotate, introPhase]);
+    // Auto-open behavior removed — packages dialog now only opens via user click.
 
     const handlePackagesOpenChange = (open: boolean) => {
         setPackagesOpen(open);
