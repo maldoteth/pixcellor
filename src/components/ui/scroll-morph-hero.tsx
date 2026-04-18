@@ -337,9 +337,11 @@ export default function IntroAnimation() {
                     type="button"
                     onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         const start = scrollRef.current;
-                        const end = Math.min(start + 750, MAX_SCROLL);
-                        const duration = 900;
+                        const end = Math.min(Math.max(start + 1200, 1200), MAX_SCROLL);
+                        console.log("[arrow] scroll", { start, end });
+                        const duration = 1200;
                         const t0 = performance.now();
                         const step = (now: number) => {
                             const t = Math.min((now - t0) / duration, 1);
