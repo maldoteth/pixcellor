@@ -320,7 +320,7 @@ export default function IntroAnimation() {
                         animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.9 - morphValue * 3 } : { opacity: 0 }}
                         transition={{ duration: 1, delay: 0.4 }}
                         aria-label="Scroll down"
-                        className="mt-6 md:mt-10 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
+                        className="hidden md:block mt-6 md:mt-10 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
                         style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
@@ -331,6 +331,44 @@ export default function IntroAnimation() {
                         </motion.div>
                     </motion.button>
                 </div>
+
+                {/* Mobile-only scroll arrow — bottom of screen, aligned with chat button */}
+                <motion.button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        const start = scrollRef.current;
+                        const end = Math.min(start + 750, MAX_SCROLL);
+                        const duration = 900;
+                        const t0 = performance.now();
+                        const step = (now: number) => {
+                            const t = Math.min((now - t0) / duration, 1);
+                            const eased = 1 - Math.pow(1 - t, 3);
+                            const v = start + (end - start) * eased;
+                            scrollRef.current = v;
+                            virtualScroll.set(v);
+                            if (t < 1) requestAnimationFrame(step);
+                        };
+                        requestAnimationFrame(step);
+                    }}
+                    initial={{ opacity: 0 }}
+                    animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.9 - morphValue * 3 } : { opacity: 0 }}
+                    transition={{ duration: 1, delay: 0.4 }}
+                    aria-label="Scroll down"
+                    className="md:hidden fixed left-1/2 -translate-x-1/2 z-40 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center"
+                    style={{
+                        bottom: "32px",
+                        height: "52px",
+                        filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))",
+                    }}
+                >
+                    <motion.div
+                        animate={{ y: [0, 4, 0] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <ChevronDown className="w-4 h-4" strokeWidth={2.25} />
+                    </motion.div>
+                </motion.button>
 
                 {/* Arc Active Content (Fades in) */}
                 <motion.div
