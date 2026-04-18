@@ -324,7 +324,7 @@ export default function IntroAnimation() {
                     <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8">
                         From quick websites in a day, to full stack turn key solutions. Whatever you need, we're here to help.
                     </p>
-                    <PackagesDialog />
+                    <PackagesDialog open={packagesOpen} onOpenChange={setPackagesOpen} />
                     <BookSlider />
                 </motion.div>
 
