@@ -360,7 +360,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
       {/* Chat Toggle Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed z-50 rounded-sm flex items-center justify-center group bottom-6 right-6 ${isMobile ? 'w-[52px] h-[52px]' : 'w-16 h-16'}`}
+        className={`fixed z-50 rounded-sm flex items-center justify-center group bottom-6 right-6 ${isMobile ? 'w-[36px] h-[36px]' : 'w-[45px] h-[45px]'}`}
         aria-label="Open chat with Alex from Pixcellor"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
@@ -395,11 +395,11 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
         <AnimatePresence mode="wait">
           {isOpen ? (
             <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
-              <X className="w-6 h-6 text-white drop-shadow-lg" />
+              <X className="w-4 h-4 text-white drop-shadow-lg" />
             </motion.div>
           ) : (
             <motion.div key="chat" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
-              <MessageCircle className="w-6 h-6 text-white drop-shadow-lg" />
+              <MessageCircle className="w-4 h-4 text-white drop-shadow-lg" />
             </motion.div>
           )}
         </AnimatePresence>
