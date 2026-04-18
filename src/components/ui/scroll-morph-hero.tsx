@@ -119,6 +119,7 @@ const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * 
 export default function IntroAnimation() {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+    const [packagesOpen, setPackagesOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // --- Container Size ---
@@ -253,6 +254,20 @@ export default function IntroAnimation() {
         };
     }, [smoothMorph, smoothScrollRotate, smoothMouseX]);
 
+    // --- Auto-open Packages dialog at end of scroll, close when scrolling back up ---
+    useEffect(() => {
+        const OPEN_THRESHOLD = MAX_SCROLL * 0.97;
+        const CLOSE_THRESHOLD = MAX_SCROLL * 0.85;
+        const unsubscribe = virtualScroll.on("change", (v) => {
+            if (v >= OPEN_THRESHOLD) {
+                setPackagesOpen((prev) => (prev ? prev : true));
+            } else if (v <= CLOSE_THRESHOLD) {
+                setPackagesOpen((prev) => (prev ? false : prev));
+            }
+        });
+        return () => unsubscribe();
+    }, [virtualScroll]);
+
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
@@ -309,7 +324,7 @@ export default function IntroAnimation() {
                     <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8">
                         From quick websites in a day, to full stack turn key solutions. Whatever you need, we're here to help.
                     </p>
-                    <PackagesDialog />
+                    <PackagesDialog open={packagesOpen} onOpenChange={setPackagesOpen} />
                     <BookSlider />
                 </motion.div>
 

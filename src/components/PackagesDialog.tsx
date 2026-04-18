@@ -99,11 +99,16 @@ function StripeBadge() {
   );
 }
 
-export default function PackagesDialog() {
+interface PackagesDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export default function PackagesDialog({ open, onOpenChange }: PackagesDialogProps = {}) {
   const isMobile = useIsMobile();
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <button
           className="mb-6 px-8 py-3 rounded-sm text-base font-semibold text-foreground flex items-center justify-center relative"
