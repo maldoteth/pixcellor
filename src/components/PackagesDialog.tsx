@@ -120,7 +120,7 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
       <DialogTrigger asChild>
         <button
           className="mb-6 px-8 py-3 rounded-sm text-base font-semibold text-foreground flex items-center justify-center relative w-[285px]"
-          aria-label="View our web development packages and pricing"
+          aria-label="View our web development pricing"
           style={glassButtonStyle}
         >
           <div
@@ -129,7 +129,7 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
               background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)",
             }}
           />
-          Packages
+          Pricing
         </button>
       </DialogTrigger>
 
