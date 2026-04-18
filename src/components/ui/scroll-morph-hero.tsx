@@ -341,20 +341,14 @@ export default function IntroAnimation() {
                 </div>
 
                 {/* Mobile-only scroll arrow — bottom of screen, aligned with chat button */}
-                <motion.button
+                <button
                     type="button"
-                    onPointerDown={(e) => {
-                        e.stopPropagation();
-                    }}
-                    onTouchStart={(e) => {
-                        e.stopPropagation();
-                    }}
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
                         const start = scrollRef.current;
                         const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
-                        console.log("[arrow-mobile] scroll", { start, end });
+                        console.log("[arrow-mobile] click", { start, end });
                         const duration = 1200;
                         const t0 = performance.now();
                         const step = (now: number) => {
@@ -367,28 +361,30 @@ export default function IntroAnimation() {
                         };
                         requestAnimationFrame(step);
                     }}
-                    initial={{ opacity: 0 }}
-                    animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.9 - morphValue * 3 } : { opacity: 0 }}
-                    transition={{ duration: 1, delay: 0.4 }}
                     aria-label="Scroll down"
-                    className="md:hidden fixed left-1/2 -translate-x-1/2 z-50 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center"
+                    className="md:hidden fixed left-1/2 -translate-x-1/2 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center"
                     style={{
                         bottom: "16px",
                         height: "64px",
                         width: "120px",
+                        zIndex: 9999,
+                        opacity: introPhase === "circle" && morphValue < 0.3 ? 0.9 - morphValue * 3 : 0.25,
                         pointerEvents: "auto",
                         touchAction: "manipulation",
                         WebkitTapHighlightColor: "transparent",
+                        background: "transparent",
+                        border: "none",
                         filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))",
                     }}
                 >
                     <motion.div
                         animate={{ y: [0, 4, 0] }}
                         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                        style={{ pointerEvents: "none" }}
                     >
                         <ChevronDown className="w-5 h-5" strokeWidth={2.25} />
                     </motion.div>
-                </motion.button>
+                </button>
 
                 {/* Arc Active Content (Fades in) */}
                 <motion.div
