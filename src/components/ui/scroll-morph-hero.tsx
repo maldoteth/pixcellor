@@ -254,27 +254,28 @@ export default function IntroAnimation() {
         };
     }, [smoothMorph, smoothScrollRotate, smoothMouseX]);
 
-    // --- Auto-open Packages dialog at end of scroll, close when scrolling back up ---
+    // --- Auto-open Packages dialog only after portfolio rotation fully completes ---
     useEffect(() => {
         if (introPhase !== "circle") return;
-        const OPEN_THRESHOLD = MAX_SCROLL - 5; // must reach the very end
-        const CLOSE_THRESHOLD = MAX_SCROLL * 0.7;
         let openTimer: ReturnType<typeof setTimeout> | null = null;
 
-        const unsubscribe = virtualScroll.on("change", (v) => {
-            if (v >= OPEN_THRESHOLD) {
+        const unsubscribe = smoothScrollRotate.on("change", (rot) => {
+            // Rotation goes from 0 -> 360 as scroll moves 600 -> 3000.
+            // Require the SMOOTHED rotation to fully complete before opening.
+            if (rot >= 358) {
                 if (!openTimer) {
                     openTimer = setTimeout(() => {
                         setPackagesOpen((prev) => (prev ? prev : true));
                         openTimer = null;
-                    }, 400);
+                    }, 600);
                 }
             } else {
                 if (openTimer) {
                     clearTimeout(openTimer);
                     openTimer = null;
                 }
-                if (v <= CLOSE_THRESHOLD) {
+                // Close when user scrolls back enough that rotation drops well below complete
+                if (rot <= 250) {
                     setPackagesOpen((prev) => (prev ? false : prev));
                 }
             }
@@ -283,7 +284,7 @@ export default function IntroAnimation() {
             unsubscribe();
             if (openTimer) clearTimeout(openTimer);
         };
-    }, [virtualScroll, introPhase]);
+    }, [smoothScrollRotate, introPhase]);
 
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
