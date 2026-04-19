@@ -277,13 +277,10 @@ export default function IntroAnimation() {
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
+    // Mobile: footer slides up into view as user scrolls (instead of lifting page content)
     const footerRevealProgress = useTransform(virtualScroll, [900, 1900], [0, 1]);
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
-    const mobileContentLift = useTransform(smoothFooterReveal, [0, 1], [0, -140]);
-    const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [20, 0]);
-    const animatedContentY = useTransform([contentY, mobileContentLift], ([baseY, liftY]) => (
-        containerSize.width < 768 ? Number(baseY) + Number(liftY) : Number(baseY)
-    ));
+    const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
