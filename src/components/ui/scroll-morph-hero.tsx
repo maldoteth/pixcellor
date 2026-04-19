@@ -277,6 +277,13 @@ export default function IntroAnimation() {
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
+    const footerRevealProgress = useTransform(virtualScroll, [900, 1900], [0, 1]);
+    const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
+    const mobileContentLift = useTransform(smoothFooterReveal, [0, 1], [0, -140]);
+    const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [20, 0]);
+    const animatedContentY = useTransform([contentY, mobileContentLift], ([baseY, liftY]) => (
+        containerSize.width < 768 ? baseY + liftY : baseY
+    ));
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
@@ -388,7 +395,7 @@ export default function IntroAnimation() {
 
                 {/* Arc Active Content (Fades in) */}
                 <motion.div
-                    style={{ opacity: contentOpacity, y: contentY }}
+                    style={{ opacity: contentOpacity, y: animatedContentY }}
                     className="absolute top-[5%] z-10 flex flex-col items-center justify-center text-center pointer-events-auto px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
@@ -477,8 +484,12 @@ export default function IntroAnimation() {
 
             {/* Footer fades in with arc content */}
             <motion.div
-                style={{ opacity: contentOpacity, pointerEvents: morphValue > 0.85 ? "auto" : "none" }}
-                className="absolute bottom-0 md:bottom-0 -bottom-6 left-0 right-0 z-10"
+                style={{
+                    opacity: contentOpacity,
+                    y: containerSize.width < 768 ? mobileFooterY : 0,
+                    pointerEvents: morphValue > 0.85 ? "auto" : "none"
+                }}
+                className="absolute bottom-0 left-0 right-0 z-10"
             >
                 <Footer />
             </motion.div>
