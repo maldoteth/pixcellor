@@ -478,7 +478,7 @@ export default function IntroAnimation() {
             {/* Footer fades in with arc content */}
             <motion.div
                 style={{ opacity: contentOpacity, pointerEvents: morphValue > 0.85 ? "auto" : "none" }}
-                className="absolute bottom-0 left-0 right-0 z-10"
+                className="absolute bottom-0 md:bottom-0 -bottom-6 left-0 right-0 z-10"
             >
                 <Footer />
             </motion.div>
