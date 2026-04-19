@@ -282,7 +282,7 @@ export default function IntroAnimation() {
     const mobileContentLift = useTransform(smoothFooterReveal, [0, 1], [0, -140]);
     const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [20, 0]);
     const animatedContentY = useTransform([contentY, mobileContentLift], ([baseY, liftY]) => (
-        containerSize.width < 768 ? baseY + liftY : baseY
+        containerSize.width < 768 ? Number(baseY) + Number(liftY) : Number(baseY)
     ));
 
     return (
