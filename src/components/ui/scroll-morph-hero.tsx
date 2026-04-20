@@ -482,14 +482,14 @@ export default function IntroAnimation() {
                 </div>
             </div>
 
-            {/* Footer fades in with arc content */}
+            {/* Footer fades in later for extra spacing after portfolio */}
             <motion.div
                 style={{
-                    opacity: contentOpacity,
+                    opacity: containerSize.width < 768 ? contentOpacity : smoothFooterOpacity,
                     y: containerSize.width < 768 ? mobileFooterY : 0,
-                    pointerEvents: morphValue > 0.85 ? "auto" : "none"
+                    pointerEvents: morphValue > 0.92 ? "auto" : "none"
                 }}
-                className="absolute bottom-0 left-0 right-0 z-10"
+                className="absolute bottom-0 left-0 right-0 z-10 pt-[25vh]"
             >
                 <Footer />
             </motion.div>
