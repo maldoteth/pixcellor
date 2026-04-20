@@ -360,12 +360,19 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     <>
       {/* Chat Toggle Button */}
       <motion.button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (wasDragged.current) {
+            wasDragged.current = false;
+            return;
+          }
+          setIsOpen(!isOpen);
+        }}
         className={`fixed z-50 rounded-sm flex items-center justify-center group bottom-6 right-6 ${isMobile ? 'w-[34px] h-[34px]' : 'w-[42px] h-[42px]'}`}
         aria-label="Open chat with Alex from Pixcellor"
         drag
         dragMomentum={false}
         dragElastic={0.15}
+        onDragStart={() => { wasDragged.current = true; }}
         dragConstraints={{
           top: -(typeof window !== 'undefined' ? window.innerHeight - 100 : 600),
           left: -(typeof window !== 'undefined' ? window.innerWidth - 100 : 300),
