@@ -479,12 +479,10 @@ export default function IntroAnimation() {
                 </div>
             </div>
 
-            {/* Footer fades in with arc content */}
+            {/* Footer always visible with liquid glass effect */}
             <motion.div
                 style={{
-                    opacity: contentOpacity,
                     y: containerSize.width < 768 ? mobileFooterY : 0,
-                    pointerEvents: morphValue > 0.85 ? "auto" : "none"
                 }}
                 className="absolute bottom-0 left-0 right-0 z-10"
             >
