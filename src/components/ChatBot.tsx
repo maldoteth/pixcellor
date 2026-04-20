@@ -128,6 +128,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId());
+  const wasDragged = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
