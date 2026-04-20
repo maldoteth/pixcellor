@@ -54,11 +54,39 @@ const getClientId = (): string => {
   return clientId;
 };
 
+const escapeHtml = (s: string): string =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 const formatMessage = (text: string): string => {
-  return text
+  const linkPlaceholders: string[] = [];
+  // Extract markdown links first so their URLs aren't escaped
+  let working = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_m, label, url) => {
+    const safeLabel = escapeHtml(label);
+    const safeUrl = escapeHtml(url);
+    linkPlaceholders.push(
+      `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-white underline underline-offset-2 hover:text-white/80 transition-colors">${safeLabel}</a>`
+    );
+    return `\u0000LINK${linkPlaceholders.length - 1}\u0000`;
+  });
+
+  // Auto-link bare URLs (http/https)
+  working = working.replace(/(^|[\s(])(https?:\/\/[^\s)<]+)/g, (_m, pre, url) => {
+    const safeUrl = escapeHtml(url);
+    linkPlaceholders.push(
+      `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-white underline underline-offset-2 hover:text-white/80 transition-colors">${safeUrl}</a>`
+    );
+    return `${pre}\u0000LINK${linkPlaceholders.length - 1}\u0000`;
+  });
+
+  // Now safely escape and apply basic markdown
+  let html = escapeHtml(working)
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/\n/g, '<br />');
+
+  // Restore links
+  html = html.replace(/\u0000LINK(\d+)\u0000/g, (_m, i) => linkPlaceholders[Number(i)]);
+  return html;
 };
 function PackageCardUI({ card }: { card: PackageCard }) {
   const [loading, setLoading] = useState(false);
