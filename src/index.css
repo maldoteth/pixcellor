@@ -129,34 +129,33 @@ All colors MUST be HSL.
 @keyframes lava-flow {
   0%, 100% {
     background-position: 0% 50%;
-    filter: blur(30px);
   }
   25% {
     background-position: 50% 0%;
-    filter: blur(35px);
   }
   50% {
     background-position: 100% 50%;
-    filter: blur(30px);
   }
   75% {
     background-position: 50% 100%;
-    filter: blur(35px);
   }
 }
 
 @keyframes lava-morph {
   0%, 100% {
     border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-    transform: rotate(0deg) scale(1);
+    -webkit-transform: translateZ(0) rotate(0deg) scale(1);
+    transform: translateZ(0) rotate(0deg) scale(1);
   }
   33% {
     border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
-    transform: rotate(120deg) scale(1.05);
+    -webkit-transform: translateZ(0) rotate(120deg) scale(1.05);
+    transform: translateZ(0) rotate(120deg) scale(1.05);
   }
   66% {
     border-radius: 50% 60% 30% 70% / 40% 50% 60% 50%;
-    transform: rotate(240deg) scale(0.95);
+    -webkit-transform: translateZ(0) rotate(240deg) scale(0.95);
+    transform: translateZ(0) rotate(240deg) scale(0.95);
   }
 }
 
@@ -165,6 +164,14 @@ All colors MUST be HSL.
   opacity: 0.08;
   animation: lava-morph 12s ease-in-out infinite;
   pointer-events: none;
+  /* iOS 15 Safari fix: force GPU compositing so blur renders correctly */
+  -webkit-filter: blur(30px);
+  filter: blur(30px);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform, filter;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 @media (min-width: 768px) {
