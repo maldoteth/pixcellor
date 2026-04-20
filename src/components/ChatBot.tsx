@@ -333,7 +333,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
+            placeholder="Ask something or just leave email address"
             className="flex-1 rounded-sm px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
             style={{
               background: "rgba(255,255,255,0.08)",
