@@ -162,7 +162,7 @@ All colors MUST be HSL.
 
 .lava-blob {
   position: absolute;
-  opacity: 0.08;
+  opacity: 0;
   animation: lava-morph 12s ease-in-out infinite;
   pointer-events: none;
 }
