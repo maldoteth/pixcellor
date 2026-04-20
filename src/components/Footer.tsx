@@ -23,10 +23,15 @@ const Footer = () => {
             01483 912430
           </a>
         </div>
-        <span className="hidden md:flex items-center gap-1.5">
+        <a
+          href="https://www.google.com/maps/dir/?api=1&destination=3rd+Floor%2C+207+Regent+Street%2C+London%2C+W1B+3HH"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden md:flex items-center gap-1.5 hover:text-foreground transition-colors"
+        >
           <MapPin className="w-3 h-3" />
           3rd Floor, 207 Regent Street, London, W1B 3HH
-        </span>
+        </a>
       </div>
     </footer>
   );
