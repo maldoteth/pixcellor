@@ -215,7 +215,7 @@ All colors MUST be HSL.
   left: -15%;
   background: radial-gradient(circle, hsl(0 0% 100%) 0%, hsl(0 0% 80%) 50%, transparent 70%);
   animation-duration: 12s;
-  opacity: 0.12;
+  opacity: 0;
   --blob-sensitivity: 50px;
 }
 
@@ -227,7 +227,7 @@ All colors MUST be HSL.
   background: radial-gradient(circle, hsl(0 0% 95%) 0%, hsl(0 0% 70%) 50%, transparent 70%);
   animation-duration: 15s;
   animation-delay: -5s;
-  opacity: 0.1;
+  opacity: 0;
   --blob-sensitivity: -35px;
 }
 
@@ -239,6 +239,6 @@ All colors MUST be HSL.
   background: radial-gradient(circle, hsl(0 0% 100%) 0%, hsl(0 0% 60%) 50%, transparent 70%);
   animation-duration: 18s;
   animation-delay: -9s;
-  opacity: 0.08;
+  opacity: 0;
   --blob-sensitivity: 30px;
 }
