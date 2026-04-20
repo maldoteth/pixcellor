@@ -134,7 +134,13 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
       </DialogTrigger>
 
       {isMobile ? (
-        <DialogContent className="max-w-4xl bg-transparent border-none p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:text-foreground">
+        <DialogContent className="max-w-4xl bg-transparent border-none p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none">
+          <div className="absolute -top-1 -right-1 z-50">
+            <DialogClose className="rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
+              <X className="h-6 w-6" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-foreground text-center mb-2 -mt-[23px]">
               Our Pricing
@@ -144,7 +150,13 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
           <MobileCards />
         </DialogContent>
       ) : (
-        <DialogContent className="max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none [&>button]:hidden sm:rounded-none" style={{ background: "transparent" }}>
+        <DialogContent className="max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent" }}>
+          <div className="absolute top-4 right-4 z-50">
+            <DialogClose className="rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
+              <X className="h-6 w-6" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
           <DesktopCards />
         </DialogContent>
       )}
