@@ -277,6 +277,9 @@ export default function IntroAnimation() {
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
+    // Footer fades in later than content — adds ~1 page of space below portfolio
+    const footerOpacity = useTransform(smoothMorph, [0.92, 1], [0, 1]);
+    const smoothFooterOpacity = useSpring(footerOpacity, { stiffness: 40, damping: 20 });
     // Mobile: footer slides up into view as user scrolls (instead of lifting page content)
     const footerRevealProgress = useTransform(virtualScroll, [900, 1900], [0, 1]);
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
