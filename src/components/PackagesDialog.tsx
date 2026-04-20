@@ -135,10 +135,12 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
 
       {isMobile ? (
         <DialogContent className="max-w-4xl bg-transparent border-none p-6 max-h-[90vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:hidden">
-          <DialogClose className="fixed right-2 top-2 z-[60] rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
-            <X className="h-6 w-6" />
-            <span className="sr-only">Close</span>
-          </DialogClose>
+          <div className="fixed right-1 top-1 z-[60]">
+            <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
+              <X className="h-6 w-6" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-foreground text-center mb-2 -mt-[23px]">
               Our Pricing
