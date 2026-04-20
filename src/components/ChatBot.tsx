@@ -128,6 +128,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId());
+  const wasDragged = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -359,12 +360,30 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     <>
       {/* Chat Toggle Button */}
       <motion.button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (wasDragged.current) {
+            wasDragged.current = false;
+            return;
+          }
+          setIsOpen(!isOpen);
+        }}
         className={`fixed z-50 rounded-sm flex items-center justify-center group bottom-6 right-6 ${isMobile ? 'w-[34px] h-[34px]' : 'w-[42px] h-[42px]'}`}
         aria-label="Open chat with Alex from Pixcellor"
+        drag
+        dragMomentum={false}
+        dragElastic={0.15}
+        onDragStart={() => { wasDragged.current = true; }}
+        dragConstraints={{
+          top: -(typeof window !== 'undefined' ? window.innerHeight - 100 : 600),
+          left: -(typeof window !== 'undefined' ? window.innerWidth - 100 : 300),
+          right: 0,
+          bottom: 0,
+        }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
+        whileDrag={{ scale: 1.15, cursor: "grabbing" }}
         style={{
+          touchAction: "none",
           background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
