@@ -132,6 +132,14 @@ Privacy rules:
 - Only share info tied to the email they provided
 - If they ask about somebody else's order, politely refuse
 
+## Cross-Session Memory & Project Briefs (CRITICAL — NEW):
+- When an email is detected in the conversation, the system automatically loads that client's full record (profile, project status, orders, past chats) and gives it to you as a "Known client context" system message.
+- ALWAYS read that context before replying. Treat it as ground truth.
+- If a client tells you ANY brief details — brand colours, page count, content they want, requirements, their name, company — IMMEDIATELY call **save_brief** with the email and the new fields. Even partial info. This builds their record so you remember next time.
+- If "Project status" shows a stage (e.g. designing / developing / live), use that exact stage when they ask for an update — don't make one up.
+- If a returning client comes back, greet them by name from the profile and reference what they shared previously ("Welcome back, Sarah — last time you mentioned you wanted navy and gold across 5 pages, still on track?").
+- NEVER invent project status or brief details. If the context says "no project status set" or "no brief saved", say so honestly.
+
 ## General Rules:
 - Keep responses SHORT (2-4 sentences max)
 - Ask ONE question at a time to keep the conversation flowing
@@ -182,6 +190,27 @@ const tools = [
             type: "string",
             description: "The customer's email address, exactly as they typed it. Will be matched case-insensitively.",
           },
+        },
+        required: ["email"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "save_brief",
+      description: "Save or update structured project brief details for a client (brand colours, page count, content notes, requirements, name, company). Call this WHENEVER the client shares any of this info — even partial. Always include their email so we can key the record.",
+      parameters: {
+        type: "object",
+        properties: {
+          email: { type: "string", description: "Client's email address (required)." },
+          name: { type: "string", description: "Client's full name if provided." },
+          company: { type: "string", description: "Company / brand name if provided." },
+          brand_colours: { type: "string", description: "Colour scheme — e.g. 'navy and gold' or hex codes." },
+          page_count: { type: "number", description: "Number of pages they want." },
+          content_notes: { type: "string", description: "Content / copy notes, sections they want, things to feature." },
+          requirements: { type: "string", description: "Functional requirements — e.g. booking system, blog, e-commerce." },
+          notes: { type: "string", description: "Any other free-form notes worth remembering." },
         },
         required: ["email"],
       },
@@ -337,6 +366,118 @@ function isOrderLookupIntent(text: string) {
   return /(order|update|status|payment|charged|checkout|website|site|progress|bought|purchase|purchased)/i.test(text);
 }
 
+// Load EVERYTHING we know about a client by email — used to give Alex memory across sessions
+async function loadClientContext(supabase: ReturnType<typeof createClient>, email: string) {
+  const normalised = email.trim().toLowerCase();
+
+  const [profileRes, statusRes, lookup] = await Promise.all([
+    supabase.from("client_profiles").select("*").ilike("email", normalised).maybeSingle(),
+    supabase.from("project_status").select("*").ilike("email", normalised).maybeSingle(),
+    lookupCustomer(supabase, normalised),
+  ]);
+
+  return {
+    profile: profileRes.data ?? null,
+    project_status: statusRes.data ?? null,
+    orders: lookup.orders,
+    contact_inquiries: lookup.contact_inquiries,
+    prior_chats: lookup.prior_chats,
+  };
+}
+
+// Upsert a brief — only writes fields the AI provided
+async function saveBrief(
+  supabase: ReturnType<typeof createClient>,
+  args: Record<string, unknown>
+) {
+  const email = typeof args.email === "string" ? args.email.trim().toLowerCase() : "";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { ok: false, error: "invalid_email" };
+  }
+
+  const payload: Record<string, unknown> = { email };
+  for (const key of ["name", "company", "brand_colours", "content_notes", "requirements", "notes"] as const) {
+    if (typeof args[key] === "string" && (args[key] as string).trim()) {
+      payload[key] = (args[key] as string).trim();
+    }
+  }
+  if (typeof args.page_count === "number" && Number.isFinite(args.page_count)) {
+    payload.page_count = Math.round(args.page_count);
+  }
+
+  const { data, error } = await supabase
+    .from("client_profiles")
+    .upsert(payload, { onConflict: "email" })
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error("saveBrief error:", error);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, profile: data };
+}
+
+function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
+  const lines: string[] = [];
+  lines.push(`## Known client context (loaded from database for this email)`);
+
+  if (ctx.profile) {
+    lines.push(`### Profile`);
+    const p = ctx.profile as Record<string, unknown>;
+    if (p.name) lines.push(`- Name: ${p.name}`);
+    if (p.company) lines.push(`- Company: ${p.company}`);
+    if (p.brand_colours) lines.push(`- Brand colours: ${p.brand_colours}`);
+    if (p.page_count) lines.push(`- Page count: ${p.page_count}`);
+    if (p.content_notes) lines.push(`- Content notes: ${p.content_notes}`);
+    if (p.requirements) lines.push(`- Requirements: ${p.requirements}`);
+    if (p.notes) lines.push(`- Notes: ${p.notes}`);
+  } else {
+    lines.push(`- No saved brief yet for this email.`);
+  }
+
+  if (ctx.project_status) {
+    const s = ctx.project_status as Record<string, unknown>;
+    lines.push(`### Project status`);
+    lines.push(`- Stage: **${s.stage}**`);
+    if (s.notes) lines.push(`- Notes from team: ${s.notes}`);
+    if (s.updated_at) lines.push(`- Last updated: ${s.updated_at}`);
+  } else {
+    lines.push(`### Project status\n- No project status set yet.`);
+  }
+
+  if (ctx.orders.length > 0) {
+    lines.push(`### Orders (${ctx.orders.length})`);
+    for (const o of ctx.orders.slice(0, 5)) {
+      lines.push(`- ${o.date?.slice(0, 10)} · ${o.amount ?? "—"} · payment_status=${o.payment_status ?? "—"} · status=${o.status ?? "—"}${o.is_subscription ? " · subscription" : ""}`);
+    }
+  } else {
+    lines.push(`### Orders\n- None on file.`);
+  }
+
+  if (ctx.contact_inquiries.length > 0) {
+    lines.push(`### Past contact form submissions (${ctx.contact_inquiries.length})`);
+    for (const c of ctx.contact_inquiries.slice(0, 3) as Array<{ name?: string; message?: string; created_at?: string }>) {
+      lines.push(`- ${c.created_at?.slice(0, 10)} · ${c.name ?? "—"}: ${(c.message ?? "").slice(0, 160)}`);
+    }
+  }
+
+  if (ctx.prior_chats.length > 0) {
+    lines.push(`### Past chat history (${ctx.prior_chats.length} prior conversation(s))`);
+    for (const conv of ctx.prior_chats.slice(0, 2)) {
+      const recent = conv.messages.slice(-6);
+      lines.push(`Conversation ${conv.conversation_id.slice(0, 8)}…:`);
+      for (const m of recent) {
+        lines.push(`  - ${m.role}: ${m.content.slice(0, 200)}`);
+      }
+    }
+  }
+
+  lines.push(`\nUse the above as your single source of truth. If they ask about their order, project, or what colours they wanted — answer from this data. If you learn anything new in this conversation (colours, pages, requirements), call save_brief to persist it.`);
+
+  return lines.join("\n");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -390,31 +531,24 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Build conversation we'll send to the model. May get extended if the model
-    // calls lookup_customer and we need a second pass.
-    const latestUserMessage = [...messages].reverse().find((entry) => entry?.role === "user")?.content ?? "";
+    // ── Cross-session memory ─────────────────────────────────────────────
+    // If we can detect an email in this conversation, load EVERYTHING we
+    // know about that client (profile, project status, orders, past chats)
+    // and inject it as a system message so the AI replies with context.
     const emailFromConversation = extractLatestEmail(messages);
-
-    if (emailFromConversation && isOrderLookupIntent(latestUserMessage)) {
-      const lookupResult = await lookupCustomer(supabase, emailFromConversation);
-      const reply = formatLookupReply(lookupResult);
-
-      if (currentConversationId && reply) {
-        await supabase.from("chat_messages").insert({
-          conversation_id: currentConversationId,
-          role: "assistant",
-          content: reply,
-        });
+    let contextSummary = "";
+    if (emailFromConversation) {
+      try {
+        const ctx = await loadClientContext(supabase, emailFromConversation);
+        contextSummary = buildClientContextSummary(ctx);
+      } catch (e) {
+        console.error("loadClientContext error:", e);
       }
-
-      return new Response(
-        JSON.stringify({ reply, conversationId: currentConversationId, packageCards: [] }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
 
     const aiMessages: Array<Record<string, unknown>> = [
       { role: "system", content: SYSTEM_PROMPT },
+      ...(contextSummary ? [{ role: "system" as const, content: contextSummary }] : []),
       ...messages,
     ];
 
@@ -459,10 +593,9 @@ Deno.serve(async (req) => {
     }> = [];
 
     // ---- Process tool calls ----
-    // We may need a 2nd AI pass if lookup_customer is used (so the AI can speak
-    // about the lookup results). send_package is handled inline (no 2nd pass).
-    let didLookup = false;
-    let lookupReply = "";
+    // After ANY data tool (lookup_customer / save_brief) we run a 2nd AI pass
+    // so Alex can speak naturally about what was found / saved.
+    let needsFollowUp = false;
 
     if (message?.tool_calls && message.tool_calls.length > 0) {
       // Push the assistant's tool-call message into history so the follow-up call is valid
@@ -534,11 +667,10 @@ Deno.serve(async (req) => {
             });
           }
         } else if (toolCall.function.name === "lookup_customer") {
-          didLookup = true;
+          needsFollowUp = true;
           try {
             const args = JSON.parse(toolCall.function.arguments);
             const result = await lookupCustomer(supabase, args.email);
-            lookupReply = formatLookupReply(result);
             aiMessages.push({
               role: "tool",
               tool_call_id: toolCall.id,
@@ -552,13 +684,28 @@ Deno.serve(async (req) => {
               content: JSON.stringify({ found: false, error: "lookup_failed" }),
             });
           }
+        } else if (toolCall.function.name === "save_brief") {
+          needsFollowUp = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await saveBrief(supabase, args);
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(result),
+            });
+          } catch (e) {
+            console.error("Error in save_brief:", e);
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ ok: false, error: "save_failed" }),
+            });
+          }
         }
       }
 
-      // If we ran a customer lookup, give the AI a chance to respond using the data
-      if (didLookup && lookupReply) {
-        reply = lookupReply;
-      } else if (didLookup) {
+      if (needsFollowUp) {
         response = await callAI();
         if (response.ok) {
           data = await response.json();

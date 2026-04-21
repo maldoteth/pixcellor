@@ -67,6 +67,48 @@ export type Database = {
           },
         ]
       }
+      client_profiles: {
+        Row: {
+          brand_colours: string | null
+          company: string | null
+          content_notes: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          notes: string | null
+          page_count: number | null
+          requirements: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand_colours?: string | null
+          company?: string | null
+          content_notes?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          page_count?: number | null
+          requirements?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand_colours?: string | null
+          company?: string | null
+          content_notes?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          page_count?: number | null
+          requirements?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_inquiries: {
         Row: {
           created_at: string
@@ -88,6 +130,33 @@ export type Database = {
           id?: string
           message?: string
           name?: string
+        }
+        Relationships: []
+      }
+      project_status: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          notes: string | null
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          notes?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          notes?: string | null
+          stage?: string
+          updated_at?: string
         }
         Relationships: []
       }
