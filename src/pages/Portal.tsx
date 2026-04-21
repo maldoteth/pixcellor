@@ -112,11 +112,11 @@ export default function Portal() {
       ]);
       setOrders(((o.data ?? []) as StripeSession[]).filter(isSiteOrder));
       const convs = (c.data ?? []) as Conversation[];
-      setConversations(convs);
       setProfiles((p.data ?? []) as Profile[]);
       setInquiries((i.data ?? []) as Inquiry[]);
 
       // Fetch the latest message per conversation for previews
+      let sortedConvs = convs;
       if (convs.length > 0) {
         const { data: msgs } = await supabase
           .from("chat_messages")
@@ -128,7 +128,14 @@ export default function Portal() {
           if (!previews[m.conversation_id]) previews[m.conversation_id] = m;
         }
         setLastMessages(previews);
+        // Re-sort conversations by most recent message activity
+        sortedConvs = [...convs].sort((a, b) => {
+          const aTime = previews[a.id]?.created_at ?? a.updated_at;
+          const bTime = previews[b.id]?.created_at ?? b.updated_at;
+          return new Date(bTime).getTime() - new Date(aTime).getTime();
+        });
       }
+      setConversations(sortedConvs);
     };
     load();
 
