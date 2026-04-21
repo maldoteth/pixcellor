@@ -276,17 +276,33 @@ export default function Portal() {
           </Card>
         </div>
 
+        {/* Global search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search everything — emails, names, chat messages, order IDs, notes…"
+            className="pl-9"
+          />
+          {q && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {filteredOrders.length} orders · {filteredConversations.length} chats · {filteredProfiles.length} clients · {filteredInquiries.length} inquiries
+            </p>
+          )}
+        </div>
+
         <Tabs defaultValue="orders">
           <TabsList className="grid grid-cols-4 w-full md:w-auto">
-            <TabsTrigger value="orders">Orders ({orders.length})</TabsTrigger>
-            <TabsTrigger value="chats">Chats ({conversations.length})</TabsTrigger>
-            <TabsTrigger value="profiles">Clients ({profiles.length})</TabsTrigger>
-            <TabsTrigger value="inquiries">Inquiries ({inquiries.length})</TabsTrigger>
+            <TabsTrigger value="orders">Orders ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="chats">Chats ({filteredConversations.length})</TabsTrigger>
+            <TabsTrigger value="profiles">Clients ({filteredProfiles.length})</TabsTrigger>
+            <TabsTrigger value="inquiries">Inquiries ({filteredInquiries.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="orders" className="space-y-2">
-            {orders.length === 0 && <p className="text-muted-foreground text-sm">No orders yet.</p>}
-            {orders.map(o => (
+            {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {q ? "match your search" : "yet"}.</p>}
+            {filteredOrders.map(o => (
               <Card key={o.session_id}>
                 <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
                   <div className="space-y-1">
