@@ -324,6 +324,19 @@ function formatLookupReply(result: Awaited<ReturnType<typeof lookupCustomer>>) {
   return "I can’t see a processed order for that email in the database yet.";
 }
 
+function extractLatestEmail(messages: Array<{ role?: string; content?: string }>) {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const content = messages[i]?.content ?? "";
+    const match = content.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+    if (match) return match[0];
+  }
+  return null;
+}
+
+function isOrderLookupIntent(text: string) {
+  return /(order|update|status|payment|charged|checkout|website|site|progress|bought|purchase|purchased)/i.test(text);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -379,6 +392,27 @@ Deno.serve(async (req) => {
 
     // Build conversation we'll send to the model. May get extended if the model
     // calls lookup_customer and we need a second pass.
+    const latestUserMessage = [...messages].reverse().find((entry) => entry?.role === "user")?.content ?? "";
+    const emailFromConversation = extractLatestEmail(messages);
+
+    if (emailFromConversation && isOrderLookupIntent(latestUserMessage)) {
+      const lookupResult = await lookupCustomer(supabase, emailFromConversation);
+      const reply = formatLookupReply(lookupResult);
+
+      if (currentConversationId && reply) {
+        await supabase.from("chat_messages").insert({
+          conversation_id: currentConversationId,
+          role: "assistant",
+          content: reply,
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ reply, conversationId: currentConversationId, packageCards: [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const aiMessages: Array<Record<string, unknown>> = [
       { role: "system", content: SYSTEM_PROMPT },
       ...messages,
