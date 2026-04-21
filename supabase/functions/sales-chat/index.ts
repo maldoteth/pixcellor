@@ -585,10 +585,9 @@ Deno.serve(async (req) => {
     }> = [];
 
     // ---- Process tool calls ----
-    // We may need a 2nd AI pass if lookup_customer is used (so the AI can speak
-    // about the lookup results). send_package is handled inline (no 2nd pass).
-    let didLookup = false;
-    let lookupReply = "";
+    // After ANY data tool (lookup_customer / save_brief) we run a 2nd AI pass
+    // so Alex can speak naturally about what was found / saved.
+    let needsFollowUp = false;
 
     if (message?.tool_calls && message.tool_calls.length > 0) {
       // Push the assistant's tool-call message into history so the follow-up call is valid
@@ -660,11 +659,10 @@ Deno.serve(async (req) => {
             });
           }
         } else if (toolCall.function.name === "lookup_customer") {
-          didLookup = true;
+          needsFollowUp = true;
           try {
             const args = JSON.parse(toolCall.function.arguments);
             const result = await lookupCustomer(supabase, args.email);
-            lookupReply = formatLookupReply(result);
             aiMessages.push({
               role: "tool",
               tool_call_id: toolCall.id,
@@ -678,13 +676,28 @@ Deno.serve(async (req) => {
               content: JSON.stringify({ found: false, error: "lookup_failed" }),
             });
           }
+        } else if (toolCall.function.name === "save_brief") {
+          needsFollowUp = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await saveBrief(supabase, args);
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(result),
+            });
+          } catch (e) {
+            console.error("Error in save_brief:", e);
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ ok: false, error: "save_failed" }),
+            });
+          }
         }
       }
 
-      // If we ran a customer lookup, give the AI a chance to respond using the data
-      if (didLookup && lookupReply) {
-        reply = lookupReply;
-      } else if (didLookup) {
+      if (needsFollowUp) {
         response = await callAI();
         if (response.ok) {
           data = await response.json();
