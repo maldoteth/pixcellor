@@ -74,9 +74,11 @@ export default function Portal() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [lastMessages, setLastMessages] = useState<Record<string, Message>>({});
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [activeConv, setActiveConv] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   // Auth gate
   useEffect(() => {
