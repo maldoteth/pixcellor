@@ -252,16 +252,27 @@ export default function Portal() {
           <TabsContent value="chats" className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-4">
             <div className="space-y-2 max-h-[70vh] overflow-y-auto">
               {conversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations yet.</p>}
-              {conversations.map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => loadMessages(c.id)}
-                  className={`w-full text-left p-3 rounded-md border transition-colors ${activeConv === c.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}
-                >
-                  <div className="text-xs font-mono truncate">{c.client_id}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(c.updated_at).toLocaleString()}</div>
-                </button>
-              ))}
+              {conversations.map(c => {
+                const last = lastMessages[c.id];
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => loadMessages(c.id)}
+                    className={`w-full text-left p-3 rounded-md border transition-colors ${activeConv === c.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}
+                  >
+                    <div className="text-xs font-mono truncate text-muted-foreground">{c.client_id}</div>
+                    {last ? (
+                      <div className="text-sm mt-1 line-clamp-2">
+                        <span className="text-muted-foreground">{last.role === "user" ? "👤" : "🤖"} </span>
+                        {last.content}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-muted-foreground italic mt-1">No messages</div>
+                    )}
+                    <div className="text-[10px] text-muted-foreground mt-1">{new Date(c.updated_at).toLocaleString()}</div>
+                  </button>
+                );
+              })}
             </div>
             <Card className="max-h-[70vh] overflow-hidden flex flex-col">
               <CardContent className="p-4 overflow-y-auto space-y-3">
