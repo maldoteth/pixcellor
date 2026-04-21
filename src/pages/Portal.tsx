@@ -111,9 +111,24 @@ export default function Portal() {
         supabase.from("contact_inquiries").select("*").order("created_at", { ascending: false }),
       ]);
       setOrders(((o.data ?? []) as StripeSession[]).filter(isSiteOrder));
-      setConversations((c.data ?? []) as Conversation[]);
+      const convs = (c.data ?? []) as Conversation[];
+      setConversations(convs);
       setProfiles((p.data ?? []) as Profile[]);
       setInquiries((i.data ?? []) as Inquiry[]);
+
+      // Fetch the latest message per conversation for previews
+      if (convs.length > 0) {
+        const { data: msgs } = await supabase
+          .from("chat_messages")
+          .select("*")
+          .in("conversation_id", convs.map(c => c.id))
+          .order("created_at", { ascending: false });
+        const previews: Record<string, Message> = {};
+        for (const m of (msgs ?? []) as Message[]) {
+          if (!previews[m.conversation_id]) previews[m.conversation_id] = m;
+        }
+        setLastMessages(previews);
+      }
     };
     load();
 
