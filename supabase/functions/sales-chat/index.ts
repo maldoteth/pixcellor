@@ -523,31 +523,24 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Build conversation we'll send to the model. May get extended if the model
-    // calls lookup_customer and we need a second pass.
-    const latestUserMessage = [...messages].reverse().find((entry) => entry?.role === "user")?.content ?? "";
+    // ── Cross-session memory ─────────────────────────────────────────────
+    // If we can detect an email in this conversation, load EVERYTHING we
+    // know about that client (profile, project status, orders, past chats)
+    // and inject it as a system message so the AI replies with context.
     const emailFromConversation = extractLatestEmail(messages);
-
-    if (emailFromConversation && isOrderLookupIntent(latestUserMessage)) {
-      const lookupResult = await lookupCustomer(supabase, emailFromConversation);
-      const reply = formatLookupReply(lookupResult);
-
-      if (currentConversationId && reply) {
-        await supabase.from("chat_messages").insert({
-          conversation_id: currentConversationId,
-          role: "assistant",
-          content: reply,
-        });
+    let contextSummary = "";
+    if (emailFromConversation) {
+      try {
+        const ctx = await loadClientContext(supabase, emailFromConversation);
+        contextSummary = buildClientContextSummary(ctx);
+      } catch (e) {
+        console.error("loadClientContext error:", e);
       }
-
-      return new Response(
-        JSON.stringify({ reply, conversationId: currentConversationId, packageCards: [] }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
 
     const aiMessages: Array<Record<string, unknown>> = [
       { role: "system", content: SYSTEM_PROMPT },
+      ...(contextSummary ? [{ role: "system" as const, content: contextSummary }] : []),
       ...messages,
     ];
 
