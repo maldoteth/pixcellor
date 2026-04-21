@@ -187,6 +187,27 @@ const tools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "save_brief",
+      description: "Save or update structured project brief details for a client (brand colours, page count, content notes, requirements, name, company). Call this WHENEVER the client shares any of this info — even partial. Always include their email so we can key the record.",
+      parameters: {
+        type: "object",
+        properties: {
+          email: { type: "string", description: "Client's email address (required)." },
+          name: { type: "string", description: "Client's full name if provided." },
+          company: { type: "string", description: "Company / brand name if provided." },
+          brand_colours: { type: "string", description: "Colour scheme — e.g. 'navy and gold' or hex codes." },
+          page_count: { type: "number", description: "Number of pages they want." },
+          content_notes: { type: "string", description: "Content / copy notes, sections they want, things to feature." },
+          requirements: { type: "string", description: "Functional requirements — e.g. booking system, blog, e-commerce." },
+          notes: { type: "string", description: "Any other free-form notes worth remembering." },
+        },
+        required: ["email"],
+      },
+    },
+  },
 ];
 
 // Look up everything we know about a customer by email
@@ -335,6 +356,118 @@ function extractLatestEmail(messages: Array<{ role?: string; content?: string }>
 
 function isOrderLookupIntent(text: string) {
   return /(order|update|status|payment|charged|checkout|website|site|progress|bought|purchase|purchased)/i.test(text);
+}
+
+// Load EVERYTHING we know about a client by email — used to give Alex memory across sessions
+async function loadClientContext(supabase: ReturnType<typeof createClient>, email: string) {
+  const normalised = email.trim().toLowerCase();
+
+  const [profileRes, statusRes, lookup] = await Promise.all([
+    supabase.from("client_profiles").select("*").ilike("email", normalised).maybeSingle(),
+    supabase.from("project_status").select("*").ilike("email", normalised).maybeSingle(),
+    lookupCustomer(supabase, normalised),
+  ]);
+
+  return {
+    profile: profileRes.data ?? null,
+    project_status: statusRes.data ?? null,
+    orders: lookup.orders,
+    contact_inquiries: lookup.contact_inquiries,
+    prior_chats: lookup.prior_chats,
+  };
+}
+
+// Upsert a brief — only writes fields the AI provided
+async function saveBrief(
+  supabase: ReturnType<typeof createClient>,
+  args: Record<string, unknown>
+) {
+  const email = typeof args.email === "string" ? args.email.trim().toLowerCase() : "";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { ok: false, error: "invalid_email" };
+  }
+
+  const payload: Record<string, unknown> = { email };
+  for (const key of ["name", "company", "brand_colours", "content_notes", "requirements", "notes"] as const) {
+    if (typeof args[key] === "string" && (args[key] as string).trim()) {
+      payload[key] = (args[key] as string).trim();
+    }
+  }
+  if (typeof args.page_count === "number" && Number.isFinite(args.page_count)) {
+    payload.page_count = Math.round(args.page_count);
+  }
+
+  const { data, error } = await supabase
+    .from("client_profiles")
+    .upsert(payload, { onConflict: "email" })
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error("saveBrief error:", error);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, profile: data };
+}
+
+function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
+  const lines: string[] = [];
+  lines.push(`## Known client context (loaded from database for this email)`);
+
+  if (ctx.profile) {
+    lines.push(`### Profile`);
+    const p = ctx.profile as Record<string, unknown>;
+    if (p.name) lines.push(`- Name: ${p.name}`);
+    if (p.company) lines.push(`- Company: ${p.company}`);
+    if (p.brand_colours) lines.push(`- Brand colours: ${p.brand_colours}`);
+    if (p.page_count) lines.push(`- Page count: ${p.page_count}`);
+    if (p.content_notes) lines.push(`- Content notes: ${p.content_notes}`);
+    if (p.requirements) lines.push(`- Requirements: ${p.requirements}`);
+    if (p.notes) lines.push(`- Notes: ${p.notes}`);
+  } else {
+    lines.push(`- No saved brief yet for this email.`);
+  }
+
+  if (ctx.project_status) {
+    const s = ctx.project_status as Record<string, unknown>;
+    lines.push(`### Project status`);
+    lines.push(`- Stage: **${s.stage}**`);
+    if (s.notes) lines.push(`- Notes from team: ${s.notes}`);
+    if (s.updated_at) lines.push(`- Last updated: ${s.updated_at}`);
+  } else {
+    lines.push(`### Project status\n- No project status set yet.`);
+  }
+
+  if (ctx.orders.length > 0) {
+    lines.push(`### Orders (${ctx.orders.length})`);
+    for (const o of ctx.orders.slice(0, 5)) {
+      lines.push(`- ${o.date?.slice(0, 10)} · ${o.amount ?? "—"} · payment_status=${o.payment_status ?? "—"} · status=${o.status ?? "—"}${o.is_subscription ? " · subscription" : ""}`);
+    }
+  } else {
+    lines.push(`### Orders\n- None on file.`);
+  }
+
+  if (ctx.contact_inquiries.length > 0) {
+    lines.push(`### Past contact form submissions (${ctx.contact_inquiries.length})`);
+    for (const c of ctx.contact_inquiries.slice(0, 3) as Array<{ name?: string; message?: string; created_at?: string }>) {
+      lines.push(`- ${c.created_at?.slice(0, 10)} · ${c.name ?? "—"}: ${(c.message ?? "").slice(0, 160)}`);
+    }
+  }
+
+  if (ctx.prior_chats.length > 0) {
+    lines.push(`### Past chat history (${ctx.prior_chats.length} prior conversation(s))`);
+    for (const conv of ctx.prior_chats.slice(0, 2)) {
+      const recent = conv.messages.slice(-6);
+      lines.push(`Conversation ${conv.conversation_id.slice(0, 8)}…:`);
+      for (const m of recent) {
+        lines.push(`  - ${m.role}: ${m.content.slice(0, 200)}`);
+      }
+    }
+  }
+
+  lines.push(`\nUse the above as your single source of truth. If they ask about their order, project, or what colours they wanted — answer from this data. If you learn anything new in this conversation (colours, pages, requirements), call save_brief to persist it.`);
+
+  return lines.join("\n");
 }
 
 Deno.serve(async (req) => {
