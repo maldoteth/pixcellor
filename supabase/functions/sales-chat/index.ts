@@ -286,6 +286,44 @@ async function lookupCustomer(supabase: ReturnType<typeof createClient>, rawEmai
   };
 }
 
+function formatLookupReply(result: Awaited<ReturnType<typeof lookupCustomer>>) {
+  if (!result.found) {
+    return "I can’t see an order or enquiry on file for that email yet — could you check if you used a different address at checkout?";
+  }
+
+  const latestOrder = result.orders[0];
+  if (latestOrder) {
+    const normalizedPayment = (latestOrder.payment_status ?? "").toLowerCase();
+    const normalizedStatus = (latestOrder.status ?? "").toLowerCase();
+    const isProcessed =
+      normalizedPayment === "paid" ||
+      normalizedPayment === "no_payment_required" ||
+      normalizedStatus === "complete" ||
+      normalizedStatus === "completed";
+
+    const orderDate = latestOrder.date
+      ? new Intl.DateTimeFormat("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        }).format(new Date(latestOrder.date))
+      : null;
+
+    if (isProcessed) {
+      return `I found your order${orderDate ? ` from ${orderDate}` : ""} in our database — payment was processed${latestOrder.amount ? ` (${latestOrder.amount})` : ""}, so your project is already in progress.`;
+    }
+
+    return `I found a checkout record${orderDate ? ` from ${orderDate}` : ""}, but payment hasn’t been processed${latestOrder.amount ? ` for ${latestOrder.amount}` : ""}, so the order isn’t being worked on yet and you weren’t charged.`;
+  }
+
+  if (result.contact_inquiries.length > 0 || result.prior_chats.length > 0) {
+    return "I can see previous contact history for that email, but no processed order in the database yet.";
+  }
+
+  return "I can’t see a processed order for that email in the database yet.";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -390,6 +428,7 @@ Deno.serve(async (req) => {
     // We may need a 2nd AI pass if lookup_customer is used (so the AI can speak
     // about the lookup results). send_package is handled inline (no 2nd pass).
     let didLookup = false;
+    let lookupReply = "";
 
     if (message?.tool_calls && message.tool_calls.length > 0) {
       // Push the assistant's tool-call message into history so the follow-up call is valid
@@ -465,6 +504,7 @@ Deno.serve(async (req) => {
           try {
             const args = JSON.parse(toolCall.function.arguments);
             const result = await lookupCustomer(supabase, args.email);
+            lookupReply = formatLookupReply(result);
             aiMessages.push({
               role: "tool",
               tool_call_id: toolCall.id,
@@ -482,7 +522,9 @@ Deno.serve(async (req) => {
       }
 
       // If we ran a customer lookup, give the AI a chance to respond using the data
-      if (didLookup) {
+      if (didLookup && lookupReply) {
+        reply = lookupReply;
+      } else if (didLookup) {
         response = await callAI();
         if (response.ok) {
           data = await response.json();
