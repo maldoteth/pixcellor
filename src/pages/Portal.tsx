@@ -384,8 +384,8 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="inquiries" className="space-y-2">
-            {inquiries.length === 0 && <p className="text-muted-foreground text-sm">No inquiries yet.</p>}
-            {inquiries.map(i => (
+            {filteredInquiries.length === 0 && <p className="text-muted-foreground text-sm">No inquiries {q ? "match your search" : "yet"}.</p>}
+            {filteredInquiries.map(i => (
               <Card key={i.id}>
                 <CardContent className="p-4 space-y-1">
                   <div className="flex justify-between">
