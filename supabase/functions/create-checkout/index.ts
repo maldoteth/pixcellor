@@ -30,6 +30,7 @@ serve(async (req) => {
       mode: mode || "payment",
       success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment=canceled`,
+      metadata: { source: "pixcellor_site" },
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

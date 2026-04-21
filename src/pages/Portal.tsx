@@ -16,6 +16,16 @@ type StripeSession = {
   customer_email: string | null;
   mode: string | null;
   created_at: string;
+  metadata: Record<string, unknown> | null;
+};
+
+// Only include orders that came from this website's checkout.
+// Future orders are stamped with metadata.source = "pixcellor_site".
+// Legacy orders are filtered by GBP currency (DHB token sales are USD).
+const isSiteOrder = (o: StripeSession) => {
+  const source = (o.metadata as { source?: string } | null)?.source;
+  if (source === "pixcellor_site") return true;
+  return o.currency?.toLowerCase() === "gbp";
 };
 
 type Conversation = {
@@ -101,7 +111,7 @@ export default function Portal() {
         supabase.from("client_profiles").select("*").order("updated_at", { ascending: false }),
         supabase.from("contact_inquiries").select("*").order("created_at", { ascending: false }),
       ]);
-      setOrders((o.data ?? []) as StripeSession[]);
+      setOrders(((o.data ?? []) as StripeSession[]).filter(isSiteOrder));
       setConversations((c.data ?? []) as Conversation[]);
       setProfiles((p.data ?? []) as Profile[]);
       setInquiries((i.data ?? []) as Inquiry[]);
