@@ -322,8 +322,8 @@ export default function Portal() {
 
           <TabsContent value="chats" className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-4">
             <div className="space-y-2 max-h-[70vh] overflow-y-auto">
-              {conversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations yet.</p>}
-              {conversations.map(c => {
+              {filteredConversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations {q ? "match your search" : "yet"}.</p>}
+              {filteredConversations.map(c => {
                 const last = lastMessages[c.id];
                 return (
                   <button
