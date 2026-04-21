@@ -127,8 +127,10 @@ export default function Portal() {
           .select("*")
           .in("conversation_id", convs.map(c => c.id))
           .order("created_at", { ascending: false });
+        const allMsgs = (msgs ?? []) as Message[];
+        setAllMessages(allMsgs);
         const previews: Record<string, Message> = {};
-        for (const m of (msgs ?? []) as Message[]) {
+        for (const m of allMsgs) {
           if (!previews[m.conversation_id]) previews[m.conversation_id] = m;
         }
         setLastMessages(previews);
