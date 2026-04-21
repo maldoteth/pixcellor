@@ -286,6 +286,57 @@ async function lookupCustomer(supabase: ReturnType<typeof createClient>, rawEmai
   };
 }
 
+function formatLookupReply(result: Awaited<ReturnType<typeof lookupCustomer>>) {
+  if (!result.found) {
+    return "I can’t see an order or enquiry on file for that email yet — could you check if you used a different address at checkout?";
+  }
+
+  const latestOrder = result.orders[0];
+  if (latestOrder) {
+    const normalizedPayment = (latestOrder.payment_status ?? "").toLowerCase();
+    const normalizedStatus = (latestOrder.status ?? "").toLowerCase();
+    const isProcessed =
+      normalizedPayment === "paid" ||
+      normalizedPayment === "no_payment_required" ||
+      normalizedStatus === "complete" ||
+      normalizedStatus === "completed";
+
+    const orderDate = latestOrder.date
+      ? new Intl.DateTimeFormat("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        }).format(new Date(latestOrder.date))
+      : null;
+
+    if (isProcessed) {
+      return `I found your order${orderDate ? ` from ${orderDate}` : ""} in our database — payment was processed${latestOrder.amount ? ` (${latestOrder.amount})` : ""}, so your project is already in progress.`;
+    }
+
+    return `I found a checkout record${orderDate ? ` from ${orderDate}` : ""}, but payment hasn’t been processed${latestOrder.amount ? ` for ${latestOrder.amount}` : ""}, so the order isn’t being worked on yet and you weren’t charged.`;
+  }
+
+  if (result.contact_inquiries.length > 0 || result.prior_chats.length > 0) {
+    return "I can see previous contact history for that email, but no processed order in the database yet.";
+  }
+
+  return "I can’t see a processed order for that email in the database yet.";
+}
+
+function extractLatestEmail(messages: Array<{ role?: string; content?: string }>) {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const content = messages[i]?.content ?? "";
+    const match = content.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+    if (match) return match[0];
+  }
+  return null;
+}
+
+function isOrderLookupIntent(text: string) {
+  return /(order|update|status|payment|charged|checkout|website|site|progress|bought|purchase|purchased)/i.test(text);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -341,6 +392,27 @@ Deno.serve(async (req) => {
 
     // Build conversation we'll send to the model. May get extended if the model
     // calls lookup_customer and we need a second pass.
+    const latestUserMessage = [...messages].reverse().find((entry) => entry?.role === "user")?.content ?? "";
+    const emailFromConversation = extractLatestEmail(messages);
+
+    if (emailFromConversation && isOrderLookupIntent(latestUserMessage)) {
+      const lookupResult = await lookupCustomer(supabase, emailFromConversation);
+      const reply = formatLookupReply(lookupResult);
+
+      if (currentConversationId && reply) {
+        await supabase.from("chat_messages").insert({
+          conversation_id: currentConversationId,
+          role: "assistant",
+          content: reply,
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ reply, conversationId: currentConversationId, packageCards: [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const aiMessages: Array<Record<string, unknown>> = [
       { role: "system", content: SYSTEM_PROMPT },
       ...messages,
@@ -390,6 +462,7 @@ Deno.serve(async (req) => {
     // We may need a 2nd AI pass if lookup_customer is used (so the AI can speak
     // about the lookup results). send_package is handled inline (no 2nd pass).
     let didLookup = false;
+    let lookupReply = "";
 
     if (message?.tool_calls && message.tool_calls.length > 0) {
       // Push the assistant's tool-call message into history so the follow-up call is valid
@@ -465,6 +538,7 @@ Deno.serve(async (req) => {
           try {
             const args = JSON.parse(toolCall.function.arguments);
             const result = await lookupCustomer(supabase, args.email);
+            lookupReply = formatLookupReply(result);
             aiMessages.push({
               role: "tool",
               tool_call_id: toolCall.id,
@@ -482,7 +556,9 @@ Deno.serve(async (req) => {
       }
 
       // If we ran a customer lookup, give the AI a chance to respond using the data
-      if (didLookup) {
+      if (didLookup && lookupReply) {
+        reply = lookupReply;
+      } else if (didLookup) {
         response = await callAI();
         if (response.ok) {
           data = await response.json();
