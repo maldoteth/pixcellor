@@ -111,6 +111,27 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
   • Web app, large platform, ongoing work, or "I'm not sure how big it'll get" → recommend **Retainer** only
 - Only send multiple packages if the user EXPLICITLY asks to compare or see all options.
 
+## Existing Customer Lookups (NEW — IMPORTANT):
+You can look up existing customers and their orders/history using the **lookup_customer** tool.
+
+When to use it:
+- The user asks for an update on their order, payment, project, website, or account
+- They say things like "where's my order", "did my payment go through", "any update on my site", "what package did I buy", "I bought something the other day", "have you got me on file"
+- They reference being an existing client/customer
+
+How to use it:
+1. If you don't already have their email, ASK FOR IT first: "Sure — what's the email address you used at checkout?"
+2. Once they give you an email, call lookup_customer with that exact email
+3. The tool returns their orders (Stripe checkout sessions), past contact form submissions, and previous chat history
+4. Summarise what you find in a warm, human way — e.g. "Found you! You picked up the Elite package on 12 Apr — payment came through fine, and our team has it queued up. Anything specific you'd like an update on?"
+5. If NOTHING is found for that email, gently say so: "Hmm, I can't see anything on file for that email — are you sure that's the one you used? Sometimes people checkout with a different address."
+
+Privacy rules:
+- NEVER reveal info about a customer until they've given you the email themselves in this conversation
+- NEVER list other customers, guess emails, or hint that another email exists
+- Only share info tied to the email they provided
+- If they ask about somebody else's order, politely refuse
+
 ## General Rules:
 - Keep responses SHORT (2-4 sentences max)
 - Ask ONE question at a time to keep the conversation flowing
@@ -149,7 +170,121 @@ const tools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "lookup_customer",
+      description: "Look up an existing customer's orders, contact submissions, and chat history by email. Use ONLY when the user has provided their email and wants info about their own account, order, payment, or project status.",
+      parameters: {
+        type: "object",
+        properties: {
+          email: {
+            type: "string",
+            description: "The customer's email address, exactly as they typed it. Will be matched case-insensitively.",
+          },
+        },
+        required: ["email"],
+      },
+    },
+  },
 ];
+
+// Look up everything we know about a customer by email
+async function lookupCustomer(supabase: ReturnType<typeof createClient>, rawEmail: string) {
+  const email = rawEmail.trim().toLowerCase();
+
+  // Validate email shape
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { found: false, reason: "invalid_email", email };
+  }
+
+  // Stripe checkout sessions (orders / subscriptions)
+  const { data: sessions } = await supabase
+    .from("stripe_checkout_sessions")
+    .select("session_id, mode, payment_status, status, amount_total, currency, customer_email, subscription_id, metadata, created_at")
+    .ilike("customer_email", email)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  // Contact form inquiries
+  const { data: inquiries } = await supabase
+    .from("contact_inquiries")
+    .select("name, message, created_at")
+    .ilike("email", email)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  // Past chat conversations — match if the email appears in any user message
+  // (we don't store email on the conversation directly, so we search messages)
+  const { data: matchingMessages } = await supabase
+    .from("chat_messages")
+    .select("conversation_id, created_at")
+    .ilike("content", `%${email}%`)
+    .eq("role", "user")
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  const conversationIds = Array.from(
+    new Set((matchingMessages ?? []).map((m: { conversation_id: string }) => m.conversation_id))
+  ).slice(0, 5);
+
+  let priorChats: Array<{ conversation_id: string; messages: Array<{ role: string; content: string; created_at: string }> }> = [];
+  if (conversationIds.length > 0) {
+    const { data: convMessages } = await supabase
+      .from("chat_messages")
+      .select("conversation_id, role, content, created_at")
+      .in("conversation_id", conversationIds)
+      .order("created_at", { ascending: true });
+
+    if (convMessages) {
+      const grouped: Record<string, Array<{ role: string; content: string; created_at: string }>> = {};
+      for (const m of convMessages as Array<{ conversation_id: string; role: string; content: string; created_at: string }>) {
+        if (!grouped[m.conversation_id]) grouped[m.conversation_id] = [];
+        // truncate very long messages so we don't blow context
+        grouped[m.conversation_id].push({
+          role: m.role,
+          content: m.content.length > 400 ? m.content.slice(0, 400) + "…" : m.content,
+          created_at: m.created_at,
+        });
+      }
+      priorChats = Object.entries(grouped).map(([conversation_id, messages]) => ({
+        conversation_id,
+        messages: messages.slice(-12), // last 12 of each
+      }));
+    }
+  }
+
+  const ordersFormatted = (sessions ?? []).map((s: {
+    session_id: string;
+    mode: string | null;
+    payment_status: string | null;
+    status: string | null;
+    amount_total: number | null;
+    currency: string | null;
+    subscription_id: string | null;
+    metadata: Record<string, unknown> | null;
+    created_at: string;
+  }) => ({
+    session_id: s.session_id,
+    mode: s.mode,
+    payment_status: s.payment_status,
+    status: s.status,
+    amount: s.amount_total != null && s.currency
+      ? `${(s.amount_total / 100).toFixed(2)} ${s.currency.toUpperCase()}`
+      : null,
+    is_subscription: !!s.subscription_id,
+    metadata: s.metadata ?? {},
+    date: s.created_at,
+  }));
+
+  return {
+    found: ordersFormatted.length > 0 || (inquiries ?? []).length > 0 || priorChats.length > 0,
+    email,
+    orders: ordersFormatted,
+    contact_inquiries: inquiries ?? [],
+    prior_chats: priorChats,
+  };
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -204,24 +339,30 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Call AI with tools
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...messages,
-        ],
-        tools,
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
-    });
+    // Build conversation we'll send to the model. May get extended if the model
+    // calls lookup_customer and we need a second pass.
+    const aiMessages: Array<Record<string, unknown>> = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...messages,
+    ];
+
+    const callAI = async () =>
+      fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: aiMessages,
+          tools,
+          max_tokens: 600,
+          temperature: 0.7,
+        }),
+      });
+
+    let response = await callAI();
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -229,9 +370,9 @@ Deno.serve(async (req) => {
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
-    const data = await response.json();
-    const choice = data.choices?.[0];
-    const message = choice?.message;
+    let data = await response.json();
+    let choice = data.choices?.[0];
+    let message = choice?.message;
 
     let reply = message?.content || "";
     const packageCards: Array<{
@@ -245,8 +386,15 @@ Deno.serve(async (req) => {
       mode: string;
     }> = [];
 
-    // Process tool calls
+    // ---- Process tool calls ----
+    // We may need a 2nd AI pass if lookup_customer is used (so the AI can speak
+    // about the lookup results). send_package is handled inline (no 2nd pass).
+    let didLookup = false;
+
     if (message?.tool_calls && message.tool_calls.length > 0) {
+      // Push the assistant's tool-call message into history so the follow-up call is valid
+      aiMessages.push(message);
+
       for (const toolCall of message.tool_calls) {
         if (toolCall.function.name === "send_package") {
           try {
@@ -297,9 +445,54 @@ Deno.serve(async (req) => {
                 mode,
               });
             }
+
+            // Add a tool-result message so AI history stays valid
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ ok: true, package_id: pkgId }),
+            });
           } catch (e) {
-            console.error("Error parsing tool call:", e);
+            console.error("Error parsing send_package tool call:", e);
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ ok: false, error: "parse_error" }),
+            });
           }
+        } else if (toolCall.function.name === "lookup_customer") {
+          didLookup = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await lookupCustomer(supabase, args.email);
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(result),
+            });
+          } catch (e) {
+            console.error("Error in lookup_customer:", e);
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ found: false, error: "lookup_failed" }),
+            });
+          }
+        }
+      }
+
+      // If we ran a customer lookup, give the AI a chance to respond using the data
+      if (didLookup) {
+        response = await callAI();
+        if (response.ok) {
+          data = await response.json();
+          choice = data.choices?.[0];
+          message = choice?.message;
+          if (message?.content) {
+            reply = message.content;
+          }
+        } else {
+          console.error("Follow-up AI call failed:", await response.text());
         }
       }
     }
