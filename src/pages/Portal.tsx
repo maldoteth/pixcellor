@@ -19,13 +19,11 @@ type StripeSession = {
   metadata: Record<string, unknown> | null;
 };
 
-// Only include orders that came from this website's checkout.
-// Future orders are stamped with metadata.source = "pixcellor_site".
-// Legacy orders are filtered by GBP currency (DHB token sales are USD).
+// ONLY include orders explicitly stamped by this website's checkout.
+// All legacy/external Stripe activity is excluded.
 const isSiteOrder = (o: StripeSession) => {
   const source = (o.metadata as { source?: string } | null)?.source;
-  if (source === "pixcellor_site") return true;
-  return o.currency?.toLowerCase() === "gbp";
+  return source === "pixcellor_site";
 };
 
 type Conversation = {
