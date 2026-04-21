@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Search } from "lucide-react";
 import { toast } from "sonner";
 
 type StripeSession = {
@@ -72,9 +74,11 @@ export default function Portal() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [lastMessages, setLastMessages] = useState<Record<string, Message>>({});
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [activeConv, setActiveConv] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   // Auth gate
   useEffect(() => {
@@ -123,8 +127,10 @@ export default function Portal() {
           .select("*")
           .in("conversation_id", convs.map(c => c.id))
           .order("created_at", { ascending: false });
+        const allMsgs = (msgs ?? []) as Message[];
+        setAllMessages(allMsgs);
         const previews: Record<string, Message> = {};
-        for (const m of (msgs ?? []) as Message[]) {
+        for (const m of allMsgs) {
           if (!previews[m.conversation_id]) previews[m.conversation_id] = m;
         }
         setLastMessages(previews);
@@ -187,6 +193,48 @@ export default function Portal() {
     return { totalSales, totalWebsites, potential };
   }, [orders, profiles, inquiries, conversations]);
 
+  // Global search across all data
+  const q = search.trim().toLowerCase();
+  const matches = (s: string | null | undefined) => !!s && s.toLowerCase().includes(q);
+
+  const filteredOrders = useMemo(() => {
+    if (!q) return orders;
+    return orders.filter(o =>
+      matches(o.customer_email) ||
+      matches(o.session_id) ||
+      matches(o.payment_status) ||
+      matches(o.status) ||
+      matches(o.currency) ||
+      matches(JSON.stringify(o.metadata))
+    );
+  }, [orders, q]);
+
+  const filteredProfiles = useMemo(() => {
+    if (!q) return profiles;
+    return profiles.filter(p =>
+      matches(p.email) || matches(p.name) || matches(p.company) ||
+      matches(p.brand_colours) || matches(p.requirements) ||
+      matches(p.content_notes) || matches(p.notes) ||
+      matches(p.page_count?.toString())
+    );
+  }, [profiles, q]);
+
+  const filteredInquiries = useMemo(() => {
+    if (!q) return inquiries;
+    return inquiries.filter(i =>
+      matches(i.name) || matches(i.email) || matches(i.message)
+    );
+  }, [inquiries, q]);
+
+  // Conversations match if client_id matches OR any message in them matches
+  const filteredConversations = useMemo(() => {
+    if (!q) return conversations;
+    const matchingConvIds = new Set(
+      allMessages.filter(m => matches(m.content) || matches(m.role)).map(m => m.conversation_id)
+    );
+    return conversations.filter(c => matches(c.client_id) || matchingConvIds.has(c.id));
+  }, [conversations, allMessages, q]);
+
   if (!authChecked) {
     return <div className="min-h-screen bg-background text-foreground flex items-center justify-center">Loading…</div>;
   }
@@ -228,17 +276,33 @@ export default function Portal() {
           </Card>
         </div>
 
+        {/* Global search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search everything — emails, names, chat messages, order IDs, notes…"
+            className="pl-9"
+          />
+          {q && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {filteredOrders.length} orders · {filteredConversations.length} chats · {filteredProfiles.length} clients · {filteredInquiries.length} inquiries
+            </p>
+          )}
+        </div>
+
         <Tabs defaultValue="orders">
           <TabsList className="grid grid-cols-4 w-full md:w-auto">
-            <TabsTrigger value="orders">Orders ({orders.length})</TabsTrigger>
-            <TabsTrigger value="chats">Chats ({conversations.length})</TabsTrigger>
-            <TabsTrigger value="profiles">Clients ({profiles.length})</TabsTrigger>
-            <TabsTrigger value="inquiries">Inquiries ({inquiries.length})</TabsTrigger>
+            <TabsTrigger value="orders">Orders ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="chats">Chats ({filteredConversations.length})</TabsTrigger>
+            <TabsTrigger value="profiles">Clients ({filteredProfiles.length})</TabsTrigger>
+            <TabsTrigger value="inquiries">Inquiries ({filteredInquiries.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="orders" className="space-y-2">
-            {orders.length === 0 && <p className="text-muted-foreground text-sm">No orders yet.</p>}
-            {orders.map(o => (
+            {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {q ? "match your search" : "yet"}.</p>}
+            {filteredOrders.map(o => (
               <Card key={o.session_id}>
                 <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
                   <div className="space-y-1">
@@ -258,8 +322,8 @@ export default function Portal() {
 
           <TabsContent value="chats" className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-4">
             <div className="space-y-2 max-h-[70vh] overflow-y-auto">
-              {conversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations yet.</p>}
-              {conversations.map(c => {
+              {filteredConversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations {q ? "match your search" : "yet"}.</p>}
+              {filteredConversations.map(c => {
                 const last = lastMessages[c.id];
                 return (
                   <button
@@ -298,8 +362,8 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="profiles" className="space-y-2">
-            {profiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles yet.</p>}
-            {profiles.map(p => (
+            {filteredProfiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles {q ? "match your search" : "yet"}.</p>}
+            {filteredProfiles.map(p => (
               <Card key={p.email}>
                 <CardContent className="p-4 space-y-1">
                   <div className="flex justify-between">
@@ -320,8 +384,8 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="inquiries" className="space-y-2">
-            {inquiries.length === 0 && <p className="text-muted-foreground text-sm">No inquiries yet.</p>}
-            {inquiries.map(i => (
+            {filteredInquiries.length === 0 && <p className="text-muted-foreground text-sm">No inquiries {q ? "match your search" : "yet"}.</p>}
+            {filteredInquiries.map(i => (
               <Card key={i.id}>
                 <CardContent className="p-4 space-y-1">
                   <div className="flex justify-between">
