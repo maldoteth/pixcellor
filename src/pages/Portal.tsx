@@ -71,6 +71,7 @@ export default function Portal() {
   const [orders, setOrders] = useState<StripeSession[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [lastMessages, setLastMessages] = useState<Record<string, Message>>({});
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [activeConv, setActiveConv] = useState<string | null>(null);
