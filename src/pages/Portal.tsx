@@ -193,6 +193,48 @@ export default function Portal() {
     return { totalSales, totalWebsites, potential };
   }, [orders, profiles, inquiries, conversations]);
 
+  // Global search across all data
+  const q = search.trim().toLowerCase();
+  const matches = (s: string | null | undefined) => !!s && s.toLowerCase().includes(q);
+
+  const filteredOrders = useMemo(() => {
+    if (!q) return orders;
+    return orders.filter(o =>
+      matches(o.customer_email) ||
+      matches(o.session_id) ||
+      matches(o.payment_status) ||
+      matches(o.status) ||
+      matches(o.currency) ||
+      matches(JSON.stringify(o.metadata))
+    );
+  }, [orders, q]);
+
+  const filteredProfiles = useMemo(() => {
+    if (!q) return profiles;
+    return profiles.filter(p =>
+      matches(p.email) || matches(p.name) || matches(p.company) ||
+      matches(p.brand_colours) || matches(p.requirements) ||
+      matches(p.content_notes) || matches(p.notes) ||
+      matches(p.page_count?.toString())
+    );
+  }, [profiles, q]);
+
+  const filteredInquiries = useMemo(() => {
+    if (!q) return inquiries;
+    return inquiries.filter(i =>
+      matches(i.name) || matches(i.email) || matches(i.message)
+    );
+  }, [inquiries, q]);
+
+  // Conversations match if client_id matches OR any message in them matches
+  const filteredConversations = useMemo(() => {
+    if (!q) return conversations;
+    const matchingConvIds = new Set(
+      allMessages.filter(m => matches(m.content) || matches(m.role)).map(m => m.conversation_id)
+    );
+    return conversations.filter(c => matches(c.client_id) || matchingConvIds.has(c.id));
+  }, [conversations, allMessages, q]);
+
   if (!authChecked) {
     return <div className="min-h-screen bg-background text-foreground flex items-center justify-center">Loading…</div>;
   }
