@@ -111,7 +111,7 @@ export default function Portal() {
         supabase.from("client_profiles").select("*").order("updated_at", { ascending: false }),
         supabase.from("contact_inquiries").select("*").order("created_at", { ascending: false }),
       ]);
-      setOrders((o.data ?? []) as StripeSession[]);
+      setOrders(((o.data ?? []) as StripeSession[]).filter(isSiteOrder));
       setConversations((c.data ?? []) as Conversation[]);
       setProfiles((p.data ?? []) as Profile[]);
       setInquiries((i.data ?? []) as Inquiry[]);
