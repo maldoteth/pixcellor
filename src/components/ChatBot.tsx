@@ -173,6 +173,23 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     }
   }, [isOpen, hasStarted]);
 
+  useEffect(() => {
+    if (!conversationId) return;
+    const channel = supabase
+      .channel(`chat-live-${conversationId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+        const next = payload.new as Message;
+        if (next.role === "admin") setMessages(current => [...current, next]);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_conversations", filter: `id=eq.${conversationId}` }, (payload) => {
+        setManualHandoff(Boolean((payload.new as { bot_paused?: boolean }).bot_paused));
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId]);
+
   const loadChatHistory = async () => {
     setIsLoadingHistory(true);
     try {
@@ -216,6 +233,11 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
         body: { messages: [], clientId: clientId.current },
       });
       if (error) throw error;
+      setManualHandoff(Boolean(data.manualHandoff));
+      if (data.manualHandoff || !data.reply) {
+        if (data.conversationId) setConversationId(data.conversationId);
+        return;
+      }
       const msg: Message = { role: "assistant", content: data.reply };
       if (data.packageCards?.length) msg.packageCards = data.packageCards;
       setMessages([msg]);
