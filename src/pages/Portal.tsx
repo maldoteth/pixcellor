@@ -108,6 +108,11 @@ type MailboxMessage = {
 
 const formatGBP = (pence: number) => `£${(pence / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
 
+const normalizeEmail = (value?: string | null) => {
+  const email = (value ?? "").trim().toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
+};
+
 const formatDateTimeLocal = (date: Date) => {
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60_000);
@@ -275,9 +280,24 @@ export default function Portal() {
   };
 
   const loadMailbox = async () => {
+    const allowedEmails = Array.from(new Set([
+      ...orders.map((order) => normalizeEmail(order.customer_email)),
+      ...profiles.map((profile) => normalizeEmail(profile.email)),
+      ...inquiries.map((inquiry) => normalizeEmail(inquiry.email)),
+      ...contacts.map((contact) => normalizeEmail(contact.email)),
+      ...conversations.map((conversation) => normalizeEmail(conversation.client_id)),
+    ].filter(Boolean) as string[]));
+
+    if (allowedEmails.length === 0) {
+      setMailboxMessages([]);
+      setActiveMail(null);
+      toast.info("No Pixcellor user emails found yet.");
+      return;
+    }
+
     setMailboxLoading(true);
     const { data, error } = await supabase.functions.invoke("mailbox", {
-      body: { accessCode: portalAccessCode, action: "list", query: mailboxSearch.trim() || undefined },
+      body: { accessCode: portalAccessCode, action: "list", query: mailboxSearch.trim() || undefined, allowedEmails },
     });
     setMailboxLoading(false);
     if (error || data?.error) {
@@ -844,7 +864,7 @@ export default function Portal() {
                 </div>
                 <Button variant="outline" onClick={loadMailbox} disabled={mailboxLoading}>{mailboxLoading ? "…" : "Load"}</Button>
               </div>
-              {mailboxMessages.length === 0 && <p className="text-sm text-muted-foreground">Load the connected mailbox to see client replies.</p>}
+              {mailboxMessages.length === 0 && <p className="text-sm text-muted-foreground">Load the connected mailbox to see Pixcellor user replies only.</p>}
               <div className="space-y-2 max-h-[70vh] md:max-h-none md:flex-1 md:min-h-0 overflow-y-auto pr-1">
                 {mailboxMessages.map(message => {
                   const relatedOrder = orders.find(order => order.customer_email?.toLowerCase() === message.fromEmail);

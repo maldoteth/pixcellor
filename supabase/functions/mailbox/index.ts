@@ -37,6 +37,11 @@ const plainTextFromPayload = (payload: any): string => {
 
 const extractEmail = (value: string) => value.match(/<([^>]+)>/)?.[1] ?? value
 
+const normalizeEmail = (value: unknown) => {
+  const email = String(value ?? '').trim().toLowerCase()
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null
+}
+
 const encodeRawEmail = (value: string) => {
   const bytes = new TextEncoder().encode(value)
   let binary = ''
@@ -74,19 +79,27 @@ Deno.serve(async (req) => {
     if (body.accessCode !== PORTAL_ACCESS_CODE) return json({ error: 'Invalid portal access code' }, 401)
 
     if (body.action === 'list') {
+      const allowedEmails = new Set(
+        Array.isArray(body.allowedEmails)
+          ? body.allowedEmails.map(normalizeEmail).filter(Boolean) as string[]
+          : [],
+      )
+      if (allowedEmails.size === 0) return json({ messages: [] })
+
       const query = encodeURIComponent(body.query?.trim() || 'in:inbox newer_than:90d')
       const list = await gatewayFetch(`/users/me/messages?maxResults=20&q=${query}`)
-      const messages = await Promise.all((list.messages ?? []).slice(0, 20).map(async (item: { id: string }) => {
+      const messages = (await Promise.all((list.messages ?? []).slice(0, 20).map(async (item: { id: string }) => {
         const msg = await gatewayFetch(`/users/me/messages/${item.id}?format=full`)
         const headers = msg.payload?.headers ?? []
         const from = header(headers, 'From')
+        const fromEmail = normalizeEmail(extractEmail(from)) ?? ''
         const subject = header(headers, 'Subject') || '(no subject)'
         const date = header(headers, 'Date')
         return {
           id: msg.id,
           threadId: msg.threadId,
           from,
-          fromEmail: extractEmail(from).toLowerCase(),
+          fromEmail,
           subject,
           snippet: msg.snippet ?? '',
           body: plainTextFromPayload(msg.payload).slice(0, 8000),
@@ -94,7 +107,7 @@ Deno.serve(async (req) => {
           unread: Array.isArray(msg.labelIds) ? msg.labelIds.includes('UNREAD') : false,
           messageId: header(headers, 'Message-ID'),
         }
-      }))
+      }))).filter((message) => allowedEmails.has(message.fromEmail))
       return json({ messages })
     }
 
