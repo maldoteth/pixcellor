@@ -741,12 +741,21 @@ export default function Portal() {
                   <div className="space-y-1">
                     <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
                     <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
+                    {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center justify-end gap-3">
                     <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>
                       {o.payment_status ?? "pending"}
                     </Badge>
+                    <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
+                      {o.order_status === "delivered" ? "Delivered" : "Open"}
+                    </Badge>
                     <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                    {o.order_status !== "delivered" && (
+                      <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
+                        Mark delivered
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
