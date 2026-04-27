@@ -400,6 +400,18 @@ export type Database = {
         Args: { _access_code: string }
         Returns: undefined
       }
+      portal_update_contact: {
+        Args: {
+          _access_code: string
+          _contact_id: string
+          _email?: string
+          _location?: string
+          _name: string
+          _notes?: string
+          _phone?: string
+        }
+        Returns: undefined
+      }
       portal_update_contact_status: {
         Args: { _access_code: string; _contact_id: string; _status: string }
         Returns: undefined
