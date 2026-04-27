@@ -307,6 +307,11 @@ export default function Portal() {
 
   const getContact = (id: string) => contacts.find(c => c.id === id);
 
+  const openEventFormForContact = (contactId: string) => {
+    setEventForm({ contact_id: contactId, title: "", description: "", callback_at: "" });
+    setShowSalesEventForm(true);
+  };
+
   const exitPortal = () => {
     sessionStorage.removeItem(PORTAL_ACCESS_STORAGE_KEY);
     navigate("/portal-login", { replace: true });
