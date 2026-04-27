@@ -108,6 +108,9 @@ export default function Portal() {
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [salesSearch, setSalesSearch] = useState("");
+  const [contactsSearch, setContactsSearch] = useState("");
+  const [openContactId, setOpenContactId] = useState<string | null>(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
@@ -216,7 +219,10 @@ export default function Portal() {
 
   // Global search across all data
   const q = search.trim().toLowerCase();
+  const salesQ = salesSearch.trim().toLowerCase();
+  const contactsQ = contactsSearch.trim().toLowerCase();
   const matches = (s: string | null | undefined) => !!s && s.toLowerCase().includes(q);
+  const matchesQuery = (query: string, s: string | null | undefined) => !!s && s.toLowerCase().includes(query);
 
   const filteredOrders = useMemo(() => {
     if (!q) return orders;
@@ -267,6 +273,31 @@ export default function Portal() {
     );
   }, [contactEvents, filteredContacts, q]);
 
+  const searchedContacts = useMemo(() => {
+    if (!contactsQ) return filteredContacts;
+    const matchingContactIds = new Set(
+      contactEvents
+        .filter(e => matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) || matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at))
+        .map(e => e.contact_id)
+    );
+    return filteredContacts.filter(c =>
+      matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
+    );
+  }, [filteredContacts, contactEvents, contactsQ]);
+
+  const salesCallbacks = useMemo(() => {
+    const pending = contactEvents
+      .filter(e => e.callback_at && !e.completed_at)
+      .sort((a, b) => new Date(a.callback_at!).getTime() - new Date(b.callback_at!).getTime());
+    if (!salesQ) return pending;
+    return pending.filter(e => {
+      const contact = contacts.find(c => c.id === e.contact_id);
+      return matchesQuery(salesQ, e.title) || matchesQuery(salesQ, e.description) || matchesQuery(salesQ, e.callback_at) ||
+        matchesQuery(salesQ, contact?.name) || matchesQuery(salesQ, contact?.email) || matchesQuery(salesQ, contact?.phone) || matchesQuery(salesQ, contact?.location);
+    });
+  }, [contactEvents, contacts, salesQ]);
+
   const callbacks = useMemo(() =>
     contactEvents
       .filter(e => e.callback_at && !e.completed_at)
@@ -275,6 +306,11 @@ export default function Portal() {
   );
 
   const getContact = (id: string) => contacts.find(c => c.id === id);
+
+  const openEventFormForContact = (contactId: string) => {
+    setEventForm({ contact_id: contactId, title: "", description: "", callback_at: "" });
+    setShowSalesEventForm(true);
+  };
 
   const exitPortal = () => {
     sessionStorage.removeItem(PORTAL_ACCESS_STORAGE_KEY);
@@ -349,6 +385,27 @@ export default function Portal() {
     );
     return conversations.filter(c => matches(c.client_id) || matchingConvIds.has(c.id));
   }, [conversations, allMessages, q]);
+
+  const eventFormCard = showSalesEventForm && (
+    <Card>
+      <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <select value={eventForm.contact_id} onChange={(e) => setEventForm(f => ({ ...f, contact_id: e.target.value }))} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+          <option value="">Select contact</option>
+          {contacts.map(c => <option key={c.id} value={c.id}>{c.name}{c.email ? ` · ${c.email}` : ""}</option>)}
+        </select>
+        <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
+        <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
+        <div>
+          <label className="text-xs text-muted-foreground">Optional callback date</label>
+          <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
+        </div>
+        <div className="flex items-end gap-2">
+          <Button onClick={createContactEvent}>Save event</Button>
+          <Button variant="outline" onClick={() => setShowSalesEventForm(false)}>Cancel</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   if (!authChecked) {
     return <div className="min-h-screen bg-background text-foreground flex items-center justify-center">Loading…</div>;
@@ -437,37 +494,24 @@ export default function Portal() {
               </Button>
             </div>
 
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={salesSearch}
+                onChange={(e) => setSalesSearch(e.target.value)}
+                placeholder="Search sales callbacks by contact, title, notes, phone, email…"
+                className="pl-9"
+              />
+            </div>
+
             {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a contact first, then you can create sales events.</p>}
 
-            {showSalesEventForm && (
-              <Card>
-                <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <select
-                    value={eventForm.contact_id}
-                    onChange={(e) => setEventForm(f => ({ ...f, contact_id: e.target.value }))}
-                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  >
-                    <option value="">Select contact</option>
-                    {contacts.map(c => <option key={c.id} value={c.id}>{c.name}{c.email ? ` · ${c.email}` : ""}</option>)}
-                  </select>
-                  <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
-                  <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
-                  <div>
-                    <label className="text-xs text-muted-foreground">Optional callback date</label>
-                    <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
-                  </div>
-                  <div className="flex items-end gap-2">
-                    <Button onClick={createContactEvent}>Save event</Button>
-                    <Button variant="outline" onClick={() => setShowSalesEventForm(false)}>Cancel</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {eventFormCard}
 
             <div className="space-y-2">
               <h3 className="font-medium">Callbacks waiting</h3>
-              {callbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting.</p>}
-              {callbacks.map(e => {
+              {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting{salesQ ? " match your search" : ""}.</p>}
+              {salesCallbacks.map(e => {
                 const contact = getContact(e.contact_id);
                 return (
                   <Card key={e.id}>
@@ -589,6 +633,16 @@ export default function Portal() {
               <Button onClick={() => setShowContactForm(v => !v)}><Plus className="w-4 h-4 mr-2" /> Add contact</Button>
             </div>
 
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={contactsSearch}
+                onChange={(e) => setContactsSearch(e.target.value)}
+                placeholder="Search contacts by name, email, phone, location, notes, history…"
+                className="pl-9"
+              />
+            </div>
+
             {showContactForm && (
               <Card>
                 <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -605,21 +659,27 @@ export default function Portal() {
               </Card>
             )}
 
-            {filteredContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {q ? "match your search" : "yet"}.</p>}
-            {filteredContacts.map(c => {
+            {eventFormCard}
+
+            {searchedContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {q || contactsQ ? "match your search" : "yet"}.</p>}
+            {searchedContacts.map(c => {
               const events = filteredContactEvents.filter(e => e.contact_id === c.id);
+              const isOpen = openContactId === c.id;
               return (
                 <Card key={c.id}>
                   <CardContent className="p-4 space-y-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
+                      <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)} className="text-left flex-1 min-w-[180px]">
                         <div className="font-medium">{c.name}</div>
                         <div className="text-xs text-muted-foreground">{[c.phone, c.email, c.location].filter(Boolean).join(" · ") || "No details added"}</div>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
+                        <Badge variant="secondary">{events.length} logs</Badge>
                       </div>
-                      <Badge variant="secondary">{events.length} logs</Badge>
                     </div>
                     {c.notes && <div className="text-sm whitespace-pre-wrap">{c.notes}</div>}
-                    <div className="border-t border-border pt-3 space-y-2">
+                    {isOpen && <div className="border-t border-border pt-3 space-y-2">
                       {events.length === 0 && <p className="text-xs text-muted-foreground">No communications logged.</p>}
                       {events.map(e => (
                         <div key={e.id} className="text-sm rounded-md bg-muted p-3">
@@ -631,7 +691,7 @@ export default function Portal() {
                           {e.callback_at && <div className="text-xs text-muted-foreground mt-1">Callback: {new Date(e.callback_at).toLocaleString()}</div>}
                         </div>
                       ))}
-                    </div>
+                    </div>}
                   </CardContent>
                 </Card>
               );
