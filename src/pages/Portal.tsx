@@ -588,6 +588,46 @@ export default function Portal() {
     toast.success("Order marked delivered.");
   };
 
+  const sendMailboxReply = async () => {
+    if (!activeMail || !mailReply.trim()) return;
+    const { data, error } = await supabase.functions.invoke("mailbox", {
+      body: {
+        accessCode: portalAccessCode,
+        action: "send",
+        to: activeMail.fromEmail,
+        subject: activeMail.subject,
+        content: mailReply.trim(),
+        threadId: activeMail.threadId,
+        inReplyTo: activeMail.messageId,
+      },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Could not send reply");
+      return;
+    }
+    setMailReply("");
+    toast.success("Email reply sent.");
+  };
+
+  const updateMailboxMessage = async (messageId: string, action: "markRead" | "archive") => {
+    const { data, error } = await supabase.functions.invoke("mailbox", {
+      body: { accessCode: portalAccessCode, action, messageId },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Mailbox action failed");
+      return;
+    }
+    if (action === "archive") {
+      setMailboxMessages(current => current.filter(message => message.id !== messageId));
+      setActiveMail(null);
+      toast.success("Email archived.");
+    } else {
+      setMailboxMessages(current => current.map(message => message.id === messageId ? { ...message, unread: false } : message));
+      if (activeMail?.id === messageId) setActiveMail({ ...activeMail, unread: false });
+      toast.success("Email marked read.");
+    }
+  };
+
   // Conversations match if client_id matches OR any message in them matches
   const filteredConversations = useMemo(() => {
     if (!q) return conversations;
