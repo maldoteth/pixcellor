@@ -108,6 +108,9 @@ export default function Portal() {
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [salesSearch, setSalesSearch] = useState("");
+  const [contactsSearch, setContactsSearch] = useState("");
+  const [openContactId, setOpenContactId] = useState<string | null>(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
@@ -216,7 +219,10 @@ export default function Portal() {
 
   // Global search across all data
   const q = search.trim().toLowerCase();
+  const salesQ = salesSearch.trim().toLowerCase();
+  const contactsQ = contactsSearch.trim().toLowerCase();
   const matches = (s: string | null | undefined) => !!s && s.toLowerCase().includes(q);
+  const matchesQuery = (query: string, s: string | null | undefined) => !!s && s.toLowerCase().includes(query);
 
   const filteredOrders = useMemo(() => {
     if (!q) return orders;
