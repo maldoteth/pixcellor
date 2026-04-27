@@ -69,6 +69,7 @@ export default function Portal() {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authError, setAuthError] = useState("");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -82,25 +83,44 @@ export default function Portal() {
 
   // Auth gate
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, session) => {
+    let cancelled = false;
+
+    const checkAdmin = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
       if (!session) {
-        navigate("/portal-login");
+        if (!cancelled) {
+          setIsAdmin(false);
+          setAuthChecked(true);
+          navigate("/portal-login", { replace: true });
+        }
         return;
       }
-      const { data } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
-      setIsAdmin(!!data);
+      const { data, error } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
+      if (cancelled) return;
+      if (error) {
+        setAuthError(error.message);
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(data === true);
+      }
       setAuthChecked(true);
-    });
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => checkAdmin(session));
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       if (!session) {
-        navigate("/portal-login");
+        setIsAdmin(false);
+        setAuthChecked(true);
+        navigate("/portal-login", { replace: true });
         return;
       }
-      const { data } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
-      setIsAdmin(!!data);
-      setAuthChecked(true);
+      setAuthChecked(false);
+      setTimeout(() => checkAdmin(session), 0);
     });
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   // Initial load + realtime
@@ -237,6 +257,15 @@ export default function Portal() {
 
   if (!authChecked) {
     return <div className="min-h-screen bg-background text-foreground flex items-center justify-center">Loading…</div>;
+  }
+
+  if (authError) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 gap-4 text-center">
+        <p className="text-muted-foreground">Portal access check failed: {authError}</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>Reload portal</Button>
+      </div>
+    );
   }
 
   if (!isAdmin) {
