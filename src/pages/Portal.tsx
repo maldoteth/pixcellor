@@ -420,6 +420,13 @@ export default function Portal() {
           <label className="text-xs text-muted-foreground">Optional callback date</label>
           <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
         </div>
+        <div>
+          <label className="text-xs text-muted-foreground">Quick callback</label>
+          <select defaultValue="" onChange={(e) => applyCallbackPreset(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+            <option value="">Pick time</option>
+            {callbackPresets.map(preset => <option key={preset.label} value={preset.label}>{preset.label}</option>)}
+          </select>
+        </div>
         <div className="flex items-end gap-2">
           <Button onClick={createContactEvent}>Save event</Button>
           <Button variant="outline" onClick={() => setShowSalesEventForm(false)}>Cancel</Button>
