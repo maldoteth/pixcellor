@@ -285,7 +285,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
           </div>
           <div>
             <h3 className="font-semibold text-white text-sm">Alex from Pixcellor</h3>
-            <p className="text-xs text-white/50">Usually replies instantly</p>
+            <p className="text-xs text-white/50">{manualHandoff ? "Team member replying" : "Usually replies instantly"}</p>
           </div>
         </div>
       </div>
@@ -364,7 +364,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask something or just leave email address"
+            placeholder={manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
             className="flex-1 rounded-sm px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
             style={{
               background: "rgba(255,255,255,0.08)",
