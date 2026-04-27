@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode } = await req.json();
+    const { priceId, mode, packageName, billing } = await req.json();
     
     if (!priceId) throw new Error("Missing priceId");
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -30,7 +30,11 @@ serve(async (req) => {
       mode: mode || "payment",
       success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment=canceled`,
-      metadata: { source: "pixcellor_site" },
+      metadata: {
+        source: "pixcellor_site",
+        package_name: typeof packageName === "string" ? packageName : "",
+        billing: typeof billing === "string" ? billing : mode || "payment",
+      },
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
