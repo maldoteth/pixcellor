@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
+import { PORTAL_ACCESS_CODE, PORTAL_ACCESS_STORAGE_KEY } from "./PortalAuth";
 
 type StripeSession = {
   session_id: string;
@@ -94,6 +95,7 @@ export default function Portal() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [portalAccessCode] = useState(() => sessionStorage.getItem(PORTAL_ACCESS_STORAGE_KEY) ?? "");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -111,47 +113,17 @@ export default function Portal() {
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
 
-  // Auth gate
+  // Access-code gate
   useEffect(() => {
-    let cancelled = false;
-
-    const checkAdmin = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
-      if (!session) {
-        if (!cancelled) {
-          setIsAdmin(false);
-          setAuthChecked(true);
-          navigate("/portal-login", { replace: true });
-        }
-        return;
-      }
-      const { data, error } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
-      if (cancelled) return;
-      if (error) {
-        setAuthError(error.message);
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(data === true);
-      }
+    if (portalAccessCode !== PORTAL_ACCESS_CODE) {
+      setIsAdmin(false);
       setAuthChecked(true);
-    };
-
-    supabase.auth.getSession().then(({ data: { session } }) => checkAdmin(session));
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session) {
-        setIsAdmin(false);
-        setAuthChecked(true);
-        navigate("/portal-login", { replace: true });
-        return;
-      }
-      setAuthChecked(false);
-      setTimeout(() => checkAdmin(session), 0);
-    });
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
+      navigate("/portal-login", { replace: true });
+      return;
+    }
+    setIsAdmin(true);
+    setAuthChecked(true);
+  }, [navigate, portalAccessCode]);
 
   // Initial load + realtime
   useEffect(() => {
