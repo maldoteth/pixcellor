@@ -139,6 +139,8 @@ export default function Portal() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
 
@@ -347,6 +349,18 @@ export default function Portal() {
     setEventForm(f => ({ ...f, contact_id: contact?.id ?? "" }));
   };
 
+  const startEditingContact = (contact: Contact) => {
+    setEditingContactId(contact.id);
+    setEditContactForm({
+      name: contact.name,
+      phone: contact.phone ?? "",
+      email: contact.email ?? "",
+      location: contact.location ?? "",
+      notes: contact.notes ?? "",
+    });
+    setOpenContactId(contact.id);
+  };
+
   const applyCallbackPreset = (presetLabel: string) => {
     const preset = callbackPresets.find(item => item.label === presetLabel);
     if (!preset) return;
@@ -380,6 +394,32 @@ export default function Portal() {
     setShowContactForm(false);
     await loadPortalSnapshot();
     toast.success("Contact added.");
+  };
+
+  const updateContact = async () => {
+    if (!editingContactId) return;
+    const name = editContactForm.name.trim();
+    if (!name) {
+      toast.error("Contact name is required.");
+      return;
+    }
+    const { error } = await (supabase as any).rpc("portal_update_contact", {
+      _access_code: portalAccessCode,
+      _contact_id: editingContactId,
+      _name: name,
+      _phone: editContactForm.phone,
+      _email: editContactForm.email,
+      _location: editContactForm.location,
+      _notes: editContactForm.notes,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setEditingContactId(null);
+    setEditContactForm({ name: "", phone: "", email: "", location: "", notes: "" });
+    await loadPortalSnapshot();
+    toast.success("Contact updated.");
   };
 
   const createContactEvent = async () => {
@@ -775,10 +815,24 @@ export default function Portal() {
                             />
                           ))}
                         </div>
+                        <Button variant="outline" size="sm" onClick={() => startEditingContact(c)}>Edit</Button>
                         <Button variant="outline" size="sm" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
                         <Badge variant="secondary">{events.length} logs</Badge>
                       </div>
                     </div>
+                    {editingContactId === c.id && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-md border border-border p-3">
+                        <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
+                        <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
+                        <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
+                        <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
+                        <Input className="md:col-span-2" placeholder="Notes" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
+                        <div className="md:col-span-2 flex gap-2">
+                          <Button onClick={updateContact}>Save changes</Button>
+                          <Button variant="outline" onClick={() => setEditingContactId(null)}>Cancel</Button>
+                        </div>
+                      </div>
+                    )}
                     {c.notes && <div className="text-sm whitespace-pre-wrap">{c.notes}</div>}
                     {isOpen && <div className="border-t border-border pt-3 space-y-2">
                       {events.length === 0 && <p className="text-xs text-muted-foreground">No communications logged.</p>}
