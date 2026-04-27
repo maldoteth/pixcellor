@@ -275,6 +275,11 @@ export default function Portal() {
 
   const getContact = (id: string) => contacts.find(c => c.id === id);
 
+  const exitPortal = () => {
+    sessionStorage.removeItem(PORTAL_ACCESS_STORAGE_KEY);
+    navigate("/portal-login", { replace: true });
+  };
+
   const createContact = async () => {
     const name = contactForm.name.trim();
     if (!name) {
@@ -355,9 +360,9 @@ export default function Portal() {
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 gap-4">
-        <p className="text-muted-foreground">This account doesn't have admin access.</p>
-        <Button variant="outline" onClick={async () => { await supabase.auth.signOut(); navigate("/portal-login"); }}>
-          Sign out
+        <p className="text-muted-foreground">Enter the access code to use the portal.</p>
+        <Button variant="outline" onClick={exitPortal}>
+          Back to access code
         </Button>
       </div>
     );
@@ -368,8 +373,8 @@ export default function Portal() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl md:text-3xl font-semibold">Pixcellor Dev Portal</h1>
-          <Button variant="outline" size="sm" onClick={async () => { await supabase.auth.signOut(); navigate("/portal-login"); }}>
-            Sign out
+          <Button variant="outline" size="sm" onClick={exitPortal}>
+            Lock portal
           </Button>
         </div>
 
