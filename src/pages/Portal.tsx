@@ -292,7 +292,7 @@ export default function Portal() {
       .sort((a, b) => new Date(a.callback_at!).getTime() - new Date(b.callback_at!).getTime());
     if (!salesQ) return pending;
     return pending.filter(e => {
-      const contact = getContact(e.contact_id);
+      const contact = contacts.find(c => c.id === e.contact_id);
       return matchesQuery(salesQ, e.title) || matchesQuery(salesQ, e.description) || matchesQuery(salesQ, e.callback_at) ||
         matchesQuery(salesQ, contact?.name) || matchesQuery(salesQ, contact?.email) || matchesQuery(salesQ, contact?.phone) || matchesQuery(salesQ, contact?.location);
     });
