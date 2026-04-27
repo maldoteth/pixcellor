@@ -139,6 +139,8 @@ export default function Portal() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
 
@@ -345,6 +347,18 @@ export default function Portal() {
     setEventContactSearch(value);
     const contact = contacts.find(c => `${c.name}${c.email ? ` · ${c.email}` : ""}` === value || c.name === value || c.email === value);
     setEventForm(f => ({ ...f, contact_id: contact?.id ?? "" }));
+  };
+
+  const startEditingContact = (contact: Contact) => {
+    setEditingContactId(contact.id);
+    setEditContactForm({
+      name: contact.name,
+      phone: contact.phone ?? "",
+      email: contact.email ?? "",
+      location: contact.location ?? "",
+      notes: contact.notes ?? "",
+    });
+    setOpenContactId(contact.id);
   };
 
   const applyCallbackPreset = (presetLabel: string) => {
