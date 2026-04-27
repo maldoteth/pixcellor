@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search } from "lucide-react";
+import { Archive, Mail, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { PORTAL_ACCESS_CODE, PORTAL_ACCESS_STORAGE_KEY } from "./PortalAuth";
 
@@ -91,6 +91,19 @@ type ContactEvent = {
   completed_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+type MailboxMessage = {
+  id: string;
+  threadId: string;
+  from: string;
+  fromEmail: string;
+  subject: string;
+  snippet: string;
+  body: string;
+  date: string;
+  unread: boolean;
+  messageId?: string;
 };
 
 const formatGBP = (pence: number) => `£${(pence / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
