@@ -16,6 +16,8 @@ type StripeSession = {
   currency: string | null;
   payment_status: string | null;
   status: string | null;
+  order_status?: string | null;
+  delivered_at?: string | null;
   customer_email: string | null;
   mode: string | null;
   created_at: string;
@@ -539,6 +541,19 @@ export default function Portal() {
       toast.error(error.message);
       await loadPortalSnapshot();
     }
+  };
+
+  const markOrderDelivered = async (sessionId: string) => {
+    const { error } = await (supabase as any).rpc("portal_mark_order_delivered", {
+      _access_code: portalAccessCode,
+      _session_id: sessionId,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await loadPortalSnapshot();
+    toast.success("Order marked delivered.");
   };
 
   // Conversations match if client_id matches OR any message in them matches
