@@ -281,13 +281,13 @@ export default function Portal() {
       toast.error("Contact name is required.");
       return;
     }
-    const { error } = await (supabase as any).from("contacts").insert({
-      name,
-      phone: contactForm.phone.trim() || null,
-      email: contactForm.email.trim() || null,
-      location: contactForm.location.trim() || null,
-      notes: contactForm.notes.trim() || null,
-      source: "manual",
+    const { error } = await (supabase as any).rpc("portal_create_contact", {
+      _access_code: portalAccessCode,
+      _name: name,
+      _phone: contactForm.phone,
+      _email: contactForm.email,
+      _location: contactForm.location,
+      _notes: contactForm.notes,
     });
     if (error) {
       toast.error(error.message);
@@ -308,12 +308,12 @@ export default function Portal() {
       toast.error("Event title is required.");
       return;
     }
-    const { error } = await (supabase as any).from("contact_events").insert({
-      contact_id: eventForm.contact_id,
-      title,
-      description: eventForm.description.trim() || null,
-      event_type: eventForm.callback_at ? "callback" : "communication",
-      callback_at: eventForm.callback_at ? new Date(eventForm.callback_at).toISOString() : null,
+    const { error } = await (supabase as any).rpc("portal_create_contact_event", {
+      _access_code: portalAccessCode,
+      _contact_id: eventForm.contact_id,
+      _title: title,
+      _description: eventForm.description,
+      _callback_at: eventForm.callback_at ? new Date(eventForm.callback_at).toISOString() : null,
     });
     if (error) {
       toast.error(error.message);
@@ -325,7 +325,7 @@ export default function Portal() {
   };
 
   const completeCallback = async (eventId: string) => {
-    const { error } = await (supabase as any).from("contact_events").update({ completed_at: new Date().toISOString() }).eq("id", eventId);
+    const { error } = await (supabase as any).rpc("portal_complete_callback", { _access_code: portalAccessCode, _event_id: eventId });
     if (error) toast.error(error.message);
     else toast.success("Callback marked done.");
   };
