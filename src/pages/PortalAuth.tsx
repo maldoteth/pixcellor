@@ -12,6 +12,7 @@ export default function PortalAuth() {
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [busy, setBusy] = useState(false);
+  const [resetBusy, setResetBusy] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -47,6 +48,25 @@ export default function PortalAuth() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!email) {
+      toast.error("Enter your email first.");
+      return;
+    }
+    setResetBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Password reset email sent.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send reset email");
+    } finally {
+      setResetBusy(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
       <Card className="w-full max-w-sm">
@@ -67,6 +87,16 @@ export default function PortalAuth() {
             >
               {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
             </button>
+            {mode === "signin" && (
+              <button
+                type="button"
+                onClick={handleResetPassword}
+                disabled={resetBusy}
+                className="w-full text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+              >
+                {resetBusy ? "Sending reset email…" : "Forgot password? Reset it"}
+              </button>
+            )}
           </form>
         </CardContent>
       </Card>
