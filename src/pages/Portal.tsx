@@ -692,8 +692,15 @@ export default function Portal() {
               {salesCallbacks.map(e => {
                 const contact = getContact(e.contact_id);
                 const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
+                const statusColor = contact ? getContactStatusColor(contact.status) : "hsl(var(--muted))";
                 return (
-                  <Card key={e.id}>
+                  <Card
+                    key={e.id}
+                    className="overflow-hidden"
+                    style={{
+                      background: `linear-gradient(135deg, ${statusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--card)) 34%, hsl(var(--card)) 100%)`,
+                    }}
+                  >
                     <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
                         <div className="font-medium">{e.title}</div>
