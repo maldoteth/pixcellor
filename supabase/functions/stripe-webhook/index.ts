@@ -33,6 +33,16 @@ serve(async (req) => {
     const rawSessionId = eventObject.id;
     const sessionId = typeof rawSessionId === "string" ? rawSessionId : null;
 
+    const formatGBP = (amount: number | null | undefined) =>
+      typeof amount === "number" ? `£${(amount / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}` : undefined;
+
+    const templateForPackage = (packageName?: string | null) => {
+      const clean = (packageName ?? "").toLowerCase();
+      if (clean.includes("retainer")) return "retainer-order-confirmation";
+      if (clean.includes("elite")) return "elite-order-confirmation";
+      return "full-works-order-confirmation";
+    };
+
     const eventInsert = await supabase.from("stripe_events").insert({
       stripe_event_id: event.id,
       event_type: event.type,
@@ -82,6 +92,24 @@ serve(async (req) => {
 
       if (sessionUpsert.error) {
         throw new Error(`Failed to upsert checkout session: ${sessionUpsert.error.message}`);
+      }
+
+      if (event.type === "checkout.session.completed" && paymentStatus === "paid" && session.customer_details?.email) {
+        const packageName = session.metadata?.package_name || "Full Works";
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: templateForPackage(packageName),
+            recipientEmail: session.customer_details.email,
+            idempotencyKey: `order-confirmation-${session.id}`,
+            templateData: {
+              customerEmail: session.customer_details.email,
+              orderId: session.id,
+              packageName,
+              amount: formatGBP(session.amount_total),
+              billing: session.metadata?.billing || session.mode || "payment",
+            },
+          },
+        });
       }
     }
 
