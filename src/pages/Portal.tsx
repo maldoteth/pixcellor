@@ -71,6 +71,7 @@ type Contact = {
   email: string | null;
   location: string | null;
   notes: string | null;
+  status: "cold" | "aware" | "warm" | "hot";
   source: string;
   created_at: string;
   updated_at: string;
@@ -104,6 +105,13 @@ const callbackPresets = [
   { label: "3m", getDate: () => { const d = new Date(); d.setMonth(d.getMonth() + 3); return d; } },
   { label: "1y", getDate: () => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d; } },
 ];
+
+const contactStatuses = [
+  { value: "cold", label: "Cold", color: "hsl(217 91% 60%)" },
+  { value: "aware", label: "Aware", color: "hsl(142 71% 45%)" },
+  { value: "warm", label: "Warm", color: "hsl(32 95% 44%)" },
+  { value: "hot", label: "Hot", color: "hsl(0 84% 60%)" },
+] as const;
 
 export default function Portal() {
   const navigate = useNavigate();
