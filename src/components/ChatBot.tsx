@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/drawer";
 
 interface Message {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "admin";
   content: string;
   packageCards?: PackageCard[];
 }
@@ -153,6 +153,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   const [hasStarted, setHasStarted] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [manualHandoff, setManualHandoff] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId());
@@ -177,12 +178,13 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     try {
       const { data: conv } = await supabase
         .from("chat_conversations")
-        .select("id")
+        .select("id, bot_paused")
         .eq("client_id", clientId.current)
         .single();
 
       if (conv) {
         setConversationId(conv.id);
+        setManualHandoff(Boolean(conv.bot_paused));
         const { data: msgs } = await supabase
           .from("chat_messages")
           .select("role, content")
@@ -244,7 +246,8 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
       if (error) throw error;
       const assistantMsg: Message = { role: "assistant", content: data.reply };
       if (data.packageCards?.length) assistantMsg.packageCards = data.packageCards;
-      setMessages([...newMessages, assistantMsg]);
+      setManualHandoff(Boolean(data.manualHandoff));
+      setMessages(data.manualHandoff || !data.reply ? newMessages : [...newMessages, assistantMsg]);
       if (data.conversationId && !conversationId) setConversationId(data.conversationId);
     } catch (error) {
       console.error("Error sending message:", error);
