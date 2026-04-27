@@ -109,6 +109,50 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_events: {
+        Row: {
+          callback_at: string | null
+          completed_at: string | null
+          contact_id: string
+          created_at: string
+          description: string | null
+          event_type: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          callback_at?: string | null
+          completed_at?: string | null
+          contact_id: string
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          callback_at?: string | null
+          completed_at?: string | null
+          contact_id?: string
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_events_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_inquiries: {
         Row: {
           created_at: string
@@ -130,6 +174,42 @@ export type Database = {
           id?: string
           message?: string
           name?: string
+        }
+        Relationships: []
+      }
+      contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          location: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string
+          updated_at?: string
         }
         Relationships: []
       }
