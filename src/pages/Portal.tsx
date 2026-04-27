@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
+import { PORTAL_ACCESS_CODE, PORTAL_ACCESS_STORAGE_KEY } from "./PortalAuth";
 
 type StripeSession = {
   session_id: string;
@@ -94,6 +95,7 @@ export default function Portal() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [portalAccessCode] = useState(() => sessionStorage.getItem(PORTAL_ACCESS_STORAGE_KEY) ?? "");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -111,90 +113,55 @@ export default function Portal() {
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
 
-  // Auth gate
+  // Access-code gate
   useEffect(() => {
-    let cancelled = false;
-
-    const checkAdmin = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
-      if (!session) {
-        if (!cancelled) {
-          setIsAdmin(false);
-          setAuthChecked(true);
-          navigate("/portal-login", { replace: true });
-        }
-        return;
-      }
-      const { data, error } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
-      if (cancelled) return;
-      if (error) {
-        setAuthError(error.message);
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(data === true);
-      }
+    if (portalAccessCode !== PORTAL_ACCESS_CODE) {
+      setIsAdmin(false);
       setAuthChecked(true);
-    };
-
-    supabase.auth.getSession().then(({ data: { session } }) => checkAdmin(session));
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session) {
-        setIsAdmin(false);
-        setAuthChecked(true);
-        navigate("/portal-login", { replace: true });
-        return;
-      }
-      setAuthChecked(false);
-      setTimeout(() => checkAdmin(session), 0);
-    });
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
+      navigate("/portal-login", { replace: true });
+      return;
+    }
+    setIsAdmin(true);
+    setAuthChecked(true);
+  }, [navigate, portalAccessCode]);
 
   // Initial load + realtime
   useEffect(() => {
     if (!isAdmin) return;
 
     const load = async () => {
-      const [o, c, p, i, co, ce] = await Promise.all([
-        supabase.from("stripe_checkout_sessions").select("*").order("created_at", { ascending: false }),
-        supabase.from("chat_conversations").select("*").order("updated_at", { ascending: false }),
-        supabase.from("client_profiles").select("*").order("updated_at", { ascending: false }),
-        supabase.from("contact_inquiries").select("*").order("created_at", { ascending: false }),
-        (supabase as any).from("contacts").select("*").order("updated_at", { ascending: false }),
-        (supabase as any).from("contact_events").select("*").order("created_at", { ascending: false }),
-      ]);
-      setOrders(((o.data ?? []) as StripeSession[]).filter(isSiteOrder));
-      const convs = (c.data ?? []) as Conversation[];
-      setProfiles((p.data ?? []) as Profile[]);
-      setInquiries((i.data ?? []) as Inquiry[]);
-      setContacts((co.data ?? []) as Contact[]);
-      setContactEvents((ce.data ?? []) as ContactEvent[]);
-
-      // Fetch the latest message per conversation for previews
-      let sortedConvs = convs;
-      if (convs.length > 0) {
-        const { data: msgs } = await supabase
-          .from("chat_messages")
-          .select("*")
-          .in("conversation_id", convs.map(c => c.id))
-          .order("created_at", { ascending: false });
-        const allMsgs = (msgs ?? []) as Message[];
-        setAllMessages(allMsgs);
-        const previews: Record<string, Message> = {};
-        for (const m of allMsgs) {
-          if (!previews[m.conversation_id]) previews[m.conversation_id] = m;
-        }
-        setLastMessages(previews);
-        // Re-sort conversations by most recent message activity
-        sortedConvs = [...convs].sort((a, b) => {
-          const aTime = previews[a.id]?.created_at ?? a.updated_at;
-          const bTime = previews[b.id]?.created_at ?? b.updated_at;
-          return new Date(bTime).getTime() - new Date(aTime).getTime();
-        });
+      const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
+      if (error) {
+        setAuthError(error.message);
+        return;
       }
+      const snapshot = (data ?? {}) as {
+        orders?: StripeSession[];
+        conversations?: Conversation[];
+        messages?: Message[];
+        profiles?: Profile[];
+        inquiries?: Inquiry[];
+        contacts?: Contact[];
+        contactEvents?: ContactEvent[];
+      };
+      setOrders((snapshot.orders ?? []).filter(isSiteOrder));
+      const convs = snapshot.conversations ?? [];
+      const allMsgs = snapshot.messages ?? [];
+      setProfiles(snapshot.profiles ?? []);
+      setInquiries(snapshot.inquiries ?? []);
+      setContacts(snapshot.contacts ?? []);
+      setContactEvents(snapshot.contactEvents ?? []);
+      setAllMessages(allMsgs);
+      const previews: Record<string, Message> = {};
+      for (const m of allMsgs) {
+        if (!previews[m.conversation_id]) previews[m.conversation_id] = m;
+      }
+      setLastMessages(previews);
+      const sortedConvs = [...convs].sort((a, b) => {
+        const aTime = previews[a.id]?.created_at ?? a.updated_at;
+        const bTime = previews[b.id]?.created_at ?? b.updated_at;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      });
       setConversations(sortedConvs);
     };
     load();
@@ -216,16 +183,13 @@ export default function Portal() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, activeConv]);
+  }, [isAdmin, activeConv, portalAccessCode]);
 
   const loadMessages = async (conversationId: string) => {
     setActiveConv(conversationId);
-    const { data } = await supabase
-      .from("chat_messages")
-      .select("*")
-      .eq("conversation_id", conversationId)
-      .order("created_at");
-    setMessages((data ?? []) as Message[]);
+    const { data, error } = await (supabase as any).rpc("portal_fetch_messages", { _access_code: portalAccessCode, _conversation_id: conversationId });
+    if (error) toast.error(error.message);
+    else setMessages((data ?? []) as Message[]);
   };
 
   const counters = useMemo(() => {
@@ -311,19 +275,24 @@ export default function Portal() {
 
   const getContact = (id: string) => contacts.find(c => c.id === id);
 
+  const exitPortal = () => {
+    sessionStorage.removeItem(PORTAL_ACCESS_STORAGE_KEY);
+    navigate("/portal-login", { replace: true });
+  };
+
   const createContact = async () => {
     const name = contactForm.name.trim();
     if (!name) {
       toast.error("Contact name is required.");
       return;
     }
-    const { error } = await (supabase as any).from("contacts").insert({
-      name,
-      phone: contactForm.phone.trim() || null,
-      email: contactForm.email.trim() || null,
-      location: contactForm.location.trim() || null,
-      notes: contactForm.notes.trim() || null,
-      source: "manual",
+    const { error } = await (supabase as any).rpc("portal_create_contact", {
+      _access_code: portalAccessCode,
+      _name: name,
+      _phone: contactForm.phone,
+      _email: contactForm.email,
+      _location: contactForm.location,
+      _notes: contactForm.notes,
     });
     if (error) {
       toast.error(error.message);
@@ -344,12 +313,12 @@ export default function Portal() {
       toast.error("Event title is required.");
       return;
     }
-    const { error } = await (supabase as any).from("contact_events").insert({
-      contact_id: eventForm.contact_id,
-      title,
-      description: eventForm.description.trim() || null,
-      event_type: eventForm.callback_at ? "callback" : "communication",
-      callback_at: eventForm.callback_at ? new Date(eventForm.callback_at).toISOString() : null,
+    const { error } = await (supabase as any).rpc("portal_create_contact_event", {
+      _access_code: portalAccessCode,
+      _contact_id: eventForm.contact_id,
+      _title: title,
+      _description: eventForm.description,
+      _callback_at: eventForm.callback_at ? new Date(eventForm.callback_at).toISOString() : null,
     });
     if (error) {
       toast.error(error.message);
@@ -361,7 +330,7 @@ export default function Portal() {
   };
 
   const completeCallback = async (eventId: string) => {
-    const { error } = await (supabase as any).from("contact_events").update({ completed_at: new Date().toISOString() }).eq("id", eventId);
+    const { error } = await (supabase as any).rpc("portal_complete_callback", { _access_code: portalAccessCode, _event_id: eventId });
     if (error) toast.error(error.message);
     else toast.success("Callback marked done.");
   };
@@ -391,9 +360,9 @@ export default function Portal() {
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 gap-4">
-        <p className="text-muted-foreground">This account doesn't have admin access.</p>
-        <Button variant="outline" onClick={async () => { await supabase.auth.signOut(); navigate("/portal-login"); }}>
-          Sign out
+        <p className="text-muted-foreground">Enter the access code to use the portal.</p>
+        <Button variant="outline" onClick={exitPortal}>
+          Back to access code
         </Button>
       </div>
     );
@@ -404,8 +373,8 @@ export default function Portal() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl md:text-3xl font-semibold">Pixcellor Dev Portal</h1>
-          <Button variant="outline" size="sm" onClick={async () => { await supabase.auth.signOut(); navigate("/portal-login"); }}>
-            Sign out
+          <Button variant="outline" size="sm" onClick={exitPortal}>
+            Lock portal
           </Button>
         </div>
 
