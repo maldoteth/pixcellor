@@ -154,6 +154,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [manualHandoff, setManualHandoff] = useState(false);
+  const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId());
@@ -174,12 +175,19 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   }, [isOpen, hasStarted]);
 
   useEffect(() => {
+    if (isOpen) setAdminUnreadCount(0);
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!conversationId) return;
     const channel = supabase
       .channel(`chat-live-${conversationId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `conversation_id=eq.${conversationId}` }, (payload) => {
         const next = payload.new as Message;
-        if (next.role === "admin") setMessages(current => [...current, next]);
+        if (next.role === "admin") {
+          setMessages(current => [...current, next]);
+          if (!isOpen) setAdminUnreadCount(1);
+        }
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_conversations", filter: `id=eq.${conversationId}` }, (payload) => {
         setManualHandoff(Boolean((payload.new as { bot_paused?: boolean }).bot_paused));
@@ -188,7 +196,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId]);
+  }, [conversationId, isOpen]);
 
   const loadChatHistory = async () => {
     setIsLoadingHistory(true);
@@ -482,6 +490,11 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             animate={{ scale: [1, 1.3, 1.5], opacity: [0.6, 0.3, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
           />
+        )}
+        {!isOpen && adminUnreadCount > 0 && (
+          <span className="absolute -right-1.5 -top-1.5 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-bold leading-none text-destructive-foreground shadow-lg">
+            {adminUnreadCount}
+          </span>
         )}
       </motion.button>
 
