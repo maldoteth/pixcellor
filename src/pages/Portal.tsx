@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
 type StripeSession = {
@@ -63,6 +63,30 @@ type Inquiry = {
   created_at: string;
 };
 
+type Contact = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  location: string | null;
+  notes: string | null;
+  source: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type ContactEvent = {
+  id: string;
+  contact_id: string;
+  title: string;
+  description: string | null;
+  event_type: string;
+  callback_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 const formatGBP = (pence: number) => `£${(pence / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
 
 export default function Portal() {
@@ -78,8 +102,14 @@ export default function Portal() {
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [showSalesEventForm, setShowSalesEventForm] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
+  const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
 
   // Auth gate
   useEffect(() => {
@@ -128,16 +158,20 @@ export default function Portal() {
     if (!isAdmin) return;
 
     const load = async () => {
-      const [o, c, p, i] = await Promise.all([
+      const [o, c, p, i, co, ce] = await Promise.all([
         supabase.from("stripe_checkout_sessions").select("*").order("created_at", { ascending: false }),
         supabase.from("chat_conversations").select("*").order("updated_at", { ascending: false }),
         supabase.from("client_profiles").select("*").order("updated_at", { ascending: false }),
         supabase.from("contact_inquiries").select("*").order("created_at", { ascending: false }),
+        (supabase as any).from("contacts").select("*").order("updated_at", { ascending: false }),
+        (supabase as any).from("contact_events").select("*").order("created_at", { ascending: false }),
       ]);
       setOrders(((o.data ?? []) as StripeSession[]).filter(isSiteOrder));
       const convs = (c.data ?? []) as Conversation[];
       setProfiles((p.data ?? []) as Profile[]);
       setInquiries((i.data ?? []) as Inquiry[]);
+      setContacts((co.data ?? []) as Contact[]);
+      setContactEvents((ce.data ?? []) as ContactEvent[]);
 
       // Fetch the latest message per conversation for previews
       let sortedConvs = convs;
@@ -175,6 +209,8 @@ export default function Portal() {
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "client_profiles" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_inquiries" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "contacts" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "contact_events" }, load)
       .subscribe();
 
     return () => {
@@ -246,6 +282,90 @@ export default function Portal() {
     );
   }, [inquiries, q]);
 
+  const filteredContacts = useMemo(() => {
+    if (!q) return contacts;
+    const matchingContactIds = new Set(
+      contactEvents.filter(e => matches(e.title) || matches(e.description) || matches(e.event_type) || matches(e.callback_at)).map(e => e.contact_id)
+    );
+    return contacts.filter(c =>
+      matches(c.name) || matches(c.phone) || matches(c.email) ||
+      matches(c.location) || matches(c.notes) || matchingContactIds.has(c.id)
+    );
+  }, [contacts, contactEvents, q]);
+
+  const filteredContactEvents = useMemo(() => {
+    if (!q) return contactEvents;
+    const contactIds = new Set(filteredContacts.map(c => c.id));
+    return contactEvents.filter(e =>
+      contactIds.has(e.contact_id) || matches(e.title) || matches(e.description) ||
+      matches(e.event_type) || matches(e.callback_at)
+    );
+  }, [contactEvents, filteredContacts, q]);
+
+  const callbacks = useMemo(() =>
+    contactEvents
+      .filter(e => e.callback_at && !e.completed_at)
+      .sort((a, b) => new Date(a.callback_at!).getTime() - new Date(b.callback_at!).getTime()),
+    [contactEvents]
+  );
+
+  const getContact = (id: string) => contacts.find(c => c.id === id);
+
+  const createContact = async () => {
+    const name = contactForm.name.trim();
+    if (!name) {
+      toast.error("Contact name is required.");
+      return;
+    }
+    const { error } = await (supabase as any).from("contacts").insert({
+      name,
+      phone: contactForm.phone.trim() || null,
+      email: contactForm.email.trim() || null,
+      location: contactForm.location.trim() || null,
+      notes: contactForm.notes.trim() || null,
+      source: "manual",
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setContactForm({ name: "", phone: "", email: "", location: "", notes: "" });
+    setShowContactForm(false);
+    toast.success("Contact added.");
+  };
+
+  const createContactEvent = async () => {
+    if (!eventForm.contact_id) {
+      toast.error("Select a contact.");
+      return;
+    }
+    const title = eventForm.title.trim();
+    if (!title) {
+      toast.error("Event title is required.");
+      return;
+    }
+    const { error } = await (supabase as any).from("contact_events").insert({
+      contact_id: eventForm.contact_id,
+      title,
+      description: eventForm.description.trim() || null,
+      event_type: eventForm.callback_at ? "callback" : "communication",
+      callback_at: eventForm.callback_at ? new Date(eventForm.callback_at).toISOString() : null,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setEventForm({ contact_id: "", title: "", description: "", callback_at: "" });
+    setShowSalesEventForm(false);
+    toast.success("Event logged.");
+  };
+
+  const completeCallback = async (eventId: string) => {
+    const { error } = await (supabase as any).from("contact_events").update({ completed_at: new Date().toISOString() }).eq("id", eventId);
+    if (error) toast.error(error.message);
+    else toast.success("Callback marked done.");
+  };
+
   // Conversations match if client_id matches OR any message in them matches
   const filteredConversations = useMemo(() => {
     if (!q) return conversations;
@@ -316,18 +436,79 @@ export default function Portal() {
           />
           {q && (
             <p className="text-xs text-muted-foreground mt-1">
-              {filteredOrders.length} orders · {filteredConversations.length} chats · {filteredProfiles.length} clients · {filteredInquiries.length} inquiries
+              {filteredOrders.length} orders · {filteredConversations.length} chats · {filteredProfiles.length} clients · {filteredInquiries.length} inquiries · {filteredContacts.length} contacts
             </p>
           )}
         </div>
 
-        <Tabs defaultValue="orders">
-          <TabsList className="grid grid-cols-4 w-full md:w-auto">
+        <Tabs defaultValue="sales">
+          <TabsList className="grid grid-cols-2 md:grid-cols-6 w-full md:w-auto h-auto">
+            <TabsTrigger value="sales">Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders">Orders ({filteredOrders.length})</TabsTrigger>
             <TabsTrigger value="chats">Chats ({filteredConversations.length})</TabsTrigger>
             <TabsTrigger value="profiles">Clients ({filteredProfiles.length})</TabsTrigger>
-            <TabsTrigger value="inquiries">Inquiries ({filteredInquiries.length})</TabsTrigger>
+            <TabsTrigger value="inquiries">Enquiries ({filteredInquiries.length})</TabsTrigger>
+            <TabsTrigger value="contacts">Contacts ({filteredContacts.length})</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="sales" className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold">Sales follow-ups</h2>
+                <p className="text-sm text-muted-foreground">Log contact events and keep future callbacks visible.</p>
+              </div>
+              <Button onClick={() => setShowSalesEventForm(v => !v)} disabled={contacts.length === 0}>
+                <Plus className="w-4 h-4 mr-2" /> Create event
+              </Button>
+            </div>
+
+            {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a contact first, then you can create sales events.</p>}
+
+            {showSalesEventForm && (
+              <Card>
+                <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <select
+                    value={eventForm.contact_id}
+                    onChange={(e) => setEventForm(f => ({ ...f, contact_id: e.target.value }))}
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="">Select contact</option>
+                    {contacts.map(c => <option key={c.id} value={c.id}>{c.name}{c.email ? ` · ${c.email}` : ""}</option>)}
+                  </select>
+                  <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
+                  <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
+                  <div>
+                    <label className="text-xs text-muted-foreground">Optional callback date</label>
+                    <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <Button onClick={createContactEvent}>Save event</Button>
+                    <Button variant="outline" onClick={() => setShowSalesEventForm(false)}>Cancel</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="space-y-2">
+              <h3 className="font-medium">Callbacks waiting</h3>
+              {callbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting.</p>}
+              {callbacks.map(e => {
+                const contact = getContact(e.contact_id);
+                return (
+                  <Card key={e.id}>
+                    <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="font-medium">{e.title}</div>
+                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown contact"} · {new Date(e.callback_at!).toLocaleString()}</div>
+                        {e.description && <div className="text-sm whitespace-pre-wrap">{e.description}</div>}
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => completeCallback(e.id)}>Done</Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
 
           <TabsContent value="orders" className="space-y-2">
             {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {q ? "match your search" : "yet"}.</p>}
@@ -425,6 +606,61 @@ export default function Portal() {
                 </CardContent>
               </Card>
             ))}
+          </TabsContent>
+
+          <TabsContent value="contacts" className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold">Contact book</h2>
+              <Button onClick={() => setShowContactForm(v => !v)}><Plus className="w-4 h-4 mr-2" /> Add contact</Button>
+            </div>
+
+            {showContactForm && (
+              <Card>
+                <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Input placeholder="Name" value={contactForm.name} onChange={(e) => setContactForm(f => ({ ...f, name: e.target.value }))} />
+                  <Input placeholder="Phone number" value={contactForm.phone} onChange={(e) => setContactForm(f => ({ ...f, phone: e.target.value }))} />
+                  <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
+                  <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
+                  <Input className="md:col-span-2" placeholder="Notes" value={contactForm.notes} onChange={(e) => setContactForm(f => ({ ...f, notes: e.target.value }))} />
+                  <div className="md:col-span-2 flex gap-2">
+                    <Button onClick={createContact}>Save contact</Button>
+                    <Button variant="outline" onClick={() => setShowContactForm(false)}>Cancel</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {filteredContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {q ? "match your search" : "yet"}.</p>}
+            {filteredContacts.map(c => {
+              const events = filteredContactEvents.filter(e => e.contact_id === c.id);
+              return (
+                <Card key={c.id}>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <div className="font-medium">{c.name}</div>
+                        <div className="text-xs text-muted-foreground">{[c.phone, c.email, c.location].filter(Boolean).join(" · ") || "No details added"}</div>
+                      </div>
+                      <Badge variant="secondary">{events.length} logs</Badge>
+                    </div>
+                    {c.notes && <div className="text-sm whitespace-pre-wrap">{c.notes}</div>}
+                    <div className="border-t border-border pt-3 space-y-2">
+                      {events.length === 0 && <p className="text-xs text-muted-foreground">No communications logged.</p>}
+                      {events.map(e => (
+                        <div key={e.id} className="text-sm rounded-md bg-muted p-3">
+                          <div className="flex flex-wrap justify-between gap-2">
+                            <span className="font-medium">{e.title}</span>
+                            <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
+                          </div>
+                          {e.description && <div className="whitespace-pre-wrap mt-1">{e.description}</div>}
+                          {e.callback_at && <div className="text-xs text-muted-foreground mt-1">Callback: {new Date(e.callback_at).toLocaleString()}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </TabsContent>
         </Tabs>
 
