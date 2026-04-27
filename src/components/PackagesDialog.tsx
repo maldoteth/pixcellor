@@ -47,9 +47,9 @@ const glassButtonStyle = {
   `,
 } as const;
 
-async function handleCheckout(priceId: string, mode: string) {
+async function handleCheckout(priceId: string, mode: string, packageName: string, billing: string) {
   const { data, error } = await supabase.functions.invoke("create-checkout", {
-    body: { priceId, mode },
+    body: { priceId, mode, packageName, billing },
   });
   if (error) throw error;
   if (data?.url) window.location.href = data.url;
@@ -196,10 +196,10 @@ function DesktopCards() {
     e.currentTarget.style.setProperty("--mouse-y", "0");
   }, []);
 
-  const buy = async (priceId: string, mode: string, key: string) => {
+  const buy = async (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
     setLoading(key);
     try {
-      await handleCheckout(priceId, mode);
+      await handleCheckout(priceId, mode, packageName, billing);
     } catch (e) {
       console.error(e);
     } finally {
@@ -244,7 +244,7 @@ function DesktopCards() {
           ))}
         </ul>
         <GlassBuyButton
-          onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks")}
+          onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
           disabled={!!loading}
           loading={loading === "fullWorks"}
           label="Buy Now"
@@ -331,7 +331,9 @@ function DesktopCards() {
                 ? PACKAGES.elite.priceId
                 : PACKAGES.elite.monthlyPriceId,
               eliteBilling === "one-time" ? "payment" : "subscription",
-              "elite"
+              "elite",
+              PACKAGES.elite.name,
+              eliteBilling === "one-time" ? "One-time payment" : "Monthly subscription"
             )
           }
           disabled={!!loading}
@@ -417,7 +419,9 @@ function DesktopCards() {
                 ? PACKAGES.retainer.monthlyPriceId
                 : PACKAGES.retainer.yearlyPriceId,
               PACKAGES.retainer.mode,
-              "retainer"
+              "retainer",
+              PACKAGES.retainer.name,
+              retainerBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
             )
           }
           disabled={!!loading}
@@ -435,10 +439,10 @@ function MobileCards() {
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
 
-  const buy = async (priceId: string, mode: string, key: string) => {
+  const buy = async (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
     setLoading(key);
     try {
-      await handleCheckout(priceId, mode);
+      await handleCheckout(priceId, mode, packageName, billing);
     } catch (e) {
       console.error(e);
     } finally {
@@ -468,7 +472,7 @@ function MobileCards() {
           ))}
         </ul>
         <GlassBuyButton
-          onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks")}
+          onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
           disabled={!!loading}
           loading={loading === "fullWorks"}
           label="Buy Now"
@@ -531,7 +535,9 @@ function MobileCards() {
                 ? PACKAGES.elite.priceId
                 : PACKAGES.elite.monthlyPriceId,
               eliteBilling === "one-time" ? "payment" : "subscription",
-              "elite"
+              "elite",
+              PACKAGES.elite.name,
+              eliteBilling === "one-time" ? "One-time payment" : "Monthly subscription"
             )
           }
           disabled={!!loading}
@@ -597,7 +603,9 @@ function MobileCards() {
                 ? PACKAGES.retainer.monthlyPriceId
                 : PACKAGES.retainer.yearlyPriceId,
               PACKAGES.retainer.mode,
-              "retainer"
+              "retainer",
+              PACKAGES.retainer.name,
+              retainerBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
             )
           }
           disabled={!!loading}
