@@ -659,6 +659,8 @@ export default function Portal() {
               </Card>
             )}
 
+            {eventFormCard}
+
             {searchedContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {q || contactsQ ? "match your search" : "yet"}.</p>}
             {searchedContacts.map(c => {
               const events = filteredContactEvents.filter(e => e.contact_id === c.id);
