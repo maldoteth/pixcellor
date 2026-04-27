@@ -16,21 +16,27 @@ export type Database = {
     Tables: {
       chat_conversations: {
         Row: {
+          bot_paused: boolean
           client_id: string
           created_at: string
           id: string
+          manual_handoff_at: string | null
           updated_at: string
         }
         Insert: {
+          bot_paused?: boolean
           client_id: string
           created_at?: string
           id?: string
+          manual_handoff_at?: string | null
           updated_at?: string
         }
         Update: {
+          bot_paused?: boolean
           client_id?: string
           created_at?: string
           id?: string
+          manual_handoff_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -366,6 +372,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      portal_close_chat_case: {
+        Args: { _access_code: string; _conversation_id: string }
+        Returns: undefined
+      }
       portal_complete_callback: {
         Args: { _access_code: string; _event_id: string }
         Returns: undefined
@@ -398,6 +408,14 @@ export type Database = {
       portal_fetch_snapshot: { Args: { _access_code: string }; Returns: Json }
       portal_require_access: {
         Args: { _access_code: string }
+        Returns: undefined
+      }
+      portal_send_chat_reply: {
+        Args: {
+          _access_code: string
+          _content: string
+          _conversation_id: string
+        }
         Returns: undefined
       }
       portal_update_contact: {
