@@ -306,7 +306,7 @@ export default function Portal() {
     );
     return filteredContacts.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id)
     );
   }, [filteredContacts, contactEvents, contactsQ]);
 
@@ -413,6 +413,19 @@ export default function Portal() {
     else {
       await loadPortalSnapshot();
       toast.success("Callback marked done.");
+    }
+  };
+
+  const updateContactStatus = async (contactId: string, status: Contact["status"]) => {
+    setContacts(current => current.map(contact => contact.id === contactId ? { ...contact, status } : contact));
+    const { error } = await (supabase as any).rpc("portal_update_contact_status", {
+      _access_code: portalAccessCode,
+      _contact_id: contactId,
+      _status: status,
+    });
+    if (error) {
+      toast.error(error.message);
+      await loadPortalSnapshot();
     }
   };
 
