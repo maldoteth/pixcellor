@@ -506,30 +506,7 @@ export default function Portal() {
 
             {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a contact first, then you can create sales events.</p>}
 
-            {showSalesEventForm && (
-              <Card>
-                <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <select
-                    value={eventForm.contact_id}
-                    onChange={(e) => setEventForm(f => ({ ...f, contact_id: e.target.value }))}
-                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  >
-                    <option value="">Select contact</option>
-                    {contacts.map(c => <option key={c.id} value={c.id}>{c.name}{c.email ? ` · ${c.email}` : ""}</option>)}
-                  </select>
-                  <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
-                  <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
-                  <div>
-                    <label className="text-xs text-muted-foreground">Optional callback date</label>
-                    <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
-                  </div>
-                  <div className="flex items-end gap-2">
-                    <Button onClick={createContactEvent}>Save event</Button>
-                    <Button variant="outline" onClick={() => setShowSalesEventForm(false)}>Cancel</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {eventFormCard}
 
             <div className="space-y-2">
               <h3 className="font-medium">Callbacks waiting</h3>
