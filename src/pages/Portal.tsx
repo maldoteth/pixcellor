@@ -114,6 +114,9 @@ const contactStatuses = [
   { value: "gold", label: "Gold", color: "hsl(45 93% 47%)" },
 ] as const;
 
+const getContactStatusColor = (status: Contact["status"]) =>
+  contactStatuses.find(item => item.value === status)?.color ?? "hsl(var(--muted))";
+
 export default function Portal() {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
@@ -793,8 +796,15 @@ export default function Portal() {
             {searchedContacts.map(c => {
               const events = filteredContactEvents.filter(e => e.contact_id === c.id);
               const isOpen = openContactId === c.id;
+              const statusColor = getContactStatusColor(c.status);
               return (
-                <Card key={c.id}>
+                <Card
+                  key={c.id}
+                  className="overflow-hidden"
+                  style={{
+                    background: `linear-gradient(135deg, ${statusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--card)) 34%, hsl(var(--card)) 100%)`,
+                  }}
+                >
                   <CardContent className="p-4 space-y-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)} className="text-left flex-1 min-w-[180px]">
