@@ -651,6 +651,7 @@ export default function Portal() {
               {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting{salesQ ? " match your search" : ""}.</p>}
               {salesCallbacks.map(e => {
                 const contact = getContact(e.contact_id);
+                const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
                 return (
                   <Card key={e.id}>
                     <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
@@ -659,7 +660,10 @@ export default function Portal() {
                         <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown contact"} · {new Date(e.callback_at!).toLocaleString()}</div>
                         {e.description && <div className="text-sm whitespace-pre-wrap">{e.description}</div>}
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => completeCallback(e.id)}>Done</Button>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <Badge variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
+                        <Button variant="outline" size="sm" onClick={() => completeCallback(e.id)}>Done</Button>
+                      </div>
                     </CardContent>
                   </Card>
                 );
