@@ -192,6 +192,7 @@ export default function Portal() {
   const [activeMail, setActiveMail] = useState<MailboxMessage | null>(null);
   const [mailReply, setMailReply] = useState("");
   const [mailboxLoading, setMailboxLoading] = useState(false);
+  const [sendingConfirmationId, setSendingConfirmationId] = useState<string | null>(null);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -608,6 +609,26 @@ export default function Portal() {
     toast.success("Order marked delivered.");
   };
 
+  const sendOrderConfirmation = async (order: StripeSession) => {
+    if (!order.customer_email) {
+      toast.error("This order does not have a customer email.");
+      return;
+    }
+
+    setSendingConfirmationId(order.session_id);
+    const { data, error } = await supabase.functions.invoke("send-order-confirmation", {
+      body: { accessCode: portalAccessCode, sessionId: order.session_id },
+    });
+    setSendingConfirmationId(null);
+
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Could not send confirmation email");
+      return;
+    }
+
+    toast.success(`Confirmation sent to ${data.recipientEmail || order.customer_email}.`);
+  };
+
   const sendMailboxReply = async () => {
     if (!activeMail || !mailReply.trim()) return;
     const { data, error } = await supabase.functions.invoke("mailbox", {
@@ -844,6 +865,14 @@ export default function Portal() {
                       {o.order_status === "delivered" ? "Delivered" : "Open"}
                     </Badge>
                     <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => sendOrderConfirmation(o)}
+                      disabled={!o.customer_email || sendingConfirmationId === o.session_id}
+                    >
+                      {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
+                    </Button>
                     {o.order_status !== "delivered" && (
                       <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
                         Mark delivered
