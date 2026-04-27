@@ -1055,7 +1055,7 @@ export default function Portal() {
                   <Input placeholder="Phone number" value={contactForm.phone} onChange={(e) => setContactForm(f => ({ ...f, phone: e.target.value }))} />
                   <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
                   <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
-                  <Input className="md:col-span-2" placeholder="Notes" value={contactForm.notes} onChange={(e) => setContactForm(f => ({ ...f, notes: e.target.value }))} />
+                  <Input className="md:col-span-2" placeholder="Job title" value={contactForm.notes} onChange={(e) => setContactForm(f => ({ ...f, notes: e.target.value }))} />
                   <div className="md:col-span-2 flex gap-2">
                     <Button onClick={createContact}>Save contact</Button>
                     <Button variant="outline" onClick={() => setShowContactForm(false)}>Cancel</Button>
@@ -1110,7 +1110,7 @@ export default function Portal() {
                         <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
-                        <Input className="md:col-span-2" placeholder="Notes" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
+                        <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
                           <Button onClick={updateContact}>Save changes</Button>
                           <Button variant="outline" onClick={() => setEditingContactId(null)}>Cancel</Button>
