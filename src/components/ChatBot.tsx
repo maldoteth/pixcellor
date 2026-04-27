@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/drawer";
 
 interface Message {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "admin";
   content: string;
   packageCards?: PackageCard[];
 }
@@ -153,6 +153,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   const [hasStarted, setHasStarted] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [manualHandoff, setManualHandoff] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId());
@@ -172,17 +173,35 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     }
   }, [isOpen, hasStarted]);
 
+  useEffect(() => {
+    if (!conversationId) return;
+    const channel = supabase
+      .channel(`chat-live-${conversationId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+        const next = payload.new as Message;
+        if (next.role === "admin") setMessages(current => [...current, next]);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_conversations", filter: `id=eq.${conversationId}` }, (payload) => {
+        setManualHandoff(Boolean((payload.new as { bot_paused?: boolean }).bot_paused));
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId]);
+
   const loadChatHistory = async () => {
     setIsLoadingHistory(true);
     try {
       const { data: conv } = await supabase
         .from("chat_conversations")
-        .select("id")
+        .select("id, bot_paused")
         .eq("client_id", clientId.current)
         .single();
 
       if (conv) {
         setConversationId(conv.id);
+        setManualHandoff(Boolean(conv.bot_paused));
         const { data: msgs } = await supabase
           .from("chat_messages")
           .select("role, content")
@@ -214,6 +233,11 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
         body: { messages: [], clientId: clientId.current },
       });
       if (error) throw error;
+      setManualHandoff(Boolean(data.manualHandoff));
+      if (data.manualHandoff || !data.reply) {
+        if (data.conversationId) setConversationId(data.conversationId);
+        return;
+      }
       const msg: Message = { role: "assistant", content: data.reply };
       if (data.packageCards?.length) msg.packageCards = data.packageCards;
       setMessages([msg]);
@@ -244,7 +268,8 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
       if (error) throw error;
       const assistantMsg: Message = { role: "assistant", content: data.reply };
       if (data.packageCards?.length) assistantMsg.packageCards = data.packageCards;
-      setMessages([...newMessages, assistantMsg]);
+      setManualHandoff(Boolean(data.manualHandoff));
+      setMessages(data.manualHandoff || !data.reply ? newMessages : [...newMessages, assistantMsg]);
       if (data.conversationId && !conversationId) setConversationId(data.conversationId);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -282,7 +307,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
           </div>
           <div>
             <h3 className="font-semibold text-white text-sm">Alex from Pixcellor</h3>
-            <p className="text-xs text-white/50">Usually replies instantly</p>
+            <p className="text-xs text-white/50">{manualHandoff ? "Team member replying" : "Usually replies instantly"}</p>
           </div>
         </div>
       </div>
@@ -361,7 +386,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask something or just leave email address"
+            placeholder={manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
             className="flex-1 rounded-sm px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
             style={{
               background: "rgba(255,255,255,0.08)",

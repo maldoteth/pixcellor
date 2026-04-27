@@ -32,6 +32,8 @@ const isSiteOrder = (o: StripeSession) => {
 type Conversation = {
   id: string;
   client_id: string;
+  bot_paused?: boolean;
+  manual_handoff_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -164,6 +166,7 @@ export default function Portal() {
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const [manualReply, setManualReply] = useState("");
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -245,9 +248,46 @@ export default function Portal() {
 
   const loadMessages = async (conversationId: string) => {
     setActiveConv(conversationId);
+    setManualReply("");
     const { data, error } = await (supabase as any).rpc("portal_fetch_messages", { _access_code: portalAccessCode, _conversation_id: conversationId });
     if (error) toast.error(error.message);
     else setMessages((data ?? []) as Message[]);
+  };
+
+  const sendManualReply = async () => {
+    if (!activeConv) return;
+    const content = manualReply.trim();
+    if (!content) {
+      toast.error("Reply cannot be empty.");
+      return;
+    }
+    const { error } = await (supabase as any).rpc("portal_send_chat_reply", {
+      _access_code: portalAccessCode,
+      _conversation_id: activeConv,
+      _content: content,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setManualReply("");
+    await loadMessages(activeConv);
+    await loadPortalSnapshot();
+    toast.success("Reply sent. Bot paused for this chat.");
+  };
+
+  const closeChatCase = async () => {
+    if (!activeConv) return;
+    const { error } = await (supabase as any).rpc("portal_close_chat_case", {
+      _access_code: portalAccessCode,
+      _conversation_id: activeConv,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await loadPortalSnapshot();
+    toast.success("Case closed. Bot re-enabled.");
   };
 
   const counters = useMemo(() => {
@@ -717,18 +757,41 @@ export default function Portal() {
               })}
             </div>
             <Card className="max-h-[70vh] overflow-hidden flex flex-col">
-              <CardContent className="p-4 overflow-y-auto space-y-3">
+              <CardContent className="p-4 overflow-y-auto space-y-3 flex-1">
                 {!activeConv && <p className="text-muted-foreground text-sm">Pick a conversation to view messages.</p>}
                 {activeConv && messages.length === 0 && <p className="text-muted-foreground text-sm">No messages.</p>}
                 {messages.map(m => (
                   <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
+                    <div className={`max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-primary text-primary-foreground" : m.role === "admin" ? "bg-accent text-accent-foreground border border-border" : "bg-muted text-foreground"}`}>
                       <div className="text-xs opacity-60 mb-1">{m.role} · {new Date(m.created_at).toLocaleTimeString()}</div>
                       {m.content}
                     </div>
                   </div>
                 ))}
               </CardContent>
+              {activeConv && (
+                <div className="border-t border-border p-3 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    {conversations.find(c => c.id === activeConv)?.bot_paused ? (
+                      <Badge variant="secondary">Manual mode</Badge>
+                    ) : (
+                      <Badge variant="outline">Bot active</Badge>
+                    )}
+                    <Button variant="outline" size="sm" onClick={closeChatCase}>Case closed</Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={manualReply}
+                      onChange={(e) => setManualReply(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") sendManualReply();
+                      }}
+                      placeholder="Type a manual reply…"
+                    />
+                    <Button onClick={sendManualReply}>Send</Button>
+                  </div>
+                </div>
+              )}
             </Card>
           </TabsContent>
 
