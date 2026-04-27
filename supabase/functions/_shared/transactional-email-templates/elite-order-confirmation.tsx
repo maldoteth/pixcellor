@@ -35,7 +35,7 @@ const EliteOrderConfirmationEmail = ({ customerEmail, orderId, packageName, amou
         </Text>
         <Text style={text}>We’ll start mapping your premium build, SEO/AEO direction, edit workflow, and the core pages that need to make the biggest impact.</Text>
         <Text style={footer}>
-          If anything looks wrong, reply to this email and we’ll update it before we move forward. — Pixcellor
+          If anything looks wrong, reply to projects@pixcellor.com and we’ll update it before we move forward. — Pixcellor
         </Text>
       </Container>
     </Body>

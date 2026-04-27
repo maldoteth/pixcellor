@@ -35,7 +35,7 @@ const RetainerOrderConfirmationEmail = ({ customerEmail, orderId, packageName, a
         </Text>
         <Text style={text}>We’ll treat this as your ongoing tech department and align on priorities, response cadence, and the first sprint of work.</Text>
         <Text style={footer}>
-          If anything looks wrong, reply to this email and we’ll update it before we move forward. — Pixcellor
+          If anything looks wrong, reply to projects@pixcellor.com and we’ll update it before we move forward. — Pixcellor
         </Text>
       </Container>
     </Body>

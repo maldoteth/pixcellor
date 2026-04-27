@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search } from "lucide-react";
+import { Archive, Mail, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { PORTAL_ACCESS_CODE, PORTAL_ACCESS_STORAGE_KEY } from "./PortalAuth";
 
@@ -93,6 +93,19 @@ type ContactEvent = {
   updated_at: string;
 };
 
+type MailboxMessage = {
+  id: string;
+  threadId: string;
+  from: string;
+  fromEmail: string;
+  subject: string;
+  snippet: string;
+  body: string;
+  date: string;
+  unread: boolean;
+  messageId?: string;
+};
+
 const formatGBP = (pence: number) => `£${(pence / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
 
 const formatDateTimeLocal = (date: Date) => {
@@ -169,6 +182,11 @@ export default function Portal() {
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [manualReply, setManualReply] = useState("");
+  const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
+  const [mailboxSearch, setMailboxSearch] = useState("");
+  const [activeMail, setActiveMail] = useState<MailboxMessage | null>(null);
+  const [mailReply, setMailReply] = useState("");
+  const [mailboxLoading, setMailboxLoading] = useState(false);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -254,6 +272,20 @@ export default function Portal() {
     const { data, error } = await (supabase as any).rpc("portal_fetch_messages", { _access_code: portalAccessCode, _conversation_id: conversationId });
     if (error) toast.error(error.message);
     else setMessages((data ?? []) as Message[]);
+  };
+
+  const loadMailbox = async () => {
+    setMailboxLoading(true);
+    const { data, error } = await supabase.functions.invoke("mailbox", {
+      body: { accessCode: portalAccessCode, action: "list", query: mailboxSearch.trim() || undefined },
+    });
+    setMailboxLoading(false);
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Could not load mailbox");
+      return;
+    }
+    setMailboxMessages(data.messages ?? []);
+    setActiveMail((current) => current ? (data.messages ?? []).find((m: MailboxMessage) => m.id === current.id) ?? current : null);
   };
 
   const sendManualReply = async () => {
@@ -556,6 +588,46 @@ export default function Portal() {
     toast.success("Order marked delivered.");
   };
 
+  const sendMailboxReply = async () => {
+    if (!activeMail || !mailReply.trim()) return;
+    const { data, error } = await supabase.functions.invoke("mailbox", {
+      body: {
+        accessCode: portalAccessCode,
+        action: "send",
+        to: activeMail.fromEmail,
+        subject: activeMail.subject,
+        content: mailReply.trim(),
+        threadId: activeMail.threadId,
+        inReplyTo: activeMail.messageId,
+      },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Could not send reply");
+      return;
+    }
+    setMailReply("");
+    toast.success("Email reply sent.");
+  };
+
+  const updateMailboxMessage = async (messageId: string, action: "markRead" | "archive") => {
+    const { data, error } = await supabase.functions.invoke("mailbox", {
+      body: { accessCode: portalAccessCode, action, messageId },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Mailbox action failed");
+      return;
+    }
+    if (action === "archive") {
+      setMailboxMessages(current => current.filter(message => message.id !== messageId));
+      setActiveMail(null);
+      toast.success("Email archived.");
+    } else {
+      setMailboxMessages(current => current.map(message => message.id === messageId ? { ...message, unread: false } : message));
+      if (activeMail?.id === messageId) setActiveMail({ ...activeMail, unread: false });
+      toast.success("Email marked read.");
+    }
+  };
+
   // Conversations match if client_id matches OR any message in them matches
   const filteredConversations = useMemo(() => {
     if (!q) return conversations;
@@ -667,9 +739,10 @@ export default function Portal() {
         </div>
 
         <Tabs defaultValue="sales">
-          <TabsList className="grid grid-cols-2 md:grid-cols-6 w-full md:w-auto h-auto">
+          <TabsList className="grid grid-cols-2 md:grid-cols-7 w-full md:w-auto h-auto">
             <TabsTrigger value="sales">Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders">Orders ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="mailbox">Inbox ({mailboxMessages.length})</TabsTrigger>
             <TabsTrigger value="chats">Chats ({filteredConversations.length})</TabsTrigger>
             <TabsTrigger value="profiles">Clients ({filteredProfiles.length})</TabsTrigger>
             <TabsTrigger value="inquiries">Enquiries ({filteredInquiries.length})</TabsTrigger>
@@ -760,6 +833,66 @@ export default function Portal() {
                 </CardContent>
               </Card>
             ))}
+          </TabsContent>
+
+          <TabsContent value="mailbox" className="grid grid-cols-1 md:grid-cols-[360px_1fr] gap-4">
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input value={mailboxSearch} onChange={(e) => setMailboxSearch(e.target.value)} placeholder="Search inbox" className="pl-9" />
+                </div>
+                <Button variant="outline" onClick={loadMailbox} disabled={mailboxLoading}>{mailboxLoading ? "…" : "Load"}</Button>
+              </div>
+              {mailboxMessages.length === 0 && <p className="text-sm text-muted-foreground">Load the connected mailbox to see client replies.</p>}
+              <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+                {mailboxMessages.map(message => {
+                  const relatedOrder = orders.find(order => order.customer_email?.toLowerCase() === message.fromEmail);
+                  return (
+                    <button key={message.id} onClick={() => setActiveMail(message)} className={`w-full text-left p-3 rounded-md border transition-colors ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-medium truncate">{message.from}</div>
+                        {message.unread && <Badge>New</Badge>}
+                      </div>
+                      <div className="text-sm truncate">{message.subject}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-2">{message.snippet}</div>
+                      {relatedOrder && <div className="text-xs text-muted-foreground mt-1">Linked order · {relatedOrder.amount_total != null ? formatGBP(relatedOrder.amount_total) : "—"}</div>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <Card>
+              <CardContent className="p-4 space-y-4">
+                {!activeMail ? (
+                  <div className="min-h-[360px] flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
+                    <Mail className="w-8 h-8" />
+                    <p>Select an email to read and reply.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h2 className="text-lg font-semibold">{activeMail.subject}</h2>
+                        <p className="text-sm text-muted-foreground">{activeMail.from} · {activeMail.date ? new Date(activeMail.date).toLocaleString() : ""}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        {activeMail.unread && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "markRead")}>Mark read</Button>}
+                        <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "archive")}><Archive className="w-4 h-4 mr-2" />Archive</Button>
+                      </div>
+                    </div>
+                    {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail) && (
+                      <div className="rounded-md border border-border p-3 text-sm text-muted-foreground">
+                        Related order: {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)?.amount_total != null ? formatGBP(orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)!.amount_total!) : "—"}
+                      </div>
+                    )}
+                    <div className="rounded-md bg-muted/30 p-3 whitespace-pre-wrap text-sm max-h-[320px] overflow-y-auto">{activeMail.body || activeMail.snippet}</div>
+                    <textarea value={mailReply} onChange={(e) => setMailReply(e.target.value)} placeholder="Reply to the client…" className="min-h-[140px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                    <Button onClick={sendMailboxReply} disabled={!mailReply.trim()}>Send reply</Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="chats" className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-4">
