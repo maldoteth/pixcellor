@@ -865,6 +865,14 @@ export default function Portal() {
                       {o.order_status === "delivered" ? "Delivered" : "Open"}
                     </Badge>
                     <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => sendOrderConfirmation(o)}
+                      disabled={!o.customer_email || sendingConfirmationId === o.session_id}
+                    >
+                      {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
+                    </Button>
                     {o.order_status !== "delivered" && (
                       <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
                         Mark delivered
