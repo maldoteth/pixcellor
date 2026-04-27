@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -112,6 +112,42 @@ export default function Portal() {
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
+
+  const loadPortalSnapshot = useCallback(async () => {
+    const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
+    if (error) {
+      setAuthError(error.message);
+      return;
+    }
+    const snapshot = (data ?? {}) as {
+      orders?: StripeSession[];
+      conversations?: Conversation[];
+      messages?: Message[];
+      profiles?: Profile[];
+      inquiries?: Inquiry[];
+      contacts?: Contact[];
+      contactEvents?: ContactEvent[];
+    };
+    setOrders((snapshot.orders ?? []).filter(isSiteOrder));
+    const convs = snapshot.conversations ?? [];
+    const allMsgs = snapshot.messages ?? [];
+    setProfiles(snapshot.profiles ?? []);
+    setInquiries(snapshot.inquiries ?? []);
+    setContacts(snapshot.contacts ?? []);
+    setContactEvents(snapshot.contactEvents ?? []);
+    setAllMessages(allMsgs);
+    const previews: Record<string, Message> = {};
+    for (const m of allMsgs) {
+      if (!previews[m.conversation_id]) previews[m.conversation_id] = m;
+    }
+    setLastMessages(previews);
+    const sortedConvs = [...convs].sort((a, b) => {
+      const aTime = previews[a.id]?.created_at ?? a.updated_at;
+      const bTime = previews[b.id]?.created_at ?? b.updated_at;
+      return new Date(bTime).getTime() - new Date(aTime).getTime();
+    });
+    setConversations(sortedConvs);
+  }, [portalAccessCode]);
 
   // Access-code gate
   useEffect(() => {
