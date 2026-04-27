@@ -1,54 +1,23 @@
+Plan to set up branded auth email templates for Pixcellor:
 
-## Add Pixcellor "P" Logo to Page Header
+1. Create the auth email template system
+   - Add branded templates for signup confirmation, password reset, magic link, invite, email change, and reauthentication/OTP emails.
+   - Keep the auth email flow connected to the existing Lovable Cloud email setup.
 
-Add the provided "P" logo image to the top of the page with responsive positioning - centered on mobile, left-aligned on desktop/tablet.
+2. Apply Pixcellor branding
+   - Use Pixcellor™ naming and concise, premium agency-style copy.
+   - Match the app’s visual identity: minimal black/white brand, system-ui font stack, rounded cards, subtle borders, white email body for inbox compatibility, and blue CTA accents where appropriate.
+   - Add the existing Pixcellor logo/wordmark if it can be safely hosted for email use.
 
----
+3. Deploy the email handler
+   - Deploy the backend email handler so the auth system uses the new templates.
+   - Auth emails will continue to activate automatically once `notify.pixcellor.com` finishes DNS verification.
 
-### Implementation Steps
+4. Provide preview links
+   - After implementation, I’ll include links to preview the main branded auth emails, especially signup confirmation and password reset.
 
-**Step 1: Copy the logo image to project assets**
-
-Copy the uploaded logo from `user-uploads://Screenshot_2026-02-01_043730-3.png` to `src/assets/logo-icon.png`
-
----
-
-**Step 2: Add logo to the hero component**
-
-**File: `src/components/ui/scroll-morph-hero.tsx`**
-
-Add the logo as a fixed-position element at the top of the page:
-
-1. Import the logo asset at the top of the file:
-```typescript
-import logoIcon from '@/assets/logo-icon.png';
-```
-
-2. Add a logo container with responsive positioning just inside the main container (around line 259-260):
-```tsx
-{/* Logo - Mobile: center, Desktop/Tablet: left */}
-<div className="absolute top-6 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 z-20">
-  <img 
-    src={logoIcon} 
-    alt="Pixcellor" 
-    className="w-10 h-10 md:w-12 md:h-12"
-  />
-</div>
-```
-
----
-
-### Responsive Behavior
-
-| Device | Position | Alignment |
-|--------|----------|-----------|
-| Mobile (< 768px) | Top center | Horizontally centered using `left-1/2 -translate-x-1/2` |
-| Tablet/Desktop (≥ 768px) | Top left | Left-aligned with `md:left-6 md:translate-x-0` |
-
----
-
-### Technical Notes
-
-- The logo uses `z-20` to ensure it stays above the animated cards
-- Sizing is `40x40px` on mobile, `48x48px` on desktop for good visibility
-- The logo maintains its square aspect ratio to match the sharp-edged design system
+Technical details:
+- The email domain `notify.pixcellor.com` is already configured but still verifying DNS; template setup can proceed now.
+- I will not change the existing generated backend client files.
+- I will not add any third-party email service or external API key.
+- Any files under the backend email functions will be deployed after editing, because template changes do not take effect until deployed.
