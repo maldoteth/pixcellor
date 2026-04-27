@@ -327,6 +327,12 @@ export default function Portal() {
     setShowSalesEventForm(true);
   };
 
+  const applyCallbackPreset = (presetLabel: string) => {
+    const preset = callbackPresets.find(item => item.label === presetLabel);
+    if (!preset) return;
+    setEventForm(f => ({ ...f, callback_at: formatDateTimeLocal(preset.getDate()) }));
+  };
+
   const exitPortal = () => {
     sessionStorage.removeItem(PORTAL_ACCESS_STORAGE_KEY);
     navigate("/portal-login", { replace: true });
