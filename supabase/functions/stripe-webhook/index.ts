@@ -96,18 +96,29 @@ serve(async (req) => {
 
       if (event.type === "checkout.session.completed" && paymentStatus === "paid" && session.customer_details?.email) {
         const packageName = session.metadata?.package_name || "Full Works";
+        const templateData = {
+          customerEmail: session.customer_details.email,
+          orderId: session.id,
+          packageName,
+          amount: formatGBP(session.amount_total),
+          billing: session.metadata?.billing || session.mode || "payment",
+        };
+
         await supabase.functions.invoke("send-transactional-email", {
           body: {
             templateName: templateForPackage(packageName),
             recipientEmail: session.customer_details.email,
             idempotencyKey: `order-confirmation-${session.id}`,
-            templateData: {
-              customerEmail: session.customer_details.email,
-              orderId: session.id,
-              packageName,
-              amount: formatGBP(session.amount_total),
-              billing: session.metadata?.billing || session.mode || "payment",
-            },
+            templateData,
+          },
+        });
+
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "internal-new-order-notification",
+            recipientEmail: "projects@pixcellor.com",
+            idempotencyKey: `internal-order-notification-${session.id}`,
+            templateData,
           },
         });
       }
