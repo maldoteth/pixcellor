@@ -393,6 +393,7 @@ export default function Portal() {
       return;
     }
     setEventForm({ contact_id: "", title: "", description: "", callback_at: "" });
+    setEventContactSearch("");
     setShowSalesEventForm(false);
     await loadPortalSnapshot();
     toast.success("Event logged.");
