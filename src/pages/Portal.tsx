@@ -130,6 +130,7 @@ export default function Portal() {
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
+  const [eventContactSearch, setEventContactSearch] = useState("");
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -323,8 +324,16 @@ export default function Portal() {
   const getContact = (id: string) => contacts.find(c => c.id === id);
 
   const openEventFormForContact = (contactId: string) => {
+    const contact = contacts.find(c => c.id === contactId);
     setEventForm({ contact_id: contactId, title: "", description: "", callback_at: "" });
+    setEventContactSearch(contact ? `${contact.name}${contact.email ? ` · ${contact.email}` : ""}` : "");
     setShowSalesEventForm(true);
+  };
+
+  const handleEventContactSearch = (value: string) => {
+    setEventContactSearch(value);
+    const contact = contacts.find(c => `${c.name}${c.email ? ` · ${c.email}` : ""}` === value || c.name === value || c.email === value);
+    setEventForm(f => ({ ...f, contact_id: contact?.id ?? "" }));
   };
 
   const applyCallbackPreset = (presetLabel: string) => {
@@ -384,6 +393,7 @@ export default function Portal() {
       return;
     }
     setEventForm({ contact_id: "", title: "", description: "", callback_at: "" });
+    setEventContactSearch("");
     setShowSalesEventForm(false);
     await loadPortalSnapshot();
     toast.success("Event logged.");
@@ -410,10 +420,17 @@ export default function Portal() {
   const eventFormCard = showSalesEventForm && (
     <Card>
       <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-        <select value={eventForm.contact_id} onChange={(e) => setEventForm(f => ({ ...f, contact_id: e.target.value }))} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
-          <option value="">Select contact</option>
-          {contacts.map(c => <option key={c.id} value={c.id}>{c.name}{c.email ? ` · ${c.email}` : ""}</option>)}
-        </select>
+        <div>
+          <Input
+            list="portal-contact-options"
+            placeholder="Search contact"
+            value={eventContactSearch}
+            onChange={(e) => handleEventContactSearch(e.target.value)}
+          />
+          <datalist id="portal-contact-options">
+            {contacts.map(c => <option key={c.id} value={`${c.name}${c.email ? ` · ${c.email}` : ""}`}>{[c.phone, c.location].filter(Boolean).join(" · ")}</option>)}
+          </datalist>
+        </div>
         <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
         <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
         <div>
