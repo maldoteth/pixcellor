@@ -90,6 +90,21 @@ type ContactEvent = {
 
 const formatGBP = (pence: number) => `£${(pence / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
 
+const formatDateTimeLocal = (date: Date) => {
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60_000);
+  return localDate.toISOString().slice(0, 16);
+};
+
+const callbackPresets = [
+  { label: "1 day", getDate: () => new Date(Date.now() + 24 * 60 * 60 * 1000) },
+  { label: "1w", getDate: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+  { label: "2w", getDate: () => new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) },
+  { label: "1m", getDate: () => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d; } },
+  { label: "3m", getDate: () => { const d = new Date(); d.setMonth(d.getMonth() + 3); return d; } },
+  { label: "1y", getDate: () => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d; } },
+];
+
 export default function Portal() {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
@@ -312,6 +327,12 @@ export default function Portal() {
     setShowSalesEventForm(true);
   };
 
+  const applyCallbackPreset = (presetLabel: string) => {
+    const preset = callbackPresets.find(item => item.label === presetLabel);
+    if (!preset) return;
+    setEventForm(f => ({ ...f, callback_at: formatDateTimeLocal(preset.getDate()) }));
+  };
+
   const exitPortal = () => {
     sessionStorage.removeItem(PORTAL_ACCESS_STORAGE_KEY);
     navigate("/portal-login", { replace: true });
@@ -398,6 +419,13 @@ export default function Portal() {
         <div>
           <label className="text-xs text-muted-foreground">Optional callback date</label>
           <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground">Quick callback</label>
+          <select defaultValue="" onChange={(e) => applyCallbackPreset(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+            <option value="">Pick time</option>
+            {callbackPresets.map(preset => <option key={preset.label} value={preset.label}>{preset.label}</option>)}
+          </select>
         </div>
         <div className="flex items-end gap-2">
           <Button onClick={createContactEvent}>Save event</Button>
