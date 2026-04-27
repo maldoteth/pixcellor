@@ -635,6 +635,16 @@ export default function Portal() {
               <Button onClick={() => setShowContactForm(v => !v)}><Plus className="w-4 h-4 mr-2" /> Add contact</Button>
             </div>
 
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={contactsSearch}
+                onChange={(e) => setContactsSearch(e.target.value)}
+                placeholder="Search contacts by name, email, phone, location, notes, history…"
+                className="pl-9"
+              />
+            </div>
+
             {showContactForm && (
               <Card>
                 <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
