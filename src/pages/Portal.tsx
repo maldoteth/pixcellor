@@ -165,61 +165,26 @@ export default function Portal() {
   useEffect(() => {
     if (!isAdmin) return;
 
-    const load = async () => {
-      const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
-      if (error) {
-        setAuthError(error.message);
-        return;
-      }
-      const snapshot = (data ?? {}) as {
-        orders?: StripeSession[];
-        conversations?: Conversation[];
-        messages?: Message[];
-        profiles?: Profile[];
-        inquiries?: Inquiry[];
-        contacts?: Contact[];
-        contactEvents?: ContactEvent[];
-      };
-      setOrders((snapshot.orders ?? []).filter(isSiteOrder));
-      const convs = snapshot.conversations ?? [];
-      const allMsgs = snapshot.messages ?? [];
-      setProfiles(snapshot.profiles ?? []);
-      setInquiries(snapshot.inquiries ?? []);
-      setContacts(snapshot.contacts ?? []);
-      setContactEvents(snapshot.contactEvents ?? []);
-      setAllMessages(allMsgs);
-      const previews: Record<string, Message> = {};
-      for (const m of allMsgs) {
-        if (!previews[m.conversation_id]) previews[m.conversation_id] = m;
-      }
-      setLastMessages(previews);
-      const sortedConvs = [...convs].sort((a, b) => {
-        const aTime = previews[a.id]?.created_at ?? a.updated_at;
-        const bTime = previews[b.id]?.created_at ?? b.updated_at;
-        return new Date(bTime).getTime() - new Date(aTime).getTime();
-      });
-      setConversations(sortedConvs);
-    };
-    load();
+    loadPortalSnapshot();
 
     const channel = supabase
       .channel("portal-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "stripe_checkout_sessions" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "chat_conversations" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "stripe_checkout_sessions" }, loadPortalSnapshot)
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_conversations" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_messages" }, () => {
         if (activeConv) loadMessages(activeConv);
-        load();
+        loadPortalSnapshot();
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "client_profiles" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "contact_inquiries" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "contacts" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "contact_events" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "client_profiles" }, loadPortalSnapshot)
+      .on("postgres_changes", { event: "*", schema: "public", table: "contact_inquiries" }, loadPortalSnapshot)
+      .on("postgres_changes", { event: "*", schema: "public", table: "contacts" }, loadPortalSnapshot)
+      .on("postgres_changes", { event: "*", schema: "public", table: "contact_events" }, loadPortalSnapshot)
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, activeConv, portalAccessCode]);
+  }, [isAdmin, activeConv, loadPortalSnapshot]);
 
   const loadMessages = async (conversationId: string) => {
     setActiveConv(conversationId);
