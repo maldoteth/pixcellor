@@ -90,6 +90,21 @@ type ContactEvent = {
 
 const formatGBP = (pence: number) => `£${(pence / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
 
+const formatDateTimeLocal = (date: Date) => {
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60_000);
+  return localDate.toISOString().slice(0, 16);
+};
+
+const callbackPresets = [
+  { label: "1 day", getDate: () => new Date(Date.now() + 24 * 60 * 60 * 1000) },
+  { label: "1w", getDate: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+  { label: "2w", getDate: () => new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) },
+  { label: "1m", getDate: () => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d; } },
+  { label: "3m", getDate: () => { const d = new Date(); d.setMonth(d.getMonth() + 3); return d; } },
+  { label: "1y", getDate: () => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d; } },
+];
+
 export default function Portal() {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
