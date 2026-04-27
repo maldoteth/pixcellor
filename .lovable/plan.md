@@ -1,20 +1,34 @@
-Plan to fix the Inbox email reader bento sizing:
+Plan to add the missing order success screen:
 
-1. Adjust the Inbox tab layout so the message list and email reader use the same bounded height as the other portal bento sections.
-   - Keep the two-column layout on desktop.
-   - Keep a single-column layout on mobile.
-   - Prevent the reader card from growing beyond the visible portal area.
+1. Change checkout success redirect
+   - Update the checkout session success URL from the homepage query string to a dedicated route like `/order-success?session_id=...`.
+   - Keep the cancel redirect as-is unless it needs a separate cancellation screen later.
 
-2. Make the email reader card internally scroll instead of pushing/cutting off the page.
-   - The selected email body will scroll inside its own section.
-   - The reply textarea/buttons will remain within the card layout.
-   - Long emails will no longer stretch the whole page.
+2. Add a new `/order-success` page
+   - Create a branded Pixcellor success screen instead of dumping the buyer back on the homepage.
+   - Show a “Payment received / order confirmed” state, package/order details when available, and clear next steps telling the client to check their email and reply with specifics, colours, images, social links, copy, requests, etc.
+   - Include a button back to the homepage.
 
-3. Match the sizing style already used by the other bento panels above.
-   - Use consistent max-height behavior.
-   - Keep spacing, borders, and card styling aligned with the existing portal design.
+3. Confirm the order after redirect
+   - Add a small backend function that checks the checkout session/order status safely by `session_id`.
+   - The success page will poll for a short period because Stripe’s webhook can arrive slightly after the browser redirect.
+   - While waiting, show a polished “confirming your order” state.
+
+4. Add the fansite-style confetti
+   - Install/use `canvas-confetti` like the referenced fansite project.
+   - Recreate the two-side fireworks plus center burst effect after the page confirms the order.
+   - Fire it once per successful page load, not repeatedly while polling.
+
+5. Register and deploy
+   - Add the `/order-success` route in `src/App.tsx`.
+   - Deploy the changed checkout/backend functions so Stripe uses the new success URL.
 
 Technical details:
-- Update `src/pages/Portal.tsx` only.
-- Focus on the `TabsContent value="mailbox"` area around the inbox list and reader card.
-- Replace the current reader card sizing with a fixed/bounded flex layout and internal overflow handling.
+- Likely files to change/create:
+  - `supabase/functions/create-checkout/index.ts`
+  - new `supabase/functions/check-order-status/index.ts`
+  - `supabase/config.toml` if needed for the new function entry
+  - new `src/pages/OrderSuccess.tsx`
+  - `src/App.tsx`
+  - `package.json` / lockfile for `canvas-confetti`
+- The order check will not expose private portal/admin data; it will only return limited confirmation fields for the specific checkout session.

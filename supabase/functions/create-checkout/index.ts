@@ -28,7 +28,7 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       line_items: [{ price: priceId, quantity: 1 }],
       mode: mode || "payment",
-      success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment=canceled`,
       metadata: {
         source: "pixcellor_site",
