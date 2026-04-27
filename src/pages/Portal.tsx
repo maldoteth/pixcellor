@@ -739,7 +739,20 @@ export default function Portal() {
                         <div className="font-medium">{c.name}</div>
                         <div className="text-xs text-muted-foreground">{[c.phone, c.email, c.location].filter(Boolean).join(" · ") || "No details added"}</div>
                       </button>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <div className="flex items-center gap-1" aria-label="Contact status">
+                          {contactStatuses.map(status => (
+                            <button
+                              key={status.value}
+                              type="button"
+                              title={status.label}
+                              aria-label={status.label}
+                              onClick={() => updateContactStatus(c.id, status.value)}
+                              className={`h-5 w-5 rounded-full border transition-opacity ${c.status === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                              style={{ backgroundColor: status.color }}
+                            />
+                          ))}
+                        </div>
                         <Button variant="outline" size="sm" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
                         <Badge variant="secondary">{events.length} logs</Badge>
                       </div>
