@@ -18,25 +18,24 @@ interface MagicLinkEmailProps {
   confirmationUrl: string
 }
 
-export const MagicLinkEmail = ({
-  siteName,
-  confirmationUrl,
-}: MagicLinkEmailProps) => (
+const BRAND_NAME = 'Pixcellor™'
+
+export const MagicLinkEmail = ({ confirmationUrl }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your login link for {siteName}</Preview>
+    <Preview>Your Pixcellor portal login link</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Your login link</Heading>
+        <Text style={brand}>{BRAND_NAME}</Text>
+        <Heading style={h1}>Your secure login link</Heading>
         <Text style={text}>
-          Click the button below to log in to {siteName}. This link will expire
-          shortly.
+          Open the link below to access your Pixcellor portal. For security, this link expires shortly.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Log In
+          Open portal
         </Button>
         <Text style={footer}>
-          If you didn't request this link, you can safely ignore this email.
+          If you did not request this login link, you can safely ignore this email.
         </Text>
       </Container>
     </Body>
@@ -45,26 +44,69 @@ export const MagicLinkEmail = ({
 
 export default MagicLinkEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
+const main = {
+  backgroundColor: '#ffffff',
+  fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  padding: '32px 12px',
+}
+const container = {
+  backgroundColor: '#080808',
+  border: '1px solid #2e2e2e',
+  borderRadius: '12px',
+  boxShadow: '0 24px 80px rgba(0, 0, 0, 0.18)',
+  maxWidth: '560px',
+  padding: '34px 30px',
+}
+const brand = {
+  color: '#ffffff',
+  fontSize: '13px',
+  fontWeight: '700' as const,
+  letterSpacing: '0',
+  margin: '0 0 28px',
+}
 const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700' as const,
+  letterSpacing: '0',
+  lineHeight: '1.2',
+  margin: '0 0 18px',
 }
 const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
+  color: '#d4d4d4',
+  fontSize: '15px',
+  lineHeight: '1.65',
+  margin: '0 0 20px',
+}
+const mutedText = {
+  color: '#999999',
+  fontSize: '13px',
+  lineHeight: '1.55',
+  margin: '0 0 22px',
+}
+const panel = {
+  backgroundColor: '#111111',
+  border: '1px solid #262626',
+  borderRadius: '10px',
+  padding: '16px 18px',
+  margin: '8px 0 24px',
 }
 const button = {
-  backgroundColor: '#000000',
+  backgroundColor: '#3399ff',
+  borderRadius: '10px',
   color: '#ffffff',
+  display: 'inline-block',
   fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  fontWeight: '700' as const,
+  padding: '13px 20px',
   textDecoration: 'none',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const link = { color: '#ffffff', textDecoration: 'underline' }
+const footer = {
+  borderTop: '1px solid #242424',
+  color: '#8f8f8f',
+  fontSize: '12px',
+  lineHeight: '1.55',
+  margin: '30px 0 0',
+  paddingTop: '18px',
+}

@@ -18,26 +18,24 @@ interface RecoveryEmailProps {
   confirmationUrl: string
 }
 
-export const RecoveryEmail = ({
-  siteName,
-  confirmationUrl,
-}: RecoveryEmailProps) => (
+const BRAND_NAME = 'Pixcellor™'
+
+export const RecoveryEmail = ({ confirmationUrl }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Reset your password for {siteName}</Preview>
+    <Preview>Reset your Pixcellor portal password</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Text style={brand}>{BRAND_NAME}</Text>
         <Heading style={h1}>Reset your password</Heading>
         <Text style={text}>
-          We received a request to reset your password for {siteName}. Click
-          the button below to choose a new password.
+          We received a request to reset your Pixcellor portal password. Use the secure link below to choose a new one.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Reset Password
+          Reset password
         </Button>
         <Text style={footer}>
-          If you didn't request a password reset, you can safely ignore this
-          email. Your password will not be changed.
+          If this was not you, ignore this email. Your current password will stay unchanged.
         </Text>
       </Container>
     </Body>
@@ -46,26 +44,69 @@ export const RecoveryEmail = ({
 
 export default RecoveryEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
+const main = {
+  backgroundColor: '#ffffff',
+  fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  padding: '32px 12px',
+}
+const container = {
+  backgroundColor: '#080808',
+  border: '1px solid #2e2e2e',
+  borderRadius: '12px',
+  boxShadow: '0 24px 80px rgba(0, 0, 0, 0.18)',
+  maxWidth: '560px',
+  padding: '34px 30px',
+}
+const brand = {
+  color: '#ffffff',
+  fontSize: '13px',
+  fontWeight: '700' as const,
+  letterSpacing: '0',
+  margin: '0 0 28px',
+}
 const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700' as const,
+  letterSpacing: '0',
+  lineHeight: '1.2',
+  margin: '0 0 18px',
 }
 const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
+  color: '#d4d4d4',
+  fontSize: '15px',
+  lineHeight: '1.65',
+  margin: '0 0 20px',
+}
+const mutedText = {
+  color: '#999999',
+  fontSize: '13px',
+  lineHeight: '1.55',
+  margin: '0 0 22px',
+}
+const panel = {
+  backgroundColor: '#111111',
+  border: '1px solid #262626',
+  borderRadius: '10px',
+  padding: '16px 18px',
+  margin: '8px 0 24px',
 }
 const button = {
-  backgroundColor: '#000000',
+  backgroundColor: '#3399ff',
+  borderRadius: '10px',
   color: '#ffffff',
+  display: 'inline-block',
   fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  fontWeight: '700' as const,
+  padding: '13px 20px',
   textDecoration: 'none',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const link = { color: '#ffffff', textDecoration: 'underline' }
+const footer = {
+  borderTop: '1px solid #242424',
+  color: '#8f8f8f',
+  fontSize: '12px',
+  lineHeight: '1.55',
+  margin: '30px 0 0',
+  paddingTop: '18px',
+}
