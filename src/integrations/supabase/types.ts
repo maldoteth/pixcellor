@@ -363,6 +363,40 @@ export type Database = {
         }
         Returns: boolean
       }
+      portal_complete_callback: {
+        Args: { _access_code: string; _event_id: string }
+        Returns: undefined
+      }
+      portal_create_contact: {
+        Args: {
+          _access_code: string
+          _email?: string
+          _location?: string
+          _name: string
+          _notes?: string
+          _phone?: string
+        }
+        Returns: undefined
+      }
+      portal_create_contact_event: {
+        Args: {
+          _access_code: string
+          _callback_at?: string
+          _contact_id: string
+          _description?: string
+          _title: string
+        }
+        Returns: undefined
+      }
+      portal_fetch_messages: {
+        Args: { _access_code: string; _conversation_id: string }
+        Returns: Json
+      }
+      portal_fetch_snapshot: { Args: { _access_code: string }; Returns: Json }
+      portal_require_access: {
+        Args: { _access_code: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
