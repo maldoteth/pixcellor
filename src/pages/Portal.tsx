@@ -133,6 +133,7 @@ export default function Portal() {
   const [search, setSearch] = useState("");
   const [salesSearch, setSalesSearch] = useState("");
   const [contactsSearch, setContactsSearch] = useState("");
+  const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [openContactId, setOpenContactId] = useState<string | null>(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
@@ -298,17 +299,18 @@ export default function Portal() {
   }, [contactEvents, filteredContacts, q]);
 
   const searchedContacts = useMemo(() => {
-    if (!contactsQ) return filteredContacts;
+    const statusFiltered = contactsStatusFilter === "all" ? filteredContacts : filteredContacts.filter(c => c.status === contactsStatusFilter);
+    if (!contactsQ) return statusFiltered;
     const matchingContactIds = new Set(
       contactEvents
         .filter(e => matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) || matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at))
         .map(e => e.contact_id)
     );
-    return filteredContacts.filter(c =>
+    return statusFiltered.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
       matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id)
     );
-  }, [filteredContacts, contactEvents, contactsQ]);
+  }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter]);
 
   const salesCallbacks = useMemo(() => {
     const pending = contactEvents
@@ -710,6 +712,22 @@ export default function Portal() {
                 placeholder="Search contacts by name, email, phone, location, notes, history…"
                 className="pl-9"
               />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant={contactsStatusFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setContactsStatusFilter("all")}>All</Button>
+              {contactStatuses.map(status => (
+                <Button
+                  key={status.value}
+                  variant={contactsStatusFilter === status.value ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setContactsStatusFilter(status.value)}
+                  className="gap-2"
+                >
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: status.color }} />
+                  {status.label}
+                </Button>
+              ))}
             </div>
 
             {showContactForm && (
