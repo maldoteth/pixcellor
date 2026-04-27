@@ -130,6 +130,7 @@ export default function Portal() {
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
+  const [eventContactSearch, setEventContactSearch] = useState("");
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -323,8 +324,16 @@ export default function Portal() {
   const getContact = (id: string) => contacts.find(c => c.id === id);
 
   const openEventFormForContact = (contactId: string) => {
+    const contact = contacts.find(c => c.id === contactId);
     setEventForm({ contact_id: contactId, title: "", description: "", callback_at: "" });
+    setEventContactSearch(contact ? `${contact.name}${contact.email ? ` · ${contact.email}` : ""}` : "");
     setShowSalesEventForm(true);
+  };
+
+  const handleEventContactSearch = (value: string) => {
+    setEventContactSearch(value);
+    const contact = contacts.find(c => `${c.name}${c.email ? ` · ${c.email}` : ""}` === value || c.name === value || c.email === value);
+    setEventForm(f => ({ ...f, contact_id: contact?.id ?? "" }));
   };
 
   const applyCallbackPreset = (presetLabel: string) => {
