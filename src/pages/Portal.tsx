@@ -133,6 +133,7 @@ export default function Portal() {
   const [search, setSearch] = useState("");
   const [salesSearch, setSalesSearch] = useState("");
   const [contactsSearch, setContactsSearch] = useState("");
+  const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [openContactId, setOpenContactId] = useState<string | null>(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
@@ -298,17 +299,18 @@ export default function Portal() {
   }, [contactEvents, filteredContacts, q]);
 
   const searchedContacts = useMemo(() => {
-    if (!contactsQ) return filteredContacts;
+    const statusFiltered = contactsStatusFilter === "all" ? filteredContacts : filteredContacts.filter(c => c.status === contactsStatusFilter);
+    if (!contactsQ) return statusFiltered;
     const matchingContactIds = new Set(
       contactEvents
         .filter(e => matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) || matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at))
         .map(e => e.contact_id)
     );
-    return filteredContacts.filter(c =>
+    return statusFiltered.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
       matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id)
     );
-  }, [filteredContacts, contactEvents, contactsQ]);
+  }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter]);
 
   const salesCallbacks = useMemo(() => {
     const pending = contactEvents
