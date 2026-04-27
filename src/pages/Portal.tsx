@@ -130,43 +130,38 @@ export default function Portal() {
     if (!isAdmin) return;
 
     const load = async () => {
-      const [o, c, p, i, co, ce] = await Promise.all([
-        supabase.from("stripe_checkout_sessions").select("*").order("created_at", { ascending: false }),
-        supabase.from("chat_conversations").select("*").order("updated_at", { ascending: false }),
-        supabase.from("client_profiles").select("*").order("updated_at", { ascending: false }),
-        supabase.from("contact_inquiries").select("*").order("created_at", { ascending: false }),
-        (supabase as any).from("contacts").select("*").order("updated_at", { ascending: false }),
-        (supabase as any).from("contact_events").select("*").order("created_at", { ascending: false }),
-      ]);
-      setOrders(((o.data ?? []) as StripeSession[]).filter(isSiteOrder));
-      const convs = (c.data ?? []) as Conversation[];
-      setProfiles((p.data ?? []) as Profile[]);
-      setInquiries((i.data ?? []) as Inquiry[]);
-      setContacts((co.data ?? []) as Contact[]);
-      setContactEvents((ce.data ?? []) as ContactEvent[]);
-
-      // Fetch the latest message per conversation for previews
-      let sortedConvs = convs;
-      if (convs.length > 0) {
-        const { data: msgs } = await supabase
-          .from("chat_messages")
-          .select("*")
-          .in("conversation_id", convs.map(c => c.id))
-          .order("created_at", { ascending: false });
-        const allMsgs = (msgs ?? []) as Message[];
-        setAllMessages(allMsgs);
-        const previews: Record<string, Message> = {};
-        for (const m of allMsgs) {
-          if (!previews[m.conversation_id]) previews[m.conversation_id] = m;
-        }
-        setLastMessages(previews);
-        // Re-sort conversations by most recent message activity
-        sortedConvs = [...convs].sort((a, b) => {
-          const aTime = previews[a.id]?.created_at ?? a.updated_at;
-          const bTime = previews[b.id]?.created_at ?? b.updated_at;
-          return new Date(bTime).getTime() - new Date(aTime).getTime();
-        });
+      const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
+      if (error) {
+        setAuthError(error.message);
+        return;
       }
+      const snapshot = (data ?? {}) as {
+        orders?: StripeSession[];
+        conversations?: Conversation[];
+        messages?: Message[];
+        profiles?: Profile[];
+        inquiries?: Inquiry[];
+        contacts?: Contact[];
+        contactEvents?: ContactEvent[];
+      };
+      setOrders((snapshot.orders ?? []).filter(isSiteOrder));
+      const convs = snapshot.conversations ?? [];
+      const allMsgs = snapshot.messages ?? [];
+      setProfiles(snapshot.profiles ?? []);
+      setInquiries(snapshot.inquiries ?? []);
+      setContacts(snapshot.contacts ?? []);
+      setContactEvents(snapshot.contactEvents ?? []);
+      setAllMessages(allMsgs);
+      const previews: Record<string, Message> = {};
+      for (const m of allMsgs) {
+        if (!previews[m.conversation_id]) previews[m.conversation_id] = m;
+      }
+      setLastMessages(previews);
+      const sortedConvs = [...convs].sort((a, b) => {
+        const aTime = previews[a.id]?.created_at ?? a.updated_at;
+        const bTime = previews[b.id]?.created_at ?? b.updated_at;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      });
       setConversations(sortedConvs);
     };
     load();
@@ -188,16 +183,13 @@ export default function Portal() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, activeConv]);
+  }, [isAdmin, activeConv, portalAccessCode]);
 
   const loadMessages = async (conversationId: string) => {
     setActiveConv(conversationId);
-    const { data } = await supabase
-      .from("chat_messages")
-      .select("*")
-      .eq("conversation_id", conversationId)
-      .order("created_at");
-    setMessages((data ?? []) as Message[]);
+    const { data, error } = await (supabase as any).rpc("portal_fetch_messages", { _access_code: portalAccessCode, _conversation_id: conversationId });
+    if (error) toast.error(error.message);
+    else setMessages((data ?? []) as Message[]);
   };
 
   const counters = useMemo(() => {
