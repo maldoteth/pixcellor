@@ -71,7 +71,7 @@ type Contact = {
   email: string | null;
   location: string | null;
   notes: string | null;
-  status: "cold" | "aware" | "warm" | "hot";
+  status: "cold" | "aware" | "warm" | "hot" | "gold";
   source: string;
   created_at: string;
   updated_at: string;
@@ -111,6 +111,7 @@ const contactStatuses = [
   { value: "aware", label: "Aware", color: "hsl(142 71% 45%)" },
   { value: "warm", label: "Warm", color: "hsl(32 95% 44%)" },
   { value: "hot", label: "Hot", color: "hsl(0 84% 60%)" },
+  { value: "gold", label: "Gold", color: "hsl(45 93% 47%)" },
 ] as const;
 
 export default function Portal() {
