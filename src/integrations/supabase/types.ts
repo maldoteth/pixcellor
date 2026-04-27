@@ -187,6 +187,7 @@ export type Database = {
           notes: string | null
           phone: string | null
           source: string
+          status: string
           updated_at: string
         }
         Insert: {
@@ -198,6 +199,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           source?: string
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -209,6 +211,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           source?: string
+          status?: string
           updated_at?: string
         }
         Relationships: []
@@ -395,6 +398,10 @@ export type Database = {
       portal_fetch_snapshot: { Args: { _access_code: string }; Returns: Json }
       portal_require_access: {
         Args: { _access_code: string }
+        Returns: undefined
+      }
+      portal_update_contact_status: {
+        Args: { _access_code: string; _contact_id: string; _status: string }
         Returns: undefined
       }
     }

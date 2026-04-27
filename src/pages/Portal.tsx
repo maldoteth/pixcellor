@@ -71,6 +71,7 @@ type Contact = {
   email: string | null;
   location: string | null;
   notes: string | null;
+  status: "cold" | "aware" | "warm" | "hot";
   source: string;
   created_at: string;
   updated_at: string;
@@ -104,6 +105,13 @@ const callbackPresets = [
   { label: "3m", getDate: () => { const d = new Date(); d.setMonth(d.getMonth() + 3); return d; } },
   { label: "1y", getDate: () => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d; } },
 ];
+
+const contactStatuses = [
+  { value: "cold", label: "Cold", color: "hsl(217 91% 60%)" },
+  { value: "aware", label: "Aware", color: "hsl(142 71% 45%)" },
+  { value: "warm", label: "Warm", color: "hsl(32 95% 44%)" },
+  { value: "hot", label: "Hot", color: "hsl(0 84% 60%)" },
+] as const;
 
 export default function Portal() {
   const navigate = useNavigate();
@@ -298,7 +306,7 @@ export default function Portal() {
     );
     return filteredContacts.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id)
     );
   }, [filteredContacts, contactEvents, contactsQ]);
 
@@ -405,6 +413,19 @@ export default function Portal() {
     else {
       await loadPortalSnapshot();
       toast.success("Callback marked done.");
+    }
+  };
+
+  const updateContactStatus = async (contactId: string, status: Contact["status"]) => {
+    setContacts(current => current.map(contact => contact.id === contactId ? { ...contact, status } : contact));
+    const { error } = await (supabase as any).rpc("portal_update_contact_status", {
+      _access_code: portalAccessCode,
+      _contact_id: contactId,
+      _status: status,
+    });
+    if (error) {
+      toast.error(error.message);
+      await loadPortalSnapshot();
     }
   };
 
@@ -718,7 +739,20 @@ export default function Portal() {
                         <div className="font-medium">{c.name}</div>
                         <div className="text-xs text-muted-foreground">{[c.phone, c.email, c.location].filter(Boolean).join(" · ") || "No details added"}</div>
                       </button>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <div className="flex items-center gap-1" aria-label="Contact status">
+                          {contactStatuses.map(status => (
+                            <button
+                              key={status.value}
+                              type="button"
+                              title={status.label}
+                              aria-label={status.label}
+                              onClick={() => updateContactStatus(c.id, status.value)}
+                              className={`h-5 w-5 rounded-full border transition-opacity ${c.status === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                              style={{ backgroundColor: status.color }}
+                            />
+                          ))}
+                        </div>
                         <Button variant="outline" size="sm" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
                         <Badge variant="secondary">{events.length} logs</Badge>
                       </div>
