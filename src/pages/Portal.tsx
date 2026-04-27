@@ -248,9 +248,46 @@ export default function Portal() {
 
   const loadMessages = async (conversationId: string) => {
     setActiveConv(conversationId);
+    setManualReply("");
     const { data, error } = await (supabase as any).rpc("portal_fetch_messages", { _access_code: portalAccessCode, _conversation_id: conversationId });
     if (error) toast.error(error.message);
     else setMessages((data ?? []) as Message[]);
+  };
+
+  const sendManualReply = async () => {
+    if (!activeConv) return;
+    const content = manualReply.trim();
+    if (!content) {
+      toast.error("Reply cannot be empty.");
+      return;
+    }
+    const { error } = await (supabase as any).rpc("portal_send_chat_reply", {
+      _access_code: portalAccessCode,
+      _conversation_id: activeConv,
+      _content: content,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setManualReply("");
+    await loadMessages(activeConv);
+    await loadPortalSnapshot();
+    toast.success("Reply sent. Bot paused for this chat.");
+  };
+
+  const closeChatCase = async () => {
+    if (!activeConv) return;
+    const { error } = await (supabase as any).rpc("portal_close_chat_case", {
+      _access_code: portalAccessCode,
+      _conversation_id: activeConv,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await loadPortalSnapshot();
+    toast.success("Case closed. Bot re-enabled.");
   };
 
   const counters = useMemo(() => {
