@@ -32,6 +32,8 @@ const isSiteOrder = (o: StripeSession) => {
 type Conversation = {
   id: string;
   client_id: string;
+  bot_paused?: boolean;
+  manual_handoff_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -164,6 +166,7 @@ export default function Portal() {
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const [manualReply, setManualReply] = useState("");
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
