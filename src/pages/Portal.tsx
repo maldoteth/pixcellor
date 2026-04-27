@@ -386,6 +386,27 @@ export default function Portal() {
     return conversations.filter(c => matches(c.client_id) || matchingConvIds.has(c.id));
   }, [conversations, allMessages, q]);
 
+  const eventFormCard = showSalesEventForm && (
+    <Card>
+      <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <select value={eventForm.contact_id} onChange={(e) => setEventForm(f => ({ ...f, contact_id: e.target.value }))} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+          <option value="">Select contact</option>
+          {contacts.map(c => <option key={c.id} value={c.id}>{c.name}{c.email ? ` · ${c.email}` : ""}</option>)}
+        </select>
+        <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
+        <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
+        <div>
+          <label className="text-xs text-muted-foreground">Optional callback date</label>
+          <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
+        </div>
+        <div className="flex items-end gap-2">
+          <Button onClick={createContactEvent}>Save event</Button>
+          <Button variant="outline" onClick={() => setShowSalesEventForm(false)}>Cancel</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   if (!authChecked) {
     return <div className="min-h-screen bg-background text-foreground flex items-center justify-center">Loading…</div>;
   }
