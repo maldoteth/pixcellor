@@ -256,9 +256,11 @@ export type Database = {
           currency: string | null
           customer_email: string | null
           customer_id: string | null
+          delivered_at: string | null
           id: string
           metadata: Json
           mode: string | null
+          order_status: string
           payment_status: string | null
           session_id: string
           status: string | null
@@ -272,9 +274,11 @@ export type Database = {
           currency?: string | null
           customer_email?: string | null
           customer_id?: string | null
+          delivered_at?: string | null
           id?: string
           metadata?: Json
           mode?: string | null
+          order_status?: string
           payment_status?: string | null
           session_id: string
           status?: string | null
@@ -288,9 +292,11 @@ export type Database = {
           currency?: string | null
           customer_email?: string | null
           customer_id?: string | null
+          delivered_at?: string | null
           id?: string
           metadata?: Json
           mode?: string | null
+          order_status?: string
           payment_status?: string | null
           session_id?: string
           status?: string | null
@@ -406,6 +412,10 @@ export type Database = {
         Returns: Json
       }
       portal_fetch_snapshot: { Args: { _access_code: string }; Returns: Json }
+      portal_mark_order_delivered: {
+        Args: { _access_code: string; _session_id: string }
+        Returns: undefined
+      }
       portal_require_access: {
         Args: { _access_code: string }
         Returns: undefined
