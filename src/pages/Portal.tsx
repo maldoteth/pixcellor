@@ -714,6 +714,22 @@ export default function Portal() {
               />
             </div>
 
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant={contactsStatusFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setContactsStatusFilter("all")}>All</Button>
+              {contactStatuses.map(status => (
+                <Button
+                  key={status.value}
+                  variant={contactsStatusFilter === status.value ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setContactsStatusFilter(status.value)}
+                  className="gap-2"
+                >
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: status.color }} />
+                  {status.label}
+                </Button>
+              ))}
+            </div>
+
             {showContactForm && (
               <Card>
                 <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
