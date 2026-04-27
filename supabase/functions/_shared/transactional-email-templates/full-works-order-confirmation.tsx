@@ -35,7 +35,7 @@ const FullWorksOrderConfirmationEmail = ({ customerEmail, orderId, packageName, 
         </Text>
         <Text style={text}>We’ll review your brief, confirm the key pages, and shape the first version around the strongest possible launch for your brand.</Text>
         <Text style={footer}>
-          If anything looks wrong, reply to this email and we’ll update it before we move forward. — Pixcellor
+          If anything looks wrong, reply to projects@pixcellor.com and we’ll update it before we move forward. — Pixcellor
         </Text>
       </Container>
     </Body>
