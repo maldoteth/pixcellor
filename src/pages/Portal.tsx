@@ -815,6 +815,7 @@ export default function Portal() {
                             />
                           ))}
                         </div>
+                        <Button variant="outline" size="sm" onClick={() => startEditingContact(c)}>Edit</Button>
                         <Button variant="outline" size="sm" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
                         <Badge variant="secondary">{events.length} logs</Badge>
                       </div>
