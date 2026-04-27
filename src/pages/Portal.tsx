@@ -384,6 +384,8 @@ export default function Portal() {
       toast.error("Select a contact.");
       return;
     }
+    const selectedContactId = eventForm.contact_id;
+    const hasCallback = Boolean(eventForm.callback_at);
     const title = eventForm.title.trim();
     if (!title) {
       toast.error("Event title is required.");
@@ -400,11 +402,12 @@ export default function Portal() {
       toast.error(error.message);
       return;
     }
+    setOpenContactId(selectedContactId);
     setEventForm({ contact_id: "", title: "", description: "", callback_at: "" });
     setEventContactSearch("");
     setShowSalesEventForm(false);
     await loadPortalSnapshot();
-    toast.success("Event logged.");
+    toast.success(hasCallback ? "Callback scheduled." : "Event logged in contact history.");
   };
 
   const completeCallback = async (eventId: string) => {
