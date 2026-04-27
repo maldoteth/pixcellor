@@ -306,6 +306,7 @@ Deno.serve(async (req) => {
     template_name: templateName,
     recipient_email: effectiveRecipient,
     status: 'pending',
+      metadata: { reply_to: `projects@${FROM_DOMAIN}` },
   })
 
   const { error: enqueueError } = await supabase.rpc('enqueue_email', {
@@ -313,7 +314,8 @@ Deno.serve(async (req) => {
     payload: {
       message_id: messageId,
       to: effectiveRecipient,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      from: `${SITE_NAME} <projects@${FROM_DOMAIN}>`,
+      reply_to: `projects@${FROM_DOMAIN}`,
       sender_domain: SENDER_DOMAIN,
       subject: resolvedSubject,
       html,
