@@ -396,6 +396,32 @@ export default function Portal() {
     toast.success("Contact added.");
   };
 
+  const updateContact = async () => {
+    if (!editingContactId) return;
+    const name = editContactForm.name.trim();
+    if (!name) {
+      toast.error("Contact name is required.");
+      return;
+    }
+    const { error } = await (supabase as any).rpc("portal_update_contact", {
+      _access_code: portalAccessCode,
+      _contact_id: editingContactId,
+      _name: name,
+      _phone: editContactForm.phone,
+      _email: editContactForm.email,
+      _location: editContactForm.location,
+      _notes: editContactForm.notes,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setEditingContactId(null);
+    setEditContactForm({ name: "", phone: "", email: "", location: "", notes: "" });
+    await loadPortalSnapshot();
+    toast.success("Contact updated.");
+  };
+
   const createContactEvent = async () => {
     if (!eventForm.contact_id) {
       toast.error("Select a contact.");
