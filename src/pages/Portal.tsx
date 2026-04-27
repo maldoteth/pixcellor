@@ -97,6 +97,23 @@ const formatDateTimeLocal = (date: Date) => {
   return localDate.toISOString().slice(0, 16);
 };
 
+const formatCountdown = (callbackAt: string, nowMs: number) => {
+  const diffMs = new Date(callbackAt).getTime() - nowMs;
+  const absMs = Math.abs(diffMs);
+  const totalMinutes = Math.floor(absMs / 60_000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  const parts = [
+    days > 0 ? `${days}d` : null,
+    hours > 0 ? `${hours}h` : null,
+    days === 0 && minutes > 0 ? `${minutes}m` : null,
+  ].filter(Boolean).join(" ");
+
+  if (totalMinutes < 1) return diffMs < 0 ? "Due now" : "Under 1m left";
+  return diffMs < 0 ? `Overdue by ${parts}` : `${parts} left`;
+};
+
 const callbackPresets = [
   { label: "1 day", getDate: () => new Date(Date.now() + 24 * 60 * 60 * 1000) },
   { label: "1w", getDate: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
@@ -146,6 +163,7 @@ export default function Portal() {
   const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -219,6 +237,11 @@ export default function Portal() {
       supabase.removeChannel(channel);
     };
   }, [isAdmin, activeConv, loadPortalSnapshot]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const loadMessages = async (conversationId: string) => {
     setActiveConv(conversationId);
@@ -628,6 +651,7 @@ export default function Portal() {
               {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting{salesQ ? " match your search" : ""}.</p>}
               {salesCallbacks.map(e => {
                 const contact = getContact(e.contact_id);
+                const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
                 return (
                   <Card key={e.id}>
                     <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
@@ -636,7 +660,10 @@ export default function Portal() {
                         <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown contact"} · {new Date(e.callback_at!).toLocaleString()}</div>
                         {e.description && <div className="text-sm whitespace-pre-wrap">{e.description}</div>}
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => completeCallback(e.id)}>Done</Button>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <Badge variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
+                        <Button variant="outline" size="sm" onClick={() => completeCallback(e.id)}>Done</Button>
+                      </div>
                     </CardContent>
                   </Card>
                 );
