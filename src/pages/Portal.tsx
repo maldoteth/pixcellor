@@ -182,6 +182,11 @@ export default function Portal() {
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [manualReply, setManualReply] = useState("");
+  const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
+  const [mailboxSearch, setMailboxSearch] = useState("");
+  const [activeMail, setActiveMail] = useState<MailboxMessage | null>(null);
+  const [mailReply, setMailReply] = useState("");
+  const [mailboxLoading, setMailboxLoading] = useState(false);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -267,6 +272,20 @@ export default function Portal() {
     const { data, error } = await (supabase as any).rpc("portal_fetch_messages", { _access_code: portalAccessCode, _conversation_id: conversationId });
     if (error) toast.error(error.message);
     else setMessages((data ?? []) as Message[]);
+  };
+
+  const loadMailbox = async () => {
+    setMailboxLoading(true);
+    const { data, error } = await supabase.functions.invoke("mailbox", {
+      body: { accessCode: portalAccessCode, action: "list", query: mailboxSearch.trim() || undefined },
+    });
+    setMailboxLoading(false);
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Could not load mailbox");
+      return;
+    }
+    setMailboxMessages(data.messages ?? []);
+    setActiveMail((current) => current ? (data.messages ?? []).find((m: MailboxMessage) => m.id === current.id) ?? current : null);
   };
 
   const sendManualReply = async () => {
