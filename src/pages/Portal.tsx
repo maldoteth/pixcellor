@@ -301,6 +301,7 @@ export default function Portal() {
     }
     setContactForm({ name: "", phone: "", email: "", location: "", notes: "" });
     setShowContactForm(false);
+    await loadPortalSnapshot();
     toast.success("Contact added.");
   };
 
@@ -327,13 +328,17 @@ export default function Portal() {
     }
     setEventForm({ contact_id: "", title: "", description: "", callback_at: "" });
     setShowSalesEventForm(false);
+    await loadPortalSnapshot();
     toast.success("Event logged.");
   };
 
   const completeCallback = async (eventId: string) => {
     const { error } = await (supabase as any).rpc("portal_complete_callback", { _access_code: portalAccessCode, _event_id: eventId });
     if (error) toast.error(error.message);
-    else toast.success("Callback marked done.");
+    else {
+      await loadPortalSnapshot();
+      toast.success("Callback marked done.");
+    }
   };
 
   // Conversations match if client_id matches OR any message in them matches
