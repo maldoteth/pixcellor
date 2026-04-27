@@ -128,7 +128,7 @@ const contactStatuses = [
   { value: "aware", label: "Aware", color: "hsl(142 71% 45%)" },
   { value: "warm", label: "Warm", color: "hsl(32 95% 44%)" },
   { value: "hot", label: "Hot", color: "hsl(0 84% 60%)" },
-  { value: "gold", label: "Gold", color: "hsl(45 93% 47%)" },
+  { value: "gold", label: "Client", color: "hsl(45 93% 47%)" },
 ] as const;
 
 const getContactStatusColor = (status: Contact["status"]) =>
