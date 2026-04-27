@@ -835,8 +835,8 @@ export default function Portal() {
             ))}
           </TabsContent>
 
-          <TabsContent value="mailbox" className="grid grid-cols-1 md:grid-cols-[360px_1fr] gap-4">
-            <div className="space-y-3">
+          <TabsContent value="mailbox" className="grid grid-cols-1 md:grid-cols-[360px_minmax(0,1fr)] gap-4 items-start">
+            <div className="space-y-3 md:max-h-[70vh] md:overflow-hidden md:flex md:flex-col md:min-h-0">
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -845,7 +845,7 @@ export default function Portal() {
                 <Button variant="outline" onClick={loadMailbox} disabled={mailboxLoading}>{mailboxLoading ? "…" : "Load"}</Button>
               </div>
               {mailboxMessages.length === 0 && <p className="text-sm text-muted-foreground">Load the connected mailbox to see client replies.</p>}
-              <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+              <div className="space-y-2 max-h-[70vh] md:max-h-none md:flex-1 md:min-h-0 overflow-y-auto pr-1">
                 {mailboxMessages.map(message => {
                   const relatedOrder = orders.find(order => order.customer_email?.toLowerCase() === message.fromEmail);
                   return (
@@ -862,8 +862,8 @@ export default function Portal() {
                 })}
               </div>
             </div>
-            <Card>
-              <CardContent className="p-4 space-y-4">
+            <Card className="md:h-[70vh] md:max-h-[70vh] min-w-0 overflow-hidden flex flex-col">
+              <CardContent className="p-4 space-y-4 min-h-0 flex-1 flex flex-col overflow-hidden">
                 {!activeMail ? (
                   <div className="min-h-[360px] flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
                     <Mail className="w-8 h-8" />
@@ -871,7 +871,7 @@ export default function Portal() {
                   </div>
                 ) : (
                   <>
-                    <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3 shrink-0">
                       <div>
                         <h2 className="text-lg font-semibold">{activeMail.subject}</h2>
                         <p className="text-sm text-muted-foreground">{activeMail.from} · {activeMail.date ? new Date(activeMail.date).toLocaleString() : ""}</p>
@@ -882,13 +882,13 @@ export default function Portal() {
                       </div>
                     </div>
                     {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail) && (
-                      <div className="rounded-md border border-border p-3 text-sm text-muted-foreground">
+                      <div className="rounded-md border border-border p-3 text-sm text-muted-foreground shrink-0">
                         Related order: {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)?.amount_total != null ? formatGBP(orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)!.amount_total!) : "—"}
                       </div>
                     )}
-                    <div className="rounded-md bg-muted/30 p-3 whitespace-pre-wrap text-sm max-h-[320px] overflow-y-auto">{activeMail.body || activeMail.snippet}</div>
-                    <textarea value={mailReply} onChange={(e) => setMailReply(e.target.value)} placeholder="Reply to the client…" className="min-h-[140px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-                    <Button onClick={sendMailboxReply} disabled={!mailReply.trim()}>Send reply</Button>
+                    <div className="rounded-md bg-muted/30 p-3 whitespace-pre-wrap text-sm flex-1 min-h-[180px] overflow-y-auto">{activeMail.body || activeMail.snippet}</div>
+                    <textarea value={mailReply} onChange={(e) => setMailReply(e.target.value)} placeholder="Reply to the client…" className="min-h-[120px] max-h-[160px] w-full shrink-0 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                    <Button className="shrink-0 self-start" onClick={sendMailboxReply} disabled={!mailReply.trim()}>Send reply</Button>
                   </>
                 )}
               </CardContent>
