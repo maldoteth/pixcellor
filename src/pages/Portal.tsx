@@ -273,6 +273,31 @@ export default function Portal() {
     );
   }, [contactEvents, filteredContacts, q]);
 
+  const searchedContacts = useMemo(() => {
+    if (!contactsQ) return filteredContacts;
+    const matchingContactIds = new Set(
+      contactEvents
+        .filter(e => matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) || matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at))
+        .map(e => e.contact_id)
+    );
+    return filteredContacts.filter(c =>
+      matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
+    );
+  }, [filteredContacts, contactEvents, contactsQ]);
+
+  const salesCallbacks = useMemo(() => {
+    const pending = contactEvents
+      .filter(e => e.callback_at && !e.completed_at)
+      .sort((a, b) => new Date(a.callback_at!).getTime() - new Date(b.callback_at!).getTime());
+    if (!salesQ) return pending;
+    return pending.filter(e => {
+      const contact = getContact(e.contact_id);
+      return matchesQuery(salesQ, e.title) || matchesQuery(salesQ, e.description) || matchesQuery(salesQ, e.callback_at) ||
+        matchesQuery(salesQ, contact?.name) || matchesQuery(salesQ, contact?.email) || matchesQuery(salesQ, contact?.phone) || matchesQuery(salesQ, contact?.location);
+    });
+  }, [contactEvents, contacts, salesQ]);
+
   const callbacks = useMemo(() =>
     contactEvents
       .filter(e => e.callback_at && !e.completed_at)
