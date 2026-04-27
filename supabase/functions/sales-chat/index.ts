@@ -495,28 +495,38 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     let currentConversationId = conversationId;
+    let botPaused = false;
 
     // Get or create conversation
     if (!currentConversationId && clientId) {
       const { data: existingConv } = await supabase
         .from("chat_conversations")
-        .select("id")
+        .select("id, bot_paused")
         .eq("client_id", clientId)
         .single();
 
       if (existingConv) {
         currentConversationId = existingConv.id;
+        botPaused = Boolean(existingConv.bot_paused);
       } else {
         const { data: newConv, error: convError } = await supabase
           .from("chat_conversations")
           .insert({ client_id: clientId })
-          .select("id")
+          .select("id, bot_paused")
           .single();
 
         if (!convError) {
           currentConversationId = newConv.id;
+          botPaused = Boolean(newConv.bot_paused);
         }
       }
+    } else if (currentConversationId) {
+      const { data: existingConv } = await supabase
+        .from("chat_conversations")
+        .select("bot_paused")
+        .eq("id", currentConversationId)
+        .single();
+      botPaused = Boolean(existingConv?.bot_paused);
     }
 
     // Save last user message
@@ -529,6 +539,13 @@ Deno.serve(async (req) => {
           content: lastMessage.content,
         });
       }
+    }
+
+    if (botPaused) {
+      return new Response(
+        JSON.stringify({ reply: "", conversationId: currentConversationId, packageCards: [], manualHandoff: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // ── Cross-session memory ─────────────────────────────────────────────
