@@ -661,21 +661,25 @@ export default function Portal() {
               </Card>
             )}
 
-            {filteredContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {q ? "match your search" : "yet"}.</p>}
-            {filteredContacts.map(c => {
+            {searchedContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {q || contactsQ ? "match your search" : "yet"}.</p>}
+            {searchedContacts.map(c => {
               const events = filteredContactEvents.filter(e => e.contact_id === c.id);
+              const isOpen = openContactId === c.id;
               return (
                 <Card key={c.id}>
                   <CardContent className="p-4 space-y-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
+                      <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)} className="text-left flex-1 min-w-[180px]">
                         <div className="font-medium">{c.name}</div>
                         <div className="text-xs text-muted-foreground">{[c.phone, c.email, c.location].filter(Boolean).join(" · ") || "No details added"}</div>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
+                        <Badge variant="secondary">{events.length} logs</Badge>
                       </div>
-                      <Badge variant="secondary">{events.length} logs</Badge>
                     </div>
                     {c.notes && <div className="text-sm whitespace-pre-wrap">{c.notes}</div>}
-                    <div className="border-t border-border pt-3 space-y-2">
+                    {isOpen && <div className="border-t border-border pt-3 space-y-2">
                       {events.length === 0 && <p className="text-xs text-muted-foreground">No communications logged.</p>}
                       {events.map(e => (
                         <div key={e.id} className="text-sm rounded-md bg-muted p-3">
@@ -687,7 +691,7 @@ export default function Portal() {
                           {e.callback_at && <div className="text-xs text-muted-foreground mt-1">Callback: {new Date(e.callback_at).toLocaleString()}</div>}
                         </div>
                       ))}
-                    </div>
+                    </div>}
                   </CardContent>
                 </Card>
               );
