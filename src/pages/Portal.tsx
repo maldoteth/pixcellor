@@ -473,6 +473,16 @@ export default function Portal() {
               </Button>
             </div>
 
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={salesSearch}
+                onChange={(e) => setSalesSearch(e.target.value)}
+                placeholder="Search sales callbacks by contact, title, notes, phone, email…"
+                className="pl-9"
+              />
+            </div>
+
             {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a contact first, then you can create sales events.</p>}
 
             {showSalesEventForm && (
@@ -502,8 +512,8 @@ export default function Portal() {
 
             <div className="space-y-2">
               <h3 className="font-medium">Callbacks waiting</h3>
-              {callbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting.</p>}
-              {callbacks.map(e => {
+              {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting{salesQ ? " match your search" : ""}.</p>}
+              {salesCallbacks.map(e => {
                 const contact = getContact(e.contact_id);
                 return (
                   <Card key={e.id}>
