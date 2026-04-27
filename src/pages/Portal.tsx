@@ -108,6 +108,11 @@ type MailboxMessage = {
 
 const formatGBP = (pence: number) => `£${(pence / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
 
+const normalizeEmail = (value?: string | null) => {
+  const email = (value ?? "").trim().toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
+};
+
 const formatDateTimeLocal = (date: Date) => {
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60_000);
