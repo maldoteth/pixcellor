@@ -13,11 +13,13 @@ serve(async (req) => {
     const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
     if (!stripeSecretKey) throw new Error("STRIPE_SECRET_KEY not configured");
     if (!stripeWebhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET not configured");
     if (!supabaseUrl) throw new Error("SUPABASE_URL not configured");
     if (!supabaseServiceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY not configured");
+    if (!supabaseAnonKey) throw new Error("SUPABASE_ANON_KEY not configured");
 
     const signature = req.headers.get("stripe-signature");
     if (!signature) {
@@ -110,22 +112,32 @@ serve(async (req) => {
           billing: session.metadata?.billing || session.mode || "payment",
         };
 
-        await supabase.functions.invoke("send-transactional-email", {
-          body: {
+        const emailHeaders = {
+          "Authorization": `Bearer ${supabaseAnonKey}`,
+          "apikey": supabaseAnonKey,
+          "Content-Type": "application/json",
+        };
+
+        await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+          method: "POST",
+          headers: emailHeaders,
+          body: JSON.stringify({
             templateName: templateForPackage(packageName),
             recipientEmail: session.customer_details.email,
             idempotencyKey: `order-confirmation-${session.id}`,
             templateData,
-          },
+          }),
         });
 
-        await supabase.functions.invoke("send-transactional-email", {
-          body: {
+        await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+          method: "POST",
+          headers: emailHeaders,
+          body: JSON.stringify({
             templateName: "internal-new-order-notification",
             recipientEmail: "projects@pixcellor.com",
             idempotencyKey: `internal-order-notification-${session.id}`,
             templateData,
-          },
+          }),
         });
       }
     }
