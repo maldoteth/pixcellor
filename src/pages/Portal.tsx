@@ -1353,9 +1353,10 @@ export default function Portal() {
           </Button>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-10">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-11">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="retainers" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
             <TabsTrigger value="edit-requests" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PencilLine className="h-3.5 w-3.5 shrink-0" />Edits ({filteredEditRequests.length})</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
