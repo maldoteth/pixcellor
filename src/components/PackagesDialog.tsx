@@ -263,6 +263,7 @@ function DesktopCards() {
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
+  const [retainerFlipped, setRetainerFlipped] = useState(false);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -290,7 +291,7 @@ function DesktopCards() {
 
   return (
     <>
-    <div className="flex items-center justify-center gap-5 h-full w-full md:max-lg:scale-[0.58] md:max-lg:origin-center lg:scale-[0.74] xl:scale-[0.88] 2xl:scale-100">
+    <div className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100">
       {/* Full Works - tilted left */}
       <motion.div
         onMouseMove={handleMouseMove}
@@ -427,7 +428,7 @@ function DesktopCards() {
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
 
-      {/* Retainer - tilted right */}
+      {/* Retainer / Enterprise flip card */}
       <motion.div
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -435,119 +436,127 @@ function DesktopCards() {
         animate={{ opacity: 1, y: 0, rotate: 6, scale: 1 }}
         whileHover={{ scale: 1.05 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
-        className="relative z-10 w-[302px] rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
-        style={{
-          willChange: "transform",
-          boxShadow: `
-            0 8px 32px rgba(0,0,0,0.3),
-            inset 0 1px 1px rgba(255,255,255,0.15),
-            inset 0 -1px 1px rgba(0,0,0,0.1)
-          `,
-        }}
+        className="relative z-10 w-[302px] min-h-[420px]"
+        style={{ willChange: "transform", perspective: "1200px" }}
       >
-        {/* Lava lamp blobs */}
-        <div className="lava-blob lava-blob-1" />
-        <div className="lava-blob lava-blob-2" />
-        <div className="lava-blob lava-blob-3" />
-        <div className="relative z-10">
-        <div className="mb-2 text-lg font-bold text-foreground">Retainer</div>
-        
-        {/* Billing toggle */}
-        <div className="flex items-center gap-2 mb-3">
-          <button
-            onClick={() => setRetainerBilling("monthly")}
-            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
-              retainerBilling === "monthly"
-                ? "bg-foreground text-background"
-                : "bg-secondary text-muted-foreground hover:text-foreground"
-            }`}
+        <motion.div
+          animate={{ rotateY: retainerFlipped ? 180 : 0 }}
+          transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="relative min-h-[420px] rounded-2xl"
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          <div
+            className="absolute inset-0 rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
+            style={{
+              backfaceVisibility: "hidden",
+              boxShadow: `
+                0 8px 32px rgba(0,0,0,0.3),
+                inset 0 1px 1px rgba(255,255,255,0.15),
+                inset 0 -1px 1px rgba(0,0,0,0.1)
+              `,
+            }}
           >
-            Monthly
-          </button>
-          <button
-            onClick={() => setRetainerBilling("yearly")}
-            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
-              retainerBilling === "yearly"
-                ? "bg-foreground text-background"
-                : "bg-secondary text-muted-foreground hover:text-foreground"
-            }`}
+            <div className="lava-blob lava-blob-1" />
+            <div className="lava-blob lava-blob-2" />
+            <div className="lava-blob lava-blob-3" />
+            <div className="relative z-10">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="text-lg font-bold text-foreground">Retainer</div>
+                <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => setRetainerFlipped(true)}>Enterprise</Button>
+              </div>
+              <div className="flex items-center gap-2 mb-3">
+                <button
+                  onClick={() => setRetainerBilling("monthly")}
+                  className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+                    retainerBilling === "monthly"
+                      ? "bg-foreground text-background"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setRetainerBilling("yearly")}
+                  className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+                    retainerBilling === "yearly"
+                      ? "bg-foreground text-background"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Yearly
+                </button>
+              </div>
+              <div className="mb-1 text-3xl font-extrabold text-foreground">
+                {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
+              </div>
+              <p className="text-xs text-muted-foreground line-through mb-4">
+                RRP {retainerBilling === "monthly" ? "£3,600/mo" : "£36,000/yr"}
+              </p>
+              <ul className="mb-6 space-y-2 text-base text-muted-foreground">
+                {PACKAGES.retainer.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+                <li className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                  {retainerBilling === "monthly" ? "Daily turnarounds" : "Billed yearly (save £2,400)"}
+                </li>
+              </ul>
+              <GlassBuyButton
+                onClick={() =>
+                  buy(
+                    retainerBilling === "monthly"
+                      ? PACKAGES.retainer.monthlyPriceId
+                      : PACKAGES.retainer.yearlyPriceId,
+                    PACKAGES.retainer.mode,
+                    "retainer",
+                    PACKAGES.retainer.name,
+                    retainerBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
+                  )
+                }
+                disabled={!!loading}
+                loading={loading === "retainer"}
+                label="Subscribe"
+              />
+            </div>
+          </div>
+
+          <div
+            className="absolute inset-0 rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
+            style={{
+              backfaceVisibility: "hidden",
+              transform: "rotateY(180deg)",
+              boxShadow: `
+                0 8px 32px rgba(0,0,0,0.3),
+                inset 0 1px 1px rgba(255,255,255,0.15),
+                inset 0 -1px 1px rgba(0,0,0,0.1)
+              `,
+            }}
           >
-            Yearly
-          </button>
-        </div>
-
-        <div className="mb-1 text-3xl font-extrabold text-foreground">
-          {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
-        </div>
-        <p className="text-xs text-muted-foreground line-through mb-4">
-          RRP {retainerBilling === "monthly" ? "£3,600/mo" : "£36,000/yr"}
-        </p>
-        <ul className="mb-6 space-y-2 text-base text-muted-foreground">
-          {PACKAGES.retainer.features.map((f) => (
-            <li key={f} className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-              {f}
-            </li>
-          ))}
-          <li className="flex items-start gap-2">
-            <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-            {retainerBilling === "monthly" ? "Daily turnarounds" : "Billed yearly (save £2,400)"}
-          </li>
-        </ul>
-        <GlassBuyButton
-          onClick={() =>
-            buy(
-              retainerBilling === "monthly"
-                ? PACKAGES.retainer.monthlyPriceId
-                : PACKAGES.retainer.yearlyPriceId,
-              PACKAGES.retainer.mode,
-              "retainer",
-              PACKAGES.retainer.name,
-              retainerBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
-            )
-          }
-          disabled={!!loading}
-          loading={loading === "retainer"}
-          label="Subscribe"
-        />
-        </div>{/* close relative z-10 wrapper */}
-      </motion.div>
-
-      {/* Enterprise */}
-      <motion.div
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        initial={{ opacity: 0, y: 40, rotate: 6, scale: 1 }}
-        animate={{ opacity: 1, y: 0, rotate: 6, scale: 1 }}
-        whileHover={{ scale: 1.05 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.4 }}
-        className="relative z-10 w-[302px] rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
-        style={{
-          willChange: "transform",
-          boxShadow: `
-            0 8px 32px rgba(0,0,0,0.3),
-            inset 0 1px 1px rgba(255,255,255,0.15),
-            inset 0 -1px 1px rgba(0,0,0,0.1)
-          `,
-        }}
-      >
-        <div className="lava-blob lava-blob-1" />
-        <div className="lava-blob lava-blob-2" />
-        <div className="lava-blob lava-blob-3" />
-        <div className="relative z-10">
-          <div className="mb-2 text-lg font-bold text-foreground">Enterprise</div>
-          <div className="mb-1 text-3xl font-extrabold text-foreground">Custom</div>
-          <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
-          <ul className="mb-6 space-y-2 text-base text-muted-foreground">
-            {PACKAGES.enterprise.features.map((f) => (
-              <li key={f} className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-                {f}
-              </li>
-            ))}
-          </ul>
-          <GlassBuyButton onClick={() => setEnterpriseOpen(true)} disabled={false} loading={false} label="Talk to sales" />
-        </div>
+            <div className="lava-blob lava-blob-1" />
+            <div className="lava-blob lava-blob-2" />
+            <div className="lava-blob lava-blob-3" />
+            <div className="relative z-10">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="text-lg font-bold text-foreground">Enterprise</div>
+                <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => setRetainerFlipped(false)}>Retainer</Button>
+              </div>
+              <div className="mb-1 text-3xl font-extrabold text-foreground">Custom</div>
+              <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
+              <ul className="mb-6 space-y-2 text-base text-muted-foreground">
+                {PACKAGES.enterprise.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <GlassBuyButton onClick={() => setEnterpriseOpen(true)} disabled={false} loading={false} label="Talk to sales" />
+            </div>
+          </div>
+        </motion.div>
       </motion.div>
     </div>
     <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
