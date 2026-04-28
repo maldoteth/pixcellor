@@ -2027,11 +2027,20 @@ export default function Portal() {
                   </div>
                 </>
               ) : currentSalesField.key === "callback_at" ? (
-                <div className="flex gap-2">
-                  <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} className="h-12 text-base" />
-                  <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
-                    <Clipboard className="h-4 w-4" />
-                  </Button>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} className="h-12 text-base" />
+                    <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
+                      <Clipboard className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2">
+                    {callbackPresets.map(preset => (
+                      <Button key={preset.label} type="button" variant="outline" className="h-10 px-2 text-sm" onClick={() => applyCallbackPreset(preset.label)}>
+                        {preset.label}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="flex gap-2">
