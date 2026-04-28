@@ -1,34 +1,41 @@
-Plan to add the missing order success screen:
+I found both issues:
 
-1. Change checkout success redirect
-   - Update the checkout session success URL from the homepage query string to a dedicated route like `/order-success?session_id=...`.
-   - Keep the cancel redirect as-is unless it needs a separate cancellation screen later.
+1. The sender display name is hardcoded as `morph-glide-show`, so inboxes show the old project name even though the email address is correct.
+2. The order email template uses a basic dark card, but it does not have enough safe email spacing/structure. In the screenshot it renders cramped at the top and the content block feels unfinished.
 
-2. Add a new `/order-success` page
-   - Create a branded Pixcellor success screen instead of dumping the buyer back on the homepage.
-   - Show a “Payment received / order confirmed” state, package/order details when available, and clear next steps telling the client to check their email and reply with specifics, colours, images, social links, copy, requests, etc.
-   - Include a button back to the homepage.
+Plan:
 
-3. Confirm the order after redirect
-   - Add a small backend function that checks the checkout session/order status safely by `session_id`.
-   - The success page will poll for a short period because Stripe’s webhook can arrive slightly after the browser redirect.
-   - While waiting, show a polished “confirming your order” state.
+1. Fix sender branding
+   - Change the app email sender display name from `morph-glide-show` to `Pixcellor™`.
+   - Keep the sender address as `projects@pixcellor.com` and reply-to as `projects@pixcellor.com`.
+   - Check auth email branding too, since the same old project name is also present there.
 
-4. Add the fansite-style confetti
-   - Install/use `canvas-confetti` like the referenced fansite project.
-   - Recreate the two-side fireworks plus center burst effect after the page confirms the order.
-   - Fire it once per successful page load, not repeatedly while polling.
+2. Redesign order confirmation emails
+   - Update all customer order templates: Full Works, Elite, and Retainer.
+   - Make them match Pixcellor’s black minimal / glass style while still rendering cleanly in email clients.
+   - Add better vertical rhythm: larger top padding, clearer brand header, cleaner hero title, separated sections, and better order-detail spacing.
+   - Avoid cramped text by replacing the current single dense block with structured rows/sections.
+   - Keep the email body white for email-client compatibility, with a polished black Pixcellor card inside.
 
-5. Register and deploy
-   - Add the `/order-success` route in `src/App.tsx`.
-   - Deploy the changed checkout/backend functions so Stripe uses the new success URL.
+3. Polish internal order alert too
+   - Apply the same improved spacing and card styling to the internal “new order received” email so the Pixcellor admin alert looks consistent.
+
+4. Redeploy the email sender
+   - Deploy the updated app email function so future emails use the fixed name and improved templates.
+
+5. Verify after deployment
+   - Render/check the templates through the existing preview function where possible.
+   - Confirm the sender name is now Pixcellor™ in the outgoing payload.
 
 Technical details:
-- Likely files to change/create:
-  - `supabase/functions/create-checkout/index.ts`
-  - new `supabase/functions/check-order-status/index.ts`
-  - `supabase/config.toml` if needed for the new function entry
-  - new `src/pages/OrderSuccess.tsx`
-  - `src/App.tsx`
-  - `package.json` / lockfile for `canvas-confetti`
-- The order check will not expose private portal/admin data; it will only return limited confirmation fields for the specific checkout session.
+- Files to update:
+  - `supabase/functions/send-transactional-email/index.ts`
+  - `supabase/functions/auth-email-hook/index.ts` if needed for consistent branding
+  - `supabase/functions/_shared/transactional-email-templates/full-works-order-confirmation.tsx`
+  - `supabase/functions/_shared/transactional-email-templates/elite-order-confirmation.tsx`
+  - `supabase/functions/_shared/transactional-email-templates/retainer-order-confirmation.tsx`
+  - `supabase/functions/_shared/transactional-email-templates/internal-new-order-notification.tsx`
+- Functions to redeploy:
+  - `send-transactional-email`
+  - `preview-transactional-email` if template previews depend on the shared updated templates
+  - `auth-email-hook` only if its sender/site name is changed
