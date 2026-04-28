@@ -9,11 +9,11 @@ const Footer = () => {
         </span>
         <div className="flex items-center justify-center gap-x-4 flex-nowrap">
           <a
-            href="mailto:dev@delabs.co.uk"
+            href="mailto:projects@pixcellor.com"
             className="flex items-center gap-1.5 hover:text-foreground transition-colors"
           >
             <Mail className="w-3 h-3" />
-            dev@delabs.co.uk
+            projects@pixcellor.com
           </a>
           <a
             href="tel:+441483912430"
