@@ -21,10 +21,11 @@ const Footer = () => {
           href="https://www.google.com/maps/dir/?api=1&destination=3rd+Floor%2C+207+Regent+Street%2C+London%2C+W1B+3HH"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden md:flex items-center gap-1.5 hover:text-foreground transition-colors"
+          aria-label="Open Pixcellor address in Google Maps"
+          className="flex items-center gap-1.5 hover:text-foreground transition-colors"
         >
-          <MapPin className="w-3 h-3" />
-          3rd Floor, 207 Regent Street, London, W1B 3HH
+          <MapPin className="w-3.5 h-3.5 md:w-3 md:h-3" />
+          <span className="hidden md:inline">3rd Floor, 207 Regent Street, London, W1B 3HH</span>
         </a>
         <a
           href="https://www.facebook.com/profile.php?id=61569263824416"
