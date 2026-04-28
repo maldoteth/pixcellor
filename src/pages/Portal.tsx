@@ -996,13 +996,36 @@ export default function Portal() {
                   <div className="grid gap-2 text-xs md:grid-cols-3">
                     <div className="rounded-md border border-border p-2">
                       <div className="font-medium">Company</div>
-                      <div className="text-muted-foreground">{f.company_name ?? "—"}</div>
-                      <div className="text-muted-foreground break-all">{f.company_domain ?? "—"}</div>
+                      <div className="text-muted-foreground">Name: {f.company_name ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">Domain: {f.company_domain ?? "—"}</div>
+                      <div className="text-muted-foreground">Type: {f.company_type ?? "—"}</div>
+                    </div>
+                    <div className="rounded-md border border-border p-2">
+                      <div className="font-medium">Location</div>
+                      <div className="text-muted-foreground">{[f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(", ") || "—"}</div>
+                      <div className="text-muted-foreground">Postal: {f.ip_postal ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">Coordinates: {f.ip_location ?? "—"}</div>
                     </div>
                     <div className="rounded-md border border-border p-2">
                       <div className="font-medium">Network</div>
-                      <div className="text-muted-foreground">{f.asn ?? "—"} {f.as_name ? `· ${f.as_name}` : ""}</div>
-                      <div className="text-muted-foreground break-all">{f.ip_address ?? "—"}</div>
+                      <div className="text-muted-foreground">ASN: {f.asn ?? "—"}</div>
+                      <div className="text-muted-foreground">Name: {f.as_name ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">Domain: {f.as_domain ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">Route: {f.as_route ?? "—"}</div>
+                    </div>
+                  </div>
+                  <div className="grid gap-2 text-xs md:grid-cols-3">
+                    <div className="rounded-md border border-border p-2">
+                      <div className="font-medium">IP details</div>
+                      <div className="text-muted-foreground break-all">IP: {f.ip_address ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">Host: {f.ip_hostname ?? "—"}</div>
+                      <div className="text-muted-foreground">IP timezone: {f.ip_timezone ?? "—"}</div>
+                    </div>
+                    <div className="rounded-md border border-border p-2">
+                      <div className="font-medium">Carrier</div>
+                      <div className="text-muted-foreground">Name: {f.carrier_name ?? "—"}</div>
+                      <div className="text-muted-foreground">MCC: {f.carrier_mcc ?? "—"}</div>
+                      <div className="text-muted-foreground">MNC: {f.carrier_mnc ?? "—"}</div>
                     </div>
                     <div className="rounded-md border border-border p-2">
                       <div className="font-medium">Privacy flags</div>
@@ -1013,6 +1036,7 @@ export default function Portal() {
                         f.privacy_relay ? "Relay" : null,
                         f.privacy_hosting ? "Hosting" : null,
                       ].filter(Boolean).join(" · ") || "None detected"}</div>
+                      <div className="text-muted-foreground">Source: {f.enrichment_source ?? "—"}</div>
                       <div className="text-muted-foreground">{f.enriched_at ? `Enriched ${new Date(f.enriched_at).toLocaleString()}` : f.enrichment_error ?? "Pending enrichment"}</div>
                     </div>
                   </div>
