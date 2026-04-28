@@ -555,6 +555,7 @@ export default function Portal() {
   const salesQ = salesSearch.trim().toLowerCase();
   const contactsQ = contactsSearch.trim().toLowerCase();
   const ordersQ = ordersSearch.trim().toLowerCase();
+  const editRequestsQ = editRequestsSearch.trim().toLowerCase();
   const completedQ = completedSearch.trim().toLowerCase();
   const falloffsQ = falloffsSearch.trim().toLowerCase();
   const chatsQ = chatsSearch.trim().toLowerCase();
@@ -573,6 +574,17 @@ export default function Portal() {
     for (const item of projectRequirements) map.set(item.session_id, item);
     return map;
   }, [projectRequirements]);
+
+  const editRequestsBySession = useMemo(() => {
+    const map = new Map<string, EditRequest[]>();
+    for (const item of editRequests) {
+      const current = map.get(item.session_id) ?? [];
+      current.push(item);
+      map.set(item.session_id, current);
+    }
+    for (const value of map.values()) value.sort((a, b) => b.request_number - a.request_number);
+    return map;
+  }, [editRequests]);
 
   const orderEmailStatusBySession = useMemo(() => {
     const confirmationTemplates = new Set(["full-works-order-confirmation", "elite-order-confirmation", "retainer-order-confirmation"]);
