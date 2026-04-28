@@ -280,7 +280,6 @@ export default function Portal() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
   const [activeConv, setActiveConv] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
   const [salesSearch, setSalesSearch] = useState("");
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
@@ -525,11 +524,8 @@ export default function Portal() {
     return { totalSales, totalWebsites, potential, uniqueVisitors, totalVisitEvents, pricingViews, buyClicks };
   }, [orders, profiles, inquiries, conversations, falloffs]);
 
-  // Global search across all data
-  const q = search.trim().toLowerCase();
   const salesQ = salesSearch.trim().toLowerCase();
   const contactsQ = contactsSearch.trim().toLowerCase();
-  const matches = (s: string | null | undefined) => !!s && s.toLowerCase().includes(q);
   const matchesQuery = (query: string, s: string | null | undefined) => !!s && s.toLowerCase().includes(query);
 
 
