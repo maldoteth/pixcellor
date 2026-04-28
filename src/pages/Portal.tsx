@@ -1147,6 +1147,9 @@ export default function Portal() {
     );
   }
 
+  const currentContactField = contactWizardFields[mobileContactStep];
+  const currentSalesField = salesEventWizardFields[mobileSalesStep];
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 pb-28 md:p-6">
       <div className="mx-auto max-w-7xl min-w-0 space-y-6">
