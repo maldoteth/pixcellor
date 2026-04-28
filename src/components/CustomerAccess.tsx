@@ -87,7 +87,11 @@ function CustomerAuthForm() {
   );
 }
 
-export default function CustomerAccess() {
+interface CustomerAccessProps {
+  hidden?: boolean;
+}
+
+export default function CustomerAccess({ hidden = false }: CustomerAccessProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -106,7 +110,7 @@ export default function CustomerAccess() {
     <button
       type="button"
       aria-label="Customer log in"
-      className={`absolute right-4 top-4 z-[10000] flex items-center justify-center rounded-sm md:right-6 md:top-6 ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
+      className={`absolute right-4 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:right-6 md:top-6 ${hidden ? "pointer-events-none opacity-0" : "opacity-100"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
         backdropFilter: "blur(20px)",
