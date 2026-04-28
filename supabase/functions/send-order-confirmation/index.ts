@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const PORTAL_ACCESS_CODE = "42069";
+const SITE_URL = "https://pixcellor.com";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,7 +58,9 @@ serve(async (req) => {
     const metadata = order.metadata && typeof order.metadata === "object" ? order.metadata as Record<string, unknown> : {};
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Full Works";
     const billing = typeof metadata.billing === "string" ? metadata.billing : order.mode || "payment";
+    const requirementsUrl = `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(order.session_id)}`;
     const templateData = {
+      requirementsUrl,
       customerEmail: order.customer_email,
       orderId: order.session_id,
       packageName,

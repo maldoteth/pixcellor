@@ -3,6 +3,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const SITE_URL = "https://pixcellor.com";
+
 serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
@@ -102,7 +104,9 @@ serve(async (req) => {
 
       if (event.type === "checkout.session.completed" && paymentStatus === "paid" && session.customer_details?.email) {
         const packageName = session.metadata?.package_name || "Full Works";
+        const requirementsUrl = `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(session.id)}`;
         const templateData = {
+          requirementsUrl,
           customerEmail: session.customer_details.email,
           orderId: session.id,
           packageName,

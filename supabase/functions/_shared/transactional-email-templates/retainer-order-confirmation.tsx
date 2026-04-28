@@ -1,5 +1,5 @@
 import * as React from 'npm:react@18.3.1'
-import { Body, Column, Container, Head, Heading, Html, Preview, Row, Section, Text } from 'npm:@react-email/components@0.0.22'
+import { Body, Button, Column, Container, Head, Heading, Html, Preview, Row, Section, Text } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
 const BRAND_NAME = 'Pixcellor™'
@@ -10,6 +10,7 @@ type OrderEmailProps = {
   packageName?: string
   amount?: string
   billing?: string
+  requirementsUrl?: string
 }
 
 type OrderTemplateConfig = {
@@ -38,7 +39,10 @@ const DetailRow = ({ label, value }: { label: string; value?: string }) => {
 }
 
 const createOrderEmail = (config: OrderTemplateConfig) => {
-  const OrderEmail = ({ customerEmail, orderId, packageName, amount, billing }: OrderEmailProps) => (
+  const OrderEmail = ({ customerEmail, orderId, packageName, amount, billing, requirementsUrl }: OrderEmailProps) => {
+    const briefUrl = requirementsUrl || (orderId ? `https://pixcellor.com/project-requirements?session_id=${encodeURIComponent(orderId)}` : 'https://pixcellor.com/project-requirements')
+
+    return (
     <Html lang="en" dir="ltr">
       <Head />
       <Preview>{config.preview}</Preview>
@@ -66,8 +70,11 @@ const createOrderEmail = (config: OrderTemplateConfig) => {
             <Text style={sectionKicker}>What happens next</Text>
             <Text style={text}>{config.nextBody}</Text>
             <Text style={text}>
-              Reply with your preferred colours, brand assets, images, social links, copy, examples you like, and any requests we should know before we begin.
+              Use the secure project requirements form to send us your site name, contents, page details, colours, style direction, references, images, written content, and social links.
             </Text>
+            <Button style={button} href={briefUrl}>
+              Add project requirements
+            </Button>
           </Section>
 
           <Text style={footer}>
@@ -76,7 +83,8 @@ const createOrderEmail = (config: OrderTemplateConfig) => {
         </Container>
       </Body>
     </Html>
-  )
+    )
+  }
 
   return {
     component: OrderEmail,
@@ -190,6 +198,18 @@ const text = {
   lineHeight: '1.7',
   margin: '0 0 16px',
 }
+
+const button = {
+  backgroundColor: '#ffffff',
+  borderRadius: '10px',
+  color: '#050505',
+  display: 'inline-block',
+  fontSize: '14px',
+  fontWeight: '800' as const,
+  margin: '2px 0 14px',
+  padding: '13px 18px',
+  textDecoration: 'none',
+}
 const footer = {
   borderTop: '1px solid #242424',
   color: '#929292',
@@ -207,6 +227,7 @@ export const template = createOrderEmail({
   subjectFallback: 'Retainer',
   displayName: 'Retainer order confirmation',
   previewData: {
+    requirementsUrl: 'https://pixcellor.com/project-requirements?session_id=cs_test_123',
     customerEmail: 'client@example.com',
     orderId: 'cs_test_123',
     packageName: 'Retainer',
