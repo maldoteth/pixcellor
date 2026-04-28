@@ -1885,7 +1885,7 @@ export default function Portal() {
       </div>
 
       <Drawer open={mobileContactDrawerOpen} onOpenChange={setMobileContactDrawerOpen}>
-        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl md:hidden">
+        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl lg:hidden">
           <DrawerHeader className="px-0 text-left">
             <DrawerTitle>Create contact</DrawerTitle>
             <DrawerDescription>Step {mobileContactStep + 1} of {contactWizardFields.length}</DrawerDescription>
@@ -1938,7 +1938,7 @@ export default function Portal() {
       </Drawer>
 
       <Drawer open={mobileSalesDrawerOpen} onOpenChange={setMobileSalesDrawerOpen}>
-        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl md:hidden">
+        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl lg:hidden">
           <DrawerHeader className="px-0 text-left">
             <DrawerTitle>Create sales event</DrawerTitle>
             <DrawerDescription>Step {mobileSalesStep + 1} of {salesEventWizardFields.length}</DrawerDescription>
@@ -2010,7 +2010,7 @@ export default function Portal() {
       </Drawer>
 
       <Drawer open={mobileOrdersDrawerOpen} onOpenChange={setMobileOrdersDrawerOpen}>
-        <DrawerContent className="max-h-[85dvh] border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl md:hidden">
+        <DrawerContent className="max-h-[85dvh] border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl lg:hidden">
           <DrawerHeader className="px-0 text-left">
             <DrawerTitle>Live orders</DrawerTitle>
             <DrawerDescription>{filteredOrders.length} open order{filteredOrders.length === 1 ? "" : "s"}</DrawerDescription>
@@ -2057,7 +2057,7 @@ export default function Portal() {
         </DrawerContent>
       </Drawer>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur md:hidden" aria-label="Admin mobile shortcuts">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur lg:hidden" aria-label="Admin mobile shortcuts">
         <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
           <Button variant={activeTab === "sales" && !showSalesEventForm ? "default" : "ghost"} size="sm" onClick={openMobileHome} className="h-14 flex-col gap-1 px-1 text-[10px]">
             <Home className="h-4 w-4" />
