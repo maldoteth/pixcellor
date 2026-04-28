@@ -695,6 +695,20 @@ export default function Portal() {
     });
   }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactOrderStatsByEmail]);
 
+  const jobTitleSuggestions = useMemo(() => {
+    const typed = contactForm.notes.trim().toLowerCase();
+    const titles = Array.from(new Set(
+      contacts
+        .map(contact => contact.notes?.trim())
+        .filter((title): title is string => Boolean(title))
+    )).sort((a, b) => a.localeCompare(b));
+
+    if (!typed) return titles.slice(0, 8);
+    return titles
+      .filter(title => title.toLowerCase().includes(typed) && title.toLowerCase() !== typed)
+      .slice(0, 8);
+  }, [contacts, contactForm.notes]);
+
   const salesCallbacks = useMemo(() => {
     const pending = contactEvents
       .filter(e => e.callback_at && !e.completed_at)
@@ -1642,7 +1656,25 @@ export default function Portal() {
                   <Input placeholder="Phone number" value={contactForm.phone} onChange={(e) => setContactForm(f => ({ ...f, phone: e.target.value }))} />
                   <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
                   <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
-                  <Input className="md:col-span-2" placeholder="Job title" value={contactForm.notes} onChange={(e) => setContactForm(f => ({ ...f, notes: e.target.value }))} />
+                  <div className="md:col-span-2 space-y-2">
+                    <Input placeholder="Job title" value={contactForm.notes} onChange={(e) => setContactForm(f => ({ ...f, notes: e.target.value }))} />
+                    {jobTitleSuggestions.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {jobTitleSuggestions.map(title => (
+                          <Button
+                            key={title}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setContactForm(f => ({ ...f, notes: title }))}
+                            className="h-8 max-w-full justify-start truncate"
+                          >
+                            {title}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <div className="md:col-span-2 flex gap-2">
                     <Button onClick={createContact}>Save contact</Button>
                     <Button variant="outline" onClick={() => setShowContactForm(false)}>Cancel</Button>
