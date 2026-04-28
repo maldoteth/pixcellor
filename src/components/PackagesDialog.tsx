@@ -473,9 +473,9 @@ function DesktopCards() {
                 <div className="text-3xl font-extrabold text-foreground">
                   {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
                 </div>
-                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}</span>
+                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£2,500/mo" : "£25,000/yr"}</span>
               </div>
-              <IntroductoryOfferText discount="57%" />
+              <IntroductoryOfferText discount="52%" />
               <ul className="mb-6 space-y-2 text-base text-muted-foreground">
                 {PACKAGES.retainer.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
@@ -688,9 +688,9 @@ function MobileCards() {
                 <div className="text-3xl font-extrabold text-foreground">
                   {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
                 </div>
-                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}</span>
+                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£2,500/mo" : "£25,000/yr"}</span>
               </div>
-              <IntroductoryOfferText discount="57%" />
+              <IntroductoryOfferText discount="52%" />
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.retainer.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
