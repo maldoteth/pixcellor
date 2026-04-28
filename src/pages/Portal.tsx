@@ -967,9 +967,10 @@ export default function Portal() {
         </div>
 
         <Tabs defaultValue="sales">
-          <TabsList className="grid grid-cols-2 md:grid-cols-8 w-full md:w-auto h-auto">
+          <TabsList className="grid grid-cols-2 md:grid-cols-9 w-full md:w-auto h-auto">
             <TabsTrigger value="sales">Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders">Orders ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="completed">Completed ({completedOrders.length})</TabsTrigger>
             <TabsTrigger value="falloffs">Falloffs ({filteredFalloffs.length})</TabsTrigger>
             <TabsTrigger value="mailbox">Inbox ({mailboxMessages.length})</TabsTrigger>
             <TabsTrigger value="chats">Chats ({filteredConversations.length})</TabsTrigger>
@@ -1037,12 +1038,6 @@ export default function Portal() {
 
           <TabsContent value="orders" className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card/50 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">Orders</span>
-                <Button variant={orderStatusFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderStatusFilter("all")}>All</Button>
-                <Button variant={orderStatusFilter === "open" ? "default" : "outline"} size="sm" onClick={() => setOrderStatusFilter("open")}>Open</Button>
-                <Button variant={orderStatusFilter === "closed" ? "default" : "outline"} size="sm" onClick={() => setOrderStatusFilter("closed")}>Closed</Button>
-              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Requirements</span>
                 <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
