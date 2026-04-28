@@ -304,6 +304,7 @@ export default function Portal() {
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
+  const [eventContactSuggestionsOpen, setEventContactSuggestionsOpen] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [manualReply, setManualReply] = useState("");
   const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
@@ -434,6 +435,10 @@ export default function Portal() {
   useEffect(() => {
     setEventContactSuggestionCount(6);
   }, [eventContactSearch, mobileSalesDrawerOpen, showSalesEventForm]);
+
+  useEffect(() => {
+    if (!mobileSalesDrawerOpen && !showSalesEventForm) setEventContactSuggestionsOpen(false);
+  }, [mobileSalesDrawerOpen, showSalesEventForm]);
 
   const loadMessages = async (conversationId: string) => {
     setActiveConv(conversationId);
@@ -770,11 +775,13 @@ export default function Portal() {
     const contact = contacts.find(c => c.id === contactId);
     setEventForm({ contact_id: contactId, title: "", description: "", callback_at: "" });
     setEventContactSearch(contact ? `${contact.name}${contact.email ? ` · ${contact.email}` : ""}` : "");
+    setEventContactSuggestionsOpen(false);
     setShowSalesEventForm(true);
   };
 
   const handleEventContactSearch = (value: string) => {
     setEventContactSearch(value);
+    setEventContactSuggestionsOpen(value.trim().length > 0);
     const contact = contacts.find(c => `${c.name}${c.email ? ` · ${c.email}` : ""}` === value || c.name === value || c.email === value);
     setEventForm(f => ({ ...f, contact_id: contact?.id ?? "" }));
   };
@@ -782,6 +789,7 @@ export default function Portal() {
   const selectEventContact = (contact: Contact) => {
     setEventContactSearch(`${contact.name}${contact.email ? ` · ${contact.email}` : ""}`);
     setEventForm(f => ({ ...f, contact_id: contact.id }));
+    setEventContactSuggestionsOpen(false);
   };
 
   const loadMoreEventContactSuggestions = (element: HTMLDivElement) => {
