@@ -1018,6 +1018,8 @@ export default function Portal() {
             {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {q ? "match your search" : "yet"}.</p>}
             {filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
+              const emailStatus = orderEmailStatusBySession.get(o.session_id);
+              const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
               return (
               <Card key={o.session_id}>
                 <CardContent className="p-4 space-y-4">
@@ -1037,6 +1039,7 @@ export default function Portal() {
                       <Badge variant={requirements ? "default" : "outline"}>
                         {requirements ? "Requirements received" : "Needs requirements"}
                       </Badge>
+                      {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                       <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
                       <Button
                         variant="outline"
@@ -1046,6 +1049,16 @@ export default function Portal() {
                       >
                         {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
                       </Button>
+                      {canSendReminder && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => sendRequirementsReminder(o)}
+                          disabled={sendingReminderId === o.session_id}
+                        >
+                          {sendingReminderId === o.session_id ? "Sending…" : "Send reminder"}
+                        </Button>
+                      )}
                       {o.order_status !== "delivered" && (
                         <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
                           Mark delivered
