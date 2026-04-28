@@ -712,6 +712,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      customer_fetch_portal: { Args: never; Returns: Json }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
