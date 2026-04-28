@@ -77,7 +77,7 @@ export default function CustomerAuth() {
         <Card className="border-border bg-card/70 backdrop-blur-xl">
           <CardHeader>
             <p className="text-xs font-semibold text-muted-foreground">Pixcellor™ customer portal</p>
-            <CardTitle>{mode === "signup" ? "Create customer account" : "Customer sign in"}</CardTitle>
+            <CardTitle>Customer access</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -98,7 +98,7 @@ export default function CustomerAuth() {
                 <Input
                   id="customer-password"
                   type="password"
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  autoComplete="current-password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   minLength={6}
@@ -107,7 +107,7 @@ export default function CustomerAuth() {
               </div>
               <Button type="submit" disabled={busy} className="w-full gap-2">
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-                {mode === "signup" ? "Create account" : "Sign in"}
+                Continue
               </Button>
             </form>
 
@@ -115,14 +115,6 @@ export default function CustomerAuth() {
               Use the same email from checkout and your past orders will appear automatically.
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => setMode((current) => (current === "signup" ? "login" : "signup"))}
-            >
-              {mode === "signup" ? "Already have an account? Sign in" : "New customer? Create account"}
-            </Button>
           </CardContent>
         </Card>
       </section>
