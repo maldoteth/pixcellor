@@ -439,6 +439,34 @@ export default function CustomerPortal() {
 
                 <TabsContent value="payments" className="space-y-4">
                   <SectionHeader title="Plan & payments" description="Retainer plan details, past payments, and the next scheduled billing date." count={retainerOrders.length} />
+                  <div className="grid gap-4 lg:grid-cols-3">
+                    {BUY_AGAIN_PACKAGES.map((plan) => (
+                      <Card key={plan.key} className={`relative overflow-hidden border-border bg-card/70 backdrop-blur-xl ${plan.featured ? "border-primary/40" : ""}`}>
+                        <CardContent className="flex h-full flex-col p-5">
+                          {plan.featured && <Badge className="mb-4 w-fit border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">Most popular</Badge>}
+                          <div className="space-y-2">
+                            <h3 className="text-xl font-semibold">{plan.name}</h3>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-3xl font-bold">{plan.price}</span>
+                              <span className="text-xs text-muted-foreground line-through">{plan.rrp}</span>
+                            </div>
+                            <p className="text-xs font-semibold text-foreground">Introductory offer — {plan.discount}</p>
+                          </div>
+                          <ul className="my-5 flex-1 space-y-2 text-sm text-muted-foreground">
+                            {plan.features.map((feature) => (
+                              <li key={feature} className="flex items-start gap-2">
+                                <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                          <Button variant="pricing" className="w-full gap-2" onClick={() => handleBuyAgain(plan)}>
+                            {plan.action} <CreditCard className="h-4 w-4" />
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                   {retainerOrders.length === 0 ? (
                     <EmptyState icon={CreditCard} title="No retainer plan found" text="One-time project payments remain visible in order history." />
                   ) : (
