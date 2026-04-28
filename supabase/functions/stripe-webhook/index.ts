@@ -103,12 +103,18 @@ serve(async (req) => {
       }
 
       if (event.type === "checkout.session.completed" && paymentStatus === "paid" && session.customer_details?.email) {
+        const { data: publicReference, error: publicReferenceError } = await supabase.rpc("ensure_order_public_reference", { _session_id: session.id });
+        if (publicReferenceError) throw publicReferenceError;
+        const orderCode = typeof publicReference?.order_code === "string" ? publicReference.order_code : session.id;
+        const requirementsToken = typeof publicReference?.requirements_token === "string" ? publicReference.requirements_token : null;
         const packageName = session.metadata?.package_name || "Full Works";
-        const requirementsUrl = `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(session.id)}`;
+        const requirementsUrl = requirementsToken
+          ? `${SITE_URL}/project-requirements?order=${encodeURIComponent(orderCode)}&token=${encodeURIComponent(requirementsToken)}`
+          : `${SITE_URL}/project-requirements`;
         const templateData = {
           requirementsUrl,
           customerEmail: session.customer_details.email,
-          orderId: session.id,
+          orderId: orderCode,
           packageName,
           amount: formatGBP(session.amount_total),
           billing: session.metadata?.billing || session.mode || "payment",

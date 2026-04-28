@@ -91,13 +91,17 @@ const pricingButtonStyle = {
 
 export default function ProjectRequirements() {
   const [params] = useSearchParams();
-  const sessionId = params.get("session_id") ?? "";
+  const orderCode = params.get("order") ?? "";
+  const requirementsToken = params.get("token") ?? "";
   const [form, setForm] = useState<RequirementsForm>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const validSession = useMemo(() => /^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId), [sessionId]);
+  const validAccess = useMemo(
+    () => /^PXC-[A-HJ-NP-Z]{4}-\d{4}$/.test(orderCode) && /^[A-Fa-f0-9]{64}$/.test(requirementsToken),
+    [orderCode, requirementsToken],
+  );
 
   const updateField = (name: FieldName, value: string) => {
     setForm((current) => ({ ...current, [name]: value }));
@@ -106,8 +110,8 @@ export default function ProjectRequirements() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!validSession) {
-      toast.error("This requirements link is missing a valid order ID.");
+    if (!validAccess) {
+      toast.error("This requirements link is missing a valid access token.");
       return;
     }
 
@@ -121,7 +125,7 @@ export default function ProjectRequirements() {
 
     setSubmitting(true);
     const { data, error } = await supabase.functions.invoke("submit-project-requirements", {
-      body: { sessionId, ...parsed.data },
+      body: { orderCode, requirementsToken, ...parsed.data },
     });
     setSubmitting(false);
 
@@ -171,9 +175,9 @@ export default function ProjectRequirements() {
 
         <Card className="border-border bg-card/70 backdrop-blur-xl">
           <CardContent className="p-5 md:p-8">
-            {!validSession && (
+            {!validAccess && (
               <div className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-                This link is missing a valid order ID. Open the project requirements link from your confirmation email.
+                This link is missing a valid access token. Open the project requirements link from your confirmation email.
               </div>
             )}
 
@@ -209,7 +213,7 @@ export default function ProjectRequirements() {
               <div className="flex flex-wrap justify-end gap-3 pt-2">
                 <button
                   type="submit"
-                  disabled={submitting || !validSession}
+                  disabled={submitting || !validAccess}
                   className="rounded-sm px-6 py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 relative overflow-hidden group"
                   style={pricingButtonStyle}
                 >

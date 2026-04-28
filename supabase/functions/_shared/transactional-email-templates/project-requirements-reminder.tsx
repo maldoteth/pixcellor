@@ -12,7 +12,7 @@ type RequirementsReminderProps = {
 }
 
 const ProjectRequirementsReminderEmail = ({ customerEmail, orderId, packageName, requirementsUrl }: RequirementsReminderProps) => {
-  const briefUrl = requirementsUrl || (orderId ? `https://pixcellor.com/project-requirements?session_id=${encodeURIComponent(orderId)}` : 'https://pixcellor.com/project-requirements')
+  const briefUrl = requirementsUrl || 'https://pixcellor.com/project-requirements'
 
   return (
     <Html lang="en" dir="ltr">
@@ -49,9 +49,9 @@ export const template = {
   subject: 'Reminder: add your Pixcellor project requirements',
   displayName: 'Project requirements reminder',
   previewData: {
-    requirementsUrl: 'https://pixcellor.com/project-requirements?session_id=cs_test_123',
+    requirementsUrl: 'https://pixcellor.com/project-requirements?order=PXC-ABCD-1234&token=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
     customerEmail: 'client@example.com',
-    orderId: 'cs_test_123',
+    orderId: 'PXC-ABCD-1234',
     packageName: 'Full Works',
   },
 } satisfies TemplateEntry

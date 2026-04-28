@@ -70,7 +70,13 @@ serve(async (req) => {
 
     const metadata = order.metadata && typeof order.metadata === "object" ? order.metadata as Record<string, unknown> : {};
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Pixcellor package";
-    const requirementsUrl = `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(order.session_id)}`;
+    const { data: publicReference, error: publicReferenceError } = await supabase.rpc("ensure_order_public_reference", { _session_id: order.session_id });
+    if (publicReferenceError) throw publicReferenceError;
+    const orderCode = typeof publicReference?.order_code === "string" ? publicReference.order_code : order.session_id;
+    const requirementsToken = typeof publicReference?.requirements_token === "string" ? publicReference.requirements_token : null;
+    const requirementsUrl = requirementsToken
+      ? `${SITE_URL}/project-requirements?order=${encodeURIComponent(orderCode)}&token=${encodeURIComponent(requirementsToken)}`
+      : `${SITE_URL}/project-requirements`;
 
     const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
       method: "POST",
@@ -79,7 +85,7 @@ serve(async (req) => {
         templateName: "project-requirements-reminder",
         recipientEmail: order.customer_email,
         idempotencyKey: `requirements-reminder-${order.session_id}-${Date.now()}`,
-        templateData: { requirementsUrl, customerEmail: order.customer_email, orderId: order.session_id, packageName },
+        templateData: { requirementsUrl, customerEmail: order.customer_email, orderId: orderCode, packageName },
       }),
     });
     const data = await emailResponse.json().catch(() => null);

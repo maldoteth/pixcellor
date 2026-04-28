@@ -14,7 +14,8 @@ const json = (body: unknown, status = 200) =>
   });
 
 const RequirementsSchema = z.object({
-  sessionId: z.string().trim().min(8).max(255).regex(/^cs_(test|live)_[A-Za-z0-9]+$/, "Invalid order link"),
+  orderCode: z.string().trim().regex(/^PXC-[A-HJ-NP-Z]{4}-\d{4}$/, "Invalid order link"),
+  requirementsToken: z.string().trim().regex(/^[A-Fa-f0-9]{64}$/, "Invalid order access token"),
   siteName: z.string().trim().min(1, "Site name is required").max(160),
   siteContents: z.string().trim().min(1, "Site contents are required").max(4000),
   pagesDetails: z.string().trim().min(1, "Page details are required").max(6000),
@@ -45,17 +46,21 @@ serve(async (req) => {
     const { data: order, error: orderError } = await supabase
       .from("stripe_checkout_sessions")
       .select("session_id, customer_email, payment_status, status")
-      .eq("session_id", parsed.data.sessionId)
+      .eq("order_code", parsed.data.orderCode)
+      .eq("requirements_token", parsed.data.requirementsToken.toLowerCase())
       .maybeSingle();
 
     if (orderError) throw orderError;
-    if (!order || (order.payment_status !== "paid" && order.status !== "complete" && order.status !== "completed")) {
+    if (!order) {
+      return json({ error: "This requirements link is invalid or has expired." }, 403);
+    }
+    if (order.payment_status !== "paid" && order.status !== "complete" && order.status !== "completed") {
       return json({ error: "This requirements link is only available after a paid order." }, 403);
     }
 
     const { error: upsertError } = await supabase.from("project_requirements").upsert(
       {
-        session_id: parsed.data.sessionId,
+        session_id: order.session_id,
         customer_email: order.customer_email,
         site_name: parsed.data.siteName,
         site_contents: parsed.data.siteContents,

@@ -55,14 +55,21 @@ serve(async (req) => {
       return json({ error: "Only paid orders can receive confirmation emails" }, 400);
     }
 
+    const { data: publicReference, error: publicReferenceError } = await supabase.rpc("ensure_order_public_reference", { _session_id: order.session_id });
+    if (publicReferenceError) throw publicReferenceError;
+    const orderCode = typeof publicReference?.order_code === "string" ? publicReference.order_code : order.session_id;
+    const requirementsToken = typeof publicReference?.requirements_token === "string" ? publicReference.requirements_token : null;
+
     const metadata = order.metadata && typeof order.metadata === "object" ? order.metadata as Record<string, unknown> : {};
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Full Works";
     const billing = typeof metadata.billing === "string" ? metadata.billing : order.mode || "payment";
-    const requirementsUrl = `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(order.session_id)}`;
+    const requirementsUrl = requirementsToken
+      ? `${SITE_URL}/project-requirements?order=${encodeURIComponent(orderCode)}&token=${encodeURIComponent(requirementsToken)}`
+      : `${SITE_URL}/project-requirements`;
     const templateData = {
       requirementsUrl,
       customerEmail: order.customer_email,
-      orderId: order.session_id,
+      orderId: orderCode,
       packageName,
       amount: formatGBP(order.amount_total),
       billing,

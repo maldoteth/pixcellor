@@ -15,6 +15,8 @@ type OrderStatus = {
   amount?: string | null;
   customerEmail?: string | null;
   requirementsSubmitted?: boolean;
+  orderCode?: string | null;
+  requirementsToken?: string | null;
 };
 
 function fireFireworks() {
@@ -175,9 +177,9 @@ export default function OrderSuccess() {
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         Use the project requirements form to send us your site name, contents, page details, colours, style direction, references, images, written content, and socials.
                       </p>
-                      {sessionId && (
+                      {order.orderCode && order.requirementsToken && (
                         <Button asChild className="mt-2">
-                          <Link to={`/project-requirements?session_id=${encodeURIComponent(sessionId)}`}>Add project requirements</Link>
+                          <Link to={`/project-requirements?order=${encodeURIComponent(order.orderCode)}&token=${encodeURIComponent(order.requirementsToken)}`}>Add project requirements</Link>
                         </Button>
                       )}
                     </>
