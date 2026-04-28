@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Archive, Mail, Plus, Search } from "lucide-react";
+import { Archive, Loader2, Mail, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { PORTAL_ACCESS_CODE, PORTAL_ACCESS_STORAGE_KEY } from "./PortalAuth";
 
@@ -282,6 +282,7 @@ export default function Portal() {
   const [mailboxLoading, setMailboxLoading] = useState(false);
   const [sendingConfirmationId, setSendingConfirmationId] = useState<string | null>(null);
   const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
+  const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
