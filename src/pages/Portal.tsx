@@ -1023,6 +1023,20 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card/50 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground">Orders</span>
+                <Button variant={orderStatusFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderStatusFilter("all")}>All</Button>
+                <Button variant={orderStatusFilter === "open" ? "default" : "outline"} size="sm" onClick={() => setOrderStatusFilter("open")}>Open</Button>
+                <Button variant={orderStatusFilter === "closed" ? "default" : "outline"} size="sm" onClick={() => setOrderStatusFilter("closed")}>Closed</Button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground">Requirements</span>
+                <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
+                <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
+                <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
+              </div>
+            </div>
             {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {q ? "match your search" : "yet"}.</p>}
             {filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
