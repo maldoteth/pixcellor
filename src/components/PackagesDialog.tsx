@@ -544,7 +544,6 @@ function DesktopCards() {
 function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
-  const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
 
@@ -606,38 +605,13 @@ function MobileCards() {
           Most Popular
         </span>
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
-        <div className="flex items-center gap-2 mt-2 mb-3">
-          <button
-            onClick={() => setEliteBilling("one-time")}
-            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
-              eliteBilling === "one-time"
-                ? "bg-foreground text-background"
-                : "bg-secondary text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            One-time
-          </button>
-          <button
-            onClick={() => setEliteBilling("monthly")}
-            className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
-              eliteBilling === "monthly"
-                ? "bg-foreground text-background"
-                : "bg-secondary text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Monthly
-          </button>
-        </div>
-        <div className="mb-1 flex items-end gap-2">
+        <div className="mt-3 mb-1">
           <span className="text-3xl font-extrabold text-foreground">
-            {eliteBilling === "one-time" ? "£500" : "£60/mo"}
+            £500
           </span>
-          {eliteBilling === "monthly" && (
-            <span className="pb-0.5 text-xs font-semibold text-muted-foreground">for 12 months</span>
-          )}
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">
-          {eliteBilling === "one-time" ? "RRP £2,500" : "RRP £250/mo"}
+          RRP £2,500
         </p>
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
@@ -650,18 +624,16 @@ function MobileCards() {
         <GlassBuyButton
           onClick={() =>
             buy(
-              eliteBilling === "one-time"
-                ? PACKAGES.elite.priceId
-                : PACKAGES.elite.monthlyPriceId,
-              eliteBilling === "one-time" ? "payment" : "subscription",
+              PACKAGES.elite.priceId,
+              PACKAGES.elite.mode,
               "elite",
               PACKAGES.elite.name,
-              eliteBilling === "one-time" ? "One-time payment" : "Monthly subscription"
+              "One-time payment"
             )
           }
           disabled={!!loading}
           loading={loading === "elite"}
-          label={eliteBilling === "one-time" ? "Buy Now" : "Subscribe"}
+          label="Buy Now"
         />
         </div>
       </div>
