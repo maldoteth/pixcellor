@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import applePayLogo from "@/assets/apple-pay.png";
 import gpayLogo from "@/assets/gpay-logo.png";
 
@@ -35,18 +36,6 @@ const PACKAGES = {
     features: ["Your own tech department", "Websites or full apps"],
   },
 };
-
-const glassButtonStyle = {
-  background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
-  backdropFilter: "blur(20px)",
-  WebkitBackdropFilter: "blur(20px)",
-  border: "1px solid rgba(255,255,255,0.2)",
-  boxShadow: `
-    0 8px 32px rgba(0,0,0,0.3),
-    inset 0 1px 1px rgba(255,255,255,0.3),
-    inset 0 -1px 1px rgba(0,0,0,0.1)
-  `,
-} as const;
 
 async function handleCheckout(priceId: string, mode: string, packageName: string, billing: string) {
   await recordFalloff({ event: "checkout_started", priceId, mode, packageName, billing });
@@ -120,19 +109,13 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <button
-          className="mb-6 px-8 py-3 rounded-sm text-base font-semibold text-foreground flex items-center justify-center relative w-[276px]"
+        <Button
+          variant="pricing"
+          className="mb-6 h-auto w-[276px] px-8 py-3 text-base font-semibold"
           aria-label="View our web development pricing"
-          style={glassButtonStyle}
         >
-          <div
-            className="absolute inset-1 rounded-sm opacity-60 pointer-events-none"
-            style={{
-              background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)",
-            }}
-          />
           Pricing
-        </button>
+        </Button>
       </DialogTrigger>
 
       {isMobile ? (
@@ -168,15 +151,14 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
 
 function GlassBuyButton({ onClick, disabled, loading, label }: { onClick: () => void; disabled: boolean; loading: boolean; label: string }) {
   return (
-    <button
+    <Button
+      variant="pricing"
       onClick={onClick}
       disabled={disabled}
-      className="w-full rounded-sm py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 flex items-center justify-center gap-2 relative overflow-hidden group"
-      style={glassButtonStyle}
+      className="h-auto w-full py-2 font-semibold"
     >
-      <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : label}
-    </button>
+    </Button>
   );
 }
 
