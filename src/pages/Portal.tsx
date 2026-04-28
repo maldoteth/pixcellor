@@ -1231,6 +1231,11 @@ export default function Portal() {
 
   const currentContactField = contactWizardFields[mobileContactStep];
   const currentSalesField = salesEventWizardFields[mobileSalesStep];
+  const contactDetailDrawerContact = contactDetailDrawerId ? getContact(contactDetailDrawerId) : null;
+  const contactDetailDrawerEvents = contactDetailDrawerContact ? contactEvents.filter(e => e.contact_id === contactDetailDrawerContact.id) : [];
+  const contactDetailDrawerEmail = normalizeEmail(contactDetailDrawerContact?.email);
+  const contactDetailDrawerOrderStats = contactDetailDrawerEmail ? contactOrderStatsByEmail.get(contactDetailDrawerEmail) : null;
+  const contactDetailDrawerPhoneHref = formatPhoneHref(contactDetailDrawerContact?.phone);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 pb-28 md:p-6 md:pb-28 lg:pb-6">
