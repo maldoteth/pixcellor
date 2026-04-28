@@ -467,6 +467,22 @@ export default function Portal() {
     return map;
   }, [projectRequirements]);
 
+  const orderEmailStatusBySession = useMemo(() => {
+    const confirmationTemplates = new Set(["full-works-order-confirmation", "elite-order-confirmation", "retainer-order-confirmation"]);
+    const map = new Map<string, { confirmationSent: boolean; reminderSent: boolean }>();
+    for (const order of orders) map.set(order.session_id, { confirmationSent: false, reminderSent: false });
+    for (const log of emailLogs) {
+      const orderId = typeof log.metadata?.order_id === "string" ? log.metadata.order_id : null;
+      const matchedOrder = orderId ? orders.find(order => order.session_id === orderId) : orders.find(order => order.customer_email?.toLowerCase() === log.recipient_email?.toLowerCase());
+      if (!matchedOrder || log.status !== "sent") continue;
+      const current = map.get(matchedOrder.session_id) ?? { confirmationSent: false, reminderSent: false };
+      if (confirmationTemplates.has(log.template_name)) current.confirmationSent = true;
+      if (log.template_name === "project-requirements-reminder") current.reminderSent = true;
+      map.set(matchedOrder.session_id, current);
+    }
+    return map;
+  }, [emailLogs, orders]);
+
   const filteredOrders = useMemo(() => {
     if (!q) return orders;
     return orders.filter(o =>
@@ -755,6 +771,28 @@ export default function Portal() {
     }
 
     toast.success(`Confirmation sent to ${data.recipientEmail || order.customer_email}.`);
+    await loadPortalSnapshot();
+  };
+
+  const sendRequirementsReminder = async (order: StripeSession) => {
+    if (!order.customer_email) {
+      toast.error("This order does not have a customer email.");
+      return;
+    }
+
+    setSendingReminderId(order.session_id);
+    const { data, error } = await supabase.functions.invoke("send-requirements-reminder", {
+      body: { accessCode: portalAccessCode, sessionId: order.session_id },
+    });
+    setSendingReminderId(null);
+
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Could not send requirements reminder");
+      return;
+    }
+
+    toast.success(`Requirements reminder sent to ${data.recipientEmail || order.customer_email}.`);
+    await loadPortalSnapshot();
   };
 
   const sendMailboxReply = async () => {
