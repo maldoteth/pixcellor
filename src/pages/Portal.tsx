@@ -2039,7 +2039,7 @@ export default function Portal() {
             <UserPlus className="h-4 w-4" />
             Contact
           </Button>
-          <Button variant={activeTab === "orders" ? "default" : "ghost"} size="sm" onClick={openMobileOrders} className="h-14 flex-col gap-1 px-1 text-[10px]">
+          <Button variant={mobileOrdersDrawerOpen || activeTab === "orders" ? "default" : "ghost"} size="sm" onClick={openMobileOrders} className="h-14 flex-col gap-1 px-1 text-[10px]">
             <ShoppingBag className="h-4 w-4" />
             Orders
           </Button>
