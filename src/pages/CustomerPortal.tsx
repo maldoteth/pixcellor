@@ -72,7 +72,7 @@ const BUY_AGAIN_PACKAGES = [
     key: "retainer",
     name: "Retainer",
     price: "£1,200/mo",
-    rrp: "RRP £2,500/mo",
+    rrp: "RRP £2,500",
     discount: "52% off",
     priceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
     mode: "subscription",
