@@ -246,6 +246,21 @@ const contactStatuses = [
 const getContactStatusColor = (status: Contact["status"]) =>
   contactStatuses.find(item => item.value === status)?.color ?? "hsl(var(--muted))";
 
+const contactWizardFields = [
+  { key: "name", label: "Name", placeholder: "Contact name", required: true, inputMode: "text" },
+  { key: "phone", label: "Number", placeholder: "Phone number", required: true, inputMode: "tel" },
+  { key: "email", label: "Email", placeholder: "Email address", required: false, inputMode: "email" },
+  { key: "location", label: "Location", placeholder: "Town or area", required: false, inputMode: "text" },
+  { key: "notes", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
+] as const;
+
+const salesEventWizardFields = [
+  { key: "contact", label: "Contact", placeholder: "Search contact", required: true, inputMode: "text" },
+  { key: "title", label: "Event", placeholder: "Callback, email, quote…", required: true, inputMode: "text" },
+  { key: "callback_at", label: "Callback time", placeholder: "Callback time", required: false, inputMode: "text" },
+  { key: "description", label: "Notes", placeholder: "Add notes", required: false, inputMode: "text" },
+] as const;
+
 export default function Portal() {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
