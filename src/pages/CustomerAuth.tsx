@@ -119,10 +119,6 @@ export default function CustomerAuth() {
               </Button>
             </form>
 
-            <div className="rounded-md border border-border bg-muted/30 p-4 text-sm text-muted-foreground leading-relaxed">
-              Use the same email from checkout and your past orders will appear automatically.
-            </div>
-
           </CardContent>
         </Card>
       </section>
