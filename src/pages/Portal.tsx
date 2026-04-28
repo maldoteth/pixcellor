@@ -1897,17 +1897,22 @@ export default function Portal() {
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium">{currentContactField.label}{currentContactField.required ? " *" : ""}</label>
-                <Input
-                  autoFocus
-                  inputMode={currentContactField.inputMode}
-                  placeholder={currentContactField.placeholder}
-                  value={contactForm[currentContactField.key]}
-                  onChange={(e) => setContactForm(f => ({ ...f, [currentContactField.key]: e.target.value }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") continueMobileContact();
-                  }}
-                  className="mt-2 h-12 text-base"
-                />
+                <div className="mt-2 flex gap-2">
+                  <Input
+                    autoFocus
+                    inputMode={currentContactField.inputMode}
+                    placeholder={currentContactField.placeholder}
+                    value={contactForm[currentContactField.key]}
+                    onChange={(e) => setContactForm(f => ({ ...f, [currentContactField.key]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") continueMobileContact();
+                    }}
+                    className="h-12 text-base"
+                  />
+                  <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileContactField} aria-label={`Paste ${currentContactField.label}`}>
+                    <Clipboard className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               {currentContactField.key === "notes" && jobTitleSuggestions.length > 0 && (
                 <div className="flex flex-wrap gap-2">
