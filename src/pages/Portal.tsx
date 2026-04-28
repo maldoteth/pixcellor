@@ -1878,7 +1878,7 @@ export default function Portal() {
                           <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
                         </div>
                         <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
-                          <div className="flex items-center gap-1" aria-label="Contact status">
+                          <div className="hidden items-center gap-1 md:flex" aria-label="Contact status">
                             {contactStatuses.map(status => (
                               <button
                                 key={status.value}
@@ -1897,10 +1897,23 @@ export default function Portal() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex justify-start md:justify-end lg:hidden">
+                    <div className="flex items-center justify-between md:justify-end lg:hidden">
                       <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)}>
                         <Badge variant="secondary" className="cursor-pointer">{events.length} logs</Badge>
                       </button>
+                      <div className="flex items-center gap-1 md:hidden" aria-label="Contact status">
+                        {contactStatuses.map(status => (
+                          <button
+                            key={status.value}
+                            type="button"
+                            title={status.label}
+                            aria-label={status.label}
+                            onClick={() => updateContactStatus(c.id, status.value)}
+                            className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                            style={{ backgroundColor: status.color }}
+                          />
+                        ))}
+                      </div>
                     </div>
                     {editingContactId === c.id && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-md border border-border p-3">
