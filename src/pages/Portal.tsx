@@ -863,6 +863,8 @@ export default function Portal() {
     }
     setContactForm({ name: "", phone: "", email: "", location: "", notes: "" });
     setShowContactForm(false);
+    setMobileContactDrawerOpen(false);
+    setMobileContactStep(0);
     await loadPortalSnapshot();
     toast.success("Contact added.");
   };
@@ -918,6 +920,8 @@ export default function Portal() {
     setEventForm({ contact_id: "", title: "", description: "", callback_at: "" });
     setEventContactSearch("");
     setShowSalesEventForm(false);
+    setMobileSalesDrawerOpen(false);
+    setMobileSalesStep(0);
     await loadPortalSnapshot();
     toast.success(hasCallback ? "Callback scheduled." : "Event logged in contact history.");
   };
