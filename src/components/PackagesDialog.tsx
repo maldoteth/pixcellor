@@ -452,7 +452,7 @@ function DesktopCards() {
           style={{ transformStyle: "preserve-3d" }}
         >
           <div
-            className="absolute inset-0 rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
+            className={`absolute inset-0 rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`}
             style={{
               backfaceVisibility: "hidden",
               boxShadow: `
@@ -530,7 +530,7 @@ function DesktopCards() {
           </div>
 
           <div
-            className="absolute inset-0 rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
+            className={`absolute inset-0 rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`}
             style={{
               backfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
