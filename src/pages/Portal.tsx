@@ -1390,7 +1390,7 @@ export default function Portal() {
             ))}
           </TabsContent>
 
-          <TabsContent value="mailbox" className="grid grid-cols-1 md:grid-cols-[360px_minmax(0,1fr)] gap-4 items-start">
+          <TabsContent value="mailbox" className="grid min-w-0 grid-cols-1 gap-4 items-start lg:grid-cols-[360px_minmax(0,1fr)]">
             <div className="space-y-3 md:max-h-[70vh] md:overflow-hidden md:flex md:flex-col md:min-h-0">
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -1450,7 +1450,7 @@ export default function Portal() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="chats" className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-4">
+          <TabsContent value="chats" className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
             <div className="space-y-2 max-h-[70vh] overflow-y-auto">
               {filteredConversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations {q ? "match your search" : "yet"}.</p>}
               {filteredConversations.map(c => {
@@ -1475,7 +1475,7 @@ export default function Portal() {
                 );
               })}
             </div>
-            <Card className="max-h-[70vh] overflow-hidden flex flex-col">
+            <Card className="min-w-0 max-h-[70vh] overflow-hidden flex flex-col">
               <CardContent className="p-4 overflow-y-auto space-y-3 flex-1">
                 {!activeConv && <p className="text-muted-foreground text-sm">Pick a conversation to view messages.</p>}
                 {activeConv && messages.length === 0 && <p className="text-muted-foreground text-sm">No messages.</p>}
