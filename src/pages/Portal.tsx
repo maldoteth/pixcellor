@@ -1871,6 +1871,111 @@ export default function Portal() {
         </p>
       </div>
 
+      <Drawer open={mobileContactDrawerOpen} onOpenChange={setMobileContactDrawerOpen}>
+        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl md:hidden">
+          <DrawerHeader className="px-0 text-left">
+            <DrawerTitle>Create contact</DrawerTitle>
+            <DrawerDescription>Step {mobileContactStep + 1} of {contactWizardFields.length}</DrawerDescription>
+          </DrawerHeader>
+          <div className="space-y-5">
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${((mobileContactStep + 1) / contactWizardFields.length) * 100}%` }} />
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium">{currentContactField.label}{currentContactField.required ? " *" : ""}</label>
+                <Input
+                  autoFocus
+                  inputMode={currentContactField.inputMode}
+                  placeholder={currentContactField.placeholder}
+                  value={contactForm[currentContactField.key]}
+                  onChange={(e) => setContactForm(f => ({ ...f, [currentContactField.key]: e.target.value }))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") continueMobileContact();
+                  }}
+                  className="mt-2 h-12 text-base"
+                />
+              </div>
+              {currentContactField.key === "notes" && jobTitleSuggestions.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {jobTitleSuggestions.map(title => (
+                    <Button key={title} type="button" variant="outline" size="sm" onClick={() => setContactForm(f => ({ ...f, notes: title }))} className="h-8 max-w-full justify-start truncate">
+                      {title}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => mobileContactStep > 0 ? setMobileContactStep(step => step - 1) : setMobileContactDrawerOpen(false)}>
+                {mobileContactStep > 0 ? "Back" : "Cancel"}
+              </Button>
+              <Button onClick={() => continueMobileContact()}>{mobileContactStep === contactWizardFields.length - 1 ? "Save" : "Next"}</Button>
+              {!currentContactField.required && (
+                <Button variant="ghost" className="col-span-2" onClick={() => continueMobileContact(true)}>Skip</Button>
+              )}
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      <Drawer open={mobileSalesDrawerOpen} onOpenChange={setMobileSalesDrawerOpen}>
+        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl md:hidden">
+          <DrawerHeader className="px-0 text-left">
+            <DrawerTitle>Create sales event</DrawerTitle>
+            <DrawerDescription>Step {mobileSalesStep + 1} of {salesEventWizardFields.length}</DrawerDescription>
+          </DrawerHeader>
+          <div className="space-y-5">
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${((mobileSalesStep + 1) / salesEventWizardFields.length) * 100}%` }} />
+            </div>
+            <div className="space-y-3">
+              <label className="text-sm font-medium">{currentSalesField.label}{currentSalesField.required ? " *" : ""}</label>
+              {currentSalesField.key === "contact" ? (
+                <>
+                  <Input
+                    autoFocus
+                    list="portal-mobile-contact-options"
+                    placeholder={currentSalesField.placeholder}
+                    value={eventContactSearch}
+                    onChange={(e) => handleEventContactSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") continueMobileSalesEvent();
+                    }}
+                    className="h-12 text-base"
+                  />
+                  <datalist id="portal-mobile-contact-options">
+                    {contacts.map(c => <option key={c.id} value={`${c.name}${c.email ? ` · ${c.email}` : ""}`}>{[c.phone, c.location].filter(Boolean).join(" · ")}</option>)}
+                  </datalist>
+                </>
+              ) : currentSalesField.key === "callback_at" ? (
+                <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} className="h-12 text-base" />
+              ) : (
+                <Input
+                  autoFocus
+                  placeholder={currentSalesField.placeholder}
+                  value={currentSalesField.key === "title" ? eventForm.title : eventForm.description}
+                  onChange={(e) => setEventForm(f => ({ ...f, [currentSalesField.key]: e.target.value }))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") continueMobileSalesEvent();
+                  }}
+                  className="h-12 text-base"
+                />
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => mobileSalesStep > 0 ? setMobileSalesStep(step => step - 1) : setMobileSalesDrawerOpen(false)}>
+                {mobileSalesStep > 0 ? "Back" : "Cancel"}
+              </Button>
+              <Button onClick={() => continueMobileSalesEvent()}>{mobileSalesStep === salesEventWizardFields.length - 1 ? "Save" : "Next"}</Button>
+              {!currentSalesField.required && (
+                <Button variant="ghost" className="col-span-2" onClick={() => continueMobileSalesEvent(true)}>Skip</Button>
+              )}
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur md:hidden" aria-label="Admin mobile shortcuts">
         <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
           <Button variant={activeTab === "sales" && !showSalesEventForm ? "default" : "ghost"} size="sm" onClick={openMobileHome} className="h-14 flex-col gap-1 px-1 text-[10px]">
