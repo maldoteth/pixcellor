@@ -26,3 +26,5 @@ project_id = "rkgjkvghejcmostuqkgw"
     verify_jwt = false
   [functions.send-requirements-reminder]
     verify_jwt = false
+  [functions.send-order-complete]
+    verify_jwt = false

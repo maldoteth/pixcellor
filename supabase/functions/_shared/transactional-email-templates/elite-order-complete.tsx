@@ -1,0 +1,1 @@
+export { template } from './full-works-order-complete.tsx'
