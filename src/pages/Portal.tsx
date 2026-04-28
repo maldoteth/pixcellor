@@ -254,6 +254,8 @@ export default function Portal() {
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [salesSearch, setSalesSearch] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState<"all" | "open" | "closed">("all");
+  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [openContactId, setOpenContactId] = useState<string | null>(null);
@@ -484,8 +486,7 @@ export default function Portal() {
   }, [emailLogs, orders]);
 
   const filteredOrders = useMemo(() => {
-    if (!q) return orders;
-    return orders.filter(o =>
+    const searched = !q ? orders : orders.filter(o =>
       matches(o.customer_email) ||
       matches(o.session_id) ||
       matches(o.payment_status) ||
@@ -493,7 +494,14 @@ export default function Portal() {
       matches(o.currency) ||
       matches(JSON.stringify(o.metadata))
     );
-  }, [orders, q]);
+    return searched.filter((order) => {
+      const isClosed = order.order_status === "delivered";
+      const hasRequirements = requirementsBySession.has(order.session_id);
+      const statusMatches = orderStatusFilter === "all" || (orderStatusFilter === "closed" ? isClosed : !isClosed);
+      const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
+      return statusMatches && reqsMatches;
+    });
+  }, [orders, q, orderStatusFilter, orderReqsFilter, requirementsBySession]);
 
   const filteredFalloffs = useMemo(() => {
     const paidSessionIds = new Set(orders.map(o => o.session_id));
