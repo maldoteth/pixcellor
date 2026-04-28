@@ -353,7 +353,7 @@ export default function Portal() {
 
     // Potential = chatters who haven't bought
     const buyerEmails = new Set(
-      paidOrders.map(o => o.customer_email?.toLowerCase()).filter(Boolean) as string[]
+      orders.map(o => o.customer_email?.toLowerCase()).filter(Boolean) as string[]
     );
     const profileEmails = profiles.map(p => p.email.toLowerCase());
     const inquiryEmails = inquiries.map(i => i.email.toLowerCase());
