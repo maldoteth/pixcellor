@@ -773,7 +773,6 @@ export default function Portal() {
   const getContact = (id: string) => contacts.find(c => c.id === id);
 
   const openContactDrawer = (contactId: string) => {
-    setActiveTab("sales");
     setContactDetailDrawerId(contactId);
   };
 
