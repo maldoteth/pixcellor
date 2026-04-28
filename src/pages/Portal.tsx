@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Archive, Mail, Plus, Search } from "lucide-react";
+import { Archive, Loader2, Mail, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { PORTAL_ACCESS_CODE, PORTAL_ACCESS_STORAGE_KEY } from "./PortalAuth";
 
@@ -282,6 +282,7 @@ export default function Portal() {
   const [mailboxLoading, setMailboxLoading] = useState(false);
   const [sendingConfirmationId, setSendingConfirmationId] = useState<string | null>(null);
   const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
+  const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -785,16 +786,21 @@ export default function Portal() {
       return;
     }
 
-    const { data, error } = await supabase.functions.invoke("send-order-complete", {
-      body: { accessCode: portalAccessCode, sessionId: order.session_id, deliveredDomain: cleanDomain },
-    });
+    setDeliveringOrderId(order.session_id);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-order-complete", {
+        body: { accessCode: portalAccessCode, sessionId: order.session_id, deliveredDomain: cleanDomain },
+      });
 
-    if (error || data?.error) {
-      toast.error(data?.error || error?.message || "Could not complete order");
-      return;
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || "Could not complete order");
+        return;
+      }
+      await loadPortalSnapshot();
+      toast.success(`Order completed and email sent to ${data.recipientEmail || order.customer_email}.`);
+    } finally {
+      setDeliveringOrderId(null);
     }
-    await loadPortalSnapshot();
-    toast.success(`Order completed and email sent to ${data.recipientEmail || order.customer_email}.`);
   };
 
   const markOrderUndelivered = async (sessionId: string) => {
@@ -1129,8 +1135,18 @@ export default function Portal() {
                         </Button>
                       )}
                       {o.order_status !== "delivered" && (
-                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o)}>
-                          Mark delivered
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => markOrderDelivered(o)}
+                          disabled={deliveringOrderId === o.session_id}
+                        >
+                          {deliveringOrderId === o.session_id ? (
+                            <span className="inline-flex items-center gap-2">
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              Processing…
+                            </span>
+                          ) : "Mark delivered"}
                         </Button>
                       )}
                     </div>
