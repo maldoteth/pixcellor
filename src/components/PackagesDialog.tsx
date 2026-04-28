@@ -700,7 +700,7 @@ function MobileCards() {
           className="relative min-h-[360px] rounded-xl"
           style={{ transformStyle: "preserve-3d" }}
         >
-          <div className="absolute inset-0 rounded-xl p-5 flex flex-col border border-border bg-background overflow-hidden" style={{ backfaceVisibility: "hidden" }}>
+          <div className={`absolute inset-0 rounded-xl p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`} style={{ backfaceVisibility: "hidden" }}>
             <div className="lava-blob lava-blob-1" />
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
@@ -770,7 +770,7 @@ function MobileCards() {
             </div>
           </div>
 
-          <div className="absolute inset-0 rounded-xl p-5 flex flex-col border border-border bg-background overflow-hidden" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
+          <div className={`absolute inset-0 rounded-xl p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`} style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
             <div className="lava-blob lava-blob-1" />
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
