@@ -539,6 +539,11 @@ export default function Portal() {
   const profilesQ = profilesSearch.trim().toLowerCase();
   const inquiriesQ = inquiriesSearch.trim().toLowerCase();
   const matchesQuery = (query: string, s: string | null | undefined) => !!s && s.toLowerCase().includes(query);
+  const orderMatchesQuery = (query: string, order: StripeSession) =>
+    matchesQuery(query, order.customer_email) || matchesQuery(query, order.session_id) ||
+    matchesQuery(query, order.payment_status) || matchesQuery(query, order.status) ||
+    matchesQuery(query, order.currency) || matchesQuery(query, order.order_status) ||
+    matchesQuery(query, order.delivered_domain) || matchesQuery(query, JSON.stringify(order.metadata));
 
 
   const requirementsBySession = useMemo(() => {
