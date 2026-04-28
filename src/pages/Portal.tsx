@@ -28,6 +28,31 @@ type VisitorFalloff = {
   id: string;
   visitor_id: string;
   session_id: string;
+  ip_address: string | null;
+  ip_hostname: string | null;
+  ip_city: string | null;
+  ip_region: string | null;
+  ip_country: string | null;
+  ip_location: string | null;
+  ip_postal: string | null;
+  ip_timezone: string | null;
+  company_name: string | null;
+  company_domain: string | null;
+  company_type: string | null;
+  asn: string | null;
+  as_name: string | null;
+  as_domain: string | null;
+  as_route: string | null;
+  carrier_name: string | null;
+  privacy_vpn: boolean | null;
+  privacy_proxy: boolean | null;
+  privacy_tor: boolean | null;
+  privacy_relay: boolean | null;
+  privacy_hosting: boolean | null;
+  enrichment_source: string | null;
+  enrichment_status: string | null;
+  enrichment_error: string | null;
+  enriched_at: string | null;
   first_page: string | null;
   last_page: string | null;
   referrer: string | null;
@@ -426,6 +451,15 @@ export default function Portal() {
       matches(f.referrer) ||
       matches(f.user_agent) ||
       matches(f.timezone) ||
+      matches(f.company_name) ||
+      matches(f.company_domain) ||
+      matches(f.company_type) ||
+      matches(f.ip_address) ||
+      matches(f.ip_city) ||
+      matches(f.ip_region) ||
+      matches(f.ip_country) ||
+      matches(f.asn) ||
+      matches(f.as_name) ||
       matches(f.visitor_id) ||
       matches(JSON.stringify(f.metadata))
     );
