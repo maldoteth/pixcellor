@@ -306,6 +306,7 @@ export default function Portal() {
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [salesSearch, setSalesSearch] = useState("");
   const [ordersSearch, setOrdersSearch] = useState("");
+  const [retainersSearch, setRetainersSearch] = useState("");
   const [editRequestsSearch, setEditRequestsSearch] = useState("");
   const [completedSearch, setCompletedSearch] = useState("");
   const [falloffsSearch, setFalloffsSearch] = useState("");
@@ -566,6 +567,7 @@ export default function Portal() {
   const salesQ = salesSearch.trim().toLowerCase();
   const contactsQ = contactsSearch.trim().toLowerCase();
   const ordersQ = ordersSearch.trim().toLowerCase();
+  const retainersQ = retainersSearch.trim().toLowerCase();
   const editRequestsQ = editRequestsSearch.trim().toLowerCase();
   const completedQ = completedSearch.trim().toLowerCase();
   const falloffsQ = falloffsSearch.trim().toLowerCase();
@@ -658,6 +660,11 @@ export default function Portal() {
       return order.order_status !== "delivered" && reqsMatches;
     });
   }, [orders, ordersQ, orderReqsFilter, requirementsBySession]);
+
+  const filteredRetainers = useMemo(() => {
+    const monthlyRetainers = orders.filter(isMonthlyRetainerOrder);
+    return !retainersQ ? monthlyRetainers : monthlyRetainers.filter(o => orderMatchesQuery(retainersQ, o));
+  }, [orders, retainersQ]);
 
   const completedOrders = useMemo(() => {
     const searched = !completedQ ? orders : orders.filter(o => orderMatchesQuery(completedQ, o));
