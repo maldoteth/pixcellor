@@ -52,6 +52,7 @@ const BUY_AGAIN_PACKAGES = [
     mode: "payment",
     billing: "One-time payment",
     action: "Buy again",
+    featured: false,
     features: ["Industry leading website", "Lifetime warranty", "Custom design", "Up to 3 pages"],
   },
   {
@@ -77,6 +78,7 @@ const BUY_AGAIN_PACKAGES = [
     mode: "subscription",
     billing: "Monthly subscription",
     action: "Subscribe",
+    featured: false,
     features: ["Your own tech department", "Free consulting", "Websites or full apps", "Monthly billing"],
   },
 ] as const;
