@@ -280,6 +280,7 @@ export default function Portal() {
     const channel = supabase
       .channel("portal-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "stripe_checkout_sessions" }, loadPortalSnapshot)
+      .on("postgres_changes", { event: "*", schema: "public", table: "visitor_falloffs" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_conversations" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_messages" }, () => {
         if (activeConv) loadMessages(activeConv);
