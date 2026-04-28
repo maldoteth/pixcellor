@@ -10,8 +10,7 @@ import { recordFalloff, recordScrollDepth } from "@/lib/checkoutTracking";
 
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
-import logoIcon from '@/assets/logo-icon.png';
-import pixcellorWordmark from '@/assets/pixcellor-wordmark.png';
+import pixcellorWordmarkWhite from '@/assets/pixcellor-wordmark-white.png';
 import ui2 from '@/assets/hero/ui-2.png';
 import ui3 from '@/assets/hero/ui-3.png';
 import ui4 from '@/assets/hero/ui-4.png';
@@ -302,7 +301,7 @@ export default function IntroAnimation() {
                         transition={{ duration: 1 }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground"
                     >
-                        <img src={pixcellorWordmark} alt="Pixcellor™" className="h-[3.6rem] md:h-[8.84rem] lg:h-[7rem] w-auto" style={{ filter: "brightness(0) invert(1)" }} />
+                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[3.6rem] md:h-[8.84rem] lg:h-[7rem] w-auto" />
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
