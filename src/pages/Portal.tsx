@@ -113,6 +113,19 @@ type Profile = {
   updated_at: string;
 };
 
+type ProjectRequirement = {
+  session_id: string;
+  customer_email: string | null;
+  site_name: string;
+  site_contents: string;
+  pages_details: string;
+  colours_styles: string;
+  reference_links: string | null;
+  images_content_socials: string;
+  extra_notes: string | null;
+  updated_at: string;
+};
+
 type Inquiry = {
   id: string;
   name: string;
@@ -223,6 +236,7 @@ export default function Portal() {
   const [lastMessages, setLastMessages] = useState<Record<string, Message>>({});
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [projectRequirements, setProjectRequirements] = useState<ProjectRequirement[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
@@ -263,6 +277,7 @@ export default function Portal() {
       inquiries?: Inquiry[];
       contacts?: Contact[];
       contactEvents?: ContactEvent[];
+      projectRequirements?: ProjectRequirement[];
     };
     setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
     setFalloffs(snapshot.falloffs ?? []);
@@ -272,6 +287,7 @@ export default function Portal() {
     setInquiries(snapshot.inquiries ?? []);
     setContacts(snapshot.contacts ?? []);
     setContactEvents(snapshot.contactEvents ?? []);
+    setProjectRequirements(snapshot.projectRequirements ?? []);
     setAllMessages(allMsgs);
     const previews: Record<string, Message> = {};
     for (const m of allMsgs) {
@@ -314,6 +330,7 @@ export default function Portal() {
         loadPortalSnapshot();
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "client_profiles" }, loadPortalSnapshot)
+      .on("postgres_changes", { event: "*", schema: "public", table: "project_requirements" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_inquiries" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contacts" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_events" }, loadPortalSnapshot)
@@ -428,6 +445,13 @@ export default function Portal() {
   const contactsQ = contactsSearch.trim().toLowerCase();
   const matches = (s: string | null | undefined) => !!s && s.toLowerCase().includes(q);
   const matchesQuery = (query: string, s: string | null | undefined) => !!s && s.toLowerCase().includes(query);
+
+
+  const requirementsBySession = useMemo(() => {
+    const map = new Map<string, ProjectRequirement>();
+    for (const item of projectRequirements) map.set(item.session_id, item);
+    return map;
+  }, [projectRequirements]);
 
   const filteredOrders = useMemo(() => {
     if (!q) return orders;
@@ -940,39 +964,64 @@ export default function Portal() {
 
           <TabsContent value="orders" className="space-y-2">
             {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {q ? "match your search" : "yet"}.</p>}
-            {filteredOrders.map(o => (
+            {filteredOrders.map(o => {
+              const requirements = requirementsBySession.get(o.session_id);
+              return (
               <Card key={o.session_id}>
-                <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
-                    <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
-                    {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
-                  </div>
-                  <div className="flex flex-wrap items-center justify-end gap-3">
-                    <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>
-                      {o.payment_status ?? "pending"}
-                    </Badge>
-                    <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
-                      {o.order_status === "delivered" ? "Delivered" : "Open"}
-                    </Badge>
-                    <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => sendOrderConfirmation(o)}
-                      disabled={!o.customer_email || sendingConfirmationId === o.session_id}
-                    >
-                      {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
-                    </Button>
-                    {o.order_status !== "delivered" && (
-                      <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
-                        Mark delivered
+                <CardContent className="p-4 space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
+                      <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
+                      {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
+                    </div>
+                    <div className="flex flex-wrap items-center justify-end gap-3">
+                      <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>
+                        {o.payment_status ?? "pending"}
+                      </Badge>
+                      <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
+                        {o.order_status === "delivered" ? "Delivered" : "Open"}
+                      </Badge>
+                      <Badge variant={requirements ? "default" : "outline"}>
+                        {requirements ? "Requirements received" : "Needs requirements"}
+                      </Badge>
+                      <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => sendOrderConfirmation(o)}
+                        disabled={!o.customer_email || sendingConfirmationId === o.session_id}
+                      >
+                        {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
                       </Button>
-                    )}
+                      {o.order_status !== "delivered" && (
+                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
+                          Mark delivered
+                        </Button>
+                      )}
+                    </div>
                   </div>
+
+                  {requirements && (
+                    <div className="rounded-md border border-border bg-background/50 p-4 text-sm">
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <div className="font-medium">{requirements.site_name}</div>
+                        <div className="text-xs text-muted-foreground">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div><span className="text-muted-foreground">Contents:</span> {requirements.site_contents}</div>
+                        <div><span className="text-muted-foreground">Pages:</span> {requirements.pages_details}</div>
+                        <div><span className="text-muted-foreground">Colours/styles:</span> {requirements.colours_styles}</div>
+                        {requirements.reference_links && <div><span className="text-muted-foreground">References:</span> {requirements.reference_links}</div>}
+                        <div className="md:col-span-2"><span className="text-muted-foreground">Images/content/socials:</span> {requirements.images_content_socials}</div>
+                        {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> {requirements.extra_notes}</div>}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            ))}
+            );
+            })}
           </TabsContent>
 
           <TabsContent value="falloffs" className="space-y-2">
