@@ -177,6 +177,59 @@ function GlassBuyButton({ onClick, disabled, loading, label }: { onClick: () => 
   );
 }
 
+function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState<EnterpriseForm>({ email: "", name: "", company: "", number: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const field = ENTERPRISE_FIELDS[step];
+
+  const continueForm = () => {
+    if (!form[field.key].trim()) return;
+    if (step < ENTERPRISE_FIELDS.length - 1) setStep((current) => current + 1);
+    else setSubmitted(true);
+  };
+
+  return (
+    <Drawer open={open} onOpenChange={(nextOpen) => { onOpenChange(nextOpen); if (!nextOpen) { setStep(0); setSubmitted(false); } }}>
+      <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
+        <DrawerHeader className="px-0 text-left">
+          <DrawerTitle>{submitted ? "Enterprise request received" : "Talk to sales"}</DrawerTitle>
+          <DrawerDescription>{submitted ? "We'll be in touch shortly." : `Step ${step + 1} of ${ENTERPRISE_FIELDS.length}`}</DrawerDescription>
+        </DrawerHeader>
+        {submitted ? (
+          <Button variant="pricing" onClick={() => onOpenChange(false)} className="h-12 w-full font-semibold">Done</Button>
+        ) : (
+          <div className="space-y-5">
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${((step + 1) / ENTERPRISE_FIELDS.length) * 100}%` }} />
+            </div>
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground">{field.label} *</label>
+              <Input
+                autoFocus
+                inputMode={field.inputMode}
+                placeholder={field.placeholder}
+                value={form[field.key]}
+                onChange={(e) => setForm((current) => ({ ...current, [field.key]: e.target.value }))}
+                onKeyDown={(e) => { if (e.key === "Enter") continueForm(); }}
+                className="h-12 text-base"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => step > 0 ? setStep((current) => current - 1) : onOpenChange(false)}>
+                {step > 0 ? "Back" : "Cancel"}
+              </Button>
+              <Button variant="pricing" onClick={continueForm} disabled={!form[field.key].trim()}>
+                {step === ENTERPRISE_FIELDS.length - 1 ? "Send" : "Next"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
 function DesktopCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
