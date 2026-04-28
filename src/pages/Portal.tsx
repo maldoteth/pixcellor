@@ -471,6 +471,10 @@ export default function Portal() {
   const counters = useMemo(() => {
     const totalSales = orders.reduce((sum, o) => sum + (o.amount_total ?? 0), 0);
     const totalWebsites = orders.length;
+    const uniqueVisitors = new Set(falloffs.map((f) => f.visitor_id).filter(Boolean)).size;
+    const totalVisitEvents = falloffs.reduce((sum, f) => sum + (f.event_count ?? 0), 0);
+    const pricingViews = falloffs.filter((f) => f.pricing_opened_at).length;
+    const buyClicks = falloffs.filter((f) => f.buy_clicked_at).length;
 
     // Potential = chatters who haven't bought
     const buyerEmails = new Set(
@@ -485,8 +489,8 @@ export default function Portal() {
     const conversationsWithoutEmail = conversations.length - allLeads.size;
     if (conversationsWithoutEmail > 0) potential += conversationsWithoutEmail;
 
-    return { totalSales, totalWebsites, potential };
-  }, [orders, profiles, inquiries, conversations]);
+    return { totalSales, totalWebsites, potential, uniqueVisitors, totalVisitEvents, pricingViews, buyClicks };
+  }, [orders, profiles, inquiries, conversations, falloffs]);
 
   // Global search across all data
   const q = search.trim().toLowerCase();
@@ -1057,7 +1061,7 @@ export default function Portal() {
         </div>
 
         {/* Counters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Total sales</CardTitle></CardHeader>
             <CardContent><div className="text-3xl font-semibold">{formatGBP(counters.totalSales)}</div></CardContent>
@@ -1069,6 +1073,27 @@ export default function Portal() {
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Potential sales (chatted, no buy)</CardTitle></CardHeader>
             <CardContent><div className="text-3xl font-semibold">{counters.potential}</div></CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Website visits</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="text-2xl font-semibold">{counters.uniqueVisitors}</div>
+                <div className="text-xs text-muted-foreground">Visitors</div>
+              </div>
+              <div>
+                <div className="text-2xl font-semibold">{counters.totalVisitEvents}</div>
+                <div className="text-xs text-muted-foreground">Events</div>
+              </div>
+              <div>
+                <div className="text-2xl font-semibold">{counters.pricingViews}</div>
+                <div className="text-xs text-muted-foreground">Pricing opens</div>
+              </div>
+              <div>
+                <div className="text-2xl font-semibold">{counters.buyClicks}</div>
+                <div className="text-xs text-muted-foreground">Buy clicks</div>
+              </div>
+            </CardContent>
           </Card>
         </div>
 
