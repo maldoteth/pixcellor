@@ -1920,7 +1920,7 @@ export default function Portal() {
                       </div>
                     </div>
                     {editingContactId === c.id && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-md border border-border p-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-md border border-border p-3" onClick={(event) => event.stopPropagation()}>
                         <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
                         <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
