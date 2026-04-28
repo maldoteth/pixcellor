@@ -1244,9 +1244,6 @@ export default function Portal() {
                 <h2 className="text-lg font-semibold">Sales follow-ups</h2>
                 <p className="text-sm text-muted-foreground">Log contact events and keep future callbacks visible.</p>
               </div>
-              <Button onClick={() => setShowSalesEventForm(v => !v)} disabled={contacts.length === 0}>
-                <Plus className="w-4 h-4 mr-2" /> Create event
-              </Button>
             </div>
 
             <div className="relative">
@@ -1260,6 +1257,12 @@ export default function Portal() {
               {!contactsQ && filteredContacts.length > 10 && (
                 <p className="mt-1 text-xs text-muted-foreground">Showing 10 most recent contacts. Search to find older contacts.</p>
               )}
+            </div>
+
+            <div className="flex justify-start">
+              <Button onClick={() => setShowSalesEventForm(v => !v)} disabled={contacts.length === 0}>
+                <Plus className="w-4 h-4 mr-2" /> Create event
+              </Button>
             </div>
 
             {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a contact first, then you can create sales events.</p>}
@@ -1727,7 +1730,6 @@ export default function Portal() {
           <TabsContent value="contacts" className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-lg font-semibold">Contact book</h2>
-              <Button onClick={() => setShowContactForm(v => !v)}><Plus className="w-4 h-4 mr-2" /> Add contact</Button>
             </div>
 
             <div className="relative">
@@ -1738,6 +1740,10 @@ export default function Portal() {
                 placeholder="Search contacts by name, email, phone, location, notes, history…"
                 className="pl-9"
               />
+            </div>
+
+            <div className="flex justify-start">
+              <Button onClick={() => setShowContactForm(v => !v)}><Plus className="w-4 h-4 mr-2" /> Add contact</Button>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
