@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function CustomerAuth() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -27,20 +26,36 @@ export default function CustomerAuth() {
 
     try {
       const cleanEmail = email.trim().toLowerCase();
-      const result = mode === "signup"
-        ? await supabase.auth.signUp({
-            email: cleanEmail,
-            password,
-            options: { emailRedirectTo: `${window.location.origin}/customer-portal` },
-          })
-        : await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+      const loginResult = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
 
-      if (result.error) throw result.error;
+      if (!loginResult.error) {
+        navigate("/customer-portal", { replace: true });
+        return;
+      }
 
-      if (mode === "signup" && !result.data.session) {
+      if (loginResult.error.message.toLowerCase().includes("email not confirmed")) {
+        toast.error("Check your email to confirm this account first.");
+        return;
+      }
+
+      const signupResult = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/customer-portal` },
+      });
+
+      if (signupResult.error) {
+        const message = signupResult.error.message.toLowerCase();
+        if (message.includes("already") || message.includes("registered")) {
+          toast.error("Account found. Check the password and try again.");
+          return;
+        }
+        throw signupResult.error;
+      }
+
+      if (!signupResult.data.session) {
         toast.success("Check your email to confirm your customer account.");
         setPassword("");
-        setMode("login");
         return;
       }
 
