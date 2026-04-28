@@ -606,70 +606,43 @@ export default function Portal() {
   }, [contacts, contactOrderStatsByEmail, loadPortalSnapshot]);
 
   const filteredOrders = useMemo(() => {
-    const searched = !q ? orders : orders.filter(o =>
-      matches(o.customer_email) ||
-      matches(o.session_id) ||
-      matches(o.payment_status) ||
-      matches(o.status) ||
-      matches(o.currency) ||
-      matches(JSON.stringify(o.metadata))
-    );
+    const searched = !ordersQ ? orders : orders.filter(o => orderMatchesQuery(ordersQ, o));
     return searched.filter((order) => {
       const hasRequirements = requirementsBySession.has(order.session_id);
       const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
       return order.order_status !== "delivered" && reqsMatches;
     });
-  }, [orders, q, orderReqsFilter, requirementsBySession]);
+  }, [orders, ordersQ, orderReqsFilter, requirementsBySession]);
 
   const completedOrders = useMemo(() => {
-    const searched = !q ? orders : orders.filter(o =>
-      matches(o.customer_email) ||
-      matches(o.session_id) ||
-      matches(o.payment_status) ||
-      matches(o.status) ||
-      matches(o.currency) ||
-      matches(JSON.stringify(o.metadata))
-    );
+    const searched = !completedQ ? orders : orders.filter(o => orderMatchesQuery(completedQ, o));
     return searched.filter((order) => {
       const hasRequirements = requirementsBySession.has(order.session_id);
       const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
       return order.order_status === "delivered" && reqsMatches;
     });
-  }, [orders, q, orderReqsFilter, requirementsBySession]);
+  }, [orders, completedQ, orderReqsFilter, requirementsBySession]);
 
   const filteredFalloffs = useMemo(() => {
     const paidSessionIds = new Set(orders.map(o => o.session_id));
     const unpaidFalloffs = falloffs.filter(f => !f.checkout_session_id || !paidSessionIds.has(f.checkout_session_id));
-    if (!q) return unpaidFalloffs;
+    if (!falloffsQ) return unpaidFalloffs;
     return unpaidFalloffs.filter(f =>
-      matches(f.customer_email) ||
-      matches(f.checkout_session_id) ||
-      matches(f.package_name) ||
-      matches(f.billing) ||
-      matches(f.referrer) ||
-      matches(f.user_agent) ||
-      matches(f.timezone) ||
-      matches(f.company_name) ||
-      matches(f.company_domain) ||
-      matches(f.company_type) ||
-      matches(f.ip_address) ||
-      matches(f.ip_city) ||
-      matches(f.ip_region) ||
-      matches(f.ip_country) ||
-      matches(f.ip_hostname) ||
-      matches(f.ip_location) ||
-      matches(f.ip_postal) ||
-      matches(f.asn) ||
-      matches(f.as_name) ||
-      matches(f.as_domain) ||
-      matches(f.as_route) ||
-      matches(f.carrier_name) ||
-      matches(f.enrichment_source) ||
-      matches(f.enrichment_status) ||
-      matches(f.visitor_id) ||
-      matches(JSON.stringify(f.metadata))
+      matchesQuery(falloffsQ, f.customer_email) || matchesQuery(falloffsQ, f.checkout_session_id) ||
+      matchesQuery(falloffsQ, f.package_name) || matchesQuery(falloffsQ, f.billing) ||
+      matchesQuery(falloffsQ, f.referrer) || matchesQuery(falloffsQ, f.user_agent) ||
+      matchesQuery(falloffsQ, f.timezone) || matchesQuery(falloffsQ, f.company_name) ||
+      matchesQuery(falloffsQ, f.company_domain) || matchesQuery(falloffsQ, f.company_type) ||
+      matchesQuery(falloffsQ, f.ip_address) || matchesQuery(falloffsQ, f.ip_city) ||
+      matchesQuery(falloffsQ, f.ip_region) || matchesQuery(falloffsQ, f.ip_country) ||
+      matchesQuery(falloffsQ, f.ip_hostname) || matchesQuery(falloffsQ, f.ip_location) ||
+      matchesQuery(falloffsQ, f.ip_postal) || matchesQuery(falloffsQ, f.asn) ||
+      matchesQuery(falloffsQ, f.as_name) || matchesQuery(falloffsQ, f.as_domain) ||
+      matchesQuery(falloffsQ, f.as_route) || matchesQuery(falloffsQ, f.carrier_name) ||
+      matchesQuery(falloffsQ, f.enrichment_source) || matchesQuery(falloffsQ, f.enrichment_status) ||
+      matchesQuery(falloffsQ, f.visitor_id) || matchesQuery(falloffsQ, JSON.stringify(f.metadata))
     );
-  }, [falloffs, orders, q]);
+  }, [falloffs, orders, falloffsQ]);
 
   const filteredProfiles = useMemo(() => {
     if (!q) return profiles;
