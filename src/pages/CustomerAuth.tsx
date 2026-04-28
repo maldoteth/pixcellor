@@ -92,8 +92,8 @@ export default function CustomerAuth() {
 
         <Card className="border-border bg-card/70 backdrop-blur-xl">
           <CardHeader>
-            <p className="text-xs font-semibold text-muted-foreground">Pixcellor™ customer portal</p>
-            <CardTitle>Customer access</CardTitle>
+            <p className="text-xs font-semibold text-muted-foreground">Pixcellor™</p>
+            <CardTitle>Log in / Sign up</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             <form onSubmit={handleSubmit} className="space-y-4">

@@ -178,7 +178,7 @@ export default function CustomerAccess() {
         <DrawerTrigger asChild>{trigger}</DrawerTrigger>
         <DrawerContent className="border-border bg-background/95 px-4 pb-6 backdrop-blur-xl">
           <DrawerHeader>
-            <DrawerTitle>Customer access</DrawerTitle>
+            <DrawerTitle>Log in / Sign up</DrawerTitle>
             <DrawerDescription>Log in or sign up to view your matched orders.</DrawerDescription>
           </DrawerHeader>
           <CustomerAuthForm onSuccess={() => setOpen(false)} />
@@ -192,7 +192,7 @@ export default function CustomerAccess() {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="border-border bg-background/95 backdrop-blur-xl">
         <DialogHeader>
-          <DialogTitle>Customer access</DialogTitle>
+          <DialogTitle>Log in / Sign up</DialogTitle>
           <DialogDescription>Log in or sign up to view your matched orders.</DialogDescription>
         </DialogHeader>
         <CustomerAuthForm onSuccess={() => setOpen(false)} />
