@@ -196,6 +196,12 @@ const normalizeEmail = (value?: string | null) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
 };
 
+const formatPhoneHref = (value?: string | null) => {
+  const phone = (value ?? "").trim();
+  const cleaned = phone.replace(/(?!^\+)[^\d]/g, "");
+  return /\d/.test(cleaned) ? `tel:${cleaned}` : null;
+};
+
 const formatDateTimeLocal = (date: Date) => {
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60_000);
