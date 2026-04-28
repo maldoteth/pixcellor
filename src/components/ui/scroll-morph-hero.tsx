@@ -6,6 +6,7 @@ import { ChevronDown } from "lucide-react";
 import BookSlider from "./book-slider";
 import PackagesDialog from "@/components/PackagesDialog";
 import Footer from "@/components/Footer";
+import { recordFalloff, recordScrollDepth } from "@/lib/checkoutTracking";
 
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
@@ -167,6 +168,7 @@ export default function IntroAnimation() {
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
+            recordScrollDepth((newScroll / MAX_SCROLL) * 100);
         };
 
         let touchStartY = 0;
@@ -191,6 +193,7 @@ export default function IntroAnimation() {
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
+            recordScrollDepth((newScroll / MAX_SCROLL) * 100);
         };
 
         container.addEventListener("wheel", handleWheel, { passive: false });
@@ -267,6 +270,7 @@ export default function IntroAnimation() {
 
     const handlePackagesOpenChange = (open: boolean) => {
         setPackagesOpen(open);
+        if (open) void recordFalloff({ event: "pricing_opened" });
         if (!open) {
             // Mark dismissed and cancel any pending auto-open so it stays closed
             // until user scrolls meaningfully back up
