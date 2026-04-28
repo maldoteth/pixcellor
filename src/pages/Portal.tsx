@@ -287,6 +287,7 @@ export default function Portal() {
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [projectRequirements, setProjectRequirements] = useState<ProjectRequirement[]>([]);
+  const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -294,6 +295,7 @@ export default function Portal() {
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [salesSearch, setSalesSearch] = useState("");
   const [ordersSearch, setOrdersSearch] = useState("");
+  const [editRequestsSearch, setEditRequestsSearch] = useState("");
   const [completedSearch, setCompletedSearch] = useState("");
   const [falloffsSearch, setFalloffsSearch] = useState("");
   const [chatsSearch, setChatsSearch] = useState("");
