@@ -1507,6 +1507,23 @@ export default function Portal() {
                     </div>
                   </div>
 
+                  {editRequestsBySession.has(o.session_id) && (
+                    <div className="rounded-md border border-border bg-background/50 p-4 text-sm">
+                      <div className="mb-3 font-medium">Edit requests</div>
+                      <div className="space-y-3">
+                        {editRequestsBySession.get(o.session_id)!.map((request) => (
+                          <div key={request.id} className="rounded-sm border border-border/70 p-3">
+                            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                              <span className="font-medium">Request #{request.request_number}</span>
+                              <Badge variant={request.status === "done" ? "default" : "outline"}>{request.status.replace("_", " ")}</Badge>
+                            </div>
+                            <p className="whitespace-pre-wrap text-muted-foreground">{request.request_details}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {requirements && (
                     <div className="rounded-md border border-border bg-background/50 p-4 text-sm">
                       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
