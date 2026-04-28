@@ -112,16 +112,8 @@ function StripeBadge() {
   );
 }
 
-function DiscountBadge({ discount }: { discount: string }) {
-  return (
-    <div
-      className="inline-flex h-[66px] w-[66px] shrink-0 flex-col items-center justify-center bg-foreground px-2 text-center text-background shadow-sm"
-      style={{ clipPath: "polygon(50% 0%, 58% 14%, 72% 8%, 74% 24%, 90% 22%, 84% 38%, 100% 50%, 84% 62%, 90% 78%, 74% 76%, 72% 92%, 58% 86%, 50% 100%, 42% 86%, 28% 92%, 26% 76%, 10% 78%, 16% 62%, 0% 50%, 16% 38%, 10% 22%, 26% 24%, 28% 8%, 42% 14%)" }}
-    >
-      <span className="text-[7px] font-black uppercase leading-[0.9] tracking-normal">Introductary offer</span>
-      <span className="mt-0.5 text-[11px] font-extrabold leading-none">{discount} off</span>
-    </div>
-  );
+function IntroductoryOfferText({ discount }: { discount: string }) {
+  return <span className="ml-2 font-semibold text-foreground">Introductary offer — {discount} off</span>;
 }
 
 interface PackagesDialogProps {
@@ -332,11 +324,8 @@ function DesktopCards() {
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
-        <div className="mb-1 flex items-center gap-3">
-          <div className="text-3xl font-extrabold text-foreground">£150</div>
-          <DiscountBadge discount="60%" />
-        </div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP £375</p>
+        <div className="mb-1 text-3xl font-extrabold text-foreground">£150</div>
+        <p className="text-xs text-muted-foreground mb-4"><span className="line-through">RRP £375</span><IntroductoryOfferText discount="60%" /></p>
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -386,12 +375,9 @@ function DesktopCards() {
         </motion.div>
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
-        <div className="mb-1 flex items-center gap-3">
-          <div className="text-5xl font-black text-foreground">£500</div>
-          <DiscountBadge discount="67%" />
-        </div>
-        <p className="text-xs text-muted-foreground line-through mb-4">
-          RRP £1,500
+        <div className="mb-1 text-5xl font-black text-foreground">£500</div>
+        <p className="text-xs text-muted-foreground mb-4">
+          <span className="line-through">RRP £1,500</span><IntroductoryOfferText discount="67%" />
         </p>
         <ul className="mb-6 space-y-2 text-lg text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
@@ -479,14 +465,11 @@ function DesktopCards() {
                   Yearly
                 </button>
               </div>
-              <div className="mb-1 flex items-center gap-3">
-                <div className="text-3xl font-extrabold text-foreground">
-                  {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
-                </div>
-                <DiscountBadge discount="57%" />
+              <div className="mb-1 text-3xl font-extrabold text-foreground">
+                {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
               </div>
-              <p className="text-xs text-muted-foreground line-through mb-4">
-                RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
+              <p className="text-xs text-muted-foreground mb-4">
+                <span className="line-through">RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}</span><IntroductoryOfferText discount="57%" />
               </p>
               <ul className="mb-6 space-y-2 text-base text-muted-foreground">
                 {PACKAGES.retainer.features.map((f) => (
@@ -593,11 +576,8 @@ function MobileCards() {
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
-        <div className="mt-3 mb-1 flex items-center gap-3">
-          <span className="text-3xl font-extrabold text-foreground">£150</span>
-          <DiscountBadge discount="60%" />
-        </div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP £375</p>
+        <div className="mt-3 mb-1 text-3xl font-extrabold text-foreground">£150</div>
+        <p className="text-xs text-muted-foreground mb-4"><span className="line-through">RRP £375</span><IntroductoryOfferText discount="60%" /></p>
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
@@ -625,14 +605,11 @@ function MobileCards() {
           Most Popular
         </span>
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
-        <div className="mt-3 mb-1 flex items-center gap-3">
-          <span className="text-3xl font-extrabold text-foreground">
-            £500
-          </span>
-          <DiscountBadge discount="67%" />
+        <div className="mt-3 mb-1 text-3xl font-extrabold text-foreground">
+          £500
         </div>
-        <p className="text-xs text-muted-foreground line-through mb-4">
-          RRP £1,500
+        <p className="text-xs text-muted-foreground mb-4">
+          <span className="line-through">RRP £1,500</span><IntroductoryOfferText discount="67%" />
         </p>
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
@@ -698,14 +675,11 @@ function MobileCards() {
                   Yearly
                 </button>
               </div>
-              <div className="mb-1 flex items-center gap-3">
-                <span className="text-3xl font-extrabold text-foreground">
-                  {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
-                </span>
-                <DiscountBadge discount="57%" />
+              <div className="mb-1 text-3xl font-extrabold text-foreground">
+                {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
               </div>
-              <p className="text-xs text-muted-foreground line-through mb-4">
-                RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
+              <p className="text-xs text-muted-foreground mb-4">
+                <span className="line-through">RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}</span><IntroductoryOfferText discount="57%" />
               </p>
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.retainer.features.map((f) => (
