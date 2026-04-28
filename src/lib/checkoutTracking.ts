@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const CLIENT_ID_KEY = "pixcellor_checkout_client_id";
 const SESSION_ID_KEY = "pixcellor_checkout_session_id";
+const VISIT_RECORDED_KEY = "pixcellor_visit_falloff_recorded";
 export const FALL_OFF_CONSENT_KEY = "pixcellor_falloff_consent";
 
 const getCheckoutClientId = () => {
@@ -68,4 +69,10 @@ export const recordFalloff = async (metadata: Record<string, unknown> = {}) => {
       body: { visitorId: context.clientId, sessionId: context.sessionId },
     });
   }
+};
+
+export const recordVisitFalloffOnce = async () => {
+  if (sessionStorage.getItem(VISIT_RECORDED_KEY)) return;
+  sessionStorage.setItem(VISIT_RECORDED_KEY, "true");
+  await recordFalloff({ event: "page_visit", visited_at: new Date().toISOString() });
 };
