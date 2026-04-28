@@ -1,9 +1,8 @@
 import * as React from 'npm:react@18.3.1'
-import { Body, Button, Column, Container, Head, Heading, Html, Img, Preview, Row, Section, Text } from 'npm:@react-email/components@0.0.22'
+import { Body, Button, Column, Container, Head, Heading, Html, Preview, Row, Section, Text } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
 const BRAND_NAME = 'Pixcellor™'
-const LOGO_URL = 'https://pixcellor.com/pixcellor-email-logo.png'
 
 type OrderEmailProps = {
   customerEmail?: string
@@ -50,35 +49,47 @@ const createOrderEmail = (config: OrderTemplateConfig) => {
       <Body style={main}>
         <Container style={shell}>
           <Section style={hero}>
-            <Row style={brandRow}>
-              <Column><Text style={brand}>{BRAND_NAME}</Text></Column>
-              <Column style={logoColumn}><Img src={LOGO_URL} width="42" height="42" alt="Pixcellor logo" style={logo} /></Column>
+            <Row>
+              <Column style={heroInner}>
+                <Row style={brandRow}>
+                  <Column><Text style={brand}>{BRAND_NAME}</Text></Column>
+                  <Column style={markColumn}><Text style={mark}>P</Text></Column>
+                </Row>
+                <Text style={eyebrow}>ORDER CONFIRMED</Text>
+                <Heading style={h1}>{config.title}</Heading>
+                <Text style={intro}>
+                  Thanks for choosing Pixcellor. Your payment is confirmed and your project has been added to our build workflow.
+                </Text>
+              </Column>
             </Row>
-            <Text style={eyebrow}>ORDER CONFIRMED</Text>
-            <Heading style={h1}>{config.title}</Heading>
-            <Text style={intro}>
-              Thanks for choosing Pixcellor. Your payment is confirmed and your project has been added to our build workflow.
-            </Text>
           </Section>
 
           <Section style={panel}>
-            <Text style={panelTitle}>Order details</Text>
-            <DetailRow label="Package" value={packageName || config.fallbackPackage} />
-            <DetailRow label="Billing" value={billing} />
-            <DetailRow label="Amount" value={amount} />
-            <DetailRow label="Order ID" value={orderId} />
-            <DetailRow label="Email" value={customerEmail} />
+            <Row>
+              <Column style={panelInner}>
+                <Text style={panelTitle}>Order details</Text>
+                <DetailRow label="Package" value={packageName || config.fallbackPackage} />
+                <DetailRow label="Billing" value={billing} />
+                <DetailRow label="Amount" value={amount} />
+                <DetailRow label="Order ID" value={orderId} />
+                <DetailRow label="Email" value={customerEmail} />
+              </Column>
+            </Row>
           </Section>
 
           <Section style={nextPanel}>
-            <Text style={sectionKicker}>What happens next</Text>
-            <Text style={text}>{config.nextBody}</Text>
-            <Text style={text}>
-              Use the secure project requirements form to send us your site name, contents, page details, colours, style direction, references, images, written content, and social links.
-            </Text>
-            <Button style={button} href={briefUrl}>
-              Add project requirements
-            </Button>
+            <Row>
+              <Column style={nextInner}>
+                <Text style={sectionKicker}>What happens next</Text>
+                <Text style={text}>{config.nextBody}</Text>
+                <Text style={text}>
+                  Use the secure project requirements form to send us your site name, contents, page details, colours, style direction, references, images, written content, and social links.
+                </Text>
+                <Button style={button} href={briefUrl}>
+                  Add project requirements
+                </Button>
+              </Column>
+            </Row>
           </Section>
 
         </Container>
@@ -103,14 +114,13 @@ const main = {
 const shell = {
   backgroundColor: '#070707',
   border: '1px solid #262626',
-  borderRadius: '14px',
-  boxShadow: '0 26px 90px rgba(0, 0, 0, 0.22)',
   maxWidth: '620px',
-  overflow: 'hidden',
 }
 const hero = {
-  padding: '34px 34px 26px',
   borderBottom: '1px solid #202020',
+}
+const heroInner = {
+  padding: '34px 34px 26px',
 }
 const brandRow = {
   margin: '0 0 28px',
@@ -122,15 +132,23 @@ const brand = {
   letterSpacing: '0',
   margin: '0',
 }
-const logoColumn = {
+const markColumn = {
   textAlign: 'right' as const,
   verticalAlign: 'top' as const,
-  width: '52px',
+  width: '46px',
 }
-const logo = {
+const mark = {
+  backgroundColor: '#f4f4f5',
+  color: '#050505',
   display: 'inline-block',
-  border: '1px solid #242424',
-  borderRadius: '8px',
+  fontFamily: 'Arial Black, Arial, Helvetica, sans-serif',
+  fontSize: '24px',
+  fontWeight: '900' as const,
+  lineHeight: '40px',
+  margin: '0',
+  textAlign: 'center' as const,
+  width: '40px',
+  height: '40px',
 }
 const eyebrow = {
   color: '#a3a3a3',
@@ -158,8 +176,9 @@ const intro = {
 const panel = {
   backgroundColor: '#101010',
   border: '1px solid #2a2a2a',
-  borderRadius: '12px',
   margin: '26px 34px 24px',
+}
+const panelInner = {
   padding: '20px 22px 12px',
 }
 const panelTitle = {
@@ -196,7 +215,8 @@ const detailValue = {
   overflowWrap: 'anywhere' as const,
   wordBreak: 'break-word' as const,
 }
-const nextPanel = {
+const nextPanel = {}
+const nextInner = {
   padding: '0 34px 2px',
 }
 const sectionKicker = {
