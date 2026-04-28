@@ -559,6 +559,7 @@ function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
+  const [enterpriseOpen, setEnterpriseOpen] = useState(false);
 
   const buy = async (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
     setLoading(key);
@@ -572,6 +573,7 @@ function MobileCards() {
   };
 
   return (
+    <>
     <div className="grid grid-cols-1 gap-4">
       {/* Full Works */}
       <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
@@ -735,6 +737,31 @@ function MobileCards() {
         />
         </div>
       </div>
+
+      {/* Enterprise */}
+      <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10 flex flex-col flex-1">
+          <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
+          <div className="mt-3 mb-1">
+            <span className="text-3xl font-extrabold text-foreground">Custom</span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
+          <ul className="space-y-2 flex-1 mb-4">
+            {PACKAGES.enterprise.features.map((f) => (
+              <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+                <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <GlassBuyButton onClick={() => setEnterpriseOpen(true)} disabled={false} loading={false} label="Talk to sales" />
+        </div>
+      </div>
     </div>
+    <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
+    </>
   );
 }
