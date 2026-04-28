@@ -26,6 +26,19 @@ const Footer = () => {
           3rd Floor, 207 Regent Street, London, W1B 3HH
         </a>
         <a
+          href="https://www.google.com/maps/dir/?api=1&destination=3rd+Floor%2C+207+Regent+Street%2C+London%2C+W1B+3HH"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex w-full items-start justify-center gap-1.5 text-center leading-tight hover:text-foreground transition-colors md:hidden"
+        >
+          <MapPin className="mt-0.5 h-3 w-3 shrink-0" />
+          <span>
+            3rd Floor<br />
+            207 Regent Street<br />
+            London, W1B 3HH
+          </span>
+        </a>
+        <a
           href="https://www.facebook.com/profile.php?id=61569263824416"
           target="_blank"
           rel="noopener noreferrer"
@@ -37,7 +50,7 @@ const Footer = () => {
         <button
           type="button"
           aria-label="Open live chat"
-          className="flex items-center hover:text-foreground transition-colors md:hidden"
+          className="flex items-center hover:text-foreground transition-colors"
           onClick={() => window.dispatchEvent(new Event("pixcellor:open-chat"))}
         >
           <MessageCircle className="w-3.5 h-3.5" />
@@ -45,7 +58,7 @@ const Footer = () => {
         <button
           type="button"
           aria-label="Customer log in"
-          className="flex items-center hover:text-foreground transition-colors md:hidden"
+          className="flex items-center hover:text-foreground transition-colors"
           onClick={() => window.dispatchEvent(new Event("pixcellor:open-login"))}
         >
           <LogIn className="w-3.5 h-3.5" />
