@@ -106,6 +106,12 @@ export default function CustomerAccess({ hidden = false }: CustomerAccessProps) 
     });
   }, [navigate, open]);
 
+  useEffect(() => {
+    const openLogin = () => setOpen(true);
+    window.addEventListener("pixcellor:open-login", openLogin);
+    return () => window.removeEventListener("pixcellor:open-login", openLogin);
+  }, []);
+
   const trigger = (
     <button
       type="button"
