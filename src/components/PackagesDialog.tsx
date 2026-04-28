@@ -5,7 +5,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import applePayLogo from "@/assets/apple-pay.png";
 import gpayLogo from "@/assets/gpay-logo.png";
 
@@ -35,7 +37,20 @@ const PACKAGES = {
     mode: "subscription" as const,
     features: ["Your own tech department", "Websites or full apps"],
   },
+  enterprise: {
+    name: "Enterprise",
+    features: ["Larger scale operations", "Infrastructure and ecosystems", "Endless Possibilities"],
+  },
 };
+
+const ENTERPRISE_FIELDS = [
+  { key: "email", label: "Email", placeholder: "you@company.com", inputMode: "email" },
+  { key: "name", label: "Contact name", placeholder: "Your name", inputMode: "text" },
+  { key: "company", label: "Company name", placeholder: "Company", inputMode: "text" },
+  { key: "number", label: "Number", placeholder: "Phone number", inputMode: "tel" },
+] as const;
+
+type EnterpriseForm = Record<(typeof ENTERPRISE_FIELDS)[number]["key"], string>;
 
 async function handleCheckout(priceId: string, mode: string, packageName: string, billing: string) {
   await recordFalloff({ event: "checkout_started", priceId, mode, packageName, billing });
@@ -162,10 +177,92 @@ function GlassBuyButton({ onClick, disabled, loading, label }: { onClick: () => 
   );
 }
 
+function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState<EnterpriseForm>({ email: "", name: "", company: "", number: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const field = ENTERPRISE_FIELDS[step];
+
+  const continueForm = async () => {
+    const value = form[field.key].trim();
+    if (!value) return;
+    if (field.key === "email" && !/^\S+@\S+\.\S+$/.test(value)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    setError("");
+    if (step < ENTERPRISE_FIELDS.length - 1) setStep((current) => current + 1);
+    else {
+      setSubmitting(true);
+      const cleanForm = {
+        email: form.email.trim().slice(0, 255),
+        name: form.name.trim().slice(0, 100),
+        company: form.company.trim().slice(0, 100),
+        number: form.number.trim().slice(0, 50),
+      };
+      const { error: insertError } = await supabase.from("contact_inquiries").insert({
+        email: cleanForm.email,
+        name: cleanForm.name,
+        message: `Enterprise enquiry\nCompany: ${cleanForm.company}\nNumber: ${cleanForm.number}`,
+      });
+      setSubmitting(false);
+      if (insertError) {
+        setError("Could not send this request. Please try again.");
+        return;
+      }
+      setSubmitted(true);
+    }
+  };
+
+  return (
+    <Drawer open={open} onOpenChange={(nextOpen) => { onOpenChange(nextOpen); if (!nextOpen) { setStep(0); setSubmitted(false); setSubmitting(false); setError(""); } }}>
+      <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
+        <DrawerHeader className="px-0 text-left">
+          <DrawerTitle>{submitted ? "Enterprise request received" : "Talk to sales"}</DrawerTitle>
+          <DrawerDescription>{submitted ? "We'll be in touch shortly." : `Step ${step + 1} of ${ENTERPRISE_FIELDS.length}`}</DrawerDescription>
+        </DrawerHeader>
+        {submitted ? (
+          <Button variant="pricing" onClick={() => onOpenChange(false)} className="h-12 w-full font-semibold">Done</Button>
+        ) : (
+          <div className="space-y-5">
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${((step + 1) / ENTERPRISE_FIELDS.length) * 100}%` }} />
+            </div>
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground">{field.label} *</label>
+              <Input
+                autoFocus
+                inputMode={field.inputMode}
+                placeholder={field.placeholder}
+                value={form[field.key]}
+                onChange={(e) => setForm((current) => ({ ...current, [field.key]: e.target.value }))}
+                onKeyDown={(e) => { if (e.key === "Enter") continueForm(); }}
+                className="h-12 text-base"
+              />
+              {error && <p className="text-sm text-destructive">{error}</p>}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => step > 0 ? setStep((current) => current - 1) : onOpenChange(false)}>
+                {step > 0 ? "Back" : "Cancel"}
+              </Button>
+              <Button variant="pricing" onClick={continueForm} disabled={!form[field.key].trim() || submitting}>
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : step === ENTERPRISE_FIELDS.length - 1 ? "Send" : "Next"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
 function DesktopCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
+  const [enterpriseOpen, setEnterpriseOpen] = useState(false);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -192,7 +289,8 @@ function DesktopCards() {
   };
 
   return (
-    <div className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100">
+    <>
+    <div className="flex items-center justify-center gap-5 h-full w-full md:max-lg:scale-[0.58] md:max-lg:origin-center lg:scale-[0.74] xl:scale-[0.88] 2xl:scale-100">
       {/* Full Works - tilted left */}
       <motion.div
         onMouseMove={handleMouseMove}
@@ -414,7 +512,46 @@ function DesktopCards() {
         />
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
+
+      {/* Enterprise */}
+      <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        initial={{ opacity: 0, y: 40, rotate: 6, scale: 1 }}
+        animate={{ opacity: 1, y: 0, rotate: 6, scale: 1 }}
+        whileHover={{ scale: 1.05 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.4 }}
+        className="relative z-10 w-[302px] rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
+        style={{
+          willChange: "transform",
+          boxShadow: `
+            0 8px 32px rgba(0,0,0,0.3),
+            inset 0 1px 1px rgba(255,255,255,0.15),
+            inset 0 -1px 1px rgba(0,0,0,0.1)
+          `,
+        }}
+      >
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10">
+          <div className="mb-2 text-lg font-bold text-foreground">Enterprise</div>
+          <div className="mb-1 text-3xl font-extrabold text-foreground">Custom</div>
+          <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
+          <ul className="mb-6 space-y-2 text-base text-muted-foreground">
+            {PACKAGES.enterprise.features.map((f) => (
+              <li key={f} className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <GlassBuyButton onClick={() => setEnterpriseOpen(true)} disabled={false} loading={false} label="Talk to sales" />
+        </div>
+      </motion.div>
     </div>
+    <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
+    </>
   );
 }
 
@@ -422,6 +559,7 @@ function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
+  const [enterpriseOpen, setEnterpriseOpen] = useState(false);
 
   const buy = async (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
     setLoading(key);
@@ -435,6 +573,7 @@ function MobileCards() {
   };
 
   return (
+    <>
     <div className="grid grid-cols-1 gap-4">
       {/* Full Works */}
       <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
@@ -598,6 +737,31 @@ function MobileCards() {
         />
         </div>
       </div>
+
+      {/* Enterprise */}
+      <div className="rounded-xl p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10 flex flex-col flex-1">
+          <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
+          <div className="mt-3 mb-1">
+            <span className="text-3xl font-extrabold text-foreground">Custom</span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
+          <ul className="space-y-2 flex-1 mb-4">
+            {PACKAGES.enterprise.features.map((f) => (
+              <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+                <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <GlassBuyButton onClick={() => setEnterpriseOpen(true)} disabled={false} loading={false} label="Talk to sales" />
+        </div>
+      </div>
     </div>
+    <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
+    </>
   );
 }
