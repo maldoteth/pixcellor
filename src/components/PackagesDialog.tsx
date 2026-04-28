@@ -114,9 +114,12 @@ function StripeBadge() {
 
 function DiscountBadge({ discount }: { discount: string }) {
   return (
-    <div className="mb-4 inline-flex w-fit flex-col rounded-md border border-border bg-foreground px-3 py-1.5 text-background shadow-sm">
-      <span className="text-[9px] font-black uppercase tracking-wider">Introductary offer</span>
-      <span className="text-xs font-extrabold">{discount} off</span>
+    <div
+      className="inline-flex h-[66px] w-[66px] shrink-0 flex-col items-center justify-center bg-foreground px-2 text-center text-background shadow-sm"
+      style={{ clipPath: "polygon(50% 0%, 58% 14%, 72% 8%, 74% 24%, 90% 22%, 84% 38%, 100% 50%, 84% 62%, 90% 78%, 74% 76%, 72% 92%, 58% 86%, 50% 100%, 42% 86%, 28% 92%, 26% 76%, 10% 78%, 16% 62%, 0% 50%, 16% 38%, 10% 22%, 26% 24%, 28% 8%, 42% 14%)" }}
+    >
+      <span className="text-[7px] font-black uppercase leading-[0.9] tracking-normal">Introductary offer</span>
+      <span className="mt-0.5 text-[11px] font-extrabold leading-none">{discount} off</span>
     </div>
   );
 }
@@ -329,9 +332,11 @@ function DesktopCards() {
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
-        <div className="mb-1 text-3xl font-extrabold text-foreground">£150</div>
+        <div className="mb-1 flex items-center gap-3">
+          <div className="text-3xl font-extrabold text-foreground">£150</div>
+          <DiscountBadge discount="60%" />
+        </div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP £375</p>
-        <DiscountBadge discount="60%" />
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -381,13 +386,13 @@ function DesktopCards() {
         </motion.div>
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
-        <div className="mb-1 text-5xl font-black text-foreground">
-          £500
+        <div className="mb-1 flex items-center gap-3">
+          <div className="text-5xl font-black text-foreground">£500</div>
+          <DiscountBadge discount="67%" />
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">
           RRP £1,500
         </p>
-        <DiscountBadge discount="67%" />
         <ul className="mb-6 space-y-2 text-lg text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -474,13 +479,15 @@ function DesktopCards() {
                   Yearly
                 </button>
               </div>
-              <div className="mb-1 text-3xl font-extrabold text-foreground">
-                {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
+              <div className="mb-1 flex items-center gap-3">
+                <div className="text-3xl font-extrabold text-foreground">
+                  {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
+                </div>
+                <DiscountBadge discount="57%" />
               </div>
               <p className="text-xs text-muted-foreground line-through mb-4">
                 RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
               </p>
-              <DiscountBadge discount="57%" />
               <ul className="mb-6 space-y-2 text-base text-muted-foreground">
                 {PACKAGES.retainer.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
