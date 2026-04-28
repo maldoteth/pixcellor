@@ -834,7 +834,7 @@ export default function Portal() {
 
   const continueMobileSalesEvent = (skip = false) => {
     const field = salesEventWizardFields[mobileSalesStep];
-    const value = field.key === "contact" ? eventForm.contact_id : eventForm[field.key].trim();
+    const value = field.key === "contact" ? eventForm.contact_id : field.key === "title" ? eventForm.title.trim() : field.key === "callback_at" ? eventForm.callback_at.trim() : eventForm.description.trim();
     if (field.required && !value) {
       toast.error(`${field.label} is required.`);
       return;
