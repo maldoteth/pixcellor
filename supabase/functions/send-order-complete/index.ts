@@ -32,6 +32,7 @@ const requireAdmin = async (req: Request) => {
     console.error("Admin role check failed", { message: roleError?.message, userId: sessionData.user.id });
     throw new Error("Admin access required");
   }
+  return authHeader;
 };
 
 const cleanDomain = (value: string) => value
@@ -49,7 +50,7 @@ serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
-    await requireAdmin(req);
+    const adminAuthHeader = await requireAdmin(req);
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) return json({ error: "Please check the delivery details" }, 400);
 
@@ -64,6 +65,9 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       global: { headers: { Authorization: `Bearer ${serviceRoleKey}` } },
+    });
+    const adminClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: adminAuthHeader } },
     });
 
     const { data: order, error: orderError } = await supabase
@@ -82,7 +86,7 @@ serve(async (req) => {
       return json({ error: "Only paid orders can be marked complete" }, 400);
     }
 
-    const { error: deliveredError } = await supabase.rpc("portal_mark_order_delivered", {
+    const { error: deliveredError } = await adminClient.rpc("portal_mark_order_delivered", {
       _session_id: parsed.data.sessionId,
       _delivered_domain: deliveredDomain,
     });
