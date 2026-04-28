@@ -41,7 +41,6 @@ const ProjectRequirementsReminderEmail = ({ customerEmail, orderId, packageName,
             <Button style={button} href={briefUrl}>Add project requirements</Button>
           </Section>
 
-          <Text style={footer}>If you’ve already sent these details another way, reply to projects@pixcellor.com and we’ll match them to your order.</Text>
         </Container>
       </Body>
     </Html>
@@ -74,4 +73,3 @@ const panel = { padding: '28px 34px 4px' }
 const panelTitle = { color: '#ffffff', fontSize: '16px', fontWeight: '800' as const, lineHeight: '1.4', margin: '0 0 10px' }
 const text = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '0 0 18px' }
 const button = { backgroundColor: '#ffffff', borderRadius: '10px', color: '#050505', display: 'inline-block', fontSize: '14px', fontWeight: '800' as const, margin: '0 0 18px', padding: '13px 18px', textDecoration: 'none' }
-const footer = { borderTop: '1px solid #242424', color: '#929292', fontSize: '12px', lineHeight: '1.6', margin: '22px 34px 0', padding: '18px 0 30px' }

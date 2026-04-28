@@ -81,9 +81,6 @@ const createOrderEmail = (config: OrderTemplateConfig) => {
             </Button>
           </Section>
 
-          <Text style={footer}>
-            If anything looks wrong, reply to projects@pixcellor.com and we’ll update it before we move forward.
-          </Text>
         </Container>
       </Body>
     </Html>
