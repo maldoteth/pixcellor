@@ -2,10 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
+  CalendarClock,
   CheckCircle2,
   ClipboardList,
+  CreditCard,
   ExternalLink,
   FileText,
+  Globe2,
   Home,
   Loader2,
   LogOut,
@@ -19,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Sidebar,
   SidebarContent,
@@ -36,12 +40,15 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "payments";
+
 type CustomerOrder = {
   id: string;
   session_id: string;
   customer_email: string | null;
   amount_total: number | null;
   currency: string | null;
+  mode: string | null;
   status: string | null;
   payment_status: string | null;
   order_status: string | null;
@@ -49,6 +56,7 @@ type CustomerOrder = {
   delivered_at: string | null;
   order_code: string | null;
   requirements_token: string | null;
+  subscription_id: string | null;
   created_at: string;
   metadata: Record<string, unknown> | null;
 };
@@ -57,6 +65,14 @@ type CustomerRequirement = {
   id: string;
   session_id: string;
   site_name: string;
+  site_contents: string;
+  images_content_socials: string;
+  reference_links: string | null;
+  colours_styles: string;
+  pages_details: string;
+  extra_notes: string | null;
+  customer_email: string | null;
+  created_at: string;
   updated_at: string;
 };
 
@@ -79,17 +95,44 @@ const packageName = (order: CustomerOrder) => {
   return typeof value === "string" && value.trim() ? value : "Pixcellor package";
 };
 
-const projectStage = (order: CustomerOrder, hasRequirements: boolean) => {
+const billingLabel = (order: CustomerOrder) => {
+  const value = order.metadata?.billing;
+  if (typeof value === "string" && value.trim()) return value;
+  if (order.mode === "subscription") return "Subscription";
+  return "One-time payment";
+};
+
+const isRetainerOrder = (order: CustomerOrder) => {
+  const plan = `${packageName(order)} ${billingLabel(order)} ${order.mode ?? ""}`.toLowerCase();
+  return Boolean(order.subscription_id) || plan.includes("retainer") || plan.includes("subscription") || plan.includes("monthly") || plan.includes("yearly");
+};
+
+const orderStage = (order: CustomerOrder, hasRequirements: boolean) => {
   if (order.order_status === "delivered") return { label: "Delivered", progress: 100 };
   if (hasRequirements) return { label: "In production", progress: 66 };
   if (order.payment_status === "paid") return { label: "Brief needed", progress: 33 };
   return { label: "Payment pending", progress: 12 };
 };
 
+const addBillingPeriod = (date: string, billing: string) => {
+  const next = new Date(date);
+  if (Number.isNaN(next.getTime())) return null;
+  const yearly = billing.toLowerCase().includes("year");
+  if (yearly) next.setFullYear(next.getFullYear() + 1);
+  else next.setMonth(next.getMonth() + 1);
+  return next;
+};
+
+const previewUrl = (domain: string | null) => {
+  if (!domain) return null;
+  return `https://${domain.replace(/^https?:\/\//i, "").replace(/\/.*$/, "")}`;
+};
+
 export default function CustomerPortal() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<CustomerPortalData | null>(null);
+  const [activeTab, setActiveTab] = useState<PortalTab>("overview");
 
   const loadPortal = async () => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -125,20 +168,21 @@ export default function CustomerPortal() {
     return map;
   }, [data?.projectRequirements]);
 
-  const ltv = useMemo(() => {
-    return (data?.orders ?? []).reduce((total, order) => {
-      if (order.payment_status !== "paid" || (order.currency || "gbp").toLowerCase() !== "gbp") return total;
-      return total + (order.amount_total ?? 0);
-    }, 0);
-  }, [data?.orders]);
+  const orders = data?.orders ?? [];
+  const briefs = data?.projectRequirements ?? [];
+  const deliveredOrders = useMemo(() => orders.filter((order) => order.order_status === "delivered"), [orders]);
+  const retainerOrders = useMemo(() => orders.filter(isRetainerOrder), [orders]);
+  const latestRetainer = retainerOrders[0] ?? null;
+  const nextRetainerPayment = latestRetainer ? addBillingPeriod(latestRetainer.created_at, billingLabel(latestRetainer)) : null;
+  const nextOrder = orders.find((order) => order.order_status !== "delivered") ?? orders[0] ?? null;
 
-  const activeOrders = useMemo(() => {
-    return (data?.orders ?? []).filter((order) => order.order_status !== "delivered").length;
-  }, [data?.orders]);
-
-  const nextOrder = useMemo(() => {
-    return (data?.orders ?? [])[0] ?? null;
-  }, [data?.orders]);
+  const navItems: { title: string; value: PortalTab; icon: typeof Home }[] = [
+    { title: "Overview", value: "overview", icon: Home },
+    { title: "Order history", value: "orders", icon: ReceiptText },
+    { title: "Briefs", value: "briefs", icon: FileText },
+    { title: "Site previews", value: "delivered", icon: Globe2 },
+    { title: "Plan & payments", value: "payments", icon: CreditCard },
+  ];
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -173,13 +217,13 @@ export default function CustomerPortal() {
               <SidebarGroupLabel>Workspace</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {[
-                    { title: "Overview", icon: Home },
-                    { title: "Orders", icon: ReceiptText },
-                    { title: "Briefs", icon: FileText },
-                  ].map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton className="data-[active=true]:bg-sidebar-accent" isActive={item.title === "Overview"}>
+                  {navItems.map((item) => (
+                    <SidebarMenuItem key={item.value}>
+                      <SidebarMenuButton
+                        className="data-[active=true]:bg-sidebar-accent"
+                        isActive={activeTab === item.value}
+                        onClick={() => setActiveTab(item.value)}
+                      >
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
                       </SidebarMenuButton>
@@ -222,15 +266,13 @@ export default function CustomerPortal() {
                       <div>
                         <h1 className="text-3xl font-semibold tracking-normal md:text-5xl">Project dashboard</h1>
                         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
-                          Signed in as {data?.email}. Track orders, submit briefs, and review delivery status in one place.
+                          Signed in as {data?.email}. Review your orders, briefs, deliveries, and retainer payments.
                         </p>
                       </div>
                     </div>
                     {nextOrder && (
-                      <Button asChild className="gap-2 md:self-end">
-                        <a href="#orders">
-                          View latest order <ExternalLink className="h-4 w-4" />
-                        </a>
+                      <Button className="gap-2 md:self-end" onClick={() => setActiveTab("orders")}>
+                        Open order history <ReceiptText className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
@@ -244,7 +286,7 @@ export default function CustomerPortal() {
                     {nextOrder ? (
                       (() => {
                         const requirements = requirementsBySession.get(nextOrder.session_id);
-                        const stage = projectStage(nextOrder, Boolean(requirements));
+                        const stage = orderStage(nextOrder, Boolean(requirements));
                         return (
                           <>
                             <div className="space-y-2">
@@ -267,163 +309,299 @@ export default function CustomerPortal() {
                         );
                       })()
                     ) : (
-                      <p className="text-sm text-muted-foreground">No customer orders are attached to this email yet.</p>
+                      <p className="text-sm text-muted-foreground">No order history is attached to this account yet.</p>
                     )}
                   </CardContent>
                 </Card>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                <Card className="border-border bg-card/70 backdrop-blur-xl">
-                  <CardContent className="p-5">
-                    <div className="text-sm text-muted-foreground">Matched orders</div>
-                    <div className="mt-2 text-3xl font-semibold">{data?.orders.length ?? 0}</div>
-                  </CardContent>
-                </Card>
-                <Card className="border-border bg-card/70 backdrop-blur-xl">
-                  <CardContent className="p-5">
-                    <div className="text-sm text-muted-foreground">Active projects</div>
-                    <div className="mt-2 text-3xl font-semibold">{activeOrders}</div>
-                  </CardContent>
-                </Card>
-                <Card className="border-border bg-card/70 backdrop-blur-xl">
-                  <CardContent className="p-5">
-                    <div className="text-sm text-muted-foreground">Total spend</div>
-                    <div className="mt-2 text-3xl font-semibold">{formatMoney(ltv, "gbp")}</div>
-                  </CardContent>
-                </Card>
-              </div>
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PortalTab)} className="space-y-5">
+                <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/40 p-1 md:grid-cols-5">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="orders">Orders</TabsTrigger>
+                  <TabsTrigger value="briefs">Briefs</TabsTrigger>
+                  <TabsTrigger value="delivered">Previews</TabsTrigger>
+                  <TabsTrigger value="payments">Payments</TabsTrigger>
+                </TabsList>
 
-              <section id="orders" className="grid gap-6 xl:grid-cols-[1fr_340px]">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-2xl font-semibold tracking-normal">Orders</h2>
-                      <p className="text-sm text-muted-foreground">Live project status linked to your checkout email.</p>
-                    </div>
-                    <Badge variant="outline">{data?.orders.length ?? 0} total</Badge>
-                  </div>
-
-                  {(data?.orders.length ?? 0) === 0 ? (
+                <TabsContent value="overview" className="space-y-5">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                     <Card className="border-border bg-card/70 backdrop-blur-xl">
-                      <CardContent className="p-8 text-center">
-                        <PackageCheck className="mx-auto h-10 w-10 text-muted-foreground" />
-                        <h3 className="mt-4 text-2xl font-semibold">No matched orders yet</h3>
-                        <p className="mt-2 text-muted-foreground">If you already bought, sign in with the exact checkout email.</p>
+                      <CardContent className="p-5">
+                        <div className="text-sm text-muted-foreground">Order history</div>
+                        <div className="mt-2 text-3xl font-semibold">{orders.length}</div>
                       </CardContent>
                     </Card>
+                    <Card className="border-border bg-card/70 backdrop-blur-xl">
+                      <CardContent className="p-5">
+                        <div className="text-sm text-muted-foreground">Submitted briefs</div>
+                        <div className="mt-2 text-3xl font-semibold">{briefs.length}</div>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-border bg-card/70 backdrop-blur-xl">
+                      <CardContent className="p-5">
+                        <div className="text-sm text-muted-foreground">Delivered sites</div>
+                        <div className="mt-2 text-3xl font-semibold">{deliveredOrders.length}</div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
+                    <div className="space-y-3">
+                      <SectionHeader title="Recent orders" description="Your latest purchases and project status." count={orders.length} />
+                      {orders.length === 0 ? <EmptyState icon={PackageCheck} title="No order history yet" text="Orders will appear here after checkout." /> : orders.slice(0, 3).map((order) => <OrderCard key={order.id} order={order} requirement={requirementsBySession.get(order.session_id)} />)}
+                    </div>
+                    <AccountCard email={data?.email ?? ""} briefs={briefs.length} delivered={deliveredOrders.length} />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="orders" className="space-y-4">
+                  <SectionHeader title="Order history" description="Every order attached to this account, shown as one clean history." count={orders.length} />
+                  {orders.length === 0 ? <EmptyState icon={PackageCheck} title="No order history yet" text="Orders will appear here after checkout." /> : orders.map((order) => <OrderCard key={order.id} order={order} requirement={requirementsBySession.get(order.session_id)} />)}
+                </TabsContent>
+
+                <TabsContent value="briefs" className="space-y-4">
+                  <SectionHeader title="Submitted briefs" description="Each brief you have sent to Pixcellor is visible here." count={briefs.length} />
+                  {briefs.length === 0 ? <EmptyState icon={FileText} title="No briefs submitted yet" text="When a project brief is submitted, it will appear here." /> : briefs.map((brief) => <BriefCard key={brief.id} brief={brief} order={orders.find((order) => order.session_id === brief.session_id)} />)}
+                </TabsContent>
+
+                <TabsContent value="delivered" className="space-y-4">
+                  <SectionHeader title="Delivered site previews" description="Live previews and links for completed deliveries." count={deliveredOrders.length} />
+                  {deliveredOrders.length === 0 ? <EmptyState icon={Globe2} title="No delivered sites yet" text="Delivered projects will appear here with a preview window." /> : <div className="grid gap-4 xl:grid-cols-2">{deliveredOrders.map((order) => <DeliveredPreview key={order.id} order={order} />)}</div>}
+                </TabsContent>
+
+                <TabsContent value="payments" className="space-y-4">
+                  <SectionHeader title="Plan & payments" description="Retainer plan details, past payments, and the next scheduled billing date." count={retainerOrders.length} />
+                  {retainerOrders.length === 0 ? (
+                    <EmptyState icon={CreditCard} title="No retainer plan found" text="One-time project payments remain visible in order history." />
                   ) : (
-                    data?.orders.map((order) => {
-                      const requirements = requirementsBySession.get(order.session_id);
-                      const stage = projectStage(order, Boolean(requirements));
-                      return (
-                        <Card key={order.id} className="overflow-hidden border-border bg-card/70 backdrop-blur-xl">
-                          <CardContent className="p-0">
-                            <div className="grid gap-0 lg:grid-cols-[1fr_220px]">
-                              <div className="space-y-5 p-5 md:p-6">
-                                <div className="flex flex-wrap items-start justify-between gap-3">
-                                  <div>
-                                    <h3 className="text-xl font-semibold">{packageName(order)}</h3>
-                                    <p className="mt-1 text-sm text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
-                                  </div>
-                                  <div className="flex flex-wrap gap-2">
-                                    <Badge variant="outline">{formatMoney(order.amount_total, order.currency)}</Badge>
-                                    <Badge className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">{order.payment_status || "pending"}</Badge>
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between text-sm">
-                                    <span className="text-muted-foreground">Progress</span>
-                                    <span className="font-medium">{stage.label}</span>
-                                  </div>
-                                  <Progress value={stage.progress} className="h-2" />
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
-                                  <div className="rounded-md border border-border bg-background/50 p-4">
-                                    <div className="text-muted-foreground">Order</div>
-                                    <div className="mt-1 font-medium">{order.order_code || "Processing"}</div>
-                                  </div>
-                                  <div className="rounded-md border border-border bg-background/50 p-4">
-                                    <div className="text-muted-foreground">Delivery</div>
-                                    <div className="mt-1 font-medium">{order.order_status === "delivered" ? "Delivered" : "Open"}</div>
-                                  </div>
-                                  <div className="rounded-md border border-border bg-background/50 p-4">
-                                    <div className="text-muted-foreground">Domain</div>
-                                    <div className="mt-1 break-words font-medium">{order.delivered_domain || "—"}</div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="border-t border-border bg-muted/20 p-5 lg:border-l lg:border-t-0 md:p-6">
-                                <div className="flex h-full flex-col justify-between gap-4">
-                                  <div className="space-y-3">
-                                    <div className="flex items-center gap-2 font-medium">
-                                      <ClipboardList className="h-5 w-5 text-primary" /> Project brief
-                                    </div>
-                                    {requirements ? (
-                                      <Badge className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">
-                                        <CheckCircle2 className="mr-1 h-3 w-3" /> Submitted
-                                      </Badge>
-                                    ) : (
-                                      <Badge variant="outline">Required</Badge>
-                                    )}
-                                  </div>
-                                  {requirements ? (
-                                    <p className="text-sm text-muted-foreground">
-                                      {requirements.site_name} updated {new Date(requirements.updated_at).toLocaleDateString()}.
-                                    </p>
-                                  ) : order.order_code && order.requirements_token ? (
-                                    <Button asChild className="w-full gap-2">
-                                      <Link to={`/project-requirements?order=${encodeURIComponent(order.order_code)}&token=${encodeURIComponent(order.requirements_token)}`}>
-                                        Add requirements <ExternalLink className="h-4 w-4" />
-                                      </Link>
-                                    </Button>
-                                  ) : (
-                                    <p className="text-sm text-muted-foreground">Your brief link is being prepared.</p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })
-                  )}
-                </div>
-
-                <aside className="space-y-4">
-                  <Card className="border-border bg-card/70 backdrop-blur-xl">
-                    <CardHeader>
-                      <CardTitle className="text-base">Account</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">Email</div>
-                        <div className="mt-1 break-all font-medium">{data?.email}</div>
-                      </div>
-                      <Separator />
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <div className="text-muted-foreground">Briefs</div>
-                          <div className="mt-1 text-xl font-semibold">{data?.projectRequirements.length ?? 0}</div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">Delivered</div>
-                          <div className="mt-1 text-xl font-semibold">
-                            {(data?.orders ?? []).filter((order) => order.order_status === "delivered").length}
+                    <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
+                      <Card className="border-border bg-card/70 backdrop-blur-xl">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-base"><CalendarClock className="h-4 w-4 text-primary" /> Current plan</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 text-sm">
+                          <div>
+                            <div className="text-muted-foreground">Plan</div>
+                            <div className="mt-1 text-lg font-semibold">{latestRetainer ? packageName(latestRetainer) : "Retainer"}</div>
                           </div>
-                        </div>
+                          <Separator />
+                          <div className="grid grid-cols-2 gap-3">
+                            <InfoTile label="Billing" value={latestRetainer ? billingLabel(latestRetainer) : "—"} />
+                            <InfoTile label="Status" value={latestRetainer?.payment_status || "Active"} />
+                          </div>
+                          <InfoTile label="Next scheduled payment" value={nextRetainerPayment ? nextRetainerPayment.toLocaleDateString() : "Not available"} />
+                        </CardContent>
+                      </Card>
+                      <div className="space-y-3">
+                        {retainerOrders.map((order) => (
+                          <Card key={order.id} className="border-border bg-card/70 backdrop-blur-xl">
+                            <CardContent className="flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
+                              <div>
+                                <h3 className="font-semibold">{packageName(order)}</h3>
+                                <p className="mt-1 text-sm text-muted-foreground">{new Date(order.created_at).toLocaleString()} · {billingLabel(order)}</p>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge variant="outline">{formatMoney(order.amount_total, order.currency)}</Badge>
+                                <Badge className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">{order.payment_status || "scheduled"}</Badge>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
                       </div>
-                    </CardContent>
-                  </Card>
-                </aside>
-              </section>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </section>
           </main>
         </SidebarInset>
       </div>
     </SidebarProvider>
+  );
+}
+
+function SectionHeader({ title, description, count }: { title: string; description: string; count: number }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div>
+        <h2 className="text-2xl font-semibold tracking-normal">{title}</h2>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      <Badge variant="outline">{count} total</Badge>
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, title, text }: { icon: typeof PackageCheck; title: string; text: string }) {
+  return (
+    <Card className="border-border bg-card/70 backdrop-blur-xl">
+      <CardContent className="p-8 text-center">
+        <Icon className="mx-auto h-10 w-10 text-muted-foreground" />
+        <h3 className="mt-4 text-2xl font-semibold">{title}</h3>
+        <p className="mt-2 text-muted-foreground">{text}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function InfoTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border bg-background/50 p-4">
+      <div className="text-muted-foreground">{label}</div>
+      <div className="mt-1 break-words font-medium">{value}</div>
+    </div>
+  );
+}
+
+function AccountCard({ email, briefs, delivered }: { email: string; briefs: number; delivered: number }) {
+  return (
+    <Card className="border-border bg-card/70 backdrop-blur-xl">
+      <CardHeader>
+        <CardTitle className="text-base">Account</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm">
+        <div>
+          <div className="text-muted-foreground">Email</div>
+          <div className="mt-1 break-all font-medium">{email}</div>
+        </div>
+        <Separator />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <div className="text-muted-foreground">Briefs</div>
+            <div className="mt-1 text-xl font-semibold">{briefs}</div>
+          </div>
+          <div>
+            <div className="text-muted-foreground">Delivered</div>
+            <div className="mt-1 text-xl font-semibold">{delivered}</div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function OrderCard({ order, requirement }: { order: CustomerOrder; requirement?: CustomerRequirement }) {
+  const stage = orderStage(order, Boolean(requirement));
+  return (
+    <Card className="overflow-hidden border-border bg-card/70 backdrop-blur-xl">
+      <CardContent className="p-0">
+        <div className="grid gap-0 lg:grid-cols-[1fr_230px]">
+          <div className="space-y-5 p-5 md:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="text-xl font-semibold">{packageName(order)}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{new Date(order.created_at).toLocaleString()} · {billingLabel(order)}</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline">{formatMoney(order.amount_total, order.currency)}</Badge>
+                <Badge className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">{order.payment_status || "pending"}</Badge>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Progress</span>
+                <span className="font-medium">{stage.label}</span>
+              </div>
+              <Progress value={stage.progress} className="h-2" />
+            </div>
+            <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
+              <InfoTile label="Order" value={order.order_code || "Processing"} />
+              <InfoTile label="Delivery" value={order.order_status === "delivered" ? "Delivered" : "Open"} />
+              <InfoTile label="Domain" value={order.delivered_domain || "—"} />
+            </div>
+          </div>
+          <div className="border-t border-border bg-muted/20 p-5 md:p-6 lg:border-l lg:border-t-0">
+            <div className="flex h-full flex-col justify-between gap-4">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 font-medium">
+                  <ClipboardList className="h-5 w-5 text-primary" /> Project brief
+                </div>
+                {requirement ? (
+                  <Badge className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">
+                    <CheckCircle2 className="mr-1 h-3 w-3" /> Submitted
+                  </Badge>
+                ) : (
+                  <Badge variant="outline">Required</Badge>
+                )}
+              </div>
+              {requirement ? (
+                <p className="text-sm text-muted-foreground">{requirement.site_name} updated {new Date(requirement.updated_at).toLocaleDateString()}.</p>
+              ) : order.order_code && order.requirements_token ? (
+                <Button asChild className="w-full gap-2">
+                  <Link to={`/project-requirements?order=${encodeURIComponent(order.order_code)}&token=${encodeURIComponent(order.requirements_token)}`}>
+                    Add brief <ExternalLink className="h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : (
+                <p className="text-sm text-muted-foreground">Your brief link is being prepared.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BriefCard({ brief, order }: { brief: CustomerRequirement; order?: CustomerOrder }) {
+  const rows = [
+    ["Site contents", brief.site_contents],
+    ["Pages", brief.pages_details],
+    ["Images, content & socials", brief.images_content_socials],
+    ["Colours & styles", brief.colours_styles],
+    ["Reference links", brief.reference_links],
+    ["Extra notes", brief.extra_notes],
+  ].filter(([, value]) => typeof value === "string" && value.trim());
+
+  return (
+    <Card className="border-border bg-card/70 backdrop-blur-xl">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-xl">{brief.site_name}</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">Submitted {new Date(brief.created_at).toLocaleString()}</p>
+          </div>
+          {order && <Badge variant="outline">{order.order_code || packageName(order)}</Badge>}
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-3 md:grid-cols-2">
+        {rows.map(([label, value]) => (
+          <div key={label} className="rounded-md border border-border bg-background/50 p-4">
+            <div className="text-sm text-muted-foreground">{label}</div>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{value}</p>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function DeliveredPreview({ order }: { order: CustomerOrder }) {
+  const url = previewUrl(order.delivered_domain);
+  return (
+    <Card className="overflow-hidden border-border bg-card/70 backdrop-blur-xl">
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <CardTitle className="text-xl">{packageName(order)}</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">Delivered {order.delivered_at ? new Date(order.delivered_at).toLocaleDateString() : "recently"}</p>
+          </div>
+          {url && (
+            <Button asChild variant="outline" size="sm" className="gap-2">
+              <a href={url} target="_blank" rel="noreferrer">Open site <ExternalLink className="h-4 w-4" /></a>
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        {url ? (
+          <div className="overflow-hidden rounded-md border border-border bg-background">
+            <iframe title={`${packageName(order)} preview`} src={url} className="h-[360px] w-full" loading="lazy" />
+          </div>
+        ) : (
+          <div className="rounded-md border border-border bg-background/50 p-6 text-sm text-muted-foreground">Preview domain is being prepared.</div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
