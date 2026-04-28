@@ -6,13 +6,14 @@ import CustomerAccess from "@/components/CustomerAccess";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
+  const [heroScrolled, setHeroScrolled] = useState(false);
 
   return (
     <div className="w-full">
       <div className="relative h-screen overflow-hidden">
-        <IntroAnimation />
-        <CustomerAccess />
-        <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} />
+        <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
+        <CustomerAccess hidden={heroScrolled} />
+        <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled} />
       </div>
       <FalloffConsentBanner />
     </div>

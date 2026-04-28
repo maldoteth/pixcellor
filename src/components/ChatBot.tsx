@@ -31,6 +31,7 @@ interface PackageCard {
 interface ChatBotProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
+  hidden?: boolean;
 }
 
 const glassStyle = {
@@ -148,7 +149,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
   );
 }
 
-export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
+export default function ChatBot({ isOpen, setIsOpen, hidden = false }: ChatBotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -423,7 +424,7 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
       {/* Chat Toggle Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`absolute right-16 top-4 z-[10000] flex items-center justify-center rounded-sm md:right-[76px] md:top-6 ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
+        className={`absolute right-16 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:right-[76px] md:top-6 ${hidden ? 'pointer-events-none opacity-0' : 'opacity-100'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
         aria-label="Open chat with Alex from Pixcellor"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
