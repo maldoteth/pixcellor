@@ -112,9 +112,6 @@ function CustomerAuthForm({ onSuccess }: { onSuccess: () => void }) {
         </Button>
       </form>
 
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Use the email from checkout to automatically link previous Pixcellor orders.
-      </p>
     </div>
   );
 }
