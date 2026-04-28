@@ -38,7 +38,9 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceRoleKey) throw new Error("Order confirmation service is not configured");
 
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      global: { headers: { Authorization: `Bearer ${serviceRoleKey}` } },
+    });
     const { data: order, error } = await supabase
       .from("stripe_checkout_sessions")
       .select("session_id, payment_status, status, amount_total, customer_email, mode, metadata")
@@ -63,22 +65,31 @@ serve(async (req) => {
       billing,
     };
 
-    const { data, error: sendError } = await supabase.functions.invoke("send-transactional-email", {
-      body: {
+    const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${serviceRoleKey}`,
+        "apikey": serviceRoleKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         templateName: templateForPackage(packageName),
         recipientEmail: order.customer_email,
         idempotencyKey: `manual-order-confirmation-${order.session_id}-${Date.now()}`,
         templateData,
-      },
+      }),
     });
+    const data = await emailResponse.json().catch(() => null);
 
-    if (sendError || data?.error) {
-      throw new Error(data?.error || sendError?.message || "Could not send confirmation email");
+    if (!emailResponse.ok || data?.error) {
+      console.error("Confirmation email send failed", { status: emailResponse.status, data });
+      throw new Error(data?.error || "Could not send confirmation email");
     }
 
     return json({ success: true, recipientEmail: order.customer_email });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not send confirmation email";
+    console.error("send-order-confirmation failed", { message });
     return json({ error: message }, 500);
   }
 });

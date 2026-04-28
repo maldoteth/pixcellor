@@ -28,7 +28,9 @@ serve(async (req) => {
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
     const event = await stripe.webhooks.constructEventAsync(bodyText, signature, stripeWebhookSecret);
 
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      global: { headers: { Authorization: `Bearer ${supabaseServiceRoleKey}` } },
+    });
     const eventObject = event.data.object as Record<string, unknown>;
     const rawSessionId = eventObject.id;
     const sessionId = typeof rawSessionId === "string" ? rawSessionId : null;
@@ -108,22 +110,32 @@ serve(async (req) => {
           billing: session.metadata?.billing || session.mode || "payment",
         };
 
-        await supabase.functions.invoke("send-transactional-email", {
-          body: {
+        const emailHeaders = {
+          "Authorization": `Bearer ${supabaseServiceRoleKey}`,
+          "apikey": supabaseServiceRoleKey,
+          "Content-Type": "application/json",
+        };
+
+        await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+          method: "POST",
+          headers: emailHeaders,
+          body: JSON.stringify({
             templateName: templateForPackage(packageName),
             recipientEmail: session.customer_details.email,
             idempotencyKey: `order-confirmation-${session.id}`,
             templateData,
-          },
+          }),
         });
 
-        await supabase.functions.invoke("send-transactional-email", {
-          body: {
+        await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+          method: "POST",
+          headers: emailHeaders,
+          body: JSON.stringify({
             templateName: "internal-new-order-notification",
             recipientEmail: "projects@pixcellor.com",
             idempotencyKey: `internal-order-notification-${session.id}`,
             templateData,
-          },
+          }),
         });
       }
     }
