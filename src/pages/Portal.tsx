@@ -126,6 +126,16 @@ type ProjectRequirement = {
   updated_at: string;
 };
 
+type EmailLog = {
+  message_id: string | null;
+  template_name: string;
+  recipient_email: string;
+  status: string;
+  error_message: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+};
+
 type Inquiry = {
   id: string;
   name: string;
@@ -237,6 +247,7 @@ export default function Portal() {
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [projectRequirements, setProjectRequirements] = useState<ProjectRequirement[]>([]);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
@@ -261,6 +272,7 @@ export default function Portal() {
   const [mailReply, setMailReply] = useState("");
   const [mailboxLoading, setMailboxLoading] = useState(false);
   const [sendingConfirmationId, setSendingConfirmationId] = useState<string | null>(null);
+  const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -278,6 +290,7 @@ export default function Portal() {
       contacts?: Contact[];
       contactEvents?: ContactEvent[];
       projectRequirements?: ProjectRequirement[];
+      emailLogs?: EmailLog[];
     };
     setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
     setFalloffs(snapshot.falloffs ?? []);
@@ -288,6 +301,7 @@ export default function Portal() {
     setContacts(snapshot.contacts ?? []);
     setContactEvents(snapshot.contactEvents ?? []);
     setProjectRequirements(snapshot.projectRequirements ?? []);
+    setEmailLogs(snapshot.emailLogs ?? []);
     setAllMessages(allMsgs);
     const previews: Record<string, Message> = {};
     for (const m of allMsgs) {
