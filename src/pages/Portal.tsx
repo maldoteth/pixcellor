@@ -526,6 +526,8 @@ export default function Portal() {
 
   const salesQ = salesSearch.trim().toLowerCase();
   const contactsQ = contactsSearch.trim().toLowerCase();
+  const q = "";
+  const matches = (s: string | null | undefined) => !!s && s.toLowerCase().includes(q);
   const matchesQuery = (query: string, s: string | null | undefined) => !!s && s.toLowerCase().includes(query);
 
 
