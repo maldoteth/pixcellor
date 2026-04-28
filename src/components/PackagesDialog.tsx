@@ -707,7 +707,7 @@ function MobileCards() {
             <div className="relative z-10 flex flex-col flex-1">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-foreground">Retainer</h3>
-                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => setRetainerFlipped(true)}>Enterprise</Button>
+                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => setRetainerFlipped((flipped) => !flipped)}>Enterprise</Button>
               </div>
               <div className="flex items-center gap-2 mt-2 mb-3">
                 <button
@@ -777,7 +777,7 @@ function MobileCards() {
             <div className="relative z-10 flex flex-col flex-1">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
-                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => setRetainerFlipped(false)}>Retainer</Button>
+                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => setRetainerFlipped((flipped) => !flipped)}>Retainer</Button>
               </div>
               <div className="mt-3 mb-1">
                 <span className="text-3xl font-extrabold text-foreground">Custom</span>
