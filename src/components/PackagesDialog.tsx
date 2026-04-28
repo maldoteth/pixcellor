@@ -480,7 +480,7 @@ function DesktopCards() {
               <p className="text-xs text-muted-foreground line-through mb-4">
                 RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
               </p>
-              <DiscountBadge discount={retainerBilling === "monthly" ? "57%" : "57%"} />
+              <DiscountBadge discount="57%" />
               <ul className="mb-6 space-y-2 text-base text-muted-foreground">
                 {PACKAGES.retainer.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
@@ -699,7 +699,7 @@ function MobileCards() {
               <p className="text-xs text-muted-foreground line-through mb-4">
                 RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
               </p>
-              <DiscountBadge discount={retainerBilling === "monthly" ? "57%" : "57%"} />
+              <DiscountBadge discount="57%" />
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.retainer.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
