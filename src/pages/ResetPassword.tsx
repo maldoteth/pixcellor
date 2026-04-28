@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,30 @@ import { toast } from "sonner";
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
+  const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "PASSWORD_RECOVERY") {
+        setReady(true);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        setReady(true);
+        return;
+      }
+
+      window.setTimeout(async () => {
+        const { data: retryData } = await supabase.auth.getSession();
+        if (retryData.session) setReady(true);
+      }, 300);
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +66,8 @@ export default function ResetPassword() {
               required
               minLength={6}
             />
-            <Button type="submit" disabled={busy} className="w-full">
-              {busy ? "Updating…" : "Update password"}
+            <Button type="submit" disabled={busy || !ready} className="w-full">
+              {busy ? "Updating…" : ready ? "Update password" : "Preparing secure invite…"}
             </Button>
           </form>
         </CardContent>
