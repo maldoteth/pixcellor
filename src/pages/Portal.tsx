@@ -1047,8 +1047,8 @@ export default function Portal() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 md:p-6">
+      <div className="mx-auto max-w-7xl min-w-0 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl md:text-3xl font-semibold">Pixcellor Dev Portal</h1>
           <Button variant="outline" size="sm" onClick={exitPortal}>
@@ -1088,7 +1088,7 @@ export default function Portal() {
           )}
         </div>
 
-        <Tabs defaultValue="sales">
+        <Tabs defaultValue="sales" className="min-w-0">
           <TabsList className="grid h-auto w-full grid-cols-2 gap-1 md:grid-cols-5 xl:grid-cols-9">
             <TabsTrigger value="sales" className="h-10 px-2 text-xs sm:text-sm">Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="h-10 px-2 text-xs sm:text-sm">Orders ({filteredOrders.length})</TabsTrigger>
@@ -1305,19 +1305,19 @@ export default function Portal() {
             })}
           </TabsContent>
 
-          <TabsContent value="falloffs" className="space-y-2">
+          <TabsContent value="falloffs" className="min-w-0 space-y-2">
             {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {q ? "match your search" : "yet"}.</p>}
             {filteredFalloffs.map(f => (
-              <Card key={f.id}>
+               <Card key={f.id} className="min-w-0 overflow-hidden">
                 <CardContent className="p-4 space-y-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="font-medium">{f.company_name ?? f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="break-words font-medium">{f.company_name ?? f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
                       <div className="text-xs text-muted-foreground">{[f.company_domain, f.company_type, f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(" · ") || "Company/location unknown"}</div>
-                      <div className="text-xs text-muted-foreground">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? f.ip_timezone ?? "timezone unknown"}</div>
-                      <div className="text-xs text-muted-foreground">Visitor {f.visitor_id} · Session {f.session_id}</div>
+                      <div className="break-words text-xs text-muted-foreground">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? f.ip_timezone ?? "timezone unknown"}</div>
+                      <div className="break-all text-xs text-muted-foreground">Visitor {f.visitor_id} · Session {f.session_id}</div>
                     </div>
-                    <div className="flex flex-wrap items-center justify-end gap-2">
+                    <div className="flex min-w-0 flex-wrap items-center justify-start gap-2 md:justify-end">
                       {f.checkout_session_id && <Badge variant="secondary">Checkout opened</Badge>}
                       {f.buy_clicked_at && <Badge variant="secondary">Buy clicked</Badge>}
                       {f.pricing_opened_at && <Badge variant="outline">Pricing opened</Badge>}
@@ -1390,7 +1390,7 @@ export default function Portal() {
             ))}
           </TabsContent>
 
-          <TabsContent value="mailbox" className="grid grid-cols-1 md:grid-cols-[360px_minmax(0,1fr)] gap-4 items-start">
+          <TabsContent value="mailbox" className="grid min-w-0 grid-cols-1 gap-4 items-start lg:grid-cols-[360px_minmax(0,1fr)]">
             <div className="space-y-3 md:max-h-[70vh] md:overflow-hidden md:flex md:flex-col md:min-h-0">
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -1450,7 +1450,7 @@ export default function Portal() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="chats" className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-4">
+          <TabsContent value="chats" className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
             <div className="space-y-2 max-h-[70vh] overflow-y-auto">
               {filteredConversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations {q ? "match your search" : "yet"}.</p>}
               {filteredConversations.map(c => {
@@ -1475,7 +1475,7 @@ export default function Portal() {
                 );
               })}
             </div>
-            <Card className="max-h-[70vh] overflow-hidden flex flex-col">
+            <Card className="min-w-0 max-h-[70vh] overflow-hidden flex flex-col">
               <CardContent className="p-4 overflow-y-auto space-y-3 flex-1">
                 {!activeConv && <p className="text-muted-foreground text-sm">Pick a conversation to view messages.</p>}
                 {activeConv && messages.length === 0 && <p className="text-muted-foreground text-sm">No messages.</p>}
