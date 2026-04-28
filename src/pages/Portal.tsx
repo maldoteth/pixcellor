@@ -1869,7 +1869,7 @@ export default function Portal() {
                           <div className="mt-1 text-xs text-muted-foreground">{c.phone}</div>
                         ))}
                       </div>
-                      <div className="flex flex-wrap items-center justify-end gap-2">
+                      <div className="flex flex-col items-end gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
                         <div className="flex items-center gap-1" aria-label="Contact status">
                           {contactStatuses.map(status => (
                             <button
@@ -1883,8 +1883,10 @@ export default function Portal() {
                             />
                           ))}
                         </div>
-                        <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => startEditingContact(c)}>Edit</Button>
-                        <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
+                        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+                          <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => startEditingContact(c)}>Edit</Button>
+                          <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
+                        </div>
                         <Badge variant="secondary">{events.length} logs</Badge>
                       </div>
                     </div>
