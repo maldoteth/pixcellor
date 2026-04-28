@@ -43,6 +43,12 @@ serve(async (req) => {
     if (!ip) throw new Error("Could not detect visitor IP");
 
     const supabase = createClient(supabaseUrl, serviceKey);
+    const { data: existingFalloff } = await supabase
+      .from("visitor_falloffs")
+      .select("max_scroll_percent, portfolio_opened_at, portfolio_pages_viewed, portfolio_project_opened_at, portfolio_project_opened, pricing_opened_at, buy_clicked_at")
+      .eq("visitor_id", visitorId)
+      .eq("session_id", sessionId)
+      .maybeSingle();
     const response = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}?token=${encodeURIComponent(token)}`);
     const data = await response.json();
     if (!response.ok) throw new Error(`IPinfo lookup failed [${response.status}]: ${JSON.stringify(data).slice(0, 300)}`);
@@ -66,13 +72,13 @@ serve(async (req) => {
         timezone: clean(safeContext.timezone),
         screen_size: clean(safeContext.screen),
         viewport_size: clean(safeContext.viewport),
-        max_scroll_percent: maxScrollPercent ?? 0,
-        portfolio_opened_at: event === "portfolio_opened" || event === "portfolio_page_viewed" || event === "portfolio_project_opened" ? new Date().toISOString() : null,
-        portfolio_pages_viewed: portfolioPage ?? 0,
-        portfolio_project_opened_at: event === "portfolio_project_opened" ? new Date().toISOString() : null,
-        portfolio_project_opened: event === "portfolio_project_opened" ? portfolioProject : null,
-        pricing_opened_at: event === "pricing_opened" ? new Date().toISOString() : null,
-        buy_clicked_at: event === "checkout_started" || event === "chat_checkout_started" ? new Date().toISOString() : null,
+        max_scroll_percent: Math.max(existingFalloff?.max_scroll_percent ?? 0, maxScrollPercent ?? 0),
+        portfolio_opened_at: existingFalloff?.portfolio_opened_at ?? (event === "portfolio_opened" || event === "portfolio_page_viewed" || event === "portfolio_project_opened" ? new Date().toISOString() : null),
+        portfolio_pages_viewed: Math.max(existingFalloff?.portfolio_pages_viewed ?? 0, portfolioPage ?? 0),
+        portfolio_project_opened_at: existingFalloff?.portfolio_project_opened_at ?? (event === "portfolio_project_opened" ? new Date().toISOString() : null),
+        portfolio_project_opened: event === "portfolio_project_opened" ? portfolioProject : existingFalloff?.portfolio_project_opened ?? null,
+        pricing_opened_at: existingFalloff?.pricing_opened_at ?? (event === "pricing_opened" ? new Date().toISOString() : null),
+        buy_clicked_at: existingFalloff?.buy_clicked_at ?? (event === "checkout_started" || event === "chat_checkout_started" ? new Date().toISOString() : null),
         last_seen_at: new Date().toISOString(),
         metadata: safeMetadata,
         ip_address: clean(data.ip) ?? ip,
