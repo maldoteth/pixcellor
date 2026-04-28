@@ -80,12 +80,16 @@ const textAreas: Array<{
 export default function ProjectRequirements() {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id") ?? "";
+  const orderCode = params.get("order") ?? "";
+  const token = params.get("token") ?? "";
   const [form, setForm] = useState<RequirementsForm>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const validSession = useMemo(() => /^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId), [sessionId]);
+  const validOrderCode = useMemo(() => /^PXC-[A-Z]{4}-[0-9]{4}$/.test(orderCode) && token.length >= 32, [orderCode, token]);
+  const validOrderReference = validSession || validOrderCode;
 
   const updateField = (name: FieldName, value: string) => {
     setForm((current) => ({ ...current, [name]: value }));
@@ -94,7 +98,7 @@ export default function ProjectRequirements() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!validSession) {
+    if (!validOrderReference) {
       toast.error("This requirements link is missing a valid order ID.");
       return;
     }
@@ -109,7 +113,7 @@ export default function ProjectRequirements() {
 
     setSubmitting(true);
     const { data, error } = await supabase.functions.invoke("submit-project-requirements", {
-      body: { sessionId, ...parsed.data },
+      body: validOrderCode ? { orderCode, token, ...parsed.data } : { sessionId, ...parsed.data },
     });
     setSubmitting(false);
 
@@ -159,9 +163,9 @@ export default function ProjectRequirements() {
 
         <Card className="border-border bg-card/70 backdrop-blur-xl">
           <CardContent className="p-5 md:p-8">
-            {!validSession && (
+            {!validOrderReference && (
               <div className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-                This link is missing a valid order ID. Open the project requirements link from your confirmation email.
+                This link is missing a valid order reference. Open the project requirements link from your confirmation email.
               </div>
             )}
 
@@ -195,7 +199,7 @@ export default function ProjectRequirements() {
               ))}
 
               <div className="flex flex-wrap justify-end gap-3 pt-2">
-                <Button type="submit" disabled={submitting || !validSession} className="gap-2">
+                <Button type="submit" disabled={submitting || !validOrderReference} className="gap-2">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {submitting ? "Saving…" : "Send requirements"}
                 </Button>

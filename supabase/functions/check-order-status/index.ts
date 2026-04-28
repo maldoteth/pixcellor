@@ -31,7 +31,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
     const { data, error } = await supabase
       .from("stripe_checkout_sessions")
-      .select("session_id, mode, payment_status, status, amount_total, customer_email, metadata")
+      .select("session_id, order_code, mode, payment_status, status, amount_total, customer_email, metadata")
       .eq("session_id", sessionId)
       .maybeSingle();
 
@@ -50,6 +50,7 @@ serve(async (req) => {
       confirmed,
       paymentStatus: data.payment_status,
       status: data.status,
+      orderCode: data.order_code,
       packageName: typeof metadata.package_name === "string" ? metadata.package_name : null,
       amount: formatGBP(data.amount_total),
       customerEmail: data.customer_email,

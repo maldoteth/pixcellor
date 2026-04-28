@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 type OrderStatus = {
   confirmed: boolean;
+  orderCode?: string | null;
   paymentStatus?: string | null;
   status?: string | null;
   packageName?: string | null;
@@ -156,6 +157,12 @@ export default function OrderSuccess() {
                     <div className="text-xs text-muted-foreground">Status</div>
                     <div className="font-medium mt-1">Paid</div>
                   </div>
+                  {order.orderCode && (
+                    <div className="rounded-md border border-border bg-background/50 p-4 md:col-span-3">
+                      <div className="text-xs text-muted-foreground">Order ID</div>
+                      <div className="font-medium mt-1">{order.orderCode}</div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="rounded-md border border-border bg-muted/30 p-5 text-left space-y-3">
