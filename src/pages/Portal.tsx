@@ -12,7 +12,6 @@ import { PORTAL_ACCESS_CODE, PORTAL_ACCESS_STORAGE_KEY } from "./PortalAuth";
 
 type StripeSession = {
   session_id: string;
-  order_code?: string | null;
   amount_total: number | null;
   currency: string | null;
   payment_status: string | null;
@@ -488,7 +487,6 @@ export default function Portal() {
   const filteredOrders = useMemo(() => {
     const searched = !q ? orders : orders.filter(o =>
       matches(o.customer_email) ||
-      matches(o.order_code) ||
       matches(o.session_id) ||
       matches(o.payment_status) ||
       matches(o.status) ||
@@ -505,7 +503,6 @@ export default function Portal() {
   const completedOrders = useMemo(() => {
     const searched = !q ? orders : orders.filter(o =>
       matches(o.customer_email) ||
-      matches(o.order_code) ||
       matches(o.session_id) ||
       matches(o.payment_status) ||
       matches(o.status) ||
@@ -1075,7 +1072,6 @@ export default function Portal() {
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="space-y-1">
                       <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
-                      {o.order_code && <div className="text-xs text-muted-foreground">Order {o.order_code}</div>}
                       <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
                       {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
                     </div>
@@ -1161,7 +1157,6 @@ export default function Portal() {
                       </div>
                       <div className="flex flex-wrap items-center justify-end gap-3">
                         <Badge variant="default">Delivered</Badge>
-                        {o.order_code && <Badge variant="outline">{o.order_code}</Badge>}
                         <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
                         {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                         <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>

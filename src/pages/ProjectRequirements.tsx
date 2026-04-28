@@ -77,19 +77,27 @@ const textAreas: Array<{
   },
 ];
 
+const pricingButtonStyle = {
+  background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  border: "1px solid rgba(255,255,255,0.2)",
+  boxShadow: `
+    0 8px 32px rgba(0,0,0,0.3),
+    inset 0 1px 1px rgba(255,255,255,0.3),
+    inset 0 -1px 1px rgba(0,0,0,0.1)
+  `,
+} as const;
+
 export default function ProjectRequirements() {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id") ?? "";
-  const orderCode = params.get("order") ?? "";
-  const token = params.get("token") ?? "";
   const [form, setForm] = useState<RequirementsForm>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const validSession = useMemo(() => /^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId), [sessionId]);
-  const validOrderCode = useMemo(() => /^PXC-[A-Z]{4}-[0-9]{4}$/.test(orderCode) && token.length >= 32, [orderCode, token]);
-  const validOrderReference = validSession || validOrderCode;
 
   const updateField = (name: FieldName, value: string) => {
     setForm((current) => ({ ...current, [name]: value }));
@@ -98,7 +106,7 @@ export default function ProjectRequirements() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!validOrderReference) {
+    if (!validSession) {
       toast.error("This requirements link is missing a valid order ID.");
       return;
     }
@@ -113,7 +121,7 @@ export default function ProjectRequirements() {
 
     setSubmitting(true);
     const { data, error } = await supabase.functions.invoke("submit-project-requirements", {
-      body: validOrderCode ? { orderCode, token, ...parsed.data } : { sessionId, ...parsed.data },
+      body: { sessionId, ...parsed.data },
     });
     setSubmitting(false);
 
@@ -163,9 +171,9 @@ export default function ProjectRequirements() {
 
         <Card className="border-border bg-card/70 backdrop-blur-xl">
           <CardContent className="p-5 md:p-8">
-            {!validOrderReference && (
+            {!validSession && (
               <div className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-                This link is missing a valid order reference. Open the project requirements link from your confirmation email.
+                This link is missing a valid order ID. Open the project requirements link from your confirmation email.
               </div>
             )}
 
@@ -199,10 +207,16 @@ export default function ProjectRequirements() {
               ))}
 
               <div className="flex flex-wrap justify-end gap-3 pt-2">
-                <Button type="submit" disabled={submitting || !validOrderReference} className="gap-2">
+                <button
+                  type="submit"
+                  disabled={submitting || !validSession}
+                  className="rounded-sm px-6 py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 relative overflow-hidden group"
+                  style={pricingButtonStyle}
+                >
+                  <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-foreground/20 to-transparent pointer-events-none" />
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {submitting ? "Saving…" : "Send requirements"}
-                </Button>
+                </button>
               </div>
             </form>
           </CardContent>

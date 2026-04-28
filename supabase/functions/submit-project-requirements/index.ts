@@ -14,9 +14,7 @@ const json = (body: unknown, status = 200) =>
   });
 
 const RequirementsSchema = z.object({
-  sessionId: z.string().trim().min(8).max(255).regex(/^cs_(test|live)_[A-Za-z0-9]+$/, "Invalid order link").optional(),
-  orderCode: z.string().trim().min(8).max(32).regex(/^PXC-[A-Z]{4}-[0-9]{4}$/, "Invalid order link").optional(),
-  token: z.string().trim().min(32).max(128).optional(),
+  sessionId: z.string().trim().min(8).max(255).regex(/^cs_(test|live)_[A-Za-z0-9]+$/, "Invalid order link"),
   siteName: z.string().trim().min(1, "Site name is required").max(160),
   siteContents: z.string().trim().min(1, "Site contents are required").max(4000),
   pagesDetails: z.string().trim().min(1, "Page details are required").max(6000),
@@ -44,19 +42,11 @@ serve(async (req) => {
       global: { headers: { Authorization: `Bearer ${serviceRoleKey}` } },
     });
 
-    if (!parsed.data.sessionId && (!parsed.data.orderCode || !parsed.data.token)) {
-      return json({ error: "This requirements link is missing a valid order reference." }, 400);
-    }
-
-    let query = supabase
+    const { data: order, error: orderError } = await supabase
       .from("stripe_checkout_sessions")
-      .select("session_id, customer_email, payment_status, status");
-
-    query = parsed.data.orderCode
-      ? query.eq("order_code", parsed.data.orderCode).eq("requirements_token", parsed.data.token ?? "")
-      : query.eq("session_id", parsed.data.sessionId ?? "");
-
-    const { data: order, error: orderError } = await query.maybeSingle();
+      .select("session_id, customer_email, payment_status, status")
+      .eq("session_id", parsed.data.sessionId)
+      .maybeSingle();
 
     if (orderError) throw orderError;
     if (!order || (order.payment_status !== "paid" && order.status !== "complete" && order.status !== "completed")) {
@@ -65,7 +55,7 @@ serve(async (req) => {
 
     const { error: upsertError } = await supabase.from("project_requirements").upsert(
       {
-        session_id: order.session_id,
+        session_id: parsed.data.sessionId,
         customer_email: order.customer_email,
         site_name: parsed.data.siteName,
         site_contents: parsed.data.siteContents,

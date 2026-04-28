@@ -5,11 +5,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SITE_URL = "https://pixcellor.com";
 
-const buildRequirementsUrl = (orderCode?: string | null, token?: string | null, fallbackSessionId?: string) => {
-  if (orderCode && token) return `${SITE_URL}/project-requirements?order=${encodeURIComponent(orderCode)}&token=${encodeURIComponent(token)}`;
-  return fallbackSessionId ? `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(fallbackSessionId)}` : `${SITE_URL}/project-requirements`;
-};
-
 serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
@@ -107,20 +102,13 @@ serve(async (req) => {
         throw new Error(`Failed to upsert checkout session: ${sessionUpsert.error.message}`);
       }
 
-      const { data: publicRefData, error: publicRefError } = await supabase.rpc("ensure_order_public_reference", { _session_id: session.id });
-      if (publicRefError) throw new Error(`Failed to create order reference: ${publicRefError.message}`);
-      const publicRef = publicRefData && typeof publicRefData === "object" ? publicRefData as Record<string, unknown> : {};
-      const orderCode = typeof publicRef.order_code === "string" ? publicRef.order_code : session.id;
-      const requirementsToken = typeof publicRef.requirements_token === "string" ? publicRef.requirements_token : null;
-
       if (event.type === "checkout.session.completed" && paymentStatus === "paid" && session.customer_details?.email) {
         const packageName = session.metadata?.package_name || "Full Works";
-        const requirementsUrl = buildRequirementsUrl(orderCode, requirementsToken, session.id);
+        const requirementsUrl = `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(session.id)}`;
         const templateData = {
           requirementsUrl,
           customerEmail: session.customer_details.email,
           orderId: session.id,
-          publicOrderId: orderCode,
           packageName,
           amount: formatGBP(session.amount_total),
           billing: session.metadata?.billing || session.mode || "payment",

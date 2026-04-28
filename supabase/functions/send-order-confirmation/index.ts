@@ -4,11 +4,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 const PORTAL_ACCESS_CODE = "42069";
 const SITE_URL = "https://pixcellor.com";
 
-const buildRequirementsUrl = (orderCode?: string | null, token?: string | null, fallbackSessionId?: string) => {
-  if (orderCode && token) return `${SITE_URL}/project-requirements?order=${encodeURIComponent(orderCode)}&token=${encodeURIComponent(token)}`;
-  return fallbackSessionId ? `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(fallbackSessionId)}` : `${SITE_URL}/project-requirements`;
-};
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
@@ -63,17 +58,11 @@ serve(async (req) => {
     const metadata = order.metadata && typeof order.metadata === "object" ? order.metadata as Record<string, unknown> : {};
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Full Works";
     const billing = typeof metadata.billing === "string" ? metadata.billing : order.mode || "payment";
-    const { data: publicRefData, error: publicRefError } = await supabase.rpc("ensure_order_public_reference", { _session_id: order.session_id });
-    if (publicRefError) throw publicRefError;
-    const publicRef = publicRefData && typeof publicRefData === "object" ? publicRefData as Record<string, unknown> : {};
-    const orderCode = typeof publicRef.order_code === "string" ? publicRef.order_code : order.session_id;
-    const requirementsToken = typeof publicRef.requirements_token === "string" ? publicRef.requirements_token : null;
-    const requirementsUrl = buildRequirementsUrl(orderCode, requirementsToken, order.session_id);
+    const requirementsUrl = `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(order.session_id)}`;
     const templateData = {
       requirementsUrl,
       customerEmail: order.customer_email,
       orderId: order.session_id,
-      publicOrderId: orderCode,
       packageName,
       amount: formatGBP(order.amount_total),
       billing,

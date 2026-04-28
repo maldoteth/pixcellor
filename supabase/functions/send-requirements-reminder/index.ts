@@ -5,11 +5,6 @@ import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 const PORTAL_ACCESS_CODE = "42069";
 const SITE_URL = "https://pixcellor.com";
 
-const buildRequirementsUrl = (orderCode?: string | null, token?: string | null, fallbackSessionId?: string) => {
-  if (orderCode && token) return `${SITE_URL}/project-requirements?order=${encodeURIComponent(orderCode)}&token=${encodeURIComponent(token)}`;
-  return fallbackSessionId ? `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(fallbackSessionId)}` : `${SITE_URL}/project-requirements`;
-};
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
@@ -75,12 +70,7 @@ serve(async (req) => {
 
     const metadata = order.metadata && typeof order.metadata === "object" ? order.metadata as Record<string, unknown> : {};
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Pixcellor package";
-    const { data: publicRefData, error: publicRefError } = await supabase.rpc("ensure_order_public_reference", { _session_id: order.session_id });
-    if (publicRefError) throw publicRefError;
-    const publicRef = publicRefData && typeof publicRefData === "object" ? publicRefData as Record<string, unknown> : {};
-    const orderCode = typeof publicRef.order_code === "string" ? publicRef.order_code : order.session_id;
-    const requirementsToken = typeof publicRef.requirements_token === "string" ? publicRef.requirements_token : null;
-    const requirementsUrl = buildRequirementsUrl(orderCode, requirementsToken, order.session_id);
+    const requirementsUrl = `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(order.session_id)}`;
 
     const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
       method: "POST",
@@ -89,7 +79,7 @@ serve(async (req) => {
         templateName: "project-requirements-reminder",
         recipientEmail: order.customer_email,
         idempotencyKey: `requirements-reminder-${order.session_id}-${Date.now()}`,
-        templateData: { requirementsUrl, customerEmail: order.customer_email, orderId: order.session_id, publicOrderId: orderCode, packageName },
+        templateData: { requirementsUrl, customerEmail: order.customer_email, orderId: order.session_id, packageName },
       }),
     });
     const data = await emailResponse.json().catch(() => null);
