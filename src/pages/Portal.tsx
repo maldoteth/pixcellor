@@ -1226,16 +1226,16 @@ export default function Portal() {
           </Button>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 md:grid-cols-5 xl:grid-cols-9">
-            <TabsTrigger value="sales" className="h-10 gap-1.5 px-2 text-xs sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
-            <TabsTrigger value="orders" className="h-10 gap-1.5 px-2 text-xs sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Orders ({filteredOrders.length})</TabsTrigger>
-            <TabsTrigger value="completed" className="h-10 gap-1.5 px-2 text-xs sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
-            <TabsTrigger value="falloffs" className="h-10 gap-1.5 px-2 text-xs sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
-            <TabsTrigger value="mailbox" className="h-10 gap-1.5 px-2 text-xs sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.length})</TabsTrigger>
-            <TabsTrigger value="chats" className="h-10 gap-1.5 px-2 text-xs sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats ({filteredConversations.length})</TabsTrigger>
-            <TabsTrigger value="profiles" className="h-10 gap-1.5 px-2 text-xs sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({filteredProfiles.length})</TabsTrigger>
-            <TabsTrigger value="inquiries" className="h-10 gap-1.5 px-2 text-xs sm:text-sm"><Mail className="h-3.5 w-3.5 shrink-0" />Enquiries ({filteredInquiries.length})</TabsTrigger>
-            <TabsTrigger value="contacts" className="h-10 gap-1.5 px-2 text-xs sm:text-sm"><UserPlus className="h-3.5 w-3.5 shrink-0" />Contacts ({filteredContacts.length})</TabsTrigger>
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-9">
+            <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
+            <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Orders ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
+            <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
+            <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.length})</TabsTrigger>
+            <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats ({filteredConversations.length})</TabsTrigger>
+            <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({filteredProfiles.length})</TabsTrigger>
+            <TabsTrigger value="inquiries" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Mail className="h-3.5 w-3.5 shrink-0" />Enquiries ({filteredInquiries.length})</TabsTrigger>
+            <TabsTrigger value="contacts" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserPlus className="h-3.5 w-3.5 shrink-0" />Contacts ({filteredContacts.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sales" className="space-y-4">
