@@ -697,7 +697,11 @@ export default function Portal() {
       const effectiveStatus = hasOrders ? "gold" : c.status;
       return effectiveStatus === contactsStatusFilter;
     });
-    if (!contactsQ) return statusFiltered;
+    if (!contactsQ) {
+      return [...statusFiltered]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 10);
+    }
     const matchingContactIds = new Set(
       contactEvents
         .filter(e => matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) || matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at))
