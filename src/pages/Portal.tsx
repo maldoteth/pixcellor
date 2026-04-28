@@ -1177,43 +1177,6 @@ export default function Portal() {
           </Button>
         </div>
 
-        {/* Counters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Total sales</CardTitle></CardHeader>
-            <CardContent><div className="text-3xl font-semibold">{formatGBP(counters.totalSales)}</div></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Websites delivered (paid orders)</CardTitle></CardHeader>
-            <CardContent><div className="text-3xl font-semibold">{counters.totalWebsites}</div></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Potential sales (chatted, no buy)</CardTitle></CardHeader>
-            <CardContent><div className="text-3xl font-semibold">{counters.potential}</div></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Website visits</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="text-2xl font-semibold">{counters.uniqueVisitors}</div>
-                <div className="text-xs text-muted-foreground">Visitors</div>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold">{counters.totalVisitEvents}</div>
-                <div className="text-xs text-muted-foreground">Events</div>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold">{counters.pricingViews}</div>
-                <div className="text-xs text-muted-foreground">Pricing opens</div>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold">{counters.buyClicks}</div>
-                <div className="text-xs text-muted-foreground">Buy clicks</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Global search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
