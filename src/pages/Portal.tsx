@@ -18,6 +18,7 @@ type StripeSession = {
   status: string | null;
   order_status?: string | null;
   delivered_at?: string | null;
+  delivered_domain?: string | null;
   customer_email: string | null;
   mode: string | null;
   created_at: string;
@@ -470,15 +471,16 @@ export default function Portal() {
 
   const orderEmailStatusBySession = useMemo(() => {
     const confirmationTemplates = new Set(["full-works-order-confirmation", "elite-order-confirmation", "retainer-order-confirmation"]);
-    const map = new Map<string, { confirmationSent: boolean; reminderSent: boolean }>();
-    for (const order of orders) map.set(order.session_id, { confirmationSent: false, reminderSent: false });
+    const map = new Map<string, { confirmationSent: boolean; reminderSent: boolean; completionSent: boolean }>();
+    for (const order of orders) map.set(order.session_id, { confirmationSent: false, reminderSent: false, completionSent: false });
     for (const log of emailLogs) {
       const orderId = typeof log.metadata?.order_id === "string" ? log.metadata.order_id : null;
       const matchedOrder = orderId ? orders.find(order => order.session_id === orderId) : orders.find(order => order.customer_email?.toLowerCase() === log.recipient_email?.toLowerCase());
       if (!matchedOrder || log.status !== "sent") continue;
-      const current = map.get(matchedOrder.session_id) ?? { confirmationSent: false, reminderSent: false };
+      const current = map.get(matchedOrder.session_id) ?? { confirmationSent: false, reminderSent: false, completionSent: false };
       if (confirmationTemplates.has(log.template_name)) current.confirmationSent = true;
       if (log.template_name === "project-requirements-reminder") current.reminderSent = true;
+      if (log.template_name === "order-complete") current.completionSent = true;
       map.set(matchedOrder.session_id, current);
     }
     return map;
