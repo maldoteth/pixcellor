@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Check, Loader2, Lock, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -265,6 +265,12 @@ function DesktopCards() {
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
 
+  useEffect(() => {
+    if (enterpriseOpen) return;
+    const interval = window.setInterval(() => setRetainerFlipped((flipped) => !flipped), 5000);
+    return () => window.clearInterval(interval);
+  }, [enterpriseOpen]);
+
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
@@ -462,7 +468,7 @@ function DesktopCards() {
             <div className="relative z-10">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="text-lg font-bold text-foreground">Retainer</div>
-                <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => setRetainerFlipped(true)}>Enterprise</Button>
+                <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => setRetainerFlipped((flipped) => !flipped)}>Enterprise</Button>
               </div>
               <div className="flex items-center gap-2 mb-3">
                 <button
@@ -541,7 +547,7 @@ function DesktopCards() {
             <div className="relative z-10">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="text-lg font-bold text-foreground">Enterprise</div>
-                <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => setRetainerFlipped(false)}>Retainer</Button>
+                <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => setRetainerFlipped((flipped) => !flipped)}>Retainer</Button>
               </div>
               <div className="mb-1 text-3xl font-extrabold text-foreground">Custom</div>
               <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
@@ -570,6 +576,12 @@ function MobileCards() {
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
+
+  useEffect(() => {
+    if (enterpriseOpen) return;
+    const interval = window.setInterval(() => setRetainerFlipped((flipped) => !flipped), 5000);
+    return () => window.clearInterval(interval);
+  }, [enterpriseOpen]);
 
   const buy = async (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
     setLoading(key);
@@ -695,7 +707,7 @@ function MobileCards() {
             <div className="relative z-10 flex flex-col flex-1">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-foreground">Retainer</h3>
-                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => setRetainerFlipped(true)}>Enterprise</Button>
+                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => setRetainerFlipped((flipped) => !flipped)}>Enterprise</Button>
               </div>
               <div className="flex items-center gap-2 mt-2 mb-3">
                 <button
@@ -765,7 +777,7 @@ function MobileCards() {
             <div className="relative z-10 flex flex-col flex-1">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
-                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => setRetainerFlipped(false)}>Retainer</Button>
+                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => setRetainerFlipped((flipped) => !flipped)}>Retainer</Button>
               </div>
               <div className="mt-3 mb-1">
                 <span className="text-3xl font-extrabold text-foreground">Custom</span>
