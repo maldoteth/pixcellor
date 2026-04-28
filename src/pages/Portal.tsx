@@ -818,7 +818,7 @@ export default function Portal() {
 
   const openMobileOrders = () => {
     setActiveTab("orders");
-    scrollPortalTop();
+    setMobileOrdersDrawerOpen(true);
   };
 
   const continueMobileContact = (skip = false) => {
