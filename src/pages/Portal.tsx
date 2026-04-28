@@ -1136,9 +1136,9 @@ export default function Portal() {
     return conversations.filter(c => matches(c.client_id) || matchingConvIds.has(c.id));
   }, [conversations, allMessages, q]);
 
-  const eventContactSuggestionList = (
+  const renderEventContactSuggestionList = (openUp = false) => (
     <div
-      className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 h-72 overflow-y-auto rounded-md border border-border bg-popover shadow-xl"
+      className={`absolute left-0 right-0 z-50 h-72 overflow-y-auto rounded-md border border-border bg-popover shadow-xl ${openUp ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}
       onScroll={(e) => loadMoreEventContactSuggestions(e.currentTarget)}
     >
       {visibleEventContactSuggestions.length > 0 ? visibleEventContactSuggestions.map(contact => (
@@ -1166,7 +1166,7 @@ export default function Portal() {
             value={eventContactSearch}
             onChange={(e) => handleEventContactSearch(e.target.value)}
           />
-          {eventContactSuggestionList}
+          {renderEventContactSuggestionList()}
         </div>
         <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
         <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
@@ -2019,7 +2019,7 @@ export default function Portal() {
                         }}
                         className="h-12 text-base"
                       />
-                      {eventContactSuggestionList}
+                      {renderEventContactSuggestionList(true)}
                     </div>
                     <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
                       <Clipboard className="h-4 w-4" />
