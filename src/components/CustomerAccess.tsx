@@ -73,7 +73,15 @@ function CustomerAuthForm({ onSuccess }: { onSuccess: () => void }) {
       }
 
       if (!signupResult.data.session) {
-        toast.success("Check your email to confirm your customer account.");
+        const { error: resendError } = await supabase.auth.resend({
+          type: "signup",
+          email: cleanEmail,
+          options: { emailRedirectTo: `${window.location.origin}/customer-portal` },
+        });
+
+        if (resendError) throw resendError;
+
+        toast.success("Confirmation email sent. Check your inbox to activate your account.");
         setPassword("");
         return;
       }
