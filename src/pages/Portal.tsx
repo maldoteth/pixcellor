@@ -774,6 +774,22 @@ export default function Portal() {
     toast.success("Order marked delivered.");
   };
 
+  const markOrderUndelivered = async (sessionId: string) => {
+    const confirmed = window.confirm("Move this order back to open so delivery can be redone?");
+    if (!confirmed) return;
+
+    const { error } = await (supabase as any).rpc("portal_mark_order_undelivered", {
+      _access_code: portalAccessCode,
+      _session_id: sessionId,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await loadPortalSnapshot();
+    toast.success("Order moved back to open.");
+  };
+
   const sendOrderConfirmation = async (order: StripeSession) => {
     if (!order.customer_email) {
       toast.error("This order does not have a customer email.");
