@@ -760,6 +760,10 @@ export type Database = {
             }
             Returns: undefined
           }
+      portal_mark_order_undelivered: {
+        Args: { _access_code: string; _session_id: string }
+        Returns: undefined
+      }
       portal_require_access: {
         Args: { _access_code: string }
         Returns: undefined

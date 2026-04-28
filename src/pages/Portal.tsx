@@ -18,7 +18,6 @@ type StripeSession = {
   status: string | null;
   order_status?: string | null;
   delivered_at?: string | null;
-  delivered_domain?: string | null;
   customer_email: string | null;
   mode: string | null;
   created_at: string;
@@ -275,7 +274,6 @@ export default function Portal() {
   const [mailboxLoading, setMailboxLoading] = useState(false);
   const [sendingConfirmationId, setSendingConfirmationId] = useState<string | null>(null);
   const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
-  const [sendingCompletionId, setSendingCompletionId] = useState<string | null>(null);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -472,17 +470,15 @@ export default function Portal() {
 
   const orderEmailStatusBySession = useMemo(() => {
     const confirmationTemplates = new Set(["full-works-order-confirmation", "elite-order-confirmation", "retainer-order-confirmation"]);
-    const completionTemplates = new Set(["full-works-order-complete", "elite-order-complete", "retainer-order-complete"]);
-    const map = new Map<string, { confirmationSent: boolean; reminderSent: boolean; completionSent: boolean }>();
-    for (const order of orders) map.set(order.session_id, { confirmationSent: false, reminderSent: false, completionSent: false });
+    const map = new Map<string, { confirmationSent: boolean; reminderSent: boolean }>();
+    for (const order of orders) map.set(order.session_id, { confirmationSent: false, reminderSent: false });
     for (const log of emailLogs) {
       const orderId = typeof log.metadata?.order_id === "string" ? log.metadata.order_id : null;
       const matchedOrder = orderId ? orders.find(order => order.session_id === orderId) : orders.find(order => order.customer_email?.toLowerCase() === log.recipient_email?.toLowerCase());
       if (!matchedOrder || log.status !== "sent") continue;
-      const current = map.get(matchedOrder.session_id) ?? { confirmationSent: false, reminderSent: false, completionSent: false };
+      const current = map.get(matchedOrder.session_id) ?? { confirmationSent: false, reminderSent: false };
       if (confirmationTemplates.has(log.template_name)) current.confirmationSent = true;
       if (log.template_name === "project-requirements-reminder") current.reminderSent = true;
-      if (completionTemplates.has(log.template_name)) current.completionSent = true;
       map.set(matchedOrder.session_id, current);
     }
     return map;
@@ -765,26 +761,33 @@ export default function Portal() {
     }
   };
 
-  const markOrderDelivered = async (order: StripeSession) => {
-    if (!order.customer_email) {
-      toast.error("This order does not have a customer email.");
-      return;
-    }
-    const domain = window.prompt("Enter the delivered website domain for the completion email:", order.delivered_domain ?? "");
-    if (domain === null) return;
-
-    setSendingCompletionId(order.session_id);
-    const { data, error } = await supabase.functions.invoke("send-order-complete", {
-      body: { accessCode: portalAccessCode, sessionId: order.session_id, deliveredDomain: domain },
+  const markOrderDelivered = async (sessionId: string) => {
+    const { error } = await (supabase as any).rpc("portal_mark_order_delivered", {
+      _access_code: portalAccessCode,
+      _session_id: sessionId,
     });
-    setSendingCompletionId(null);
-
-    if (error || data?.error) {
-      toast.error(data?.error || error?.message || "Could not complete order");
+    if (error) {
+      toast.error(error.message);
       return;
     }
     await loadPortalSnapshot();
-    toast.success(`Completion email sent to ${data.recipientEmail || order.customer_email}.`);
+    toast.success("Order marked delivered.");
+  };
+
+  const markOrderUndelivered = async (sessionId: string) => {
+    const confirmed = window.confirm("Move this order back to open so delivery can be redone?");
+    if (!confirmed) return;
+
+    const { error } = await (supabase as any).rpc("portal_mark_order_undelivered", {
+      _access_code: portalAccessCode,
+      _session_id: sessionId,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await loadPortalSnapshot();
+    toast.success("Order moved back to open.");
   };
 
   const sendOrderConfirmation = async (order: StripeSession) => {
@@ -1103,8 +1106,8 @@ export default function Portal() {
                         </Button>
                       )}
                       {o.order_status !== "delivered" && (
-                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o)} disabled={sendingCompletionId === o.session_id}>
-                          {sendingCompletionId === o.session_id ? "Sending…" : "Mark delivered"}
+                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
+                          Mark delivered
                         </Button>
                       )}
                     </div>
@@ -1151,15 +1154,15 @@ export default function Portal() {
                         <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
                         <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
                         {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
-                        {o.delivered_domain && <div className="text-xs text-muted-foreground break-all">Domain: {o.delivered_domain}</div>}
                       </div>
                       <div className="flex flex-wrap items-center justify-end gap-3">
                         <Badge variant="default">Delivered</Badge>
-                        {o.delivered_domain && <Badge variant="secondary" className="break-all">{o.delivered_domain}</Badge>}
                         <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
-                        {emailStatus?.completionSent && <Badge variant="secondary">Complete email sent</Badge>}
                         {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                         <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                        <Button variant="outline" size="sm" onClick={() => markOrderUndelivered(o.session_id)}>
+                          Mark undelivered
+                        </Button>
                       </div>
                     </div>
 
