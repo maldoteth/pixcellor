@@ -535,6 +535,7 @@ export type Database = {
           asn: string | null
           billing: string | null
           browser_language: string | null
+          buy_clicked_at: string | null
           carrier_mcc: string | null
           carrier_mnc: string | null
           carrier_name: string | null
@@ -563,9 +564,15 @@ export type Database = {
           ip_timezone: string | null
           last_page: string | null
           last_seen_at: string
+          max_scroll_percent: number
           metadata: Json
           package_name: string | null
+          portfolio_opened_at: string | null
+          portfolio_pages_viewed: number
+          portfolio_project_opened: string | null
+          portfolio_project_opened_at: string | null
           price_id: string | null
+          pricing_opened_at: string | null
           privacy_hosting: boolean | null
           privacy_proxy: boolean | null
           privacy_relay: boolean | null
@@ -587,6 +594,7 @@ export type Database = {
           asn?: string | null
           billing?: string | null
           browser_language?: string | null
+          buy_clicked_at?: string | null
           carrier_mcc?: string | null
           carrier_mnc?: string | null
           carrier_name?: string | null
@@ -615,9 +623,15 @@ export type Database = {
           ip_timezone?: string | null
           last_page?: string | null
           last_seen_at?: string
+          max_scroll_percent?: number
           metadata?: Json
           package_name?: string | null
+          portfolio_opened_at?: string | null
+          portfolio_pages_viewed?: number
+          portfolio_project_opened?: string | null
+          portfolio_project_opened_at?: string | null
           price_id?: string | null
+          pricing_opened_at?: string | null
           privacy_hosting?: boolean | null
           privacy_proxy?: boolean | null
           privacy_relay?: boolean | null
@@ -639,6 +653,7 @@ export type Database = {
           asn?: string | null
           billing?: string | null
           browser_language?: string | null
+          buy_clicked_at?: string | null
           carrier_mcc?: string | null
           carrier_mnc?: string | null
           carrier_name?: string | null
@@ -667,9 +682,15 @@ export type Database = {
           ip_timezone?: string | null
           last_page?: string | null
           last_seen_at?: string
+          max_scroll_percent?: number
           metadata?: Json
           package_name?: string | null
+          portfolio_opened_at?: string | null
+          portfolio_pages_viewed?: number
+          portfolio_project_opened?: string | null
+          portfolio_project_opened_at?: string | null
           price_id?: string | null
+          pricing_opened_at?: string | null
           privacy_hosting?: boolean | null
           privacy_proxy?: boolean | null
           privacy_relay?: boolean | null
