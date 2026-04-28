@@ -3,6 +3,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { FALL_OFF_CONSENT_KEY, recordFalloff, setFalloffConsent } from "@/lib/checkoutTracking";
 
+const glassButtonStyle = {
+  background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  border: "1px solid rgba(255,255,255,0.2)",
+  boxShadow: `
+    0 8px 32px rgba(0,0,0,0.3),
+    inset 0 1px 1px rgba(255,255,255,0.3),
+    inset 0 -1px 1px rgba(0,0,0,0.1)
+  `,
+} as const;
+
 export default function FalloffConsentBanner() {
   const [visible, setVisible] = useState(false);
 
@@ -32,7 +44,15 @@ export default function FalloffConsentBanner() {
             </p>
             <div className="flex shrink-0 gap-2">
               <Button variant="outline" size="sm" onClick={() => choose(false)}>No</Button>
-              <Button size="sm" onClick={() => choose(true)}>Allow</Button>
+              <button
+                type="button"
+                onClick={() => choose(true)}
+                className="relative overflow-hidden rounded-sm px-4 py-2 text-sm font-semibold text-foreground transition hover:brightness-125"
+                style={glassButtonStyle}
+              >
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-in-out hover:translate-x-full pointer-events-none" />
+                <span className="relative">Allow</span>
+              </button>
             </div>
           </div>
         </motion.div>
