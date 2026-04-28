@@ -40,7 +40,7 @@ const DetailRow = ({ label, value }: { label: string; value?: string }) => {
 
 const createOrderEmail = (config: OrderTemplateConfig) => {
   const OrderEmail = ({ customerEmail, orderId, packageName, amount, billing, requirementsUrl }: OrderEmailProps) => {
-    const briefUrl = requirementsUrl || (orderId ? `https://pixcellor.com/project-requirements?session_id=${encodeURIComponent(orderId)}` : 'https://pixcellor.com/project-requirements')
+    const briefUrl = requirementsUrl || 'https://pixcellor.com/project-requirements'
 
     return (
     <Html lang="en" dir="ltr">
@@ -227,9 +227,9 @@ export const template = createOrderEmail({
   subjectFallback: 'Full Works',
   displayName: 'Full Works order confirmation',
   previewData: {
-    requirementsUrl: 'https://pixcellor.com/project-requirements?session_id=cs_test_123',
+    requirementsUrl: 'https://pixcellor.com/project-requirements?order=PXC-ABCD-1234&token=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
     customerEmail: 'client@example.com',
-    orderId: 'cs_test_123',
+    orderId: 'PXC-ABCD-1234',
     packageName: 'Full Works',
     amount: '£150.00',
     billing: 'One-time payment',
