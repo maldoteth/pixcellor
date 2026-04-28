@@ -30,19 +30,27 @@ const InternalNewOrderNotificationEmail = ({ customerEmail, orderId, packageName
     <Body style={main}>
       <Container style={shell}>
         <Section style={hero}>
-          <Text style={brand}>{BRAND_NAME}</Text>
-          <Text style={eyebrow}>DEV PORTAL ALERT</Text>
-          <Heading style={h1}>New order received</Heading>
-          <Text style={intro}>A new Pixcellor order has been paid, logged in the Dev Portal, and the client confirmation email has been queued.</Text>
+          <Row>
+            <Column style={heroInner}>
+              <Text style={brand}>{BRAND_NAME}</Text>
+              <Text style={eyebrow}>DEV PORTAL ALERT</Text>
+              <Heading style={h1}>New order received</Heading>
+              <Text style={intro}>A new Pixcellor order has been paid, logged in the Dev Portal, and the client confirmation email has been queued.</Text>
+            </Column>
+          </Row>
         </Section>
 
         <Section style={panel}>
-          <Text style={panelTitle}>Order snapshot</Text>
-          <DetailRow label="Package" value={packageName || 'Pixcellor package'} />
-          <DetailRow label="Billing" value={billing} />
-          <DetailRow label="Amount" value={amount} />
-          <DetailRow label="Customer" value={customerEmail} />
-          <DetailRow label="Order ID" value={orderId} />
+          <Row>
+            <Column style={panelInner}>
+              <Text style={panelTitle}>Order snapshot</Text>
+              <DetailRow label="Package" value={packageName || 'Pixcellor package'} />
+              <DetailRow label="Billing" value={billing} />
+              <DetailRow label="Amount" value={amount} />
+              <DetailRow label="Customer" value={customerEmail} />
+              <DetailRow label="Order ID" value={orderId} />
+            </Column>
+          </Row>
         </Section>
 
         <Text style={footer}>Check the Dev Portal for the order, then watch the inbox for the client’s reply with colours, images, links, copy, requests, and project specifics.</Text>
@@ -72,14 +80,13 @@ const main = {
 const shell = {
   backgroundColor: '#070707',
   border: '1px solid #262626',
-  borderRadius: '14px',
-  boxShadow: '0 26px 90px rgba(0, 0, 0, 0.22)',
   maxWidth: '620px',
-  overflow: 'hidden',
 }
 const hero = {
-  padding: '34px 34px 26px',
   borderBottom: '1px solid #202020',
+}
+const heroInner = {
+  padding: '34px 34px 26px',
 }
 const brand = {
   color: '#ffffff',
@@ -114,8 +121,9 @@ const intro = {
 const panel = {
   backgroundColor: '#101010',
   border: '1px solid #2a2a2a',
-  borderRadius: '12px',
   margin: '26px 34px 24px',
+}
+const panelInner = {
   padding: '20px 22px 12px',
 }
 const panelTitle = {
