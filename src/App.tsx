@@ -11,6 +11,7 @@ import PortalAuth from "./pages/PortalAuth";
 import ResetPassword from "./pages/ResetPassword";
 import Unsubscribe from "./pages/Unsubscribe";
 import OrderSuccess from "./pages/OrderSuccess";
+import ProjectRequirements from "./pages/ProjectRequirements";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
           <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/project-requirements" element={<ProjectRequirements />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
