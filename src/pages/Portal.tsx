@@ -657,6 +657,17 @@ export default function Portal() {
     });
   }, [orders, completedQ, orderReqsFilter, requirementsBySession]);
 
+  const filteredEditRequests = useMemo(() => {
+    const searched = !editRequestsQ ? editRequests : editRequests.filter((request) =>
+      matchesQuery(editRequestsQ, request.customer_email) ||
+      matchesQuery(editRequestsQ, request.session_id) ||
+      matchesQuery(editRequestsQ, request.package_name) ||
+      matchesQuery(editRequestsQ, request.status) ||
+      matchesQuery(editRequestsQ, request.request_details)
+    );
+    return [...searched].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [editRequests, editRequestsQ]);
+
   const filteredFalloffs = useMemo(() => {
     const paidSessionIds = new Set(orders.map(o => o.session_id));
     const unpaidFalloffs = falloffs.filter(f => !f.checkout_session_id || !paidSessionIds.has(f.checkout_session_id));
