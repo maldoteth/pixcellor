@@ -765,17 +765,26 @@ export default function Portal() {
     }
   };
 
-  const markOrderDelivered = async (sessionId: string) => {
-    const { error } = await (supabase as any).rpc("portal_mark_order_delivered", {
-      _access_code: portalAccessCode,
-      _session_id: sessionId,
+  const markOrderDelivered = async (order: StripeSession) => {
+    if (!order.customer_email) {
+      toast.error("This order does not have a customer email.");
+      return;
+    }
+    const domain = window.prompt("Enter the delivered website domain for the completion email:", order.delivered_domain ?? "");
+    if (domain === null) return;
+
+    setSendingCompletionId(order.session_id);
+    const { data, error } = await supabase.functions.invoke("send-order-complete", {
+      body: { accessCode: portalAccessCode, sessionId: order.session_id, deliveredDomain: domain },
     });
-    if (error) {
-      toast.error(error.message);
+    setSendingCompletionId(null);
+
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Could not complete order");
       return;
     }
     await loadPortalSnapshot();
-    toast.success("Order marked delivered.");
+    toast.success(`Completion email sent to ${data.recipientEmail || order.customer_email}.`);
   };
 
   const sendOrderConfirmation = async (order: StripeSession) => {
