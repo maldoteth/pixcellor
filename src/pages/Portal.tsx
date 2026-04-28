@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, PencilLine, Plus, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, PencilLine, Plus, Repeat, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
 
 type StripeSession = {
@@ -21,6 +21,7 @@ type StripeSession = {
   delivered_domain?: string | null;
   customer_email: string | null;
   mode: string | null;
+  subscription_id?: string | null;
   created_at: string;
   metadata: Record<string, unknown> | null;
 };
@@ -91,6 +92,17 @@ const isSiteOrder = (o: StripeSession) => {
 };
 
 const isPaidOrder = (o: StripeSession) => o.payment_status === "paid" || o.status === "complete" || o.status === "completed";
+
+const getOrderMetadataText = (order: StripeSession, key: string) => {
+  const value = order.metadata?.[key];
+  return typeof value === "string" ? value : "";
+};
+
+const isMonthlyRetainerOrder = (order: StripeSession) => {
+  const packageName = getOrderMetadataText(order, "package_name").toLowerCase();
+  const billing = getOrderMetadataText(order, "billing").toLowerCase();
+  return packageName.includes("retainer") && billing.includes("monthly");
+};
 
 type Conversation = {
   id: string;
@@ -295,6 +307,7 @@ export default function Portal() {
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [salesSearch, setSalesSearch] = useState("");
   const [ordersSearch, setOrdersSearch] = useState("");
+  const [retainersSearch, setRetainersSearch] = useState("");
   const [editRequestsSearch, setEditRequestsSearch] = useState("");
   const [completedSearch, setCompletedSearch] = useState("");
   const [falloffsSearch, setFalloffsSearch] = useState("");
@@ -555,6 +568,7 @@ export default function Portal() {
   const salesQ = salesSearch.trim().toLowerCase();
   const contactsQ = contactsSearch.trim().toLowerCase();
   const ordersQ = ordersSearch.trim().toLowerCase();
+  const retainersQ = retainersSearch.trim().toLowerCase();
   const editRequestsQ = editRequestsSearch.trim().toLowerCase();
   const completedQ = completedSearch.trim().toLowerCase();
   const falloffsQ = falloffsSearch.trim().toLowerCase();
@@ -647,6 +661,11 @@ export default function Portal() {
       return order.order_status !== "delivered" && reqsMatches;
     });
   }, [orders, ordersQ, orderReqsFilter, requirementsBySession]);
+
+  const filteredRetainers = useMemo(() => {
+    const monthlyRetainers = orders.filter(isMonthlyRetainerOrder);
+    return !retainersQ ? monthlyRetainers : monthlyRetainers.filter(o => orderMatchesQuery(retainersQ, o));
+  }, [orders, retainersQ]);
 
   const completedOrders = useMemo(() => {
     const searched = !completedQ ? orders : orders.filter(o => orderMatchesQuery(completedQ, o));
@@ -1335,9 +1354,10 @@ export default function Portal() {
           </Button>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-10">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-11">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="retainers" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
             <TabsTrigger value="edit-requests" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PencilLine className="h-3.5 w-3.5 shrink-0" />Edits ({filteredEditRequests.length})</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
@@ -1544,6 +1564,32 @@ export default function Portal() {
               </Card>
             );
             })}
+          </TabsContent>
+
+          <TabsContent value="retainers" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={retainersSearch} onChange={(e) => setRetainersSearch(e.target.value)} placeholder="Search monthly retainer clients by email, order ID, status…" className="pl-9" />
+            </div>
+            {filteredRetainers.length === 0 && <p className="text-muted-foreground text-sm">No monthly retainer clients {retainersQ ? "match your search" : "yet"}.</p>}
+            {filteredRetainers.map(o => (
+              <Card key={o.session_id}>
+                <CardContent className="p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
+                      <div className="text-xs text-muted-foreground">Started {new Date(o.created_at).toLocaleString()} · Monthly retainer</div>
+                      {o.subscription_id && <div className="break-all text-xs text-muted-foreground">Subscription {o.subscription_id}</div>}
+                    </div>
+                    <div className="flex flex-wrap items-center justify-end gap-3">
+                      <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>{o.payment_status ?? "pending"}</Badge>
+                      <Badge variant="outline">{getOrderMetadataText(o, "billing") || "Monthly subscription"}</Badge>
+                      <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </TabsContent>
 
           <TabsContent value="edit-requests" className="space-y-2">
