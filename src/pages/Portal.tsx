@@ -44,6 +44,8 @@ type VisitorFalloff = {
   as_domain: string | null;
   as_route: string | null;
   carrier_name: string | null;
+  carrier_mcc: string | null;
+  carrier_mnc: string | null;
   privacy_vpn: boolean | null;
   privacy_proxy: boolean | null;
   privacy_tor: boolean | null;
@@ -458,8 +460,16 @@ export default function Portal() {
       matches(f.ip_city) ||
       matches(f.ip_region) ||
       matches(f.ip_country) ||
+      matches(f.ip_hostname) ||
+      matches(f.ip_location) ||
+      matches(f.ip_postal) ||
       matches(f.asn) ||
       matches(f.as_name) ||
+      matches(f.as_domain) ||
+      matches(f.as_route) ||
+      matches(f.carrier_name) ||
+      matches(f.enrichment_source) ||
+      matches(f.enrichment_status) ||
       matches(f.visitor_id) ||
       matches(JSON.stringify(f.metadata))
     );
