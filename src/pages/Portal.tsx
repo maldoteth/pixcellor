@@ -413,6 +413,23 @@ export default function Portal() {
     );
   }, [orders, q]);
 
+  const filteredFalloffs = useMemo(() => {
+    const paidSessionIds = new Set(orders.map(o => o.session_id));
+    const unpaidFalloffs = falloffs.filter(f => !f.checkout_session_id || !paidSessionIds.has(f.checkout_session_id));
+    if (!q) return unpaidFalloffs;
+    return unpaidFalloffs.filter(f =>
+      matches(f.customer_email) ||
+      matches(f.checkout_session_id) ||
+      matches(f.package_name) ||
+      matches(f.billing) ||
+      matches(f.referrer) ||
+      matches(f.user_agent) ||
+      matches(f.timezone) ||
+      matches(f.visitor_id) ||
+      matches(JSON.stringify(f.metadata))
+    );
+  }, [falloffs, orders, q]);
+
   const filteredProfiles = useMemo(() => {
     if (!q) return profiles;
     return profiles.filter(p =>
