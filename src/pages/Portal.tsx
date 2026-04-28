@@ -1100,6 +1100,19 @@ export default function Portal() {
     toast.success("Order moved back to open.");
   };
 
+  const updateEditRequestStatus = async (requestId: string, status: EditRequest["status"]) => {
+    const { error } = await (supabase as any).rpc("portal_update_edit_request_status", {
+      _request_id: requestId,
+      _status: status,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await loadPortalSnapshot();
+    toast.success("Edit request updated.");
+  };
+
   const sendOrderConfirmation = async (order: StripeSession) => {
     if (!order.customer_email) {
       toast.error("This order does not have a customer email.");
