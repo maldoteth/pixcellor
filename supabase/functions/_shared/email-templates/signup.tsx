@@ -50,7 +50,7 @@ export const SignupEmail = ({ siteUrl, recipient, confirmationUrl }: SignupEmail
                   Confirm Email
                 </Button>
                 <Text style={footer}>
-                  If you did not create a Pixcellor account, you can safely ignore this email. Visit <Link href={siteUrl} style={link}>Pixcellor</Link> any time.
+                  If you did not create a Pixcellor account, you can safely ignore this.
                 </Text>
               </Column>
             </Row>
