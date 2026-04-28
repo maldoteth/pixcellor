@@ -320,7 +320,7 @@ export default function CustomerPortal() {
                   </Link>
                 </Button>
               )}
-              <Button variant="outline" size="sm" className="gap-2" onClick={handleSignOut}>
+              <Button variant="pricing" size="sm" className="gap-2" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4" />
                 Sign out
               </Button>
@@ -344,7 +344,7 @@ export default function CustomerPortal() {
                       </div>
                     </div>
                     {nextOrder && (
-                      <Button className="gap-2 md:self-end" onClick={() => setActiveTab("orders")}>
+                      <Button variant="pricing" className="gap-2 md:self-end" onClick={() => setActiveTab("orders")}>
                         Open order history <ReceiptText className="h-4 w-4" />
                       </Button>
                     )}
@@ -370,7 +370,7 @@ export default function CustomerPortal() {
                               <Progress value={stage.progress} className="h-2" />
                             </div>
                             {!requirements && nextOrder.order_code && nextOrder.requirements_token ? (
-                              <Button asChild className="w-full gap-2">
+                              <Button asChild variant="pricing" className="w-full gap-2">
                                 <Link to={`/project-requirements?order=${encodeURIComponent(nextOrder.order_code)}&token=${encodeURIComponent(nextOrder.requirements_token)}`}>
                                   Submit project brief <ClipboardList className="h-4 w-4" />
                                 </Link>
@@ -598,7 +598,7 @@ function OrderCard({ order, requirement }: { order: CustomerOrder; requirement?:
               {requirement ? (
                 <p className="text-sm text-muted-foreground">{requirement.site_name} updated {new Date(requirement.updated_at).toLocaleDateString()}.</p>
               ) : order.order_code && order.requirements_token ? (
-                <Button asChild className="w-full gap-2">
+                <Button asChild variant="pricing" className="w-full gap-2">
                   <Link to={`/project-requirements?order=${encodeURIComponent(order.order_code)}&token=${encodeURIComponent(order.requirements_token)}`}>
                     Add brief <ExternalLink className="h-4 w-4" />
                   </Link>
@@ -658,7 +658,7 @@ function DeliveredPreview({ order }: { order: CustomerOrder }) {
             <p className="mt-1 text-sm text-muted-foreground">Delivered {order.delivered_at ? new Date(order.delivered_at).toLocaleDateString() : "recently"}</p>
           </div>
           {url && (
-            <Button asChild variant="outline" size="sm" className="gap-2">
+              <Button asChild variant="pricing" size="sm" className="gap-2">
               <a href={url} target="_blank" rel="noreferrer">Open site <ExternalLink className="h-4 w-4" /></a>
             </Button>
           )}
