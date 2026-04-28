@@ -281,6 +281,12 @@ export default function Portal() {
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [salesSearch, setSalesSearch] = useState("");
+  const [ordersSearch, setOrdersSearch] = useState("");
+  const [completedSearch, setCompletedSearch] = useState("");
+  const [falloffsSearch, setFalloffsSearch] = useState("");
+  const [chatsSearch, setChatsSearch] = useState("");
+  const [profilesSearch, setProfilesSearch] = useState("");
+  const [inquiriesSearch, setInquiriesSearch] = useState("");
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
@@ -526,8 +532,12 @@ export default function Portal() {
 
   const salesQ = salesSearch.trim().toLowerCase();
   const contactsQ = contactsSearch.trim().toLowerCase();
-  const q = "";
-  const matches = (s: string | null | undefined) => !!s && s.toLowerCase().includes(q);
+  const ordersQ = ordersSearch.trim().toLowerCase();
+  const completedQ = completedSearch.trim().toLowerCase();
+  const falloffsQ = falloffsSearch.trim().toLowerCase();
+  const chatsQ = chatsSearch.trim().toLowerCase();
+  const profilesQ = profilesSearch.trim().toLowerCase();
+  const inquiriesQ = inquiriesSearch.trim().toLowerCase();
   const matchesQuery = (query: string, s: string | null | undefined) => !!s && s.toLowerCase().includes(query);
 
 
