@@ -1301,7 +1301,15 @@ export default function Portal() {
                 return (
                   <Card
                     key={e.id}
-                    className="overflow-hidden"
+                    role="button"
+                    tabIndex={0}
+                    className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    onClick={() => contact && openContactDrawer(contact.id)}
+                    onKeyDown={(event) => {
+                      if (!contact || (event.key !== "Enter" && event.key !== " ")) return;
+                      event.preventDefault();
+                      openContactDrawer(contact.id);
+                    }}
                     style={{
                       background: `linear-gradient(135deg, ${statusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--card)) 34%, hsl(var(--card)) 100%)`,
                     }}
@@ -1311,7 +1319,7 @@ export default function Portal() {
                         <div className="font-medium">{e.title}</div>
                         <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown contact"} · {new Date(e.callback_at!).toLocaleString()}</div>
                         {contact?.phone && (phoneHref ? (
-                          <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`}>
+                          <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
                             {contact.phone}
                           </a>
                         ) : (
@@ -1321,8 +1329,8 @@ export default function Portal() {
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <Badge className="pricing-button rounded-sm px-3 py-1 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
-                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={() => completeCallback(e.id)}>Done</Button>
-                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={() => tryCallbackAgain(e.id)}>Tried</Button>
+                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void completeCallback(e.id); }}>Done</Button>
+                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void tryCallbackAgain(e.id); }}>Tried</Button>
                       </div>
                     </CardContent>
                   </Card>
