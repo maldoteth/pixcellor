@@ -333,6 +333,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 const v = start + (end - start) * eased;
                                 scrollRef.current = v;
                                 virtualScroll.set(v);
+                                onVirtualScrollChange?.(v);
                                 if (t < 1) requestAnimationFrame(step);
                             };
                             requestAnimationFrame(step);
@@ -370,6 +371,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             const v = start + (end - start) * eased;
                             scrollRef.current = v;
                             virtualScroll.set(v);
+                            onVirtualScrollChange?.(v);
                             if (t < 1) requestAnimationFrame(step);
                         };
                         requestAnimationFrame(step);
