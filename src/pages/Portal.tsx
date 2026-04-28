@@ -1122,7 +1122,7 @@ export default function Portal() {
                         </Button>
                       )}
                       {o.order_status !== "delivered" && (
-                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
+                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o)}>
                           Mark delivered
                         </Button>
                       )}
