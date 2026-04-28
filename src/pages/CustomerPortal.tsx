@@ -238,6 +238,18 @@ export default function CustomerPortal() {
     navigate("/customer-login", { replace: true });
   };
 
+  const handleBuyAgain = async (plan: (typeof BUY_AGAIN_PACKAGES)[number]) => {
+    try {
+      const { data: checkout, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: plan.priceId, mode: plan.mode, packageName: plan.name, billing: plan.billing },
+      });
+      if (error) throw error;
+      if (checkout?.url) window.location.href = checkout.url;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not start checkout");
+    }
+  };
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
