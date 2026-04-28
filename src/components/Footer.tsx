@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Phone, MapPin } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -8,13 +8,6 @@ const Footer = () => {
           Pixcellor™ c/o DeLabs LTD<span className="hidden md:inline"> · 14204424</span>
         </span>
         <div className="flex items-center justify-center gap-x-4 flex-nowrap">
-          <a
-            href="mailto:projects@pixcellor.com"
-            className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-          >
-            <Mail className="w-3 h-3" />
-            projects@pixcellor.com
-          </a>
           <a
             href="tel:+441483912430"
             className="flex items-center gap-1.5 hover:text-foreground transition-colors"
