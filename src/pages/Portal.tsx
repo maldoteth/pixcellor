@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Archive, Loader2, Mail, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
-import { PORTAL_ACCESS_CODE, PORTAL_ACCESS_STORAGE_KEY } from "./PortalAuth";
 
 type StripeSession = {
   session_id: string;
@@ -245,7 +244,6 @@ export default function Portal() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authError, setAuthError] = useState("");
-  const [portalAccessCode] = useState(() => sessionStorage.getItem(PORTAL_ACCESS_STORAGE_KEY) ?? "");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
   const [falloffs, setFalloffs] = useState<VisitorFalloff[]>([]);
@@ -285,7 +283,7 @@ export default function Portal() {
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
 
   const loadPortalSnapshot = useCallback(async () => {
-    const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
+    const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot");
     if (error) {
       setAuthError(error.message);
       return;
@@ -324,19 +322,48 @@ export default function Portal() {
       return new Date(bTime).getTime() - new Date(aTime).getTime();
     });
     setConversations(sortedConvs);
-  }, [portalAccessCode]);
+  }, []);
 
-  // Access-code gate
+  // Signed-in admin gate
   useEffect(() => {
-    if (portalAccessCode !== PORTAL_ACCESS_CODE) {
-      setIsAdmin(false);
+    let mounted = true;
+
+    const checkAdmin = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!mounted) return;
+      if (!sessionData.session) {
+        setIsAdmin(false);
+        setAuthChecked(true);
+        navigate("/portal-login", { replace: true });
+        return;
+      }
+
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: sessionData.session.user.id,
+        _role: "admin",
+      });
+      if (!mounted) return;
+      if (error || !data) {
+        await supabase.auth.signOut();
+        setIsAdmin(false);
+        setAuthChecked(true);
+        navigate("/portal-login", { replace: true });
+        return;
+      }
+      setIsAdmin(true);
       setAuthChecked(true);
-      navigate("/portal-login", { replace: true });
-      return;
-    }
-    setIsAdmin(true);
-    setAuthChecked(true);
-  }, [navigate, portalAccessCode]);
+    };
+
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      void checkAdmin();
+    });
+    void checkAdmin();
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   // Initial load + realtime
   useEffect(() => {
