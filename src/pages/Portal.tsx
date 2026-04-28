@@ -1173,8 +1173,10 @@ export default function Portal() {
             placeholder="Search contact"
             value={eventContactSearch}
             onChange={(e) => handleEventContactSearch(e.target.value)}
+            onDoubleClick={() => setEventContactSuggestionsOpen(true)}
+            onBlur={() => window.setTimeout(() => setEventContactSuggestionsOpen(false), 120)}
           />
-          {renderEventContactSuggestionList()}
+          {eventContactSuggestionsOpen && renderEventContactSuggestionList()}
         </div>
         <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
         <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
@@ -2036,12 +2038,14 @@ export default function Portal() {
                         placeholder={currentSalesField.placeholder}
                         value={eventContactSearch}
                         onChange={(e) => handleEventContactSearch(e.target.value)}
+                        onDoubleClick={() => setEventContactSuggestionsOpen(true)}
+                        onBlur={() => window.setTimeout(() => setEventContactSuggestionsOpen(false), 120)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") continueMobileSalesEvent();
                         }}
                         className="h-12 text-base"
                       />
-                      {renderEventContactSuggestionList(true)}
+                      {eventContactSuggestionsOpen && renderEventContactSuggestionList(true)}
                     </div>
                     <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
                       <Clipboard className="h-4 w-4" />
