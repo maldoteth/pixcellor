@@ -331,6 +331,7 @@ function DesktopCards() {
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-1 text-3xl font-extrabold text-foreground">£150</div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP £375</p>
+        <DiscountBadge discount="60%" />
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -386,6 +387,7 @@ function DesktopCards() {
         <p className="text-xs text-muted-foreground line-through mb-4">
           RRP £1,500
         </p>
+        <DiscountBadge discount="67%" />
         <ul className="mb-6 space-y-2 text-lg text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -478,6 +480,7 @@ function DesktopCards() {
               <p className="text-xs text-muted-foreground line-through mb-4">
                 RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
               </p>
+              <DiscountBadge discount={retainerBilling === "monthly" ? "57%" : "57%"} />
               <ul className="mb-6 space-y-2 text-base text-muted-foreground">
                 {PACKAGES.retainer.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
