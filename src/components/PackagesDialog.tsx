@@ -308,7 +308,7 @@ function DesktopCards() {
         animate={{ opacity: 1, y: 0, rotate: -6, scale: 1 }}
         whileHover={{ scale: 1.05 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
-        className="relative z-10 w-[302px] rounded-sm border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
+        className="relative z-10 w-[302px] rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
         style={{
           willChange: "transform",
           boxShadow: `
@@ -351,7 +351,7 @@ function DesktopCards() {
         animate={{ opacity: 1, y: -20, rotate: 0, scale: 1.1 }}
         whileHover={{ scale: 1.12 }}
         transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
-        className="relative z-20 w-[336px] rounded-sm border-2 border-foreground/30 bg-background/80 px-10 py-14 shadow-xl overflow-hidden"
+        className="relative z-20 w-[336px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 py-14 shadow-xl overflow-hidden"
         style={{
           willChange: "transform",
           boxShadow: `
@@ -421,11 +421,11 @@ function DesktopCards() {
         <motion.div
           animate={{ rotateY: retainerFlipped ? 180 : 0 }}
           transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative min-h-[420px] rounded-sm"
+          className="relative min-h-[420px] rounded-none"
           style={{ transformStyle: "preserve-3d" }}
         >
           <div
-            className={`absolute inset-0 rounded-sm border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`}
+            className={`absolute inset-0 rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`}
             style={{
               backfaceVisibility: "hidden",
               boxShadow: `
@@ -503,7 +503,7 @@ function DesktopCards() {
           </div>
 
           <div
-            className={`absolute inset-0 rounded-sm border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`}
+            className={`absolute inset-0 rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`}
             style={{
               backfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
@@ -570,7 +570,7 @@ function MobileCards() {
     <>
     <div className="grid grid-cols-1 gap-4">
       {/* Full Works */}
-      <div className="rounded-sm p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+      <div className="rounded-none p-5 flex flex-col border border-border bg-background relative overflow-hidden">
         <div className="lava-blob lava-blob-1" />
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
@@ -596,7 +596,7 @@ function MobileCards() {
       </div>
 
       {/* Elite */}
-      <div className="rounded-sm p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10 relative overflow-hidden">
+      <div className="rounded-none p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10 relative overflow-hidden">
         <div className="lava-blob lava-blob-featured-1" />
         <div className="lava-blob lava-blob-featured-2" />
         <div className="lava-blob lava-blob-featured-3" />
@@ -641,10 +641,10 @@ function MobileCards() {
         <motion.div
           animate={{ rotateY: retainerFlipped ? 180 : 0 }}
           transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative min-h-[360px] rounded-sm"
+          className="relative min-h-[360px] rounded-none"
           style={{ transformStyle: "preserve-3d" }}
         >
-          <div className={`absolute inset-0 rounded-sm p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`} style={{ backfaceVisibility: "hidden" }}>
+          <div className={`absolute inset-0 rounded-none p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`} style={{ backfaceVisibility: "hidden" }}>
             <div className="lava-blob lava-blob-1" />
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
@@ -712,7 +712,7 @@ function MobileCards() {
             </div>
           </div>
 
-          <div className={`absolute inset-0 rounded-sm p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`} style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
+          <div className={`absolute inset-0 rounded-none p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`} style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
             <div className="lava-blob lava-blob-1" />
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
