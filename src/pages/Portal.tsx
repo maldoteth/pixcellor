@@ -781,7 +781,9 @@ export default function Portal() {
     setEventForm({ contact_id: contactId, title: "", description: "", callback_at: "" });
     setEventContactSearch(contact ? `${contact.name}${contact.email ? ` · ${contact.email}` : ""}` : "");
     setEventContactSuggestionsOpen(false);
-    setShowSalesEventForm(true);
+    setShowSalesEventForm(false);
+    setMobileSalesStep(1);
+    setMobileSalesDrawerOpen(true);
   };
 
   const handleEventContactSearch = (value: string) => {
