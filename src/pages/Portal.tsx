@@ -1878,24 +1878,22 @@ export default function Portal() {
                           <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => startEditingContact(c)}>Edit</Button>
                           <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
                         </div>
-                        <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
-                          <div className="hidden items-center gap-1 md:flex" aria-label="Contact status">
-                            {contactStatuses.map(status => (
-                              <button
-                                key={status.value}
-                                type="button"
-                                title={status.label}
-                                aria-label={status.label}
-                                onClick={() => updateContactStatus(c.id, status.value)}
-                                className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
-                                style={{ backgroundColor: status.color }}
-                              />
-                            ))}
-                          </div>
-                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between md:justify-end">
+                    <div className="flex items-center justify-between">
+                      <div className="hidden items-center gap-1 md:flex" aria-label="Contact status">
+                        {contactStatuses.map(status => (
+                          <button
+                            key={status.value}
+                            type="button"
+                            title={status.label}
+                            aria-label={status.label}
+                            onClick={() => updateContactStatus(c.id, status.value)}
+                            className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                            style={{ backgroundColor: status.color }}
+                          />
+                        ))}
+                      </div>
                       <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)}>
                         <Badge variant="secondary" className="cursor-pointer">{events.length} logs</Badge>
                       </button>
