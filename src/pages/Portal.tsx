@@ -1164,7 +1164,7 @@ export default function Portal() {
   const currentSalesField = salesEventWizardFields[mobileSalesStep];
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 pb-28 md:p-6">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 pb-28 md:p-6 md:pb-28 lg:pb-6">
       <div className="mx-auto max-w-7xl min-w-0 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl md:text-3xl font-semibold">Pixcellor Dev Portal</h1>
