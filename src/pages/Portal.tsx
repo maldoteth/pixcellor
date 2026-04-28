@@ -31,6 +31,8 @@ const isSiteOrder = (o: StripeSession) => {
   return source === "pixcellor_site";
 };
 
+const isPaidOrder = (o: StripeSession) => o.payment_status === "paid" || o.status === "complete" || o.status === "completed";
+
 type Conversation = {
   id: string;
   client_id: string;
@@ -209,7 +211,7 @@ export default function Portal() {
       contacts?: Contact[];
       contactEvents?: ContactEvent[];
     };
-    setOrders((snapshot.orders ?? []).filter(isSiteOrder));
+    setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
     const convs = snapshot.conversations ?? [];
     const allMsgs = snapshot.messages ?? [];
     setProfiles(snapshot.profiles ?? []);
@@ -346,13 +348,12 @@ export default function Portal() {
   };
 
   const counters = useMemo(() => {
-    const paidOrders = orders.filter(o => o.payment_status === "paid" || o.status === "complete");
-    const totalSales = paidOrders.reduce((sum, o) => sum + (o.amount_total ?? 0), 0);
-    const totalWebsites = paidOrders.length;
+    const totalSales = orders.reduce((sum, o) => sum + (o.amount_total ?? 0), 0);
+    const totalWebsites = orders.length;
 
     // Potential = chatters who haven't bought
     const buyerEmails = new Set(
-      paidOrders.map(o => o.customer_email?.toLowerCase()).filter(Boolean) as string[]
+      orders.map(o => o.customer_email?.toLowerCase()).filter(Boolean) as string[]
     );
     const profileEmails = profiles.map(p => p.email.toLowerCase());
     const inquiryEmails = inquiries.map(i => i.email.toLowerCase());

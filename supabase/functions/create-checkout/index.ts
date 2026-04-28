@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode, packageName, billing } = await req.json();
+    const { priceId, mode, packageName, billing, clientContext } = await req.json();
     
     if (!priceId) throw new Error("Missing priceId");
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -25,15 +25,21 @@ serve(async (req) => {
     const origin = req.headers.get("origin");
     if (!origin) throw new Error("Missing request origin");
 
+    const safeClientContext = clientContext && typeof clientContext === "object" ? clientContext as Record<string, unknown> : {};
+    const clientReferenceId = typeof safeClientContext.clientId === "string" ? safeClientContext.clientId.slice(0, 200) : undefined;
+
     const session = await stripe.checkout.sessions.create({
       line_items: [{ price: priceId, quantity: 1 }],
       mode: mode || "payment",
       success_url: `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment=canceled`,
+      client_reference_id: clientReferenceId,
       metadata: {
         source: "pixcellor_site",
         package_name: typeof packageName === "string" ? packageName : "",
         billing: typeof billing === "string" ? billing : mode || "payment",
+        client_id: clientReferenceId ?? "",
+        checkout_context: JSON.stringify(safeClientContext).slice(0, 500),
       },
     });
 
