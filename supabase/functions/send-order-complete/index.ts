@@ -23,9 +23,15 @@ const requireAdmin = async (req: Request) => {
   if (!supabaseUrl || !anonKey) throw new Error("Authentication is not configured");
   const client = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
   const { data: sessionData, error: sessionError } = await client.auth.getUser();
-  if (sessionError || !sessionData.user) throw new Error("Unauthorized");
+  if (sessionError || !sessionData.user) {
+    console.error("Admin auth check failed", { message: sessionError?.message });
+    throw new Error("Unauthorized");
+  }
   const { data: isAdmin, error: roleError } = await client.rpc("has_role", { _user_id: sessionData.user.id, _role: "admin" });
-  if (roleError || !isAdmin) throw new Error("Admin access required");
+  if (roleError || !isAdmin) {
+    console.error("Admin role check failed", { message: roleError?.message, userId: sessionData.user.id });
+    throw new Error("Admin access required");
+  }
 };
 
 const cleanDomain = (value: string) => value
@@ -66,7 +72,10 @@ serve(async (req) => {
       .eq("session_id", parsed.data.sessionId)
       .maybeSingle();
 
-    if (orderError) throw orderError;
+    if (orderError) {
+      console.error("Order lookup failed", { message: orderError.message, sessionId: parsed.data.sessionId });
+      throw new Error("Could not find this order");
+    }
     if (!order) return json({ error: "Order not found" }, 404);
     if (!order.customer_email) return json({ error: "This order does not have a customer email" }, 400);
     if (order.payment_status !== "paid" && order.status !== "complete" && order.status !== "completed") {
@@ -77,7 +86,10 @@ serve(async (req) => {
       _session_id: parsed.data.sessionId,
       _delivered_domain: deliveredDomain,
     });
-    if (deliveredError) throw deliveredError;
+    if (deliveredError) {
+      console.error("Mark delivered RPC failed", { message: deliveredError.message, sessionId: parsed.data.sessionId, deliveredDomain });
+      throw new Error(deliveredError.message || "Could not mark order delivered");
+    }
 
     const metadata = order.metadata && typeof order.metadata === "object" ? order.metadata as Record<string, unknown> : {};
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Pixcellor package";
@@ -103,7 +115,20 @@ serve(async (req) => {
       }),
     });
     const data = await emailResponse.json().catch(() => null);
-    if (!emailResponse.ok || data?.error) throw new Error(data?.error || "Could not send completion email");
+    if (!emailResponse.ok || data?.error) {
+      console.error("Completion email send failed after delivery update", {
+        status: emailResponse.status,
+        data,
+        sessionId: order.session_id,
+        recipientEmail: order.customer_email,
+      });
+      return json({
+        success: true,
+        emailWarning: data?.error || "Completion email could not be sent",
+        recipientEmail: order.customer_email,
+        deliveredDomain,
+      });
+    }
 
     return json({ success: true, recipientEmail: order.customer_email, deliveredDomain });
   } catch (error) {
