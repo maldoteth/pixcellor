@@ -85,7 +85,11 @@ serve(async (req) => {
           customer_email: session.customer_details?.email ?? null,
           customer_id: typeof session.customer === "string" ? session.customer : null,
           subscription_id: typeof session.subscription === "string" ? session.subscription : null,
-          metadata: session.metadata ?? {},
+          metadata: {
+            ...(session.metadata ?? {}),
+            client_reference_id: session.client_reference_id ?? null,
+            customer_details: session.customer_details ?? null,
+          },
         },
         { onConflict: "session_id" },
       );
