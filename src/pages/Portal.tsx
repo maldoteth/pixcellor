@@ -1115,12 +1115,12 @@ export default function Portal() {
 
   // Conversations match if client_id matches OR any message in them matches
   const filteredConversations = useMemo(() => {
-    if (!q) return conversations;
+    if (!chatsQ) return conversations;
     const matchingConvIds = new Set(
-      allMessages.filter(m => matches(m.content) || matches(m.role)).map(m => m.conversation_id)
+      allMessages.filter(m => matchesQuery(chatsQ, m.content) || matchesQuery(chatsQ, m.role)).map(m => m.conversation_id)
     );
-    return conversations.filter(c => matches(c.client_id) || matchingConvIds.has(c.id));
-  }, [conversations, allMessages, q]);
+    return conversations.filter(c => matchesQuery(chatsQ, c.client_id) || matchingConvIds.has(c.id));
+  }, [conversations, allMessages, chatsQ]);
 
   const renderEventContactSuggestionList = (openUp = false) => (
     <div
