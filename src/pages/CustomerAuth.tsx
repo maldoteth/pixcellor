@@ -11,7 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 export default function CustomerAuth() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -26,53 +25,17 @@ export default function CustomerAuth() {
 
     try {
       const cleanEmail = email.trim().toLowerCase();
-      const loginResult = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-
-      if (!loginResult.error) {
-        navigate("/customer-portal", { replace: true });
-        return;
-      }
-
-      if (loginResult.error.message.toLowerCase().includes("email not confirmed")) {
-        const { error: resendError } = await supabase.auth.resend({
-          type: "signup",
-          email: cleanEmail,
-          options: { emailRedirectTo: `${window.location.origin}/customer-portal` },
-        });
-
-        if (resendError) throw resendError;
-
-        toast.success("Confirmation email resent. Check your inbox to activate your account.");
-        return;
-      }
-
-      const signupResult = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
-        password,
-        options: { emailRedirectTo: `${window.location.origin}/customer-portal` },
+        options: {
+          emailRedirectTo: `${window.location.origin}/customer-portal`,
+          shouldCreateUser: true,
+        },
       });
 
-      if (signupResult.error) {
-        const message = signupResult.error.message.toLowerCase();
-        if (message.includes("already") || message.includes("registered")) {
-          toast.error("Account found. Check the password and try again.");
-          return;
-        }
-        throw signupResult.error;
-      }
+      if (error) throw error;
 
-      if (signupResult.data.user?.identities?.length === 0) {
-        toast.error("Account found. Check the password and try again.");
-        return;
-      }
-
-      if (!signupResult.data.session) {
-        toast.success("Confirmation email sent. Check your inbox to activate your account.");
-        setPassword("");
-        return;
-      }
-
-      navigate("/customer-portal", { replace: true });
+      toast.success("Magic link sent. Check your inbox to continue.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not continue");
     } finally {
@@ -106,21 +69,9 @@ export default function CustomerAuth() {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="customer-password">Password</Label>
-                <Input
-                  id="customer-password"
-                  type="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  minLength={6}
-                  required
-                />
-              </div>
               <Button type="submit" disabled={busy} className="w-full gap-2">
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-                Continue
+                Send magic link
               </Button>
             </form>
 
