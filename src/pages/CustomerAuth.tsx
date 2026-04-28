@@ -34,7 +34,15 @@ export default function CustomerAuth() {
       }
 
       if (loginResult.error.message.toLowerCase().includes("email not confirmed")) {
-        toast.error("Check your email to confirm this account first.");
+        const { error: resendError } = await supabase.auth.resend({
+          type: "signup",
+          email: cleanEmail,
+          options: { emailRedirectTo: `${window.location.origin}/customer-portal` },
+        });
+
+        if (resendError) throw resendError;
+
+        toast.success("Confirmation email resent. Check your inbox to activate your account.");
         return;
       }
 
