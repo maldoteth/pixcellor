@@ -40,6 +40,11 @@ serve(async (req) => {
 
     const confirmed = data.payment_status === "paid" || data.status === "complete";
     const metadata = data.metadata && typeof data.metadata === "object" ? data.metadata as Record<string, unknown> : {};
+    const { data: requirements } = await supabase
+      .from("project_requirements")
+      .select("id")
+      .eq("session_id", sessionId)
+      .maybeSingle();
 
     return json({
       confirmed,
@@ -48,6 +53,7 @@ serve(async (req) => {
       packageName: typeof metadata.package_name === "string" ? metadata.package_name : null,
       amount: formatGBP(data.amount_total),
       customerEmail: data.customer_email,
+      requirementsSubmitted: Boolean(requirements?.id),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not check order status";
