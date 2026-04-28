@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, Lock, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { getCheckoutContext } from "@/lib/checkoutTracking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import applePayLogo from "@/assets/apple-pay.png";
 import gpayLogo from "@/assets/gpay-logo.png";
@@ -49,7 +50,7 @@ const glassButtonStyle = {
 
 async function handleCheckout(priceId: string, mode: string, packageName: string, billing: string) {
   const { data, error } = await supabase.functions.invoke("create-checkout", {
-    body: { priceId, mode, packageName, billing },
+    body: { priceId, mode, packageName, billing, clientContext: getCheckoutContext() },
   });
   if (error) throw error;
   if (data?.url) window.location.href = data.url;
