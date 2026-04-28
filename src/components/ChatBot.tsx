@@ -160,7 +160,6 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId());
-  const wasDragged = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -423,30 +422,12 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
     <>
       {/* Chat Toggle Button */}
       <motion.button
-        onClick={() => {
-          if (wasDragged.current) {
-            wasDragged.current = false;
-            return;
-          }
-          setIsOpen(!isOpen);
-        }}
-        className={`fixed z-50 rounded-sm flex items-center justify-center group bottom-6 right-6 ${isMobile ? 'w-[34px] h-[34px]' : 'w-[42px] h-[42px]'}`}
+        onClick={() => setIsOpen(!isOpen)}
+        className={`absolute right-16 top-4 z-[10000] flex items-center justify-center rounded-sm md:right-[76px] md:top-6 ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
         aria-label="Open chat with Alex from Pixcellor"
-        drag
-        dragMomentum={false}
-        dragElastic={0.15}
-        onDragStart={() => { wasDragged.current = true; }}
-        dragConstraints={{
-          top: -(typeof window !== 'undefined' ? window.innerHeight - 100 : 600),
-          left: -(typeof window !== 'undefined' ? window.innerWidth - 100 : 300),
-          right: 0,
-          bottom: 0,
-        }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        whileDrag={{ scale: 1.15, cursor: "grabbing" }}
         style={{
-          touchAction: "none",
           background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
@@ -464,16 +445,6 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)",
           }}
         />
-        <motion.div
-          className="absolute inset-0 rounded-sm overflow-hidden"
-          animate={{
-            background: [
-              "linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)",
-              "linear-gradient(45deg, transparent 100%, rgba(255,255,255,0.1) 150%, transparent 200%)",
-            ],
-          }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        />
         <AnimatePresence mode="wait">
           {isOpen ? (
             <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
@@ -485,14 +456,6 @@ export default function ChatBot({ isOpen, setIsOpen }: ChatBotProps) {
             </motion.div>
           )}
         </AnimatePresence>
-        {!isOpen && (
-          <motion.div
-            className="absolute inset-0 rounded-sm"
-            style={{ border: "2px solid rgba(255,255,255,0.3)" }}
-            animate={{ scale: [1, 1.3, 1.5], opacity: [0.6, 0.3, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-          />
-        )}
         {!isOpen && adminUnreadCount > 0 && (
           <span className="absolute -right-1.5 -top-1.5 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-bold leading-none text-destructive-foreground shadow-lg">
             {adminUnreadCount}
