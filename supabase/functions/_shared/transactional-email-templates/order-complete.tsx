@@ -37,7 +37,6 @@ const OrderCompleteEmail = ({ customerEmail, orderId, packageName, deliveredDoma
           {customerEmail && <Text style={meta}>Sent to: {customerEmail}</Text>}
         </Section>
 
-        <Text style={footer}>If anything needs a small adjustment, reply to projects@pixcellor.com and we’ll take a look.</Text>
       </Container>
     </Body>
   </Html>
@@ -71,4 +70,3 @@ const panelTitle = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as co
 const text = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '0 0 16px' }
 const button = { backgroundColor: '#ffffff', borderRadius: '10px', color: '#050505', display: 'inline-block', fontSize: '14px', fontWeight: '800' as const, margin: '0 0 14px', padding: '13px 18px', textDecoration: 'none' }
 const meta = { color: '#929292', fontSize: '12px', lineHeight: '1.6', margin: '8px 0' }
-const footer = { borderTop: '1px solid #242424', color: '#929292', fontSize: '12px', lineHeight: '1.6', margin: '22px 34px 0', padding: '18px 0 30px' }
