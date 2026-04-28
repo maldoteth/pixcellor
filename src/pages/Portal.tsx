@@ -24,6 +24,30 @@ type StripeSession = {
   metadata: Record<string, unknown> | null;
 };
 
+type VisitorFalloff = {
+  id: string;
+  visitor_id: string;
+  session_id: string;
+  first_page: string | null;
+  last_page: string | null;
+  referrer: string | null;
+  user_agent: string | null;
+  browser_language: string | null;
+  timezone: string | null;
+  screen_size: string | null;
+  viewport_size: string | null;
+  checkout_session_id: string | null;
+  package_name: string | null;
+  billing: string | null;
+  price_id: string | null;
+  customer_email: string | null;
+  checkout_started_at: string | null;
+  last_seen_at: string;
+  event_count: number;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+};
+
 // ONLY include orders explicitly stamped by this website's checkout.
 // All legacy/external Stripe activity is excluded.
 const isSiteOrder = (o: StripeSession) => {
@@ -166,6 +190,7 @@ export default function Portal() {
   const [portalAccessCode] = useState(() => sessionStorage.getItem(PORTAL_ACCESS_STORAGE_KEY) ?? "");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
+  const [falloffs, setFalloffs] = useState<VisitorFalloff[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [lastMessages, setLastMessages] = useState<Record<string, Message>>({});
@@ -204,6 +229,7 @@ export default function Portal() {
     }
     const snapshot = (data ?? {}) as {
       orders?: StripeSession[];
+      falloffs?: VisitorFalloff[];
       conversations?: Conversation[];
       messages?: Message[];
       profiles?: Profile[];
@@ -212,6 +238,7 @@ export default function Portal() {
       contactEvents?: ContactEvent[];
     };
     setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
+    setFalloffs(snapshot.falloffs ?? []);
     const convs = snapshot.conversations ?? [];
     const allMsgs = snapshot.messages ?? [];
     setProfiles(snapshot.profiles ?? []);
@@ -253,6 +280,7 @@ export default function Portal() {
     const channel = supabase
       .channel("portal-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "stripe_checkout_sessions" }, loadPortalSnapshot)
+      .on("postgres_changes", { event: "*", schema: "public", table: "visitor_falloffs" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_conversations" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_messages" }, () => {
         if (activeConv) loadMessages(activeConv);
@@ -385,6 +413,23 @@ export default function Portal() {
       matches(JSON.stringify(o.metadata))
     );
   }, [orders, q]);
+
+  const filteredFalloffs = useMemo(() => {
+    const paidSessionIds = new Set(orders.map(o => o.session_id));
+    const unpaidFalloffs = falloffs.filter(f => !f.checkout_session_id || !paidSessionIds.has(f.checkout_session_id));
+    if (!q) return unpaidFalloffs;
+    return unpaidFalloffs.filter(f =>
+      matches(f.customer_email) ||
+      matches(f.checkout_session_id) ||
+      matches(f.package_name) ||
+      matches(f.billing) ||
+      matches(f.referrer) ||
+      matches(f.user_agent) ||
+      matches(f.timezone) ||
+      matches(f.visitor_id) ||
+      matches(JSON.stringify(f.metadata))
+    );
+  }, [falloffs, orders, q]);
 
   const filteredProfiles = useMemo(() => {
     if (!q) return profiles;
@@ -775,15 +820,16 @@ export default function Portal() {
           />
           {q && (
             <p className="text-xs text-muted-foreground mt-1">
-              {filteredOrders.length} orders · {filteredConversations.length} chats · {filteredProfiles.length} clients · {filteredInquiries.length} inquiries · {filteredContacts.length} contacts
+              {filteredOrders.length} orders · {filteredFalloffs.length} falloffs · {filteredConversations.length} chats · {filteredProfiles.length} clients · {filteredInquiries.length} inquiries · {filteredContacts.length} contacts
             </p>
           )}
         </div>
 
         <Tabs defaultValue="sales">
-          <TabsList className="grid grid-cols-2 md:grid-cols-7 w-full md:w-auto h-auto">
+          <TabsList className="grid grid-cols-2 md:grid-cols-8 w-full md:w-auto h-auto">
             <TabsTrigger value="sales">Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders">Orders ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="falloffs">Falloffs ({filteredFalloffs.length})</TabsTrigger>
             <TabsTrigger value="mailbox">Inbox ({mailboxMessages.length})</TabsTrigger>
             <TabsTrigger value="chats">Chats ({filteredConversations.length})</TabsTrigger>
             <TabsTrigger value="profiles">Clients ({filteredProfiles.length})</TabsTrigger>
@@ -879,6 +925,34 @@ export default function Portal() {
                         Mark delivered
                       </Button>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="falloffs" className="space-y-2">
+            {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {q ? "match your search" : "yet"}.</p>}
+            {filteredFalloffs.map(f => (
+              <Card key={f.id}>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="font-medium">{f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
+                      <div className="text-xs text-muted-foreground">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? "timezone unknown"}</div>
+                      <div className="text-xs text-muted-foreground">Visitor {f.visitor_id} · Session {f.session_id}</div>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      {f.checkout_session_id && <Badge variant="secondary">Checkout opened</Badge>}
+                      {f.package_name && <Badge variant="outline">{f.package_name}</Badge>}
+                    </div>
+                  </div>
+                  <div className="grid gap-2 text-xs text-muted-foreground md:grid-cols-2">
+                    <div>Page: {f.last_page ?? f.first_page ?? "—"}</div>
+                    <div>Referrer: {f.referrer ?? "Direct"}</div>
+                    <div>Device: {f.viewport_size ?? "—"} viewport · {f.screen_size ?? "—"} screen</div>
+                    <div>Language: {f.browser_language ?? "—"}</div>
+                    <div className="md:col-span-2 break-all">User agent: {f.user_agent ?? "—"}</div>
                   </div>
                 </CardContent>
               </Card>
