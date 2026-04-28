@@ -291,6 +291,7 @@ export default function Portal() {
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [openContactId, setOpenContactId] = useState<string | null>(null);
+  const [contactDetailDrawerId, setContactDetailDrawerId] = useState<string | null>(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [mobileContactDrawerOpen, setMobileContactDrawerOpen] = useState(false);
@@ -770,6 +771,11 @@ export default function Portal() {
   );
 
   const getContact = (id: string) => contacts.find(c => c.id === id);
+
+  const openContactDrawer = (contactId: string) => {
+    setActiveTab("sales");
+    setContactDetailDrawerId(contactId);
+  };
 
   const openEventFormForContact = (contactId: string) => {
     const contact = contacts.find(c => c.id === contactId);
