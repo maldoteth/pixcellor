@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   CalendarClock,
   CheckCircle2,
+  Check,
   ClipboardList,
   CreditCard,
   ExternalLink,
@@ -39,6 +40,48 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const BUY_AGAIN_PACKAGES = [
+  {
+    key: "fullWorks",
+    name: "Full Works",
+    price: "£150",
+    rrp: "RRP £375",
+    discount: "60% off",
+    priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
+    mode: "payment",
+    billing: "One-time payment",
+    action: "Buy again",
+    featured: false,
+    features: ["Industry leading website", "Lifetime warranty", "Custom design", "Up to 3 pages"],
+  },
+  {
+    key: "elite",
+    name: "Elite",
+    price: "£500",
+    rrp: "RRP £1,500",
+    discount: "67% off",
+    priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
+    mode: "payment",
+    billing: "One-time payment",
+    action: "Buy again",
+    featured: true,
+    features: ["Sites or web apps", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
+  },
+  {
+    key: "retainer",
+    name: "Retainer",
+    price: "£1,200/mo",
+    rrp: "RRP £2,500/mo",
+    discount: "52% off",
+    priceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
+    mode: "subscription",
+    billing: "Monthly subscription",
+    action: "Subscribe",
+    featured: false,
+    features: ["Your own tech department", "Free consulting", "Websites or full apps", "Monthly billing"],
+  },
+] as const;
 
 type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "payments";
 
@@ -195,6 +238,18 @@ export default function CustomerPortal() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/customer-login", { replace: true });
+  };
+
+  const handleBuyAgain = async (plan: (typeof BUY_AGAIN_PACKAGES)[number]) => {
+    try {
+      const { data: checkout, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: plan.priceId, mode: plan.mode, packageName: plan.name, billing: plan.billing },
+      });
+      if (error) throw error;
+      if (checkout?.url) window.location.href = checkout.url;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not start checkout");
+    }
   };
 
   if (loading) {
@@ -386,6 +441,34 @@ export default function CustomerPortal() {
 
                 <TabsContent value="payments" className="space-y-4">
                   <SectionHeader title="Plan & payments" description="Retainer plan details, past payments, and the next scheduled billing date." count={retainerOrders.length} />
+                  <div className="grid gap-4 lg:grid-cols-3">
+                    {BUY_AGAIN_PACKAGES.map((plan) => (
+                      <Card key={plan.key} className={`relative overflow-hidden border-border bg-card/70 backdrop-blur-xl ${plan.featured ? "border-primary/40" : ""}`}>
+                        <CardContent className="flex h-full flex-col p-5">
+                          {plan.featured && <Badge className="mb-4 w-fit border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">Most popular</Badge>}
+                          <div className="space-y-2">
+                            <h3 className="text-xl font-semibold">{plan.name}</h3>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-3xl font-bold">{plan.price}</span>
+                              <span className="text-xs text-muted-foreground line-through">{plan.rrp}</span>
+                            </div>
+                            <p className="text-xs font-semibold text-foreground">Introductory offer — {plan.discount}</p>
+                          </div>
+                          <ul className="my-5 flex-1 space-y-2 text-sm text-muted-foreground">
+                            {plan.features.map((feature) => (
+                              <li key={feature} className="flex items-start gap-2">
+                                <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                          <Button variant="pricing" className="w-full gap-2" onClick={() => handleBuyAgain(plan)}>
+                            {plan.action} <CreditCard className="h-4 w-4" />
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                   {retainerOrders.length === 0 ? (
                     <EmptyState icon={CreditCard} title="No retainer plan found" text="One-time project payments remain visible in order history." />
                   ) : (
