@@ -196,6 +196,12 @@ const normalizeEmail = (value?: string | null) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
 };
 
+const formatPhoneHref = (value?: string | null) => {
+  const phone = (value ?? "").trim();
+  const cleaned = phone.replace(/(?!^\+)[^\d]/g, "");
+  return /\d/.test(cleaned) ? `tel:${cleaned}` : null;
+};
+
 const formatDateTimeLocal = (date: Date) => {
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60_000);
@@ -1693,6 +1699,7 @@ export default function Portal() {
               const effectiveStatus = orderStats ? "gold" : c.status;
               const isOpen = openContactId === c.id;
               const statusColor = getContactStatusColor(effectiveStatus);
+              const phoneHref = formatPhoneHref(c.phone);
               return (
                 <Card
                   key={c.id}
@@ -1703,14 +1710,23 @@ export default function Portal() {
                 >
                   <CardContent className="p-4 space-y-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)} className="text-left flex-1 min-w-[180px]">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium">{c.name}</span>
-                          {orderStats && <Badge variant="secondary">Client</Badge>}
-                        </div>
-                        <div className="text-xs text-muted-foreground">{[c.phone, c.email, c.location].filter(Boolean).join(" · ") || "No details added"}</div>
-                        {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
-                      </button>
+                      <div className="min-w-[180px] flex-1 text-left">
+                        <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)} className="w-full text-left">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-medium">{c.name}</span>
+                            {orderStats && <Badge variant="secondary">Client</Badge>}
+                          </div>
+                          <div className="text-xs text-muted-foreground">{[c.email, c.location].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
+                          {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
+                        </button>
+                        {c.phone && (phoneHref ? (
+                          <a href={phoneHref} className="mt-1 inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${c.phone}`}>
+                            {c.phone}
+                          </a>
+                        ) : (
+                          <div className="mt-1 text-xs text-muted-foreground">{c.phone}</div>
+                        ))}
+                      </div>
                       <div className="flex flex-wrap items-center justify-end gap-2">
                         <div className="flex items-center gap-1" aria-label="Contact status">
                           {contactStatuses.map(status => (
