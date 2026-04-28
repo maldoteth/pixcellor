@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,7 +17,11 @@ serve(async (req) => {
     
     if (!priceId) throw new Error("Missing priceId");
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!stripeSecretKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    if (!supabaseUrl) throw new Error("SUPABASE_URL not configured");
+    if (!supabaseServiceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY not configured");
 
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2025-08-27.basil",
@@ -42,6 +47,31 @@ serve(async (req) => {
         checkout_context: JSON.stringify(safeClientContext).slice(0, 500),
       },
     });
+
+    const sessionId = typeof safeClientContext.sessionId === "string" ? safeClientContext.sessionId.slice(0, 200) : undefined;
+    if (clientReferenceId && sessionId) {
+      const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+      await supabase.from("visitor_falloffs").upsert({
+        visitor_id: clientReferenceId,
+        session_id: sessionId,
+        consent_status: "granted",
+        first_page: typeof safeClientContext.pageUrl === "string" ? safeClientContext.pageUrl : null,
+        last_page: typeof safeClientContext.pageUrl === "string" ? safeClientContext.pageUrl : null,
+        referrer: typeof safeClientContext.referrer === "string" ? safeClientContext.referrer : null,
+        user_agent: typeof safeClientContext.userAgent === "string" ? safeClientContext.userAgent : null,
+        browser_language: typeof safeClientContext.language === "string" ? safeClientContext.language : null,
+        timezone: typeof safeClientContext.timezone === "string" ? safeClientContext.timezone : null,
+        screen_size: typeof safeClientContext.screen === "string" ? safeClientContext.screen : null,
+        viewport_size: typeof safeClientContext.viewport === "string" ? safeClientContext.viewport : null,
+        checkout_session_id: session.id,
+        package_name: typeof packageName === "string" ? packageName : null,
+        billing: typeof billing === "string" ? billing : mode || "payment",
+        price_id: typeof priceId === "string" ? priceId : null,
+        checkout_started_at: typeof safeClientContext.startedAt === "string" ? safeClientContext.startedAt : new Date().toISOString(),
+        last_seen_at: new Date().toISOString(),
+        metadata: { checkout_url_created: true },
+      }, { onConflict: "visitor_id,session_id" });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
