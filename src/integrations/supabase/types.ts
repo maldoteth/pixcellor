@@ -473,6 +473,84 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_falloffs: {
+        Row: {
+          billing: string | null
+          browser_language: string | null
+          checkout_session_id: string | null
+          checkout_started_at: string | null
+          consent_status: string
+          created_at: string
+          customer_email: string | null
+          event_count: number
+          first_page: string | null
+          id: string
+          last_page: string | null
+          last_seen_at: string
+          metadata: Json
+          package_name: string | null
+          price_id: string | null
+          referrer: string | null
+          screen_size: string | null
+          session_id: string
+          timezone: string | null
+          updated_at: string
+          user_agent: string | null
+          viewport_size: string | null
+          visitor_id: string
+        }
+        Insert: {
+          billing?: string | null
+          browser_language?: string | null
+          checkout_session_id?: string | null
+          checkout_started_at?: string | null
+          consent_status?: string
+          created_at?: string
+          customer_email?: string | null
+          event_count?: number
+          first_page?: string | null
+          id?: string
+          last_page?: string | null
+          last_seen_at?: string
+          metadata?: Json
+          package_name?: string | null
+          price_id?: string | null
+          referrer?: string | null
+          screen_size?: string | null
+          session_id: string
+          timezone?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          viewport_size?: string | null
+          visitor_id: string
+        }
+        Update: {
+          billing?: string | null
+          browser_language?: string | null
+          checkout_session_id?: string | null
+          checkout_started_at?: string | null
+          consent_status?: string
+          created_at?: string
+          customer_email?: string | null
+          event_count?: number
+          first_page?: string | null
+          id?: string
+          last_page?: string | null
+          last_seen_at?: string
+          metadata?: Json
+          package_name?: string | null
+          price_id?: string | null
+          referrer?: string | null
+          screen_size?: string | null
+          session_id?: string
+          timezone?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          viewport_size?: string | null
+          visitor_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
