@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Home, Loader2, Mail, Plus, Search, ShoppingBag, UserPlus } from "lucide-react";
+import { Archive, Clipboard, Home, Loader2, Mail, Plus, Search, ShoppingBag, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 type StripeSession = {
@@ -843,6 +843,18 @@ export default function Portal() {
     if (skip && !field.required) setEventForm(f => ({ ...f, [field.key]: "" }));
     if (mobileSalesStep < salesEventWizardFields.length - 1) setMobileSalesStep(step => step + 1);
     else void createContactEvent();
+  };
+
+  const pasteMobileContactField = async () => {
+    const text = await navigator.clipboard.readText();
+    setContactForm(f => ({ ...f, [contactWizardFields[mobileContactStep].key]: text.trim() }));
+  };
+
+  const pasteMobileSalesField = async () => {
+    const text = (await navigator.clipboard.readText()).trim();
+    const field = salesEventWizardFields[mobileSalesStep];
+    if (field.key === "contact") handleEventContactSearch(text);
+    else setEventForm(f => ({ ...f, [field.key]: text }));
   };
 
   const createContact = async () => {
@@ -1885,17 +1897,22 @@ export default function Portal() {
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium">{currentContactField.label}{currentContactField.required ? " *" : ""}</label>
-                <Input
-                  autoFocus
-                  inputMode={currentContactField.inputMode}
-                  placeholder={currentContactField.placeholder}
-                  value={contactForm[currentContactField.key]}
-                  onChange={(e) => setContactForm(f => ({ ...f, [currentContactField.key]: e.target.value }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") continueMobileContact();
-                  }}
-                  className="mt-2 h-12 text-base"
-                />
+                <div className="mt-2 flex gap-2">
+                  <Input
+                    autoFocus
+                    inputMode={currentContactField.inputMode}
+                    placeholder={currentContactField.placeholder}
+                    value={contactForm[currentContactField.key]}
+                    onChange={(e) => setContactForm(f => ({ ...f, [currentContactField.key]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") continueMobileContact();
+                    }}
+                    className="h-12 text-base"
+                  />
+                  <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileContactField} aria-label={`Paste ${currentContactField.label}`}>
+                    <Clipboard className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               {currentContactField.key === "notes" && jobTitleSuggestions.length > 0 && (
                 <div className="flex flex-wrap gap-2">
@@ -1934,34 +1951,49 @@ export default function Portal() {
               <label className="text-sm font-medium">{currentSalesField.label}{currentSalesField.required ? " *" : ""}</label>
               {currentSalesField.key === "contact" ? (
                 <>
-                  <Input
-                    autoFocus
-                    list="portal-mobile-contact-options"
-                    placeholder={currentSalesField.placeholder}
-                    value={eventContactSearch}
-                    onChange={(e) => handleEventContactSearch(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") continueMobileSalesEvent();
-                    }}
-                    className="h-12 text-base"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      autoFocus
+                      list="portal-mobile-contact-options"
+                      placeholder={currentSalesField.placeholder}
+                      value={eventContactSearch}
+                      onChange={(e) => handleEventContactSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") continueMobileSalesEvent();
+                      }}
+                      className="h-12 text-base"
+                    />
+                    <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
+                      <Clipboard className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <datalist id="portal-mobile-contact-options">
                     {contacts.map(c => <option key={c.id} value={`${c.name}${c.email ? ` · ${c.email}` : ""}`}>{[c.phone, c.location].filter(Boolean).join(" · ")}</option>)}
                   </datalist>
                 </>
               ) : currentSalesField.key === "callback_at" ? (
-                <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} className="h-12 text-base" />
+                <div className="flex gap-2">
+                  <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} className="h-12 text-base" />
+                  <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
+                    <Clipboard className="h-4 w-4" />
+                  </Button>
+                </div>
               ) : (
-                <Input
-                  autoFocus
-                  placeholder={currentSalesField.placeholder}
-                  value={currentSalesField.key === "title" ? eventForm.title : eventForm.description}
-                  onChange={(e) => setEventForm(f => ({ ...f, [currentSalesField.key]: e.target.value }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") continueMobileSalesEvent();
-                  }}
-                  className="h-12 text-base"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    autoFocus
+                    placeholder={currentSalesField.placeholder}
+                    value={currentSalesField.key === "title" ? eventForm.title : eventForm.description}
+                    onChange={(e) => setEventForm(f => ({ ...f, [currentSalesField.key]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") continueMobileSalesEvent();
+                    }}
+                    className="h-12 text-base"
+                  />
+                  <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
+                    <Clipboard className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
