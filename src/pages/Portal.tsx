@@ -645,41 +645,41 @@ export default function Portal() {
   }, [falloffs, orders, falloffsQ]);
 
   const filteredProfiles = useMemo(() => {
-    if (!q) return profiles;
+    if (!profilesQ) return profiles;
     return profiles.filter(p =>
-      matches(p.email) || matches(p.name) || matches(p.company) ||
-      matches(p.brand_colours) || matches(p.requirements) ||
-      matches(p.content_notes) || matches(p.notes) ||
-      matches(p.page_count?.toString())
+      matchesQuery(profilesQ, p.email) || matchesQuery(profilesQ, p.name) || matchesQuery(profilesQ, p.company) ||
+      matchesQuery(profilesQ, p.brand_colours) || matchesQuery(profilesQ, p.requirements) ||
+      matchesQuery(profilesQ, p.content_notes) || matchesQuery(profilesQ, p.notes) ||
+      matchesQuery(profilesQ, p.page_count?.toString())
     );
-  }, [profiles, q]);
+  }, [profiles, profilesQ]);
 
   const filteredInquiries = useMemo(() => {
-    if (!q) return inquiries;
+    if (!inquiriesQ) return inquiries;
     return inquiries.filter(i =>
-      matches(i.name) || matches(i.email) || matches(i.message)
+      matchesQuery(inquiriesQ, i.name) || matchesQuery(inquiriesQ, i.email) || matchesQuery(inquiriesQ, i.message)
     );
-  }, [inquiries, q]);
+  }, [inquiries, inquiriesQ]);
 
   const filteredContacts = useMemo(() => {
-    if (!q) return contacts;
+    if (!contactsQ) return contacts;
     const matchingContactIds = new Set(
-      contactEvents.filter(e => matches(e.title) || matches(e.description) || matches(e.event_type) || matches(e.callback_at)).map(e => e.contact_id)
+      contactEvents.filter(e => matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) || matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at)).map(e => e.contact_id)
     );
     return contacts.filter(c =>
-      matches(c.name) || matches(c.phone) || matches(c.email) ||
-      matches(c.location) || matches(c.notes) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
     );
-  }, [contacts, contactEvents, q]);
+  }, [contacts, contactEvents, contactsQ]);
 
   const filteredContactEvents = useMemo(() => {
-    if (!q) return contactEvents;
+    if (!contactsQ) return contactEvents;
     const contactIds = new Set(filteredContacts.map(c => c.id));
     return contactEvents.filter(e =>
-      contactIds.has(e.contact_id) || matches(e.title) || matches(e.description) ||
-      matches(e.event_type) || matches(e.callback_at)
+      contactIds.has(e.contact_id) || matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) ||
+      matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at)
     );
-  }, [contactEvents, filteredContacts, q]);
+  }, [contactEvents, filteredContacts, contactsQ]);
 
   const searchedContacts = useMemo(() => {
     const statusFiltered = contactsStatusFilter === "all" ? filteredContacts : filteredContacts.filter(c => {
