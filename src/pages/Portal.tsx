@@ -28,6 +28,31 @@ type VisitorFalloff = {
   id: string;
   visitor_id: string;
   session_id: string;
+  ip_address: string | null;
+  ip_hostname: string | null;
+  ip_city: string | null;
+  ip_region: string | null;
+  ip_country: string | null;
+  ip_location: string | null;
+  ip_postal: string | null;
+  ip_timezone: string | null;
+  company_name: string | null;
+  company_domain: string | null;
+  company_type: string | null;
+  asn: string | null;
+  as_name: string | null;
+  as_domain: string | null;
+  as_route: string | null;
+  carrier_name: string | null;
+  privacy_vpn: boolean | null;
+  privacy_proxy: boolean | null;
+  privacy_tor: boolean | null;
+  privacy_relay: boolean | null;
+  privacy_hosting: boolean | null;
+  enrichment_source: string | null;
+  enrichment_status: string | null;
+  enrichment_error: string | null;
+  enriched_at: string | null;
   first_page: string | null;
   last_page: string | null;
   referrer: string | null;
@@ -426,6 +451,15 @@ export default function Portal() {
       matches(f.referrer) ||
       matches(f.user_agent) ||
       matches(f.timezone) ||
+      matches(f.company_name) ||
+      matches(f.company_domain) ||
+      matches(f.company_type) ||
+      matches(f.ip_address) ||
+      matches(f.ip_city) ||
+      matches(f.ip_region) ||
+      matches(f.ip_country) ||
+      matches(f.asn) ||
+      matches(f.as_name) ||
       matches(f.visitor_id) ||
       matches(JSON.stringify(f.metadata))
     );
@@ -938,13 +972,38 @@ export default function Portal() {
                 <CardContent className="p-4 space-y-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="space-y-1">
-                      <div className="font-medium">{f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
-                      <div className="text-xs text-muted-foreground">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? "timezone unknown"}</div>
+                      <div className="font-medium">{f.company_name ?? f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
+                      <div className="text-xs text-muted-foreground">{[f.company_domain, f.company_type, f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(" · ") || "Company/location unknown"}</div>
+                      <div className="text-xs text-muted-foreground">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? f.ip_timezone ?? "timezone unknown"}</div>
                       <div className="text-xs text-muted-foreground">Visitor {f.visitor_id} · Session {f.session_id}</div>
                     </div>
                     <div className="flex flex-wrap items-center justify-end gap-2">
                       {f.checkout_session_id && <Badge variant="secondary">Checkout opened</Badge>}
                       {f.package_name && <Badge variant="outline">{f.package_name}</Badge>}
+                      {f.enrichment_status && <Badge variant={f.enrichment_status === "enriched" ? "secondary" : "outline"}>{f.enrichment_status}</Badge>}
+                    </div>
+                  </div>
+                  <div className="grid gap-2 text-xs md:grid-cols-3">
+                    <div className="rounded-md border border-border p-2">
+                      <div className="font-medium">Company</div>
+                      <div className="text-muted-foreground">{f.company_name ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">{f.company_domain ?? "—"}</div>
+                    </div>
+                    <div className="rounded-md border border-border p-2">
+                      <div className="font-medium">Network</div>
+                      <div className="text-muted-foreground">{f.asn ?? "—"} {f.as_name ? `· ${f.as_name}` : ""}</div>
+                      <div className="text-muted-foreground break-all">{f.ip_address ?? "—"}</div>
+                    </div>
+                    <div className="rounded-md border border-border p-2">
+                      <div className="font-medium">Privacy flags</div>
+                      <div className="text-muted-foreground">{[
+                        f.privacy_vpn ? "VPN" : null,
+                        f.privacy_proxy ? "Proxy" : null,
+                        f.privacy_tor ? "Tor" : null,
+                        f.privacy_relay ? "Relay" : null,
+                        f.privacy_hosting ? "Hosting" : null,
+                      ].filter(Boolean).join(" · ") || "None detected"}</div>
+                      <div className="text-muted-foreground">{f.enriched_at ? `Enriched ${new Date(f.enriched_at).toLocaleString()}` : f.enrichment_error ?? "Pending enrichment"}</div>
                     </div>
                   </div>
                   <div className="grid gap-2 text-xs text-muted-foreground md:grid-cols-2">

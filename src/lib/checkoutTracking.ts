@@ -45,7 +45,7 @@ export const recordFalloff = async (metadata: Record<string, unknown> = {}) => {
   if (!hasFalloffConsent()) return;
 
   const context = getCheckoutContext();
-  await (supabase as any)
+  const { error } = await (supabase as any)
     .from("visitor_falloffs")
     .upsert({
       visitor_id: context.clientId,
@@ -62,4 +62,10 @@ export const recordFalloff = async (metadata: Record<string, unknown> = {}) => {
       last_seen_at: new Date().toISOString(),
       metadata,
     }, { onConflict: "visitor_id,session_id" });
+
+  if (!error) {
+    void supabase.functions.invoke("enrich-visitor", {
+      body: { visitorId: context.clientId, sessionId: context.sessionId },
+    });
+  }
 };

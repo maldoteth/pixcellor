@@ -475,21 +475,48 @@ export type Database = {
       }
       visitor_falloffs: {
         Row: {
+          as_domain: string | null
+          as_name: string | null
+          as_route: string | null
+          asn: string | null
           billing: string | null
           browser_language: string | null
+          carrier_mcc: string | null
+          carrier_mnc: string | null
+          carrier_name: string | null
           checkout_session_id: string | null
           checkout_started_at: string | null
+          company_domain: string | null
+          company_name: string | null
+          company_type: string | null
           consent_status: string
           created_at: string
           customer_email: string | null
+          enriched_at: string | null
+          enrichment_error: string | null
+          enrichment_source: string | null
+          enrichment_status: string
           event_count: number
           first_page: string | null
           id: string
+          ip_address: string | null
+          ip_city: string | null
+          ip_country: string | null
+          ip_hostname: string | null
+          ip_location: string | null
+          ip_postal: string | null
+          ip_region: string | null
+          ip_timezone: string | null
           last_page: string | null
           last_seen_at: string
           metadata: Json
           package_name: string | null
           price_id: string | null
+          privacy_hosting: boolean | null
+          privacy_proxy: boolean | null
+          privacy_relay: boolean | null
+          privacy_tor: boolean | null
+          privacy_vpn: boolean | null
           referrer: string | null
           screen_size: string | null
           session_id: string
@@ -500,21 +527,48 @@ export type Database = {
           visitor_id: string
         }
         Insert: {
+          as_domain?: string | null
+          as_name?: string | null
+          as_route?: string | null
+          asn?: string | null
           billing?: string | null
           browser_language?: string | null
+          carrier_mcc?: string | null
+          carrier_mnc?: string | null
+          carrier_name?: string | null
           checkout_session_id?: string | null
           checkout_started_at?: string | null
+          company_domain?: string | null
+          company_name?: string | null
+          company_type?: string | null
           consent_status?: string
           created_at?: string
           customer_email?: string | null
+          enriched_at?: string | null
+          enrichment_error?: string | null
+          enrichment_source?: string | null
+          enrichment_status?: string
           event_count?: number
           first_page?: string | null
           id?: string
+          ip_address?: string | null
+          ip_city?: string | null
+          ip_country?: string | null
+          ip_hostname?: string | null
+          ip_location?: string | null
+          ip_postal?: string | null
+          ip_region?: string | null
+          ip_timezone?: string | null
           last_page?: string | null
           last_seen_at?: string
           metadata?: Json
           package_name?: string | null
           price_id?: string | null
+          privacy_hosting?: boolean | null
+          privacy_proxy?: boolean | null
+          privacy_relay?: boolean | null
+          privacy_tor?: boolean | null
+          privacy_vpn?: boolean | null
           referrer?: string | null
           screen_size?: string | null
           session_id: string
@@ -525,21 +579,48 @@ export type Database = {
           visitor_id: string
         }
         Update: {
+          as_domain?: string | null
+          as_name?: string | null
+          as_route?: string | null
+          asn?: string | null
           billing?: string | null
           browser_language?: string | null
+          carrier_mcc?: string | null
+          carrier_mnc?: string | null
+          carrier_name?: string | null
           checkout_session_id?: string | null
           checkout_started_at?: string | null
+          company_domain?: string | null
+          company_name?: string | null
+          company_type?: string | null
           consent_status?: string
           created_at?: string
           customer_email?: string | null
+          enriched_at?: string | null
+          enrichment_error?: string | null
+          enrichment_source?: string | null
+          enrichment_status?: string
           event_count?: number
           first_page?: string | null
           id?: string
+          ip_address?: string | null
+          ip_city?: string | null
+          ip_country?: string | null
+          ip_hostname?: string | null
+          ip_location?: string | null
+          ip_postal?: string | null
+          ip_region?: string | null
+          ip_timezone?: string | null
           last_page?: string | null
           last_seen_at?: string
           metadata?: Json
           package_name?: string | null
           price_id?: string | null
+          privacy_hosting?: boolean | null
+          privacy_proxy?: boolean | null
+          privacy_relay?: boolean | null
+          privacy_tor?: boolean | null
+          privacy_vpn?: boolean | null
           referrer?: string | null
           screen_size?: string | null
           session_id?: string

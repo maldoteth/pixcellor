@@ -7,6 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const clean = (value: unknown) => typeof value === "string" && value.trim() ? value.trim().slice(0, 500) : null;
+const getClientIp = (req: Request) => req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || null;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -52,6 +55,53 @@ serve(async (req) => {
     const sessionId = typeof safeClientContext.sessionId === "string" ? safeClientContext.sessionId.slice(0, 200) : undefined;
     if (hasTrackingConsent && clientReferenceId && sessionId) {
       const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+      const enrichment: Record<string, unknown> = { enrichment_status: "pending" };
+      const ipinfoToken = Deno.env.get("IPINFO_TOKEN");
+      const ip = getClientIp(req);
+
+      if (ipinfoToken && ip) {
+        try {
+          const ipinfoResponse = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}?token=${encodeURIComponent(ipinfoToken)}`);
+          const ipinfo = await ipinfoResponse.json();
+          if (!ipinfoResponse.ok) throw new Error(`IPinfo lookup failed [${ipinfoResponse.status}]`);
+          const company = ipinfo.company && typeof ipinfo.company === "object" ? ipinfo.company : {};
+          const asn = ipinfo.asn && typeof ipinfo.asn === "object" ? ipinfo.asn : {};
+          const privacy = ipinfo.privacy && typeof ipinfo.privacy === "object" ? ipinfo.privacy : {};
+          const carrier = ipinfo.carrier && typeof ipinfo.carrier === "object" ? ipinfo.carrier : {};
+          Object.assign(enrichment, {
+            ip_address: clean(ipinfo.ip) ?? ip,
+            ip_hostname: clean(ipinfo.hostname),
+            ip_city: clean(ipinfo.city),
+            ip_region: clean(ipinfo.region),
+            ip_country: clean(ipinfo.country),
+            ip_location: clean(ipinfo.loc),
+            ip_postal: clean(ipinfo.postal),
+            ip_timezone: clean(ipinfo.timezone),
+            company_name: clean(company.name) ?? clean(ipinfo.org),
+            company_domain: clean(company.domain),
+            company_type: clean(company.type),
+            asn: clean(asn.asn),
+            as_name: clean(asn.name) ?? clean(ipinfo.org),
+            as_domain: clean(asn.domain),
+            as_route: clean(asn.route),
+            carrier_name: clean(carrier.name),
+            carrier_mcc: clean(carrier.mcc),
+            carrier_mnc: clean(carrier.mnc),
+            privacy_vpn: typeof privacy.vpn === "boolean" ? privacy.vpn : null,
+            privacy_proxy: typeof privacy.proxy === "boolean" ? privacy.proxy : null,
+            privacy_tor: typeof privacy.tor === "boolean" ? privacy.tor : null,
+            privacy_relay: typeof privacy.relay === "boolean" ? privacy.relay : null,
+            privacy_hosting: typeof privacy.hosting === "boolean" ? privacy.hosting : null,
+            enrichment_source: "ipinfo",
+            enrichment_status: "enriched",
+            enrichment_error: null,
+            enriched_at: new Date().toISOString(),
+          });
+        } catch (error) {
+          Object.assign(enrichment, { ip_address: ip, enrichment_source: "ipinfo", enrichment_status: "failed", enrichment_error: error instanceof Error ? error.message.slice(0, 500) : "IPinfo lookup failed" });
+        }
+      }
+
       await supabase.from("visitor_falloffs").upsert({
         visitor_id: clientReferenceId,
         session_id: sessionId,
@@ -71,6 +121,7 @@ serve(async (req) => {
         checkout_started_at: typeof safeClientContext.startedAt === "string" ? safeClientContext.startedAt : new Date().toISOString(),
         last_seen_at: new Date().toISOString(),
         metadata: { checkout_url_created: true },
+        ...enrichment,
       }, { onConflict: "visitor_id,session_id" });
     }
 
