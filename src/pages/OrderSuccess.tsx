@@ -204,6 +204,11 @@ export default function OrderSuccess() {
               <Button asChild>
                 <Link to="/">Back to Pixcellor</Link>
               </Button>
+              {order?.confirmed && (
+                <Button asChild variant="outline">
+                  <Link to="/customer-login">Create customer account</Link>
+                </Button>
+              )}
               {timedOut && (
                 <Button variant="outline" onClick={() => window.location.reload()}>
                   Check again
