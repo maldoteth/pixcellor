@@ -845,6 +845,18 @@ export default function Portal() {
     else void createContactEvent();
   };
 
+  const pasteMobileContactField = async () => {
+    const text = await navigator.clipboard.readText();
+    setContactForm(f => ({ ...f, [contactWizardFields[mobileContactStep].key]: text.trim() }));
+  };
+
+  const pasteMobileSalesField = async () => {
+    const text = (await navigator.clipboard.readText()).trim();
+    const field = salesEventWizardFields[mobileSalesStep];
+    if (field.key === "contact") handleEventContactSearch(text);
+    else setEventForm(f => ({ ...f, [field.key]: text }));
+  };
+
   const createContact = async () => {
     const name = contactForm.name.trim();
     if (!name) {
