@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, PencilLine, Plus, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, PencilLine, Plus, Repeat, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
 
 type StripeSession = {
@@ -91,6 +91,17 @@ const isSiteOrder = (o: StripeSession) => {
 };
 
 const isPaidOrder = (o: StripeSession) => o.payment_status === "paid" || o.status === "complete" || o.status === "completed";
+
+const getOrderMetadataText = (order: StripeSession, key: string) => {
+  const value = order.metadata?.[key];
+  return typeof value === "string" ? value : "";
+};
+
+const isMonthlyRetainerOrder = (order: StripeSession) => {
+  const packageName = getOrderMetadataText(order, "package_name").toLowerCase();
+  const billing = getOrderMetadataText(order, "billing").toLowerCase();
+  return packageName.includes("retainer") && billing.includes("monthly");
+};
 
 type Conversation = {
   id: string;
