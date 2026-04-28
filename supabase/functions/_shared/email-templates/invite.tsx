@@ -39,7 +39,7 @@ export const InviteEmail = ({ siteUrl, confirmationUrl }: InviteEmailProps) => (
             Accept Invitation
           </Button>
           <Text style={footer}>
-            If you were not expecting this, you can ignore it. Visit 
+            If you were not expecting this, you can ignore it. Visit{' '}
             <Link href={siteUrl} style={link}>Pixcellor</Link> any time.
           </Text>
         </Section>
