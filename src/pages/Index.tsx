@@ -9,11 +9,11 @@ const Index = () => {
 
   return (
     <div className="w-full">
-      <div className="h-screen overflow-hidden">
+      <div className="relative h-screen overflow-hidden">
         <IntroAnimation />
+        <CustomerAccess />
+        <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} />
       </div>
-      <CustomerAccess />
-      <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} />
       <FalloffConsentBanner />
     </div>
   );
