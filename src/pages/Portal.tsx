@@ -1883,8 +1883,8 @@ export default function Portal() {
                             />
                           ))}
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => startEditingContact(c)}>Edit</Button>
-                        <Button variant="outline" size="sm" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
+                        <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => startEditingContact(c)}>Edit</Button>
+                        <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
                         <Badge variant="secondary">{events.length} logs</Badge>
                       </div>
                     </div>
