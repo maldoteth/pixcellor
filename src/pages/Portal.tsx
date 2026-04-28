@@ -291,6 +291,7 @@ export default function Portal() {
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [openContactId, setOpenContactId] = useState<string | null>(null);
+  const [contactDetailDrawerId, setContactDetailDrawerId] = useState<string | null>(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [mobileContactDrawerOpen, setMobileContactDrawerOpen] = useState(false);
@@ -771,6 +772,11 @@ export default function Portal() {
 
   const getContact = (id: string) => contacts.find(c => c.id === id);
 
+  const openContactDrawer = (contactId: string) => {
+    setActiveTab("sales");
+    setContactDetailDrawerId(contactId);
+  };
+
   const openEventFormForContact = (contactId: string) => {
     const contact = contacts.find(c => c.id === contactId);
     setEventForm({ contact_id: contactId, title: "", description: "", callback_at: "" });
@@ -1225,6 +1231,11 @@ export default function Portal() {
 
   const currentContactField = contactWizardFields[mobileContactStep];
   const currentSalesField = salesEventWizardFields[mobileSalesStep];
+  const contactDetailDrawerContact = contactDetailDrawerId ? getContact(contactDetailDrawerId) : null;
+  const contactDetailDrawerEvents = contactDetailDrawerContact ? contactEvents.filter(e => e.contact_id === contactDetailDrawerContact.id) : [];
+  const contactDetailDrawerEmail = normalizeEmail(contactDetailDrawerContact?.email);
+  const contactDetailDrawerOrderStats = contactDetailDrawerEmail ? contactOrderStatsByEmail.get(contactDetailDrawerEmail) : null;
+  const contactDetailDrawerPhoneHref = formatPhoneHref(contactDetailDrawerContact?.phone);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 pb-28 md:p-6 md:pb-28 lg:pb-6">
@@ -1290,7 +1301,15 @@ export default function Portal() {
                 return (
                   <Card
                     key={e.id}
-                    className="overflow-hidden"
+                    role="button"
+                    tabIndex={0}
+                    className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    onClick={() => contact && openContactDrawer(contact.id)}
+                    onKeyDown={(event) => {
+                      if (!contact || (event.key !== "Enter" && event.key !== " ")) return;
+                      event.preventDefault();
+                      openContactDrawer(contact.id);
+                    }}
                     style={{
                       background: `linear-gradient(135deg, ${statusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--card)) 34%, hsl(var(--card)) 100%)`,
                     }}
@@ -1300,7 +1319,7 @@ export default function Portal() {
                         <div className="font-medium">{e.title}</div>
                         <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown contact"} · {new Date(e.callback_at!).toLocaleString()}</div>
                         {contact?.phone && (phoneHref ? (
-                          <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`}>
+                          <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
                             {contact.phone}
                           </a>
                         ) : (
@@ -1310,8 +1329,8 @@ export default function Portal() {
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <Badge className="pricing-button rounded-sm px-3 py-1 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
-                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={() => completeCallback(e.id)}>Done</Button>
-                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={() => tryCallbackAgain(e.id)}>Tried</Button>
+                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void completeCallback(e.id); }}>Done</Button>
+                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void tryCallbackAgain(e.id); }}>Tried</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -1963,6 +1982,87 @@ export default function Portal() {
           {"\n"}
         </p>
       </div>
+
+      <Drawer open={Boolean(contactDetailDrawerContact)} onOpenChange={(open) => !open && setContactDetailDrawerId(null)}>
+        <DrawerContent className="max-h-[88dvh] border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
+          <DrawerHeader className="mx-auto w-full max-w-3xl px-0 text-left">
+            <DrawerTitle>{contactDetailDrawerContact?.name ?? "Contact"}</DrawerTitle>
+            <DrawerDescription>
+              {[contactDetailDrawerContact?.email, contactDetailDrawerContact?.location].filter(Boolean).join(" · ") || "Sales contact"}
+            </DrawerDescription>
+          </DrawerHeader>
+          {contactDetailDrawerContact && (
+            <div className="mx-auto w-full max-w-3xl space-y-4 overflow-y-auto pb-2">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card/60 p-3">
+                <div className="min-w-0 space-y-1">
+                  {contactDetailDrawerContact.phone && (contactDetailDrawerPhoneHref ? (
+                    <a href={contactDetailDrawerPhoneHref} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contactDetailDrawerContact.phone}`}>
+                      {contactDetailDrawerContact.phone}
+                    </a>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.phone}</div>
+                  ))}
+                  {contactDetailDrawerContact.notes && <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.notes}</div>}
+                  {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
+                </div>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <div className="flex items-center gap-1" aria-label="Contact status">
+                    {contactStatuses.map(status => (
+                      <button
+                        key={status.value}
+                        type="button"
+                        title={status.label}
+                        aria-label={status.label}
+                        onClick={() => updateContactStatus(contactDetailDrawerContact.id, status.value)}
+                        className={`h-5 w-5 rounded-full border transition-opacity ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                        style={{ backgroundColor: status.color }}
+                      />
+                    ))}
+                  </div>
+                  <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
+                    Create event
+                  </Button>
+                </div>
+              </div>
+              {contactDetailDrawerOrderStats && (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Order history</div>
+                  {contactDetailDrawerOrderStats.orders.map(order => {
+                    const requirements = requirementsBySession.get(order.session_id);
+                    return (
+                      <div key={order.session_id} className="rounded-md border border-border bg-card/60 p-3 text-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-medium">{order.amount_total != null ? formatGBP(order.amount_total) : "—"}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</span>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <Badge variant={order.order_status === "delivered" ? "default" : "outline"}>{order.order_status === "delivered" ? "Delivered" : "Open"}</Badge>
+                          <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
+                          {order.delivered_domain && <Badge variant="secondary">{order.delivered_domain}</Badge>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Contact history</div>
+                {contactDetailDrawerEvents.length === 0 && <p className="text-sm text-muted-foreground">No communications logged.</p>}
+                {contactDetailDrawerEvents.map(e => (
+                  <div key={e.id} className="rounded-md border border-border bg-card/60 p-3 text-sm">
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <span className="font-medium">{e.title}</span>
+                      <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
+                    </div>
+                    {e.description && <div className="mt-1 whitespace-pre-wrap">{e.description}</div>}
+                    {e.callback_at && <div className="mt-1 text-xs text-muted-foreground">Callback: {new Date(e.callback_at).toLocaleString()}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </DrawerContent>
+      </Drawer>
 
       <Drawer open={mobileContactDrawerOpen} onOpenChange={setMobileContactDrawerOpen}>
         <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl lg:hidden">
