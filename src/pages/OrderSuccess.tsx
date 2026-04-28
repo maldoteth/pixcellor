@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { CheckCircle2, ClipboardList, Loader2, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +14,7 @@ type OrderStatus = {
   packageName?: string | null;
   amount?: string | null;
   customerEmail?: string | null;
+  requirementsSubmitted?: boolean;
 };
 
 function fireFireworks() {
@@ -157,17 +159,28 @@ export default function OrderSuccess() {
                 </div>
 
                 <div className="rounded-md border border-border bg-muted/30 p-5 text-left space-y-3">
-                  <div className="flex items-center gap-2 font-medium">
+                  <div className="flex flex-wrap items-center gap-2 font-medium">
                     <ClipboardList className="h-5 w-5 text-primary" />
-                    Add your project requirements
+                    Project requirements
+                    {order.requirementsSubmitted && (
+                      <Badge className="ml-auto border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">Reqs submitted</Badge>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Use the project requirements form to send us your site name, contents, page details, colours, style direction, references, images, written content, and socials.
-                  </p>
-                  {sessionId && (
-                    <Button asChild className="mt-2">
-                      <Link to={`/project-requirements?session_id=${encodeURIComponent(sessionId)}`}>Add project requirements</Link>
-                    </Button>
+                  {order.requirementsSubmitted ? (
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Your project requirements are saved and linked to this order.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Use the project requirements form to send us your site name, contents, page details, colours, style direction, references, images, written content, and socials.
+                      </p>
+                      {sessionId && (
+                        <Button asChild className="mt-2">
+                          <Link to={`/project-requirements?session_id=${encodeURIComponent(sessionId)}`}>Add project requirements</Link>
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               </>
