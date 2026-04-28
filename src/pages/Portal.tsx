@@ -519,6 +519,42 @@ export default function Portal() {
     return map;
   }, [emailLogs, orders]);
 
+  const contactOrderStatsByEmail = useMemo(() => {
+    const map = new Map<string, { orders: StripeSession[]; ltv: number }>();
+    for (const order of orders) {
+      const email = normalizeEmail(order.customer_email);
+      if (!email) continue;
+      const current = map.get(email) ?? { orders: [], ltv: 0 };
+      current.orders.push(order);
+      current.ltv += order.amount_total ?? 0;
+      map.set(email, current);
+    }
+    for (const value of map.values()) {
+      value.orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
+    return map;
+  }, [orders]);
+
+  useEffect(() => {
+    const matchedNonClients = contacts.filter(contact => {
+      const email = normalizeEmail(contact.email);
+      return email && contact.status !== "gold" && contactOrderStatsByEmail.has(email);
+    });
+    if (matchedNonClients.length === 0) return;
+
+    setContacts(current => current.map(contact => {
+      const email = normalizeEmail(contact.email);
+      return email && contactOrderStatsByEmail.has(email) ? { ...contact, status: "gold" } : contact;
+    }));
+
+    void Promise.all(matchedNonClients.map(contact =>
+      (supabase as any).rpc("portal_update_contact_status", {
+        _contact_id: contact.id,
+        _status: "gold",
+      })
+    )).then(() => loadPortalSnapshot());
+  }, [contacts, contactOrderStatsByEmail, loadPortalSnapshot]);
+
   const filteredOrders = useMemo(() => {
     const searched = !q ? orders : orders.filter(o =>
       matches(o.customer_email) ||
@@ -623,18 +659,36 @@ export default function Portal() {
   }, [contactEvents, filteredContacts, q]);
 
   const searchedContacts = useMemo(() => {
-    const statusFiltered = contactsStatusFilter === "all" ? filteredContacts : filteredContacts.filter(c => c.status === contactsStatusFilter);
+    const statusFiltered = contactsStatusFilter === "all" ? filteredContacts : filteredContacts.filter(c => {
+      const email = normalizeEmail(c.email);
+      const hasOrders = Boolean(email && contactOrderStatsByEmail.has(email));
+      const effectiveStatus = hasOrders ? "gold" : c.status;
+      return effectiveStatus === contactsStatusFilter;
+    });
     if (!contactsQ) return statusFiltered;
     const matchingContactIds = new Set(
       contactEvents
         .filter(e => matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) || matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at))
         .map(e => e.contact_id)
     );
-    return statusFiltered.filter(c =>
+    return statusFiltered.filter(c => {
+      const email = normalizeEmail(c.email);
+      const orderStats = email ? contactOrderStatsByEmail.get(email) : null;
+      const orderMatches = Boolean(orderStats && (
+        matchesQuery(contactsQ, "client") ||
+        matchesQuery(contactsQ, "ltv") ||
+        orderStats.orders.some(order =>
+          matchesQuery(contactsQ, order.session_id) || matchesQuery(contactsQ, order.payment_status) ||
+          matchesQuery(contactsQ, order.status) || matchesQuery(contactsQ, order.order_status) ||
+          matchesQuery(contactsQ, order.delivered_domain) || matchesQuery(contactsQ, formatGBP(order.amount_total ?? 0))
+        )
+      ));
+      return (
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id)
-    );
-  }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter]);
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
+      );
+    });
+  }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactOrderStatsByEmail]);
 
   const salesCallbacks = useMemo(() => {
     const pending = contactEvents
