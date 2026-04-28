@@ -590,6 +590,7 @@ function MobileCards() {
           <span className="text-3xl font-extrabold text-foreground">£150</span>
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP £375</p>
+        <DiscountBadge discount="60%" />
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
@@ -625,6 +626,7 @@ function MobileCards() {
         <p className="text-xs text-muted-foreground line-through mb-4">
           RRP £1,500
         </p>
+        <DiscountBadge discount="67%" />
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
@@ -697,6 +699,7 @@ function MobileCards() {
               <p className="text-xs text-muted-foreground line-through mb-4">
                 RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
               </p>
+              <DiscountBadge discount={retainerBilling === "monthly" ? "57%" : "57%"} />
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.retainer.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
