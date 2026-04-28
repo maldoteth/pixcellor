@@ -972,7 +972,7 @@ export default function Portal() {
   const tryCallbackAgain = async (eventId: string) => {
     const nextCallback = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     const { error } = await supabase
-      .from("contact_events" as any)
+      .from("contact_events")
       .update({ callback_at: nextCallback, completed_at: null })
       .eq("id", eventId);
 
