@@ -18,7 +18,7 @@ const PACKAGES = {
     rrp: "£500",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment" as const,
-    features: ["Industry leading website", "Lifetime guarantee", "Custom design", "Up to 3 pages"],
+    features: ["Industry leading website", "Lifetime warranty", "Custom design", "Up to 3 pages"],
   },
   elite: {
     name: "Elite",
@@ -28,7 +28,7 @@ const PACKAGES = {
     monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
     mode: "payment" as const,
     featured: true,
-    features: ["Cutting edge site or app", "Lifetime guarantee", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
+    features: ["Cutting edge site or app", "Lifetime warranty", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
   },
   retainer: {
     name: "Retainer",
