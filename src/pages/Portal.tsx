@@ -298,6 +298,7 @@ export default function Portal() {
   const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
+  const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [manualReply, setManualReply] = useState("");
   const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
@@ -424,6 +425,10 @@ export default function Portal() {
     const timer = window.setInterval(() => setNowMs(Date.now()), 30_000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    setEventContactSuggestionCount(6);
+  }, [eventContactSearch, mobileSalesDrawerOpen, showSalesEventForm]);
 
   const loadMessages = async (conversationId: string) => {
     setActiveConv(conversationId);
