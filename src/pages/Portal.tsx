@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Archive, Loader2, Mail, Plus, Search } from "lucide-react";
+import { Archive, Home, Loader2, Mail, Plus, Search, ShoppingBag, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 type StripeSession = {
@@ -281,6 +281,7 @@ export default function Portal() {
   const [sendingConfirmationId, setSendingConfirmationId] = useState<string | null>(null);
   const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("sales");
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot");
@@ -751,6 +752,32 @@ export default function Portal() {
     navigate("/portal-login", { replace: true });
   };
 
+  const scrollPortalTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+  const openMobileHome = () => {
+    setActiveTab("sales");
+    setShowContactForm(false);
+    setShowSalesEventForm(false);
+    scrollPortalTop();
+  };
+
+  const openMobileSalesEvent = () => {
+    setActiveTab("sales");
+    setShowSalesEventForm(true);
+    scrollPortalTop();
+  };
+
+  const openMobileContactForm = () => {
+    setActiveTab("contacts");
+    setShowContactForm(true);
+    scrollPortalTop();
+  };
+
+  const openMobileOrders = () => {
+    setActiveTab("orders");
+    scrollPortalTop();
+  };
+
   const createContact = async () => {
     const name = contactForm.name.trim();
     if (!name) {
@@ -1051,7 +1078,7 @@ export default function Portal() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 md:p-6">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 pb-28 md:p-6">
       <div className="mx-auto max-w-7xl min-w-0 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl md:text-3xl font-semibold">Pixcellor Dev Portal</h1>
@@ -1113,7 +1140,7 @@ export default function Portal() {
           )}
         </div>
 
-        <Tabs defaultValue="sales" className="min-w-0">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
           <TabsList className="grid h-auto w-full grid-cols-2 gap-1 md:grid-cols-5 xl:grid-cols-9">
             <TabsTrigger value="sales" className="h-10 px-2 text-xs sm:text-sm">Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="h-10 px-2 text-xs sm:text-sm">Orders ({filteredOrders.length})</TabsTrigger>
@@ -1734,6 +1761,27 @@ export default function Portal() {
           {"\n"}
         </p>
       </div>
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur md:hidden" aria-label="Admin mobile shortcuts">
+        <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
+          <Button variant={activeTab === "sales" && !showSalesEventForm ? "default" : "ghost"} size="sm" onClick={openMobileHome} className="h-14 flex-col gap-1 px-1 text-[10px]">
+            <Home className="h-4 w-4" />
+            Home
+          </Button>
+          <Button variant={showSalesEventForm ? "default" : "ghost"} size="sm" onClick={openMobileSalesEvent} className="h-14 flex-col gap-1 px-1 text-[10px]" disabled={contacts.length === 0}>
+            <Plus className="h-4 w-4" />
+            Sales event
+          </Button>
+          <Button variant={showContactForm ? "default" : "ghost"} size="sm" onClick={openMobileContactForm} className="h-14 flex-col gap-1 px-1 text-[10px]">
+            <UserPlus className="h-4 w-4" />
+            Contact
+          </Button>
+          <Button variant={activeTab === "orders" ? "default" : "ghost"} size="sm" onClick={openMobileOrders} className="h-14 flex-col gap-1 px-1 text-[10px]">
+            <ShoppingBag className="h-4 w-4" />
+            Orders
+          </Button>
+        </div>
+      </nav>
     </div>
   );
 }
