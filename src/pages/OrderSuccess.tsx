@@ -127,11 +127,6 @@ export default function OrderSuccess() {
                   <p className="text-muted-foreground max-w-xl mx-auto">
                     Your payment was received by checkout. We’re syncing the confirmation now so your order details and email are ready.
                   </p>
-                  {sessionId && (
-                    <Button asChild className="mt-2">
-                      <Link to={`/project-requirements?session_id=${encodeURIComponent(sessionId)}`}>Add project requirements</Link>
-                    </Button>
-                  )}
                 </div>
               </>
             ) : order?.confirmed ? (
@@ -169,6 +164,11 @@ export default function OrderSuccess() {
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Use the project requirements form to send us your site name, contents, page details, colours, style direction, references, images, written content, and socials.
                   </p>
+                  {sessionId && (
+                    <Button asChild className="mt-2">
+                      <Link to={`/project-requirements?session_id=${encodeURIComponent(sessionId)}`}>Add project requirements</Link>
+                    </Button>
+                  )}
                 </div>
               </>
             ) : (
