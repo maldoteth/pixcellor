@@ -803,19 +803,45 @@ export default function Portal() {
 
   const openMobileSalesEvent = () => {
     setActiveTab("sales");
-    setShowSalesEventForm(true);
-    scrollPortalTop();
+    setShowSalesEventForm(false);
+    setMobileSalesStep(0);
+    setMobileSalesDrawerOpen(true);
   };
 
   const openMobileContactForm = () => {
     setActiveTab("contacts");
-    setShowContactForm(true);
-    scrollPortalTop();
+    setShowContactForm(false);
+    setMobileContactStep(0);
+    setMobileContactDrawerOpen(true);
   };
 
   const openMobileOrders = () => {
     setActiveTab("orders");
     scrollPortalTop();
+  };
+
+  const continueMobileContact = (skip = false) => {
+    const field = contactWizardFields[mobileContactStep];
+    const value = contactForm[field.key].trim();
+    if (field.required && !value) {
+      toast.error(`${field.label} is required.`);
+      return;
+    }
+    if (skip && !field.required) setContactForm(f => ({ ...f, [field.key]: "" }));
+    if (mobileContactStep < contactWizardFields.length - 1) setMobileContactStep(step => step + 1);
+    else void createContact();
+  };
+
+  const continueMobileSalesEvent = (skip = false) => {
+    const field = salesEventWizardFields[mobileSalesStep];
+    const value = field.key === "contact" ? eventForm.contact_id : eventForm[field.key].trim();
+    if (field.required && !value) {
+      toast.error(`${field.label} is required.`);
+      return;
+    }
+    if (skip && !field.required) setEventForm(f => ({ ...f, [field.key]: "" }));
+    if (mobileSalesStep < salesEventWizardFields.length - 1) setMobileSalesStep(step => step + 1);
+    else void createContactEvent();
   };
 
   const createContact = async () => {
