@@ -8,6 +8,10 @@ const corsHeaders = {
 
 const clean = (value: unknown) => typeof value === "string" && value.trim() ? value.trim().slice(0, 500) : null;
 const cleanLong = (value: unknown) => typeof value === "string" && value.trim() ? value.trim().slice(0, 2000) : null;
+const cleanInt = (value: unknown, min = 0, max = 100) => {
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? Math.max(min, Math.min(max, Math.round(n))) : null;
+};
 
 const getClientIp = (req: Request) => {
   const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
@@ -23,6 +27,10 @@ serve(async (req) => {
     if (typeof sessionId !== "string" || sessionId.length < 8 || sessionId.length > 200) throw new Error("Invalid sessionId");
     const safeContext = context && typeof context === "object" ? context as Record<string, unknown> : {};
     const safeMetadata = metadata && typeof metadata === "object" ? metadata as Record<string, unknown> : {};
+    const event = clean(safeMetadata.event);
+    const maxScrollPercent = cleanInt(safeMetadata.maxScrollPercent ?? safeContext.maxScrollPercent);
+    const portfolioPage = cleanInt(safeMetadata.portfolioPage, 0, 1000);
+    const portfolioProject = clean(safeMetadata.projectName ?? safeMetadata.projectUrl);
 
     const token = Deno.env.get("IPINFO_TOKEN");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -35,6 +43,12 @@ serve(async (req) => {
     if (!ip) throw new Error("Could not detect visitor IP");
 
     const supabase = createClient(supabaseUrl, serviceKey);
+    const { data: existingFalloff } = await supabase
+      .from("visitor_falloffs")
+      .select("max_scroll_percent, portfolio_opened_at, portfolio_pages_viewed, portfolio_project_opened_at, portfolio_project_opened, pricing_opened_at, buy_clicked_at")
+      .eq("visitor_id", visitorId)
+      .eq("session_id", sessionId)
+      .maybeSingle();
     const response = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}?token=${encodeURIComponent(token)}`);
     const data = await response.json();
     if (!response.ok) throw new Error(`IPinfo lookup failed [${response.status}]: ${JSON.stringify(data).slice(0, 300)}`);
@@ -58,6 +72,13 @@ serve(async (req) => {
         timezone: clean(safeContext.timezone),
         screen_size: clean(safeContext.screen),
         viewport_size: clean(safeContext.viewport),
+        max_scroll_percent: Math.max(existingFalloff?.max_scroll_percent ?? 0, maxScrollPercent ?? 0),
+        portfolio_opened_at: existingFalloff?.portfolio_opened_at ?? (event === "portfolio_opened" || event === "portfolio_page_viewed" || event === "portfolio_project_opened" ? new Date().toISOString() : null),
+        portfolio_pages_viewed: Math.max(existingFalloff?.portfolio_pages_viewed ?? 0, portfolioPage ?? 0),
+        portfolio_project_opened_at: existingFalloff?.portfolio_project_opened_at ?? (event === "portfolio_project_opened" ? new Date().toISOString() : null),
+        portfolio_project_opened: event === "portfolio_project_opened" ? portfolioProject : existingFalloff?.portfolio_project_opened ?? null,
+        pricing_opened_at: existingFalloff?.pricing_opened_at ?? (event === "pricing_opened" ? new Date().toISOString() : null),
+        buy_clicked_at: existingFalloff?.buy_clicked_at ?? (event === "checkout_started" || event === "chat_checkout_started" ? new Date().toISOString() : null),
         last_seen_at: new Date().toISOString(),
         metadata: safeMetadata,
         ip_address: clean(data.ip) ?? ip,
@@ -88,7 +109,7 @@ serve(async (req) => {
         enrichment_error: null,
         enriched_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }, { onConflict: "visitor_id,session_id" });
+      }, { onConflict: "visitor_id,session_id", ignoreDuplicates: false });
 
     if (error) throw error;
 

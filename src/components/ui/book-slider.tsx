@@ -3,6 +3,7 @@ import HTMLFlipBook from "react-pageflip";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileBookSlider from "./mobile-book-slider";
+import { recordFalloff } from "@/lib/checkoutTracking";
 
 // Import portfolio screenshots
 import firstClassAgencyImg from '@/assets/portfolio/first-class-agency.png';
@@ -86,6 +87,7 @@ function BookSlider() {
   const bookRef = useRef<any>(null);
 
   const handleFlip = (e: any) => {
+    void recordFalloff({ event: e.data > 0 ? "portfolio_page_viewed" : "portfolio_opened", portfolioPage: e.data });
     if (e.data > 0) {
       setIsOpened(true);
     } else if (e.data === 0) {
@@ -238,6 +240,7 @@ function BookSlider() {
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
+                      void recordFalloff({ event: "portfolio_project_opened", projectName: site.name, projectUrl: site.url });
                       window.open(`https://${site.url}`, '_blank', 'noopener,noreferrer');
                     }}
                     className="text-primary text-sm mb-3 hover:underline inline-block cursor-pointer"

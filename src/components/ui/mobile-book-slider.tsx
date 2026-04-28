@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import HTMLFlipBook from "react-pageflip";
+import { recordFalloff } from "@/lib/checkoutTracking";
 
 // Import portfolio screenshots
 import firstClassAgencyImg from '@/assets/portfolio/first-class-agency.png';
@@ -85,6 +86,7 @@ function MobileBookSlider() {
 
   const handleFlip = (e: any) => {
     setCurrentPage(e.data);
+    void recordFalloff({ event: "portfolio_page_viewed", portfolioPage: e.data + 1 });
   };
 
   return (
@@ -164,6 +166,7 @@ function MobileBookSlider() {
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
+                      void recordFalloff({ event: "portfolio_project_opened", projectName: site.name, projectUrl: site.url });
                       window.open(`https://${site.url}`, '_blank', 'noopener,noreferrer');
                     }}
                     className="text-primary text-xs mb-2 hover:underline inline-block cursor-pointer"

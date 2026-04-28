@@ -70,6 +70,13 @@ type VisitorFalloff = {
   price_id: string | null;
   customer_email: string | null;
   checkout_started_at: string | null;
+  max_scroll_percent: number;
+  portfolio_opened_at: string | null;
+  portfolio_pages_viewed: number;
+  portfolio_project_opened_at: string | null;
+  portfolio_project_opened: string | null;
+  pricing_opened_at: string | null;
+  buy_clicked_at: string | null;
   last_seen_at: string;
   event_count: number;
   metadata: Record<string, unknown> | null;
@@ -1219,6 +1226,9 @@ export default function Portal() {
                     </div>
                     <div className="flex flex-wrap items-center justify-end gap-2">
                       {f.checkout_session_id && <Badge variant="secondary">Checkout opened</Badge>}
+                      {f.buy_clicked_at && <Badge variant="secondary">Buy clicked</Badge>}
+                      {f.pricing_opened_at && <Badge variant="outline">Pricing opened</Badge>}
+                      {f.portfolio_opened_at && <Badge variant="outline">Portfolio read</Badge>}
                       {f.package_name && <Badge variant="outline">{f.package_name}</Badge>}
                       {f.enrichment_status && <Badge variant={f.enrichment_status === "enriched" ? "secondary" : "outline"}>{f.enrichment_status}</Badge>}
                     </div>
@@ -1271,6 +1281,11 @@ export default function Portal() {
                     </div>
                   </div>
                   <div className="grid gap-2 text-xs text-muted-foreground md:grid-cols-2">
+                    <div>Scroll depth: {f.max_scroll_percent ?? 0}%</div>
+                    <div>Portfolio pages: {f.portfolio_pages_viewed ?? 0}</div>
+                    <div>Pricing opened: {f.pricing_opened_at ? new Date(f.pricing_opened_at).toLocaleString() : "—"}</div>
+                    <div>Buy clicked: {f.buy_clicked_at ? new Date(f.buy_clicked_at).toLocaleString() : "—"}</div>
+                    <div className="md:col-span-2">Portfolio project: {f.portfolio_project_opened ?? "—"}</div>
                     <div>Page: {f.last_page ?? f.first_page ?? "—"}</div>
                     <div>Referrer: {f.referrer ?? "Direct"}</div>
                     <div>Device: {f.viewport_size ?? "—"} viewport · {f.screen_size ?? "—"} screen</div>
