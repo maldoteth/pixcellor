@@ -181,6 +181,12 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false }: ChatBotPr
   }, [isOpen]);
 
   useEffect(() => {
+    const openChat = () => setIsOpen(true);
+    window.addEventListener("pixcellor:open-chat", openChat);
+    return () => window.removeEventListener("pixcellor:open-chat", openChat);
+  }, [setIsOpen]);
+
+  useEffect(() => {
     if (!conversationId) return;
     const channel = supabase
       .channel(`chat-live-${conversationId}`)
