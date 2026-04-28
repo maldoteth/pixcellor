@@ -819,15 +819,16 @@ export default function Portal() {
           />
           {q && (
             <p className="text-xs text-muted-foreground mt-1">
-              {filteredOrders.length} orders · {filteredConversations.length} chats · {filteredProfiles.length} clients · {filteredInquiries.length} inquiries · {filteredContacts.length} contacts
+              {filteredOrders.length} orders · {filteredFalloffs.length} falloffs · {filteredConversations.length} chats · {filteredProfiles.length} clients · {filteredInquiries.length} inquiries · {filteredContacts.length} contacts
             </p>
           )}
         </div>
 
         <Tabs defaultValue="sales">
-          <TabsList className="grid grid-cols-2 md:grid-cols-7 w-full md:w-auto h-auto">
+          <TabsList className="grid grid-cols-2 md:grid-cols-8 w-full md:w-auto h-auto">
             <TabsTrigger value="sales">Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders">Orders ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="falloffs">Falloffs ({filteredFalloffs.length})</TabsTrigger>
             <TabsTrigger value="mailbox">Inbox ({mailboxMessages.length})</TabsTrigger>
             <TabsTrigger value="chats">Chats ({filteredConversations.length})</TabsTrigger>
             <TabsTrigger value="profiles">Clients ({filteredProfiles.length})</TabsTrigger>
@@ -923,6 +924,34 @@ export default function Portal() {
                         Mark delivered
                       </Button>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="falloffs" className="space-y-2">
+            {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {q ? "match your search" : "yet"}.</p>}
+            {filteredFalloffs.map(f => (
+              <Card key={f.id}>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="font-medium">{f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
+                      <div className="text-xs text-muted-foreground">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? "timezone unknown"}</div>
+                      <div className="text-xs text-muted-foreground">Visitor {f.visitor_id} · Session {f.session_id}</div>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      {f.checkout_session_id && <Badge variant="secondary">Checkout opened</Badge>}
+                      {f.package_name && <Badge variant="outline">{f.package_name}</Badge>}
+                    </div>
+                  </div>
+                  <div className="grid gap-2 text-xs text-muted-foreground md:grid-cols-2">
+                    <div>Page: {f.last_page ?? f.first_page ?? "—"}</div>
+                    <div>Referrer: {f.referrer ?? "Direct"}</div>
+                    <div>Device: {f.viewport_size ?? "—"} viewport · {f.screen_size ?? "—"} screen</div>
+                    <div>Language: {f.browser_language ?? "—"}</div>
+                    <div className="md:col-span-2 break-all">User agent: {f.user_agent ?? "—"}</div>
                   </div>
                 </CardContent>
               </Card>
