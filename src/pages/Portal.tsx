@@ -1309,9 +1309,9 @@ export default function Portal() {
                         {e.description && <div className="text-sm whitespace-pre-wrap">{e.description}</div>}
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <Badge variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
-                        <Button variant="outline" size="sm" onClick={() => completeCallback(e.id)}>Done</Button>
-                        <Button variant="outline" size="sm" onClick={() => tryCallbackAgain(e.id)}>Tried</Button>
+                        <Badge className="pricing-button rounded-sm px-3 py-1 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
+                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={() => completeCallback(e.id)}>Done</Button>
+                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={() => tryCallbackAgain(e.id)}>Tried</Button>
                       </div>
                     </CardContent>
                   </Card>
