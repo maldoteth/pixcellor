@@ -222,8 +222,8 @@ const formatCountdown = (callbackAt: string, nowMs: number) => {
     days === 0 && minutes > 0 ? `${minutes}m` : null,
   ].filter(Boolean).join(" ");
 
-  if (totalMinutes < 1) return diffMs < 0 ? "Due now" : "Under 1m left";
-  return diffMs < 0 ? `Overdue by ${parts}` : `${parts} left`;
+  if (totalMinutes < 1) return diffMs < 0 ? "Due now" : "Under 1m";
+  return diffMs < 0 ? `Overdue by ${parts}` : parts;
 };
 
 const callbackPresets = [
