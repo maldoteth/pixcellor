@@ -264,7 +264,6 @@ function DesktopCards() {
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
-  const [retainerFlipped, setRetainerFlipped] = useState(false);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -570,6 +569,7 @@ function MobileCards() {
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
+  const [retainerFlipped, setRetainerFlipped] = useState(false);
 
   const buy = async (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
     setLoading(key);
