@@ -1846,7 +1846,15 @@ export default function Portal() {
               return (
                 <Card
                   key={c.id}
-                  className="overflow-hidden"
+                  role="button"
+                  tabIndex={0}
+                  className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  onClick={() => openContactDrawer(c.id)}
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter" && event.key !== " ") return;
+                    event.preventDefault();
+                    openContactDrawer(c.id);
+                  }}
                   style={{
                     background: `linear-gradient(135deg, ${statusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--card)) 34%, hsl(var(--card)) 100%)`,
                   }}
@@ -1854,17 +1862,17 @@ export default function Portal() {
                   <CardContent className="p-4 space-y-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-[180px] flex-1 text-left">
-                        <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)} className="w-full text-left">
+                        <div className="w-full text-left">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="font-medium">{c.name}</span>
                             {orderStats && <Badge variant="secondary">Client</Badge>}
                           </div>
                           <div className="text-xs text-muted-foreground">{[c.email, c.location].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
                           {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
-                        </button>
+                        </div>
                         <div className="mt-1 space-y-1">
                           {c.phone && (phoneHref ? (
-                            <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${c.phone}`}>
+                            <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${c.phone}`} onClick={(event) => event.stopPropagation()}>
                               {c.phone}
                             </a>
                           ) : (
@@ -1875,8 +1883,8 @@ export default function Portal() {
                       </div>
                       <div className="flex flex-col items-end justify-between gap-3 self-stretch sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:self-auto">
                         <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
-                          <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => startEditingContact(c)}>Edit</Button>
-                          <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
+                          <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={(event) => { event.stopPropagation(); startEditingContact(c); }}>Edit</Button>
+                          <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={(event) => { event.stopPropagation(); openEventFormForContact(c.id); }}>Create event</Button>
                         </div>
                       </div>
                     </div>
@@ -1888,13 +1896,13 @@ export default function Portal() {
                             type="button"
                             title={status.label}
                             aria-label={status.label}
-                            onClick={() => updateContactStatus(c.id, status.value)}
+                            onClick={(event) => { event.stopPropagation(); updateContactStatus(c.id, status.value); }}
                             className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                             style={{ backgroundColor: status.color }}
                           />
                         ))}
                       </div>
-                      <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)}>
+                      <button type="button" onClick={(event) => { event.stopPropagation(); setOpenContactId(isOpen ? null : c.id); }}>
                         <Badge variant="secondary" className="cursor-pointer">{events.length} logs</Badge>
                       </button>
                       <div className="flex items-center gap-1 md:hidden" aria-label="Contact status">
@@ -1904,7 +1912,7 @@ export default function Portal() {
                             type="button"
                             title={status.label}
                             aria-label={status.label}
-                            onClick={() => updateContactStatus(c.id, status.value)}
+                            onClick={(event) => { event.stopPropagation(); updateContactStatus(c.id, status.value); }}
                             className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                             style={{ backgroundColor: status.color }}
                           />
@@ -1912,15 +1920,15 @@ export default function Portal() {
                       </div>
                     </div>
                     {editingContactId === c.id && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-md border border-border p-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-md border border-border p-3" onClick={(event) => event.stopPropagation()}>
                         <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
                         <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                         <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
-                          <Button onClick={updateContact}>Save changes</Button>
-                          <Button variant="outline" onClick={() => setEditingContactId(null)}>Cancel</Button>
+                          <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
+                          <Button variant="outline" onClick={(event) => { event.stopPropagation(); setEditingContactId(null); }}>Cancel</Button>
                         </div>
                       </div>
                     )}
