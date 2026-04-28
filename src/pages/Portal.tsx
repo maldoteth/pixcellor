@@ -1597,7 +1597,7 @@ export default function Portal() {
         </Tabs>
 
         <p className="text-xs text-muted-foreground text-center pt-4">
-          Manage project stages at <a href="/admin" className="underline">/admin</a>
+          {"\n"}
         </p>
       </div>
     </div>
