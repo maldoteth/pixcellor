@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, PencilLine, Plus, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
 
 type StripeSession = {
@@ -131,6 +131,18 @@ type ProjectRequirement = {
   reference_links: string | null;
   images_content_socials: string;
   extra_notes: string | null;
+  updated_at: string;
+};
+
+type EditRequest = {
+  id: string;
+  session_id: string;
+  customer_email: string | null;
+  package_name: string;
+  request_number: number;
+  request_details: string;
+  status: "open" | "in_progress" | "done";
+  created_at: string;
   updated_at: string;
 };
 
