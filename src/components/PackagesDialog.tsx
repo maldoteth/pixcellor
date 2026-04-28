@@ -151,15 +151,14 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
 
 function GlassBuyButton({ onClick, disabled, loading, label }: { onClick: () => void; disabled: boolean; loading: boolean; label: string }) {
   return (
-    <button
+    <Button
+      variant="pricing"
       onClick={onClick}
       disabled={disabled}
-      className="w-full rounded-sm py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 flex items-center justify-center gap-2 relative overflow-hidden group"
-      style={glassButtonStyle}
+      className="h-auto w-full py-2 font-semibold"
     >
-      <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : label}
-    </button>
+    </Button>
   );
 }
 
