@@ -222,6 +222,42 @@ export type Database = {
         }
         Relationships: []
       }
+      edit_requests: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          id: string
+          package_name: string
+          request_details: string
+          request_number: number
+          session_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          id?: string
+          package_name: string
+          request_details: string
+          request_number: number
+          session_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          id?: string
+          package_name?: string
+          request_details?: string
+          request_number?: number
+          session_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -876,6 +912,10 @@ export type Database = {
             Returns: undefined
           }
         | { Args: { _contact_id: string; _status: string }; Returns: undefined }
+      portal_update_edit_request_status: {
+        Args: { _request_id: string; _status: string }
+        Returns: undefined
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
