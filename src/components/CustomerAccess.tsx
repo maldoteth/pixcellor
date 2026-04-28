@@ -136,14 +136,28 @@ export default function CustomerAccess() {
   }, [navigate, open]);
 
   const trigger = (
-    <Button
-      variant="outline"
-      size="icon"
+    <button
+      type="button"
       aria-label="Customer log in"
-      className="fixed right-4 top-4 z-[10000] h-10 w-10 rounded-full border-border bg-background/55 backdrop-blur-xl md:right-6 md:top-6"
+      className={`fixed right-4 top-4 z-[10000] flex items-center justify-center rounded-sm md:right-6 md:top-6 ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
+      style={{
+        background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        border: "1px solid rgba(255,255,255,0.2)",
+        boxShadow: `
+          0 8px 32px rgba(0,0,0,0.3),
+          inset 0 1px 1px rgba(255,255,255,0.3),
+          inset 0 -1px 1px rgba(0,0,0,0.1)
+        `,
+      }}
     >
-      <LogIn className="h-5 w-5" />
-    </Button>
+      <div
+        className="absolute inset-1 rounded-sm opacity-60"
+        style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)" }}
+      />
+      <LogIn className="relative z-10 h-4 w-4 text-white drop-shadow-lg" />
+    </button>
   );
 
   if (isMobile) {
