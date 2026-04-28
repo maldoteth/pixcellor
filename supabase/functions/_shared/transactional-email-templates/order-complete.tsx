@@ -10,9 +10,10 @@ type OrderCompleteProps = {
   packageName?: string
   deliveredDomain?: string
   deliveredUrl?: string
+  editRequestUrl?: string
 }
 
-const OrderCompleteEmail = ({ customerEmail, orderId, packageName, deliveredDomain, deliveredUrl }: OrderCompleteProps) => (
+const OrderCompleteEmail = ({ customerEmail, orderId, packageName, deliveredDomain, deliveredUrl, editRequestUrl }: OrderCompleteProps) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Your Pixcellor website is complete</Preview>
@@ -38,6 +39,7 @@ const OrderCompleteEmail = ({ customerEmail, orderId, packageName, deliveredDoma
               <Text style={panelTitle}>Delivery details</Text>
               {deliveredDomain && <Text style={text}>Your website is live at {deliveredDomain}.</Text>}
               {deliveredUrl && <Button style={button} href={deliveredUrl}>View website</Button>}
+              {editRequestUrl && <Button style={secondaryButton} href={editRequestUrl}>Edit requests</Button>}
               {orderId && <Text style={meta}>Order ID: {orderId}</Text>}
               {customerEmail && <Text style={meta}>Sent to: {customerEmail}</Text>}
             </Column>
@@ -59,6 +61,7 @@ export const template = {
     packageName: 'Full Works',
     deliveredDomain: 'example.com',
     deliveredUrl: 'https://example.com',
+    editRequestUrl: 'https://pixcellor.com/edit-request?order=PXC-ABCD-1234&token=abc123',
   },
 } satisfies TemplateEntry
 
@@ -78,4 +81,5 @@ const panelInner = { padding: '28px 34px 12px' }
 const panelTitle = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as const, lineHeight: '1.4', margin: '0 0 12px' }
 const text = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '0 0 16px' }
 const button = { backgroundColor: '#ffffff', borderRadius: '10px', color: '#050505', display: 'inline-block', fontSize: '14px', fontWeight: '800' as const, margin: '0 0 14px', padding: '13px 18px', textDecoration: 'none' }
+const secondaryButton = { backgroundColor: '#171717', border: '1px solid #3f3f46', borderRadius: '10px', color: '#ffffff', display: 'inline-block', fontSize: '14px', fontWeight: '800' as const, margin: '0 0 14px 10px', padding: '13px 18px', textDecoration: 'none' }
 const meta = { color: '#929292', fontSize: '12px', lineHeight: '1.6', margin: '8px 0' }
