@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getCheckoutContext, recordFalloff } from "@/lib/checkoutTracking";
+import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
 import {
   Drawer,
   DrawerContent,
@@ -97,7 +97,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
     try {
       await recordFalloff({ event: "chat_checkout_started", priceId: card.priceId, mode: card.mode, packageName: card.name, billing: card.billing });
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: card.priceId, mode: card.mode, packageName: card.name, billing: card.billing, clientContext: getCheckoutContext() },
+        body: { priceId: card.priceId, mode: card.mode, packageName: card.name, billing: card.billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined },
       });
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
