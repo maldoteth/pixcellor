@@ -745,6 +745,20 @@ export default function Portal() {
       .slice(0, 8);
   }, [contacts, contactForm.notes]);
 
+  const eventContactSuggestions = useMemo(() => {
+    const query = eventContactSearch.trim().toLowerCase();
+    const sortedContacts = [...contacts].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    if (!query) return sortedContacts;
+
+    return sortedContacts.filter(contact =>
+      [contact.name, contact.email, contact.phone, contact.location, contact.notes]
+        .some(value => value?.toLowerCase().includes(query))
+    );
+  }, [contacts, eventContactSearch]);
+
+  const visibleEventContactSuggestions = eventContactSuggestions.slice(0, eventContactSuggestionCount);
+
   const salesCallbacks = useMemo(() => {
     const pending = contactEvents
       .filter(e => e.callback_at && !e.completed_at)
@@ -777,6 +791,18 @@ export default function Portal() {
     setEventContactSearch(value);
     const contact = contacts.find(c => `${c.name}${c.email ? ` · ${c.email}` : ""}` === value || c.name === value || c.email === value);
     setEventForm(f => ({ ...f, contact_id: contact?.id ?? "" }));
+  };
+
+  const selectEventContact = (contact: Contact) => {
+    setEventContactSearch(`${contact.name}${contact.email ? ` · ${contact.email}` : ""}`);
+    setEventForm(f => ({ ...f, contact_id: contact.id }));
+  };
+
+  const loadMoreEventContactSuggestions = (element: HTMLDivElement) => {
+    const nearBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 12;
+    if (nearBottom && eventContactSuggestionCount < eventContactSuggestions.length) {
+      setEventContactSuggestionCount(count => Math.min(count + 6, eventContactSuggestions.length));
+    }
   };
 
   const startEditingContact = (contact: Contact) => {
