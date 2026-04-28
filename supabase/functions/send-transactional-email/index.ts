@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
 
   const emailLogMetadata = {
     reply_to: `projects@${FROM_DOMAIN}`,
-    order_id: typeof templateData.orderId === 'string' ? templateData.orderId : undefined,
+    order_id: typeof templateData.sessionId === 'string' ? templateData.sessionId : typeof templateData.orderId === 'string' ? templateData.orderId : undefined,
     package_name: typeof templateData.packageName === 'string' ? templateData.packageName : undefined,
   }
 

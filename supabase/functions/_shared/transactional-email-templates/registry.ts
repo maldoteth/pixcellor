@@ -14,6 +14,7 @@ import { template as eliteOrderConfirmation } from './elite-order-confirmation.t
 import { template as retainerOrderConfirmation } from './retainer-order-confirmation.tsx'
 import { template as internalNewOrderNotification } from './internal-new-order-notification.tsx'
 import { template as projectRequirementsReminder } from './project-requirements-reminder.tsx'
+import { template as orderComplete } from './order-complete.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'full-works-order-confirmation': fullWorksOrderConfirmation,
@@ -21,4 +22,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'retainer-order-confirmation': retainerOrderConfirmation,
   'internal-new-order-notification': internalNewOrderNotification,
   'project-requirements-reminder': projectRequirementsReminder,
+  'order-complete': orderComplete,
 }

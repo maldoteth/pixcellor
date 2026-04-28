@@ -18,6 +18,7 @@ type StripeSession = {
   status: string | null;
   order_status?: string | null;
   delivered_at?: string | null;
+  delivered_domain?: string | null;
   customer_email: string | null;
   mode: string | null;
   created_at: string;
@@ -470,15 +471,16 @@ export default function Portal() {
 
   const orderEmailStatusBySession = useMemo(() => {
     const confirmationTemplates = new Set(["full-works-order-confirmation", "elite-order-confirmation", "retainer-order-confirmation"]);
-    const map = new Map<string, { confirmationSent: boolean; reminderSent: boolean }>();
-    for (const order of orders) map.set(order.session_id, { confirmationSent: false, reminderSent: false });
+    const map = new Map<string, { confirmationSent: boolean; reminderSent: boolean; completionSent: boolean }>();
+    for (const order of orders) map.set(order.session_id, { confirmationSent: false, reminderSent: false, completionSent: false });
     for (const log of emailLogs) {
       const orderId = typeof log.metadata?.order_id === "string" ? log.metadata.order_id : null;
       const matchedOrder = orderId ? orders.find(order => order.session_id === orderId) : orders.find(order => order.customer_email?.toLowerCase() === log.recipient_email?.toLowerCase());
       if (!matchedOrder || log.status !== "sent") continue;
-      const current = map.get(matchedOrder.session_id) ?? { confirmationSent: false, reminderSent: false };
+      const current = map.get(matchedOrder.session_id) ?? { confirmationSent: false, reminderSent: false, completionSent: false };
       if (confirmationTemplates.has(log.template_name)) current.confirmationSent = true;
       if (log.template_name === "project-requirements-reminder") current.reminderSent = true;
+      if (log.template_name === "order-complete") current.completionSent = true;
       map.set(matchedOrder.session_id, current);
     }
     return map;
@@ -761,17 +763,31 @@ export default function Portal() {
     }
   };
 
-  const markOrderDelivered = async (sessionId: string) => {
-    const { error } = await (supabase as any).rpc("portal_mark_order_delivered", {
-      _access_code: portalAccessCode,
-      _session_id: sessionId,
+  const markOrderDelivered = async (order: StripeSession) => {
+    if (!order.customer_email) {
+      toast.error("This order does not have a customer email.");
+      return;
+    }
+
+    const deliveredDomain = window.prompt("Enter the delivered website domain, e.g. example.com");
+    if (!deliveredDomain) return;
+
+    const cleanDomain = deliveredDomain.trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "").replace(/^www\./i, "").toLowerCase();
+    if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(cleanDomain)) {
+      toast.error("Enter a valid delivered domain.");
+      return;
+    }
+
+    const { data, error } = await supabase.functions.invoke("send-order-complete", {
+      body: { accessCode: portalAccessCode, sessionId: order.session_id, deliveredDomain: cleanDomain },
     });
-    if (error) {
-      toast.error(error.message);
+
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Could not complete order");
       return;
     }
     await loadPortalSnapshot();
-    toast.success("Order marked delivered.");
+    toast.success(`Order completed and email sent to ${data.recipientEmail || order.customer_email}.`);
   };
 
   const markOrderUndelivered = async (sessionId: string) => {
@@ -1106,7 +1122,7 @@ export default function Portal() {
                         </Button>
                       )}
                       {o.order_status !== "delivered" && (
-                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
+                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o)}>
                           Mark delivered
                         </Button>
                       )}
@@ -1153,10 +1169,11 @@ export default function Portal() {
                       <div className="space-y-1">
                         <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
                         <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
-                        {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
+                        {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}{o.delivered_domain ? ` · ${o.delivered_domain}` : ""}</div>}
                       </div>
                       <div className="flex flex-wrap items-center justify-end gap-3">
                         <Badge variant="default">Delivered</Badge>
+                        {emailStatus?.completionSent && <Badge variant="secondary">Completion sent</Badge>}
                         <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
                         {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                         <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
