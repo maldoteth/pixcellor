@@ -130,6 +130,12 @@ Deno.serve(async (req) => {
     )
   }
 
+  const emailLogMetadata = {
+    reply_to: `projects@${FROM_DOMAIN}`,
+    order_id: typeof templateData.orderId === 'string' ? templateData.orderId : undefined,
+    package_name: typeof templateData.packageName === 'string' ? templateData.packageName : undefined,
+  }
+
   // Create Supabase client with service role (bypasses RLS)
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -314,7 +320,7 @@ Deno.serve(async (req) => {
     template_name: templateName,
     recipient_email: effectiveRecipient,
     status: 'pending',
-      metadata: { reply_to: `projects@${FROM_DOMAIN}` },
+    metadata: emailLogMetadata,
   })
 
   const { error: enqueueError } = await supabase.rpc('enqueue_email', {
@@ -332,6 +338,7 @@ Deno.serve(async (req) => {
       label: templateName,
       idempotency_key: idempotencyKey,
       unsubscribe_token: unsubscribeToken,
+      email_log_metadata: emailLogMetadata,
       queued_at: new Date().toISOString(),
     },
   })
