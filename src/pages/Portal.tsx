@@ -126,6 +126,16 @@ type ProjectRequirement = {
   updated_at: string;
 };
 
+type EmailLog = {
+  message_id: string | null;
+  template_name: string;
+  recipient_email: string;
+  status: string;
+  error_message: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+};
+
 type Inquiry = {
   id: string;
   name: string;
@@ -237,6 +247,7 @@ export default function Portal() {
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [projectRequirements, setProjectRequirements] = useState<ProjectRequirement[]>([]);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
@@ -261,6 +272,7 @@ export default function Portal() {
   const [mailReply, setMailReply] = useState("");
   const [mailboxLoading, setMailboxLoading] = useState(false);
   const [sendingConfirmationId, setSendingConfirmationId] = useState<string | null>(null);
+  const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
@@ -278,6 +290,7 @@ export default function Portal() {
       contacts?: Contact[];
       contactEvents?: ContactEvent[];
       projectRequirements?: ProjectRequirement[];
+      emailLogs?: EmailLog[];
     };
     setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
     setFalloffs(snapshot.falloffs ?? []);
@@ -288,6 +301,7 @@ export default function Portal() {
     setContacts(snapshot.contacts ?? []);
     setContactEvents(snapshot.contactEvents ?? []);
     setProjectRequirements(snapshot.projectRequirements ?? []);
+    setEmailLogs(snapshot.emailLogs ?? []);
     setAllMessages(allMsgs);
     const previews: Record<string, Message> = {};
     for (const m of allMsgs) {
@@ -452,6 +466,22 @@ export default function Portal() {
     for (const item of projectRequirements) map.set(item.session_id, item);
     return map;
   }, [projectRequirements]);
+
+  const orderEmailStatusBySession = useMemo(() => {
+    const confirmationTemplates = new Set(["full-works-order-confirmation", "elite-order-confirmation", "retainer-order-confirmation"]);
+    const map = new Map<string, { confirmationSent: boolean; reminderSent: boolean }>();
+    for (const order of orders) map.set(order.session_id, { confirmationSent: false, reminderSent: false });
+    for (const log of emailLogs) {
+      const orderId = typeof log.metadata?.order_id === "string" ? log.metadata.order_id : null;
+      const matchedOrder = orderId ? orders.find(order => order.session_id === orderId) : orders.find(order => order.customer_email?.toLowerCase() === log.recipient_email?.toLowerCase());
+      if (!matchedOrder || log.status !== "sent") continue;
+      const current = map.get(matchedOrder.session_id) ?? { confirmationSent: false, reminderSent: false };
+      if (confirmationTemplates.has(log.template_name)) current.confirmationSent = true;
+      if (log.template_name === "project-requirements-reminder") current.reminderSent = true;
+      map.set(matchedOrder.session_id, current);
+    }
+    return map;
+  }, [emailLogs, orders]);
 
   const filteredOrders = useMemo(() => {
     if (!q) return orders;
@@ -741,6 +771,28 @@ export default function Portal() {
     }
 
     toast.success(`Confirmation sent to ${data.recipientEmail || order.customer_email}.`);
+    await loadPortalSnapshot();
+  };
+
+  const sendRequirementsReminder = async (order: StripeSession) => {
+    if (!order.customer_email) {
+      toast.error("This order does not have a customer email.");
+      return;
+    }
+
+    setSendingReminderId(order.session_id);
+    const { data, error } = await supabase.functions.invoke("send-requirements-reminder", {
+      body: { accessCode: portalAccessCode, sessionId: order.session_id },
+    });
+    setSendingReminderId(null);
+
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Could not send requirements reminder");
+      return;
+    }
+
+    toast.success(`Requirements reminder sent to ${data.recipientEmail || order.customer_email}.`);
+    await loadPortalSnapshot();
   };
 
   const sendMailboxReply = async () => {
@@ -966,6 +1018,8 @@ export default function Portal() {
             {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {q ? "match your search" : "yet"}.</p>}
             {filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
+              const emailStatus = orderEmailStatusBySession.get(o.session_id);
+              const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
               return (
               <Card key={o.session_id}>
                 <CardContent className="p-4 space-y-4">
@@ -985,6 +1039,7 @@ export default function Portal() {
                       <Badge variant={requirements ? "default" : "outline"}>
                         {requirements ? "Requirements received" : "Needs requirements"}
                       </Badge>
+                      {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                       <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
                       <Button
                         variant="outline"
@@ -994,6 +1049,16 @@ export default function Portal() {
                       >
                         {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
                       </Button>
+                      {canSendReminder && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => sendRequirementsReminder(o)}
+                          disabled={sendingReminderId === o.session_id}
+                        >
+                          {sendingReminderId === o.session_id ? "Sending…" : "Send reminder"}
+                        </Button>
+                      )}
                       {o.order_status !== "delivered" && (
                         <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
                           Mark delivered

@@ -24,3 +24,5 @@ project_id = "rkgjkvghejcmostuqkgw"
 
   [functions.submit-project-requirements]
     verify_jwt = false
+  [functions.send-requirements-reminder]
+    verify_jwt = false
