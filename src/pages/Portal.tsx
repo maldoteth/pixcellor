@@ -695,6 +695,20 @@ export default function Portal() {
     });
   }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactOrderStatsByEmail]);
 
+  const jobTitleSuggestions = useMemo(() => {
+    const typed = contactForm.notes.trim().toLowerCase();
+    const titles = Array.from(new Set(
+      contacts
+        .map(contact => contact.notes?.trim())
+        .filter((title): title is string => Boolean(title))
+    )).sort((a, b) => a.localeCompare(b));
+
+    if (!typed) return titles.slice(0, 8);
+    return titles
+      .filter(title => title.toLowerCase().includes(typed) && title.toLowerCase() !== typed)
+      .slice(0, 8);
+  }, [contacts, contactForm.notes]);
+
   const salesCallbacks = useMemo(() => {
     const pending = contactEvents
       .filter(e => e.callback_at && !e.completed_at)
