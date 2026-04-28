@@ -398,8 +398,11 @@ function DesktopCards() {
           </button>
         </div>
 
-        <div className="mb-1 text-5xl font-black text-foreground">
-          {eliteBilling === "one-time" ? "£500" : "£60/mo"}
+        <div className="mb-1 flex items-end gap-2 text-5xl font-black text-foreground">
+          <span>{eliteBilling === "one-time" ? "£500" : "£60/mo"}</span>
+          {eliteBilling === "monthly" && (
+            <span className="pb-1 text-xs font-semibold text-muted-foreground">for 12 months</span>
+          )}
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">
           {eliteBilling === "one-time" ? "RRP £2,500" : "RRP £250/mo"}
@@ -657,10 +660,13 @@ function MobileCards() {
             Monthly
           </button>
         </div>
-        <div className="mb-1">
+        <div className="mb-1 flex items-end gap-2">
           <span className="text-3xl font-extrabold text-foreground">
             {eliteBilling === "one-time" ? "£500" : "£60/mo"}
           </span>
+          {eliteBilling === "monthly" && (
+            <span className="pb-0.5 text-xs font-semibold text-muted-foreground">for 12 months</span>
+          )}
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">
           {eliteBilling === "one-time" ? "RRP £2,500" : "RRP £250/mo"}
