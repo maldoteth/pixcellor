@@ -10,10 +10,11 @@ const Footer = () => {
         <div className="flex items-center justify-center gap-x-4 flex-nowrap">
           <a
             href="tel:+441483912430"
+            aria-label="Call Pixcellor"
             className="flex items-center gap-1.5 hover:text-foreground transition-colors"
           >
             <Phone className="w-3 h-3" />
-            01483 912430
+            <span className="hidden md:inline">01483 912430</span>
           </a>
         </div>
         <a
