@@ -72,7 +72,7 @@ serve(async (req) => {
 
     const { data: order, error: orderError } = await supabase
       .from("stripe_checkout_sessions")
-      .select("session_id, payment_status, status, amount_total, customer_email, mode, metadata, order_code")
+      .select("session_id, payment_status, status, amount_total, customer_email, mode, metadata, order_code, requirements_token")
       .eq("session_id", parsed.data.sessionId)
       .maybeSingle();
 
@@ -99,6 +99,11 @@ serve(async (req) => {
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Pixcellor package";
     const orderCode = typeof order.order_code === "string" ? order.order_code : order.session_id;
     const deliveredUrl = `https://${deliveredDomain}`;
+    const normalizedPackage = packageName.toLowerCase();
+    const canRequestEdits = normalizedPackage.includes("full works") || normalizedPackage.includes("elite");
+    const editRequestUrl = canRequestEdits && order.order_code && order.requirements_token
+      ? `${req.headers.get("origin") || "https://pixcellor.com"}/edit-request?order=${encodeURIComponent(order.order_code)}&token=${encodeURIComponent(order.requirements_token)}`
+      : undefined;
 
     const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
       method: "POST",
@@ -115,6 +120,7 @@ serve(async (req) => {
           amount: formatGBP(order.amount_total),
           deliveredDomain,
           deliveredUrl,
+          editRequestUrl,
         },
       }),
     });

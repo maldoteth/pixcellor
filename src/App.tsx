@@ -14,6 +14,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Unsubscribe from "./pages/Unsubscribe";
 import OrderSuccess from "./pages/OrderSuccess";
 import ProjectRequirements from "./pages/ProjectRequirements";
+import EditRequest from "./pages/EditRequest";
 import CustomerAuth from "./pages/CustomerAuth";
 import CustomerPortal from "./pages/CustomerPortal";
 
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/unsubscribe" element={<Unsubscribe />} />
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/project-requirements" element={<ProjectRequirements />} />
+          <Route path="/edit-request" element={<EditRequest />} />
           <Route path="/customer-login" element={<CustomerAuth />} />
           <Route path="/customer-portal" element={<CustomerPortal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
