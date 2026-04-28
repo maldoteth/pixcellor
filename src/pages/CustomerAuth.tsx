@@ -12,6 +12,7 @@ export default function CustomerAuth() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -35,8 +36,15 @@ export default function CustomerAuth() {
 
       if (error) throw error;
 
+      setLinkSent(true);
       toast.success("Magic link sent. Check your inbox to continue.");
     } catch (error) {
+      const message = error instanceof Error ? error.message.toLowerCase() : "";
+      if (message.includes("rate limit")) {
+        setLinkSent(true);
+        toast.success("A login link was already sent recently. Check your inbox.");
+        return;
+      }
       toast.error(error instanceof Error ? error.message : "Could not continue");
     } finally {
       setBusy(false);
@@ -64,14 +72,17 @@ export default function CustomerAuth() {
                   type="email"
                   autoComplete="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setLinkSent(false);
+                  }}
                   placeholder="you@example.com"
                   required
                 />
               </div>
-              <Button type="submit" disabled={busy} className="w-full gap-2">
+              <Button type="submit" disabled={busy || linkSent} className="w-full gap-2">
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-                Send magic link
+                {linkSent ? "Magic link sent" : "Send magic link"}
               </Button>
             </form>
 
