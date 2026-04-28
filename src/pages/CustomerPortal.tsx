@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   CalendarClock,
   CheckCircle2,
+  Check,
   ClipboardList,
   CreditCard,
   ExternalLink,
@@ -39,6 +40,46 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const BUY_AGAIN_PACKAGES = [
+  {
+    key: "fullWorks",
+    name: "Full Works",
+    price: "£150",
+    rrp: "RRP £375",
+    discount: "60% off",
+    priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
+    mode: "payment",
+    billing: "One-time payment",
+    action: "Buy again",
+    features: ["Industry leading website", "Lifetime warranty", "Custom design", "Up to 3 pages"],
+  },
+  {
+    key: "elite",
+    name: "Elite",
+    price: "£500",
+    rrp: "RRP £1,500",
+    discount: "67% off",
+    priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
+    mode: "payment",
+    billing: "One-time payment",
+    action: "Buy again",
+    featured: true,
+    features: ["Sites or web apps", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
+  },
+  {
+    key: "retainer",
+    name: "Retainer",
+    price: "£1,200/mo",
+    rrp: "RRP £2,500/mo",
+    discount: "52% off",
+    priceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
+    mode: "subscription",
+    billing: "Monthly subscription",
+    action: "Subscribe",
+    features: ["Your own tech department", "Free consulting", "Websites or full apps", "Monthly billing"],
+  },
+] as const;
 
 type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "payments";
 
