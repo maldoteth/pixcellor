@@ -1171,6 +1171,40 @@ export default function Portal() {
     </div>
   );
 
+  const contactFormCard = showContactForm && (
+    <Card>
+      <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <Input placeholder="Name" value={contactForm.name} onChange={(e) => setContactForm(f => ({ ...f, name: e.target.value }))} />
+        <Input placeholder="Phone number" value={contactForm.phone} onChange={(e) => setContactForm(f => ({ ...f, phone: e.target.value }))} />
+        <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
+        <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
+        <div className="md:col-span-2 space-y-2">
+          <Input placeholder="Job title" value={contactForm.notes} onChange={(e) => setContactForm(f => ({ ...f, notes: e.target.value }))} />
+          {jobTitleSuggestions.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {jobTitleSuggestions.map(title => (
+                <Button
+                  key={title}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setContactForm(f => ({ ...f, notes: title }))}
+                  className="h-8 max-w-full justify-start truncate"
+                >
+                  {title}
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="md:col-span-2 flex gap-2">
+          <Button onClick={createContact}>Save contact</Button>
+          <Button variant="outline" onClick={() => setShowContactForm(false)}>Cancel</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   const eventFormCard = showSalesEventForm && (
     <Card>
       <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
