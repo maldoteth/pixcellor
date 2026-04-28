@@ -393,8 +393,10 @@ export type Database = {
           id: string
           metadata: Json
           mode: string | null
+          order_code: string | null
           order_status: string
           payment_status: string | null
+          requirements_token: string | null
           session_id: string
           status: string | null
           stripe_event_id: string
@@ -412,8 +414,10 @@ export type Database = {
           id?: string
           metadata?: Json
           mode?: string | null
+          order_code?: string | null
           order_status?: string
           payment_status?: string | null
+          requirements_token?: string | null
           session_id: string
           status?: string | null
           stripe_event_id: string
@@ -431,8 +435,10 @@ export type Database = {
           id?: string
           metadata?: Json
           mode?: string | null
+          order_code?: string | null
           order_status?: string
           payment_status?: string | null
+          requirements_token?: string | null
           session_id?: string
           status?: string | null
           stripe_event_id?: string
@@ -697,6 +703,11 @@ export type Database = {
         Args: { _email: string }
         Returns: undefined
       }
+      ensure_order_public_reference: {
+        Args: { _session_id: string }
+        Returns: Json
+      }
+      generate_order_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
