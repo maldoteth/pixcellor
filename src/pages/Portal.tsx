@@ -281,6 +281,12 @@ export default function Portal() {
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [salesSearch, setSalesSearch] = useState("");
+  const [ordersSearch, setOrdersSearch] = useState("");
+  const [completedSearch, setCompletedSearch] = useState("");
+  const [falloffsSearch, setFalloffsSearch] = useState("");
+  const [chatsSearch, setChatsSearch] = useState("");
+  const [profilesSearch, setProfilesSearch] = useState("");
+  const [inquiriesSearch, setInquiriesSearch] = useState("");
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
@@ -526,9 +532,18 @@ export default function Portal() {
 
   const salesQ = salesSearch.trim().toLowerCase();
   const contactsQ = contactsSearch.trim().toLowerCase();
-  const q = "";
-  const matches = (s: string | null | undefined) => !!s && s.toLowerCase().includes(q);
+  const ordersQ = ordersSearch.trim().toLowerCase();
+  const completedQ = completedSearch.trim().toLowerCase();
+  const falloffsQ = falloffsSearch.trim().toLowerCase();
+  const chatsQ = chatsSearch.trim().toLowerCase();
+  const profilesQ = profilesSearch.trim().toLowerCase();
+  const inquiriesQ = inquiriesSearch.trim().toLowerCase();
   const matchesQuery = (query: string, s: string | null | undefined) => !!s && s.toLowerCase().includes(query);
+  const orderMatchesQuery = (query: string, order: StripeSession) =>
+    matchesQuery(query, order.customer_email) || matchesQuery(query, order.session_id) ||
+    matchesQuery(query, order.payment_status) || matchesQuery(query, order.status) ||
+    matchesQuery(query, order.currency) || matchesQuery(query, order.order_status) ||
+    matchesQuery(query, order.delivered_domain) || matchesQuery(query, JSON.stringify(order.metadata));
 
 
   const requirementsBySession = useMemo(() => {
@@ -591,107 +606,80 @@ export default function Portal() {
   }, [contacts, contactOrderStatsByEmail, loadPortalSnapshot]);
 
   const filteredOrders = useMemo(() => {
-    const searched = !q ? orders : orders.filter(o =>
-      matches(o.customer_email) ||
-      matches(o.session_id) ||
-      matches(o.payment_status) ||
-      matches(o.status) ||
-      matches(o.currency) ||
-      matches(JSON.stringify(o.metadata))
-    );
+    const searched = !ordersQ ? orders : orders.filter(o => orderMatchesQuery(ordersQ, o));
     return searched.filter((order) => {
       const hasRequirements = requirementsBySession.has(order.session_id);
       const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
       return order.order_status !== "delivered" && reqsMatches;
     });
-  }, [orders, q, orderReqsFilter, requirementsBySession]);
+  }, [orders, ordersQ, orderReqsFilter, requirementsBySession]);
 
   const completedOrders = useMemo(() => {
-    const searched = !q ? orders : orders.filter(o =>
-      matches(o.customer_email) ||
-      matches(o.session_id) ||
-      matches(o.payment_status) ||
-      matches(o.status) ||
-      matches(o.currency) ||
-      matches(JSON.stringify(o.metadata))
-    );
+    const searched = !completedQ ? orders : orders.filter(o => orderMatchesQuery(completedQ, o));
     return searched.filter((order) => {
       const hasRequirements = requirementsBySession.has(order.session_id);
       const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
       return order.order_status === "delivered" && reqsMatches;
     });
-  }, [orders, q, orderReqsFilter, requirementsBySession]);
+  }, [orders, completedQ, orderReqsFilter, requirementsBySession]);
 
   const filteredFalloffs = useMemo(() => {
     const paidSessionIds = new Set(orders.map(o => o.session_id));
     const unpaidFalloffs = falloffs.filter(f => !f.checkout_session_id || !paidSessionIds.has(f.checkout_session_id));
-    if (!q) return unpaidFalloffs;
+    if (!falloffsQ) return unpaidFalloffs;
     return unpaidFalloffs.filter(f =>
-      matches(f.customer_email) ||
-      matches(f.checkout_session_id) ||
-      matches(f.package_name) ||
-      matches(f.billing) ||
-      matches(f.referrer) ||
-      matches(f.user_agent) ||
-      matches(f.timezone) ||
-      matches(f.company_name) ||
-      matches(f.company_domain) ||
-      matches(f.company_type) ||
-      matches(f.ip_address) ||
-      matches(f.ip_city) ||
-      matches(f.ip_region) ||
-      matches(f.ip_country) ||
-      matches(f.ip_hostname) ||
-      matches(f.ip_location) ||
-      matches(f.ip_postal) ||
-      matches(f.asn) ||
-      matches(f.as_name) ||
-      matches(f.as_domain) ||
-      matches(f.as_route) ||
-      matches(f.carrier_name) ||
-      matches(f.enrichment_source) ||
-      matches(f.enrichment_status) ||
-      matches(f.visitor_id) ||
-      matches(JSON.stringify(f.metadata))
+      matchesQuery(falloffsQ, f.customer_email) || matchesQuery(falloffsQ, f.checkout_session_id) ||
+      matchesQuery(falloffsQ, f.package_name) || matchesQuery(falloffsQ, f.billing) ||
+      matchesQuery(falloffsQ, f.referrer) || matchesQuery(falloffsQ, f.user_agent) ||
+      matchesQuery(falloffsQ, f.timezone) || matchesQuery(falloffsQ, f.company_name) ||
+      matchesQuery(falloffsQ, f.company_domain) || matchesQuery(falloffsQ, f.company_type) ||
+      matchesQuery(falloffsQ, f.ip_address) || matchesQuery(falloffsQ, f.ip_city) ||
+      matchesQuery(falloffsQ, f.ip_region) || matchesQuery(falloffsQ, f.ip_country) ||
+      matchesQuery(falloffsQ, f.ip_hostname) || matchesQuery(falloffsQ, f.ip_location) ||
+      matchesQuery(falloffsQ, f.ip_postal) || matchesQuery(falloffsQ, f.asn) ||
+      matchesQuery(falloffsQ, f.as_name) || matchesQuery(falloffsQ, f.as_domain) ||
+      matchesQuery(falloffsQ, f.as_route) || matchesQuery(falloffsQ, f.carrier_name) ||
+      matchesQuery(falloffsQ, f.enrichment_source) || matchesQuery(falloffsQ, f.enrichment_status) ||
+      matchesQuery(falloffsQ, f.visitor_id) || matchesQuery(falloffsQ, JSON.stringify(f.metadata))
     );
-  }, [falloffs, orders, q]);
+  }, [falloffs, orders, falloffsQ]);
 
   const filteredProfiles = useMemo(() => {
-    if (!q) return profiles;
+    if (!profilesQ) return profiles;
     return profiles.filter(p =>
-      matches(p.email) || matches(p.name) || matches(p.company) ||
-      matches(p.brand_colours) || matches(p.requirements) ||
-      matches(p.content_notes) || matches(p.notes) ||
-      matches(p.page_count?.toString())
+      matchesQuery(profilesQ, p.email) || matchesQuery(profilesQ, p.name) || matchesQuery(profilesQ, p.company) ||
+      matchesQuery(profilesQ, p.brand_colours) || matchesQuery(profilesQ, p.requirements) ||
+      matchesQuery(profilesQ, p.content_notes) || matchesQuery(profilesQ, p.notes) ||
+      matchesQuery(profilesQ, p.page_count?.toString())
     );
-  }, [profiles, q]);
+  }, [profiles, profilesQ]);
 
   const filteredInquiries = useMemo(() => {
-    if (!q) return inquiries;
+    if (!inquiriesQ) return inquiries;
     return inquiries.filter(i =>
-      matches(i.name) || matches(i.email) || matches(i.message)
+      matchesQuery(inquiriesQ, i.name) || matchesQuery(inquiriesQ, i.email) || matchesQuery(inquiriesQ, i.message)
     );
-  }, [inquiries, q]);
+  }, [inquiries, inquiriesQ]);
 
   const filteredContacts = useMemo(() => {
-    if (!q) return contacts;
+    if (!contactsQ) return contacts;
     const matchingContactIds = new Set(
-      contactEvents.filter(e => matches(e.title) || matches(e.description) || matches(e.event_type) || matches(e.callback_at)).map(e => e.contact_id)
+      contactEvents.filter(e => matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) || matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at)).map(e => e.contact_id)
     );
     return contacts.filter(c =>
-      matches(c.name) || matches(c.phone) || matches(c.email) ||
-      matches(c.location) || matches(c.notes) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
     );
-  }, [contacts, contactEvents, q]);
+  }, [contacts, contactEvents, contactsQ]);
 
   const filteredContactEvents = useMemo(() => {
-    if (!q) return contactEvents;
+    if (!contactsQ) return contactEvents;
     const contactIds = new Set(filteredContacts.map(c => c.id));
     return contactEvents.filter(e =>
-      contactIds.has(e.contact_id) || matches(e.title) || matches(e.description) ||
-      matches(e.event_type) || matches(e.callback_at)
+      contactIds.has(e.contact_id) || matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) ||
+      matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at)
     );
-  }, [contactEvents, filteredContacts, q]);
+  }, [contactEvents, filteredContacts, contactsQ]);
 
   const searchedContacts = useMemo(() => {
     const statusFiltered = contactsStatusFilter === "all" ? filteredContacts : filteredContacts.filter(c => {
@@ -1127,12 +1115,12 @@ export default function Portal() {
 
   // Conversations match if client_id matches OR any message in them matches
   const filteredConversations = useMemo(() => {
-    if (!q) return conversations;
+    if (!chatsQ) return conversations;
     const matchingConvIds = new Set(
-      allMessages.filter(m => matches(m.content) || matches(m.role)).map(m => m.conversation_id)
+      allMessages.filter(m => matchesQuery(chatsQ, m.content) || matchesQuery(chatsQ, m.role)).map(m => m.conversation_id)
     );
-    return conversations.filter(c => matches(c.client_id) || matchingConvIds.has(c.id));
-  }, [conversations, allMessages, q]);
+    return conversations.filter(c => matchesQuery(chatsQ, c.client_id) || matchingConvIds.has(c.id));
+  }, [conversations, allMessages, chatsQ]);
 
   const renderEventContactSuggestionList = (openUp = false) => (
     <div
@@ -1305,6 +1293,10 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
+            </div>
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card/50 p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Requirements</span>
@@ -1313,7 +1305,7 @@ export default function Portal() {
                 <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
               </div>
             </div>
-            {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {q ? "match your search" : "yet"}.</p>}
+            {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {ordersQ ? "match your search" : "yet"}.</p>}
             {filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
@@ -1398,13 +1390,17 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="completed" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search completed orders by email, order ID, status, domain…" className="pl-9" />
+            </div>
             <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-card/50 p-3">
               <span className="text-xs font-medium text-muted-foreground">Requirements</span>
               <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
               <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
               <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
             </div>
-            {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No completed orders {q ? "match your search" : "yet"}.</p>}
+            {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No completed orders {completedQ ? "match your search" : "yet"}.</p>}
             {completedOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
@@ -1452,7 +1448,11 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="falloffs" className="min-w-0 space-y-2">
-            {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {q ? "match your search" : "yet"}.</p>}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={falloffsSearch} onChange={(e) => setFalloffsSearch(e.target.value)} placeholder="Search falloffs by company, email, IP, location, session…" className="pl-9" />
+            </div>
+            {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
             {filteredFalloffs.map(f => (
                <Card key={f.id} className="min-w-0 overflow-hidden">
                 <CardContent className="p-4 space-y-3">
@@ -1598,7 +1598,11 @@ export default function Portal() {
 
           <TabsContent value="chats" className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
             <div className="space-y-2 max-h-[70vh] overflow-y-auto">
-              {filteredConversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations {q ? "match your search" : "yet"}.</p>}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input value={chatsSearch} onChange={(e) => setChatsSearch(e.target.value)} placeholder="Search chats by client, message, role…" className="pl-9" />
+              </div>
+              {filteredConversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations {chatsQ ? "match your search" : "yet"}.</p>}
               {filteredConversations.map(c => {
                 const last = lastMessages[c.id];
                 return (
@@ -1661,7 +1665,11 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="profiles" className="space-y-2">
-            {filteredProfiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles {q ? "match your search" : "yet"}.</p>}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={profilesSearch} onChange={(e) => setProfilesSearch(e.target.value)} placeholder="Search clients by email, name, company, notes…" className="pl-9" />
+            </div>
+            {filteredProfiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles {profilesQ ? "match your search" : "yet"}.</p>}
             {filteredProfiles.map(p => (
               <Card key={p.email}>
                 <CardContent className="p-4 space-y-1">
@@ -1683,7 +1691,11 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="inquiries" className="space-y-2">
-            {filteredInquiries.length === 0 && <p className="text-muted-foreground text-sm">No inquiries {q ? "match your search" : "yet"}.</p>}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={inquiriesSearch} onChange={(e) => setInquiriesSearch(e.target.value)} placeholder="Search enquiries by name, email, message…" className="pl-9" />
+            </div>
+            {filteredInquiries.length === 0 && <p className="text-muted-foreground text-sm">No inquiries {inquiriesQ ? "match your search" : "yet"}.</p>}
             {filteredInquiries.map(i => (
               <Card key={i.id}>
                 <CardContent className="p-4 space-y-1">
@@ -1765,7 +1777,7 @@ export default function Portal() {
 
             {eventFormCard}
 
-            {searchedContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {q || contactsQ ? "match your search" : "yet"}.</p>}
+            {searchedContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {contactsQ ? "match your search" : "yet"}.</p>}
             {searchedContacts.map(c => {
               const events = filteredContactEvents.filter(e => e.contact_id === c.id);
               const contactEmail = normalizeEmail(c.email);
