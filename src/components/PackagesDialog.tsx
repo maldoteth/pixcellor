@@ -290,7 +290,7 @@ function DesktopCards() {
 
   return (
     <>
-    <div className="flex items-center justify-center gap-5 h-full w-full md:max-lg:scale-[0.58] md:max-lg:origin-center lg:scale-[0.88] xl:scale-100">
+    <div className="flex items-center justify-center gap-5 h-full w-full md:max-lg:scale-[0.58] md:max-lg:origin-center lg:scale-[0.74] xl:scale-[0.88] 2xl:scale-100">
       {/* Full Works - tilted left */}
       <motion.div
         onMouseMove={handleMouseMove}
