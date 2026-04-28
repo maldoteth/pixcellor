@@ -363,12 +363,9 @@ export default function CustomerPortal() {
                       </CardContent>
                     </Card>
                   </div>
-                  <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-                    <div className="space-y-3">
-                      <SectionHeader title="Recent orders" description="Your latest purchases and project status." count={orders.length} />
-                      {orders.length === 0 ? <EmptyState icon={PackageCheck} title="No order history yet" text="Orders will appear here after checkout." /> : orders.slice(0, 3).map((order) => <OrderCard key={order.id} order={order} requirement={requirementsBySession.get(order.session_id)} />)}
-                    </div>
-                    <AccountCard email={data?.email ?? ""} briefs={briefs.length} delivered={deliveredOrders.length} />
+                  <div className="space-y-3">
+                    <SectionHeader title="Recent orders" description="Your latest purchases and project status." count={orders.length} />
+                    {orders.length === 0 ? <EmptyState icon={PackageCheck} title="No order history yet" text="Orders will appear here after checkout." /> : orders.slice(0, 3).map((order) => <OrderCard key={order.id} order={order} requirement={requirementsBySession.get(order.session_id)} />)}
                   </div>
                 </TabsContent>
 
@@ -468,33 +465,6 @@ function InfoTile({ label, value }: { label: string; value: string }) {
       <div className="text-muted-foreground">{label}</div>
       <div className="mt-1 break-words font-medium">{value}</div>
     </div>
-  );
-}
-
-function AccountCard({ email, briefs, delivered }: { email: string; briefs: number; delivered: number }) {
-  return (
-    <Card className="border-border bg-card/70 backdrop-blur-xl">
-      <CardHeader>
-        <CardTitle className="text-base">Account</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 text-sm">
-        <div>
-          <div className="text-muted-foreground">Email</div>
-          <div className="mt-1 break-all font-medium">{email}</div>
-        </div>
-        <Separator />
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <div className="text-muted-foreground">Briefs</div>
-            <div className="mt-1 text-xl font-semibold">{briefs}</div>
-          </div>
-          <div>
-            <div className="text-muted-foreground">Delivered</div>
-            <div className="mt-1 text-xl font-semibold">{delivered}</div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 
