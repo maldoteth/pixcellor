@@ -440,7 +440,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false }: ChatBotPr
       {/* Chat Toggle Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`absolute right-16 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:right-[76px] md:top-6 xl:pointer-events-auto xl:opacity-100 ${hidden ? 'pointer-events-none opacity-0 xl:pointer-events-auto xl:opacity-100' : 'opacity-100'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
+        className={`absolute right-16 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:right-[76px] md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden ? 'pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100' : 'opacity-100'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
         aria-label="Open chat with Alex from Pixcellor"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
