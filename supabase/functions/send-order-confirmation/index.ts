@@ -58,7 +58,9 @@ serve(async (req) => {
     const metadata = order.metadata && typeof order.metadata === "object" ? order.metadata as Record<string, unknown> : {};
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Full Works";
     const billing = typeof metadata.billing === "string" ? metadata.billing : order.mode || "payment";
+    const requirementsUrl = `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(order.session_id)}`;
     const templateData = {
+      requirementsUrl,
       customerEmail: order.customer_email,
       orderId: order.session_id,
       packageName,
