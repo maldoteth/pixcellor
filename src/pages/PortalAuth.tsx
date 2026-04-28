@@ -3,37 +3,54 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-const PORTAL_ACCESS_CODE = "42069";
-const PORTAL_ACCESS_STORAGE_KEY = "pixcellor_portal_access_code";
 
 export default function PortalAuth() {
   const navigate = useNavigate();
-  const [code, setCode] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(PORTAL_ACCESS_STORAGE_KEY) === PORTAL_ACCESS_CODE) {
-      navigate("/portal", { replace: true });
-    }
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate("/portal", { replace: true });
+    });
   }, [navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const cleanCode = code.trim();
-    if (!/^\d{5}$/.test(cleanCode)) {
-      toast.error("Enter the 5-digit access code.");
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
+      toast.error(error.message);
       setBusy(false);
       return;
     }
-    if (cleanCode !== PORTAL_ACCESS_CODE) {
-      toast.error("Wrong access code.");
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userId = sessionData.session?.user.id;
+    if (!userId) {
+      toast.error("Could not verify admin access.");
       setBusy(false);
       return;
     }
-    sessionStorage.setItem(PORTAL_ACCESS_STORAGE_KEY, cleanCode);
+
+    const { data: isAdmin, error: roleError } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (roleError || !isAdmin) {
+      await supabase.auth.signOut();
+      toast.error("Admin access required.");
+      setBusy(false);
+      return;
+    }
+
     navigate("/portal", { replace: true });
   };
 
@@ -46,18 +63,23 @@ export default function PortalAuth() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-3">
             <Input
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="one-time-code"
-              placeholder="Access code"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 5))}
+              type="email"
+              autoComplete="email"
+              placeholder="Admin email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              minLength={5}
-              maxLength={5}
+            />
+            <Input
+              type="password"
+              autoComplete="current-password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
             <Button type="submit" disabled={busy} className="w-full">
-              {busy ? "…" : "Enter portal"}
+              {busy ? "Checking…" : "Enter portal"}
             </Button>
           </form>
         </CardContent>
@@ -65,5 +87,3 @@ export default function PortalAuth() {
     </div>
   );
 }
-
-export { PORTAL_ACCESS_CODE, PORTAL_ACCESS_STORAGE_KEY };

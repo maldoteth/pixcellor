@@ -745,45 +745,70 @@ export type Database = {
         }
         Returns: number
       }
-      portal_close_chat_case: {
-        Args: { _access_code: string; _conversation_id: string }
-        Returns: undefined
-      }
-      portal_complete_callback: {
-        Args: { _access_code: string; _event_id: string }
-        Returns: undefined
-      }
-      portal_create_contact: {
-        Args: {
-          _access_code: string
-          _email?: string
-          _location?: string
-          _name: string
-          _notes?: string
-          _phone?: string
-        }
-        Returns: undefined
-      }
-      portal_create_contact_event: {
-        Args: {
-          _access_code: string
-          _callback_at?: string
-          _contact_id: string
-          _description?: string
-          _title: string
-        }
-        Returns: undefined
-      }
-      portal_fetch_messages: {
-        Args: { _access_code: string; _conversation_id: string }
-        Returns: Json
-      }
-      portal_fetch_snapshot: { Args: { _access_code: string }; Returns: Json }
-      portal_mark_order_delivered:
+      portal_close_chat_case:
         | {
-            Args: { _access_code: string; _session_id: string }
+            Args: { _access_code: string; _conversation_id: string }
             Returns: undefined
           }
+        | { Args: { _conversation_id: string }; Returns: undefined }
+      portal_complete_callback:
+        | {
+            Args: { _access_code: string; _event_id: string }
+            Returns: undefined
+          }
+        | { Args: { _event_id: string }; Returns: undefined }
+      portal_create_contact:
+        | {
+            Args: {
+              _access_code: string
+              _email?: string
+              _location?: string
+              _name: string
+              _notes?: string
+              _phone?: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _email?: string
+              _location?: string
+              _name: string
+              _notes?: string
+              _phone?: string
+            }
+            Returns: undefined
+          }
+      portal_create_contact_event:
+        | {
+            Args: {
+              _access_code: string
+              _callback_at?: string
+              _contact_id: string
+              _description?: string
+              _title: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _callback_at?: string
+              _contact_id: string
+              _description?: string
+              _title: string
+            }
+            Returns: undefined
+          }
+      portal_fetch_messages:
+        | {
+            Args: { _access_code: string; _conversation_id: string }
+            Returns: Json
+          }
+        | { Args: { _conversation_id: string }; Returns: Json }
+      portal_fetch_snapshot:
+        | { Args: never; Returns: Json }
+        | { Args: { _access_code: string }; Returns: Json }
+      portal_mark_order_delivered:
         | {
             Args: {
               _access_code: string
@@ -792,38 +817,64 @@ export type Database = {
             }
             Returns: undefined
           }
-      portal_mark_order_undelivered: {
-        Args: { _access_code: string; _session_id: string }
-        Returns: undefined
-      }
+        | {
+            Args: { _delivered_domain: string; _session_id: string }
+            Returns: undefined
+          }
+      portal_mark_order_undelivered:
+        | {
+            Args: { _access_code: string; _session_id: string }
+            Returns: undefined
+          }
+        | { Args: { _session_id: string }; Returns: undefined }
       portal_require_access: {
         Args: { _access_code: string }
         Returns: undefined
       }
-      portal_send_chat_reply: {
-        Args: {
-          _access_code: string
-          _content: string
-          _conversation_id: string
-        }
-        Returns: undefined
-      }
-      portal_update_contact: {
-        Args: {
-          _access_code: string
-          _contact_id: string
-          _email?: string
-          _location?: string
-          _name: string
-          _notes?: string
-          _phone?: string
-        }
-        Returns: undefined
-      }
-      portal_update_contact_status: {
-        Args: { _access_code: string; _contact_id: string; _status: string }
-        Returns: undefined
-      }
+      portal_require_admin: { Args: never; Returns: undefined }
+      portal_send_chat_reply:
+        | {
+            Args: {
+              _access_code: string
+              _content: string
+              _conversation_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: { _content: string; _conversation_id: string }
+            Returns: undefined
+          }
+      portal_update_contact:
+        | {
+            Args: {
+              _access_code: string
+              _contact_id: string
+              _email?: string
+              _location?: string
+              _name: string
+              _notes?: string
+              _phone?: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _contact_id: string
+              _email?: string
+              _location?: string
+              _name: string
+              _notes?: string
+              _phone?: string
+            }
+            Returns: undefined
+          }
+      portal_update_contact_status:
+        | {
+            Args: { _access_code: string; _contact_id: string; _status: string }
+            Returns: undefined
+          }
+        | { Args: { _contact_id: string; _status: string }; Returns: undefined }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {

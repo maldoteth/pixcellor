@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const PORTAL_ACCESS_CODE = "42069";
 const SITE_URL = "https://pixcellor.com";
 
 const corsHeaders = {
@@ -18,6 +17,19 @@ const json = (body: unknown, status = 200) =>
 const formatGBP = (amount: number | null) =>
   typeof amount === "number" ? `£${(amount / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}` : undefined;
 
+const requireAdmin = async (req: Request) => {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) throw new Error("Unauthorized");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!supabaseUrl || !anonKey) throw new Error("Authentication is not configured");
+  const client = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
+  const { data: sessionData, error: sessionError } = await client.auth.getUser();
+  if (sessionError || !sessionData.user) throw new Error("Unauthorized");
+  const { data: isAdmin, error: roleError } = await client.rpc("has_role", { _user_id: sessionData.user.id, _role: "admin" });
+  if (roleError || !isAdmin) throw new Error("Admin access required");
+};
+
 const templateForPackage = (packageName?: string | null) => {
   const clean = (packageName ?? "").toLowerCase();
   if (clean.includes("retainer")) return "retainer-order-confirmation";
@@ -29,8 +41,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { accessCode, sessionId } = await req.json();
-    if (accessCode !== PORTAL_ACCESS_CODE) return json({ error: "Invalid portal access code" }, 401);
+    await requireAdmin(req);
+    const { sessionId } = await req.json();
     if (typeof sessionId !== "string" || !/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId)) {
       return json({ error: "Invalid order id" }, 400);
     }

@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Archive, Loader2, Mail, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
-import { PORTAL_ACCESS_CODE, PORTAL_ACCESS_STORAGE_KEY } from "./PortalAuth";
 
 type StripeSession = {
   session_id: string;
@@ -245,7 +244,6 @@ export default function Portal() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authError, setAuthError] = useState("");
-  const [portalAccessCode] = useState(() => sessionStorage.getItem(PORTAL_ACCESS_STORAGE_KEY) ?? "");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
   const [falloffs, setFalloffs] = useState<VisitorFalloff[]>([]);
@@ -285,7 +283,7 @@ export default function Portal() {
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
 
   const loadPortalSnapshot = useCallback(async () => {
-    const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot", { _access_code: portalAccessCode });
+    const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot");
     if (error) {
       setAuthError(error.message);
       return;
@@ -324,19 +322,48 @@ export default function Portal() {
       return new Date(bTime).getTime() - new Date(aTime).getTime();
     });
     setConversations(sortedConvs);
-  }, [portalAccessCode]);
+  }, []);
 
-  // Access-code gate
+  // Signed-in admin gate
   useEffect(() => {
-    if (portalAccessCode !== PORTAL_ACCESS_CODE) {
-      setIsAdmin(false);
+    let mounted = true;
+
+    const checkAdmin = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!mounted) return;
+      if (!sessionData.session) {
+        setIsAdmin(false);
+        setAuthChecked(true);
+        navigate("/portal-login", { replace: true });
+        return;
+      }
+
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: sessionData.session.user.id,
+        _role: "admin",
+      });
+      if (!mounted) return;
+      if (error || !data) {
+        await supabase.auth.signOut();
+        setIsAdmin(false);
+        setAuthChecked(true);
+        navigate("/portal-login", { replace: true });
+        return;
+      }
+      setIsAdmin(true);
       setAuthChecked(true);
-      navigate("/portal-login", { replace: true });
-      return;
-    }
-    setIsAdmin(true);
-    setAuthChecked(true);
-  }, [navigate, portalAccessCode]);
+    };
+
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      void checkAdmin();
+    });
+    void checkAdmin();
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   // Initial load + realtime
   useEffect(() => {
@@ -373,7 +400,7 @@ export default function Portal() {
   const loadMessages = async (conversationId: string) => {
     setActiveConv(conversationId);
     setManualReply("");
-    const { data, error } = await (supabase as any).rpc("portal_fetch_messages", { _access_code: portalAccessCode, _conversation_id: conversationId });
+    const { data, error } = await (supabase as any).rpc("portal_fetch_messages", { _conversation_id: conversationId });
     if (error) toast.error(error.message);
     else setMessages((data ?? []) as Message[]);
   };
@@ -396,7 +423,7 @@ export default function Portal() {
 
     setMailboxLoading(true);
     const { data, error } = await supabase.functions.invoke("mailbox", {
-      body: { accessCode: portalAccessCode, action: "list", query: mailboxSearch.trim() || undefined, allowedEmails },
+      body: { action: "list", query: mailboxSearch.trim() || undefined, allowedEmails },
     });
     setMailboxLoading(false);
     if (error || data?.error) {
@@ -415,7 +442,6 @@ export default function Portal() {
       return;
     }
     const { error } = await (supabase as any).rpc("portal_send_chat_reply", {
-      _access_code: portalAccessCode,
       _conversation_id: activeConv,
       _content: content,
     });
@@ -432,7 +458,6 @@ export default function Portal() {
   const closeChatCase = async () => {
     if (!activeConv) return;
     const { error } = await (supabase as any).rpc("portal_close_chat_case", {
-      _access_code: portalAccessCode,
       _conversation_id: activeConv,
     });
     if (error) {
@@ -664,7 +689,7 @@ export default function Portal() {
   };
 
   const exitPortal = () => {
-    sessionStorage.removeItem(PORTAL_ACCESS_STORAGE_KEY);
+    void supabase.auth.signOut();
     navigate("/portal-login", { replace: true });
   };
 
@@ -675,7 +700,6 @@ export default function Portal() {
       return;
     }
     const { error } = await (supabase as any).rpc("portal_create_contact", {
-      _access_code: portalAccessCode,
       _name: name,
       _phone: contactForm.phone,
       _email: contactForm.email,
@@ -700,7 +724,6 @@ export default function Portal() {
       return;
     }
     const { error } = await (supabase as any).rpc("portal_update_contact", {
-      _access_code: portalAccessCode,
       _contact_id: editingContactId,
       _name: name,
       _phone: editContactForm.phone,
@@ -731,7 +754,6 @@ export default function Portal() {
       return;
     }
     const { error } = await (supabase as any).rpc("portal_create_contact_event", {
-      _access_code: portalAccessCode,
       _contact_id: eventForm.contact_id,
       _title: title,
       _description: eventForm.description,
@@ -750,7 +772,7 @@ export default function Portal() {
   };
 
   const completeCallback = async (eventId: string) => {
-    const { error } = await (supabase as any).rpc("portal_complete_callback", { _access_code: portalAccessCode, _event_id: eventId });
+    const { error } = await (supabase as any).rpc("portal_complete_callback", { _event_id: eventId });
     if (error) toast.error(error.message);
     else {
       await loadPortalSnapshot();
@@ -761,7 +783,6 @@ export default function Portal() {
   const updateContactStatus = async (contactId: string, status: Contact["status"]) => {
     setContacts(current => current.map(contact => contact.id === contactId ? { ...contact, status } : contact));
     const { error } = await (supabase as any).rpc("portal_update_contact_status", {
-      _access_code: portalAccessCode,
       _contact_id: contactId,
       _status: status,
     });
@@ -789,7 +810,7 @@ export default function Portal() {
     setDeliveringOrderId(order.session_id);
     try {
       const { data, error } = await supabase.functions.invoke("send-order-complete", {
-        body: { accessCode: portalAccessCode, sessionId: order.session_id, deliveredDomain: cleanDomain },
+        body: { sessionId: order.session_id, deliveredDomain: cleanDomain },
       });
 
       if (error || data?.error) {
@@ -808,7 +829,6 @@ export default function Portal() {
     if (!confirmed) return;
 
     const { error } = await (supabase as any).rpc("portal_mark_order_undelivered", {
-      _access_code: portalAccessCode,
       _session_id: sessionId,
     });
     if (error) {
@@ -827,7 +847,7 @@ export default function Portal() {
 
     setSendingConfirmationId(order.session_id);
     const { data, error } = await supabase.functions.invoke("send-order-confirmation", {
-      body: { accessCode: portalAccessCode, sessionId: order.session_id },
+      body: { sessionId: order.session_id },
     });
     setSendingConfirmationId(null);
 
@@ -848,7 +868,7 @@ export default function Portal() {
 
     setSendingReminderId(order.session_id);
     const { data, error } = await supabase.functions.invoke("send-requirements-reminder", {
-      body: { accessCode: portalAccessCode, sessionId: order.session_id },
+      body: { sessionId: order.session_id },
     });
     setSendingReminderId(null);
 
@@ -865,7 +885,6 @@ export default function Portal() {
     if (!activeMail || !mailReply.trim()) return;
     const { data, error } = await supabase.functions.invoke("mailbox", {
       body: {
-        accessCode: portalAccessCode,
         action: "send",
         to: activeMail.fromEmail,
         subject: activeMail.subject,
@@ -884,7 +903,7 @@ export default function Portal() {
 
   const updateMailboxMessage = async (messageId: string, action: "markRead" | "archive") => {
     const { data, error } = await supabase.functions.invoke("mailbox", {
-      body: { accessCode: portalAccessCode, action, messageId },
+      body: { action, messageId },
     });
     if (error || data?.error) {
       toast.error(data?.error || error?.message || "Mailbox action failed");
