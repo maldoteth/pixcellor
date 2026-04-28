@@ -1136,19 +1136,37 @@ export default function Portal() {
     return conversations.filter(c => matches(c.client_id) || matchingConvIds.has(c.id));
   }, [conversations, allMessages, q]);
 
+  const eventContactSuggestionList = (
+    <div
+      className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 h-72 overflow-y-auto rounded-md border border-border bg-popover shadow-xl"
+      onScroll={(e) => loadMoreEventContactSuggestions(e.currentTarget)}
+    >
+      {visibleEventContactSuggestions.length > 0 ? visibleEventContactSuggestions.map(contact => (
+        <button
+          key={contact.id}
+          type="button"
+          className="flex min-h-12 w-full flex-col items-start justify-center border-b border-border px-3 py-2 text-left text-sm transition-colors last:border-b-0 hover:bg-accent"
+          onClick={() => selectEventContact(contact)}
+        >
+          <span className="font-medium text-foreground">{contact.name}</span>
+          <span className="text-xs text-muted-foreground">{[contact.email, contact.phone, contact.location].filter(Boolean).join(" · ") || "No extra details"}</span>
+        </button>
+      )) : (
+        <div className="flex h-full items-center justify-center px-3 text-sm text-muted-foreground">No contacts found</div>
+      )}
+    </div>
+  );
+
   const eventFormCard = showSalesEventForm && (
     <Card>
       <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
+        <div className="relative">
           <Input
-            list="portal-contact-options"
             placeholder="Search contact"
             value={eventContactSearch}
             onChange={(e) => handleEventContactSearch(e.target.value)}
           />
-          <datalist id="portal-contact-options">
-            {contacts.map(c => <option key={c.id} value={`${c.name}${c.email ? ` · ${c.email}` : ""}`}>{[c.phone, c.location].filter(Boolean).join(" · ")}</option>)}
-          </datalist>
+          {eventContactSuggestionList}
         </div>
         <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
         <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
