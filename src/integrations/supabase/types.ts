@@ -309,6 +309,51 @@ export type Database = {
         }
         Relationships: []
       }
+      project_requirements: {
+        Row: {
+          colours_styles: string
+          created_at: string
+          customer_email: string | null
+          extra_notes: string | null
+          id: string
+          images_content_socials: string
+          pages_details: string
+          reference_links: string | null
+          session_id: string
+          site_contents: string
+          site_name: string
+          updated_at: string
+        }
+        Insert: {
+          colours_styles: string
+          created_at?: string
+          customer_email?: string | null
+          extra_notes?: string | null
+          id?: string
+          images_content_socials: string
+          pages_details: string
+          reference_links?: string | null
+          session_id: string
+          site_contents: string
+          site_name: string
+          updated_at?: string
+        }
+        Update: {
+          colours_styles?: string
+          created_at?: string
+          customer_email?: string | null
+          extra_notes?: string | null
+          id?: string
+          images_content_socials?: string
+          pages_details?: string
+          reference_links?: string | null
+          session_id?: string
+          site_contents?: string
+          site_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_status: {
         Row: {
           created_at: string
