@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -14,7 +13,6 @@ import {
 import {
   Drawer,
   DrawerContent,
-  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -184,7 +182,6 @@ export default function CustomerAccess() {
         <DrawerContent className="border-border bg-background/95 px-4 pb-6 backdrop-blur-xl">
           <DrawerHeader>
             <DrawerTitle>Log in / Sign up</DrawerTitle>
-            <DrawerDescription>Log in or sign up to view your matched orders.</DrawerDescription>
           </DrawerHeader>
           <CustomerAuthForm onSuccess={() => setOpen(false)} />
         </DrawerContent>
@@ -198,7 +195,6 @@ export default function CustomerAccess() {
       <DialogContent className="border-border bg-background/95 backdrop-blur-xl">
         <DialogHeader>
           <DialogTitle>Log in / Sign up</DialogTitle>
-          <DialogDescription>Log in or sign up to view your matched orders.</DialogDescription>
         </DialogHeader>
         <CustomerAuthForm onSuccess={() => setOpen(false)} />
       </DialogContent>
