@@ -145,17 +145,17 @@ function MobileBookSlider() {
                 {/* Nav arrows in top corners of text area */}
                 <button
                   onClick={(e) => { e.stopPropagation(); bookRef.current?.pageFlip()?.flipPrev(); }}
-                  className={`absolute top-2 left-2 p-1 transition ${currentPage === 0 ? 'opacity-0 pointer-events-none' : 'opacity-40 hover:opacity-80'}`}
+                  className={`absolute top-2 left-2 p-1 transition ${currentPage === 0 ? 'opacity-0 pointer-events-none' : 'opacity-90 hover:opacity-100'}`}
                   aria-label="Previous page"
                 >
-                  <ChevronLeft className="w-4 h-4 text-foreground" />
+                  <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); bookRef.current?.pageFlip()?.flipNext(); }}
-                  className={`absolute top-2 right-2 p-1 transition ${currentPage >= totalPages - 1 ? 'opacity-0 pointer-events-none' : 'opacity-40 hover:opacity-80'}`}
+                  className={`absolute top-2 right-2 p-1 transition ${currentPage >= totalPages - 1 ? 'opacity-0 pointer-events-none' : 'opacity-90 hover:opacity-100'}`}
                   aria-label="Next page"
                 >
-                  <ChevronRight className="w-4 h-4 text-foreground" />
+                  <ChevronRight className="w-5 h-5 text-foreground" />
                 </button>
 
                 <div className="text-center">
