@@ -290,6 +290,7 @@ export default function Portal() {
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [mobileContactDrawerOpen, setMobileContactDrawerOpen] = useState(false);
   const [mobileSalesDrawerOpen, setMobileSalesDrawerOpen] = useState(false);
+  const [mobileOrdersDrawerOpen, setMobileOrdersDrawerOpen] = useState(false);
   const [mobileContactStep, setMobileContactStep] = useState(0);
   const [mobileSalesStep, setMobileSalesStep] = useState(0);
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
@@ -817,7 +818,7 @@ export default function Portal() {
 
   const openMobileOrders = () => {
     setActiveTab("orders");
-    scrollPortalTop();
+    setMobileOrdersDrawerOpen(true);
   };
 
   const continueMobileContact = (skip = false) => {
@@ -1976,6 +1977,54 @@ export default function Portal() {
         </DrawerContent>
       </Drawer>
 
+      <Drawer open={mobileOrdersDrawerOpen} onOpenChange={setMobileOrdersDrawerOpen}>
+        <DrawerContent className="max-h-[85dvh] border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl md:hidden">
+          <DrawerHeader className="px-0 text-left">
+            <DrawerTitle>Live orders</DrawerTitle>
+            <DrawerDescription>{filteredOrders.length} open order{filteredOrders.length === 1 ? "" : "s"}</DrawerDescription>
+          </DrawerHeader>
+          <div className="space-y-3 overflow-y-auto pb-2">
+            {filteredOrders.length === 0 && <p className="text-sm text-muted-foreground">No live orders.</p>}
+            {filteredOrders.map(o => {
+              const requirements = requirementsBySession.get(o.session_id);
+              const emailStatus = orderEmailStatusBySession.get(o.session_id);
+              const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
+              return (
+                <div key={o.session_id} className="space-y-3 rounded-md border border-border bg-card/60 p-3">
+                  <div className="space-y-1">
+                    <div className="break-all text-sm font-medium">{o.customer_email ?? "Guest checkout"}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>
+                    <div className="text-xl font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>{o.payment_status ?? "pending"}</Badge>
+                    <Badge variant="outline">Open</Badge>
+                    <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
+                    {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
+                  </div>
+                  <div className="grid gap-2">
+                    <Button variant="outline" size="sm" onClick={() => sendOrderConfirmation(o)} disabled={!o.customer_email || sendingConfirmationId === o.session_id}>
+                      {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
+                    </Button>
+                    {canSendReminder && (
+                      <Button variant="outline" size="sm" onClick={() => sendRequirementsReminder(o)} disabled={sendingReminderId === o.session_id}>
+                        {sendingReminderId === o.session_id ? "Sending…" : "Send reminder"}
+                      </Button>
+                    )}
+                    {o.order_status !== "delivered" && (
+                      <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o)} disabled={deliveringOrderId === o.session_id}>
+                        {deliveringOrderId === o.session_id ? "Processing…" : "Mark delivered"}
+                      </Button>
+                    )}
+                  </div>
+                  <div className="break-all text-[10px] text-muted-foreground">Session {o.session_id}</div>
+                </div>
+              );
+            })}
+          </div>
+        </DrawerContent>
+      </Drawer>
+
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur md:hidden" aria-label="Admin mobile shortcuts">
         <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
           <Button variant={activeTab === "sales" && !showSalesEventForm ? "default" : "ghost"} size="sm" onClick={openMobileHome} className="h-14 flex-col gap-1 px-1 text-[10px]">
@@ -1990,7 +2039,7 @@ export default function Portal() {
             <UserPlus className="h-4 w-4" />
             Contact
           </Button>
-          <Button variant={activeTab === "orders" ? "default" : "ghost"} size="sm" onClick={openMobileOrders} className="h-14 flex-col gap-1 px-1 text-[10px]">
+          <Button variant={mobileOrdersDrawerOpen || activeTab === "orders" ? "default" : "ghost"} size="sm" onClick={openMobileOrders} className="h-14 flex-col gap-1 px-1 text-[10px]">
             <ShoppingBag className="h-4 w-4" />
             Orders
           </Button>
