@@ -1754,7 +1754,7 @@ export default function Portal() {
                           {orderStats.orders.map(order => {
                             const requirements = requirementsBySession.get(order.session_id);
                             return (
-                              <div key={order.session_id} className="rounded-md bg-muted p-3 text-sm">
+                              <div key={order.session_id} className="text-sm rounded-md p-3 bg-neutral-800/[0.17]">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                   <span className="font-medium">{order.amount_total != null ? formatGBP(order.amount_total) : "—"}</span>
                                   <span className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</span>
@@ -1772,7 +1772,7 @@ export default function Portal() {
                       )}
                       {events.length === 0 && !orderStats && <p className="text-xs text-muted-foreground">No communications logged.</p>}
                       {events.map(e => (
-                        <div key={e.id} className="text-sm rounded-md bg-muted p-3">
+                        <div key={e.id} className="text-sm rounded-md p-3 bg-neutral-800/[0.17]">
                           <div className="flex flex-wrap justify-between gap-2">
                             <span className="font-medium">{e.title}</span>
                             <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
