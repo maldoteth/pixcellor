@@ -24,6 +24,7 @@ const DetailRow = ({ label, value }: { label: string; value?: string }) => {
 const FullWorksOrderCompleteEmail = ({ customerEmail, orderId, packageName, deliveredDomain }: CompletionEmailProps) => {
   const cleanDomain = deliveredDomain || 'your new website domain'
   const websiteUrl = deliveredDomain ? `https://${deliveredDomain.replace(/^https?:\/\//i, '')}` : undefined
+  const packageLabel = packageName || 'Full Works'
 
   return (
     <Html lang="en" dir="ltr">
@@ -35,7 +36,7 @@ const FullWorksOrderCompleteEmail = ({ customerEmail, orderId, packageName, deli
             <Text style={brand}>{BRAND_NAME}</Text>
             <Text style={eyebrow}>ORDER COMPLETE</Text>
             <Heading style={h1}>Your order is complete!</Heading>
-            <Text style={intro}>Your Full Works website has been completed and is ready to view on its live domain.</Text>
+            <Text style={intro}>Your {packageLabel} project has been completed and is ready to view on its live domain.</Text>
           </Section>
 
           <Section style={domainPanel}>
@@ -46,7 +47,7 @@ const FullWorksOrderCompleteEmail = ({ customerEmail, orderId, packageName, deli
 
           <Section style={panel}>
             <Text style={panelTitle}>Completion details</Text>
-            <DetailRow label="Package" value={packageName || 'Full Works'} />
+            <DetailRow label="Package" value={packageLabel} />
             <DetailRow label="Order ID" value={orderId} />
             <DetailRow label="Email" value={customerEmail} />
           </Section>
