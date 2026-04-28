@@ -1293,6 +1293,10 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
+            </div>
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card/50 p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Requirements</span>
@@ -1301,7 +1305,7 @@ export default function Portal() {
                 <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
               </div>
             </div>
-            {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {q ? "match your search" : "yet"}.</p>}
+            {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No orders {ordersQ ? "match your search" : "yet"}.</p>}
             {filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
@@ -1386,13 +1390,17 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="completed" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search completed orders by email, order ID, status, domain…" className="pl-9" />
+            </div>
             <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-card/50 p-3">
               <span className="text-xs font-medium text-muted-foreground">Requirements</span>
               <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
               <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
               <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
             </div>
-            {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No completed orders {q ? "match your search" : "yet"}.</p>}
+            {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No completed orders {completedQ ? "match your search" : "yet"}.</p>}
             {completedOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
@@ -1440,7 +1448,11 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="falloffs" className="min-w-0 space-y-2">
-            {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {q ? "match your search" : "yet"}.</p>}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={falloffsSearch} onChange={(e) => setFalloffsSearch(e.target.value)} placeholder="Search falloffs by company, email, IP, location, session…" className="pl-9" />
+            </div>
+            {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
             {filteredFalloffs.map(f => (
                <Card key={f.id} className="min-w-0 overflow-hidden">
                 <CardContent className="p-4 space-y-3">
