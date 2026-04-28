@@ -31,6 +31,21 @@ serve(async (req) => {
     const ip = getClientIp(req);
     if (!ip) throw new Error("Could not detect visitor IP");
 
+    const supabase = createClient(supabaseUrl, serviceKey);
+    const { data: existing, error: readError } = await supabase
+      .from("visitor_falloffs")
+      .select("enrichment_status,enriched_at")
+      .eq("visitor_id", visitorId)
+      .eq("session_id", sessionId)
+      .maybeSingle();
+    if (readError) throw readError;
+    if (existing?.enrichment_status === "enriched" && existing?.enriched_at) {
+      return new Response(JSON.stringify({ ok: true, skipped: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const response = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}?token=${encodeURIComponent(token)}`);
     const data = await response.json();
     if (!response.ok) throw new Error(`IPinfo lookup failed [${response.status}]: ${JSON.stringify(data).slice(0, 300)}`);
@@ -40,7 +55,6 @@ serve(async (req) => {
     const privacy = data.privacy && typeof data.privacy === "object" ? data.privacy : {};
     const carrier = data.carrier && typeof data.carrier === "object" ? data.carrier : {};
 
-    const supabase = createClient(supabaseUrl, serviceKey);
     const { error } = await supabase
       .from("visitor_falloffs")
       .update({
