@@ -1546,6 +1546,38 @@ export default function Portal() {
             })}
           </TabsContent>
 
+          <TabsContent value="edit-requests" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={editRequestsSearch} onChange={(e) => setEditRequestsSearch(e.target.value)} placeholder="Search edit requests by email, order, package, status, or details…" className="pl-9" />
+            </div>
+            {filteredEditRequests.length === 0 && <p className="text-muted-foreground text-sm">No edit requests {editRequestsQ ? "match your search" : "yet"}.</p>}
+            {filteredEditRequests.map((request) => {
+              const order = orders.find((item) => item.session_id === request.session_id);
+              return (
+                <Card key={request.id}>
+                  <CardContent className="space-y-4 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 space-y-1">
+                        <div className="break-all font-medium">{request.customer_email ?? order?.customer_email ?? "Guest checkout"}</div>
+                        <div className="text-xs text-muted-foreground">{request.package_name} · Request #{request.request_number} · {new Date(request.created_at).toLocaleString()}</div>
+                        <div className="break-all text-xs text-muted-foreground">Order {request.session_id}</div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant={request.status === "done" ? "default" : request.status === "in_progress" ? "secondary" : "outline"}>{request.status.replace("_", " ")}</Badge>
+                        <Button variant="outline" size="sm" onClick={() => updateEditRequestStatus(request.id, "in_progress")} disabled={request.status === "in_progress"}>In progress</Button>
+                        <Button variant="outline" size="sm" onClick={() => updateEditRequestStatus(request.id, "done")} disabled={request.status === "done"}>Done</Button>
+                      </div>
+                    </div>
+                    <div className="rounded-md border border-border bg-background/50 p-4 text-sm whitespace-pre-wrap text-muted-foreground">
+                      {request.request_details}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </TabsContent>
+
           <TabsContent value="completed" className="space-y-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
