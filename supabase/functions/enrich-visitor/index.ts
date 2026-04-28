@@ -46,7 +46,20 @@ serve(async (req) => {
 
     const { error } = await supabase
       .from("visitor_falloffs")
-      .update({
+      .upsert({
+        visitor_id: visitorId,
+        session_id: sessionId,
+        consent_status: "granted",
+        first_page: cleanLong(safeContext.pageUrl),
+        last_page: cleanLong(safeContext.pageUrl),
+        referrer: cleanLong(safeContext.referrer),
+        user_agent: cleanLong(safeContext.userAgent),
+        browser_language: clean(safeContext.language),
+        timezone: clean(safeContext.timezone),
+        screen_size: clean(safeContext.screen),
+        viewport_size: clean(safeContext.viewport),
+        last_seen_at: new Date().toISOString(),
+        metadata: safeMetadata,
         ip_address: clean(data.ip) ?? ip,
         ip_hostname: clean(data.hostname),
         ip_city: clean(data.city),
@@ -75,9 +88,7 @@ serve(async (req) => {
         enrichment_error: null,
         enriched_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      })
-      .eq("visitor_id", visitorId)
-      .eq("session_id", sessionId);
+      }, { onConflict: "visitor_id,session_id" });
 
     if (error) throw error;
 
