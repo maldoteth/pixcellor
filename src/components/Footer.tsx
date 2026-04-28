@@ -7,16 +7,6 @@ const Footer = () => {
         <span className="font-medium text-foreground/90 w-full md:w-auto text-center text-sm py-[5px]">
           Pixcellor™
         </span>
-        <div className="flex items-center justify-center gap-x-4 flex-nowrap">
-          <a
-            href="tel:+441483912430"
-            aria-label="Call Pixcellor"
-            className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-          >
-            <Phone className="w-3 h-3" />
-            <span className="hidden md:inline">01483 912430</span>
-          </a>
-        </div>
         <a
           href="https://www.google.com/maps/dir/?api=1&destination=3rd+Floor%2C+207+Regent+Street%2C+London%2C+W1B+3HH"
           target="_blank"
@@ -27,6 +17,16 @@ const Footer = () => {
           <MapPin className="w-3.5 h-3.5 md:w-3 md:h-3" />
           <span className="hidden md:inline">3rd Floor, 207 Regent Street, London, W1B 3HH</span>
         </a>
+        <div className="flex items-center justify-center gap-x-4 flex-nowrap">
+          <a
+            href="tel:+441483912430"
+            aria-label="Call Pixcellor"
+            className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+          >
+            <Phone className="w-3 h-3" />
+            <span className="hidden md:inline">01483 912430</span>
+          </a>
+        </div>
         <a
           href="https://www.facebook.com/profile.php?id=61569263824416"
           target="_blank"
