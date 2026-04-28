@@ -1598,7 +1598,11 @@ export default function Portal() {
 
           <TabsContent value="chats" className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
             <div className="space-y-2 max-h-[70vh] overflow-y-auto">
-              {filteredConversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations {q ? "match your search" : "yet"}.</p>}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input value={chatsSearch} onChange={(e) => setChatsSearch(e.target.value)} placeholder="Search chats by client, message, role…" className="pl-9" />
+              </div>
+              {filteredConversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations {chatsQ ? "match your search" : "yet"}.</p>}
               {filteredConversations.map(c => {
                 const last = lastMessages[c.id];
                 return (
@@ -1661,7 +1665,11 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="profiles" className="space-y-2">
-            {filteredProfiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles {q ? "match your search" : "yet"}.</p>}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={profilesSearch} onChange={(e) => setProfilesSearch(e.target.value)} placeholder="Search clients by email, name, company, notes…" className="pl-9" />
+            </div>
+            {filteredProfiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles {profilesQ ? "match your search" : "yet"}.</p>}
             {filteredProfiles.map(p => (
               <Card key={p.email}>
                 <CardContent className="p-4 space-y-1">
@@ -1683,7 +1691,11 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="inquiries" className="space-y-2">
-            {filteredInquiries.length === 0 && <p className="text-muted-foreground text-sm">No inquiries {q ? "match your search" : "yet"}.</p>}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={inquiriesSearch} onChange={(e) => setInquiriesSearch(e.target.value)} placeholder="Search enquiries by name, email, message…" className="pl-9" />
+            </div>
+            {filteredInquiries.length === 0 && <p className="text-muted-foreground text-sm">No inquiries {inquiriesQ ? "match your search" : "yet"}.</p>}
             {filteredInquiries.map(i => (
               <Card key={i.id}>
                 <CardContent className="p-4 space-y-1">
@@ -1765,7 +1777,7 @@ export default function Portal() {
 
             {eventFormCard}
 
-            {searchedContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {q || contactsQ ? "match your search" : "yet"}.</p>}
+            {searchedContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {contactsQ ? "match your search" : "yet"}.</p>}
             {searchedContacts.map(c => {
               const events = filteredContactEvents.filter(e => e.contact_id === c.id);
               const contactEmail = normalizeEmail(c.email);
