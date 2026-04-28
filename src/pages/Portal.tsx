@@ -2048,11 +2048,27 @@ export default function Portal() {
                       />
                     ))}
                   </div>
+                  <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
+                    Edit
+                  </Button>
                   <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
                     Create event
                   </Button>
                 </div>
               </div>
+              {editingContactId === contactDetailDrawerContact.id && (
+                <div className="grid grid-cols-1 gap-3 rounded-md border border-border p-3 md:grid-cols-2">
+                  <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
+                  <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
+                  <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
+                  <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
+                  <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
+                  <div className="flex gap-2 md:col-span-2">
+                    <Button onClick={updateContact}>Save changes</Button>
+                    <Button variant="outline" onClick={() => setEditingContactId(null)}>Cancel</Button>
+                  </div>
+                </div>
+              )}
               {contactDetailDrawerOrderStats && (
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Order history</div>
