@@ -102,7 +102,9 @@ serve(async (req) => {
 
       if (event.type === "checkout.session.completed" && paymentStatus === "paid" && session.customer_details?.email) {
         const packageName = session.metadata?.package_name || "Full Works";
+        const requirementsUrl = `${SITE_URL}/project-requirements?session_id=${encodeURIComponent(session.id)}`;
         const templateData = {
+          requirementsUrl,
           customerEmail: session.customer_details.email,
           orderId: session.id,
           packageName,
