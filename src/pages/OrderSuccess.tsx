@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
-import { CheckCircle2, Loader2, Mail, Sparkles } from "lucide-react";
+import { CheckCircle2, ClipboardList, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -127,6 +127,11 @@ export default function OrderSuccess() {
                   <p className="text-muted-foreground max-w-xl mx-auto">
                     Your payment was received by checkout. We’re syncing the confirmation now so your order details and email are ready.
                   </p>
+                  {sessionId && (
+                    <Button asChild className="mt-2">
+                      <Link to={`/project-requirements?session_id=${encodeURIComponent(sessionId)}`}>Add project requirements</Link>
+                    </Button>
+                  )}
                 </div>
               </>
             ) : order?.confirmed ? (
@@ -158,11 +163,11 @@ export default function OrderSuccess() {
 
                 <div className="rounded-md border border-border bg-muted/30 p-5 text-left space-y-3">
                   <div className="flex items-center gap-2 font-medium">
-                    <Mail className="h-5 w-5 text-primary" />
-                    What happens next
+                    <ClipboardList className="h-5 w-5 text-primary" />
+                    Add your project requirements
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Reply to the confirmation email with any specifics, requests, colours, images, logos, social links, written copy, references, inspiration, or anything else you’d like us to include so we can perfect your site.
+                    Use the project requirements form to send us your site name, contents, page details, colours, style direction, references, images, written content, and socials.
                   </p>
                 </div>
               </>
