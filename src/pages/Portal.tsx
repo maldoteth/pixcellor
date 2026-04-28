@@ -2019,7 +2019,7 @@ export default function Portal() {
                         }}
                         className="h-12 text-base"
                       />
-                      {eventContactSuggestionList}
+                      {renderEventContactSuggestionList(true)}
                     </div>
                     <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
                       <Clipboard className="h-4 w-4" />
