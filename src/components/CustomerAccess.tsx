@@ -26,7 +26,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 function CustomerAuthForm({ onSuccess }: { onSuccess: () => void }) {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -37,20 +36,37 @@ function CustomerAuthForm({ onSuccess }: { onSuccess: () => void }) {
 
     try {
       const cleanEmail = email.trim().toLowerCase();
-      const result = mode === "signup"
-        ? await supabase.auth.signUp({
-            email: cleanEmail,
-            password,
-            options: { emailRedirectTo: `${window.location.origin}/customer-portal` },
-          })
-        : await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+      const loginResult = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
 
-      if (result.error) throw result.error;
+      if (!loginResult.error) {
+        onSuccess();
+        navigate("/customer-portal", { replace: true });
+        return;
+      }
 
-      if (mode === "signup" && !result.data.session) {
+      if (loginResult.error.message.toLowerCase().includes("email not confirmed")) {
+        toast.error("Check your email to confirm this account first.");
+        return;
+      }
+
+      const signupResult = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/customer-portal` },
+      });
+
+      if (signupResult.error) {
+        const message = signupResult.error.message.toLowerCase();
+        if (message.includes("already") || message.includes("registered")) {
+          toast.error("Account found. Check the password and try again.");
+          return;
+        }
+        throw signupResult.error;
+      }
+
+      if (!signupResult.data.session) {
         toast.success("Check your email to confirm your customer account.");
         setPassword("");
-        setMode("login");
         return;
       }
 
@@ -65,23 +81,6 @@ function CustomerAuthForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 rounded-md border border-border bg-muted/30 p-1">
-        <Button
-          type="button"
-          variant={mode === "login" ? "default" : "ghost"}
-          onClick={() => setMode("login")}
-        >
-          Log in
-        </Button>
-        <Button
-          type="button"
-          variant={mode === "signup" ? "default" : "ghost"}
-          onClick={() => setMode("signup")}
-        >
-          Sign up
-        </Button>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="customer-access-email">Email</Label>
@@ -100,7 +99,7 @@ function CustomerAuthForm({ onSuccess }: { onSuccess: () => void }) {
           <Input
             id="customer-access-password"
             type="password"
-            autoComplete={mode === "signup" ? "new-password" : "current-password"}
+            autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             minLength={6}
@@ -109,7 +108,7 @@ function CustomerAuthForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
         <Button type="submit" disabled={busy} className="w-full gap-2">
           {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-          {mode === "signup" ? "Create account" : "Log in"}
+          Continue
         </Button>
       </form>
 
