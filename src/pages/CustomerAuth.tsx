@@ -61,6 +61,11 @@ export default function CustomerAuth() {
         throw signupResult.error;
       }
 
+      if (signupResult.data.user?.identities?.length === 0) {
+        toast.error("Account found. Check the password and try again.");
+        return;
+      }
+
       if (!signupResult.data.session) {
         const { error: resendError } = await supabase.auth.resend({
           type: "signup",
