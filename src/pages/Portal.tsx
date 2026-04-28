@@ -1270,6 +1270,7 @@ export default function Portal() {
   const contactDetailDrawerEmail = normalizeEmail(contactDetailDrawerContact?.email);
   const contactDetailDrawerOrderStats = contactDetailDrawerEmail ? contactOrderStatsByEmail.get(contactDetailDrawerEmail) : null;
   const contactDetailDrawerPhoneHref = formatPhoneHref(contactDetailDrawerContact?.phone);
+  const contactDetailDrawerStatusColor = contactDetailDrawerContact ? getContactStatusColor(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) : "hsl(var(--card))";
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 pb-28 md:p-6 md:pb-28 lg:pb-6">
@@ -2013,7 +2014,12 @@ export default function Portal() {
       </div>
 
       <Drawer open={Boolean(contactDetailDrawerContact)} onOpenChange={(open) => !open && setContactDetailDrawerId(null)}>
-        <DrawerContent className="max-h-[88dvh] border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
+        <DrawerContent
+          className="max-h-[88dvh] border-border px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl"
+          style={{
+            background: `linear-gradient(135deg, ${contactDetailDrawerStatusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--background) / 0.96) 34%, hsl(var(--background) / 0.96) 100%)`,
+          }}
+        >
           <DrawerHeader className="mx-auto w-full max-w-3xl px-0 text-left">
             <DrawerTitle>{contactDetailDrawerContact?.name ?? "Contact"}</DrawerTitle>
             <DrawerDescription>
