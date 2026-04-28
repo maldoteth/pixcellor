@@ -1861,33 +1861,38 @@ export default function Portal() {
                           <div className="text-xs text-muted-foreground">{[c.email, c.location].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
                           {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
                         </button>
-                        {c.phone && (phoneHref ? (
-                          <a href={phoneHref} className="mt-1 inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${c.phone}`}>
-                            {c.phone}
-                          </a>
-                        ) : (
-                          <div className="mt-1 text-xs text-muted-foreground">{c.phone}</div>
-                        ))}
-                      </div>
-                      <div className="flex flex-col items-end gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-                        <div className="flex items-center gap-1" aria-label="Contact status">
-                          {contactStatuses.map(status => (
-                            <button
-                              key={status.value}
-                              type="button"
-                              title={status.label}
-                              aria-label={status.label}
-                              onClick={() => updateContactStatus(c.id, status.value)}
-                              className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
-                              style={{ backgroundColor: status.color }}
-                            />
+                        <div className="mt-1 space-y-1">
+                          {c.phone && (phoneHref ? (
+                            <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${c.phone}`}>
+                              {c.phone}
+                            </a>
+                          ) : (
+                            <div className="text-xs text-muted-foreground">{c.phone}</div>
                           ))}
+                          {c.notes && <div className="text-xs text-muted-foreground">{c.notes}</div>}
                         </div>
+                      </div>
+                      <div className="flex flex-col items-end justify-between gap-3 self-stretch sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:self-auto">
                         <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
                           <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => startEditingContact(c)}>Edit</Button>
                           <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => openEventFormForContact(c.id)}>Create event</Button>
                         </div>
-                        <Badge variant="secondary">{events.length} logs</Badge>
+                        <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
+                          <div className="flex items-center gap-1" aria-label="Contact status">
+                            {contactStatuses.map(status => (
+                              <button
+                                key={status.value}
+                                type="button"
+                                title={status.label}
+                                aria-label={status.label}
+                                onClick={() => updateContactStatus(c.id, status.value)}
+                                className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                                style={{ backgroundColor: status.color }}
+                              />
+                            ))}
+                          </div>
+                          <Badge variant="secondary">{events.length} logs</Badge>
+                        </div>
                       </div>
                     </div>
                     {editingContactId === c.id && (
@@ -1903,7 +1908,6 @@ export default function Portal() {
                         </div>
                       </div>
                     )}
-                    {c.notes && <div className="text-sm whitespace-pre-wrap">{c.notes}</div>}
                     {isOpen && <div className="border-t border-border pt-3 space-y-2">
                       {orderStats && (
                         <div className="space-y-2">
