@@ -1891,12 +1891,16 @@ export default function Portal() {
                               />
                             ))}
                           </div>
-                          <Badge variant="secondary" className="hidden lg:inline-flex">{events.length} logs</Badge>
+                          <button type="button" className="hidden lg:inline-flex" onClick={() => setOpenContactId(isOpen ? null : c.id)}>
+                            <Badge variant="secondary" className="cursor-pointer">{events.length} logs</Badge>
+                          </button>
                         </div>
                       </div>
                     </div>
                     <div className="flex justify-start md:justify-end lg:hidden">
-                      <Badge variant="secondary">{events.length} logs</Badge>
+                      <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)}>
+                        <Badge variant="secondary" className="cursor-pointer">{events.length} logs</Badge>
+                      </button>
                     </div>
                     {editingContactId === c.id && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-md border border-border p-3">
