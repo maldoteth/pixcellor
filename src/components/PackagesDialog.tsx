@@ -15,7 +15,7 @@ const PACKAGES = {
   fullWorks: {
     name: "Full Works",
     price: "£150",
-    rrp: "£500",
+    rrp: "£375",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment" as const,
     features: ["Industry leading website", "Lifetime warranty", "Custom design", "Up to 3 pages"],
@@ -23,7 +23,7 @@ const PACKAGES = {
   elite: {
     name: "Elite",
     price: "£500",
-    rrp: "£2,500",
+    rrp: "£1,500",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     mode: "payment" as const,
     featured: true,
@@ -321,7 +321,7 @@ function DesktopCards() {
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-1 text-3xl font-extrabold text-foreground">£150</div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP £500</p>
+        <p className="text-xs text-muted-foreground line-through mb-4">RRP £375</p>
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -375,7 +375,7 @@ function DesktopCards() {
           £500
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">
-          RRP £2,500
+          RRP £1,500
         </p>
         <ul className="mb-6 space-y-2 text-lg text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
@@ -467,7 +467,7 @@ function DesktopCards() {
                 {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
               </div>
               <p className="text-xs text-muted-foreground line-through mb-4">
-                RRP {retainerBilling === "monthly" ? "£3,600/mo" : "£36,000/yr"}
+                RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
               </p>
               <ul className="mb-6 space-y-2 text-base text-muted-foreground">
                 {PACKAGES.retainer.features.map((f) => (
@@ -577,7 +577,7 @@ function MobileCards() {
         <div className="mt-3 mb-1">
           <span className="text-3xl font-extrabold text-foreground">£150</span>
         </div>
-        <p className="text-xs text-muted-foreground line-through mb-4">RRP £500</p>
+        <p className="text-xs text-muted-foreground line-through mb-4">RRP £375</p>
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
@@ -611,7 +611,7 @@ function MobileCards() {
           </span>
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">
-          RRP £2,500
+          RRP £1,500
         </p>
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
@@ -683,7 +683,7 @@ function MobileCards() {
                 </span>
               </div>
               <p className="text-xs text-muted-foreground line-through mb-4">
-                RRP {retainerBilling === "monthly" ? "£3,600/mo" : "£36,000/yr"}
+                RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
               </p>
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.retainer.features.map((f) => (
