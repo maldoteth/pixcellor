@@ -810,7 +810,7 @@ export default function Portal() {
     setDeliveringOrderId(order.session_id);
     try {
       const { data, error } = await supabase.functions.invoke("send-order-complete", {
-        body: { accessCode: portalAccessCode, sessionId: order.session_id, deliveredDomain: cleanDomain },
+        body: { sessionId: order.session_id, deliveredDomain: cleanDomain },
       });
 
       if (error || data?.error) {
@@ -829,7 +829,6 @@ export default function Portal() {
     if (!confirmed) return;
 
     const { error } = await (supabase as any).rpc("portal_mark_order_undelivered", {
-      _access_code: portalAccessCode,
       _session_id: sessionId,
     });
     if (error) {
@@ -848,7 +847,7 @@ export default function Portal() {
 
     setSendingConfirmationId(order.session_id);
     const { data, error } = await supabase.functions.invoke("send-order-confirmation", {
-      body: { accessCode: portalAccessCode, sessionId: order.session_id },
+      body: { sessionId: order.session_id },
     });
     setSendingConfirmationId(null);
 
@@ -869,7 +868,7 @@ export default function Portal() {
 
     setSendingReminderId(order.session_id);
     const { data, error } = await supabase.functions.invoke("send-requirements-reminder", {
-      body: { accessCode: portalAccessCode, sessionId: order.session_id },
+      body: { sessionId: order.session_id },
     });
     setSendingReminderId(null);
 
@@ -886,7 +885,6 @@ export default function Portal() {
     if (!activeMail || !mailReply.trim()) return;
     const { data, error } = await supabase.functions.invoke("mailbox", {
       body: {
-        accessCode: portalAccessCode,
         action: "send",
         to: activeMail.fromEmail,
         subject: activeMail.subject,
@@ -905,7 +903,7 @@ export default function Portal() {
 
   const updateMailboxMessage = async (messageId: string, action: "markRead" | "archive") => {
     const { data, error } = await supabase.functions.invoke("mailbox", {
-      body: { accessCode: portalAccessCode, action, messageId },
+      body: { action, messageId },
     });
     if (error || data?.error) {
       toast.error(data?.error || error?.message || "Mailbox action failed");
