@@ -112,6 +112,15 @@ function StripeBadge() {
   );
 }
 
+function DiscountBadge({ discount }: { discount: string }) {
+  return (
+    <div className="mb-4 inline-flex w-fit flex-col rounded-md border border-border bg-foreground px-3 py-1.5 text-background shadow-sm">
+      <span className="text-[9px] font-black uppercase tracking-wider">Introductary offer</span>
+      <span className="text-xs font-extrabold">{discount} off</span>
+    </div>
+  );
+}
+
 interface PackagesDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
