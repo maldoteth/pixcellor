@@ -36,7 +36,8 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!supabaseUrl || !serviceRoleKey) throw new Error("Order confirmation service is not configured");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!supabaseUrl || !serviceRoleKey || !anonKey) throw new Error("Order confirmation service is not configured");
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       global: { headers: { Authorization: `Bearer ${serviceRoleKey}` } },
@@ -65,18 +66,25 @@ serve(async (req) => {
       billing,
     };
 
-    const { data, error: sendError } = await supabase.functions.invoke("send-transactional-email", {
-      body: {
+    const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${anonKey}`,
+        "apikey": anonKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         templateName: templateForPackage(packageName),
         recipientEmail: order.customer_email,
         idempotencyKey: `manual-order-confirmation-${order.session_id}-${Date.now()}`,
         templateData,
-      },
+      }),
     });
+    const data = await emailResponse.json().catch(() => null);
 
-    if (sendError || data?.error) {
-      console.error("Confirmation email send failed", { sendError, data });
-      throw new Error(data?.error || sendError?.message || "Could not send confirmation email");
+    if (!emailResponse.ok || data?.error) {
+      console.error("Confirmation email send failed", { status: emailResponse.status, data });
+      throw new Error(data?.error || "Could not send confirmation email");
     }
 
     return json({ success: true, recipientEmail: order.customer_email });
