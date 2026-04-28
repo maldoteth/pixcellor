@@ -234,6 +234,7 @@ function DesktopCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [eliteBilling, setEliteBilling] = useState<"one-time" | "monthly">("one-time");
+  const [enterpriseOpen, setEnterpriseOpen] = useState(false);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -260,7 +261,8 @@ function DesktopCards() {
   };
 
   return (
-    <div className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100">
+    <>
+    <div className="flex items-center justify-center gap-5 h-full w-full md:max-lg:scale-[0.58] md:max-lg:origin-center lg:scale-[0.88] xl:scale-100">
       {/* Full Works - tilted left */}
       <motion.div
         onMouseMove={handleMouseMove}
@@ -482,7 +484,46 @@ function DesktopCards() {
         />
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
+
+      {/* Enterprise */}
+      <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        initial={{ opacity: 0, y: 40, rotate: 6, scale: 1 }}
+        animate={{ opacity: 1, y: 0, rotate: 6, scale: 1 }}
+        whileHover={{ scale: 1.05 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.4 }}
+        className="relative z-10 w-[302px] rounded-2xl border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
+        style={{
+          willChange: "transform",
+          boxShadow: `
+            0 8px 32px rgba(0,0,0,0.3),
+            inset 0 1px 1px rgba(255,255,255,0.15),
+            inset 0 -1px 1px rgba(0,0,0,0.1)
+          `,
+        }}
+      >
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10">
+          <div className="mb-2 text-lg font-bold text-foreground">Enterprise</div>
+          <div className="mb-1 text-3xl font-extrabold text-foreground">Custom</div>
+          <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
+          <ul className="mb-6 space-y-2 text-base text-muted-foreground">
+            {PACKAGES.enterprise.features.map((f) => (
+              <li key={f} className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <GlassBuyButton onClick={() => setEnterpriseOpen(true)} disabled={false} loading={false} label="Talk to sales" />
+        </div>
+      </motion.div>
     </div>
+    <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
+    </>
   );
 }
 
