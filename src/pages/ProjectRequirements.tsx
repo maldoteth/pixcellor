@@ -77,6 +77,18 @@ const textAreas: Array<{
   },
 ];
 
+const pricingButtonStyle = {
+  background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  border: "1px solid rgba(255,255,255,0.2)",
+  boxShadow: `
+    0 8px 32px rgba(0,0,0,0.3),
+    inset 0 1px 1px rgba(255,255,255,0.3),
+    inset 0 -1px 1px rgba(0,0,0,0.1)
+  `,
+} as const;
+
 export default function ProjectRequirements() {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id") ?? "";
@@ -195,10 +207,16 @@ export default function ProjectRequirements() {
               ))}
 
               <div className="flex flex-wrap justify-end gap-3 pt-2">
-                <Button type="submit" disabled={submitting || !validSession} className="gap-2">
+                <button
+                  type="submit"
+                  disabled={submitting || !validSession}
+                  className="rounded-sm px-6 py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 relative overflow-hidden group"
+                  style={pricingButtonStyle}
+                >
+                  <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-foreground/20 to-transparent pointer-events-none" />
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {submitting ? "Saving…" : "Send requirements"}
-                </Button>
+                </button>
               </div>
             </form>
           </CardContent>
