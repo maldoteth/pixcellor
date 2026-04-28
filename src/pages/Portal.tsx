@@ -689,7 +689,7 @@ export default function Portal() {
   };
 
   const exitPortal = () => {
-    sessionStorage.removeItem(PORTAL_ACCESS_STORAGE_KEY);
+    void supabase.auth.signOut();
     navigate("/portal-login", { replace: true });
   };
 
@@ -700,7 +700,6 @@ export default function Portal() {
       return;
     }
     const { error } = await (supabase as any).rpc("portal_create_contact", {
-      _access_code: portalAccessCode,
       _name: name,
       _phone: contactForm.phone,
       _email: contactForm.email,
@@ -725,7 +724,6 @@ export default function Portal() {
       return;
     }
     const { error } = await (supabase as any).rpc("portal_update_contact", {
-      _access_code: portalAccessCode,
       _contact_id: editingContactId,
       _name: name,
       _phone: editContactForm.phone,
@@ -756,7 +754,6 @@ export default function Portal() {
       return;
     }
     const { error } = await (supabase as any).rpc("portal_create_contact_event", {
-      _access_code: portalAccessCode,
       _contact_id: eventForm.contact_id,
       _title: title,
       _description: eventForm.description,
@@ -775,7 +772,7 @@ export default function Portal() {
   };
 
   const completeCallback = async (eventId: string) => {
-    const { error } = await (supabase as any).rpc("portal_complete_callback", { _access_code: portalAccessCode, _event_id: eventId });
+    const { error } = await (supabase as any).rpc("portal_complete_callback", { _event_id: eventId });
     if (error) toast.error(error.message);
     else {
       await loadPortalSnapshot();
@@ -786,7 +783,6 @@ export default function Portal() {
   const updateContactStatus = async (contactId: string, status: Contact["status"]) => {
     setContacts(current => current.map(contact => contact.id === contactId ? { ...contact, status } : contact));
     const { error } = await (supabase as any).rpc("portal_update_contact_status", {
-      _access_code: portalAccessCode,
       _contact_id: contactId,
       _status: status,
     });
