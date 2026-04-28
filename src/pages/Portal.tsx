@@ -24,6 +24,30 @@ type StripeSession = {
   metadata: Record<string, unknown> | null;
 };
 
+type VisitorFalloff = {
+  id: string;
+  visitor_id: string;
+  session_id: string;
+  first_page: string | null;
+  last_page: string | null;
+  referrer: string | null;
+  user_agent: string | null;
+  browser_language: string | null;
+  timezone: string | null;
+  screen_size: string | null;
+  viewport_size: string | null;
+  checkout_session_id: string | null;
+  package_name: string | null;
+  billing: string | null;
+  price_id: string | null;
+  customer_email: string | null;
+  checkout_started_at: string | null;
+  last_seen_at: string;
+  event_count: number;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+};
+
 // ONLY include orders explicitly stamped by this website's checkout.
 // All legacy/external Stripe activity is excluded.
 const isSiteOrder = (o: StripeSession) => {
@@ -166,6 +190,7 @@ export default function Portal() {
   const [portalAccessCode] = useState(() => sessionStorage.getItem(PORTAL_ACCESS_STORAGE_KEY) ?? "");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
+  const [falloffs, setFalloffs] = useState<VisitorFalloff[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [lastMessages, setLastMessages] = useState<Record<string, Message>>({});
@@ -204,6 +229,7 @@ export default function Portal() {
     }
     const snapshot = (data ?? {}) as {
       orders?: StripeSession[];
+      falloffs?: VisitorFalloff[];
       conversations?: Conversation[];
       messages?: Message[];
       profiles?: Profile[];
@@ -212,6 +238,7 @@ export default function Portal() {
       contactEvents?: ContactEvent[];
     };
     setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
+    setFalloffs(snapshot.falloffs ?? []);
     const convs = snapshot.conversations ?? [];
     const allMsgs = snapshot.messages ?? [];
     setProfiles(snapshot.profiles ?? []);
