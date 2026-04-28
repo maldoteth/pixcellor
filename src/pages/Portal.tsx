@@ -786,16 +786,21 @@ export default function Portal() {
       return;
     }
 
-    const { data, error } = await supabase.functions.invoke("send-order-complete", {
-      body: { accessCode: portalAccessCode, sessionId: order.session_id, deliveredDomain: cleanDomain },
-    });
+    setDeliveringOrderId(order.session_id);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-order-complete", {
+        body: { accessCode: portalAccessCode, sessionId: order.session_id, deliveredDomain: cleanDomain },
+      });
 
-    if (error || data?.error) {
-      toast.error(data?.error || error?.message || "Could not complete order");
-      return;
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || "Could not complete order");
+        return;
+      }
+      await loadPortalSnapshot();
+      toast.success(`Order completed and email sent to ${data.recipientEmail || order.customer_email}.`);
+    } finally {
+      setDeliveringOrderId(null);
     }
-    await loadPortalSnapshot();
-    toast.success(`Order completed and email sent to ${data.recipientEmail || order.customer_email}.`);
   };
 
   const markOrderUndelivered = async (sessionId: string) => {
