@@ -46,29 +46,9 @@ export const recordFalloff = async (metadata: Record<string, unknown> = {}) => {
   if (!hasFalloffConsent()) return;
 
   const context = getCheckoutContext();
-  const { error } = await (supabase as any)
-    .from("visitor_falloffs")
-    .upsert({
-      visitor_id: context.clientId,
-      session_id: context.sessionId,
-      consent_status: "granted",
-      first_page: context.pageUrl,
-      last_page: context.pageUrl,
-      referrer: context.referrer,
-      user_agent: context.userAgent,
-      browser_language: context.language,
-      timezone: context.timezone,
-      screen_size: context.screen,
-      viewport_size: context.viewport,
-      last_seen_at: new Date().toISOString(),
-      metadata,
-    }, { onConflict: "visitor_id,session_id" });
-
-  if (!error) {
-    void supabase.functions.invoke("enrich-visitor", {
-      body: { visitorId: context.clientId, sessionId: context.sessionId },
-    });
-  }
+  void supabase.functions.invoke("enrich-visitor", {
+    body: { visitorId: context.clientId, sessionId: context.sessionId, context, metadata },
+  });
 };
 
 export const recordVisitFalloffOnce = async () => {

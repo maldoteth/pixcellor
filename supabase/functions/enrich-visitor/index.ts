@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const clean = (value: unknown) => typeof value === "string" && value.trim() ? value.trim().slice(0, 500) : null;
+const cleanLong = (value: unknown) => typeof value === "string" && value.trim() ? value.trim().slice(0, 2000) : null;
 
 const getClientIp = (req: Request) => {
   const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
@@ -17,9 +18,11 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { visitorId, sessionId } = await req.json();
+    const { visitorId, sessionId, context, metadata } = await req.json();
     if (typeof visitorId !== "string" || visitorId.length < 8 || visitorId.length > 200) throw new Error("Invalid visitorId");
     if (typeof sessionId !== "string" || sessionId.length < 8 || sessionId.length > 200) throw new Error("Invalid sessionId");
+    const safeContext = context && typeof context === "object" ? context as Record<string, unknown> : {};
+    const safeMetadata = metadata && typeof metadata === "object" ? metadata as Record<string, unknown> : {};
 
     const token = Deno.env.get("IPINFO_TOKEN");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -32,20 +35,6 @@ serve(async (req) => {
     if (!ip) throw new Error("Could not detect visitor IP");
 
     const supabase = createClient(supabaseUrl, serviceKey);
-    const { data: existing, error: readError } = await supabase
-      .from("visitor_falloffs")
-      .select("enrichment_status,enriched_at")
-      .eq("visitor_id", visitorId)
-      .eq("session_id", sessionId)
-      .maybeSingle();
-    if (readError) throw readError;
-    if (existing?.enrichment_status === "enriched" && existing?.enriched_at) {
-      return new Response(JSON.stringify({ ok: true, skipped: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
     const response = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}?token=${encodeURIComponent(token)}`);
     const data = await response.json();
     if (!response.ok) throw new Error(`IPinfo lookup failed [${response.status}]: ${JSON.stringify(data).slice(0, 300)}`);
@@ -57,7 +46,20 @@ serve(async (req) => {
 
     const { error } = await supabase
       .from("visitor_falloffs")
-      .update({
+      .upsert({
+        visitor_id: visitorId,
+        session_id: sessionId,
+        consent_status: "granted",
+        first_page: cleanLong(safeContext.pageUrl),
+        last_page: cleanLong(safeContext.pageUrl),
+        referrer: cleanLong(safeContext.referrer),
+        user_agent: cleanLong(safeContext.userAgent),
+        browser_language: clean(safeContext.language),
+        timezone: clean(safeContext.timezone),
+        screen_size: clean(safeContext.screen),
+        viewport_size: clean(safeContext.viewport),
+        last_seen_at: new Date().toISOString(),
+        metadata: safeMetadata,
         ip_address: clean(data.ip) ?? ip,
         ip_hostname: clean(data.hostname),
         ip_city: clean(data.city),
@@ -86,9 +88,7 @@ serve(async (req) => {
         enrichment_error: null,
         enriched_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      })
-      .eq("visitor_id", visitorId)
-      .eq("session_id", sessionId);
+      }, { onConflict: "visitor_id,session_id" });
 
     if (error) throw error;
 
