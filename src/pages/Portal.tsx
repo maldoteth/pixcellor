@@ -1951,34 +1951,49 @@ export default function Portal() {
               <label className="text-sm font-medium">{currentSalesField.label}{currentSalesField.required ? " *" : ""}</label>
               {currentSalesField.key === "contact" ? (
                 <>
-                  <Input
-                    autoFocus
-                    list="portal-mobile-contact-options"
-                    placeholder={currentSalesField.placeholder}
-                    value={eventContactSearch}
-                    onChange={(e) => handleEventContactSearch(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") continueMobileSalesEvent();
-                    }}
-                    className="h-12 text-base"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      autoFocus
+                      list="portal-mobile-contact-options"
+                      placeholder={currentSalesField.placeholder}
+                      value={eventContactSearch}
+                      onChange={(e) => handleEventContactSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") continueMobileSalesEvent();
+                      }}
+                      className="h-12 text-base"
+                    />
+                    <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
+                      <Clipboard className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <datalist id="portal-mobile-contact-options">
                     {contacts.map(c => <option key={c.id} value={`${c.name}${c.email ? ` · ${c.email}` : ""}`}>{[c.phone, c.location].filter(Boolean).join(" · ")}</option>)}
                   </datalist>
                 </>
               ) : currentSalesField.key === "callback_at" ? (
-                <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} className="h-12 text-base" />
+                <div className="flex gap-2">
+                  <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} className="h-12 text-base" />
+                  <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
+                    <Clipboard className="h-4 w-4" />
+                  </Button>
+                </div>
               ) : (
-                <Input
-                  autoFocus
-                  placeholder={currentSalesField.placeholder}
-                  value={currentSalesField.key === "title" ? eventForm.title : eventForm.description}
-                  onChange={(e) => setEventForm(f => ({ ...f, [currentSalesField.key]: e.target.value }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") continueMobileSalesEvent();
-                  }}
-                  className="h-12 text-base"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    autoFocus
+                    placeholder={currentSalesField.placeholder}
+                    value={currentSalesField.key === "title" ? eventForm.title : eventForm.description}
+                    onChange={(e) => setEventForm(f => ({ ...f, [currentSalesField.key]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") continueMobileSalesEvent();
+                    }}
+                    className="h-12 text-base"
+                  />
+                  <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
+                    <Clipboard className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
