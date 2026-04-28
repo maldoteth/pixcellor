@@ -115,10 +115,14 @@ const IMAGES = [
     ui11, ui12, ui13, ui14, ui15, ui16, ui1, ui2, ui3, ui4
 ];
 
+interface IntroAnimationProps {
+    onVirtualScrollChange?: (value: number) => void;
+}
+
 // Helper for linear interpolation
 const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;
 
-export default function IntroAnimation() {
+export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimationProps) {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
     const [packagesOpen, setPackagesOpen] = useState(false);
@@ -167,6 +171,7 @@ export default function IntroAnimation() {
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
+            onVirtualScrollChange?.(newScroll);
             recordScrollDepth((newScroll / MAX_SCROLL) * 100);
         };
 
@@ -192,6 +197,7 @@ export default function IntroAnimation() {
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
+            onVirtualScrollChange?.(newScroll);
             recordScrollDepth((newScroll / MAX_SCROLL) * 100);
         };
 
@@ -204,7 +210,7 @@ export default function IntroAnimation() {
             container.removeEventListener("touchstart", handleTouchStart);
             container.removeEventListener("touchmove", handleTouchMove);
         };
-    }, [virtualScroll]);
+    }, [onVirtualScrollChange, virtualScroll]);
 
     const morphProgress = useTransform(virtualScroll, [0, 600], [0, 1]);
     const smoothMorph = useSpring(morphProgress, { stiffness: 40, damping: 20 });
