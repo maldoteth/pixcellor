@@ -1135,8 +1135,18 @@ export default function Portal() {
                         </Button>
                       )}
                       {o.order_status !== "delivered" && (
-                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o)}>
-                          Mark delivered
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => markOrderDelivered(o)}
+                          disabled={deliveringOrderId === o.session_id}
+                        >
+                          {deliveringOrderId === o.session_id ? (
+                            <span className="inline-flex items-center gap-2">
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              Processing…
+                            </span>
+                          ) : "Mark delivered"}
                         </Button>
                       )}
                     </div>
