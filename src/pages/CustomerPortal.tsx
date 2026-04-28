@@ -133,6 +133,7 @@ export default function CustomerPortal() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<CustomerPortalData | null>(null);
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const loadPortal = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -141,13 +142,20 @@ export default function CustomerPortal() {
       return;
     }
 
-    const { data: portalData, error } = await supabase.rpc("customer_fetch_portal");
+    const [{ data: portalData, error }, { data: adminRole }] = await Promise.all([
+      supabase.rpc("customer_fetch_portal"),
+      supabase.rpc("has_role", {
+        _user_id: sessionData.session.user.id,
+        _role: "admin",
+      }),
+    ]);
     if (error) {
       toast.error(error.message);
       setLoading(false);
       return;
     }
 
+    setIsAdmin(Boolean(adminRole));
     setData(portalData as CustomerPortalData);
     setLoading(false);
   }, [navigate]);
@@ -248,10 +256,20 @@ export default function CustomerPortal() {
                 </Link>
               </Button>
             </div>
-            <Button variant="outline" size="sm" className="gap-2" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
-              Sign out
-            </Button>
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Button asChild variant="pricing" size="sm" className="gap-2">
+                  <Link to="/portal">
+                    <ShieldCheck className="h-4 w-4" />
+                    Admin panel
+                  </Link>
+                </Button>
+              )}
+              <Button variant="outline" size="sm" className="gap-2" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </Button>
+            </div>
           </header>
 
           <main className="px-4 py-6 md:px-8 md:py-8">
