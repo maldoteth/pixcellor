@@ -752,7 +752,7 @@ export default function Portal() {
     if (!query) return sortedContacts;
 
     return sortedContacts.filter(contact =>
-      [contact.name, contact.email, contact.phone, contact.location, contact.notes]
+      [`${contact.name}${contact.email ? ` · ${contact.email}` : ""}`, contact.name, contact.email, contact.phone, contact.location, contact.notes]
         .some(value => value?.toLowerCase().includes(query))
     );
   }, [contacts, eventContactSearch]);
@@ -1145,7 +1145,7 @@ export default function Portal() {
         <button
           key={contact.id}
           type="button"
-          className="flex min-h-12 w-full flex-col items-start justify-center border-b border-border px-3 py-2 text-left text-sm transition-colors last:border-b-0 hover:bg-accent"
+          className="flex min-h-12 w-full flex-col items-start justify-center border-b border-border px-3 py-2 text-left text-sm last:border-b-0"
           onClick={() => selectEventContact(contact)}
         >
           <span className="font-medium text-foreground">{contact.name}</span>
