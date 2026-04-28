@@ -254,7 +254,6 @@ export default function Portal() {
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [salesSearch, setSalesSearch] = useState("");
-  const [orderStatusFilter, setOrderStatusFilter] = useState<"all" | "open" | "closed">("all");
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
@@ -495,13 +494,27 @@ export default function Portal() {
       matches(JSON.stringify(o.metadata))
     );
     return searched.filter((order) => {
-      const isClosed = order.order_status === "delivered";
       const hasRequirements = requirementsBySession.has(order.session_id);
-      const statusMatches = orderStatusFilter === "all" || (orderStatusFilter === "closed" ? isClosed : !isClosed);
       const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
-      return statusMatches && reqsMatches;
+      return order.order_status !== "delivered" && reqsMatches;
     });
-  }, [orders, q, orderStatusFilter, orderReqsFilter, requirementsBySession]);
+  }, [orders, q, orderReqsFilter, requirementsBySession]);
+
+  const completedOrders = useMemo(() => {
+    const searched = !q ? orders : orders.filter(o =>
+      matches(o.customer_email) ||
+      matches(o.session_id) ||
+      matches(o.payment_status) ||
+      matches(o.status) ||
+      matches(o.currency) ||
+      matches(JSON.stringify(o.metadata))
+    );
+    return searched.filter((order) => {
+      const hasRequirements = requirementsBySession.has(order.session_id);
+      const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
+      return order.order_status === "delivered" && reqsMatches;
+    });
+  }, [orders, q, orderReqsFilter, requirementsBySession]);
 
   const filteredFalloffs = useMemo(() => {
     const paidSessionIds = new Set(orders.map(o => o.session_id));
@@ -954,9 +967,10 @@ export default function Portal() {
         </div>
 
         <Tabs defaultValue="sales">
-          <TabsList className="grid grid-cols-2 md:grid-cols-8 w-full md:w-auto h-auto">
+          <TabsList className="grid grid-cols-2 md:grid-cols-9 w-full md:w-auto h-auto">
             <TabsTrigger value="sales">Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders">Orders ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="completed">Completed ({completedOrders.length})</TabsTrigger>
             <TabsTrigger value="falloffs">Falloffs ({filteredFalloffs.length})</TabsTrigger>
             <TabsTrigger value="mailbox">Inbox ({mailboxMessages.length})</TabsTrigger>
             <TabsTrigger value="chats">Chats ({filteredConversations.length})</TabsTrigger>
@@ -1024,12 +1038,6 @@ export default function Portal() {
 
           <TabsContent value="orders" className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card/50 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">Orders</span>
-                <Button variant={orderStatusFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderStatusFilter("all")}>All</Button>
-                <Button variant={orderStatusFilter === "open" ? "default" : "outline"} size="sm" onClick={() => setOrderStatusFilter("open")}>Open</Button>
-                <Button variant={orderStatusFilter === "closed" ? "default" : "outline"} size="sm" onClick={() => setOrderStatusFilter("closed")}>Closed</Button>
-              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Requirements</span>
                 <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
@@ -1108,6 +1116,56 @@ export default function Portal() {
                 </CardContent>
               </Card>
             );
+            })}
+          </TabsContent>
+
+          <TabsContent value="completed" className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-card/50 p-3">
+              <span className="text-xs font-medium text-muted-foreground">Requirements</span>
+              <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
+              <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
+              <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
+            </div>
+            {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No completed orders {q ? "match your search" : "yet"}.</p>}
+            {completedOrders.map(o => {
+              const requirements = requirementsBySession.get(o.session_id);
+              const emailStatus = orderEmailStatusBySession.get(o.session_id);
+              return (
+                <Card key={o.session_id}>
+                  <CardContent className="p-4 space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
+                        <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
+                        {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
+                      </div>
+                      <div className="flex flex-wrap items-center justify-end gap-3">
+                        <Badge variant="default">Delivered</Badge>
+                        <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
+                        {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
+                        <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                      </div>
+                    </div>
+
+                    {requirements && (
+                      <div className="rounded-md border border-border bg-background/50 p-4 text-sm">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-medium">{requirements.site_name}</div>
+                          <div className="text-xs text-muted-foreground">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div><span className="text-muted-foreground">Contents:</span> {requirements.site_contents}</div>
+                          <div><span className="text-muted-foreground">Pages:</span> {requirements.pages_details}</div>
+                          <div><span className="text-muted-foreground">Colours/styles:</span> {requirements.colours_styles}</div>
+                          {requirements.reference_links && <div><span className="text-muted-foreground">References:</span> {requirements.reference_links}</div>}
+                          <div className="md:col-span-2"><span className="text-muted-foreground">Images/content/socials:</span> {requirements.images_content_socials}</div>
+                          {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> {requirements.extra_notes}</div>}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
             })}
           </TabsContent>
 
