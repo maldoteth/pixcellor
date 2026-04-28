@@ -181,16 +181,43 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<EnterpriseForm>({ email: "", name: "", company: "", number: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const field = ENTERPRISE_FIELDS[step];
 
-  const continueForm = () => {
-    if (!form[field.key].trim()) return;
+  const continueForm = async () => {
+    const value = form[field.key].trim();
+    if (!value) return;
+    if (field.key === "email" && !/^\S+@\S+\.\S+$/.test(value)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    setError("");
     if (step < ENTERPRISE_FIELDS.length - 1) setStep((current) => current + 1);
-    else setSubmitted(true);
+    else {
+      setSubmitting(true);
+      const cleanForm = {
+        email: form.email.trim().slice(0, 255),
+        name: form.name.trim().slice(0, 100),
+        company: form.company.trim().slice(0, 100),
+        number: form.number.trim().slice(0, 50),
+      };
+      const { error: insertError } = await supabase.from("contact_inquiries").insert({
+        email: cleanForm.email,
+        name: cleanForm.name,
+        message: `Enterprise enquiry\nCompany: ${cleanForm.company}\nNumber: ${cleanForm.number}`,
+      });
+      setSubmitting(false);
+      if (insertError) {
+        setError("Could not send this request. Please try again.");
+        return;
+      }
+      setSubmitted(true);
+    }
   };
 
   return (
-    <Drawer open={open} onOpenChange={(nextOpen) => { onOpenChange(nextOpen); if (!nextOpen) { setStep(0); setSubmitted(false); } }}>
+    <Drawer open={open} onOpenChange={(nextOpen) => { onOpenChange(nextOpen); if (!nextOpen) { setStep(0); setSubmitted(false); setSubmitting(false); setError(""); } }}>
       <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
         <DrawerHeader className="px-0 text-left">
           <DrawerTitle>{submitted ? "Enterprise request received" : "Talk to sales"}</DrawerTitle>
@@ -214,13 +241,14 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
                 onKeyDown={(e) => { if (e.key === "Enter") continueForm(); }}
                 className="h-12 text-base"
               />
+              {error && <p className="text-sm text-destructive">{error}</p>}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button variant="outline" onClick={() => step > 0 ? setStep((current) => current - 1) : onOpenChange(false)}>
                 {step > 0 ? "Back" : "Cancel"}
               </Button>
-              <Button variant="pricing" onClick={continueForm} disabled={!form[field.key].trim()}>
-                {step === ENTERPRISE_FIELDS.length - 1 ? "Send" : "Next"}
+              <Button variant="pricing" onClick={continueForm} disabled={!form[field.key].trim() || submitting}>
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : step === ENTERPRISE_FIELDS.length - 1 ? "Send" : "Next"}
               </Button>
             </div>
           </div>
