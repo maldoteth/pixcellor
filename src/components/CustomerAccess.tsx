@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 
-function CustomerAuthForm({ onSuccess }: { onSuccess: () => void }) {
+function CustomerAuthForm() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -135,7 +135,7 @@ export default function CustomerAccess() {
           <DrawerHeader>
             <DrawerTitle>Log in / Sign up</DrawerTitle>
           </DrawerHeader>
-          <CustomerAuthForm onSuccess={() => setOpen(false)} />
+          <CustomerAuthForm />
         </DrawerContent>
       </Drawer>
     );
@@ -148,7 +148,7 @@ export default function CustomerAccess() {
         <DialogHeader>
           <DialogTitle>Log in / Sign up</DialogTitle>
         </DialogHeader>
-        <CustomerAuthForm onSuccess={() => setOpen(false)} />
+        <CustomerAuthForm />
       </DialogContent>
     </Dialog>
   );
