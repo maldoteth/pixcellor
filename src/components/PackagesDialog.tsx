@@ -112,6 +112,15 @@ function StripeBadge() {
   );
 }
 
+function DiscountBadge({ discount }: { discount: string }) {
+  return (
+    <div className="mb-4 inline-flex w-fit flex-col rounded-md border border-border bg-foreground px-3 py-1.5 text-background shadow-sm">
+      <span className="text-[9px] font-black uppercase tracking-wider">Introductary offer</span>
+      <span className="text-xs font-extrabold">{discount} off</span>
+    </div>
+  );
+}
+
 interface PackagesDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -322,6 +331,7 @@ function DesktopCards() {
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-1 text-3xl font-extrabold text-foreground">£150</div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP £375</p>
+        <DiscountBadge discount="60%" />
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -377,6 +387,7 @@ function DesktopCards() {
         <p className="text-xs text-muted-foreground line-through mb-4">
           RRP £1,500
         </p>
+        <DiscountBadge discount="67%" />
         <ul className="mb-6 space-y-2 text-lg text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -469,6 +480,7 @@ function DesktopCards() {
               <p className="text-xs text-muted-foreground line-through mb-4">
                 RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
               </p>
+              <DiscountBadge discount="57%" />
               <ul className="mb-6 space-y-2 text-base text-muted-foreground">
                 {PACKAGES.retainer.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
@@ -578,6 +590,7 @@ function MobileCards() {
           <span className="text-3xl font-extrabold text-foreground">£150</span>
         </div>
         <p className="text-xs text-muted-foreground line-through mb-4">RRP £375</p>
+        <DiscountBadge discount="60%" />
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
@@ -613,6 +626,7 @@ function MobileCards() {
         <p className="text-xs text-muted-foreground line-through mb-4">
           RRP £1,500
         </p>
+        <DiscountBadge discount="67%" />
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
@@ -685,6 +699,7 @@ function MobileCards() {
               <p className="text-xs text-muted-foreground line-through mb-4">
                 RRP {retainerBilling === "monthly" ? "£2,800/mo" : "£28,000/yr"}
               </p>
+              <DiscountBadge discount="57%" />
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.retainer.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
