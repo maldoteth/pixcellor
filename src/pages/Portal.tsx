@@ -348,6 +348,7 @@ export default function Portal() {
       contacts?: Contact[];
       contactEvents?: ContactEvent[];
       projectRequirements?: ProjectRequirement[];
+      editRequests?: EditRequest[];
       emailLogs?: EmailLog[];
     };
     setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
@@ -359,6 +360,7 @@ export default function Portal() {
     setContacts(snapshot.contacts ?? []);
     setContactEvents(snapshot.contactEvents ?? []);
     setProjectRequirements(snapshot.projectRequirements ?? []);
+    setEditRequests(snapshot.editRequests ?? []);
     setEmailLogs(snapshot.emailLogs ?? []);
     setAllMessages(allMsgs);
     const previews: Record<string, Message> = {};
