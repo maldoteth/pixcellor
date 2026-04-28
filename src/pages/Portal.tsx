@@ -1047,8 +1047,8 @@ export default function Portal() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 md:p-6">
+      <div className="mx-auto max-w-7xl min-w-0 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl md:text-3xl font-semibold">Pixcellor Dev Portal</h1>
           <Button variant="outline" size="sm" onClick={exitPortal}>
@@ -1088,7 +1088,7 @@ export default function Portal() {
           )}
         </div>
 
-        <Tabs defaultValue="sales">
+        <Tabs defaultValue="sales" className="min-w-0">
           <TabsList className="grid h-auto w-full grid-cols-2 gap-1 md:grid-cols-5 xl:grid-cols-9">
             <TabsTrigger value="sales" className="h-10 px-2 text-xs sm:text-sm">Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="h-10 px-2 text-xs sm:text-sm">Orders ({filteredOrders.length})</TabsTrigger>
