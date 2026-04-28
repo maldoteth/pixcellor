@@ -112,16 +112,8 @@ function StripeBadge() {
   );
 }
 
-function DiscountBadge({ discount }: { discount: string }) {
-  return (
-    <div
-      className="inline-flex h-[66px] w-[66px] shrink-0 flex-col items-center justify-center bg-foreground px-2 text-center text-background shadow-sm"
-      style={{ clipPath: "polygon(50% 0%, 58% 14%, 72% 8%, 74% 24%, 90% 22%, 84% 38%, 100% 50%, 84% 62%, 90% 78%, 74% 76%, 72% 92%, 58% 86%, 50% 100%, 42% 86%, 28% 92%, 26% 76%, 10% 78%, 16% 62%, 0% 50%, 16% 38%, 10% 22%, 26% 24%, 28% 8%, 42% 14%)" }}
-    >
-      <span className="text-[7px] font-black uppercase leading-[0.9] tracking-normal">Introductary offer</span>
-      <span className="mt-0.5 text-[11px] font-extrabold leading-none">{discount} off</span>
-    </div>
-  );
+function IntroductoryOfferText({ discount }: { discount: string }) {
+  return <span className="ml-2 font-semibold text-foreground">Introductary offer — {discount} off</span>;
 }
 
 interface PackagesDialogProps {
