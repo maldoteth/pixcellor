@@ -254,7 +254,6 @@ export default function Portal() {
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [salesSearch, setSalesSearch] = useState("");
-  const [orderStatusFilter, setOrderStatusFilter] = useState<"all" | "open" | "closed">("all");
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
@@ -495,13 +494,27 @@ export default function Portal() {
       matches(JSON.stringify(o.metadata))
     );
     return searched.filter((order) => {
-      const isClosed = order.order_status === "delivered";
       const hasRequirements = requirementsBySession.has(order.session_id);
-      const statusMatches = orderStatusFilter === "all" || (orderStatusFilter === "closed" ? isClosed : !isClosed);
       const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
-      return statusMatches && reqsMatches;
+      return order.order_status !== "delivered" && reqsMatches;
     });
-  }, [orders, q, orderStatusFilter, orderReqsFilter, requirementsBySession]);
+  }, [orders, q, orderReqsFilter, requirementsBySession]);
+
+  const completedOrders = useMemo(() => {
+    const searched = !q ? orders : orders.filter(o =>
+      matches(o.customer_email) ||
+      matches(o.session_id) ||
+      matches(o.payment_status) ||
+      matches(o.status) ||
+      matches(o.currency) ||
+      matches(JSON.stringify(o.metadata))
+    );
+    return searched.filter((order) => {
+      const hasRequirements = requirementsBySession.has(order.session_id);
+      const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
+      return order.order_status === "delivered" && reqsMatches;
+    });
+  }, [orders, q, orderReqsFilter, requirementsBySession]);
 
   const filteredFalloffs = useMemo(() => {
     const paidSessionIds = new Set(orders.map(o => o.session_id));
