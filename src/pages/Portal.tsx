@@ -1896,13 +1896,13 @@ export default function Portal() {
                             type="button"
                             title={status.label}
                             aria-label={status.label}
-                            onClick={() => updateContactStatus(c.id, status.value)}
+                            onClick={(event) => { event.stopPropagation(); updateContactStatus(c.id, status.value); }}
                             className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                             style={{ backgroundColor: status.color }}
                           />
                         ))}
                       </div>
-                      <button type="button" onClick={() => setOpenContactId(isOpen ? null : c.id)}>
+                      <button type="button" onClick={(event) => { event.stopPropagation(); setOpenContactId(isOpen ? null : c.id); }}>
                         <Badge variant="secondary" className="cursor-pointer">{events.length} logs</Badge>
                       </button>
                       <div className="flex items-center gap-1 md:hidden" aria-label="Contact status">
@@ -1912,7 +1912,7 @@ export default function Portal() {
                             type="button"
                             title={status.label}
                             aria-label={status.label}
-                            onClick={() => updateContactStatus(c.id, status.value)}
+                            onClick={(event) => { event.stopPropagation(); updateContactStatus(c.id, status.value); }}
                             className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                             style={{ backgroundColor: status.color }}
                           />
@@ -1927,8 +1927,8 @@ export default function Portal() {
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                         <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
-                          <Button onClick={updateContact}>Save changes</Button>
-                          <Button variant="outline" onClick={() => setEditingContactId(null)}>Cancel</Button>
+                          <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
+                          <Button variant="outline" onClick={(event) => { event.stopPropagation(); setEditingContactId(null); }}>Cancel</Button>
                         </div>
                       </div>
                     )}
