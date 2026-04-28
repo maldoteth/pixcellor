@@ -21,6 +21,7 @@ type StripeSession = {
   delivered_domain?: string | null;
   customer_email: string | null;
   mode: string | null;
+  subscription_id?: string | null;
   created_at: string;
   metadata: Record<string, unknown> | null;
 };
