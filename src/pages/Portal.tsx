@@ -969,6 +969,20 @@ export default function Portal() {
     }
   };
 
+  const tryCallbackAgain = async (eventId: string) => {
+    const nextCallback = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { error } = await supabase
+      .from("contact_events" as any)
+      .update({ callback_at: nextCallback, completed_at: null })
+      .eq("id", eventId);
+
+    if (error) toast.error(error.message);
+    else {
+      await loadPortalSnapshot();
+      toast.success("Callback pushed back 1 week.");
+    }
+  };
+
   const updateContactStatus = async (contactId: string, status: Contact["status"]) => {
     setContacts(current => current.map(contact => contact.id === contactId ? { ...contact, status } : contact));
     const { error } = await (supabase as any).rpc("portal_update_contact_status", {
@@ -1281,9 +1295,10 @@ export default function Portal() {
                         ))}
                         {e.description && <div className="text-sm whitespace-pre-wrap">{e.description}</div>}
                       </div>
-                      <div className="flex flex-wrap items-center justify-end gap-2">
+                      <div className="flex flex-col items-end gap-2">
                         <Badge variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
                         <Button variant="outline" size="sm" onClick={() => completeCallback(e.id)}>Done</Button>
+                        <Button variant="outline" size="sm" onClick={() => tryCallbackAgain(e.id)}>Tried</Button>
                       </div>
                     </CardContent>
                   </Card>
