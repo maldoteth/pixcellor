@@ -1205,6 +1205,7 @@ export default function Portal() {
                 const contact = getContact(e.contact_id);
                 const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
                 const statusColor = contact ? getContactStatusColor(contact.status) : "hsl(var(--muted))";
+                const phoneHref = formatPhoneHref(contact?.phone);
                 return (
                   <Card
                     key={e.id}
@@ -1217,6 +1218,13 @@ export default function Portal() {
                       <div className="space-y-1">
                         <div className="font-medium">{e.title}</div>
                         <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown contact"} · {new Date(e.callback_at!).toLocaleString()}</div>
+                        {contact?.phone && (phoneHref ? (
+                          <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`}>
+                            {contact.phone}
+                          </a>
+                        ) : (
+                          <div className="text-xs text-muted-foreground">{contact.phone}</div>
+                        ))}
                         {e.description && <div className="text-sm whitespace-pre-wrap">{e.description}</div>}
                       </div>
                       <div className="flex flex-wrap items-center justify-end gap-2">
