@@ -2008,24 +2008,23 @@ export default function Portal() {
               {currentSalesField.key === "contact" ? (
                 <>
                   <div className="flex gap-2">
-                    <Input
-                      autoFocus
-                      list="portal-mobile-contact-options"
-                      placeholder={currentSalesField.placeholder}
-                      value={eventContactSearch}
-                      onChange={(e) => handleEventContactSearch(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") continueMobileSalesEvent();
-                      }}
-                      className="h-12 text-base"
-                    />
+                    <div className="relative min-w-0 flex-1">
+                      <Input
+                        autoFocus
+                        placeholder={currentSalesField.placeholder}
+                        value={eventContactSearch}
+                        onChange={(e) => handleEventContactSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") continueMobileSalesEvent();
+                        }}
+                        className="h-12 text-base"
+                      />
+                      {eventContactSuggestionList}
+                    </div>
                     <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
                       <Clipboard className="h-4 w-4" />
                     </Button>
                   </div>
-                  <datalist id="portal-mobile-contact-options">
-                    {contacts.map(c => <option key={c.id} value={`${c.name}${c.email ? ` · ${c.email}` : ""}`}>{[c.phone, c.location].filter(Boolean).join(" · ")}</option>)}
-                  </datalist>
                 </>
               ) : currentSalesField.key === "callback_at" ? (
                 <div className="flex gap-2">
