@@ -169,7 +169,7 @@ export default function CustomerPortal() {
             </div>
           </SidebarHeader>
           <SidebarContent>
-            <SidebarGroup defaultOpen>
+            <SidebarGroup>
               <SidebarGroupLabel>Workspace</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
