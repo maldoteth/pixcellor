@@ -1,4 +1,4 @@
-import { Facebook, Phone, MapPin } from "lucide-react";
+import { Facebook, LogIn, MessageCircle, Phone, MapPin } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -34,6 +34,22 @@ const Footer = () => {
         >
           <Facebook className="w-3.5 h-3.5" />
         </a>
+        <button
+          type="button"
+          aria-label="Open live chat"
+          className="flex items-center hover:text-foreground transition-colors md:hidden"
+          onClick={() => window.dispatchEvent(new Event("pixcellor:open-chat"))}
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          aria-label="Customer log in"
+          className="flex items-center hover:text-foreground transition-colors md:hidden"
+          onClick={() => window.dispatchEvent(new Event("pixcellor:open-login"))}
+        >
+          <LogIn className="w-3.5 h-3.5" />
+        </button>
       </div>
     </footer>
   );
