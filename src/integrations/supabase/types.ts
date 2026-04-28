@@ -389,6 +389,7 @@ export type Database = {
           customer_email: string | null
           customer_id: string | null
           delivered_at: string | null
+          delivered_domain: string | null
           id: string
           metadata: Json
           mode: string | null
@@ -407,6 +408,7 @@ export type Database = {
           customer_email?: string | null
           customer_id?: string | null
           delivered_at?: string | null
+          delivered_domain?: string | null
           id?: string
           metadata?: Json
           mode?: string | null
@@ -425,6 +427,7 @@ export type Database = {
           customer_email?: string | null
           customer_id?: string | null
           delivered_at?: string | null
+          delivered_domain?: string | null
           id?: string
           metadata?: Json
           mode?: string | null
@@ -744,7 +747,20 @@ export type Database = {
         Returns: Json
       }
       portal_fetch_snapshot: { Args: { _access_code: string }; Returns: Json }
-      portal_mark_order_delivered: {
+      portal_mark_order_delivered:
+        | {
+            Args: { _access_code: string; _session_id: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _access_code: string
+              _delivered_domain: string
+              _session_id: string
+            }
+            Returns: undefined
+          }
+      portal_mark_order_undelivered: {
         Args: { _access_code: string; _session_id: string }
         Returns: undefined
       }
