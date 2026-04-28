@@ -763,17 +763,31 @@ export default function Portal() {
     }
   };
 
-  const markOrderDelivered = async (sessionId: string) => {
-    const { error } = await (supabase as any).rpc("portal_mark_order_delivered", {
-      _access_code: portalAccessCode,
-      _session_id: sessionId,
+  const markOrderDelivered = async (order: StripeSession) => {
+    if (!order.customer_email) {
+      toast.error("This order does not have a customer email.");
+      return;
+    }
+
+    const deliveredDomain = window.prompt("Enter the delivered website domain, e.g. example.com");
+    if (!deliveredDomain) return;
+
+    const cleanDomain = deliveredDomain.trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "").replace(/^www\./i, "").toLowerCase();
+    if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(cleanDomain)) {
+      toast.error("Enter a valid delivered domain.");
+      return;
+    }
+
+    const { data, error } = await supabase.functions.invoke("send-order-complete", {
+      body: { accessCode: portalAccessCode, sessionId: order.session_id, deliveredDomain: cleanDomain },
     });
-    if (error) {
-      toast.error(error.message);
+
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Could not complete order");
       return;
     }
     await loadPortalSnapshot();
-    toast.success("Order marked delivered.");
+    toast.success(`Order completed and email sent to ${data.recipientEmail || order.customer_email}.`);
   };
 
   const markOrderUndelivered = async (sessionId: string) => {
