@@ -483,10 +483,12 @@ function DesktopCards() {
                     {f}
                   </li>
                 ))}
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-                  {retainerBilling === "monthly" ? "Daily turnarounds" : "Billed yearly (save £2,400)"}
-                </li>
+                {retainerBilling === "yearly" && (
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                    Billed yearly (save £2,400)
+                  </li>
+                )}
               </ul>
               <GlassBuyButton
                 onClick={() =>
@@ -696,10 +698,12 @@ function MobileCards() {
                     {f}
                   </li>
                 ))}
-                <li className="flex items-start gap-2 text-base text-muted-foreground">
-                  <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-                  {retainerBilling === "monthly" ? "Daily turnarounds" : "Billed yearly (save £2,400)"}
-                </li>
+                {retainerBilling === "yearly" && (
+                  <li className="flex items-start gap-2 text-base text-muted-foreground">
+                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                    Billed yearly (save £2,400)
+                  </li>
+                )}
               </ul>
               <GlassBuyButton
                 onClick={() =>
