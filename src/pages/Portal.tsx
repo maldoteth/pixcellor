@@ -1169,10 +1169,11 @@ export default function Portal() {
                       <div className="space-y-1">
                         <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
                         <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
-                        {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
+                        {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}{o.delivered_domain ? ` · ${o.delivered_domain}` : ""}</div>}
                       </div>
                       <div className="flex flex-wrap items-center justify-end gap-3">
                         <Badge variant="default">Delivered</Badge>
+                        {emailStatus?.completionSent && <Badge variant="secondary">Completion sent</Badge>}
                         <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
                         {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                         <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
