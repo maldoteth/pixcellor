@@ -173,13 +173,9 @@ const intro = {
   lineHeight: '1.65',
   margin: '0',
 }
-const panel = {
-  backgroundColor: '#101010',
-  border: '1px solid #2a2a2a',
-  margin: '26px 34px 24px',
-}
+const panel = {}
 const panelInner = {
-  padding: '20px 22px 12px',
+  padding: '28px 34px 12px',
 }
 const panelTitle = {
   color: '#ffffff',
