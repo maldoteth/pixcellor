@@ -1103,8 +1103,8 @@ export default function Portal() {
                         </Button>
                       )}
                       {o.order_status !== "delivered" && (
-                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o.session_id)}>
-                          Mark delivered
+                        <Button variant="outline" size="sm" onClick={() => markOrderDelivered(o)} disabled={sendingCompletionId === o.session_id}>
+                          {sendingCompletionId === o.session_id ? "Sending…" : "Mark delivered"}
                         </Button>
                       )}
                     </div>
@@ -1151,10 +1151,13 @@ export default function Portal() {
                         <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
                         <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
                         {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
+                        {o.delivered_domain && <div className="text-xs text-muted-foreground break-all">Domain: {o.delivered_domain}</div>}
                       </div>
                       <div className="flex flex-wrap items-center justify-end gap-3">
                         <Badge variant="default">Delivered</Badge>
+                        {o.delivered_domain && <Badge variant="secondary" className="break-all">{o.delivered_domain}</Badge>}
                         <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
+                        {emailStatus?.completionSent && <Badge variant="secondary">Complete email sent</Badge>}
                         {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                         <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
                       </div>
