@@ -38,7 +38,7 @@ const Footer = () => {
         <button
           type="button"
           aria-label="Open live chat"
-          className="flex items-center hover:text-foreground transition-colors md:hidden"
+          className="flex items-center hover:text-foreground transition-colors"
           onClick={() => window.dispatchEvent(new Event("pixcellor:open-chat"))}
         >
           <MessageCircle className="w-3.5 h-3.5" />
@@ -46,7 +46,7 @@ const Footer = () => {
         <button
           type="button"
           aria-label="Customer log in"
-          className="flex items-center hover:text-foreground transition-colors md:hidden"
+          className="flex items-center hover:text-foreground transition-colors"
           onClick={() => window.dispatchEvent(new Event("pixcellor:open-login"))}
         >
           <LogIn className="w-3.5 h-3.5" />
