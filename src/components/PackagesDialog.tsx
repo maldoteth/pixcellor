@@ -5,7 +5,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import applePayLogo from "@/assets/apple-pay.png";
 import gpayLogo from "@/assets/gpay-logo.png";
 
@@ -35,7 +37,20 @@ const PACKAGES = {
     mode: "subscription" as const,
     features: ["Your own tech department", "Websites or full apps"],
   },
+  enterprise: {
+    name: "Enterprise",
+    features: ["Larger scale operations", "Infrastructure and ecosystems", "Endless Possibilities"],
+  },
 };
+
+const ENTERPRISE_FIELDS = [
+  { key: "email", label: "Email", placeholder: "you@company.com", inputMode: "email" },
+  { key: "name", label: "Contact name", placeholder: "Your name", inputMode: "text" },
+  { key: "company", label: "Company name", placeholder: "Company", inputMode: "text" },
+  { key: "number", label: "Number", placeholder: "Phone number", inputMode: "tel" },
+] as const;
+
+type EnterpriseForm = Record<(typeof ENTERPRISE_FIELDS)[number]["key"], string>;
 
 async function handleCheckout(priceId: string, mode: string, packageName: string, billing: string) {
   await recordFalloff({ event: "checkout_started", priceId, mode, packageName, billing });
