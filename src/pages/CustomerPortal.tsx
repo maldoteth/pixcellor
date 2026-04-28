@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -134,7 +134,7 @@ export default function CustomerPortal() {
   const [data, setData] = useState<CustomerPortalData | null>(null);
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
 
-  const loadPortal = async () => {
+  const loadPortal = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       navigate("/customer-login", { replace: true });
@@ -150,7 +150,7 @@ export default function CustomerPortal() {
 
     setData(portalData as CustomerPortalData);
     setLoading(false);
-  };
+  }, [navigate]);
 
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
@@ -160,7 +160,7 @@ export default function CustomerPortal() {
 
     loadPortal();
     return () => listener.subscription.unsubscribe();
-  }, [navigate]);
+  }, [loadPortal, navigate]);
 
   const requirementsBySession = useMemo(() => {
     const map = new Map<string, CustomerRequirement>();
@@ -168,8 +168,8 @@ export default function CustomerPortal() {
     return map;
   }, [data?.projectRequirements]);
 
-  const orders = data?.orders ?? [];
-  const briefs = data?.projectRequirements ?? [];
+  const orders = useMemo(() => data?.orders ?? [], [data?.orders]);
+  const briefs = useMemo(() => data?.projectRequirements ?? [], [data?.projectRequirements]);
   const deliveredOrders = useMemo(() => orders.filter((order) => order.order_status === "delivered"), [orders]);
   const retainerOrders = useMemo(() => orders.filter(isRetainerOrder), [orders]);
   const latestRetainer = retainerOrders[0] ?? null;
