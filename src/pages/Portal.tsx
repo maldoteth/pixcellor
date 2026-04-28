@@ -1089,16 +1089,16 @@ export default function Portal() {
         </div>
 
         <Tabs defaultValue="sales">
-          <TabsList className="grid grid-cols-2 md:grid-cols-9 w-full md:w-auto h-auto">
-            <TabsTrigger value="sales">Sales ({callbacks.length})</TabsTrigger>
-            <TabsTrigger value="orders">Orders ({filteredOrders.length})</TabsTrigger>
-            <TabsTrigger value="completed">Completed ({completedOrders.length})</TabsTrigger>
-            <TabsTrigger value="falloffs">Falloffs ({filteredFalloffs.length})</TabsTrigger>
-            <TabsTrigger value="mailbox">Inbox ({mailboxMessages.length})</TabsTrigger>
-            <TabsTrigger value="chats">Chats ({filteredConversations.length})</TabsTrigger>
-            <TabsTrigger value="profiles">Clients ({filteredProfiles.length})</TabsTrigger>
-            <TabsTrigger value="inquiries">Enquiries ({filteredInquiries.length})</TabsTrigger>
-            <TabsTrigger value="contacts">Contacts ({filteredContacts.length})</TabsTrigger>
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 md:grid-cols-5 xl:grid-cols-9">
+            <TabsTrigger value="sales" className="h-10 px-2 text-xs sm:text-sm">Sales ({callbacks.length})</TabsTrigger>
+            <TabsTrigger value="orders" className="h-10 px-2 text-xs sm:text-sm">Orders ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="completed" className="h-10 px-2 text-xs sm:text-sm">Completed ({completedOrders.length})</TabsTrigger>
+            <TabsTrigger value="falloffs" className="h-10 px-2 text-xs sm:text-sm">Falloffs ({filteredFalloffs.length})</TabsTrigger>
+            <TabsTrigger value="mailbox" className="h-10 px-2 text-xs sm:text-sm">Inbox ({mailboxMessages.length})</TabsTrigger>
+            <TabsTrigger value="chats" className="h-10 px-2 text-xs sm:text-sm">Chats ({filteredConversations.length})</TabsTrigger>
+            <TabsTrigger value="profiles" className="h-10 px-2 text-xs sm:text-sm">Clients ({filteredProfiles.length})</TabsTrigger>
+            <TabsTrigger value="inquiries" className="h-10 px-2 text-xs sm:text-sm">Enquiries ({filteredInquiries.length})</TabsTrigger>
+            <TabsTrigger value="contacts" className="h-10 px-2 text-xs sm:text-sm">Contacts ({filteredContacts.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sales" className="space-y-4">
