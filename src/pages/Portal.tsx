@@ -1262,6 +1262,9 @@ export default function Portal() {
                 placeholder="Search sales callbacks by contact, title, notes, phone, email…"
                 className="pl-9"
               />
+              {!contactsQ && filteredContacts.length > 10 && (
+                <p className="mt-1 text-xs text-muted-foreground">Showing 10 most recent contacts. Search to find older contacts.</p>
+              )}
             </div>
 
             {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a contact first, then you can create sales events.</p>}
