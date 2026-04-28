@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { ArrowLeft, CheckCircle2, Loader2, Send } from "lucide-react";
@@ -97,6 +97,8 @@ export default function ProjectRequirements() {
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+  const [checkingExisting, setCheckingExisting] = useState(false);
 
   const validAccess = useMemo(
     () => /^PXC-[A-HJ-NP-Z]{4}-\d{4}$/.test(orderCode) && /^[A-Fa-f0-9]{64}$/.test(requirementsToken),
@@ -107,6 +109,23 @@ export default function ProjectRequirements() {
     setForm((current) => ({ ...current, [name]: value }));
     setErrors((current) => ({ ...current, [name]: undefined }));
   };
+
+  useEffect(() => {
+    if (!validAccess) return;
+    let cancelled = false;
+    setCheckingExisting(true);
+    supabase.functions.invoke("submit-project-requirements", {
+      body: { orderCode, requirementsToken },
+    }).then(({ data }) => {
+      if (!cancelled && data?.already_submitted) setAlreadySubmitted(true);
+    }).finally(() => {
+      if (!cancelled) setCheckingExisting(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderCode, requirementsToken, validAccess]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -129,6 +148,12 @@ export default function ProjectRequirements() {
     });
     setSubmitting(false);
 
+    if (data?.already_submitted) {
+      setAlreadySubmitted(true);
+      toast.message("Already submitted!");
+      return;
+    }
+
     if (error || data?.error) {
       toast.error(data?.error || error?.message || "Could not save requirements");
       return;
@@ -138,7 +163,7 @@ export default function ProjectRequirements() {
     toast.success("Requirements saved.");
   };
 
-  if (submitted) {
+  if (submitted || alreadySubmitted) {
     return (
       <main className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-2xl border-border bg-card/70 backdrop-blur-xl">
@@ -148,12 +173,17 @@ export default function ProjectRequirements() {
             </div>
             <div className="space-y-3">
               <p className="text-xs font-semibold text-muted-foreground">Pixcellor™ project brief</p>
-              <h1 className="text-3xl md:text-5xl font-semibold tracking-normal">Requirements received</h1>
-              <p className="text-muted-foreground leading-relaxed">We’ve saved your project details and linked them to your order.</p>
+              <h1 className="text-3xl md:text-5xl font-semibold tracking-normal">{alreadySubmitted ? "Already submitted!" : "Requirements received"}</h1>
+              <p className="text-muted-foreground leading-relaxed">{alreadySubmitted ? "Thanks — your project brief is already saved and linked to your order." : "We’ve saved your project details and linked them to your order."}</p>
             </div>
-            <Button asChild>
-              <Link to="/">Back to Pixcellor</Link>
-            </Button>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button asChild>
+                <Link to="/customer-portal">Go to profile dashboard</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/">Back to Pixcellor</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </main>
@@ -213,13 +243,13 @@ export default function ProjectRequirements() {
               <div className="flex flex-wrap justify-end gap-3 pt-2">
                 <button
                   type="submit"
-                  disabled={submitting || !validAccess}
+                  disabled={submitting || checkingExisting || !validAccess}
                   className="rounded-sm px-6 py-2 font-semibold text-foreground hover:brightness-125 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 relative overflow-hidden group"
                   style={pricingButtonStyle}
                 >
                   <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-foreground/20 to-transparent pointer-events-none" />
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  {submitting ? "Saving…" : "Send requirements"}
+                  {submitting || checkingExisting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  {submitting ? "Saving…" : checkingExisting ? "Checking…" : "Send requirements"}
                 </button>
               </div>
             </form>
