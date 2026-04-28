@@ -697,7 +697,11 @@ export default function Portal() {
       const effectiveStatus = hasOrders ? "gold" : c.status;
       return effectiveStatus === contactsStatusFilter;
     });
-    if (!contactsQ) return statusFiltered;
+    if (!contactsQ) {
+      return [...statusFiltered]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 10);
+    }
     const matchingContactIds = new Set(
       contactEvents
         .filter(e => matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) || matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at))
@@ -1258,6 +1262,9 @@ export default function Portal() {
                 placeholder="Search sales callbacks by contact, title, notes, phone, email…"
                 className="pl-9"
               />
+              {!contactsQ && filteredContacts.length > 10 && (
+                <p className="mt-1 text-xs text-muted-foreground">Showing 10 most recent contacts. Search to find older contacts.</p>
+              )}
             </div>
 
             {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a contact first, then you can create sales events.</p>}
