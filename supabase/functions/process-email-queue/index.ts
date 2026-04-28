@@ -276,6 +276,7 @@ Deno.serve(async (req) => {
           template_name: payload.label || queue,
           recipient_email: payload.to,
           status: 'sent',
+          metadata: payload.email_log_metadata && typeof payload.email_log_metadata === 'object' ? payload.email_log_metadata : null,
         })
 
         // Delete from queue
