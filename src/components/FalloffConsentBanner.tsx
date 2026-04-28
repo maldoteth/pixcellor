@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { FALL_OFF_CONSENT_KEY, recordFalloff, setFalloffConsent } from "@/lib/checkoutTracking";
+import { FALL_OFF_CONSENT_KEY, recordFalloff, recordVisitFalloffOnce, setFalloffConsent } from "@/lib/checkoutTracking";
 
 const glassButtonStyle = {
   background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
@@ -19,7 +19,9 @@ export default function FalloffConsentBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    setVisible(!localStorage.getItem(FALL_OFF_CONSENT_KEY));
+    const consent = localStorage.getItem(FALL_OFF_CONSENT_KEY);
+    setVisible(!consent);
+    if (consent === "granted") void recordVisitFalloffOnce();
   }, []);
 
   const choose = async (granted: boolean) => {
