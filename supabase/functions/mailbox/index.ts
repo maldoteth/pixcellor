@@ -1,5 +1,4 @@
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_mail/gmail/v1'
-const PORTAL_ACCESS_CODE = '42069'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -71,12 +70,26 @@ const gatewayFetch = async (path: string, init: RequestInit = {}) => {
   return data
 }
 
+const requireAdmin = async (req: Request) => {
+  const authHeader = req.headers.get('Authorization')
+  if (!authHeader?.startsWith('Bearer ')) throw new Error('Unauthorized')
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+  if (!supabaseUrl || !anonKey) throw new Error('Authentication is not configured')
+  const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.2')
+  const client = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } })
+  const { data: sessionData, error: sessionError } = await client.auth.getUser()
+  if (sessionError || !sessionData.user) throw new Error('Unauthorized')
+  const { data: isAdmin, error: roleError } = await client.rpc('has_role', { _user_id: sessionData.user.id, _role: 'admin' })
+  if (roleError || !isAdmin) throw new Error('Admin access required')
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
   try {
+    await requireAdmin(req)
     const body = req.method === 'POST' ? await req.json() : {}
-    if (body.accessCode !== PORTAL_ACCESS_CODE) return json({ error: 'Invalid portal access code' }, 401)
 
     if (body.action === 'list') {
       const allowedEmails = new Set(
