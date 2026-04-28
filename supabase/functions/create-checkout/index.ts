@@ -30,7 +30,8 @@ serve(async (req) => {
     const origin = req.headers.get("origin");
     if (!origin) throw new Error("Missing request origin");
 
-    const safeClientContext = clientContext && typeof clientContext === "object" ? clientContext as Record<string, unknown> : {};
+    const hasTrackingConsent = clientContext && typeof clientContext === "object";
+    const safeClientContext = hasTrackingConsent ? clientContext as Record<string, unknown> : {};
     const clientReferenceId = typeof safeClientContext.clientId === "string" ? safeClientContext.clientId.slice(0, 200) : undefined;
 
     const session = await stripe.checkout.sessions.create({
@@ -44,12 +45,12 @@ serve(async (req) => {
         package_name: typeof packageName === "string" ? packageName : "",
         billing: typeof billing === "string" ? billing : mode || "payment",
         client_id: clientReferenceId ?? "",
-        checkout_context: JSON.stringify(safeClientContext).slice(0, 500),
+        checkout_context: hasTrackingConsent ? JSON.stringify(safeClientContext).slice(0, 500) : "",
       },
     });
 
     const sessionId = typeof safeClientContext.sessionId === "string" ? safeClientContext.sessionId.slice(0, 200) : undefined;
-    if (clientReferenceId && sessionId) {
+    if (hasTrackingConsent && clientReferenceId && sessionId) {
       const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
       await supabase.from("visitor_falloffs").upsert({
         visitor_id: clientReferenceId,
