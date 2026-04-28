@@ -11,7 +11,7 @@ const PACKAGES = {
     name: "Full Works",
     price: "£150",
     rrp: "£500",
-    priceId: "price_1TJrSfBtUjwejeUwWd3YoFVy",
+    priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment",
     features: ["Industry leading website", "Lifetime guarantee", "Custom design", "Up to 3 pages"],
   },
