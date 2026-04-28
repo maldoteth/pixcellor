@@ -1982,11 +1982,11 @@ export default function Portal() {
             <Home className="h-4 w-4" />
             Home
           </Button>
-          <Button variant={showSalesEventForm ? "default" : "ghost"} size="sm" onClick={openMobileSalesEvent} className="h-14 flex-col gap-1 px-1 text-[10px]" disabled={contacts.length === 0}>
+          <Button variant={mobileSalesDrawerOpen || showSalesEventForm ? "default" : "ghost"} size="sm" onClick={openMobileSalesEvent} className="h-14 flex-col gap-1 px-1 text-[10px]" disabled={contacts.length === 0}>
             <Plus className="h-4 w-4" />
             Sales event
           </Button>
-          <Button variant={showContactForm ? "default" : "ghost"} size="sm" onClick={openMobileContactForm} className="h-14 flex-col gap-1 px-1 text-[10px]">
+          <Button variant={mobileContactDrawerOpen || showContactForm ? "default" : "ghost"} size="sm" onClick={openMobileContactForm} className="h-14 flex-col gap-1 px-1 text-[10px]">
             <UserPlus className="h-4 w-4" />
             Contact
           </Button>
