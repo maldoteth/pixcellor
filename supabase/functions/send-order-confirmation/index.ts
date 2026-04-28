@@ -36,8 +36,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    if (!supabaseUrl || !serviceRoleKey || !anonKey) throw new Error("Order confirmation service is not configured");
+    if (!supabaseUrl || !serviceRoleKey) throw new Error("Order confirmation service is not configured");
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       global: { headers: { Authorization: `Bearer ${serviceRoleKey}` } },
@@ -69,8 +68,8 @@ serve(async (req) => {
     const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${anonKey}`,
-        "apikey": anonKey,
+        "Authorization": `Bearer ${serviceRoleKey}`,
+        "apikey": serviceRoleKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
