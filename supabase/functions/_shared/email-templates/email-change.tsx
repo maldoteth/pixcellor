@@ -34,7 +34,7 @@ export const EmailChangeEmail = ({ email, newEmail, confirmationUrl }: EmailChan
           <Text style={eyebrow}>Pixcellor™ account security</Text>
           <Heading style={h1}>Confirm your email change</Heading>
           <Text style={text}>
-            Confirm the change from <Link href={`mailto:${email}`} style={link}>{email}</Link> to 
+            Confirm the change from <Link href={`mailto:${email}`} style={link}>{email}</Link> to{' '}
             <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>.
           </Text>
           <Button style={button} href={confirmationUrl}>
