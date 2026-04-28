@@ -28,7 +28,9 @@ serve(async (req) => {
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
     const event = await stripe.webhooks.constructEventAsync(bodyText, signature, stripeWebhookSecret);
 
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      global: { headers: { Authorization: `Bearer ${supabaseServiceRoleKey}` } },
+    });
     const eventObject = event.data.object as Record<string, unknown>;
     const rawSessionId = eventObject.id;
     const sessionId = typeof rawSessionId === "string" ? rawSessionId : null;
