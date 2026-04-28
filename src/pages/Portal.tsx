@@ -872,7 +872,11 @@ export default function Portal() {
         return;
       }
       await loadPortalSnapshot();
-      toast.success(`Order completed and email sent to ${data.recipientEmail || order.customer_email}.`);
+      if (data?.emailWarning) {
+        toast.warning(`Order marked delivered, but the completion email failed: ${data.emailWarning}`);
+      } else {
+        toast.success(`Order completed and email sent to ${data.recipientEmail || order.customer_email}.`);
+      }
     } finally {
       setDeliveringOrderId(null);
     }
