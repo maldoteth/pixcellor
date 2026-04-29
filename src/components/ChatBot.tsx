@@ -525,7 +525,6 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       {/* Header */}
       <div 
         className="px-4 py-3 border-b border-white/10 md:cursor-move"
-        onPointerDown={handleWidgetDragStart}
         style={{
           background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
         }}
@@ -752,6 +751,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
+              onPointerDown={handleWidgetDragStart}
               className="fixed z-50 rounded-3xl flex flex-col overflow-hidden"
               style={{
                 ...glassStyle,
