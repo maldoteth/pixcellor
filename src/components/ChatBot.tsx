@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Loader2, Check, Mic, MicOff } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
@@ -15,6 +15,7 @@ interface Message {
   role: "user" | "assistant" | "admin";
   content: string;
   packageCards?: PackageCard[];
+  imageUrl?: string;
 }
 
 interface PackageCard {
@@ -184,8 +185,10 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [manualHandoff, setManualHandoff] = useState(false);
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId(mode));
   const isDevMode = mode === "dev";
@@ -335,6 +338,59 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
+  const sendImageMessage = async (imageUrl: string, fileName: string) => {
+    const content = isDevMode
+      ? `Uploaded screenshot for contact extraction: ${fileName}\n${imageUrl}`
+      : `Uploaded image: ${fileName}\n${imageUrl}`;
+    const userMessage: Message = { role: "user", content, imageUrl };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setIsLoading(true);
+
+    try {
+      const apiMessages = newMessages.map(({ role, content, imageUrl }) => ({ role, content, imageUrl }));
+      const { data, error } = await supabase.functions.invoke("sales-chat", {
+        body: { messages: apiMessages, clientId: clientId.current, conversationId, mode },
+      });
+      if (error) throw error;
+      const assistantMsg: Message = { role: "assistant", content: data.reply };
+      setMessages(data.manualHandoff || !data.reply ? newMessages : [...newMessages, assistantMsg]);
+      if (data.conversationId && !conversationId) setConversationId(data.conversationId);
+      if (isDevMode && data.actionTaken) onDevAction?.();
+    } catch (error) {
+      console.error("Error sending image:", error);
+      setMessages([...newMessages, { role: "assistant", content: "Sorry, I couldn't process that image. Could you try again?" }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || isUploadingImage) return;
+    if (!file.type.startsWith("image/")) {
+      setMessages((current) => [...current, { role: "assistant", content: "Please choose an image file." }]);
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const extension = file.name.split(".").pop()?.toLowerCase() || "png";
+      const safeExtension = ["jpg", "jpeg", "png", "webp", "gif"].includes(extension) ? extension : "png";
+      const path = `${mode}/${clientId.current}/${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExtension}`;
+      const { error } = await supabase.storage.from("chat-images").upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("chat-images").getPublicUrl(path);
+      await sendImageMessage(data.publicUrl, file.name);
+    } catch (error) {
+      console.error("Image upload error:", error);
+      setMessages((current) => [...current, { role: "assistant", content: "Image upload failed. Please try again." }]);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -442,6 +498,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                     backdropFilter: "blur(10px)",
                   }}
                 >
+                  {msg.imageUrl && (
+                    <img src={msg.imageUrl} alt="Chat upload" className="mb-2 max-h-44 w-full rounded-sm object-cover" loading="lazy" />
+                  )}
                   <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
                 </div>
                 {/* Package cards */}
@@ -479,6 +538,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       {/* Input */}
       <div className="p-3 border-t border-white/10">
         <div className="flex items-center gap-2">
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           <input
             type="text"
             value={input}
@@ -491,6 +551,19 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
               border: "1px solid rgba(255,255,255,0.1)",
             }}
           />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingImage || isLoading}
+            aria-label="Upload image"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              background: "linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%)",
+              border: "1px solid rgba(255,255,255,0.2)",
+            }}
+          >
+            {isUploadingImage ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <ImageIcon className="h-4 w-4 text-white" />}
+          </button>
           <button
             type="button"
             onClick={toggleListening}

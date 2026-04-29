@@ -163,11 +163,13 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 
 ## What you can do
 - Create contacts from pasted details with create_contact.
+- Read uploaded screenshots/images and extract visible contact details with extract_screenshot_contact.
 - Create sales events/callback notes for existing contacts with create_sales_event.
 
 ## Rules
 - Be concise and operational.
 - If contact details include a name, create the contact immediately. Email and phone are optional.
+- If a message includes an uploaded screenshot/image URL, call extract_screenshot_contact first, then create_contact with any extracted name, job title, location, email, phone, and screenshot URL in notes.
 - If the dev says what happened with a lead/client, create a sales event. Use find_contact first when they name the person/company.
 - If a sales event does not clearly map to one existing contact, ask which contact to attach it to.
 - Never invent contact details. Save uncertainty in notes/description.
@@ -255,6 +257,20 @@ const tools = [
 ];
 
 const devTools = [
+  {
+    type: "function" as const,
+    function: {
+      name: "extract_screenshot_contact",
+      description: "Analyze an uploaded screenshot/image URL and extract visible contact details like name, job title, company, location, email, phone, and notes.",
+      parameters: {
+        type: "object",
+        properties: {
+          image_url: { type: "string", description: "Public URL of the uploaded screenshot/image." },
+        },
+        required: ["image_url"],
+      },
+    },
+  },
   {
     type: "function" as const,
     function: {
@@ -560,6 +576,37 @@ async function saveCustomerContact(supabase: ReturnType<typeof createClient>, ar
     .single();
   if (error) return { ok: false, error: error.message };
   return { ok: true, contact: data, updated: false };
+}
+
+async function extractScreenshotContact(apiKey: string, imageUrl: unknown) {
+  const url = cleanText(imageUrl, 1000);
+  if (!/^https:\/\//i.test(url)) return { ok: false, error: "invalid_image_url" };
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [{
+        role: "user",
+        content: [
+          { type: "text", text: "Extract visible contact details from this screenshot. Return only JSON with keys: name, job_title, company, location, email, phone, notes. Use empty strings for missing fields. Do not invent details." },
+          { type: "image_url", image_url: { url } },
+        ],
+      }],
+      response_format: { type: "json_object" },
+      max_tokens: 500,
+      temperature: 0,
+    }),
+  });
+  if (!response.ok) return { ok: false, error: `vision_failed_${response.status}` };
+  const data = await response.json();
+  const raw = data.choices?.[0]?.message?.content ?? "{}";
+  try {
+    return { ok: true, image_url: url, extracted: JSON.parse(raw) };
+  } catch {
+    return { ok: false, error: "parse_failed", raw };
+  }
 }
 
 async function findDevContacts(supabase: ReturnType<typeof createClient>, query: unknown) {
@@ -887,6 +934,16 @@ Deno.serve(async (req) => {
           } catch (e) {
             console.error("Error in save_contact:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "save_contact_failed" }) });
+          }
+        } else if (toolCall.function.name === "extract_screenshot_contact" && isDevMode) {
+          needsFollowUp = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await extractScreenshotContact(apiKey, args.image_url);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in extract_screenshot_contact:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "extract_failed" }) });
           }
         } else if (toolCall.function.name === "create_contact" && isDevMode) {
           needsFollowUp = true;
