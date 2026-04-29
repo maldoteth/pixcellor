@@ -82,6 +82,17 @@ const getClientId = (mode: "sales" | "dev" = "sales"): string => {
   return clientId;
 };
 
+const CHAT_WIDGET_DEFAULT_SIZE = { width: 380, height: 520 };
+const CHAT_WIDGET_MIN_SIZE = { width: 320, height: 420 };
+const CHAT_WIDGET_EDGE_GAP = 16;
+
+const clampValue = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+const getDefaultWidgetPosition = () => ({
+  x: Math.max(CHAT_WIDGET_EDGE_GAP, window.innerWidth - CHAT_WIDGET_DEFAULT_SIZE.width - 24),
+  y: Math.max(CHAT_WIDGET_EDGE_GAP, window.innerHeight - CHAT_WIDGET_DEFAULT_SIZE.height - 96),
+});
+
 const escapeHtml = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -186,6 +197,8 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [widgetSize, setWidgetSize] = useState(CHAT_WIDGET_DEFAULT_SIZE);
+  const [widgetPosition, setWidgetPosition] = useState<{ x: number; y: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -210,6 +223,27 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   useEffect(() => {
     if (isOpen) setAdminUnreadCount(0);
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || isMobile) return;
+    setWidgetPosition((current) => current ?? getDefaultWidgetPosition());
+  }, [isOpen, isMobile]);
+
+  useEffect(() => {
+    if (isMobile) return;
+    const clampWidgetToViewport = () => {
+      setWidgetSize((current) => ({
+        width: clampValue(current.width, CHAT_WIDGET_MIN_SIZE.width, window.innerWidth - CHAT_WIDGET_EDGE_GAP * 2),
+        height: clampValue(current.height, CHAT_WIDGET_MIN_SIZE.height, window.innerHeight - CHAT_WIDGET_EDGE_GAP * 2),
+      }));
+      setWidgetPosition((current) => current ? {
+        x: clampValue(current.x, CHAT_WIDGET_EDGE_GAP, window.innerWidth - widgetSize.width - CHAT_WIDGET_EDGE_GAP),
+        y: clampValue(current.y, CHAT_WIDGET_EDGE_GAP, window.innerHeight - widgetSize.height - CHAT_WIDGET_EDGE_GAP),
+      } : current);
+    };
+    window.addEventListener("resize", clampWidgetToViewport);
+    return () => window.removeEventListener("resize", clampWidgetToViewport);
+  }, [isMobile, widgetSize.height, widgetSize.width]);
 
   useEffect(() => {
     const openChat = () => setIsOpen(true);
@@ -430,11 +464,68 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     recognition.start();
   };
 
+  const handleWidgetDragStart = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (isMobile || !widgetPosition) return;
+    if ((event.target as HTMLElement).closest("button, input, a")) return;
+
+    event.preventDefault();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startPosition = widgetPosition;
+    const previousUserSelect = document.body.style.userSelect;
+    document.body.style.userSelect = "none";
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      setWidgetPosition({
+        x: clampValue(startPosition.x + moveEvent.clientX - startX, CHAT_WIDGET_EDGE_GAP, window.innerWidth - widgetSize.width - CHAT_WIDGET_EDGE_GAP),
+        y: clampValue(startPosition.y + moveEvent.clientY - startY, CHAT_WIDGET_EDGE_GAP, window.innerHeight - widgetSize.height - CHAT_WIDGET_EDGE_GAP),
+      });
+    };
+
+    const handlePointerUp = () => {
+      document.body.style.userSelect = previousUserSelect;
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  };
+
+  const handleWidgetResizeStart = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (isMobile || !widgetPosition) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startSize = widgetSize;
+    const previousUserSelect = document.body.style.userSelect;
+    document.body.style.userSelect = "none";
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      setWidgetSize({
+        width: clampValue(startSize.width + moveEvent.clientX - startX, CHAT_WIDGET_MIN_SIZE.width, window.innerWidth - widgetPosition.x - CHAT_WIDGET_EDGE_GAP),
+        height: clampValue(startSize.height + moveEvent.clientY - startY, CHAT_WIDGET_MIN_SIZE.height, window.innerHeight - widgetPosition.y - CHAT_WIDGET_EDGE_GAP),
+      });
+    };
+
+    const handlePointerUp = () => {
+      document.body.style.userSelect = previousUserSelect;
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  };
+
   const chatContent = (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div 
-        className="px-4 py-3 border-b border-white/10"
+        className="px-4 py-3 border-b border-white/10 md:cursor-move"
+        onPointerDown={handleWidgetDragStart}
         style={{
           background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
         }}
@@ -457,6 +548,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
           </div>
           <button
             type="button"
+            onPointerDown={(event) => event.stopPropagation()}
             onClick={() => setIsOpen(false)}
             aria-label="Close chat"
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-white/70 transition-colors hover:text-white"
@@ -660,8 +752,14 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="fixed bottom-24 right-6 z-50 w-[380px] h-[520px] rounded-3xl flex flex-col overflow-hidden"
-              style={glassStyle}
+              className="fixed z-50 rounded-3xl flex flex-col overflow-hidden"
+              style={{
+                ...glassStyle,
+                width: widgetSize.width,
+                height: widgetSize.height,
+                left: widgetPosition?.x ?? getDefaultWidgetPosition().x,
+                top: widgetPosition?.y ?? getDefaultWidgetPosition().y,
+              }}
             >
               <div 
                 className="absolute inset-0 rounded-3xl pointer-events-none"
@@ -670,6 +768,15 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                 }}
               />
               {chatContent}
+              <div
+                role="separator"
+                aria-label="Resize chat"
+                onPointerDown={handleWidgetResizeStart}
+                className="absolute bottom-0 right-0 z-20 h-8 w-8 cursor-se-resize touch-none"
+              >
+                <span className="absolute bottom-2 right-2 h-3 w-3 rounded-br-sm border-b border-r border-white/50" />
+                <span className="absolute bottom-2 right-2 h-5 w-5 rounded-br-sm border-b border-r border-white/25" />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
