@@ -101,8 +101,16 @@ All colors MUST be HSL.
   input,
   textarea,
   select {
-    color: hsl(var(--foreground));
-    caret-color: hsl(var(--foreground));
+    color: hsl(var(--foreground)) !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    caret-color: hsl(var(--foreground)) !important;
+    color-scheme: dark;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+    -webkit-text-fill-color: hsl(var(--muted-foreground));
   }
 
   input:-webkit-autofill,
@@ -115,8 +123,8 @@ All colors MUST be HSL.
     box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
     -webkit-box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
     background-color: hsl(var(--background)) !important;
-    background-clip: content-box !important;
-    transition: background-color 9999s ease-out;
+    background-clip: border-box !important;
+    transition: background-color 0s, color 0s, -webkit-text-fill-color 0s;
   }
 
   input::selection,
