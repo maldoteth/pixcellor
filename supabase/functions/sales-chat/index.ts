@@ -941,9 +941,8 @@ Deno.serve(async (req) => {
     // ---- Process tool calls ----
     // After ANY data tool (lookup_customer / save_brief) we run a 2nd AI pass
     // so Alex can speak naturally about what was found / saved.
-    let needsFollowUp = false;
-
-    if (message?.tool_calls && message.tool_calls.length > 0) {
+    for (let toolIteration = 0; toolIteration < 4 && message?.tool_calls && message.tool_calls.length > 0; toolIteration += 1) {
+      let needsFollowUp = false;
       // Push the assistant's tool-call message into history so the follow-up call is valid
       aiMessages.push(message);
 
@@ -1115,7 +1114,10 @@ Deno.serve(async (req) => {
           }
         } else {
           console.error("Follow-up AI call failed:", await response.text());
+          break;
         }
+      } else {
+        break;
       }
     }
 
