@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon, Phone, Mail } from "lucide-react";
+import { MessageSquare, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon, Phone, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
@@ -564,7 +564,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                 border: "1px solid rgba(255,255,255,0.2)",
               }}
             >
-              <MessageCircle className="w-5 h-5 text-white" />
+              <MessageSquare className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="font-semibold text-white text-sm">{isDevMode ? "Pixcellor Dev Assistant" : "Alex from Pixcellor"}</h3>
@@ -778,7 +778,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             </motion.div>
           ) : (
             <motion.div key="chat" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
-              <MessageCircle className="w-4 h-4 text-white drop-shadow-lg" />
+              <MessageSquare className="w-4 h-4 text-white drop-shadow-lg" />
             </motion.div>
           )}
         </AnimatePresence>
