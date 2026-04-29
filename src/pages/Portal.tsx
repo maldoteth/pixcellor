@@ -1262,7 +1262,7 @@ export default function Portal() {
         </div>
         <div className="md:col-span-2 flex gap-2">
           <Button onClick={createContact}>Save contact</Button>
-          <Button variant="outline" onClick={() => setShowContactForm(false)}>Cancel</Button>
+          <Button variant="outline" className="rounded-sm shadow-none" onClick={() => setShowContactForm(false)}>Cancel</Button>
         </div>
       </CardContent>
     </Card>
@@ -1296,7 +1296,7 @@ export default function Portal() {
         </div>
         <div className="flex items-end gap-2">
           <Button onClick={createContactEvent}>Save event</Button>
-          <Button variant="outline" onClick={() => setShowSalesEventForm(false)}>Cancel</Button>
+          <Button variant="outline" className="rounded-sm shadow-none" onClick={() => setShowSalesEventForm(false)}>Cancel</Button>
         </div>
       </CardContent>
     </Card>
