@@ -1,6 +1,8 @@
 /// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+type DbClient = any;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -328,7 +330,7 @@ const devTools = [
 ];
 
 // Look up everything we know about a customer by email
-async function lookupCustomer(supabase: ReturnType<typeof createClient>, rawEmail: string) {
+async function lookupCustomer(supabase: DbClient, rawEmail: string) {
   const email = rawEmail.trim().toLowerCase();
 
   // Validate email shape
@@ -476,7 +478,7 @@ function isOrderLookupIntent(text: string) {
 }
 
 // Load EVERYTHING we know about a client by email — used to give Alex memory across sessions
-async function loadClientContext(supabase: ReturnType<typeof createClient>, email: string) {
+async function loadClientContext(supabase: DbClient, email: string) {
   const normalised = email.trim().toLowerCase();
 
   const [profileRes, statusRes, lookup] = await Promise.all([
@@ -496,7 +498,7 @@ async function loadClientContext(supabase: ReturnType<typeof createClient>, emai
 
 // Upsert a brief — only writes fields the AI provided
 async function saveBrief(
-  supabase: ReturnType<typeof createClient>,
+  supabase: DbClient,
   args: Record<string, unknown>
 ) {
   const email = typeof args.email === "string" ? args.email.trim().toLowerCase() : "";
@@ -529,7 +531,7 @@ async function saveBrief(
 
 const cleanText = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
 
-async function createDevContact(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>) {
+async function createDevContact(supabase: DbClient, args: Record<string, unknown>) {
   const name = cleanText(args.name, 100);
   if (!name) return { ok: false, error: "missing_name" };
   const email = cleanText(args.email, 255).toLowerCase();
@@ -549,7 +551,7 @@ async function createDevContact(supabase: ReturnType<typeof createClient>, args:
   return { ok: true, contact: data };
 }
 
-async function saveCustomerContact(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>, conversationId: string | null) {
+async function saveCustomerContact(supabase: DbClient, args: Record<string, unknown>, conversationId: string | null) {
   const name = cleanText(args.name, 100);
   const email = cleanText(args.email, 255).toLowerCase();
   const phone = cleanText(args.phone, 40);
@@ -594,7 +596,7 @@ async function saveCustomerContact(supabase: ReturnType<typeof createClient>, ar
 }
 
 async function handleCustomerContactFollowUps(
-  supabase: ReturnType<typeof createClient>,
+  supabase: DbClient,
   contactId: string,
   details: { name: string; email: string; phone: string; shouldScheduleCallback: boolean; shouldSendWelcomeEmail: boolean }
 ) {
@@ -654,7 +656,7 @@ async function extractScreenshotContact(apiKey: string, imageUrl: unknown) {
   }
 }
 
-async function findDevContacts(supabase: ReturnType<typeof createClient>, query: unknown) {
+async function findDevContacts(supabase: DbClient, query: unknown) {
   const q = cleanText(query, 120);
   if (!q) return { ok: false, error: "missing_query", matches: [] };
   const pattern = `%${q.replace(/[%_]/g, "")} %`.replace(" %", "%");
@@ -668,7 +670,7 @@ async function findDevContacts(supabase: ReturnType<typeof createClient>, query:
   return { ok: true, matches: data ?? [] };
 }
 
-async function loadDevRecentContactContext(supabase: ReturnType<typeof createClient>) {
+async function loadDevRecentContactContext(supabase: DbClient) {
   const { data, error } = await supabase
     .from("contacts")
     .select("id, name, email, phone, location, status, created_at, updated_at")
@@ -701,7 +703,7 @@ async function loadDevRecentContactContext(supabase: ReturnType<typeof createCli
   ].join("\n");
 }
 
-async function createDevSalesEvent(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>) {
+async function createDevSalesEvent(supabase: DbClient, args: Record<string, unknown>) {
   const contactId = cleanText(args.contact_id, 80);
   const title = cleanText(args.title, 160);
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(contactId)) return { ok: false, error: "invalid_contact" };
