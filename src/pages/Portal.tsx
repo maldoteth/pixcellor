@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Repeat, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
+import ChatBot from "@/components/ChatBot";
 
 type StripeSession = {
   session_id: string;
@@ -347,6 +348,7 @@ export default function Portal() {
   const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("sales");
+  const [devChatOpen, setDevChatOpen] = useState(false);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot");
@@ -1342,11 +1344,17 @@ export default function Portal() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 pb-28 md:p-6 md:pb-28 lg:pb-6">
       <div className="mx-auto max-w-7xl min-w-0 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl md:text-3xl font-semibold">Pixcellor Dev Portal</h1>
-          <Button variant="outline" size="sm" onClick={exitPortal}>
-            Lock portal
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button variant="pricing" size="sm" onClick={() => setDevChatOpen(true)}>
+              <MessageSquare className="h-4 w-4" />
+              Chat
+            </Button>
+            <Button variant="outline" size="sm" onClick={exitPortal}>
+              Lock portal
+            </Button>
+          </div>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
           <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-10">
@@ -2419,6 +2427,8 @@ export default function Portal() {
           </div>
         </DrawerContent>
       </Drawer>
+
+      <ChatBot isOpen={devChatOpen} setIsOpen={setDevChatOpen} showToggle={false} mode="dev" onDevAction={loadPortalSnapshot} />
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur lg:hidden" aria-label="Admin mobile shortcuts">
         <div className="mx-auto grid max-w-md grid-cols-4 gap-1">

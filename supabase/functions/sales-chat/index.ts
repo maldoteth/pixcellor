@@ -157,6 +157,20 @@ Privacy rules:
 
 Start by greeting them warmly and asking what brings them here today.`;
 
+const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin portal. You help the Pixcellor team turn pasted notes into CRM records.
+
+## What you can do
+- Create contacts from pasted details with create_contact.
+- Create sales events/callback notes for existing contacts with create_sales_event.
+
+## Rules
+- Be concise and operational.
+- If contact details include a name, create the contact immediately. Email and phone are optional.
+- If the dev says what happened with a lead/client, create a sales event. Use find_contact first when they name the person/company.
+- If a sales event does not clearly map to one existing contact, ask which contact to attach it to.
+- Never invent contact details. Save uncertainty in notes/description.
+- For callback/reminder times, only include callback_at if a clear date/time is provided.`;
+
 const tools = [
   {
     type: "function" as const,
@@ -216,6 +230,58 @@ const tools = [
           notes: { type: "string", description: "Any other free-form notes worth remembering." },
         },
         required: ["email"],
+      },
+    },
+  },
+];
+
+const devTools = [
+  {
+    type: "function" as const,
+    function: {
+      name: "create_contact",
+      description: "Create a CRM contact from pasted contact details.",
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Contact name or company/lead name." },
+          phone: { type: "string", description: "Phone number, if provided." },
+          email: { type: "string", description: "Email address, if provided." },
+          location: { type: "string", description: "Location, if provided." },
+          notes: { type: "string", description: "Any extra pasted context or source details." },
+        },
+        required: ["name"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "find_contact",
+      description: "Find matching contacts before creating a sales event.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Name, company, email, or phone to search." },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_sales_event",
+      description: "Create a sales event or callback note for an existing contact.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string", description: "Existing contact UUID." },
+          title: { type: "string", description: "Short event title." },
+          description: { type: "string", description: "What happened or what needs doing." },
+          callback_at: { type: "string", description: "ISO date/time if a callback/reminder is clearly requested." },
+        },
+        required: ["contact_id", "title"],
       },
     },
   },
@@ -421,6 +487,61 @@ async function saveBrief(
   return { ok: true, profile: data };
 }
 
+const cleanText = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
+
+async function createDevContact(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>) {
+  const name = cleanText(args.name, 100);
+  if (!name) return { ok: false, error: "missing_name" };
+  const email = cleanText(args.email, 255).toLowerCase();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+
+  const payload = {
+    name,
+    phone: cleanText(args.phone, 40) || null,
+    email: email || null,
+    location: cleanText(args.location, 160) || null,
+    notes: cleanText(args.notes, 1000) || null,
+    source: "dev_chat",
+  };
+
+  const { data, error } = await supabase.from("contacts").insert(payload).select("id, name, email, phone").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, contact: data };
+}
+
+async function findDevContacts(supabase: ReturnType<typeof createClient>, query: unknown) {
+  const q = cleanText(query, 120);
+  if (!q) return { ok: false, error: "missing_query", matches: [] };
+  const pattern = `%${q.replace(/[%_]/g, "")} %`.replace(" %", "%");
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("id, name, email, phone, location, status")
+    .or(`name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern}`)
+    .order("updated_at", { ascending: false })
+    .limit(5);
+  if (error) return { ok: false, error: error.message, matches: [] };
+  return { ok: true, matches: data ?? [] };
+}
+
+async function createDevSalesEvent(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>) {
+  const contactId = cleanText(args.contact_id, 80);
+  const title = cleanText(args.title, 160);
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(contactId)) return { ok: false, error: "invalid_contact" };
+  if (!title) return { ok: false, error: "missing_title" };
+
+  const callbackAt = cleanText(args.callback_at, 80);
+  const payload = {
+    contact_id: contactId,
+    title,
+    description: cleanText(args.description, 2000) || null,
+    event_type: callbackAt ? "callback" : "communication",
+    callback_at: callbackAt && !Number.isNaN(Date.parse(callbackAt)) ? new Date(callbackAt).toISOString() : null,
+  };
+  const { data, error } = await supabase.from("contact_events").insert(payload).select("id, title, callback_at").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, event: data };
+}
+
 function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
   const lines: string[] = [];
   lines.push(`## Known client context (loaded from database for this email)`);
@@ -487,8 +608,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { messages, clientId, conversationId } = await req.json();
+    const { messages, clientId, conversationId, mode } = await req.json();
     const safeClientId = typeof clientId === "string" && clientId.length >= 8 && clientId.length <= 200 ? clientId : null;
+    const isDevMode = mode === "dev" && safeClientId?.startsWith("dev_");
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -498,6 +620,16 @@ Deno.serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    if (isDevMode) {
+      const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+      const { data: userData, error: userError } = await supabase.auth.getUser(token);
+      if (userError || !userData.user) throw new Error("Admin sign-in required");
+      const { data: hasAdminRole } = await supabase.rpc("has_role", {
+        _user_id: userData.user.id,
+        _role: "admin",
+      });
+      if (!hasAdminRole) throw new Error("Admin access required");
+    }
     let currentConversationId = conversationId;
     let botPaused = false;
 
@@ -560,7 +692,7 @@ Deno.serve(async (req) => {
     // If we can detect an email in this conversation, load EVERYTHING we
     // know about that client (profile, project status, orders, past chats)
     // and inject it as a system message so the AI replies with context.
-    const emailFromConversation = extractLatestEmail(messages);
+    const emailFromConversation = isDevMode ? null : extractLatestEmail(messages);
     let contextSummary = "";
     if (emailFromConversation) {
       try {
@@ -572,7 +704,7 @@ Deno.serve(async (req) => {
     }
 
     const aiMessages: Array<Record<string, unknown>> = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: isDevMode ? DEV_SYSTEM_PROMPT : SYSTEM_PROMPT },
       ...(contextSummary ? [{ role: "system" as const, content: contextSummary }] : []),
       ...messages,
     ];
@@ -587,7 +719,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: aiMessages,
-          tools,
+          tools: isDevMode ? devTools : tools,
           max_tokens: 600,
           temperature: 0.7,
         }),
@@ -616,6 +748,7 @@ Deno.serve(async (req) => {
       priceId: string;
       mode: string;
     }> = [];
+    let actionTaken = false;
 
     // ---- Process tool calls ----
     // After ANY data tool (lookup_customer / save_brief) we run a 2nd AI pass
@@ -691,6 +824,38 @@ Deno.serve(async (req) => {
               content: JSON.stringify({ ok: false, error: "parse_error" }),
             });
           }
+        } else if (toolCall.function.name === "create_contact" && isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await createDevContact(supabase, args);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in create_contact:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_contact_failed" }) });
+          }
+        } else if (toolCall.function.name === "find_contact" && isDevMode) {
+          needsFollowUp = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await findDevContacts(supabase, args.query);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in find_contact:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "find_contact_failed", matches: [] }) });
+          }
+        } else if (toolCall.function.name === "create_sales_event" && isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await createDevSalesEvent(supabase, args);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in create_sales_event:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_sales_event_failed" }) });
+          }
         } else if (toolCall.function.name === "lookup_customer") {
           needsFollowUp = true;
           try {
@@ -760,7 +925,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ reply, conversationId: currentConversationId, packageCards }),
+      JSON.stringify({ reply, conversationId: currentConversationId, packageCards, actionTaken }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {

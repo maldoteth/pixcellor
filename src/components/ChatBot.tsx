@@ -33,6 +33,8 @@ interface ChatBotProps {
   setIsOpen: (open: boolean) => void;
   hidden?: boolean;
   showToggle?: boolean;
+  mode?: "sales" | "dev";
+  onDevAction?: () => void;
 }
 
 interface ChatHistoryResponse {
@@ -52,11 +54,11 @@ const glassStyle = {
   `,
 };
 
-const getClientId = (): string => {
-  const storageKey = "pixcellor_chat_client_id";
+const getClientId = (mode: "sales" | "dev" = "sales"): string => {
+  const storageKey = mode === "dev" ? "pixcellor_dev_chat_client_id" : "pixcellor_chat_client_id";
   let clientId = localStorage.getItem(storageKey);
   if (!clientId) {
-    clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    clientId = `${mode === "dev" ? "dev" : "client"}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     localStorage.setItem(storageKey, clientId);
   }
   return clientId;
@@ -155,7 +157,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
   );
 }
 
-export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle = true }: ChatBotProps) {
+export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle = true, mode = "sales", onDevAction }: ChatBotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -166,7 +168,8 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
-  const clientId = useRef(getClientId());
+  const clientId = useRef(getClientId(mode));
+  const isDevMode = mode === "dev";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -259,7 +262,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("sales-chat", {
-        body: { messages: [], clientId: clientId.current },
+        body: { messages: [], clientId: clientId.current, mode },
       });
       if (error) throw error;
       setManualHandoff(Boolean(data.manualHandoff));
@@ -292,7 +295,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       // Send only role+content to the API
       const apiMessages = newMessages.map(({ role, content }) => ({ role, content }));
       const { data, error } = await supabase.functions.invoke("sales-chat", {
-        body: { messages: apiMessages, clientId: clientId.current, conversationId },
+        body: { messages: apiMessages, clientId: clientId.current, conversationId, mode },
       });
       if (error) throw error;
       const assistantMsg: Message = { role: "assistant", content: data.reply };
@@ -300,6 +303,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       setManualHandoff(Boolean(data.manualHandoff));
       setMessages(data.manualHandoff || !data.reply ? newMessages : [...newMessages, assistantMsg]);
       if (data.conversationId && !conversationId) setConversationId(data.conversationId);
+      if (isDevMode && data.actionTaken) onDevAction?.();
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages([...newMessages, { role: "assistant", content: "Sorry, I had a hiccup! Could you try that again?" }]);
@@ -336,8 +340,8 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-white text-sm">Alex from Pixcellor</h3>
-              <p className="text-xs text-white/50">{manualHandoff ? "Team member replying" : "Usually replies instantly"}</p>
+              <h3 className="font-semibold text-white text-sm">{isDevMode ? "Pixcellor Dev Assistant" : "Alex from Pixcellor"}</h3>
+              <p className="text-xs text-white/50">{isDevMode ? "Creates contacts and sales events" : manualHandoff ? "Team member replying" : "Usually replies instantly"}</p>
             </div>
           </div>
           <button
@@ -425,7 +429,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
+            placeholder={isDevMode ? "Paste contact details or describe a sales event" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
             className="flex-1 rounded-sm px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
             style={{
               background: "rgba(255,255,255,0.08)",
