@@ -163,11 +163,13 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 
 ## What you can do
 - Create contacts from pasted details with create_contact.
+- Read uploaded screenshots/images and extract visible contact details with extract_screenshot_contact.
 - Create sales events/callback notes for existing contacts with create_sales_event.
 
 ## Rules
 - Be concise and operational.
 - If contact details include a name, create the contact immediately. Email and phone are optional.
+- If a message includes an uploaded screenshot/image URL, call extract_screenshot_contact first, then create_contact with any extracted name, job title, location, email, phone, and screenshot URL in notes.
 - If the dev says what happened with a lead/client, create a sales event. Use find_contact first when they name the person/company.
 - If a sales event does not clearly map to one existing contact, ask which contact to attach it to.
 - Never invent contact details. Save uncertainty in notes/description.
@@ -255,6 +257,20 @@ const tools = [
 ];
 
 const devTools = [
+  {
+    type: "function" as const,
+    function: {
+      name: "extract_screenshot_contact",
+      description: "Analyze an uploaded screenshot/image URL and extract visible contact details like name, job title, company, location, email, phone, and notes.",
+      parameters: {
+        type: "object",
+        properties: {
+          image_url: { type: "string", description: "Public URL of the uploaded screenshot/image." },
+        },
+        required: ["image_url"],
+      },
+    },
+  },
   {
     type: "function" as const,
     function: {
