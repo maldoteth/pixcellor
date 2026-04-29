@@ -30,6 +30,12 @@ const portfolioData = [
     screenshot: dehubImg
   },
   {
+    name: "DeHub Network",
+    url: "dehub.net",
+    description: "Web3 ecosystem platform connecting creators, communities and decentralised products.",
+    screenshot: dehubImg
+  },
+  {
     name: "TikUp",
     url: "tikup.xyz",
     description: "TikTok live streaming toolkit integrated with TikTok APIs to help creators thrive.",
