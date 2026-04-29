@@ -2189,7 +2189,7 @@ export default function Portal() {
                   <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                   <div className="flex gap-2 md:col-span-2">
                     <Button onClick={updateContact}>Save changes</Button>
-                    <Button variant="outline" onClick={() => setEditingContactId(null)}>Cancel</Button>
+                    <Button variant="outline" className="rounded-sm shadow-none" onClick={() => setEditingContactId(null)}>Cancel</Button>
                   </div>
                 </div>
               )}
@@ -2274,7 +2274,7 @@ export default function Portal() {
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" onClick={() => mobileContactStep > 0 ? setMobileContactStep(step => step - 1) : setMobileContactDrawerOpen(false)}>
+              <Button variant="outline" className="rounded-sm shadow-none" onClick={() => mobileContactStep > 0 ? setMobileContactStep(step => step - 1) : setMobileContactDrawerOpen(false)}>
                 {mobileContactStep > 0 ? "Back" : "Cancel"}
               </Button>
               <Button onClick={() => continueMobileContact()}>{mobileContactStep === contactWizardFields.length - 1 ? "Save" : "Next"}</Button>
