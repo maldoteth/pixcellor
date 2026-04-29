@@ -10,12 +10,15 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Link,
   Preview,
   Row,
   Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+
+const LOGO_URL = 'https://pixcellor.com/pixcellor-email-logo.png'
 
 interface EmailChangeEmailProps {
   siteName: string
@@ -35,7 +38,7 @@ export const EmailChangeEmail = ({ email, newEmail, confirmationUrl }: EmailChan
               <Column style={inner}>
                 <Row style={brandRow}>
                   <Column style={markColumn}>
-                    <Text style={mark}>P</Text>
+                    <Img src={LOGO_URL} alt="Pixcellor" width="40" height="40" style={mark} />
                   </Column>
                   <Column style={brandColumn}>
                     <Text style={brand}>Pixcellor™</Text>
@@ -89,15 +92,8 @@ const markColumn = {
   verticalAlign: 'middle' as const,
 }
 const mark = {
-  backgroundColor: '#f4f4f5',
-  color: '#050505',
-  display: 'inline-block',
-  fontFamily: 'Arial Black, Arial, Helvetica, sans-serif',
-  fontSize: '24px',
-  fontWeight: '900' as const,
-  lineHeight: '40px',
+  display: 'block',
   margin: '0',
-  textAlign: 'center' as const,
   width: '40px',
   height: '40px',
 }
