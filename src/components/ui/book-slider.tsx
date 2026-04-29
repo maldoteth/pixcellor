@@ -61,7 +61,7 @@ const portfolioData = [
   {
     name: "DeLabs UK",
     url: "delabs.co.uk",
-    description: "UK-registered software consultancy delivering bespoke digital products, technical strategy, and scalable web platforms.",
+    description: "UK-registered software consultancy delivering bespoke products and scalable web platforms.",
     screenshot: delabsImg
   },
   {
