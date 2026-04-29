@@ -157,7 +157,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
   );
 }
 
-export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle = true }: ChatBotProps) {
+export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle = true, mode = "sales", onDevAction }: ChatBotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -168,7 +168,8 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
-  const clientId = useRef(getClientId());
+  const clientId = useRef(getClientId(mode));
+  const isDevMode = mode === "dev";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -261,7 +262,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("sales-chat", {
-        body: { messages: [], clientId: clientId.current },
+        body: { messages: [], clientId: clientId.current, mode },
       });
       if (error) throw error;
       setManualHandoff(Boolean(data.manualHandoff));
@@ -294,7 +295,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       // Send only role+content to the API
       const apiMessages = newMessages.map(({ role, content }) => ({ role, content }));
       const { data, error } = await supabase.functions.invoke("sales-chat", {
-        body: { messages: apiMessages, clientId: clientId.current, conversationId },
+        body: { messages: apiMessages, clientId: clientId.current, conversationId, mode },
       });
       if (error) throw error;
       const assistantMsg: Message = { role: "assistant", content: data.reply };
@@ -302,6 +303,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       setManualHandoff(Boolean(data.manualHandoff));
       setMessages(data.manualHandoff || !data.reply ? newMessages : [...newMessages, assistantMsg]);
       if (data.conversationId && !conversationId) setConversationId(data.conversationId);
+      if (isDevMode && data.actionTaken) onDevAction?.();
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages([...newMessages, { role: "assistant", content: "Sorry, I had a hiccup! Could you try that again?" }]);
