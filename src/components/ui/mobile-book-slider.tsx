@@ -25,18 +25,6 @@ const portfolioData = [
     screenshot: firstClassAgencyImg
   },
   {
-    name: "DeHub",
-    url: "dehub.io",
-    description: "Full stack app, large scale YouTube and X alternative packed with features.",
-    screenshot: dehubImg
-  },
-  {
-    name: "DeHub Network",
-    url: "dehub.net",
-    description: "Web3 ecosystem platform connecting creators, communities and decentralised products.",
-    screenshot: dehubNetworkImg
-  },
-  {
     name: "TikUp",
     url: "tikup.xyz",
     description: "TikTok live streaming toolkit integrated with TikTok APIs to help creators thrive.",
@@ -95,6 +83,18 @@ const portfolioData = [
     url: "arvox.agency",
     description: "Modern agency website presenting premium creative services, brand strategy and digital delivery.",
     screenshot: firstClassAgencyImg
+  },
+  {
+    name: "DeHub Network",
+    url: "dehub.net",
+    description: "Web3 ecosystem platform connecting creators, communities and decentralised products.",
+    screenshot: dehubNetworkImg
+  },
+  {
+    name: "DeHub",
+    url: "dehub.io",
+    description: "Full stack app, large scale YouTube and X alternative packed with features.",
+    screenshot: dehubImg
   }
 ];
 
