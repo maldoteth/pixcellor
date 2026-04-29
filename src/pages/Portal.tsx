@@ -1927,14 +1927,14 @@ export default function Portal() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant={contactsStatusFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setContactsStatusFilter("all")}>All</Button>
+              <Button variant={contactsStatusFilter === "all" ? "default" : "outline"} size="sm" className="rounded-sm shadow-none" onClick={() => setContactsStatusFilter("all")}>All</Button>
               {contactStatuses.map(status => (
                 <Button
                   key={status.value}
                   variant={contactsStatusFilter === status.value ? "default" : "outline"}
                   size="sm"
                   onClick={() => setContactsStatusFilter(status.value)}
-                  className="gap-2"
+                  className="gap-2 rounded-sm shadow-none"
                 >
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: status.color }} />
                   {status.label}
@@ -2040,7 +2040,7 @@ export default function Portal() {
                         <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
                           <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
-                          <Button variant="outline" onClick={(event) => { event.stopPropagation(); setEditingContactId(null); }}>Cancel</Button>
+                          <Button variant="outline" className="rounded-sm shadow-none" onClick={(event) => { event.stopPropagation(); setEditingContactId(null); }}>Cancel</Button>
                         </div>
                       </div>
                     )}
