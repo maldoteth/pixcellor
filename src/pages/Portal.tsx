@@ -1424,7 +1424,7 @@ export default function Portal() {
                     <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
                         <div className="font-medium">{e.title}</div>
-                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown contact"} · {new Date(e.callback_at!).toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown contact"} · {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
                         {contact?.phone && (phoneHref ? (
                           <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
                             {contact.phone}
@@ -2079,7 +2079,7 @@ export default function Portal() {
                         <div key={e.id} className="text-sm rounded-none p-3 bg-neutral-800/[0.17]">
                           <div className="flex flex-wrap justify-between gap-2">
                             <span className="font-medium">{e.title}</span>
-                            <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
+                            <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()} · {getEventAuthorLabel(e)}</span>
                           </div>
                           {e.description && <div className="whitespace-pre-wrap mt-1">{e.description}</div>}
                           {e.callback_at && <div className="text-xs text-muted-foreground mt-1">Callback: {new Date(e.callback_at).toLocaleString()}</div>}
@@ -2225,7 +2225,7 @@ export default function Portal() {
                   <div key={e.id} className="rounded-none border border-border bg-card/60 p-3 text-sm">
                     <div className="flex flex-wrap justify-between gap-2">
                       <span className="font-medium">{e.title}</span>
-                      <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
+                      <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()} · {getEventAuthorLabel(e)}</span>
                     </div>
                     {e.description && <div className="mt-1 whitespace-pre-wrap">{e.description}</div>}
                     {e.callback_at && <div className="mt-1 text-xs text-muted-foreground">Callback: {new Date(e.callback_at).toLocaleString()}</div>}
