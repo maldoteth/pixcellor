@@ -1215,7 +1215,7 @@ export default function Portal() {
 
   const renderEventContactSuggestionList = (openUp = false) => (
     <div
-      className={`absolute left-0 right-0 z-50 h-72 overflow-y-auto rounded-md border border-border bg-popover shadow-xl ${openUp ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}
+      className={`absolute left-0 right-0 z-50 h-72 overflow-y-auto rounded-sm border border-border bg-popover shadow-xl ${openUp ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}
       onScroll={(e) => loadMoreEventContactSuggestions(e.currentTarget)}
     >
       {visibleEventContactSuggestions.length > 0 ? visibleEventContactSuggestions.map(contact => (
@@ -1289,7 +1289,7 @@ export default function Portal() {
         </div>
         <div>
           <label className="text-xs text-muted-foreground">Quick callback</label>
-          <select defaultValue="" onChange={(e) => applyCallbackPreset(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+          <select defaultValue="" onChange={(e) => applyCallbackPreset(e.target.value)} className="h-10 w-full rounded-sm border border-input bg-background px-3 text-sm">
             <option value="">Pick time</option>
             {callbackPresets.map(preset => <option key={preset.label} value={preset.label}>{preset.label}</option>)}
           </select>
@@ -1447,7 +1447,7 @@ export default function Portal() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card/50 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-border bg-card/50 p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Requirements</span>
                 <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
@@ -1519,7 +1519,7 @@ export default function Portal() {
                   </div>
 
                   {editRequestsBySession.has(o.session_id) && (
-                    <div className="rounded-md border border-border bg-background/50 p-4 text-sm">
+                    <div className="rounded-sm border border-border bg-background/50 p-4 text-sm">
                       <div className="mb-3 font-medium">Edit requests</div>
                       <div className="space-y-3">
                         {editRequestsBySession.get(o.session_id)!.map((request) => (
@@ -1540,7 +1540,7 @@ export default function Portal() {
                   )}
 
                   {requirements && (
-                    <div className="rounded-md border border-border bg-background/50 p-4 text-sm">
+                    <div className="rounded-sm border border-border bg-background/50 p-4 text-sm">
                       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                         <div className="font-medium">{requirements.site_name}</div>
                         <div className="text-xs text-muted-foreground">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
@@ -1592,7 +1592,7 @@ export default function Portal() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search completed orders by email, order ID, status, domain…" className="pl-9" />
             </div>
-            <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-card/50 p-3">
+            <div className="flex flex-wrap items-center gap-2 rounded-sm border border-border bg-card/50 p-3">
               <span className="text-xs font-medium text-muted-foreground">Requirements</span>
               <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
               <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
@@ -1624,7 +1624,7 @@ export default function Portal() {
                     </div>
 
                     {requirements && (
-                      <div className="rounded-md border border-border bg-background/50 p-4 text-sm">
+                      <div className="rounded-sm border border-border bg-background/50 p-4 text-sm">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="font-medium">{requirements.site_name}</div>
                           <div className="text-xs text-muted-foreground">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
@@ -1671,19 +1671,19 @@ export default function Portal() {
                     </div>
                   </div>
                   <div className="grid gap-2 text-xs md:grid-cols-3">
-                    <div className="rounded-md border border-border p-2">
+                    <div className="rounded-sm border border-border p-2">
                       <div className="font-medium">Company</div>
                       <div className="text-muted-foreground">Name: {f.company_name ?? "—"}</div>
                       <div className="text-muted-foreground break-all">Domain: {f.company_domain ?? "—"}</div>
                       <div className="text-muted-foreground">Type: {f.company_type ?? "—"}</div>
                     </div>
-                    <div className="rounded-md border border-border p-2">
+                    <div className="rounded-sm border border-border p-2">
                       <div className="font-medium">Location</div>
                       <div className="text-muted-foreground">{[f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(", ") || "—"}</div>
                       <div className="text-muted-foreground">Postal: {f.ip_postal ?? "—"}</div>
                       <div className="text-muted-foreground break-all">Coordinates: {f.ip_location ?? "—"}</div>
                     </div>
-                    <div className="rounded-md border border-border p-2">
+                    <div className="rounded-sm border border-border p-2">
                       <div className="font-medium">Network</div>
                       <div className="text-muted-foreground">ASN: {f.asn ?? "—"}</div>
                       <div className="text-muted-foreground">Name: {f.as_name ?? "—"}</div>
@@ -1692,19 +1692,19 @@ export default function Portal() {
                     </div>
                   </div>
                   <div className="grid gap-2 text-xs md:grid-cols-3">
-                    <div className="rounded-md border border-border p-2">
+                    <div className="rounded-sm border border-border p-2">
                       <div className="font-medium">IP details</div>
                       <div className="text-muted-foreground break-all">IP: {f.ip_address ?? "—"}</div>
                       <div className="text-muted-foreground break-all">Host: {f.ip_hostname ?? "—"}</div>
                       <div className="text-muted-foreground">IP timezone: {f.ip_timezone ?? "—"}</div>
                     </div>
-                    <div className="rounded-md border border-border p-2">
+                    <div className="rounded-sm border border-border p-2">
                       <div className="font-medium">Carrier</div>
                       <div className="text-muted-foreground">Name: {f.carrier_name ?? "—"}</div>
                       <div className="text-muted-foreground">MCC: {f.carrier_mcc ?? "—"}</div>
                       <div className="text-muted-foreground">MNC: {f.carrier_mnc ?? "—"}</div>
                     </div>
-                    <div className="rounded-md border border-border p-2">
+                    <div className="rounded-sm border border-border p-2">
                       <div className="font-medium">Privacy flags</div>
                       <div className="text-muted-foreground">{[
                         f.privacy_vpn ? "VPN" : null,
@@ -1748,7 +1748,7 @@ export default function Portal() {
                 {mailboxMessages.map(message => {
                   const relatedOrder = orders.find(order => order.customer_email?.toLowerCase() === message.fromEmail);
                   return (
-                    <button key={message.id} onClick={() => setActiveMail(message)} className={`w-full text-left p-3 rounded-md border transition-colors ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
+                    <button key={message.id} onClick={() => setActiveMail(message)} className={`w-full text-left p-3 rounded-sm border transition-colors ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
                       <div className="flex items-center justify-between gap-2">
                         <div className="font-medium truncate">{message.from}</div>
                         {message.unread && <Badge>New</Badge>}
@@ -1781,12 +1781,12 @@ export default function Portal() {
                       </div>
                     </div>
                     {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail) && (
-                      <div className="rounded-md border border-border p-3 text-sm text-muted-foreground shrink-0">
+                      <div className="rounded-sm border border-border p-3 text-sm text-muted-foreground shrink-0">
                         Related order: {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)?.amount_total != null ? formatGBP(orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)!.amount_total!) : "—"}
                       </div>
                     )}
-                    <div className="rounded-md bg-muted/30 p-3 whitespace-pre-wrap text-sm flex-1 min-h-[180px] overflow-y-auto">{activeMail.body || activeMail.snippet}</div>
-                    <textarea value={mailReply} onChange={(e) => setMailReply(e.target.value)} placeholder="Reply to the client…" className="min-h-[120px] max-h-[160px] w-full shrink-0 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                    <div className="rounded-sm bg-muted/30 p-3 whitespace-pre-wrap text-sm flex-1 min-h-[180px] overflow-y-auto">{activeMail.body || activeMail.snippet}</div>
+                    <textarea value={mailReply} onChange={(e) => setMailReply(e.target.value)} placeholder="Reply to the client…" className="min-h-[120px] max-h-[160px] w-full shrink-0 rounded-sm border border-input bg-background px-3 py-2 text-sm" />
                     <Button className="shrink-0 self-start" onClick={sendMailboxReply} disabled={!mailReply.trim()}>Send reply</Button>
                   </>
                 )}
@@ -1807,7 +1807,7 @@ export default function Portal() {
                   <button
                     key={c.id}
                     onClick={() => loadMessages(c.id)}
-                    className={`w-full text-left p-3 rounded-md border transition-colors ${activeConv === c.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}
+                    className={`w-full text-left p-3 rounded-sm border transition-colors ${activeConv === c.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}
                   >
                     <div className="text-xs font-mono truncate text-muted-foreground">{c.client_id}</div>
                     {last ? (
@@ -1829,7 +1829,7 @@ export default function Portal() {
                 {activeConv && messages.length === 0 && <p className="text-muted-foreground text-sm">No messages.</p>}
                 {messages.map(m => (
                   <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-primary text-primary-foreground" : m.role === "admin" ? "bg-accent text-accent-foreground border border-border" : "bg-muted text-foreground"}`}>
+                    <div className={`max-w-[80%] rounded-sm p-3 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-primary text-primary-foreground" : m.role === "admin" ? "bg-accent text-accent-foreground border border-border" : "bg-muted text-foreground"}`}>
                       <div className="text-xs opacity-60 mb-1">{m.role} · {new Date(m.created_at).toLocaleTimeString()}</div>
                       {m.content}
                     </div>
@@ -2032,7 +2032,7 @@ export default function Portal() {
                       </div>
                     </div>
                     {editingContactId === c.id && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-md border border-border p-3" onClick={(event) => event.stopPropagation()}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-sm border border-border p-3" onClick={(event) => event.stopPropagation()}>
                         <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
                         <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
@@ -2054,7 +2054,7 @@ export default function Portal() {
                           {orderStats.orders.map(order => {
                             const requirements = requirementsBySession.get(order.session_id);
                             return (
-                              <div key={order.session_id} className="text-sm rounded-md p-3 bg-neutral-800/[0.17]">
+                              <div key={order.session_id} className="text-sm rounded-sm p-3 bg-neutral-800/[0.17]">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                   <span className="font-medium">{order.amount_total != null ? formatGBP(order.amount_total) : "—"}</span>
                                   <span className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</span>
@@ -2072,7 +2072,7 @@ export default function Portal() {
                       )}
                       {events.length === 0 && !orderStats && <p className="text-xs text-muted-foreground">No communications logged.</p>}
                       {events.map(e => (
-                        <div key={e.id} className="text-sm rounded-md p-3 bg-neutral-800/[0.17]">
+                        <div key={e.id} className="text-sm rounded-sm p-3 bg-neutral-800/[0.17]">
                           <div className="flex flex-wrap justify-between gap-2">
                             <span className="font-medium">{e.title}</span>
                             <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
@@ -2146,7 +2146,7 @@ export default function Portal() {
           </DrawerHeader>
           {contactDetailDrawerContact && (
             <div className="mx-auto w-full max-w-3xl space-y-4 overflow-y-auto pb-2">
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card/60 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-border bg-card/60 p-3">
                 <div className="min-w-0 space-y-1">
                   {contactDetailDrawerContact.phone && (contactDetailDrawerPhoneHref ? (
                     <a href={contactDetailDrawerPhoneHref} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contactDetailDrawerContact.phone}`}>
@@ -2181,7 +2181,7 @@ export default function Portal() {
                 </div>
               </div>
               {editingContactId === contactDetailDrawerContact.id && (
-                <div className="grid grid-cols-1 gap-3 rounded-md border border-border p-3 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 rounded-sm border border-border p-3 md:grid-cols-2">
                   <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
                   <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                   <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
@@ -2199,7 +2199,7 @@ export default function Portal() {
                   {contactDetailDrawerOrderStats.orders.map(order => {
                     const requirements = requirementsBySession.get(order.session_id);
                     return (
-                      <div key={order.session_id} className="rounded-md border border-border bg-card/60 p-3 text-sm">
+                      <div key={order.session_id} className="rounded-sm border border-border bg-card/60 p-3 text-sm">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="font-medium">{order.amount_total != null ? formatGBP(order.amount_total) : "—"}</span>
                           <span className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</span>
@@ -2218,7 +2218,7 @@ export default function Portal() {
                 <div className="text-sm font-medium">Contact history</div>
                 {contactDetailDrawerEvents.length === 0 && <p className="text-sm text-muted-foreground">No communications logged.</p>}
                 {contactDetailDrawerEvents.map(e => (
-                  <div key={e.id} className="rounded-md border border-border bg-card/60 p-3 text-sm">
+                  <div key={e.id} className="rounded-sm border border-border bg-card/60 p-3 text-sm">
                     <div className="flex flex-wrap justify-between gap-2">
                       <span className="font-medium">{e.title}</span>
                       <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
@@ -2381,7 +2381,7 @@ export default function Portal() {
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
               const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
               return (
-                <div key={o.session_id} className="space-y-3 rounded-md border border-border bg-card/60 p-3">
+                <div key={o.session_id} className="space-y-3 rounded-sm border border-border bg-card/60 p-3">
                   <div className="space-y-1">
                     <div className="break-all text-sm font-medium">{o.customer_email ?? "Guest checkout"}</div>
                     <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>
