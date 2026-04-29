@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
+import { motion, useTransform, useSpring, useMotionValue, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import BookSlider from "./book-slider";
 import PackagesDialog from "@/components/PackagesDialog";
@@ -101,6 +101,85 @@ function FlipCard({
                     </div>
                 </div>
             </motion.div>
+        </motion.div>
+    );
+}
+
+type PixelBackgroundProps = {
+    phase: AnimationPhase;
+    morphValue: number;
+    containerSize: { width: number; height: number };
+};
+
+function PixelBackground({ phase, morphValue, containerSize }: PixelBackgroundProps) {
+    const reduceMotion = useReducedMotion();
+    const isMobile = containerSize.width < 768;
+    const pixelCount = isMobile ? 34 : 64;
+    const visible = phase === "scatter" ? 0.42 : phase === "line" ? 0.34 : Math.max(0, 0.24 - morphValue * 0.7);
+
+    const pixels = useMemo(() => {
+        return Array.from({ length: pixelCount }, (_, index) => {
+            const column = index % 8;
+            const row = Math.floor(index / 8);
+            const jitterX = Math.sin(index * 13.37) * 7;
+            const jitterY = Math.cos(index * 9.91) * 7;
+            return {
+                id: index,
+                left: 8 + column * 12 + jitterX,
+                top: 9 + row * (isMobile ? 10 : 8) + jitterY,
+                size: 2 + (index % 4),
+                delay: (index % 11) * 0.08,
+                driftX: Math.sin(index * 2.3) * (isMobile ? 8 : 18),
+                driftY: Math.cos(index * 1.7) * (isMobile ? 6 : 14),
+            };
+        });
+    }, [isMobile, pixelCount]);
+
+    if (reduceMotion || visible <= 0) return null;
+
+    return (
+        <motion.div
+            aria-hidden="true"
+            className="absolute inset-0 z-[1] pointer-events-none overflow-hidden"
+            animate={{ opacity: visible }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+        >
+            <div
+                className="absolute inset-0 opacity-40"
+                style={{
+                    backgroundImage: "linear-gradient(hsla(0,0%,100%,0.045) 1px, transparent 1px), linear-gradient(90deg, hsla(0,0%,100%,0.045) 1px, transparent 1px)",
+                    backgroundSize: isMobile ? "28px 28px" : "34px 34px",
+                    maskImage: "radial-gradient(circle at 50% 48%, black 0%, transparent 68%)",
+                    WebkitMaskImage: "radial-gradient(circle at 50% 48%, black 0%, transparent 68%)",
+                }}
+            />
+            {pixels.map((pixel) => (
+                <motion.span
+                    key={pixel.id}
+                    className="absolute block bg-foreground"
+                    style={{
+                        left: `${pixel.left}%`,
+                        top: `${pixel.top}%`,
+                        width: pixel.size,
+                        height: pixel.size,
+                        boxShadow: "0 0 14px hsla(0,0%,100%,0.45)",
+                    }}
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{
+                        opacity: phase === "circle" ? [0.18, 0.04, 0.12] : [0.08, 0.42, 0.12],
+                        scale: phase === "line" ? [1, 1.55, 1] : [0.8, 1.15, 0.9],
+                        x: phase === "scatter" ? [pixel.driftX, 0, pixel.driftX * -0.35] : [0, pixel.driftX * 0.3, 0],
+                        y: phase === "scatter" ? [pixel.driftY, 0, pixel.driftY * -0.35] : [0, pixel.driftY * 0.3, 0],
+                    }}
+                    transition={{
+                        duration: 2.6 + (pixel.id % 5) * 0.35,
+                        delay: pixel.delay,
+                        repeat: Infinity,
+                        repeatType: "mirror",
+                        ease: "easeInOut",
+                    }}
+                />
+            ))}
         </motion.div>
     );
 }
@@ -297,6 +376,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             <div className="absolute inset-0 pointer-events-none z-0" style={{
                 background: 'radial-gradient(ellipse 60% 50% at 50% 50%, hsla(0,0%,100%,0.15) 0%, transparent 70%)',
             }} />
+            <PixelBackground phase={introPhase} morphValue={morphValue} containerSize={containerSize} />
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
