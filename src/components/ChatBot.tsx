@@ -693,7 +693,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={isDevMode ? "Paste contact details or describe a sales event" : quickAction === "call" ? "Name and phone number" : quickAction === "email" ? "Name and email address" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
-            className="h-9 flex-1 rounded-sm px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
+            className="h-9 flex-1 rounded-sm px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-0 focus-visible:outline-none"
             style={{
               background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(255,255,255,0.1)",
