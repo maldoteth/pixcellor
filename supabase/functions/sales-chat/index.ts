@@ -175,7 +175,10 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - If contact details include a name, create the contact immediately. Email and phone are optional.
 - If a message includes an uploaded screenshot/image URL, call extract_screenshot_contact first, then create_contact with any extracted name, job title, location, email, phone, and screenshot URL in notes.
 - If the dev says what happened with a lead/client, create a sales event. Use find_contact first when they name the person/company.
-- If the dev asks for a callback/reminder for a contact they just created or just discussed, use the recent-contact context or the previous tool result instead of asking them to repeat details.
+- Callback/reminder intent is scoped to the contact the dev explicitly names or clearly references in the SAME request. Do not carry a callback request over to later contacts.
+- When the dev uploads/pastes a screenshot to add a new contact, only create the contact. NEVER create a callback for the screenshot contact unless the dev explicitly says the callback is for the person/company in that screenshot in the same message.
+- If a message both adds/imports a screenshot contact and asks for a callback for a different named contact, keep those actions separate: create the screenshot contact, then find/create the event only for the named callback contact.
+- If the dev asks for a callback/reminder for a contact they just created or just discussed, use the recent-contact context or the previous tool result only when the current message is a callback/reminder request and does not include a new screenshot/contact import.
 - If a sales event does not clearly map to one existing contact after checking recent contacts/find_contact, ask which contact to attach it to.
 - Never invent contact details. Save uncertainty in notes/description.
 - For callback/reminder times, treat relative dates like "tomorrow", "next week", and "in 1 week" as clear. If no time is given, default to 09:00 Europe/London and include callback_at as ISO.`;
@@ -687,7 +690,7 @@ async function loadDevRecentContactContext(supabase: DbClient) {
 
   return [
     "## Recent CRM contacts",
-    "Use this to resolve follow-up phrases like 'him', 'her', 'that contact', or 'the one I just added'. Prefer the most recent matching contact when the user asks for a callback right after creating a contact.",
+    "Use this to resolve follow-up phrases like 'him', 'her', 'that contact', or 'the one I just added'. Prefer the most recent matching contact only when the current user message is asking for a callback/reminder and is not also adding/importing a new screenshot contact.",
     ...contacts.map((contact: Record<string, unknown>, index: number) => {
       const bits = [
         `${index + 1}. ${contact.name}`,
