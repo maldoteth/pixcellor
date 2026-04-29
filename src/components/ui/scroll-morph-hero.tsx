@@ -376,6 +376,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             <div className="absolute inset-0 pointer-events-none z-0" style={{
                 background: 'radial-gradient(ellipse 60% 50% at 50% 50%, hsla(0,0%,100%,0.15) 0%, transparent 70%)',
             }} />
+            <PixelBackground phase={introPhase} morphValue={morphValue} containerSize={containerSize} />
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
