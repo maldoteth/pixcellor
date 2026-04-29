@@ -935,6 +935,16 @@ Deno.serve(async (req) => {
             console.error("Error in save_contact:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "save_contact_failed" }) });
           }
+        } else if (toolCall.function.name === "extract_screenshot_contact" && isDevMode) {
+          needsFollowUp = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await extractScreenshotContact(apiKey, args.image_url);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in extract_screenshot_contact:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "extract_failed" }) });
+          }
         } else if (toolCall.function.name === "create_contact" && isDevMode) {
           needsFollowUp = true;
           actionTaken = true;
