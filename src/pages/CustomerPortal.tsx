@@ -526,7 +526,7 @@ function SectionHeader({ title, description, count }: { title: string; descripti
         <h2 className="text-2xl font-semibold tracking-normal">{title}</h2>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
-      <Badge variant="outline">{count} total</Badge>
+      <Badge variant="outline">{count}</Badge>
     </div>
   );
 }
