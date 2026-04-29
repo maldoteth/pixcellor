@@ -738,6 +738,7 @@ Deno.serve(async (req) => {
       priceId: string;
       mode: string;
     }> = [];
+    let actionTaken = false;
 
     // ---- Process tool calls ----
     // After ANY data tool (lookup_customer / save_brief) we run a 2nd AI pass
@@ -813,6 +814,38 @@ Deno.serve(async (req) => {
               content: JSON.stringify({ ok: false, error: "parse_error" }),
             });
           }
+        } else if (toolCall.function.name === "create_contact" && isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await createDevContact(supabase, args);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in create_contact:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_contact_failed" }) });
+          }
+        } else if (toolCall.function.name === "find_contact" && isDevMode) {
+          needsFollowUp = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await findDevContacts(supabase, args.query);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in find_contact:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "find_contact_failed", matches: [] }) });
+          }
+        } else if (toolCall.function.name === "create_sales_event" && isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await createDevSalesEvent(supabase, args);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in create_sales_event:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_sales_event_failed" }) });
+          }
         } else if (toolCall.function.name === "lookup_customer") {
           needsFollowUp = true;
           try {
@@ -882,7 +915,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ reply, conversationId: currentConversationId, packageCards }),
+      JSON.stringify({ reply, conversationId: currentConversationId, packageCards, actionTaken }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
