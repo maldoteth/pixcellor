@@ -1,6 +1,8 @@
 /// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+type DbClient = any;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -173,9 +175,10 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - If contact details include a name, create the contact immediately. Email and phone are optional.
 - If a message includes an uploaded screenshot/image URL, call extract_screenshot_contact first, then create_contact with any extracted name, job title, location, email, phone, and screenshot URL in notes.
 - If the dev says what happened with a lead/client, create a sales event. Use find_contact first when they name the person/company.
-- If a sales event does not clearly map to one existing contact, ask which contact to attach it to.
+- If the dev asks for a callback/reminder for a contact they just created or just discussed, use the recent-contact context or the previous tool result instead of asking them to repeat details.
+- If a sales event does not clearly map to one existing contact after checking recent contacts/find_contact, ask which contact to attach it to.
 - Never invent contact details. Save uncertainty in notes/description.
-- For callback/reminder times, only include callback_at if a clear date/time is provided.`;
+- For callback/reminder times, treat relative dates like "tomorrow", "next week", and "in 1 week" as clear. If no time is given, default to 09:00 Europe/London and include callback_at as ISO.`;
 
 const tools = [
   {
@@ -327,7 +330,7 @@ const devTools = [
 ];
 
 // Look up everything we know about a customer by email
-async function lookupCustomer(supabase: ReturnType<typeof createClient>, rawEmail: string) {
+async function lookupCustomer(supabase: DbClient, rawEmail: string) {
   const email = rawEmail.trim().toLowerCase();
 
   // Validate email shape
@@ -454,7 +457,7 @@ function formatLookupReply(result: Awaited<ReturnType<typeof lookupCustomer>>) {
     return `I found a checkout record${orderDate ? ` from ${orderDate}` : ""}, but payment hasn’t been processed${latestOrder.amount ? ` for ${latestOrder.amount}` : ""}, so the order isn’t being worked on yet and you weren’t charged.`;
   }
 
-  if (result.contact_inquiries.length > 0 || result.prior_chats.length > 0) {
+  if (result.contact_inquiries.length > 0 || (result.prior_chats ?? []).length > 0) {
     return "I can see previous contact history for that email, but no processed order in the database yet.";
   }
 
@@ -475,7 +478,7 @@ function isOrderLookupIntent(text: string) {
 }
 
 // Load EVERYTHING we know about a client by email — used to give Alex memory across sessions
-async function loadClientContext(supabase: ReturnType<typeof createClient>, email: string) {
+async function loadClientContext(supabase: DbClient, email: string) {
   const normalised = email.trim().toLowerCase();
 
   const [profileRes, statusRes, lookup] = await Promise.all([
@@ -495,7 +498,7 @@ async function loadClientContext(supabase: ReturnType<typeof createClient>, emai
 
 // Upsert a brief — only writes fields the AI provided
 async function saveBrief(
-  supabase: ReturnType<typeof createClient>,
+  supabase: DbClient,
   args: Record<string, unknown>
 ) {
   const email = typeof args.email === "string" ? args.email.trim().toLowerCase() : "";
@@ -528,7 +531,7 @@ async function saveBrief(
 
 const cleanText = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
 
-async function createDevContact(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>) {
+async function createDevContact(supabase: DbClient, args: Record<string, unknown>) {
   const name = cleanText(args.name, 100);
   if (!name) return { ok: false, error: "missing_name" };
   const email = cleanText(args.email, 255).toLowerCase();
@@ -548,7 +551,7 @@ async function createDevContact(supabase: ReturnType<typeof createClient>, args:
   return { ok: true, contact: data };
 }
 
-async function saveCustomerContact(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>, conversationId: string | null) {
+async function saveCustomerContact(supabase: DbClient, args: Record<string, unknown>, conversationId: string | null) {
   const name = cleanText(args.name, 100);
   const email = cleanText(args.email, 255).toLowerCase();
   const phone = cleanText(args.phone, 40);
@@ -593,7 +596,7 @@ async function saveCustomerContact(supabase: ReturnType<typeof createClient>, ar
 }
 
 async function handleCustomerContactFollowUps(
-  supabase: ReturnType<typeof createClient>,
+  supabase: DbClient,
   contactId: string,
   details: { name: string; email: string; phone: string; shouldScheduleCallback: boolean; shouldSendWelcomeEmail: boolean }
 ) {
@@ -653,7 +656,7 @@ async function extractScreenshotContact(apiKey: string, imageUrl: unknown) {
   }
 }
 
-async function findDevContacts(supabase: ReturnType<typeof createClient>, query: unknown) {
+async function findDevContacts(supabase: DbClient, query: unknown) {
   const q = cleanText(query, 120);
   if (!q) return { ok: false, error: "missing_query", matches: [] };
   const pattern = `%${q.replace(/[%_]/g, "")} %`.replace(" %", "%");
@@ -667,7 +670,40 @@ async function findDevContacts(supabase: ReturnType<typeof createClient>, query:
   return { ok: true, matches: data ?? [] };
 }
 
-async function createDevSalesEvent(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>) {
+async function loadDevRecentContactContext(supabase: DbClient) {
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("id, name, email, phone, location, status, created_at, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(8);
+
+  if (error) {
+    console.error("loadDevRecentContactContext error:", error);
+    return "";
+  }
+
+  const contacts = data ?? [];
+  if (contacts.length === 0) return "";
+
+  return [
+    "## Recent CRM contacts",
+    "Use this to resolve follow-up phrases like 'him', 'her', 'that contact', or 'the one I just added'. Prefer the most recent matching contact when the user asks for a callback right after creating a contact.",
+    ...contacts.map((contact: Record<string, unknown>, index: number) => {
+      const bits = [
+        `${index + 1}. ${contact.name}`,
+        `id=${contact.id}`,
+        contact.email ? `email=${contact.email}` : "",
+        contact.phone ? `phone=${contact.phone}` : "",
+        contact.location ? `location=${contact.location}` : "",
+        contact.status ? `status=${contact.status}` : "",
+        contact.updated_at ? `updated=${contact.updated_at}` : "",
+      ].filter(Boolean);
+      return `- ${bits.join(" · ")}`;
+    }),
+  ].join("\n");
+}
+
+async function createDevSalesEvent(supabase: DbClient, args: Record<string, unknown>) {
   const contactId = cleanText(args.contact_id, 80);
   const title = cleanText(args.title, 160);
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(contactId)) return { ok: false, error: "invalid_contact" };
@@ -730,9 +766,10 @@ function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientCont
     }
   }
 
-  if (ctx.prior_chats.length > 0) {
-    lines.push(`### Past chat history (${ctx.prior_chats.length} prior conversation(s))`);
-    for (const conv of ctx.prior_chats.slice(0, 2)) {
+  const priorChats = ctx.prior_chats ?? [];
+  if (priorChats.length > 0) {
+    lines.push(`### Past chat history (${priorChats.length} prior conversation(s))`);
+    for (const conv of priorChats.slice(0, 2)) {
       const recent = conv.messages.slice(-6);
       lines.push(`Conversation ${conv.conversation_id.slice(0, 8)}…:`);
       for (const m of recent) {
@@ -847,9 +884,20 @@ Deno.serve(async (req) => {
       }
     }
 
+    let devRecentContactContext = "";
+    if (isDevMode) {
+      try {
+        devRecentContactContext = await loadDevRecentContactContext(supabase);
+      } catch (e) {
+        console.error("dev recent contact context error:", e);
+      }
+    }
+
     const aiMessages: Array<Record<string, unknown>> = [
       { role: "system", content: isDevMode ? DEV_SYSTEM_PROMPT : SYSTEM_PROMPT },
+      { role: "system", content: `Current server time: ${new Date().toISOString()}. For CRM callbacks, resolve relative dates from this timestamp and use Europe/London business hours when no time is supplied.` },
       ...(contextSummary ? [{ role: "system" as const, content: contextSummary }] : []),
+      ...(devRecentContactContext ? [{ role: "system" as const, content: devRecentContactContext }] : []),
       ...messages,
     ];
 
@@ -897,9 +945,8 @@ Deno.serve(async (req) => {
     // ---- Process tool calls ----
     // After ANY data tool (lookup_customer / save_brief) we run a 2nd AI pass
     // so Alex can speak naturally about what was found / saved.
-    let needsFollowUp = false;
-
-    if (message?.tool_calls && message.tool_calls.length > 0) {
+    for (let toolIteration = 0; toolIteration < 4 && message?.tool_calls && message.tool_calls.length > 0; toolIteration += 1) {
+      let needsFollowUp = false;
       // Push the assistant's tool-call message into history so the follow-up call is valid
       aiMessages.push(message);
 
@@ -1071,7 +1118,10 @@ Deno.serve(async (req) => {
           }
         } else {
           console.error("Follow-up AI call failed:", await response.text());
+          break;
         }
+      } else {
+        break;
       }
     }
 
