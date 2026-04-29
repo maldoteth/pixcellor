@@ -197,6 +197,8 @@ type ContactEvent = {
   event_type: string;
   callback_at: string | null;
   completed_at: string | null;
+  created_by_user_id?: string | null;
+  created_by_email?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -258,6 +260,8 @@ const callbackPresets = [
   { label: "3m", getDate: () => { const d = new Date(); d.setMonth(d.getMonth() + 3); return d; } },
   { label: "1y", getDate: () => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d; } },
 ];
+
+const getEventAuthorLabel = (event: ContactEvent) => event.created_by_email ? `Logged by ${event.created_by_email}` : "Logged by admin";
 
 const contactStatuses = [
   { value: "cold", label: "Cold", color: "hsl(217 91% 60%)" },
