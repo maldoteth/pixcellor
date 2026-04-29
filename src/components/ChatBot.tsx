@@ -492,6 +492,18 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             }}
           />
           <button
+            type="button"
+            onClick={toggleListening}
+            aria-label={isListening ? "Stop voice input" : "Start voice input"}
+            className="flex h-10 w-10 items-center justify-center rounded-sm transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              background: isListening ? "linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.14) 100%)" : "linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%)",
+              border: "1px solid rgba(255,255,255,0.2)",
+            }}
+          >
+            {isListening ? <MicOff className="h-4 w-4 text-white" /> : <Mic className="h-4 w-4 text-white" />}
+          </button>
+          <button
             onClick={sendMessage}
             disabled={!input.trim() || isLoading}
             className="w-10 h-10 rounded-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
