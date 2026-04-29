@@ -568,7 +568,6 @@ export default function Portal() {
   const contactsQ = contactsSearch.trim().toLowerCase();
   const ordersQ = ordersSearch.trim().toLowerCase();
   const retainersQ = retainersSearch.trim().toLowerCase();
-  const editRequestsQ = editRequestsSearch.trim().toLowerCase();
   const completedQ = completedSearch.trim().toLowerCase();
   const falloffsQ = falloffsSearch.trim().toLowerCase();
   const chatsQ = chatsSearch.trim().toLowerCase();
@@ -656,10 +655,12 @@ export default function Portal() {
     const searched = !ordersQ ? orders : orders.filter(o => orderMatchesQuery(ordersQ, o));
     return searched.filter((order) => {
       const hasRequirements = requirementsBySession.has(order.session_id);
-      const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
+      const hasEditRequests = editRequestsBySession.has(order.session_id);
+      const reqsMatches = orderReqsFilter === "all" ||
+        (orderReqsFilter === "submitted" ? hasRequirements : orderReqsFilter === "edits" ? hasEditRequests : !hasRequirements);
       return order.order_status !== "delivered" && reqsMatches;
     });
-  }, [orders, ordersQ, orderReqsFilter, requirementsBySession]);
+  }, [orders, ordersQ, orderReqsFilter, requirementsBySession, editRequestsBySession]);
 
   const filteredRetainers = useMemo(() => {
     const monthlyRetainers = orders.filter(isMonthlyRetainerOrder);
@@ -674,17 +675,6 @@ export default function Portal() {
       return order.order_status === "delivered" && reqsMatches;
     });
   }, [orders, completedQ, orderReqsFilter, requirementsBySession]);
-
-  const filteredEditRequests = useMemo(() => {
-    const searched = !editRequestsQ ? editRequests : editRequests.filter((request) =>
-      matchesQuery(editRequestsQ, request.customer_email) ||
-      matchesQuery(editRequestsQ, request.session_id) ||
-      matchesQuery(editRequestsQ, request.package_name) ||
-      matchesQuery(editRequestsQ, request.status) ||
-      matchesQuery(editRequestsQ, request.request_details)
-    );
-    return [...searched].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [editRequests, editRequestsQ]);
 
   const filteredFalloffs = useMemo(() => {
     const paidSessionIds = new Set(orders.map(o => o.session_id));
