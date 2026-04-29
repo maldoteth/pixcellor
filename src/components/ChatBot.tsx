@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon, Phone, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
@@ -197,6 +197,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [quickAction, setQuickAction] = useState<"call" | "email" | null>(null);
   const [widgetSize, setWidgetSize] = useState(CHAT_WIDGET_DEFAULT_SIZE);
   const [widgetPosition, setWidgetPosition] = useState<{ x: number; y: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -345,15 +346,23 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input.trim() };
+    const visibleContent = input.trim();
+    const actionInstruction = quickAction === "call"
+      ? "\n\n[Quick action: Request call. Save these details as a contact and schedule a callback for 1 day from now.]"
+      : quickAction === "email"
+        ? "\n\n[Quick action: Email info. Save these details as a contact and send the Pixcellor welcome sales email.]"
+        : "";
+    const userMessage: Message = { role: "user", content: visibleContent };
+    const apiUserMessage = { role: "user" as const, content: `${visibleContent}${actionInstruction}` };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput("");
+    setQuickAction(null);
     setIsLoading(true);
 
     try {
       // Send only role+content to the API
-      const apiMessages = newMessages.map(({ role, content }) => ({ role, content }));
+      const apiMessages = [...messages.map(({ role, content }) => ({ role, content })), apiUserMessage];
       const { data, error } = await supabase.functions.invoke("sales-chat", {
         body: { messages: apiMessages, clientId: clientId.current, conversationId, mode },
       });
@@ -430,6 +439,20 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const startQuickAction = (action: "call" | "email") => {
+    if (isDevMode || isLoading) return;
+    setQuickAction(action);
+    setMessages((current) => [
+      ...current,
+      {
+        role: "assistant",
+        content: action === "call"
+          ? "Absolutely — leave your name and phone number and I’ll get a callback booked for tomorrow."
+          : "Sure — leave your name and email and I’ll send over our full package guide, process breakdown, portfolio and buy links.",
+      },
+    ]);
   };
 
   const toggleListening = () => {
