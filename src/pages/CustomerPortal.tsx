@@ -352,11 +352,6 @@ export default function CustomerPortal() {
                         </p>
                       </div>
                     </div>
-                    {nextOrder && (
-                      <Button variant="pricing" className="gap-2 md:self-end" onClick={() => setActiveTab("orders")}>
-                        Open order history <ReceiptText className="h-4 w-4" />
-                      </Button>
-                    )}
                   </div>
                 </div>
 
