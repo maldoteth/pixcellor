@@ -877,6 +877,17 @@ Deno.serve(async (req) => {
               content: JSON.stringify({ ok: false, error: "parse_error" }),
             });
           }
+        } else if (toolCall.function.name === "save_contact" && !isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await saveCustomerContact(supabase, args, currentConversationId);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in save_contact:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "save_contact_failed" }) });
+          }
         } else if (toolCall.function.name === "create_contact" && isDevMode) {
           needsFollowUp = true;
           actionTaken = true;
