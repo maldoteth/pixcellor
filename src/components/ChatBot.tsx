@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon, Phone, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
@@ -197,6 +197,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [quickAction, setQuickAction] = useState<"call" | "email" | null>(null);
   const [widgetSize, setWidgetSize] = useState(CHAT_WIDGET_DEFAULT_SIZE);
   const [widgetPosition, setWidgetPosition] = useState<{ x: number; y: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -345,15 +346,23 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input.trim() };
+    const visibleContent = input.trim();
+    const actionInstruction = quickAction === "call"
+      ? "\n\n[Quick action: Request call. Save these details as a contact and schedule a callback for 1 day from now.]"
+      : quickAction === "email"
+        ? "\n\n[Quick action: Email info. Save these details as a contact and send the Pixcellor welcome sales email.]"
+        : "";
+    const userMessage: Message = { role: "user", content: visibleContent };
+    const apiUserMessage = { role: "user" as const, content: `${visibleContent}${actionInstruction}` };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput("");
+    setQuickAction(null);
     setIsLoading(true);
 
     try {
       // Send only role+content to the API
-      const apiMessages = newMessages.map(({ role, content }) => ({ role, content }));
+      const apiMessages = [...messages.map(({ role, content }) => ({ role, content })), apiUserMessage];
       const { data, error } = await supabase.functions.invoke("sales-chat", {
         body: { messages: apiMessages, clientId: clientId.current, conversationId, mode },
       });
@@ -430,6 +439,20 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const startQuickAction = (action: "call" | "email") => {
+    if (isDevMode || isLoading) return;
+    setQuickAction(action);
+    setMessages((current) => [
+      ...current,
+      {
+        role: "assistant",
+        content: action === "call"
+          ? "Absolutely — leave your name and phone number and I’ll get a callback booked for tomorrow."
+          : "Sure — leave your name and email and I’ll send over our full package guide, process breakdown, portfolio and buy links.",
+      },
+    ]);
   };
 
   const toggleListening = () => {
@@ -602,6 +625,40 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                     ))}
                   </div>
                 )}
+                {!isDevMode && i === 0 && msg.role === "assistant" && (
+                  <div className="mt-2 flex w-[80%] flex-wrap gap-2">
+                    <motion.button
+                      type="button"
+                      onClick={() => startQuickAction("call")}
+                      disabled={isLoading}
+                      whileHover={{ y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex h-8 items-center gap-2 rounded-sm px-3 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)",
+                        border: "1px solid rgba(255,255,255,0.18)",
+                      }}
+                    >
+                      <Phone className="h-3.5 w-3.5" />
+                      Request call
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      onClick={() => startQuickAction("email")}
+                      disabled={isLoading}
+                      whileHover={{ y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex h-8 items-center gap-2 rounded-sm px-3 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)",
+                        border: "1px solid rgba(255,255,255,0.18)",
+                      }}
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      Email info
+                    </motion.button>
+                  </div>
+                )}
               </motion.div>
             ))}
             {isLoading && (
@@ -635,7 +692,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isDevMode ? "Paste contact details or describe a sales event" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
+            placeholder={isDevMode ? "Paste contact details or describe a sales event" : quickAction === "call" ? "Name and phone number" : quickAction === "email" ? "Name and email address" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
             className="h-9 flex-1 rounded-sm px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
             style={{
               background: "rgba(255,255,255,0.08)",

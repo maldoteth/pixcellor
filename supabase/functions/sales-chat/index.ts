@@ -101,6 +101,8 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
 2. Recommend ONE package that fits (not all three)
 3. Collect their contact details for follow-up: Name, Email (required), Brief project description
 4. When a visitor gives their name plus either email or phone number, immediately call save_contact so the team can follow up.
+5. If the visitor used the "Request call" quick action, ask for name + phone, then call save_contact with schedule_callback_tomorrow=true.
+6. If the visitor used the "Email info" quick action, ask for name + email, then call save_contact with send_welcome_email=true.
 
 ## CRITICAL Rules — Qualifying Questions:
 - DO NOT list or recommend all three packages at once. That overwhelms clients.
@@ -249,6 +251,8 @@ const tools = [
           phone: { type: "string", description: "Phone number, if provided." },
           email: { type: "string", description: "Email address, if provided." },
           notes: { type: "string", description: "Project summary or relevant chat context." },
+          schedule_callback_tomorrow: { type: "boolean", description: "True when the visitor requested a call. Creates a callback event for 1 day from now." },
+          send_welcome_email: { type: "boolean", description: "True when the visitor requested package/process info by email. Sends the Pixcellor welcome sales email." },
         },
         required: ["name"],
       },
@@ -548,11 +552,19 @@ async function saveCustomerContact(supabase: ReturnType<typeof createClient>, ar
   const name = cleanText(args.name, 100);
   const email = cleanText(args.email, 255).toLowerCase();
   const phone = cleanText(args.phone, 40);
+  const shouldScheduleCallback = args.schedule_callback_tomorrow === true;
+  const shouldSendWelcomeEmail = args.send_welcome_email === true;
   if (!name) return { ok: false, error: "missing_name" };
   if (!email && !phone) return { ok: false, error: "email_or_phone_required" };
+  if (shouldSendWelcomeEmail && !email) return { ok: false, error: "email_required_for_welcome_email" };
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
 
-  const notes = [cleanText(args.notes, 850), conversationId ? `Live chat: ${conversationId}` : "Live chat lead"].filter(Boolean).join("\n");
+  const notes = [
+    cleanText(args.notes, 850),
+    shouldScheduleCallback ? "Requested a callback from Alex chat." : "",
+    shouldSendWelcomeEmail ? "Requested Pixcellor package/process info by email." : "",
+    conversationId ? `Live chat: ${conversationId}` : "Live chat lead",
+  ].filter(Boolean).join("\n");
   const existingQuery = supabase.from("contacts").select("id, notes").limit(1);
   const { data: existing } = email
     ? await existingQuery.ilike("email", email).maybeSingle()
@@ -566,7 +578,8 @@ async function saveCustomerContact(supabase: ReturnType<typeof createClient>, ar
       .select("id, name, email, phone")
       .single();
     if (error) return { ok: false, error: error.message };
-    return { ok: true, contact: data, updated: true };
+    await handleCustomerContactFollowUps(supabase, data.id, { name, email, phone, shouldScheduleCallback, shouldSendWelcomeEmail });
+    return { ok: true, contact: data, updated: true, callback_scheduled: shouldScheduleCallback, welcome_email_requested: shouldSendWelcomeEmail };
   }
 
   const { data, error } = await supabase
@@ -575,7 +588,38 @@ async function saveCustomerContact(supabase: ReturnType<typeof createClient>, ar
     .select("id, name, email, phone")
     .single();
   if (error) return { ok: false, error: error.message };
-  return { ok: true, contact: data, updated: false };
+  await handleCustomerContactFollowUps(supabase, data.id, { name, email, phone, shouldScheduleCallback, shouldSendWelcomeEmail });
+  return { ok: true, contact: data, updated: false, callback_scheduled: shouldScheduleCallback, welcome_email_requested: shouldSendWelcomeEmail };
+}
+
+async function handleCustomerContactFollowUps(
+  supabase: ReturnType<typeof createClient>,
+  contactId: string,
+  details: { name: string; email: string; phone: string; shouldScheduleCallback: boolean; shouldSendWelcomeEmail: boolean }
+) {
+  if (details.shouldScheduleCallback) {
+    const callbackAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const { error } = await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: "Call back requested from website chat",
+      description: `Alex chat captured callback request for ${details.name}${details.phone ? ` (${details.phone})` : ""}.`,
+      event_type: "callback",
+      callback_at: callbackAt,
+    });
+    if (error) console.error("callback event error:", error);
+  }
+
+  if (details.shouldSendWelcomeEmail && details.email) {
+    const { error } = await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "sales-welcome-info",
+        recipientEmail: details.email,
+        idempotencyKey: `sales-welcome-${contactId}`,
+        templateData: { name: details.name },
+      },
+    });
+    if (error) console.error("welcome email error:", error);
+  }
 }
 
 async function extractScreenshotContact(apiKey: string, imageUrl: unknown) {
