@@ -101,6 +101,8 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
 2. Recommend ONE package that fits (not all three)
 3. Collect their contact details for follow-up: Name, Email (required), Brief project description
 4. When a visitor gives their name plus either email or phone number, immediately call save_contact so the team can follow up.
+5. If the visitor used the "Request call" quick action, ask for name + phone, then call save_contact with schedule_callback_tomorrow=true.
+6. If the visitor used the "Email info" quick action, ask for name + email, then call save_contact with send_welcome_email=true.
 
 ## CRITICAL Rules — Qualifying Questions:
 - DO NOT list or recommend all three packages at once. That overwhelms clients.
@@ -249,6 +251,8 @@ const tools = [
           phone: { type: "string", description: "Phone number, if provided." },
           email: { type: "string", description: "Email address, if provided." },
           notes: { type: "string", description: "Project summary or relevant chat context." },
+          schedule_callback_tomorrow: { type: "boolean", description: "True when the visitor requested a call. Creates a callback event for 1 day from now." },
+          send_welcome_email: { type: "boolean", description: "True when the visitor requested package/process info by email. Sends the Pixcellor welcome sales email." },
         },
         required: ["name"],
       },
