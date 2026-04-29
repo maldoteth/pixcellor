@@ -520,7 +520,7 @@ export default function CustomerPortal() {
               </Tabs>
             </section>
           </main>
-          <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} />
+          <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} showToggle={false} />
         </SidebarInset>
       </div>
     </SidebarProvider>

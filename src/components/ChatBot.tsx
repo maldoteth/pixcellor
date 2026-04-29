@@ -32,6 +32,7 @@ interface ChatBotProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   hidden?: boolean;
+  showToggle?: boolean;
 }
 
 interface ChatHistoryResponse {
@@ -154,7 +155,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
   );
 }
 
-export default function ChatBot({ isOpen, setIsOpen, hidden = false }: ChatBotProps) {
+export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle = true }: ChatBotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -450,24 +451,25 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false }: ChatBotPr
   return (
     <>
       {/* Chat Toggle Button */}
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`absolute right-16 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:right-[76px] md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden ? 'pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100' : 'opacity-100'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
-        aria-label="Open chat with Alex from Pixcellor"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(255,255,255,0.2)",
-          boxShadow: `
-            0 8px 32px rgba(0,0,0,0.3),
-            inset 0 1px 1px rgba(255,255,255,0.3),
-            inset 0 -1px 1px rgba(0,0,0,0.1)
-          `,
-        }}
-      >
+      {showToggle && (
+        <motion.button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`absolute right-16 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:right-[76px] md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden ? 'pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100' : 'opacity-100'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
+          aria-label="Open chat with Alex from Pixcellor"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          style={{
+            background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            boxShadow: `
+              0 8px 32px rgba(0,0,0,0.3),
+              inset 0 1px 1px rgba(255,255,255,0.3),
+              inset 0 -1px 1px rgba(0,0,0,0.1)
+            `,
+          }}
+        >
         <div 
           className="absolute inset-1 rounded-sm opacity-60"
           style={{
@@ -490,7 +492,8 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false }: ChatBotPr
             {adminUnreadCount}
           </span>
         )}
-      </motion.button>
+        </motion.button>
+      )}
 
       {/* Mobile: Drawer */}
       {isMobile ? (
