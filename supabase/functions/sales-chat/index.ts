@@ -528,6 +528,40 @@ async function createDevContact(supabase: ReturnType<typeof createClient>, args:
   return { ok: true, contact: data };
 }
 
+async function saveCustomerContact(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>, conversationId: string | null) {
+  const name = cleanText(args.name, 100);
+  const email = cleanText(args.email, 255).toLowerCase();
+  const phone = cleanText(args.phone, 40);
+  if (!name) return { ok: false, error: "missing_name" };
+  if (!email && !phone) return { ok: false, error: "email_or_phone_required" };
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+
+  const notes = [cleanText(args.notes, 850), conversationId ? `Live chat: ${conversationId}` : "Live chat lead"].filter(Boolean).join("\n");
+  const existingQuery = supabase.from("contacts").select("id, notes").limit(1);
+  const { data: existing } = email
+    ? await existingQuery.ilike("email", email).maybeSingle()
+    : await existingQuery.eq("phone", phone).maybeSingle();
+
+  if (existing?.id) {
+    const { data, error } = await supabase
+      .from("contacts")
+      .update({ name, phone: phone || null, email: email || null, notes: [existing.notes, notes].filter(Boolean).join("\n"), updated_at: new Date().toISOString() })
+      .eq("id", existing.id)
+      .select("id, name, email, phone")
+      .single();
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, contact: data, updated: true };
+  }
+
+  const { data, error } = await supabase
+    .from("contacts")
+    .insert({ name, phone: phone || null, email: email || null, notes, source: "chat" })
+    .select("id, name, email, phone")
+    .single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, contact: data, updated: false };
+}
+
 async function findDevContacts(supabase: ReturnType<typeof createClient>, query: unknown) {
   const q = cleanText(query, 120);
   if (!q) return { ok: false, error: "missing_query", matches: [] };
