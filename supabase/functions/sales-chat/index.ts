@@ -457,7 +457,7 @@ function formatLookupReply(result: Awaited<ReturnType<typeof lookupCustomer>>) {
     return `I found a checkout record${orderDate ? ` from ${orderDate}` : ""}, but payment hasn’t been processed${latestOrder.amount ? ` for ${latestOrder.amount}` : ""}, so the order isn’t being worked on yet and you weren’t charged.`;
   }
 
-  if (result.contact_inquiries.length > 0 || result.prior_chats.length > 0) {
+  if (result.contact_inquiries.length > 0 || (result.prior_chats ?? []).length > 0) {
     return "I can see previous contact history for that email, but no processed order in the database yet.";
   }
 
@@ -766,9 +766,10 @@ function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientCont
     }
   }
 
-  if (ctx.prior_chats.length > 0) {
-    lines.push(`### Past chat history (${ctx.prior_chats.length} prior conversation(s))`);
-    for (const conv of ctx.prior_chats.slice(0, 2)) {
+  const priorChats = ctx.prior_chats ?? [];
+  if (priorChats.length > 0) {
+    lines.push(`### Past chat history (${priorChats.length} prior conversation(s))`);
+    for (const conv of priorChats.slice(0, 2)) {
       const recent = conv.messages.slice(-6);
       lines.push(`Conversation ${conv.conversation_id.slice(0, 8)}…:`);
       for (const m of recent) {
