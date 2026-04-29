@@ -620,6 +620,16 @@ Deno.serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    if (isDevMode) {
+      const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+      const { data: userData, error: userError } = await supabase.auth.getUser(token);
+      if (userError || !userData.user) throw new Error("Admin sign-in required");
+      const { data: hasAdminRole } = await supabase.rpc("has_role", {
+        _user_id: userData.user.id,
+        _role: "admin",
+      });
+      if (!hasAdminRole) throw new Error("Admin access required");
+    }
     let currentConversationId = conversationId;
     let botPaused = false;
 
