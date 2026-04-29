@@ -527,9 +527,12 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     document.body.style.userSelect = "none";
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
-      setWidgetSize({
-        width: clampValue(startSize.width + moveEvent.clientX - startX, CHAT_WIDGET_MIN_SIZE.width, window.innerWidth - widgetPosition.x - CHAT_WIDGET_EDGE_GAP),
-        height: clampValue(startSize.height + moveEvent.clientY - startY, CHAT_WIDGET_MIN_SIZE.height, window.innerHeight - widgetPosition.y - CHAT_WIDGET_EDGE_GAP),
+      const nextWidth = clampValue(startSize.width - (moveEvent.clientX - startX), CHAT_WIDGET_MIN_SIZE.width, startSize.width + widgetPosition.x - CHAT_WIDGET_EDGE_GAP);
+      const nextHeight = clampValue(startSize.height - (moveEvent.clientY - startY), CHAT_WIDGET_MIN_SIZE.height, startSize.height + widgetPosition.y - CHAT_WIDGET_EDGE_GAP);
+      setWidgetSize({ width: nextWidth, height: nextHeight });
+      setWidgetPosition({
+        x: widgetPosition.x + startSize.width - nextWidth,
+        y: widgetPosition.y + startSize.height - nextHeight,
       });
     };
 
@@ -829,10 +832,10 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                 role="separator"
                 aria-label="Resize chat"
                 onPointerDown={handleWidgetResizeStart}
-                className="absolute bottom-0 right-0 z-20 h-8 w-8 cursor-se-resize touch-none"
+                className="absolute left-0 top-0 z-20 h-8 w-8 cursor-nw-resize touch-none"
               >
-                <span className="absolute bottom-2 right-2 h-3 w-3 rounded-br-sm border-b border-r border-white/50" />
-                <span className="absolute bottom-2 right-2 h-5 w-5 rounded-br-sm border-b border-r border-white/25" />
+                <span className="absolute left-2 top-2 h-3 w-3 rounded-tl-sm border-l border-t border-white/50" />
+                <span className="absolute left-2 top-2 h-5 w-5 rounded-tl-sm border-l border-t border-white/25" />
               </div>
             </motion.div>
           )}
