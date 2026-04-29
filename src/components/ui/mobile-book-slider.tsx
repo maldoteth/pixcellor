@@ -94,13 +94,13 @@ function MobileBookSlider() {
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
-        width={280}
-        height={380}
+        width={288}
+        height={391}
         size="fixed"
-        minWidth={280}
-        maxWidth={280}
-        minHeight={380}
-        maxHeight={380}
+        minWidth={288}
+        maxWidth={288}
+        minHeight={391}
+        maxHeight={391}
         showCover={false}
         mobileScrollSupport={true}
         className=""
