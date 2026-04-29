@@ -2356,7 +2356,7 @@ export default function Portal() {
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" onClick={() => mobileSalesStep > 0 ? setMobileSalesStep(step => step - 1) : setMobileSalesDrawerOpen(false)}>
+              <Button variant="outline" className="rounded-sm shadow-none" onClick={() => mobileSalesStep > 0 ? setMobileSalesStep(step => step - 1) : setMobileSalesDrawerOpen(false)}>
                 {mobileSalesStep > 0 ? "Back" : "Cancel"}
               </Button>
               <Button onClick={() => continueMobileSalesEvent()}>{mobileSalesStep === salesEventWizardFields.length - 1 ? "Save" : "Next"}</Button>
