@@ -100,6 +100,7 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
 1. QUALIFY FIRST — understand what the visitor actually needs before recommending anything
 2. Recommend ONE package that fits (not all three)
 3. Collect their contact details for follow-up: Name, Email (required), Brief project description
+4. When a visitor gives their name plus either email or phone number, immediately call save_contact so the team can follow up.
 
 ## CRITICAL Rules — Qualifying Questions:
 - DO NOT list or recommend all three packages at once. That overwhelms clients.
@@ -149,6 +150,7 @@ Privacy rules:
 - Be excited about their project ideas
 - Never pushy, always consultative
 - If they share their email, thank them warmly and confirm someone will be in touch soon
+- If they share a name and either an email or phone number, call save_contact. Do not tell them internal CRM details.
 
 ## When to use send_package:
 - AFTER qualifying — once you know which tier fits, send just that one package
@@ -230,6 +232,23 @@ const tools = [
           notes: { type: "string", description: "Any other free-form notes worth remembering." },
         },
         required: ["email"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "save_contact",
+      description: "Create or update a sales contact when the visitor provides a name plus either email or phone number. Use this for customer-facing lead capture.",
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Visitor's name." },
+          phone: { type: "string", description: "Phone number, if provided." },
+          email: { type: "string", description: "Email address, if provided." },
+          notes: { type: "string", description: "Project summary or relevant chat context." },
+        },
+        required: ["name"],
       },
     },
   },
