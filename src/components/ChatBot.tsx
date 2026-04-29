@@ -498,6 +498,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                     backdropFilter: "blur(10px)",
                   }}
                 >
+                  {msg.imageUrl && (
+                    <img src={msg.imageUrl} alt="Chat upload" className="mb-2 max-h-44 w-full rounded-sm object-cover" loading="lazy" />
+                  )}
                   <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
                 </div>
                 {/* Package cards */}
@@ -535,6 +538,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       {/* Input */}
       <div className="p-3 border-t border-white/10">
         <div className="flex items-center gap-2">
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           <input
             type="text"
             value={input}
@@ -547,6 +551,19 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
               border: "1px solid rgba(255,255,255,0.1)",
             }}
           />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingImage || isLoading}
+            aria-label="Upload image"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              background: "linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%)",
+              border: "1px solid rgba(255,255,255,0.2)",
+            }}
+          >
+            {isUploadingImage ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <ImageIcon className="h-4 w-4 text-white" />}
+          </button>
           <button
             type="button"
             onClick={toggleListening}
