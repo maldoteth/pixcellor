@@ -8,6 +8,7 @@ const SITE_URL = 'https://pixcellor.com'
 
 type SalesWelcomeProps = {
   name?: string
+  email?: string
 }
 
 const PackageBlock = ({ name, price, body, href }: { name: string; price: string; body: string; href: string }) => (
@@ -36,18 +37,24 @@ const SalesWelcomeEmail = ({ name }: SalesWelcomeProps) => (
           </Row>
           <Text style={eyebrow}>WEBSITE BUILDS WITHOUT THE BACK-AND-FORTH</Text>
           <Heading style={h1}>{name ? `${name}, here’s how Pixcellor works` : 'Here’s how Pixcellor works'}</Heading>
-          <Text style={intro}>Buy the package that fits, add your brief online, request edits in your customer portal, then take delivery automatically. No endless meetings, no chasing, no messy handovers.</Text>
+          <Text style={intro}>Buy the package that fits, add your brief online, request edits in your customer portal, then take delivery automatically. Every build includes a 28-day money-back guarantee and a lifetime warranty, so you are protected long after launch.</Text>
           <Button style={button} href={SITE_URL}>View packages and buy</Button>
         </Section>
 
         <Section style={section}>
           <Text style={sectionTitle}>Pick the right build</Text>
           <PackageBlock name="Full Works" price="£150" href={`${SITE_URL}/#pricing`} body="A sharp custom website for standard brands, up to 3 pages, with our lifetime guarantee. Best for simple launch-ready sites." />
-          <PackageBlock name="Elite" price="£500 one-time or £60/mo" href={`${SITE_URL}/#pricing`} body="Our most popular option: up to 10 pages, SEO & AEO optimisation, unlimited edit requests and a higher-end finish." />
+          <PackageBlock name="Elite" price="£500 one-time" href={`${SITE_URL}/#pricing`} body="Our most popular option: up to 10 pages, SEO & AEO optimisation, unlimited edit requests and a higher-end finish." />
           <PackageBlock name="Retainer" price="£1,200/mo or £12,000/yr" href={`${SITE_URL}/#pricing`} body="Your own tech department for large sites, full apps, automations and ongoing development with rapid turnarounds." />
         </Section>
 
         <Section style={sectionAlt}>
+          <Text style={sectionTitle}>Prefer to see it first?</Text>
+          <Text style={text}>Speak to sales and we can make your site before you buy. You only pay if you are happy with the result, and your purchase is still backed by our 28-day money-back guarantee plus lifetime warranty.</Text>
+          <Button style={button} href={SITE_URL}>Speak to sales</Button>
+        </Section>
+
+        <Section style={section}>
           <Text style={sectionTitle}>The process</Text>
           <Text style={listItem}>1. Buy the package that matches your project.</Text>
           <Text style={listItem}>2. Add your brief, pages, copy, brand colours, images and references in one clean form.</Text>
