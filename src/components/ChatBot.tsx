@@ -625,6 +625,40 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                     ))}
                   </div>
                 )}
+                {!isDevMode && i === 0 && msg.role === "assistant" && (
+                  <div className="mt-2 flex w-[80%] flex-wrap gap-2">
+                    <motion.button
+                      type="button"
+                      onClick={() => startQuickAction("call")}
+                      disabled={isLoading}
+                      whileHover={{ y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex h-8 items-center gap-2 rounded-sm px-3 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)",
+                        border: "1px solid rgba(255,255,255,0.18)",
+                      }}
+                    >
+                      <Phone className="h-3.5 w-3.5" />
+                      Request call
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      onClick={() => startQuickAction("email")}
+                      disabled={isLoading}
+                      whileHover={{ y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex h-8 items-center gap-2 rounded-sm px-3 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)",
+                        border: "1px solid rgba(255,255,255,0.18)",
+                      }}
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      Email info
+                    </motion.button>
+                  </div>
+                )}
               </motion.div>
             ))}
             {isLoading && (
@@ -658,7 +692,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isDevMode ? "Paste contact details or describe a sales event" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
+            placeholder={isDevMode ? "Paste contact details or describe a sales event" : quickAction === "call" ? "Name and phone number" : quickAction === "email" ? "Name and email address" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
             className="h-9 flex-1 rounded-sm px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
             style={{
               background: "rgba(255,255,255,0.08)",
