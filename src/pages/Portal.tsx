@@ -1345,7 +1345,7 @@ export default function Portal() {
           </Button>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-11">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-10">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
             <TabsTrigger value="retainers" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
@@ -1526,7 +1526,11 @@ export default function Portal() {
                           <div key={request.id} className="rounded-sm border border-border/70 p-3">
                             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                               <span className="font-medium">Request #{request.request_number}</span>
-                              <Badge variant={request.status === "done" ? "default" : "outline"}>{request.status.replace("_", " ")}</Badge>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge variant={request.status === "done" ? "default" : request.status === "in_progress" ? "secondary" : "outline"}>{request.status.replace("_", " ")}</Badge>
+                                <Button variant="outline" size="sm" onClick={() => updateEditRequestStatus(request.id, "in_progress")} disabled={request.status === "in_progress"}>In progress</Button>
+                                <Button variant="outline" size="sm" onClick={() => updateEditRequestStatus(request.id, "done")} disabled={request.status === "done"}>Done</Button>
+                              </div>
                             </div>
                             <p className="whitespace-pre-wrap text-muted-foreground">{request.request_details}</p>
                           </div>
