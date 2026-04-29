@@ -33,6 +33,8 @@ interface ChatBotProps {
   setIsOpen: (open: boolean) => void;
   hidden?: boolean;
   showToggle?: boolean;
+  mode?: "sales" | "dev";
+  onDevAction?: () => void;
 }
 
 interface ChatHistoryResponse {
@@ -52,11 +54,11 @@ const glassStyle = {
   `,
 };
 
-const getClientId = (): string => {
-  const storageKey = "pixcellor_chat_client_id";
+const getClientId = (mode: "sales" | "dev" = "sales"): string => {
+  const storageKey = mode === "dev" ? "pixcellor_dev_chat_client_id" : "pixcellor_chat_client_id";
   let clientId = localStorage.getItem(storageKey);
   if (!clientId) {
-    clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    clientId = `${mode === "dev" ? "dev" : "client"}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     localStorage.setItem(storageKey, clientId);
   }
   return clientId;
