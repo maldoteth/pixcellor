@@ -892,6 +892,7 @@ Deno.serve(async (req) => {
 
     const aiMessages: Array<Record<string, unknown>> = [
       { role: "system", content: isDevMode ? DEV_SYSTEM_PROMPT : SYSTEM_PROMPT },
+      { role: "system", content: `Current server time: ${new Date().toISOString()}. For CRM callbacks, resolve relative dates from this timestamp and use Europe/London business hours when no time is supplied.` },
       ...(contextSummary ? [{ role: "system" as const, content: contextSummary }] : []),
       ...(devRecentContactContext ? [{ role: "system" as const, content: devRecentContactContext }] : []),
       ...messages,
