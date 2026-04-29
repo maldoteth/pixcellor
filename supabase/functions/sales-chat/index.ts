@@ -488,6 +488,7 @@ Deno.serve(async (req) => {
 
   try {
     const { messages, clientId, conversationId } = await req.json();
+    const safeClientId = typeof clientId === "string" && clientId.length >= 8 && clientId.length <= 200 ? clientId : null;
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -501,11 +502,11 @@ Deno.serve(async (req) => {
     let botPaused = false;
 
     // Get or create conversation
-    if (!currentConversationId && clientId) {
+    if (!currentConversationId && safeClientId) {
       const { data: existingConv } = await supabase
         .from("chat_conversations")
         .select("id, bot_paused")
-        .eq("client_id", clientId)
+        .eq("client_id", safeClientId)
         .single();
 
       if (existingConv) {
@@ -514,7 +515,7 @@ Deno.serve(async (req) => {
       } else {
         const { data: newConv, error: convError } = await supabase
           .from("chat_conversations")
-          .insert({ client_id: clientId })
+          .insert({ client_id: safeClientId })
           .select("id, bot_paused")
           .single();
 
@@ -523,13 +524,17 @@ Deno.serve(async (req) => {
           botPaused = Boolean(newConv.bot_paused);
         }
       }
-    } else if (currentConversationId) {
+    } else if (currentConversationId && safeClientId) {
       const { data: existingConv } = await supabase
         .from("chat_conversations")
         .select("bot_paused")
         .eq("id", currentConversationId)
+        .eq("client_id", safeClientId)
         .single();
+      if (!existingConv) throw new Error("Invalid chat session");
       botPaused = Boolean(existingConv?.bot_paused);
+    } else {
+      throw new Error("Invalid chat session");
     }
 
     // Save last user message
