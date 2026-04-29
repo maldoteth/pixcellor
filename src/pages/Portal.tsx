@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Repeat, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
+import ChatBot from "@/components/ChatBot";
 
 type StripeSession = {
   session_id: string;
@@ -347,6 +348,7 @@ export default function Portal() {
   const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("sales");
+  const [devChatOpen, setDevChatOpen] = useState(false);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot");
