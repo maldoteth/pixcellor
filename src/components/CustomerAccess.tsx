@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Loader2, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -113,9 +114,11 @@ export default function CustomerAccess({ hidden = false }: CustomerAccessProps) 
   }, []);
 
   const trigger = (
-    <button
+    <motion.button
       type="button"
       aria-label="Customer log in"
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
       className={`absolute right-4 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:right-6 md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
@@ -133,8 +136,10 @@ export default function CustomerAccess({ hidden = false }: CustomerAccessProps) 
         className="absolute inset-1 rounded-sm opacity-60"
         style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)" }}
       />
-      <LogIn className="relative z-10 h-4 w-4 text-white drop-shadow-lg" />
-    </button>
+      <motion.div initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} transition={{ duration: 0.2 }} className="relative z-10">
+        <LogIn className="h-4 w-4 text-white drop-shadow-lg" />
+      </motion.div>
+    </motion.button>
   );
 
   if (isMobile) {
