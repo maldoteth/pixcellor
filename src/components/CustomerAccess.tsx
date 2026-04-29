@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -168,10 +169,13 @@ export default function CustomerAccess({ hidden = false }: CustomerAccessProps) 
   return (
     <>
       {trigger}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={setOpen} modal={false}>
         <DialogContent className="border-border bg-background/95 backdrop-blur-xl">
           <DialogHeader>
             <DialogTitle>Log in / Sign up</DialogTitle>
+            <DialogDescription className="sr-only">
+              Enter your email address to receive a secure magic link for the customer portal.
+            </DialogDescription>
           </DialogHeader>
           <CustomerAuthForm />
         </DialogContent>
