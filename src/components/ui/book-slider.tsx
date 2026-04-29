@@ -90,6 +90,12 @@ const portfolioData = [
     url: "docs.dhb.gg",
     description: "Technical documentation hub for DeHub products, token utilities and ecosystem guidance.",
     screenshot: dhbscanImg
+  },
+  {
+    name: "Arvox Agency",
+    url: "arvox.agency",
+    description: "Modern agency website presenting premium creative services, brand strategy and digital delivery.",
+    screenshot: firstClassAgencyImg
   }
 ];
 
