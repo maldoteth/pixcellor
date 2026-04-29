@@ -2238,6 +2238,19 @@ export default function Portal() {
                 </div>
               )}
               <div className="space-y-2">
+                <div className="text-sm font-medium">Live chat messages</div>
+                {contactDetailDrawerChatMessages.length === 0 && <p className="text-sm text-muted-foreground">No matching chat messages found.</p>}
+                {contactDetailDrawerChatMessages.map(message => (
+                  <div key={message.id} className="rounded-none border border-border bg-card/60 p-3 text-sm">
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <span className="font-medium capitalize">{message.role}</span>
+                      <span className="text-xs text-muted-foreground">{new Date(message.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className="mt-1 whitespace-pre-wrap text-muted-foreground">{message.content}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
                 <div className="text-sm font-medium">Contact history</div>
                 {contactDetailDrawerEvents.length === 0 && <p className="text-sm text-muted-foreground">No communications logged.</p>}
                 {contactDetailDrawerEvents.map(e => (
