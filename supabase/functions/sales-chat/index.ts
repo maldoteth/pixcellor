@@ -80,7 +80,7 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
 5. **Bricks** — https://bricks.it.com — Construction recruitment, payroll and HR app utilising latest advancements in technology.
 6. **Last Chad Standing** — https://lastchadstanding.com — Competitive elimination platform where players battle and only the strongest survive.
 7. **Holder Chat** — https://holder.chat — Token-gated chat platform for crypto holders and communities to connect securely.
-8. **SEC Digital** — https://sec.digital — Decentralized crime registry for recording, verifying, and surfacing community-reported incidents with transparent case data.
+8. **SEC Digital** — https://sec.digital — Decentralized crime registry for recording, verifying, and surfacing community-reported incidents.
 9. **DeLabs UK** — https://delabs.co.uk — UK-registered software consultancy delivering bespoke digital products, technical strategy, and scalable web platforms.
 10. **The Ponzi** — https://theponzi.lol — Satirical crypto culture platform with gamified experiences and community content.
 11. **DHBScan** — https://dhbscan.com — Token analytics dashboard with revenue sharing, buyback tracking, and supply data.
