@@ -19,6 +19,7 @@ import dhbscanImg from '@/assets/portfolio/dhbscan.png';
 import dhbDocsImg from '@/assets/portfolio/dhb-docs.png';
 import tikupImg from '@/assets/portfolio/tikup.png';
 import bricksImg from '@/assets/portfolio/bricks.png';
+import arvoxAgencyImg from '@/assets/portfolio/arvox-agency.png';
 
 const portfolioData = [
   {
@@ -85,7 +86,7 @@ const portfolioData = [
     name: "Arvox Agency",
     url: "arvox.agency",
     description: "Modern agency website presenting premium creative services, brand strategy and digital delivery.",
-    screenshot: firstClassAgencyImg
+    screenshot: arvoxAgencyImg
   },
   {
     name: "DeHub Network",
