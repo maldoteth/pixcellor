@@ -82,6 +82,12 @@ const portfolioData = [
     url: "dhbscan.com",
     description: "Token analytics dashboard with revenue sharing, buyback tracking, and supply data.",
     screenshot: dhbscanImg
+  },
+  {
+    name: "DHB Docs",
+    url: "docs.dhb.gg",
+    description: "Technical documentation hub for DeHub products, token utilities and ecosystem guidance.",
+    screenshot: dhbscanImg
   }
 ];
 
