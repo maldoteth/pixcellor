@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, PencilLine, Plus, Repeat, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Repeat, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
 
 type StripeSession = {
@@ -308,13 +308,12 @@ export default function Portal() {
   const [salesSearch, setSalesSearch] = useState("");
   const [ordersSearch, setOrdersSearch] = useState("");
   const [retainersSearch, setRetainersSearch] = useState("");
-  const [editRequestsSearch, setEditRequestsSearch] = useState("");
   const [completedSearch, setCompletedSearch] = useState("");
   const [falloffsSearch, setFalloffsSearch] = useState("");
   const [chatsSearch, setChatsSearch] = useState("");
   const [profilesSearch, setProfilesSearch] = useState("");
   const [inquiriesSearch, setInquiriesSearch] = useState("");
-  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
+  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [openContactId, setOpenContactId] = useState<string | null>(null);
@@ -569,7 +568,6 @@ export default function Portal() {
   const contactsQ = contactsSearch.trim().toLowerCase();
   const ordersQ = ordersSearch.trim().toLowerCase();
   const retainersQ = retainersSearch.trim().toLowerCase();
-  const editRequestsQ = editRequestsSearch.trim().toLowerCase();
   const completedQ = completedSearch.trim().toLowerCase();
   const falloffsQ = falloffsSearch.trim().toLowerCase();
   const chatsQ = chatsSearch.trim().toLowerCase();
@@ -657,10 +655,12 @@ export default function Portal() {
     const searched = !ordersQ ? orders : orders.filter(o => orderMatchesQuery(ordersQ, o));
     return searched.filter((order) => {
       const hasRequirements = requirementsBySession.has(order.session_id);
-      const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
+      const hasEditRequests = editRequestsBySession.has(order.session_id);
+      const reqsMatches = orderReqsFilter === "all" ||
+        (orderReqsFilter === "submitted" ? hasRequirements : orderReqsFilter === "edits" ? hasEditRequests : !hasRequirements);
       return order.order_status !== "delivered" && reqsMatches;
     });
-  }, [orders, ordersQ, orderReqsFilter, requirementsBySession]);
+  }, [orders, ordersQ, orderReqsFilter, requirementsBySession, editRequestsBySession]);
 
   const filteredRetainers = useMemo(() => {
     const monthlyRetainers = orders.filter(isMonthlyRetainerOrder);
@@ -671,21 +671,12 @@ export default function Portal() {
     const searched = !completedQ ? orders : orders.filter(o => orderMatchesQuery(completedQ, o));
     return searched.filter((order) => {
       const hasRequirements = requirementsBySession.has(order.session_id);
-      const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
+      const hasEditRequests = editRequestsBySession.has(order.session_id);
+      const reqsMatches = orderReqsFilter === "all" ||
+        (orderReqsFilter === "submitted" ? hasRequirements : orderReqsFilter === "edits" ? hasEditRequests : !hasRequirements);
       return order.order_status === "delivered" && reqsMatches;
     });
-  }, [orders, completedQ, orderReqsFilter, requirementsBySession]);
-
-  const filteredEditRequests = useMemo(() => {
-    const searched = !editRequestsQ ? editRequests : editRequests.filter((request) =>
-      matchesQuery(editRequestsQ, request.customer_email) ||
-      matchesQuery(editRequestsQ, request.session_id) ||
-      matchesQuery(editRequestsQ, request.package_name) ||
-      matchesQuery(editRequestsQ, request.status) ||
-      matchesQuery(editRequestsQ, request.request_details)
-    );
-    return [...searched].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [editRequests, editRequestsQ]);
+  }, [orders, completedQ, orderReqsFilter, requirementsBySession, editRequestsBySession]);
 
   const filteredFalloffs = useMemo(() => {
     const paidSessionIds = new Set(orders.map(o => o.session_id));
@@ -1354,11 +1345,10 @@ export default function Portal() {
           </Button>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-11">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-10">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
             <TabsTrigger value="retainers" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
-            <TabsTrigger value="edit-requests" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PencilLine className="h-3.5 w-3.5 shrink-0" />Edits ({filteredEditRequests.length})</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
             <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.length})</TabsTrigger>
@@ -1462,6 +1452,7 @@ export default function Portal() {
                 <span className="text-xs font-medium text-muted-foreground">Requirements</span>
                 <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
                 <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
+                <Button variant={orderReqsFilter === "edits" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("edits")}>Edits</Button>
                 <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
               </div>
             </div>
@@ -1535,7 +1526,11 @@ export default function Portal() {
                           <div key={request.id} className="rounded-sm border border-border/70 p-3">
                             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                               <span className="font-medium">Request #{request.request_number}</span>
-                              <Badge variant={request.status === "done" ? "default" : "outline"}>{request.status.replace("_", " ")}</Badge>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge variant={request.status === "done" ? "default" : request.status === "in_progress" ? "secondary" : "outline"}>{request.status.replace("_", " ")}</Badge>
+                                <Button variant="outline" size="sm" onClick={() => updateEditRequestStatus(request.id, "in_progress")} disabled={request.status === "in_progress"}>In progress</Button>
+                                <Button variant="outline" size="sm" onClick={() => updateEditRequestStatus(request.id, "done")} disabled={request.status === "done"}>Done</Button>
+                              </div>
                             </div>
                             <p className="whitespace-pre-wrap text-muted-foreground">{request.request_details}</p>
                           </div>
@@ -1590,38 +1585,6 @@ export default function Portal() {
                 </CardContent>
               </Card>
             ))}
-          </TabsContent>
-
-          <TabsContent value="edit-requests" className="space-y-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={editRequestsSearch} onChange={(e) => setEditRequestsSearch(e.target.value)} placeholder="Search edit requests by email, order, package, status, or details…" className="pl-9" />
-            </div>
-            {filteredEditRequests.length === 0 && <p className="text-muted-foreground text-sm">No edit requests {editRequestsQ ? "match your search" : "yet"}.</p>}
-            {filteredEditRequests.map((request) => {
-              const order = orders.find((item) => item.session_id === request.session_id);
-              return (
-                <Card key={request.id}>
-                  <CardContent className="space-y-4 p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0 space-y-1">
-                        <div className="break-all font-medium">{request.customer_email ?? order?.customer_email ?? "Guest checkout"}</div>
-                        <div className="text-xs text-muted-foreground">{request.package_name} · Request #{request.request_number} · {new Date(request.created_at).toLocaleString()}</div>
-                        <div className="break-all text-xs text-muted-foreground">Order {request.session_id}</div>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant={request.status === "done" ? "default" : request.status === "in_progress" ? "secondary" : "outline"}>{request.status.replace("_", " ")}</Badge>
-                        <Button variant="outline" size="sm" onClick={() => updateEditRequestStatus(request.id, "in_progress")} disabled={request.status === "in_progress"}>In progress</Button>
-                        <Button variant="outline" size="sm" onClick={() => updateEditRequestStatus(request.id, "done")} disabled={request.status === "done"}>Done</Button>
-                      </div>
-                    </div>
-                    <div className="rounded-md border border-border bg-background/50 p-4 text-sm whitespace-pre-wrap text-muted-foreground">
-                      {request.request_details}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
           </TabsContent>
 
           <TabsContent value="completed" className="space-y-2">
