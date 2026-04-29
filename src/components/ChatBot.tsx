@@ -485,7 +485,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={isDevMode ? "Paste contact details or describe a sales event" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
-            className="flex-1 rounded-sm px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
+            className="h-9 flex-1 rounded-sm px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
             style={{
               background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(255,255,255,0.1)",
@@ -495,7 +495,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             type="button"
             onClick={toggleListening}
             aria-label={isListening ? "Stop voice input" : "Start voice input"}
-            className="flex h-10 w-10 items-center justify-center rounded-sm transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm transition-all disabled:cursor-not-allowed disabled:opacity-50"
             style={{
               background: isListening ? "linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.14) 100%)" : "linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%)",
               border: "1px solid rgba(255,255,255,0.2)",
@@ -506,7 +506,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
           <button
             onClick={sendMessage}
             disabled={!input.trim() || isLoading}
-            className="w-10 h-10 rounded-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm transition-all disabled:cursor-not-allowed disabled:opacity-50"
             style={{
               background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)",
               border: "1px solid rgba(255,255,255,0.2)",
