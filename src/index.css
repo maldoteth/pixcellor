@@ -109,10 +109,20 @@ All colors MUST be HSL.
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
   input:-webkit-autofill:active {
-    -webkit-text-fill-color: hsl(var(--foreground));
-    caret-color: hsl(var(--foreground));
-    box-shadow: 0 0 0 1000px hsl(var(--background)) inset;
+    color: hsl(var(--foreground)) !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    caret-color: hsl(var(--foreground)) !important;
+    box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
+    -webkit-box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
+    background-color: hsl(var(--background)) !important;
+    background-clip: content-box !important;
     transition: background-color 9999s ease-out;
+  }
+
+  input::selection,
+  textarea::selection {
+    background: hsl(var(--foreground) / 0.22);
+    color: hsl(var(--foreground));
   }
 
   html,
