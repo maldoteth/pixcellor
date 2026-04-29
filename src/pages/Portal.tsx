@@ -1215,7 +1215,7 @@ export default function Portal() {
 
   const renderEventContactSuggestionList = (openUp = false) => (
     <div
-      className={`absolute left-0 right-0 z-50 h-72 overflow-y-auto rounded-sm border border-border bg-popover shadow-xl ${openUp ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}
+      className={`absolute left-0 right-0 z-50 h-72 overflow-y-auto rounded-none border border-border bg-popover shadow-xl ${openUp ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}
       onScroll={(e) => loadMoreEventContactSuggestions(e.currentTarget)}
     >
       {visibleEventContactSuggestions.length > 0 ? visibleEventContactSuggestions.map(contact => (
@@ -1262,7 +1262,7 @@ export default function Portal() {
         </div>
         <div className="md:col-span-2 flex gap-2">
           <Button onClick={createContact}>Save contact</Button>
-          <Button variant="outline" className="rounded-sm shadow-none" onClick={() => setShowContactForm(false)}>Cancel</Button>
+          <Button variant="outline" className="rounded-none shadow-none" onClick={() => setShowContactForm(false)}>Cancel</Button>
         </div>
       </CardContent>
     </Card>
@@ -1289,14 +1289,14 @@ export default function Portal() {
         </div>
         <div>
           <label className="text-xs text-muted-foreground">Quick callback</label>
-          <select defaultValue="" onChange={(e) => applyCallbackPreset(e.target.value)} className="h-10 w-full rounded-sm border border-input bg-background px-3 text-sm">
+          <select defaultValue="" onChange={(e) => applyCallbackPreset(e.target.value)} className="h-10 w-full rounded-none border border-input bg-background px-3 text-sm">
             <option value="">Pick time</option>
             {callbackPresets.map(preset => <option key={preset.label} value={preset.label}>{preset.label}</option>)}
           </select>
         </div>
         <div className="flex items-end gap-2">
           <Button onClick={createContactEvent}>Save event</Button>
-          <Button variant="outline" className="rounded-sm shadow-none" onClick={() => setShowSalesEventForm(false)}>Cancel</Button>
+          <Button variant="outline" className="rounded-none shadow-none" onClick={() => setShowSalesEventForm(false)}>Cancel</Button>
         </div>
       </CardContent>
     </Card>
@@ -1346,16 +1346,16 @@ export default function Portal() {
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
           <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-10">
-            <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
-            <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
-            <TabsTrigger value="retainers" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
-            <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
-            <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
-            <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.length})</TabsTrigger>
-            <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats ({filteredConversations.length})</TabsTrigger>
-            <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({filteredProfiles.length})</TabsTrigger>
-            <TabsTrigger value="inquiries" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Mail className="h-3.5 w-3.5 shrink-0" />Enquiries ({filteredInquiries.length})</TabsTrigger>
-            <TabsTrigger value="contacts" className="pricing-button h-10 gap-1.5 rounded-sm px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserPlus className="h-3.5 w-3.5 shrink-0" />Contacts ({filteredContacts.length})</TabsTrigger>
+            <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
+            <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="retainers" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
+            <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
+            <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
+            <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.length})</TabsTrigger>
+            <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats ({filteredConversations.length})</TabsTrigger>
+            <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({filteredProfiles.length})</TabsTrigger>
+            <TabsTrigger value="inquiries" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Mail className="h-3.5 w-3.5 shrink-0" />Enquiries ({filteredInquiries.length})</TabsTrigger>
+            <TabsTrigger value="contacts" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserPlus className="h-3.5 w-3.5 shrink-0" />Contacts ({filteredContacts.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sales" className="space-y-4">
@@ -1431,9 +1431,9 @@ export default function Portal() {
                         {e.description && <div className="text-sm whitespace-pre-wrap">{e.description}</div>}
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <Badge className="pricing-button rounded-sm px-3 py-1 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
-                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void completeCallback(e.id); }}>Done</Button>
-                        <Button variant="pricing" size="sm" className="h-8 rounded-sm px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void tryCallbackAgain(e.id); }}>Tried</Button>
+                        <Badge className="pricing-button rounded-none px-3 py-1 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
+                        <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void completeCallback(e.id); }}>Done</Button>
+                        <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void tryCallbackAgain(e.id); }}>Tried</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -1447,7 +1447,7 @@ export default function Portal() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-border bg-card/50 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/50 p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Requirements</span>
                 <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
@@ -1519,11 +1519,11 @@ export default function Portal() {
                   </div>
 
                   {editRequestsBySession.has(o.session_id) && (
-                    <div className="rounded-sm border border-border bg-background/50 p-4 text-sm">
+                    <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
                       <div className="mb-3 font-medium">Edit requests</div>
                       <div className="space-y-3">
                         {editRequestsBySession.get(o.session_id)!.map((request) => (
-                          <div key={request.id} className="rounded-sm border border-border/70 p-3">
+                          <div key={request.id} className="rounded-none border border-border/70 p-3">
                             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                               <span className="font-medium">Request #{request.request_number}</span>
                               <div className="flex flex-wrap items-center gap-2">
@@ -1540,7 +1540,7 @@ export default function Portal() {
                   )}
 
                   {requirements && (
-                    <div className="rounded-sm border border-border bg-background/50 p-4 text-sm">
+                    <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
                       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                         <div className="font-medium">{requirements.site_name}</div>
                         <div className="text-xs text-muted-foreground">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
@@ -1592,7 +1592,7 @@ export default function Portal() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search completed orders by email, order ID, status, domain…" className="pl-9" />
             </div>
-            <div className="flex flex-wrap items-center gap-2 rounded-sm border border-border bg-card/50 p-3">
+            <div className="flex flex-wrap items-center gap-2 rounded-none border border-border bg-card/50 p-3">
               <span className="text-xs font-medium text-muted-foreground">Requirements</span>
               <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
               <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
@@ -1624,7 +1624,7 @@ export default function Portal() {
                     </div>
 
                     {requirements && (
-                      <div className="rounded-sm border border-border bg-background/50 p-4 text-sm">
+                      <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="font-medium">{requirements.site_name}</div>
                           <div className="text-xs text-muted-foreground">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
@@ -1671,19 +1671,19 @@ export default function Portal() {
                     </div>
                   </div>
                   <div className="grid gap-2 text-xs md:grid-cols-3">
-                    <div className="rounded-sm border border-border p-2">
+                    <div className="rounded-none border border-border p-2">
                       <div className="font-medium">Company</div>
                       <div className="text-muted-foreground">Name: {f.company_name ?? "—"}</div>
                       <div className="text-muted-foreground break-all">Domain: {f.company_domain ?? "—"}</div>
                       <div className="text-muted-foreground">Type: {f.company_type ?? "—"}</div>
                     </div>
-                    <div className="rounded-sm border border-border p-2">
+                    <div className="rounded-none border border-border p-2">
                       <div className="font-medium">Location</div>
                       <div className="text-muted-foreground">{[f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(", ") || "—"}</div>
                       <div className="text-muted-foreground">Postal: {f.ip_postal ?? "—"}</div>
                       <div className="text-muted-foreground break-all">Coordinates: {f.ip_location ?? "—"}</div>
                     </div>
-                    <div className="rounded-sm border border-border p-2">
+                    <div className="rounded-none border border-border p-2">
                       <div className="font-medium">Network</div>
                       <div className="text-muted-foreground">ASN: {f.asn ?? "—"}</div>
                       <div className="text-muted-foreground">Name: {f.as_name ?? "—"}</div>
@@ -1692,19 +1692,19 @@ export default function Portal() {
                     </div>
                   </div>
                   <div className="grid gap-2 text-xs md:grid-cols-3">
-                    <div className="rounded-sm border border-border p-2">
+                    <div className="rounded-none border border-border p-2">
                       <div className="font-medium">IP details</div>
                       <div className="text-muted-foreground break-all">IP: {f.ip_address ?? "—"}</div>
                       <div className="text-muted-foreground break-all">Host: {f.ip_hostname ?? "—"}</div>
                       <div className="text-muted-foreground">IP timezone: {f.ip_timezone ?? "—"}</div>
                     </div>
-                    <div className="rounded-sm border border-border p-2">
+                    <div className="rounded-none border border-border p-2">
                       <div className="font-medium">Carrier</div>
                       <div className="text-muted-foreground">Name: {f.carrier_name ?? "—"}</div>
                       <div className="text-muted-foreground">MCC: {f.carrier_mcc ?? "—"}</div>
                       <div className="text-muted-foreground">MNC: {f.carrier_mnc ?? "—"}</div>
                     </div>
-                    <div className="rounded-sm border border-border p-2">
+                    <div className="rounded-none border border-border p-2">
                       <div className="font-medium">Privacy flags</div>
                       <div className="text-muted-foreground">{[
                         f.privacy_vpn ? "VPN" : null,
@@ -1748,7 +1748,7 @@ export default function Portal() {
                 {mailboxMessages.map(message => {
                   const relatedOrder = orders.find(order => order.customer_email?.toLowerCase() === message.fromEmail);
                   return (
-                    <button key={message.id} onClick={() => setActiveMail(message)} className={`w-full text-left p-3 rounded-sm border transition-colors ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
+                    <button key={message.id} onClick={() => setActiveMail(message)} className={`w-full text-left p-3 rounded-none border transition-colors ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
                       <div className="flex items-center justify-between gap-2">
                         <div className="font-medium truncate">{message.from}</div>
                         {message.unread && <Badge>New</Badge>}
@@ -1781,12 +1781,12 @@ export default function Portal() {
                       </div>
                     </div>
                     {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail) && (
-                      <div className="rounded-sm border border-border p-3 text-sm text-muted-foreground shrink-0">
+                      <div className="rounded-none border border-border p-3 text-sm text-muted-foreground shrink-0">
                         Related order: {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)?.amount_total != null ? formatGBP(orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)!.amount_total!) : "—"}
                       </div>
                     )}
-                    <div className="rounded-sm bg-muted/30 p-3 whitespace-pre-wrap text-sm flex-1 min-h-[180px] overflow-y-auto">{activeMail.body || activeMail.snippet}</div>
-                    <textarea value={mailReply} onChange={(e) => setMailReply(e.target.value)} placeholder="Reply to the client…" className="min-h-[120px] max-h-[160px] w-full shrink-0 rounded-sm border border-input bg-background px-3 py-2 text-sm" />
+                    <div className="rounded-none bg-muted/30 p-3 whitespace-pre-wrap text-sm flex-1 min-h-[180px] overflow-y-auto">{activeMail.body || activeMail.snippet}</div>
+                    <textarea value={mailReply} onChange={(e) => setMailReply(e.target.value)} placeholder="Reply to the client…" className="min-h-[120px] max-h-[160px] w-full shrink-0 rounded-none border border-input bg-background px-3 py-2 text-sm" />
                     <Button className="shrink-0 self-start" onClick={sendMailboxReply} disabled={!mailReply.trim()}>Send reply</Button>
                   </>
                 )}
@@ -1807,7 +1807,7 @@ export default function Portal() {
                   <button
                     key={c.id}
                     onClick={() => loadMessages(c.id)}
-                    className={`w-full text-left p-3 rounded-sm border transition-colors ${activeConv === c.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}
+                    className={`w-full text-left p-3 rounded-none border transition-colors ${activeConv === c.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}
                   >
                     <div className="text-xs font-mono truncate text-muted-foreground">{c.client_id}</div>
                     {last ? (
@@ -1829,7 +1829,7 @@ export default function Portal() {
                 {activeConv && messages.length === 0 && <p className="text-muted-foreground text-sm">No messages.</p>}
                 {messages.map(m => (
                   <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-sm p-3 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-primary text-primary-foreground" : m.role === "admin" ? "bg-accent text-accent-foreground border border-border" : "bg-muted text-foreground"}`}>
+                    <div className={`max-w-[80%] rounded-none p-3 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-primary text-primary-foreground" : m.role === "admin" ? "bg-accent text-accent-foreground border border-border" : "bg-muted text-foreground"}`}>
                       <div className="text-xs opacity-60 mb-1">{m.role} · {new Date(m.created_at).toLocaleTimeString()}</div>
                       {m.content}
                     </div>
@@ -1927,16 +1927,16 @@ export default function Portal() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant={contactsStatusFilter === "all" ? "default" : "outline"} size="sm" className="rounded-sm shadow-none" onClick={() => setContactsStatusFilter("all")}>All</Button>
+              <Button variant={contactsStatusFilter === "all" ? "default" : "outline"} size="sm" className="rounded-none shadow-none" onClick={() => setContactsStatusFilter("all")}>All</Button>
               {contactStatuses.map(status => (
                 <Button
                   key={status.value}
                   variant={contactsStatusFilter === status.value ? "default" : "outline"}
                   size="sm"
                   onClick={() => setContactsStatusFilter(status.value)}
-                  className="gap-2 rounded-sm shadow-none"
+                  className="gap-2 rounded-none shadow-none"
                 >
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: status.color }} />
+                  <span className="h-2.5 w-2.5 rounded-none" style={{ backgroundColor: status.color }} />
                   {status.label}
                 </Button>
               ))}
@@ -1995,8 +1995,8 @@ export default function Portal() {
                       </div>
                       <div className="flex flex-col items-end justify-between gap-3 self-stretch sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:self-auto">
                         <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
-                          <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={(event) => { event.stopPropagation(); startEditingContact(c); }}>Edit</Button>
-                          <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={(event) => { event.stopPropagation(); openEventFormForContact(c.id); }}>Create event</Button>
+                          <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={(event) => { event.stopPropagation(); startEditingContact(c); }}>Edit</Button>
+                          <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={(event) => { event.stopPropagation(); openEventFormForContact(c.id); }}>Create event</Button>
                         </div>
                       </div>
                     </div>
@@ -2009,7 +2009,7 @@ export default function Portal() {
                             title={status.label}
                             aria-label={status.label}
                             onClick={(event) => { event.stopPropagation(); updateContactStatus(c.id, status.value); }}
-                            className={`h-5 w-5 rounded-sm border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                            className={`h-5 w-5 rounded-none border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                             style={{ backgroundColor: status.color }}
                           />
                         ))}
@@ -2025,14 +2025,14 @@ export default function Portal() {
                             title={status.label}
                             aria-label={status.label}
                             onClick={(event) => { event.stopPropagation(); updateContactStatus(c.id, status.value); }}
-                            className={`h-5 w-5 rounded-sm border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                            className={`h-5 w-5 rounded-none border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                             style={{ backgroundColor: status.color }}
                           />
                         ))}
                       </div>
                     </div>
                     {editingContactId === c.id && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-sm border border-border p-3" onClick={(event) => event.stopPropagation()}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-none border border-border p-3" onClick={(event) => event.stopPropagation()}>
                         <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
                         <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
@@ -2040,7 +2040,7 @@ export default function Portal() {
                         <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
                           <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
-                          <Button variant="outline" className="rounded-sm shadow-none" onClick={(event) => { event.stopPropagation(); setEditingContactId(null); }}>Cancel</Button>
+                          <Button variant="outline" className="rounded-none shadow-none" onClick={(event) => { event.stopPropagation(); setEditingContactId(null); }}>Cancel</Button>
                         </div>
                       </div>
                     )}
@@ -2054,7 +2054,7 @@ export default function Portal() {
                           {orderStats.orders.map(order => {
                             const requirements = requirementsBySession.get(order.session_id);
                             return (
-                              <div key={order.session_id} className="text-sm rounded-sm p-3 bg-neutral-800/[0.17]">
+                              <div key={order.session_id} className="text-sm rounded-none p-3 bg-neutral-800/[0.17]">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                   <span className="font-medium">{order.amount_total != null ? formatGBP(order.amount_total) : "—"}</span>
                                   <span className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</span>
@@ -2072,7 +2072,7 @@ export default function Portal() {
                       )}
                       {events.length === 0 && !orderStats && <p className="text-xs text-muted-foreground">No communications logged.</p>}
                       {events.map(e => (
-                        <div key={e.id} className="text-sm rounded-sm p-3 bg-neutral-800/[0.17]">
+                        <div key={e.id} className="text-sm rounded-none p-3 bg-neutral-800/[0.17]">
                           <div className="flex flex-wrap justify-between gap-2">
                             <span className="font-medium">{e.title}</span>
                             <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
@@ -2146,7 +2146,7 @@ export default function Portal() {
           </DrawerHeader>
           {contactDetailDrawerContact && (
             <div className="mx-auto w-full max-w-3xl space-y-4 overflow-y-auto pb-2">
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-border bg-card/60 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/60 p-3">
                 <div className="min-w-0 space-y-1">
                   {contactDetailDrawerContact.phone && (contactDetailDrawerPhoneHref ? (
                     <a href={contactDetailDrawerPhoneHref} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contactDetailDrawerContact.phone}`}>
@@ -2167,21 +2167,21 @@ export default function Portal() {
                         title={status.label}
                         aria-label={status.label}
                         onClick={() => updateContactStatus(contactDetailDrawerContact.id, status.value)}
-                        className={`h-5 w-5 rounded-sm border transition-opacity ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                        className={`h-5 w-5 rounded-none border transition-opacity ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                         style={{ backgroundColor: status.color }}
                       />
                     ))}
                   </div>
-                  <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
+                  <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
                     Edit
                   </Button>
-                  <Button variant="pricing" size="sm" className="rounded-sm shadow-none" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
+                  <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
                     Create event
                   </Button>
                 </div>
               </div>
               {editingContactId === contactDetailDrawerContact.id && (
-                <div className="grid grid-cols-1 gap-3 rounded-sm border border-border p-3 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 rounded-none border border-border p-3 md:grid-cols-2">
                   <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
                   <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                   <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
@@ -2189,7 +2189,7 @@ export default function Portal() {
                   <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                   <div className="flex gap-2 md:col-span-2">
                     <Button onClick={updateContact}>Save changes</Button>
-                    <Button variant="outline" className="rounded-sm shadow-none" onClick={() => setEditingContactId(null)}>Cancel</Button>
+                    <Button variant="outline" className="rounded-none shadow-none" onClick={() => setEditingContactId(null)}>Cancel</Button>
                   </div>
                 </div>
               )}
@@ -2199,7 +2199,7 @@ export default function Portal() {
                   {contactDetailDrawerOrderStats.orders.map(order => {
                     const requirements = requirementsBySession.get(order.session_id);
                     return (
-                      <div key={order.session_id} className="rounded-sm border border-border bg-card/60 p-3 text-sm">
+                      <div key={order.session_id} className="rounded-none border border-border bg-card/60 p-3 text-sm">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="font-medium">{order.amount_total != null ? formatGBP(order.amount_total) : "—"}</span>
                           <span className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</span>
@@ -2218,7 +2218,7 @@ export default function Portal() {
                 <div className="text-sm font-medium">Contact history</div>
                 {contactDetailDrawerEvents.length === 0 && <p className="text-sm text-muted-foreground">No communications logged.</p>}
                 {contactDetailDrawerEvents.map(e => (
-                  <div key={e.id} className="rounded-sm border border-border bg-card/60 p-3 text-sm">
+                  <div key={e.id} className="rounded-none border border-border bg-card/60 p-3 text-sm">
                     <div className="flex flex-wrap justify-between gap-2">
                       <span className="font-medium">{e.title}</span>
                       <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
@@ -2240,8 +2240,8 @@ export default function Portal() {
             <DrawerDescription>Step {mobileContactStep + 1} of {contactWizardFields.length}</DrawerDescription>
           </DrawerHeader>
           <div className="space-y-5">
-            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${((mobileContactStep + 1) / contactWizardFields.length) * 100}%` }} />
+            <div className="h-1.5 overflow-hidden rounded-none bg-muted">
+              <div className="h-full rounded-none bg-primary transition-all" style={{ width: `${((mobileContactStep + 1) / contactWizardFields.length) * 100}%` }} />
             </div>
             <div className="space-y-3">
               <div>
@@ -2274,7 +2274,7 @@ export default function Portal() {
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" className="rounded-sm shadow-none" onClick={() => mobileContactStep > 0 ? setMobileContactStep(step => step - 1) : setMobileContactDrawerOpen(false)}>
+              <Button variant="outline" className="rounded-none shadow-none" onClick={() => mobileContactStep > 0 ? setMobileContactStep(step => step - 1) : setMobileContactDrawerOpen(false)}>
                 {mobileContactStep > 0 ? "Back" : "Cancel"}
               </Button>
               <Button onClick={() => continueMobileContact()}>{mobileContactStep === contactWizardFields.length - 1 ? "Save" : "Next"}</Button>
@@ -2293,8 +2293,8 @@ export default function Portal() {
             <DrawerDescription>Step {mobileSalesStep + 1} of {salesEventWizardFields.length}</DrawerDescription>
           </DrawerHeader>
           <div className="space-y-5">
-            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${((mobileSalesStep + 1) / salesEventWizardFields.length) * 100}%` }} />
+            <div className="h-1.5 overflow-hidden rounded-none bg-muted">
+              <div className="h-full rounded-none bg-primary transition-all" style={{ width: `${((mobileSalesStep + 1) / salesEventWizardFields.length) * 100}%` }} />
             </div>
             <div className="space-y-3">
               <label className="text-sm font-medium">{currentSalesField.label}{currentSalesField.required ? " *" : ""}</label>
@@ -2356,7 +2356,7 @@ export default function Portal() {
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" className="rounded-sm shadow-none" onClick={() => mobileSalesStep > 0 ? setMobileSalesStep(step => step - 1) : setMobileSalesDrawerOpen(false)}>
+              <Button variant="outline" className="rounded-none shadow-none" onClick={() => mobileSalesStep > 0 ? setMobileSalesStep(step => step - 1) : setMobileSalesDrawerOpen(false)}>
                 {mobileSalesStep > 0 ? "Back" : "Cancel"}
               </Button>
               <Button onClick={() => continueMobileSalesEvent()}>{mobileSalesStep === salesEventWizardFields.length - 1 ? "Save" : "Next"}</Button>
@@ -2381,7 +2381,7 @@ export default function Portal() {
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
               const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
               return (
-                <div key={o.session_id} className="space-y-3 rounded-sm border border-border bg-card/60 p-3">
+                <div key={o.session_id} className="space-y-3 rounded-none border border-border bg-card/60 p-3">
                   <div className="space-y-1">
                     <div className="break-all text-sm font-medium">{o.customer_email ?? "Guest checkout"}</div>
                     <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>

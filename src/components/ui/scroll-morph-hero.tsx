@@ -79,7 +79,7 @@ function FlipCard({
             >
                 {/* Front Face */}
                 <div
-                    className="absolute inset-0 h-full w-full overflow-hidden rounded-xl shadow-lg bg-muted"
+                    className="absolute inset-0 h-full w-full overflow-hidden rounded-none shadow-lg bg-muted"
                     style={{ backfaceVisibility: "hidden" }}
                 >
                     <img
@@ -92,7 +92,7 @@ function FlipCard({
 
                 {/* Back Face */}
                 <div
-                    className="absolute inset-0 h-full w-full overflow-hidden rounded-xl shadow-lg bg-card flex flex-col items-center justify-center p-4 border border-border"
+                    className="absolute inset-0 h-full w-full overflow-hidden rounded-none shadow-lg bg-card flex flex-col items-center justify-center p-4 border border-border"
                     style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                 >
                     <div className="text-center">
