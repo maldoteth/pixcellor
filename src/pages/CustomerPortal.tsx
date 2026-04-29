@@ -398,12 +398,17 @@ export default function CustomerPortal() {
               </div>
 
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PortalTab)} className="space-y-5">
-                <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/40 p-1 md:grid-cols-5">
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="orders">Orders</TabsTrigger>
-                  <TabsTrigger value="briefs">Briefs</TabsTrigger>
-                  <TabsTrigger value="delivered">Previews</TabsTrigger>
-                  <TabsTrigger value="payments">Payments</TabsTrigger>
+                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5">
+                  {navItems.map((item) => (
+                    <TabsTrigger
+                      key={item.value}
+                      value={item.value}
+                      className="pricing-button h-10 gap-2 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"
+                    >
+                      <item.icon className="h-3.5 w-3.5 shrink-0" />
+                      <span>{item.value === "delivered" ? "Previews" : item.value === "payments" ? "Payments" : item.title}</span>
+                    </TabsTrigger>
+                  ))}
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-5">
