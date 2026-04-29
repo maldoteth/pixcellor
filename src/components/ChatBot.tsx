@@ -34,6 +34,11 @@ interface ChatBotProps {
   hidden?: boolean;
 }
 
+interface ChatHistoryResponse {
+  conversation: { id: string; bot_paused: boolean } | null;
+  messages: Message[];
+}
+
 const glassStyle = {
   background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%)",
   backdropFilter: "blur(24px)",
@@ -206,38 +211,45 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false }: ChatBotPr
     };
   }, [conversationId, isOpen]);
 
-  const loadChatHistory = async () => {
-    setIsLoadingHistory(true);
+  useEffect(() => {
+    if (!isOpen || !manualHandoff || !conversationId) return;
+    const interval = window.setInterval(() => {
+      void loadChatHistory(true);
+    }, 5000);
+    return () => window.clearInterval(interval);
+  }, [isOpen, manualHandoff, conversationId]);
+
+  const loadChatHistory = async (silent = false) => {
+    if (!silent) setIsLoadingHistory(true);
     try {
-      const { data: conv } = await supabase
-        .from("chat_conversations")
-        .select("id, bot_paused")
-        .eq("client_id", clientId.current)
-        .single();
+      const { data, error } = await (supabase as any).rpc("fetch_chat_history", {
+        _client_id: clientId.current,
+      });
+
+      if (error) throw error;
+
+      const history = data as ChatHistoryResponse | null;
+      const conv = history?.conversation ?? null;
+      const msgs = history?.messages ?? [];
 
       if (conv) {
         setConversationId(conv.id);
         setManualHandoff(Boolean(conv.bot_paused));
-        const { data: msgs } = await supabase
-          .from("chat_messages")
-          .select("role, content")
-          .eq("conversation_id", conv.id)
-          .order("created_at", { ascending: true });
 
         if (msgs && msgs.length > 0) {
           setMessages(msgs as Message[]);
           setHasStarted(true);
-        } else {
+        } else if (!silent) {
           startConversation();
         }
-      } else {
+      } else if (!silent) {
         startConversation();
       }
     } catch (error) {
       console.error("Error loading chat history:", error);
-      startConversation();
+      if (!silent) startConversation();
     } finally {
-      setIsLoadingHistory(false);
+      if (!silent) setIsLoadingHistory(false);
     }
   };
 
