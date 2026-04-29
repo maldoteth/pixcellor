@@ -114,23 +114,24 @@ type PixelBackgroundProps = {
 function PixelBackground({ phase, morphValue, containerSize }: PixelBackgroundProps) {
     const reduceMotion = useReducedMotion();
     const isMobile = containerSize.width < 768;
-    const pixelCount = isMobile ? 34 : 64;
-    const visible = phase === "scatter" ? 0.42 : phase === "line" ? 0.34 : Math.max(0, 0.24 - morphValue * 0.7);
+    const pixelCount = isMobile ? 12 : 22;
+    const tileSize = isMobile ? 42 : 70;
+    const visible = phase === "scatter" ? 0.45 : phase === "line" ? 0.38 : Math.max(0, 0.28 - morphValue * 0.8);
 
     const pixels = useMemo(() => {
         return Array.from({ length: pixelCount }, (_, index) => {
-            const column = index % 8;
-            const row = Math.floor(index / 8);
-            const jitterX = Math.sin(index * 13.37) * 7;
-            const jitterY = Math.cos(index * 9.91) * 7;
+            const ring = index % 2 === 0 ? 1 : 0.62;
+            const angle = (index / pixelCount) * Math.PI * 2;
+            const left = 50 + Math.cos(angle) * 42 * ring + Math.sin(index * 5.31) * 7;
+            const top = 50 + Math.sin(angle) * 34 * ring + Math.cos(index * 3.17) * 6;
             return {
                 id: index,
-                left: 8 + column * 12 + jitterX,
-                top: 9 + row * (isMobile ? 10 : 8) + jitterY,
-                size: 2 + (index % 4),
-                delay: (index % 11) * 0.08,
-                driftX: Math.sin(index * 2.3) * (isMobile ? 8 : 18),
-                driftY: Math.cos(index * 1.7) * (isMobile ? 6 : 14),
+                left: Math.min(Math.max(left, 7), 91),
+                top: Math.min(Math.max(top, 8), 88),
+                delay: index * 0.11,
+                driftX: Math.cos(angle) * (isMobile ? 18 : 34),
+                driftY: Math.sin(angle) * (isMobile ? 14 : 28),
+                opacity: 0.09 + (index % 4) * 0.035,
             };
         });
     }, [isMobile, pixelCount]);
@@ -144,38 +145,34 @@ function PixelBackground({ phase, morphValue, containerSize }: PixelBackgroundPr
             animate={{ opacity: visible }}
             transition={{ duration: 0.7, ease: "easeOut" }}
         >
-            <div
-                className="absolute inset-0 opacity-40"
-                style={{
-                    backgroundImage: "linear-gradient(hsla(0,0%,100%,0.045) 1px, transparent 1px), linear-gradient(90deg, hsla(0,0%,100%,0.045) 1px, transparent 1px)",
-                    backgroundSize: isMobile ? "28px 28px" : "34px 34px",
-                    maskImage: "radial-gradient(circle at 50% 48%, black 0%, transparent 68%)",
-                    WebkitMaskImage: "radial-gradient(circle at 50% 48%, black 0%, transparent 68%)",
-                }}
-            />
             {pixels.map((pixel) => (
                 <motion.span
                     key={pixel.id}
-                    className="absolute block bg-foreground"
+                    className="absolute block bg-foreground/10"
                     style={{
                         left: `${pixel.left}%`,
                         top: `${pixel.top}%`,
-                        width: pixel.size,
-                        height: pixel.size,
-                        boxShadow: "0 0 14px hsla(0,0%,100%,0.45)",
+                        width: tileSize,
+                        height: tileSize,
+                        marginLeft: -tileSize / 2,
+                        marginTop: -tileSize / 2,
+                        border: "1px solid hsla(0,0%,100%,0.08)",
+                        backdropFilter: "blur(6px)",
+                        WebkitBackdropFilter: "blur(6px)",
+                        boxShadow: "inset 0 1px 1px hsla(0,0%,100%,0.12), 0 0 28px hsla(0,0%,100%,0.08)",
                     }}
-                    initial={{ opacity: 0, scale: 0.7 }}
+                    initial={{ opacity: 0, scale: 0.82 }}
                     animate={{
-                        opacity: phase === "circle" ? [0.18, 0.04, 0.12] : [0.08, 0.42, 0.12],
-                        scale: phase === "line" ? [1, 1.55, 1] : [0.8, 1.15, 0.9],
-                        x: phase === "scatter" ? [pixel.driftX, 0, pixel.driftX * -0.35] : [0, pixel.driftX * 0.3, 0],
-                        y: phase === "scatter" ? [pixel.driftY, 0, pixel.driftY * -0.35] : [0, pixel.driftY * 0.3, 0],
+                        opacity: phase === "circle" ? [0, pixel.opacity * 0.75, 0] : [0, pixel.opacity, 0],
+                        scale: [0.78, 1, 0.86],
+                        x: phase === "scatter" ? [pixel.driftX, 0, pixel.driftX * -0.2] : [0, pixel.driftX * 0.2, 0],
+                        y: phase === "scatter" ? [pixel.driftY, 0, pixel.driftY * -0.2] : [0, pixel.driftY * 0.2, 0],
                     }}
                     transition={{
-                        duration: 2.6 + (pixel.id % 5) * 0.35,
+                        duration: 2.2,
                         delay: pixel.delay,
                         repeat: Infinity,
-                        repeatType: "mirror",
+                        repeatDelay: pixelCount * 0.035,
                         ease: "easeInOut",
                     }}
                 />
