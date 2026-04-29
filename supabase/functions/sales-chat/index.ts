@@ -173,7 +173,9 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 ## Rules
 - Be concise and operational.
 - If contact details include a name, create the contact immediately. Email and phone are optional.
-- If a message includes an uploaded screenshot/image URL, call extract_screenshot_contact first, then create_contact with any extracted name, job title, location, email, phone, and screenshot URL in notes.
+- If a message includes an uploaded screenshot/image URL, call extract_screenshot_contact first, then create_contact with any extracted name, trade, location, email, phone, and useful notes.
+- For screenshot contacts, be smart about job titles: save a clean trade/category (e.g. Roofer, Electrician, Plumber, Builder, Landscaper, Carpenter, Joiner, Painter, Plasterer, Tiler, Scaffolder, Glazier, Cleaner, Mechanic, Hair/Beauty, Restaurant/Food, Retail, Fitness, Consultant, Designer, Developer, Agency, Property, Recruitment). Do NOT save raw UI labels, hashtags, usernames, ratings, follower counts, profile URLs, map links, or random website/social links as the job title/trade.
+- If the exact trade is unclear, infer the closest sensible trade from the business name, visible services, bio, category, or page context. If still unclear, use "Unknown trade" and put the uncertainty in notes.
 - If the dev says what happened with a lead/client, create a sales event. Use find_contact first when they name the person/company.
 - Callback/reminder intent is scoped to the contact the dev explicitly names or clearly references in the SAME request. Do not carry a callback request over to later contacts.
 - When the dev uploads/pastes a screenshot to add a new contact, only create the contact. NEVER create a callback for the screenshot contact unless the dev explicitly says the callback is for the person/company in that screenshot in the same message.
@@ -293,7 +295,8 @@ const devTools = [
           phone: { type: "string", description: "Phone number, if provided." },
           email: { type: "string", description: "Email address, if provided." },
           location: { type: "string", description: "Location, if provided." },
-          notes: { type: "string", description: "Any extra pasted context or source details." },
+          trade: { type: "string", description: "Clean trade/category only, e.g. Roofer, Electrician, Plumber, Builder. Never URLs, usernames, UI labels, or long bios." },
+          notes: { type: "string", description: "Useful extra context only. Do not include raw links, UI labels, follower counts, ratings, or screenshot storage URLs." },
         },
         required: ["name"],
       },
@@ -534,18 +537,35 @@ async function saveBrief(
 
 const cleanText = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
 
+const cleanDevNotes = (value: unknown, max: number) => cleanText(value, max)
+  .split(/\n+/)
+  .map((line) => line.replace(/https?:\/\/\S+/gi, "").trim())
+  .filter((line) => line && !/(followers?|following|likes?|reviews?|rating|views?|posts?|profile|share|message|follow|open in app|sign in|log in)/i.test(line))
+  .join("\n")
+  .slice(0, max);
+
+const cleanTrade = (value: unknown) => cleanText(value, 80)
+  .replace(/https?:\/\/\S+/gi, "")
+  .replace(/^[@#]+/, "")
+  .trim();
+
 async function createDevContact(supabase: DbClient, args: Record<string, unknown>) {
   const name = cleanText(args.name, 100);
   if (!name) return { ok: false, error: "missing_name" };
   const email = cleanText(args.email, 255).toLowerCase();
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+  const trade = cleanTrade(args.trade);
+  const notes = [
+    trade ? `Trade: ${trade}` : "",
+    cleanDevNotes(args.notes, 900),
+  ].filter(Boolean).join("\n");
 
   const payload = {
     name,
     phone: cleanText(args.phone, 40) || null,
     email: email || null,
     location: cleanText(args.location, 160) || null,
-    notes: cleanText(args.notes, 1000) || null,
+    notes: notes || null,
     source: "dev_chat",
   };
 
@@ -640,7 +660,7 @@ async function extractScreenshotContact(apiKey: string, imageUrl: unknown) {
       messages: [{
         role: "user",
         content: [
-          { type: "text", text: "Extract visible contact details from this screenshot. Return only JSON with keys: name, job_title, company, location, email, phone, notes. Use empty strings for missing fields. Do not invent details." },
+          { type: "text", text: "Extract visible contact details from this screenshot. Return only JSON with keys: name, trade, company, location, email, phone, notes. Use empty strings for missing fields. For trade, infer the closest clean business trade/category from visible services, bio, page category, or business name (e.g. Roofer, Electrician, Plumber, Builder, Landscaper, Carpenter, Joiner, Painter, Plasterer, Tiler, Scaffolder, Glazier, Cleaner, Mechanic, Hair/Beauty, Restaurant/Food, Retail, Fitness, Consultant, Designer, Developer, Agency, Property, Recruitment). Never put URLs, usernames, UI labels, ratings, follower counts, hashtags, or social/profile links in trade. If unclear, trade must be \"Unknown trade\". Notes should be short useful context only and must not include raw links or UI clutter. Do not invent email/phone/location." },
           { type: "image_url", image_url: { url } },
         ],
       }],
