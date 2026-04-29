@@ -13,6 +13,7 @@ import {
   Home,
   Loader2,
   LogOut,
+  MessageCircle,
   PackageCheck,
   PanelLeft,
   ReceiptText,
@@ -41,6 +42,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import customerPortalPLogo from "@/assets/customer-portal-p-logo.png";
+import ChatBot from "@/components/ChatBot";
 
 const BUY_AGAIN_PACKAGES = [
   {
@@ -178,6 +180,7 @@ export default function CustomerPortal() {
   const [data, setData] = useState<CustomerPortalData | null>(null);
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const loadPortal = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -321,6 +324,10 @@ export default function CustomerPortal() {
                   </Link>
                 </Button>
               )}
+              <Button variant="pricing" size="sm" className="gap-2" onClick={() => setChatOpen(true)}>
+                <MessageCircle className="h-4 w-4" />
+                Chat
+              </Button>
               <Button variant="pricing" size="sm" className="gap-2" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4" />
                 Sign out
@@ -513,6 +520,7 @@ export default function CustomerPortal() {
               </Tabs>
             </section>
           </main>
+          <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} />
         </SidebarInset>
       </div>
     </SidebarProvider>
