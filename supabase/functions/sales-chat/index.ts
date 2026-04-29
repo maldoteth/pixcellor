@@ -552,11 +552,19 @@ async function saveCustomerContact(supabase: ReturnType<typeof createClient>, ar
   const name = cleanText(args.name, 100);
   const email = cleanText(args.email, 255).toLowerCase();
   const phone = cleanText(args.phone, 40);
+  const shouldScheduleCallback = args.schedule_callback_tomorrow === true;
+  const shouldSendWelcomeEmail = args.send_welcome_email === true;
   if (!name) return { ok: false, error: "missing_name" };
   if (!email && !phone) return { ok: false, error: "email_or_phone_required" };
+  if (shouldSendWelcomeEmail && !email) return { ok: false, error: "email_required_for_welcome_email" };
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
 
-  const notes = [cleanText(args.notes, 850), conversationId ? `Live chat: ${conversationId}` : "Live chat lead"].filter(Boolean).join("\n");
+  const notes = [
+    cleanText(args.notes, 850),
+    shouldScheduleCallback ? "Requested a callback from Alex chat." : "",
+    shouldSendWelcomeEmail ? "Requested Pixcellor package/process info by email." : "",
+    conversationId ? `Live chat: ${conversationId}` : "Live chat lead",
+  ].filter(Boolean).join("\n");
   const existingQuery = supabase.from("contacts").select("id, notes").limit(1);
   const { data: existing } = email
     ? await existingQuery.ilike("email", email).maybeSingle()
@@ -570,7 +578,8 @@ async function saveCustomerContact(supabase: ReturnType<typeof createClient>, ar
       .select("id, name, email, phone")
       .single();
     if (error) return { ok: false, error: error.message };
-    return { ok: true, contact: data, updated: true };
+    await handleCustomerContactFollowUps(supabase, data.id, { name, email, phone, shouldScheduleCallback, shouldSendWelcomeEmail });
+    return { ok: true, contact: data, updated: true, callback_scheduled: shouldScheduleCallback, welcome_email_requested: shouldSendWelcomeEmail };
   }
 
   const { data, error } = await supabase
@@ -579,7 +588,38 @@ async function saveCustomerContact(supabase: ReturnType<typeof createClient>, ar
     .select("id, name, email, phone")
     .single();
   if (error) return { ok: false, error: error.message };
-  return { ok: true, contact: data, updated: false };
+  await handleCustomerContactFollowUps(supabase, data.id, { name, email, phone, shouldScheduleCallback, shouldSendWelcomeEmail });
+  return { ok: true, contact: data, updated: false, callback_scheduled: shouldScheduleCallback, welcome_email_requested: shouldSendWelcomeEmail };
+}
+
+async function handleCustomerContactFollowUps(
+  supabase: ReturnType<typeof createClient>,
+  contactId: string,
+  details: { name: string; email: string; phone: string; shouldScheduleCallback: boolean; shouldSendWelcomeEmail: boolean }
+) {
+  if (details.shouldScheduleCallback) {
+    const callbackAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const { error } = await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: "Call back requested from website chat",
+      description: `Alex chat captured callback request for ${details.name}${details.phone ? ` (${details.phone})` : ""}.`,
+      event_type: "callback",
+      callback_at: callbackAt,
+    });
+    if (error) console.error("callback event error:", error);
+  }
+
+  if (details.shouldSendWelcomeEmail && details.email) {
+    const { error } = await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "sales-welcome-info",
+        recipientEmail: details.email,
+        idempotencyKey: `sales-welcome-${contactId}`,
+        templateData: { name: details.name },
+      },
+    });
+    if (error) console.error("welcome email error:", error);
+  }
 }
 
 async function extractScreenshotContact(apiKey: string, imageUrl: unknown) {
