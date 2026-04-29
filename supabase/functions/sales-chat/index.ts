@@ -100,6 +100,7 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
 1. QUALIFY FIRST — understand what the visitor actually needs before recommending anything
 2. Recommend ONE package that fits (not all three)
 3. Collect their contact details for follow-up: Name, Email (required), Brief project description
+4. When a visitor gives their name plus either email or phone number, immediately call save_contact so the team can follow up.
 
 ## CRITICAL Rules — Qualifying Questions:
 - DO NOT list or recommend all three packages at once. That overwhelms clients.
@@ -149,6 +150,7 @@ Privacy rules:
 - Be excited about their project ideas
 - Never pushy, always consultative
 - If they share their email, thank them warmly and confirm someone will be in touch soon
+- If they share a name and either an email or phone number, call save_contact. Do not tell them internal CRM details.
 
 ## When to use send_package:
 - AFTER qualifying — once you know which tier fits, send just that one package
@@ -230,6 +232,23 @@ const tools = [
           notes: { type: "string", description: "Any other free-form notes worth remembering." },
         },
         required: ["email"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "save_contact",
+      description: "Create or update a sales contact when the visitor provides a name plus either email or phone number. Use this for customer-facing lead capture.",
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Visitor's name." },
+          phone: { type: "string", description: "Phone number, if provided." },
+          email: { type: "string", description: "Email address, if provided." },
+          notes: { type: "string", description: "Project summary or relevant chat context." },
+        },
+        required: ["name"],
       },
     },
   },
@@ -507,6 +526,40 @@ async function createDevContact(supabase: ReturnType<typeof createClient>, args:
   const { data, error } = await supabase.from("contacts").insert(payload).select("id, name, email, phone").single();
   if (error) return { ok: false, error: error.message };
   return { ok: true, contact: data };
+}
+
+async function saveCustomerContact(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>, conversationId: string | null) {
+  const name = cleanText(args.name, 100);
+  const email = cleanText(args.email, 255).toLowerCase();
+  const phone = cleanText(args.phone, 40);
+  if (!name) return { ok: false, error: "missing_name" };
+  if (!email && !phone) return { ok: false, error: "email_or_phone_required" };
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+
+  const notes = [cleanText(args.notes, 850), conversationId ? `Live chat: ${conversationId}` : "Live chat lead"].filter(Boolean).join("\n");
+  const existingQuery = supabase.from("contacts").select("id, notes").limit(1);
+  const { data: existing } = email
+    ? await existingQuery.ilike("email", email).maybeSingle()
+    : await existingQuery.eq("phone", phone).maybeSingle();
+
+  if (existing?.id) {
+    const { data, error } = await supabase
+      .from("contacts")
+      .update({ name, phone: phone || null, email: email || null, notes: [existing.notes, notes].filter(Boolean).join("\n"), updated_at: new Date().toISOString() })
+      .eq("id", existing.id)
+      .select("id, name, email, phone")
+      .single();
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, contact: data, updated: true };
+  }
+
+  const { data, error } = await supabase
+    .from("contacts")
+    .insert({ name, phone: phone || null, email: email || null, notes, source: "chat" })
+    .select("id, name, email, phone")
+    .single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, contact: data, updated: false };
 }
 
 async function findDevContacts(supabase: ReturnType<typeof createClient>, query: unknown) {
@@ -823,6 +876,17 @@ Deno.serve(async (req) => {
               tool_call_id: toolCall.id,
               content: JSON.stringify({ ok: false, error: "parse_error" }),
             });
+          }
+        } else if (toolCall.function.name === "save_contact" && !isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await saveCustomerContact(supabase, args, currentConversationId);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in save_contact:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "save_contact_failed" }) });
           }
         } else if (toolCall.function.name === "create_contact" && isDevMode) {
           needsFollowUp = true;
