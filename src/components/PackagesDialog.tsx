@@ -129,7 +129,7 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
       <DialogTrigger asChild>
         <Button
           variant="pricing"
-          className="mb-6 h-auto w-[276px] px-8 py-3 text-base font-semibold"
+          className="mb-6 h-auto w-[265px] px-8 py-3 text-base font-semibold"
           aria-label="View our web development pricing"
         >
           Pricing
