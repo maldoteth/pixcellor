@@ -1,8 +1,9 @@
 import * as React from 'npm:react@18.3.1'
-import { Body, Button, Column, Container, Head, Heading, Html, Preview, Row, Section, Text } from 'npm:@react-email/components@0.0.22'
+import { Body, Button, Column, Container, Head, Heading, Html, Img, Preview, Row, Section, Text } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
 const BRAND_NAME = 'Pixcellor™'
+const LOGO_URL = 'https://pixcellor.com/pixcellor-email-logo.png'
 
 type OrderEmailProps = {
   customerEmail?: string
@@ -53,7 +54,7 @@ const createOrderEmail = (config: OrderTemplateConfig) => {
               <Column style={heroInner}>
                 <Row style={brandRow}>
                   <Column><Text style={brand}>{BRAND_NAME}</Text></Column>
-                  <Column style={markColumn}><Text style={mark}>P</Text></Column>
+                  <Column style={markColumn}><Img src={LOGO_URL} alt="Pixcellor" width="40" height="40" style={mark} /></Column>
                 </Row>
                 <Text style={eyebrow}>ORDER CONFIRMED</Text>
                 <Heading style={h1}>{config.title}</Heading>
@@ -138,15 +139,8 @@ const markColumn = {
   width: '46px',
 }
 const mark = {
-  backgroundColor: '#f4f4f5',
-  color: '#050505',
-  display: 'inline-block',
-  fontFamily: 'Arial Black, Arial, Helvetica, sans-serif',
-  fontSize: '24px',
-  fontWeight: '900' as const,
-  lineHeight: '40px',
+  display: 'block',
   margin: '0',
-  textAlign: 'center' as const,
   width: '40px',
   height: '40px',
 }
