@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { motion, useTransform, useSpring, useMotionValue, useReducedMotion } from "framer-motion";
+import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import BookSlider from "./book-slider";
 import PackagesDialog from "@/components/PackagesDialog";
@@ -101,82 +101,6 @@ function FlipCard({
                     </div>
                 </div>
             </motion.div>
-        </motion.div>
-    );
-}
-
-type PixelBackgroundProps = {
-    phase: AnimationPhase;
-    morphValue: number;
-    containerSize: { width: number; height: number };
-};
-
-function PixelBackground({ phase, morphValue, containerSize }: PixelBackgroundProps) {
-    const reduceMotion = useReducedMotion();
-    const isMobile = containerSize.width < 768;
-    const pixelCount = isMobile ? 12 : 22;
-    const tileSize = isMobile ? 42 : 70;
-    const visible = phase === "scatter" ? 0.45 : phase === "line" ? 0.38 : Math.max(0, 0.28 - morphValue * 0.8);
-
-    const pixels = useMemo(() => {
-        return Array.from({ length: pixelCount }, (_, index) => {
-            const ring = index % 2 === 0 ? 1 : 0.62;
-            const angle = (index / pixelCount) * Math.PI * 2;
-            const left = 50 + Math.cos(angle) * 42 * ring + Math.sin(index * 5.31) * 7;
-            const top = 50 + Math.sin(angle) * 34 * ring + Math.cos(index * 3.17) * 6;
-            return {
-                id: index,
-                left: Math.min(Math.max(left, 7), 91),
-                top: Math.min(Math.max(top, 8), 88),
-                delay: index * 0.11,
-                driftX: Math.cos(angle) * (isMobile ? 18 : 34),
-                driftY: Math.sin(angle) * (isMobile ? 14 : 28),
-                opacity: 0.09 + (index % 4) * 0.035,
-            };
-        });
-    }, [isMobile, pixelCount]);
-
-    if (reduceMotion || visible <= 0) return null;
-
-    return (
-        <motion.div
-            aria-hidden="true"
-            className="absolute inset-0 z-[1] pointer-events-none overflow-hidden"
-            animate={{ opacity: visible }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-        >
-            {pixels.map((pixel) => (
-                <motion.span
-                    key={pixel.id}
-                    className="absolute block bg-foreground/10"
-                    style={{
-                        left: `${pixel.left}%`,
-                        top: `${pixel.top}%`,
-                        width: tileSize,
-                        height: tileSize,
-                        marginLeft: -tileSize / 2,
-                        marginTop: -tileSize / 2,
-                        border: "1px solid hsla(0,0%,100%,0.08)",
-                        backdropFilter: "blur(6px)",
-                        WebkitBackdropFilter: "blur(6px)",
-                        boxShadow: "inset 0 1px 1px hsla(0,0%,100%,0.12), 0 0 28px hsla(0,0%,100%,0.08)",
-                    }}
-                    initial={{ opacity: 0, scale: 0.82 }}
-                    animate={{
-                        opacity: phase === "circle" ? [0, pixel.opacity * 0.75, 0] : [0, pixel.opacity, 0],
-                        scale: [0.78, 1, 0.86],
-                        x: phase === "scatter" ? [pixel.driftX, 0, pixel.driftX * -0.2] : [0, pixel.driftX * 0.2, 0],
-                        y: phase === "scatter" ? [pixel.driftY, 0, pixel.driftY * -0.2] : [0, pixel.driftY * 0.2, 0],
-                    }}
-                    transition={{
-                        duration: 2.2,
-                        delay: pixel.delay,
-                        repeat: Infinity,
-                        repeatDelay: pixelCount * 0.035,
-                        ease: "easeInOut",
-                    }}
-                />
-            ))}
         </motion.div>
     );
 }
@@ -373,7 +297,6 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             <div className="absolute inset-0 pointer-events-none z-0" style={{
                 background: 'radial-gradient(ellipse 60% 50% at 50% 50%, hsla(0,0%,100%,0.15) 0%, transparent 70%)',
             }} />
-            <PixelBackground phase={introPhase} morphValue={morphValue} containerSize={containerSize} />
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
