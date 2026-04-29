@@ -183,7 +183,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [manualHandoff, setManualHandoff] = useState(false);
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId(mode));
   const isDevMode = mode === "dev";
@@ -338,6 +340,38 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognitionApi = (window as typeof window & {
+      SpeechRecognition?: SpeechRecognitionConstructor;
+      webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    }).SpeechRecognition ?? (window as typeof window & { webkitSpeechRecognition?: SpeechRecognitionConstructor }).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionApi) {
+      setMessages((current) => [...current, { role: "assistant", content: "Voice input isn't supported in this browser yet." }]);
+      return;
+    }
+
+    const recognition = new SpeechRecognitionApi();
+    recognitionRef.current = recognition;
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-GB";
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results).map((result) => result[0].transcript).join(" ").trim();
+      if (transcript) setInput((current) => `${current}${current ? " " : ""}${transcript}`);
+    };
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+    setIsListening(true);
+    recognition.start();
   };
 
   const chatContent = (
