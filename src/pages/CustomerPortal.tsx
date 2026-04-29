@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import logoIconWhite from "@/assets/logo-icon-white.png";
 
 const BUY_AGAIN_PACKAGES = [
   {
@@ -266,8 +267,8 @@ export default function CustomerPortal() {
         <Sidebar collapsible="icon" className="border-sidebar-border bg-sidebar/95 backdrop-blur-xl">
           <SidebarHeader className="border-b border-sidebar-border px-3 py-4">
             <div className="flex items-center gap-3 px-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-sm border border-sidebar-border bg-sidebar-accent">
-                <PackageCheck className="h-4 w-4 text-sidebar-primary" />
+              <div className="flex h-9 w-9 items-center justify-center border border-sidebar-border bg-sidebar-accent p-1.5">
+                <img src={logoIconWhite} alt="Pixcellor P logo" className="h-full w-full object-contain" />
               </div>
               <div className="min-w-0 group-data-[collapsible=icon]:hidden">
                 <p className="truncate text-sm font-semibold">Pixcellor™</p>
