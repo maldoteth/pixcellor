@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, PencilLine, Plus, Repeat, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Repeat, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
 
 type StripeSession = {
@@ -308,13 +308,12 @@ export default function Portal() {
   const [salesSearch, setSalesSearch] = useState("");
   const [ordersSearch, setOrdersSearch] = useState("");
   const [retainersSearch, setRetainersSearch] = useState("");
-  const [editRequestsSearch, setEditRequestsSearch] = useState("");
   const [completedSearch, setCompletedSearch] = useState("");
   const [falloffsSearch, setFalloffsSearch] = useState("");
   const [chatsSearch, setChatsSearch] = useState("");
   const [profilesSearch, setProfilesSearch] = useState("");
   const [inquiriesSearch, setInquiriesSearch] = useState("");
-  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
+  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [openContactId, setOpenContactId] = useState<string | null>(null);
