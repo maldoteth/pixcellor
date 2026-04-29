@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Loader2, Check, Mic, MicOff } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
@@ -15,6 +15,7 @@ interface Message {
   role: "user" | "assistant" | "admin";
   content: string;
   packageCards?: PackageCard[];
+  imageUrl?: string;
 }
 
 interface PackageCard {
@@ -184,8 +185,10 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [manualHandoff, setManualHandoff] = useState(false);
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId(mode));
   const isDevMode = mode === "dev";
