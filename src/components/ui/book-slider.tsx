@@ -55,7 +55,7 @@ const portfolioData = [
   {
     name: "SEC Digital",
     url: "sec.digital",
-    description: "Blockchain infrastructure services with smart contract auditing and compliance.",
+    description: "Decentralized crime registry for recording, verifying, and surfacing community-reported incidents with transparent case data.",
     screenshot: secDigitalImg
   },
   {
