@@ -771,6 +771,7 @@ export type Database = {
         Args: { _session_id: string }
         Returns: Json
       }
+      fetch_chat_history: { Args: { _client_id: string }; Returns: Json }
       generate_order_code: { Args: never; Returns: string }
       has_role: {
         Args: {
