@@ -65,7 +65,7 @@ const portfolioData = [
   {
     name: "The Ponzi",
     url: "theponzi.lol",
-    description: "Satirical crypto culture platform with gamified experiences and community.",
+    description: "Satirical AI news platform and community building onchain experiences.",
     screenshot: theponziImg
   },
   {
