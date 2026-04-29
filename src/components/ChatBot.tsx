@@ -127,6 +127,19 @@ const formatMessage = (text: string): string => {
   html = html.replace(/\u0000LINK(\d+)\u0000/g, (_m, i) => linkPlaceholders[Number(i)]);
   return html;
 };
+
+const getDisplayMessageContent = (msg: Message): string => {
+  if (!msg.content) return "";
+  if (msg.imageUrl || /^Uploaded (screenshot|image)/i.test(msg.content)) {
+    return msg.content
+      .split("\n")
+      .filter((line) => !/^https?:\/\//i.test(line.trim()))
+      .join("\n")
+      .replace(/^Uploaded screenshot for contact extraction:/i, "Uploaded screenshot:")
+      .trim();
+  }
+  return msg.content;
+};
 function PackageCardUI({ card }: { card: PackageCard }) {
   const [loading, setLoading] = useState(false);
 
@@ -382,16 +395,20 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   };
 
   const sendImageMessage = async (imageUrl: string, fileName: string) => {
-    const content = isDevMode
+    const visibleContent = isDevMode ? `Uploaded screenshot: ${fileName}` : `Uploaded image: ${fileName}`;
+    const apiContent = isDevMode
       ? `Uploaded screenshot for contact extraction: ${fileName}\n${imageUrl}`
       : `Uploaded image: ${fileName}\n${imageUrl}`;
-    const userMessage: Message = { role: "user", content, imageUrl };
+    const userMessage: Message = { role: "user", content: visibleContent, imageUrl };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setIsLoading(true);
 
     try {
-      const apiMessages = newMessages.map(({ role, content, imageUrl }) => ({ role, content, imageUrl }));
+      const apiMessages = [
+        ...messages.map(({ role, content, imageUrl }) => ({ role, content, imageUrl })),
+        { role: "user" as const, content: apiContent, imageUrl, displayContent: visibleContent },
+      ];
       const { data, error } = await supabase.functions.invoke("sales-chat", {
         body: { messages: apiMessages, clientId: clientId.current, conversationId, mode },
       });
@@ -618,7 +635,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                   {msg.imageUrl && (
                     <img src={msg.imageUrl} alt="Chat upload" className="mb-2 max-h-44 w-full rounded-sm object-cover" loading="lazy" />
                   )}
-                  <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+                  <span dangerouslySetInnerHTML={{ __html: formatMessage(getDisplayMessageContent(msg)) }} />
                 </div>
                 {/* Package cards */}
                 {msg.packageCards && msg.packageCards.length > 0 && (
