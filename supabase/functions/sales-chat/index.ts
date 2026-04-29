@@ -173,9 +173,10 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - If contact details include a name, create the contact immediately. Email and phone are optional.
 - If a message includes an uploaded screenshot/image URL, call extract_screenshot_contact first, then create_contact with any extracted name, job title, location, email, phone, and screenshot URL in notes.
 - If the dev says what happened with a lead/client, create a sales event. Use find_contact first when they name the person/company.
-- If a sales event does not clearly map to one existing contact, ask which contact to attach it to.
+- If the dev asks for a callback/reminder for a contact they just created or just discussed, use the recent-contact context or the previous tool result instead of asking them to repeat details.
+- If a sales event does not clearly map to one existing contact after checking recent contacts/find_contact, ask which contact to attach it to.
 - Never invent contact details. Save uncertainty in notes/description.
-- For callback/reminder times, only include callback_at if a clear date/time is provided.`;
+- For callback/reminder times, treat relative dates like "tomorrow", "next week", and "in 1 week" as clear. If no time is given, default to 09:00 Europe/London and include callback_at as ISO.`;
 
 const tools = [
   {
@@ -667,6 +668,39 @@ async function findDevContacts(supabase: ReturnType<typeof createClient>, query:
   return { ok: true, matches: data ?? [] };
 }
 
+async function loadDevRecentContactContext(supabase: ReturnType<typeof createClient>) {
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("id, name, email, phone, location, status, created_at, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(8);
+
+  if (error) {
+    console.error("loadDevRecentContactContext error:", error);
+    return "";
+  }
+
+  const contacts = data ?? [];
+  if (contacts.length === 0) return "";
+
+  return [
+    "## Recent CRM contacts",
+    "Use this to resolve follow-up phrases like 'him', 'her', 'that contact', or 'the one I just added'. Prefer the most recent matching contact when the user asks for a callback right after creating a contact.",
+    ...contacts.map((contact: Record<string, unknown>, index: number) => {
+      const bits = [
+        `${index + 1}. ${contact.name}`,
+        `id=${contact.id}`,
+        contact.email ? `email=${contact.email}` : "",
+        contact.phone ? `phone=${contact.phone}` : "",
+        contact.location ? `location=${contact.location}` : "",
+        contact.status ? `status=${contact.status}` : "",
+        contact.updated_at ? `updated=${contact.updated_at}` : "",
+      ].filter(Boolean);
+      return `- ${bits.join(" · ")}`;
+    }),
+  ].join("\n");
+}
+
 async function createDevSalesEvent(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>) {
   const contactId = cleanText(args.contact_id, 80);
   const title = cleanText(args.title, 160);
@@ -847,9 +881,19 @@ Deno.serve(async (req) => {
       }
     }
 
+    let devRecentContactContext = "";
+    if (isDevMode) {
+      try {
+        devRecentContactContext = await loadDevRecentContactContext(supabase);
+      } catch (e) {
+        console.error("dev recent contact context error:", e);
+      }
+    }
+
     const aiMessages: Array<Record<string, unknown>> = [
       { role: "system", content: isDevMode ? DEV_SYSTEM_PROMPT : SYSTEM_PROMPT },
       ...(contextSummary ? [{ role: "system" as const, content: contextSummary }] : []),
+      ...(devRecentContactContext ? [{ role: "system" as const, content: devRecentContactContext }] : []),
       ...messages,
     ];
 
