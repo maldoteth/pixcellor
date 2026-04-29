@@ -230,6 +230,8 @@ const formatPhoneHref = (value?: string | null) => {
   return /\d/.test(cleaned) ? `tel:${cleaned}` : null;
 };
 
+const normalizePhoneDigits = (value?: string | null) => (value ?? "").replace(/\D/g, "");
+
 const formatDateTimeLocal = (date: Date) => {
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60_000);
@@ -1337,6 +1339,15 @@ export default function Portal() {
   const contactDetailDrawerContact = contactDetailDrawerId ? getContact(contactDetailDrawerId) : null;
   const contactDetailDrawerEvents = contactDetailDrawerContact ? contactEvents.filter(e => e.contact_id === contactDetailDrawerContact.id) : [];
   const contactDetailDrawerEmail = normalizeEmail(contactDetailDrawerContact?.email);
+  const contactDetailDrawerPhoneDigits = normalizePhoneDigits(contactDetailDrawerContact?.phone);
+  const contactDetailDrawerChatMessages = contactDetailDrawerContact ? allMessages.filter(message => {
+    const content = message.content.toLowerCase();
+    return Boolean(
+      (contactDetailDrawerEmail && content.includes(contactDetailDrawerEmail)) ||
+      (contactDetailDrawerPhoneDigits.length >= 6 && normalizePhoneDigits(message.content).includes(contactDetailDrawerPhoneDigits)) ||
+      (contactDetailDrawerContact.name.length > 2 && content.includes(contactDetailDrawerContact.name.toLowerCase()))
+    );
+  }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 12) : [];
   const contactDetailDrawerOrderStats = contactDetailDrawerEmail ? contactOrderStatsByEmail.get(contactDetailDrawerEmail) : null;
   const contactDetailDrawerPhoneHref = formatPhoneHref(contactDetailDrawerContact?.phone);
   const contactDetailDrawerStatusColor = contactDetailDrawerContact ? getContactStatusColor(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) : "hsl(var(--card))";
