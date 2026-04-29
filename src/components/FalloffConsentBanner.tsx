@@ -45,11 +45,11 @@ export default function FalloffConsentBanner() {
               Can Pixcellor remember your visit, device basics, and checkout progress so we can improve follow-up if you leave before ordering?
             </p>
             <div className="flex shrink-0 gap-2">
-              <Button variant="outline" size="sm" onClick={() => choose(false)}>No</Button>
+              <Button variant="outline" size="sm" onClick={() => choose(false)} className="h-9 min-w-20 px-4">No</Button>
               <button
                 type="button"
                 onClick={() => choose(true)}
-                className="relative overflow-hidden rounded-sm px-4 py-2 text-sm font-semibold text-foreground transition hover:brightness-125"
+                className="relative h-9 min-w-20 overflow-hidden rounded-sm px-4 text-sm font-semibold text-foreground transition hover:brightness-125"
                 style={glassButtonStyle}
               >
                 <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-in-out hover:translate-x-full pointer-events-none" />
