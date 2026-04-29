@@ -83,7 +83,7 @@ const portfolioData = [
   {
     name: "Arvox Agency",
     url: "arvox.agency",
-    description: "Modern agency website presenting premium creative services, brand strategy and digital delivery.",
+    description: "Web3 talent agency connecting brands with creators, communities, and onchain growth.",
     screenshot: arvoxAgencyImg
   },
   {

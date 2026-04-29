@@ -85,7 +85,7 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
 10. **The Ponzi** — https://theponzi.lol — Satirical AI news platform and community building onchain experiences.
 11. **DHBScan** — https://dhbscan.com — Token analytics dashboard with revenue sharing, buyback tracking, and supply data.
 12. **DHB Docs** — https://docs.dhb.gg — Technical documentation hub for DeHub products, token utilities and ecosystem guidance.
-13. **Arvox Agency** — https://arvox.agency — Modern agency website presenting premium creative services, brand strategy and digital delivery.
+13. **Arvox Agency** — https://arvox.agency — Web3 talent agency connecting brands with creators, communities, and onchain growth.
 
 ## How to talk about portfolio:
 - When someone asks "what have you built?", "show me your work", "examples", "portfolio", "case studies", or anything similar — DON'T just say "check our portfolio section". LIST the projects directly in the chat.
