@@ -235,6 +235,58 @@ const tools = [
   },
 ];
 
+const devTools = [
+  {
+    type: "function" as const,
+    function: {
+      name: "create_contact",
+      description: "Create a CRM contact from pasted contact details.",
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Contact name or company/lead name." },
+          phone: { type: "string", description: "Phone number, if provided." },
+          email: { type: "string", description: "Email address, if provided." },
+          location: { type: "string", description: "Location, if provided." },
+          notes: { type: "string", description: "Any extra pasted context or source details." },
+        },
+        required: ["name"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "find_contact",
+      description: "Find matching contacts before creating a sales event.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Name, company, email, or phone to search." },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_sales_event",
+      description: "Create a sales event or callback note for an existing contact.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string", description: "Existing contact UUID." },
+          title: { type: "string", description: "Short event title." },
+          description: { type: "string", description: "What happened or what needs doing." },
+          callback_at: { type: "string", description: "ISO date/time if a callback/reminder is clearly requested." },
+        },
+        required: ["contact_id", "title"],
+      },
+    },
+  },
+];
+
 // Look up everything we know about a customer by email
 async function lookupCustomer(supabase: ReturnType<typeof createClient>, rawEmail: string) {
   const email = rawEmail.trim().toLowerCase();
