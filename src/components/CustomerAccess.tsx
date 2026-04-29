@@ -9,14 +9,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -117,6 +115,7 @@ export default function CustomerAccess({ hidden = false }: CustomerAccessProps) 
     <motion.button
       type="button"
       aria-label="Customer log in"
+      onClick={() => setOpen((current) => !current)}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
       className={`absolute right-4 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:right-6 md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
@@ -152,27 +151,31 @@ export default function CustomerAccess({ hidden = false }: CustomerAccessProps) 
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerTrigger asChild>{trigger}</DrawerTrigger>
-        <DrawerContent className="border-border bg-background/95 px-4 pb-6 backdrop-blur-xl">
-          <DrawerHeader>
-            <DrawerTitle>Log in / Sign up</DrawerTitle>
-          </DrawerHeader>
-          <CustomerAuthForm />
-        </DrawerContent>
-      </Drawer>
+      <>
+        {trigger}
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerContent className="border-border bg-background/95 px-4 pb-6 backdrop-blur-xl">
+            <DrawerHeader>
+              <DrawerTitle>Log in / Sign up</DrawerTitle>
+            </DrawerHeader>
+            <CustomerAuthForm />
+          </DrawerContent>
+        </Drawer>
+      </>
     );
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="border-border bg-background/95 backdrop-blur-xl">
-        <DialogHeader>
-          <DialogTitle>Log in / Sign up</DialogTitle>
-        </DialogHeader>
-        <CustomerAuthForm />
-      </DialogContent>
-    </Dialog>
+    <>
+      {trigger}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="border-border bg-background/95 backdrop-blur-xl">
+          <DialogHeader>
+            <DialogTitle>Log in / Sign up</DialogTitle>
+          </DialogHeader>
+          <CustomerAuthForm />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
