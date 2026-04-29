@@ -578,6 +578,37 @@ async function saveCustomerContact(supabase: ReturnType<typeof createClient>, ar
   return { ok: true, contact: data, updated: false };
 }
 
+async function extractScreenshotContact(apiKey: string, imageUrl: unknown) {
+  const url = cleanText(imageUrl, 1000);
+  if (!/^https:\/\//i.test(url)) return { ok: false, error: "invalid_image_url" };
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [{
+        role: "user",
+        content: [
+          { type: "text", text: "Extract visible contact details from this screenshot. Return only JSON with keys: name, job_title, company, location, email, phone, notes. Use empty strings for missing fields. Do not invent details." },
+          { type: "image_url", image_url: { url } },
+        ],
+      }],
+      response_format: { type: "json_object" },
+      max_tokens: 500,
+      temperature: 0,
+    }),
+  });
+  if (!response.ok) return { ok: false, error: `vision_failed_${response.status}` };
+  const data = await response.json();
+  const raw = data.choices?.[0]?.message?.content ?? "{}";
+  try {
+    return { ok: true, image_url: url, extracted: JSON.parse(raw) };
+  } catch {
+    return { ok: false, error: "parse_failed", raw };
+  }
+}
+
 async function findDevContacts(supabase: ReturnType<typeof createClient>, query: unknown) {
   const q = cleanText(query, 120);
   if (!q) return { ok: false, error: "missing_query", matches: [] };
