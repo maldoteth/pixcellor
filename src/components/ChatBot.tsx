@@ -259,6 +259,10 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
 
   const startConversation = async () => {
     setHasStarted(true);
+    if (isDevMode) {
+      setMessages([]);
+      return;
+    }
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("sales-chat", {
