@@ -408,13 +408,13 @@ export default function CustomerPortal() {
                     </Card>
                     <Card className="border-border bg-card/70 backdrop-blur-xl">
                       <CardContent className="p-5">
-                        <div className="text-sm text-muted-foreground">Submitted briefs</div>
+                        <div className="text-sm text-muted-foreground">briefs</div>
                         <div className="mt-2 text-3xl font-semibold">{briefs.length}</div>
                       </CardContent>
                     </Card>
                     <Card className="border-border bg-card/70 backdrop-blur-xl">
                       <CardContent className="p-5">
-                        <div className="text-sm text-muted-foreground">Delivered sites</div>
+                        <div className="text-sm text-muted-foreground">sites</div>
                         <div className="mt-2 text-3xl font-semibold">{deliveredOrders.length}</div>
                       </CardContent>
                     </Card>
@@ -431,13 +431,13 @@ export default function CustomerPortal() {
                 </TabsContent>
 
                 <TabsContent value="briefs" className="space-y-4">
-                  <SectionHeader title="Submitted briefs" description="Each brief you have sent to Pixcellor is visible here." count={briefs.length} />
+                  <SectionHeader title="briefs" description="Each brief you have sent to Pixcellor is visible here." count={briefs.length} />
                   {briefs.length === 0 ? <EmptyState icon={FileText} title="No briefs submitted yet" text="When a project brief is submitted, it will appear here." /> : briefs.map((brief) => <BriefCard key={brief.id} brief={brief} order={orders.find((order) => order.session_id === brief.session_id)} />)}
                 </TabsContent>
 
                 <TabsContent value="delivered" className="space-y-4">
                   <SectionHeader title="Delivered site previews" description="Live previews and links for completed deliveries." count={deliveredOrders.length} />
-                  {deliveredOrders.length === 0 ? <EmptyState icon={Globe2} title="No delivered sites yet" text="Delivered projects will appear here with a preview window." /> : <div className="grid gap-4 xl:grid-cols-2">{deliveredOrders.map((order) => <DeliveredPreview key={order.id} order={order} />)}</div>}
+                  {deliveredOrders.length === 0 ? <EmptyState icon={Globe2} title="No sites yet" text="Delivered projects will appear here with a preview window." /> : <div className="grid gap-4 xl:grid-cols-2">{deliveredOrders.map((order) => <DeliveredPreview key={order.id} order={order} />)}</div>}
                 </TabsContent>
 
                 <TabsContent value="payments" className="space-y-4">
