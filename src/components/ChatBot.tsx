@@ -338,6 +338,59 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
+  const sendImageMessage = async (imageUrl: string, fileName: string) => {
+    const content = isDevMode
+      ? `Uploaded screenshot for contact extraction: ${fileName}\n${imageUrl}`
+      : `Uploaded image: ${fileName}\n${imageUrl}`;
+    const userMessage: Message = { role: "user", content, imageUrl };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setIsLoading(true);
+
+    try {
+      const apiMessages = newMessages.map(({ role, content, imageUrl }) => ({ role, content, imageUrl }));
+      const { data, error } = await supabase.functions.invoke("sales-chat", {
+        body: { messages: apiMessages, clientId: clientId.current, conversationId, mode },
+      });
+      if (error) throw error;
+      const assistantMsg: Message = { role: "assistant", content: data.reply };
+      setMessages(data.manualHandoff || !data.reply ? newMessages : [...newMessages, assistantMsg]);
+      if (data.conversationId && !conversationId) setConversationId(data.conversationId);
+      if (isDevMode && data.actionTaken) onDevAction?.();
+    } catch (error) {
+      console.error("Error sending image:", error);
+      setMessages([...newMessages, { role: "assistant", content: "Sorry, I couldn't process that image. Could you try again?" }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || isUploadingImage) return;
+    if (!file.type.startsWith("image/")) {
+      setMessages((current) => [...current, { role: "assistant", content: "Please choose an image file." }]);
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const extension = file.name.split(".").pop()?.toLowerCase() || "png";
+      const safeExtension = ["jpg", "jpeg", "png", "webp", "gif"].includes(extension) ? extension : "png";
+      const path = `${mode}/${clientId.current}/${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExtension}`;
+      const { error } = await supabase.storage.from("chat-images").upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("chat-images").getPublicUrl(path);
+      await sendImageMessage(data.publicUrl, file.name);
+    } catch (error) {
+      console.error("Image upload error:", error);
+      setMessages((current) => [...current, { role: "assistant", content: "Image upload failed. Please try again." }]);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
