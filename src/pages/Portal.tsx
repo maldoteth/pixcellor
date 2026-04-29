@@ -2009,7 +2009,7 @@ export default function Portal() {
                             title={status.label}
                             aria-label={status.label}
                             onClick={(event) => { event.stopPropagation(); updateContactStatus(c.id, status.value); }}
-                            className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                            className={`h-5 w-5 rounded-sm border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                             style={{ backgroundColor: status.color }}
                           />
                         ))}
@@ -2025,7 +2025,7 @@ export default function Portal() {
                             title={status.label}
                             aria-label={status.label}
                             onClick={(event) => { event.stopPropagation(); updateContactStatus(c.id, status.value); }}
-                            className={`h-5 w-5 rounded-full border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                            className={`h-5 w-5 rounded-sm border transition-opacity ${effectiveStatus === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                             style={{ backgroundColor: status.color }}
                           />
                         ))}
@@ -2167,7 +2167,7 @@ export default function Portal() {
                         title={status.label}
                         aria-label={status.label}
                         onClick={() => updateContactStatus(contactDetailDrawerContact.id, status.value)}
-                        className={`h-5 w-5 rounded-full border transition-opacity ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                        className={`h-5 w-5 rounded-sm border transition-opacity ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                         style={{ backgroundColor: status.color }}
                       />
                     ))}
