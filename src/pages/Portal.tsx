@@ -671,10 +671,12 @@ export default function Portal() {
     const searched = !completedQ ? orders : orders.filter(o => orderMatchesQuery(completedQ, o));
     return searched.filter((order) => {
       const hasRequirements = requirementsBySession.has(order.session_id);
-      const reqsMatches = orderReqsFilter === "all" || (orderReqsFilter === "submitted" ? hasRequirements : !hasRequirements);
+      const hasEditRequests = editRequestsBySession.has(order.session_id);
+      const reqsMatches = orderReqsFilter === "all" ||
+        (orderReqsFilter === "submitted" ? hasRequirements : orderReqsFilter === "edits" ? hasEditRequests : !hasRequirements);
       return order.order_status === "delivered" && reqsMatches;
     });
-  }, [orders, completedQ, orderReqsFilter, requirementsBySession]);
+  }, [orders, completedQ, orderReqsFilter, requirementsBySession, editRequestsBySession]);
 
   const filteredFalloffs = useMemo(() => {
     const paidSessionIds = new Set(orders.map(o => o.session_id));
