@@ -487,6 +487,61 @@ async function saveBrief(
   return { ok: true, profile: data };
 }
 
+const cleanText = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
+
+async function createDevContact(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>) {
+  const name = cleanText(args.name, 100);
+  if (!name) return { ok: false, error: "missing_name" };
+  const email = cleanText(args.email, 255).toLowerCase();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+
+  const payload = {
+    name,
+    phone: cleanText(args.phone, 40) || null,
+    email: email || null,
+    location: cleanText(args.location, 160) || null,
+    notes: cleanText(args.notes, 1000) || null,
+    source: "dev_chat",
+  };
+
+  const { data, error } = await supabase.from("contacts").insert(payload).select("id, name, email, phone").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, contact: data };
+}
+
+async function findDevContacts(supabase: ReturnType<typeof createClient>, query: unknown) {
+  const q = cleanText(query, 120);
+  if (!q) return { ok: false, error: "missing_query", matches: [] };
+  const pattern = `%${q.replace(/[%_]/g, "")} %`.replace(" %", "%");
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("id, name, email, phone, location, status")
+    .or(`name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern}`)
+    .order("updated_at", { ascending: false })
+    .limit(5);
+  if (error) return { ok: false, error: error.message, matches: [] };
+  return { ok: true, matches: data ?? [] };
+}
+
+async function createDevSalesEvent(supabase: ReturnType<typeof createClient>, args: Record<string, unknown>) {
+  const contactId = cleanText(args.contact_id, 80);
+  const title = cleanText(args.title, 160);
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(contactId)) return { ok: false, error: "invalid_contact" };
+  if (!title) return { ok: false, error: "missing_title" };
+
+  const callbackAt = cleanText(args.callback_at, 80);
+  const payload = {
+    contact_id: contactId,
+    title,
+    description: cleanText(args.description, 2000) || null,
+    event_type: callbackAt ? "callback" : "communication",
+    callback_at: callbackAt && !Number.isNaN(Date.parse(callbackAt)) ? new Date(callbackAt).toISOString() : null,
+  };
+  const { data, error } = await supabase.from("contact_events").insert(payload).select("id, title, callback_at").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, event: data };
+}
+
 function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
   const lines: string[] = [];
   lines.push(`## Known client context (loaded from database for this email)`);
