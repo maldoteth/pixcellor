@@ -558,7 +558,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-sm flex items-center justify-center"
+              className="-ml-[3px] w-10 h-10 rounded-sm flex items-center justify-center"
               style={{
                 background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)",
                 border: "1px solid rgba(255,255,255,0.2)",
