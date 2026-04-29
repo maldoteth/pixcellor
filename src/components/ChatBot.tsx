@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Loader2, Check } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Check, Mic, MicOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
@@ -40,6 +40,23 @@ interface ChatBotProps {
 interface ChatHistoryResponse {
   conversation: { id: string; bot_paused: boolean } | null;
   messages: Message[];
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognition;
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+}
+
+interface SpeechRecognitionEvent {
+  results: ArrayLike<{ 0: { transcript: string } }>;
 }
 
 const glassStyle = {
@@ -166,7 +183,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [manualHandoff, setManualHandoff] = useState(false);
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId(mode));
   const isDevMode = mode === "dev";
@@ -323,6 +342,38 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognitionApi = (window as typeof window & {
+      SpeechRecognition?: SpeechRecognitionConstructor;
+      webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    }).SpeechRecognition ?? (window as typeof window & { webkitSpeechRecognition?: SpeechRecognitionConstructor }).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionApi) {
+      setMessages((current) => [...current, { role: "assistant", content: "Voice input isn't supported in this browser yet." }]);
+      return;
+    }
+
+    const recognition = new SpeechRecognitionApi();
+    recognitionRef.current = recognition;
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-GB";
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results).map((result) => result[0].transcript).join(" ").trim();
+      if (transcript) setInput((current) => `${current}${current ? " " : ""}${transcript}`);
+    };
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+    setIsListening(true);
+    recognition.start();
+  };
+
   const chatContent = (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -440,6 +491,18 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
               border: "1px solid rgba(255,255,255,0.1)",
             }}
           />
+          <button
+            type="button"
+            onClick={toggleListening}
+            aria-label={isListening ? "Stop voice input" : "Start voice input"}
+            className="flex h-10 w-10 items-center justify-center rounded-sm transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              background: isListening ? "linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.14) 100%)" : "linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%)",
+              border: "1px solid rgba(255,255,255,0.2)",
+            }}
+          >
+            {isListening ? <MicOff className="h-4 w-4 text-white" /> : <Mic className="h-4 w-4 text-white" />}
+          </button>
           <button
             onClick={sendMessage}
             disabled={!input.trim() || isLoading}
