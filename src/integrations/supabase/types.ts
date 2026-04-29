@@ -121,6 +121,8 @@ export type Database = {
           completed_at: string | null
           contact_id: string
           created_at: string
+          created_by_email: string | null
+          created_by_user_id: string | null
           description: string | null
           event_type: string
           id: string
@@ -132,6 +134,8 @@ export type Database = {
           completed_at?: string | null
           contact_id: string
           created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
           description?: string | null
           event_type?: string
           id?: string
@@ -143,6 +147,8 @@ export type Database = {
           completed_at?: string | null
           contact_id?: string
           created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
           description?: string | null
           event_type?: string
           id?: string
