@@ -83,7 +83,7 @@ const getClientId = (mode: "sales" | "dev" = "sales"): string => {
 };
 
 const CHAT_WIDGET_DEFAULT_SIZE = { width: 380, height: 520 };
-const CHAT_WIDGET_MIN_SIZE = { width: 320, height: 420 };
+const CHAT_WIDGET_MIN_SIZE = { width: 340, height: 420 };
 const CHAT_WIDGET_EDGE_GAP = 16;
 
 const clampValue = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
@@ -688,7 +688,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
 
       {/* Input */}
       <div className="p-3 border-t border-white/10">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           <input
             type="text"
@@ -696,7 +696,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={isDevMode ? "Paste contact details or describe a sales event" : quickAction === "call" ? "Name and phone number" : quickAction === "email" ? "Name and email address" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
-            className="h-9 flex-1 rounded-sm px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-0 focus-visible:outline-none"
+            className="h-9 min-w-0 flex-1 rounded-sm px-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-0 focus-visible:outline-none"
             style={{
               background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(255,255,255,0.1)",
