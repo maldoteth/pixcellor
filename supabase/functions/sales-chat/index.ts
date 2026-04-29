@@ -608,8 +608,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { messages, clientId, conversationId } = await req.json();
+    const { messages, clientId, conversationId, mode } = await req.json();
     const safeClientId = typeof clientId === "string" && clientId.length >= 8 && clientId.length <= 200 ? clientId : null;
+    const isDevMode = mode === "dev" && safeClientId?.startsWith("dev_");
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -681,7 +682,7 @@ Deno.serve(async (req) => {
     // If we can detect an email in this conversation, load EVERYTHING we
     // know about that client (profile, project status, orders, past chats)
     // and inject it as a system message so the AI replies with context.
-    const emailFromConversation = extractLatestEmail(messages);
+    const emailFromConversation = isDevMode ? null : extractLatestEmail(messages);
     let contextSummary = "";
     if (emailFromConversation) {
       try {
@@ -693,7 +694,7 @@ Deno.serve(async (req) => {
     }
 
     const aiMessages: Array<Record<string, unknown>> = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: isDevMode ? DEV_SYSTEM_PROMPT : SYSTEM_PROMPT },
       ...(contextSummary ? [{ role: "system" as const, content: contextSummary }] : []),
       ...messages,
     ];
@@ -708,7 +709,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: aiMessages,
-          tools,
+          tools: isDevMode ? devTools : tools,
           max_tokens: 600,
           temperature: 0.7,
         }),
