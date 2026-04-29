@@ -2428,6 +2428,8 @@ export default function Portal() {
         </DrawerContent>
       </Drawer>
 
+      <ChatBot isOpen={devChatOpen} setIsOpen={setDevChatOpen} showToggle={false} mode="dev" onDevAction={loadPortalSnapshot} />
+
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur lg:hidden" aria-label="Admin mobile shortcuts">
         <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
           <Button variant={activeTab === "sales" && !showSalesEventForm ? "default" : "ghost"} size="sm" onClick={openMobileHome} className="h-14 flex-col gap-1 px-1 text-[10px]">
