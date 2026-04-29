@@ -14,6 +14,7 @@ import delabsImg from '@/assets/portfolio/delabs.png';
 
 import theponziImg from '@/assets/portfolio/theponzi.png';
 import dhbscanImg from '@/assets/portfolio/dhbscan.png';
+import dhbDocsImg from '@/assets/portfolio/dhb-docs.png';
 import tikupImg from '@/assets/portfolio/tikup.png';
 import bricksImg from '@/assets/portfolio/bricks.png';
 
@@ -76,7 +77,7 @@ const portfolioData = [
     name: "DHB Docs",
     url: "docs.dhb.gg",
     description: "Technical documentation hub for DeHub products, token utilities and ecosystem guidance.",
-    screenshot: dhbscanImg
+    screenshot: dhbDocsImg
   },
   {
     name: "Arvox Agency",
