@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Loader2, LogIn } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Loader2, LogIn, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -136,9 +136,17 @@ export default function CustomerAccess({ hidden = false }: CustomerAccessProps) 
         className="absolute inset-1 rounded-sm opacity-60"
         style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)" }}
       />
-      <motion.div initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} transition={{ duration: 0.2 }} className="relative z-10">
-        <LogIn className="h-4 w-4 text-white drop-shadow-lg" />
-      </motion.div>
+      <AnimatePresence mode="wait">
+        {open ? (
+          <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 180, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
+            <X className="h-4 w-4 text-white drop-shadow-lg" />
+          </motion.div>
+        ) : (
+          <motion.div key="login" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
+            <LogIn className="h-4 w-4 text-white drop-shadow-lg" />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.button>
   );
 
