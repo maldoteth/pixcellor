@@ -6,6 +6,7 @@ import { recordFalloff } from "@/lib/checkoutTracking";
 // Import portfolio screenshots
 import firstClassAgencyImg from '@/assets/portfolio/first-class-agency.png';
 import dehubImg from '@/assets/portfolio/dehub.png';
+import dehubNetworkImg from '@/assets/portfolio/dehub-network.png';
 import lastChadStandingImg from '@/assets/portfolio/last-chad-standing.png';
 import holderChatImg from '@/assets/portfolio/holder-chat.png';
 import secDigitalImg from '@/assets/portfolio/sec-digital.png';
@@ -33,7 +34,7 @@ const portfolioData = [
     name: "DeHub Network",
     url: "dehub.net",
     description: "Web3 ecosystem platform connecting creators, communities and decentralised products.",
-    screenshot: dehubImg
+    screenshot: dehubNetworkImg
   },
   {
     name: "TikUp",
