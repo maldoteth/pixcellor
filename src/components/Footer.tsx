@@ -1,4 +1,4 @@
-import { Facebook, LogIn, MessageCircle, Phone, MapPin } from "lucide-react";
+import { Facebook, LogIn, MessageSquare, Phone, MapPin } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -42,7 +42,7 @@ const Footer = () => {
           className="flex items-center hover:text-foreground transition-colors"
           onClick={() => window.dispatchEvent(new Event("pixcellor:open-chat"))}
         >
-          <MessageCircle className="w-3.5 h-3.5" />
+          <MessageSquare className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
