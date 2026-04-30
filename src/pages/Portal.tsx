@@ -180,6 +180,7 @@ type Inquiry = {
 type Contact = {
   id: string;
   name: string;
+  contact_name: string | null;
   phone: string | null;
   email: string | null;
   location: string | null;
@@ -326,12 +327,13 @@ function LinkifiedText({ text, className, stopPropagation = false }: { text: str
 }
 
 const contactWizardFields = [
-  { key: "name", label: "Name", placeholder: "Contact name", required: true, inputMode: "text" },
+  { key: "name", label: "Company name", placeholder: "Company name", required: true, inputMode: "text" },
   { key: "phone", label: "Number", placeholder: "Phone number", required: true, inputMode: "tel" },
   { key: "email", label: "Email", placeholder: "Email address", required: false, inputMode: "email" },
   { key: "location", label: "Location", placeholder: "Town or area", required: false, inputMode: "text" },
   { key: "industry", label: "Industry", placeholder: "Industry", required: false, inputMode: "text" },
   { key: "website", label: "Website", placeholder: "Website domain", required: false, inputMode: "url" },
+  { key: "contact_name", label: "Contact name", placeholder: "Contact name", required: false, inputMode: "text" },
   { key: "notes", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
 ] as const;
 
