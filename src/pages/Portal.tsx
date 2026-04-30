@@ -2285,8 +2285,8 @@ export default function Portal() {
           </DrawerHeader>
           {contactDetailDrawerContact && (
             <div className="mx-auto w-full max-w-3xl space-y-4 overflow-y-auto pb-2">
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/60 p-3">
-                <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/60 p-3 md:flex-nowrap">
+                <div className="min-w-0 flex-1 space-y-1">
                   {contactDetailDrawerContact.phone && (contactDetailDrawerPhoneHref ? (
                     <a href={contactDetailDrawerPhoneHref} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contactDetailDrawerContact.phone}`}>
                       {contactDetailDrawerContact.phone}
@@ -2298,7 +2298,7 @@ export default function Portal() {
                   <div className="text-xs text-muted-foreground">{getContactCreatorLabel(contactDetailDrawerContact)} · {new Date(contactDetailDrawerContact.created_at).toLocaleString()}</div>
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
-                <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:flex-row md:items-center md:justify-end md:overflow-visible">
+                <div className="flex w-full flex-col items-stretch gap-2 md:ml-auto md:w-auto md:flex-row md:items-center md:justify-end md:overflow-visible">
                   <div className="flex h-9 items-center justify-end gap-1" aria-label="Contact status">
                     {contactStatuses.map(status => (
                       <button
