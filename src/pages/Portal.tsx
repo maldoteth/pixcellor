@@ -1161,17 +1161,65 @@ export default function Portal() {
 
     setLeadAgentLoading(true);
     setLeadAgentSummary(null);
-    const { data, error } = await supabase.functions.invoke("find-local-leads", {
+    setLeadAgentProgress(5);
+
+    const { data: queueData, error: queueError } = await supabase.functions.invoke("find-local-leads", {
       body: { trade, location, limit },
     });
-    setLeadAgentLoading(false);
 
-    if (error || data?.error) {
-      toast.error(data?.error || error?.message || "Lead agent failed");
+    if (queueError || queueData?.error || !queueData?.job_id) {
+      setLeadAgentLoading(false);
+      setLeadAgentProgress(0);
+      toast.error(queueData?.error || queueError?.message || "Lead agent failed to start");
       return;
     }
 
-    const summary = data.message || `Added ${data.added ?? 0}. Searched ${data.searched ?? 0}, extracted ${data.extracted ?? 0}. Skipped ${data.skipped_duplicates ?? 0} duplicates. Rejected ${data.rejected_with_websites ?? 0} with websites, ${data.rejected_invalid_sources ?? 0} dead sources, and ${data.rejected_invalid ?? 0} invalid.`;
+    const jobId: string = queueData.job_id;
+    setLeadAgentSummary("Searching the web for fresh leads…");
+
+    const startedAt = Date.now();
+    const maxWaitMs = 150_000;
+    let finalResult: any = null;
+    let finalError: string | null = null;
+
+    while (Date.now() - startedAt < maxWaitMs) {
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      const { data: statusData, error: statusError } = await supabase.functions.invoke("get-job-status", {
+        body: { job_id: jobId },
+      });
+      if (statusError || statusData?.error) {
+        finalError = statusData?.error || statusError?.message || "Lost track of the job";
+        break;
+      }
+      const job = statusData?.job;
+      if (!job) continue;
+      if (typeof job.progress === "number") setLeadAgentProgress(Math.max(5, job.progress));
+      if (job.status === "complete") {
+        finalResult = job.result;
+        break;
+      }
+      if (job.status === "failed") {
+        finalError = job.error || "Lead agent failed";
+        break;
+      }
+    }
+
+    setLeadAgentLoading(false);
+    setLeadAgentProgress(0);
+
+    if (finalError) {
+      toast.error(finalError);
+      setLeadAgentSummary(`Failed: ${finalError}`);
+      return;
+    }
+    if (!finalResult) {
+      toast.error("Lead agent timed out. Try again or narrow the search.");
+      setLeadAgentSummary("Timed out waiting for results.");
+      return;
+    }
+
+    const data = finalResult;
+    const summary = data.message || `Added ${data.added ?? 0}. Searched ${data.searched ?? 0}, extracted ${data.candidates_extracted ?? 0}. Skipped ${data.skipped_duplicates ?? 0} duplicates.`;
     setLeadAgentSummary(summary);
     await loadPortalSnapshot();
     toast.success(summary);
