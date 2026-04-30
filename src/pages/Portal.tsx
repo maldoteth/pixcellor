@@ -1645,7 +1645,7 @@ export default function Portal() {
                         <div><span className="text-muted-foreground">Colours/styles:</span> {requirements.colours_styles}</div>
                         {requirements.reference_links && <div><span className="text-muted-foreground">References:</span> {requirements.reference_links}</div>}
                         <div className="md:col-span-2"><span className="text-muted-foreground">Images/content/socials:</span> {requirements.images_content_socials}</div>
-                        {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> {requirements.extra_notes}</div>}
+                        {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={requirements.extra_notes} /></div>}
                       </div>
                     </div>
                   )}
@@ -1729,7 +1729,7 @@ export default function Portal() {
                           <div><span className="text-muted-foreground">Colours/styles:</span> {requirements.colours_styles}</div>
                           {requirements.reference_links && <div><span className="text-muted-foreground">References:</span> {requirements.reference_links}</div>}
                           <div className="md:col-span-2"><span className="text-muted-foreground">Images/content/socials:</span> {requirements.images_content_socials}</div>
-                          {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> {requirements.extra_notes}</div>}
+                          {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={requirements.extra_notes} /></div>}
                         </div>
                       </div>
                     )}
@@ -1907,7 +1907,7 @@ export default function Portal() {
                     {last ? (
                       <div className="text-sm mt-1 line-clamp-2">
                         <span className="text-muted-foreground">{last.role === "user" ? "👤" : "🤖"} </span>
-                        {last.content}
+                        <LinkifiedText text={last.content} />
                       </div>
                     ) : (
                       <div className="text-xs text-muted-foreground italic mt-1">No messages</div>
