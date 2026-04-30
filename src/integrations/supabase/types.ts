@@ -192,6 +192,8 @@ export type Database = {
       contacts: {
         Row: {
           created_at: string
+          created_by_email: string | null
+          created_by_user_id: string | null
           email: string | null
           id: string
           location: string | null
@@ -204,6 +206,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
           email?: string | null
           id?: string
           location?: string | null
@@ -216,6 +220,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
           email?: string | null
           id?: string
           location?: string | null
@@ -821,7 +827,7 @@ export type Database = {
               _notes?: string
               _phone?: string
             }
-            Returns: undefined
+            Returns: Json
           }
       portal_create_contact_event:
         | {
@@ -841,7 +847,7 @@ export type Database = {
               _description?: string
               _title: string
             }
-            Returns: undefined
+            Returns: Json
           }
       portal_fetch_messages:
         | {
