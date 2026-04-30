@@ -354,7 +354,7 @@ function guessBusinessName(page: ScrapedPage, trade: string, location: string) {
   return cleanCompanyName(heading, trade, location);
 }
 
-async function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: string, apiKey: string): Promise<Candidate | null> {
+async function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: string, apiKey: string, opts?: { skipVerify?: boolean }): Promise<Candidate | null> {
   const text = `${page.title}\n${page.markdown}\n${page.html}`;
   const name = guessBusinessName(page, trade, location);
   if (!name || /checkatrade|find a tradesperson|search results|reviews for/i.test(name)) return null;
@@ -365,10 +365,18 @@ async function parseCandidateFromProfile(page: ScrapedPage, trade: string, locat
   const linkedSocial = page.links.find((link) => /facebook\.com|instagram\.com/i.test(link)) ?? "";
   const sourcePlatform = getSourcePlatform(page.url);
 
-  // Verify on the open web whether this company actually has its own domain
-  const verified = await verifyOwnWebsite(apiKey, name, location);
-  const ownDomainUrl = linkedWebsites.find((u) => !isDirectoryHost(u)) || verified.ownDomainUrl || "";
-  const socialUrl = linkedSocial || verified.socialUrl || "";
+  // Decide whether we even need to call Firecrawl again to verify the website
+  const sourceIsSocial = /facebook|instagram/i.test(sourcePlatform);
+  const sourceIsOwnDomain = !isDirectoryHost(page.url) && !sourceIsSocial;
+  const linkedOwnDomain = linkedWebsites.find((u) => !isDirectoryHost(u));
+
+  let verified = { ownDomainUrl: "", socialUrl: "" };
+  if (!opts?.skipVerify && !linkedOwnDomain && !sourceIsOwnDomain && !sourceIsSocial) {
+    verified = await verifyOwnWebsite(apiKey, name, location);
+  }
+
+  const ownDomainUrl = linkedOwnDomain || (sourceIsOwnDomain ? page.url : "") || verified.ownDomainUrl || "";
+  const socialUrl = linkedSocial || (sourceIsSocial ? page.url : "") || verified.socialUrl || "";
 
   const websiteStatus = ownDomainUrl ? "has_website" : socialUrl ? "social_only" : "no_website_found";
   const onGoogleMaps = sourcePlatform === "Google Maps";
