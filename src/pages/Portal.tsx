@@ -1371,7 +1371,7 @@ export default function Portal() {
         <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
         <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
         <Input placeholder="Industry e.g. construction" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
-        <div className="relative md:col-span-2">
+        <div className="relative">
           <Input
             placeholder="Job title"
             value={contactForm.notes}
@@ -2201,7 +2201,7 @@ export default function Portal() {
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                         <Input placeholder="Industry e.g. construction" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
-                        <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
+                        <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
                           <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
                           <Button variant="outline" className="rounded-none shadow-none" onClick={(event) => { event.stopPropagation(); setEditingContactId(null); }}>Cancel</Button>
@@ -2358,7 +2358,7 @@ export default function Portal() {
                   <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                   <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                   <Input placeholder="Industry e.g. construction" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
-                  <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
+                  <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                   <div className="flex gap-2 md:col-span-2">
                     <Button onClick={updateContact}>Save changes</Button>
                     <Button variant="outline" className="rounded-none shadow-none" onClick={() => setEditingContactId(null)}>Cancel</Button>
