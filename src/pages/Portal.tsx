@@ -2059,6 +2059,10 @@ export default function Portal() {
                   {status.label}
                 </Button>
               ))}
+              <Button variant={contactsStatusFilter === "archived" ? "default" : "outline"} size="sm" className="gap-2 rounded-none shadow-none" onClick={() => setContactsStatusFilter("archived")}>
+                <Trash2 className="h-4 w-4" />
+                Bin
+              </Button>
               <div className="ml-auto flex items-center gap-2">
                 <Button variant={contactsSortOrder === "newest" ? "default" : "outline"} size="sm" className="rounded-none shadow-none" onClick={() => setContactsSortOrder("newest")}>Newest</Button>
                 <Button variant={contactsSortOrder === "oldest" ? "default" : "outline"} size="sm" className="rounded-none shadow-none" onClick={() => setContactsSortOrder("oldest")}>Earliest</Button>
