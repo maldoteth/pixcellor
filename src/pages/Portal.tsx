@@ -361,6 +361,7 @@ export default function Portal() {
   const [ordersSearch, setOrdersSearch] = useState("");
   const [retainersSearch, setRetainersSearch] = useState("");
   const [completedSearch, setCompletedSearch] = useState("");
+  const [websitesSearch, setWebsitesSearch] = useState("");
   const [falloffsSearch, setFalloffsSearch] = useState("");
   const [chatsSearch, setChatsSearch] = useState("");
   const [profilesSearch, setProfilesSearch] = useState("");
@@ -378,9 +379,9 @@ export default function Portal() {
   const [mobileOrdersDrawerOpen, setMobileOrdersDrawerOpen] = useState(false);
   const [mobileContactStep, setMobileContactStep] = useState(0);
   const [mobileSalesStep, setMobileSalesStep] = useState(0);
-  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
+  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
-  const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
+  const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
@@ -631,6 +632,7 @@ export default function Portal() {
   const ordersQ = ordersSearch.trim().toLowerCase();
   const retainersQ = retainersSearch.trim().toLowerCase();
   const completedQ = completedSearch.trim().toLowerCase();
+  const websitesQ = websitesSearch.trim().toLowerCase();
   const falloffsQ = falloffsSearch.trim().toLowerCase();
   const chatsQ = chatsSearch.trim().toLowerCase();
   const profilesQ = profilesSearch.trim().toLowerCase();
