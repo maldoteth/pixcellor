@@ -2437,7 +2437,14 @@ export default function Portal() {
                     inputMode={currentContactField.inputMode}
                     placeholder={currentContactField.placeholder}
                     value={contactForm[currentContactField.key]}
-                    onChange={(e) => setContactForm(f => ({ ...f, [currentContactField.key]: e.target.value }))}
+                    onChange={(e) => {
+                      setContactForm(f => ({ ...f, [currentContactField.key]: e.target.value }));
+                      if (currentContactField.key === "notes") setContactJobTitleSuggestionsOpen(Boolean(e.target.value.trim()));
+                    }}
+                    onFocus={() => {
+                      if (currentContactField.key === "notes") setContactJobTitleSuggestionsOpen(Boolean(contactForm.notes.trim()));
+                    }}
+                    onBlur={() => window.setTimeout(() => setContactJobTitleSuggestionsOpen(false), 120)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") continueMobileContact();
                     }}
@@ -2448,15 +2455,7 @@ export default function Portal() {
                   </Button>
                 </div>
               </div>
-              {currentContactField.key === "notes" && jobTitleSuggestions.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {jobTitleSuggestions.map(title => (
-                    <Button key={title} type="button" variant="outline" size="sm" onClick={() => setContactForm(f => ({ ...f, notes: title }))} className="h-8 max-w-full justify-start truncate">
-                      {title}
-                    </Button>
-                  ))}
-                </div>
-              )}
+              {currentContactField.key === "notes" && contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button variant="outline" className="rounded-none shadow-none" onClick={() => mobileContactStep > 0 ? setMobileContactStep(step => step - 1) : setMobileContactDrawerOpen(false)}>
