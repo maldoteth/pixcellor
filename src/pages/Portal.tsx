@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Repeat, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Repeat, Search, ShoppingBag, Trash2, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 
@@ -184,7 +184,7 @@ type Contact = {
   email: string | null;
   location: string | null;
   notes: string | null;
-  status: "cold" | "aware" | "warm" | "hot" | "gold";
+  status: "cold" | "aware" | "warm" | "hot" | "gold" | "archived";
   source: string;
   created_at: string;
   updated_at: string;
