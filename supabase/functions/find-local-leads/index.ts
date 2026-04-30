@@ -69,13 +69,25 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(`Firecrawl search failed (${response.status}): ${data?.error ?? "unknown error"}`);
-  const results = Array.isArray(data?.data) ? data.data : Array.isArray(data?.web) ? data.web : [];
-  return results.slice(0, limit).map((item: Record<string, unknown>) => ({
-    url: cleanText(item.url, 500),
-    title: cleanText(item.title, 180),
-    description: cleanText(item.description, 300),
-    markdown: cleanText(item.markdown, 2500),
-  }));
+  const rawResults = Array.isArray(data?.data)
+    ? data.data
+    : Array.isArray(data?.web)
+      ? data.web
+      : Array.isArray(data?.results)
+        ? data.results
+        : Array.isArray(data?.data?.web)
+          ? data.data.web
+          : [];
+  return rawResults.slice(0, limit).map((item: Record<string, unknown>) => {
+    const metadata = (item.metadata ?? {}) as Record<string, unknown>;
+    const sourceUrl = item.url ?? item.sourceURL ?? item.link ?? metadata.sourceURL;
+    return {
+      url: cleanText(sourceUrl, 500),
+      title: cleanText(item.title ?? metadata.title, 180),
+      description: cleanText(item.description ?? item.snippet ?? metadata.description, 300),
+      markdown: cleanText(item.markdown ?? item.content, 2500),
+    };
+  }).filter((item: { url: string }) => item.url);
 }
 
 async function validateSourceUrl(apiKey: string, rawUrl: unknown, businessName: string) {
@@ -176,6 +188,21 @@ Deno.serve(async (req) => {
 
     const query = `${trade} ${location} local business no website OR Facebook OR Instagram OR Yell OR Checkatrade OR Google Business`;
     const searchResults = await searchFirecrawl(firecrawlKey, query, Math.min(limit * 5, 60));
+    if (searchResults.length === 0) {
+      return new Response(JSON.stringify({
+        ok: true,
+        query,
+        searched: 0,
+        extracted: 0,
+        added: 0,
+        skipped_duplicates: 0,
+        rejected_with_websites: 0,
+        rejected_invalid_sources: 0,
+        rejected_invalid: 0,
+        message: "No usable search results were returned, so no contacts were added.",
+        contacts: [],
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     const extracted = await extractCandidates(lovableKey, trade, location, limit, searchResults);
 
     const { data: existing } = await supabase
