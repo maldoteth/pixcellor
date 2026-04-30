@@ -183,13 +183,44 @@ function getSourcePlatform(rawUrl: unknown) {
     if (host.includes("mybuilder")) return "MyBuilder";
     if (host.includes("facebook")) return "Facebook";
     if (host.includes("instagram")) return "Instagram";
+    if (host.includes("google.com/maps") || host === "maps.google.com" || host.includes("google.com")) return "Google Maps";
+    if (host.includes("bing.com")) return "Bing";
+    if (host.includes("apple.com")) return "Apple Maps";
+    if (host.includes("nextdoor")) return "Nextdoor";
+    if (host.includes("thomsonlocal")) return "Thomson Local";
+    if (host.includes("cylex")) return "Cylex";
+    if (host.includes("hotfrog")) return "Hotfrog";
+    if (host.includes("freeindex")) return "FreeIndex";
+    if (host.includes("scoot")) return "Scoot";
+    if (host.includes("yelp")) return "Yelp";
+    if (host.includes("192.com")) return "192.com";
+    if (host.includes("linkedin")) return "LinkedIn";
     return host.split(".")[0]?.replace(/\b\w/g, (c) => c.toUpperCase()) || "Web";
   } catch {
     return "Web";
   }
 }
 
+// Accept any http(s) URL except clearly junk hosts. Replaces the old directory whitelist.
 function isAcceptedSourceUrl(rawUrl: unknown) {
+  try {
+    const parsed = new URL(cleanText(rawUrl, 1000));
+    if (!["http:", "https:"].includes(parsed.protocol)) return false;
+    const host = parsed.hostname.replace(/^www\./i, "").toLowerCase();
+    if (!host || host.length < 4) return false;
+    for (const blocked of EXCLUDED_HOSTS) {
+      if (host === blocked || host.endsWith(`.${blocked}`)) return false;
+    }
+    // Block obvious asset/infra hosts
+    if (/cdn|assets|static|fonts|analytics|tracking|tagmanager|cookie|consent/.test(host)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// True if this URL is a directory/social/maps listing rather than a company's own website
+function isDirectoryHost(rawUrl: unknown) {
   try {
     const host = new URL(cleanText(rawUrl, 1000)).hostname.replace(/^www\./i, "").toLowerCase();
     return DIRECTORY_HOSTS.some((domain) => host === domain || host.endsWith(`.${domain}`));
