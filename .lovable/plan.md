@@ -1,63 +1,36 @@
-Plan to replace the broad lead finder with a targeted Checkatrade-first flow.
+I found why this is happening: the lead bot currently asks Firecrawl for only one narrow Checkatrade search query and then only inspects about `limit * 2` results, capped at 10 profile URLs. If several of those are already in your contacts, it stops with fewer/new zero leads instead of broadening the search. It also only checks duplicates in app code, so it can keep seeing the same top-ranked Checkatrade profiles again on the next run.
 
-1. Keep the existing AI lead finder UI
-- The Portal form can stay as-is: trade, location/city, and limit.
-- The first implementation will be optimized for `electricians + city`, but still keep the trade input so it can later support plumbers, roofers, etc.
-- The results will continue saving into the existing contacts list with `source: lead_agent`.
+Plan:
 
-2. Rewrite the `find-local-leads` backend function around Checkatrade
-- Instead of a broad query across Google Business, Yell, Facebook, Instagram, etc., the function will use targeted Checkatrade discovery.
-- Build focused search queries such as:
-  - `site:checkatrade.com/trades electricians Bristol Checkatrade`
-  - `site:checkatrade.com electricians Bristol Checkatrade no website`
-  - `Checkatrade electricians Bristol`
-- Use Firecrawl search to discover Checkatrade result/profile URLs.
-- Filter discovered URLs so only Checkatrade pages are considered.
+1. Add persistent lead-source tracking
+   - Add a `source_url` field to contacts so every lead added from Checkatrade stores the exact profile URL it came from.
+   - Add a database-level unique index for lead-agent Checkatrade URLs so the same profile cannot be inserted twice.
+   - Keep existing admin-only contact security unchanged.
 
-3. Scrape listing and profile pages separately
-- Scrape each Checkatrade result/profile page with Firecrawl.
-- From listing pages, extract candidate profile URLs.
-- From profile pages, extract:
-  - business name
-  - phone number if visible
-  - email if visible
-  - city/location
-  - Checkatrade profile URL
-  - evidence text
-  - whether a standalone website appears to be present
+2. Make duplicate detection stronger and more precise
+   - Include `source_url` in the existing duplicate check.
+   - Continue checking phone/email/company name too, but only use source URL as the strongest identity for Checkatrade profiles.
+   - Stop relying on the first 1000 contacts only; query existing lead URLs/identifiers more intentionally.
 
-4. Add stricter website detection
-- Treat a business as having a website if the profile text/links include an external website URL/button.
-- Ignore Checkatrade internal URLs, telephone links, email links, social links, tracking URLs, and generic directory URLs.
-- Only save businesses where no standalone website is found.
+3. Make the bot keep searching when duplicates are found
+   - Instead of one query, generate multiple query variations for the same trade/location, e.g. singular/plural trade, nearby wording, “Checkatrade profile”, “members”, and location/trade order swaps.
+   - Request a larger pool of candidates than the requested lead count.
+   - Keep looping through candidate profile URLs until it either fills the requested number of new leads or exhausts a larger safety cap.
+   - Return a clearer summary like: “Checked 35 profiles, skipped 12 duplicates, added 5.”
 
-5. Add deterministic parsing before AI fallback
-- First use regex/link parsing on scraped markdown/html/links for business names, phones, external domains, and profile URLs.
-- Then use Lovable AI only to normalize messy profile content into structured fields.
-- This reduces hallucinations compared with asking AI to infer leads from broad search snippets.
+4. Prevent repeated runs from re-checking the exact same profiles
+   - Store rejected/seen Checkatrade source URLs when practical, or at minimum use stored contact `source_url` so already-added profiles are skipped immediately.
+   - Add query variation so the next run is less likely to only hit the same first page of search results.
 
-6. Improve rejection/debug output
-- Return better summary counts to the UI:
-  - Checkatrade pages searched
-  - profile pages scraped
-  - candidates extracted
-  - rejected because they had websites
-  - rejected because source page could not be verified
-  - rejected as duplicates
-  - contacts added
-- Keep the existing toast/summary display compatible with the current Portal UI.
+5. Preserve the separate fields you just requested
+   - Company name remains `name`.
+   - Contact name remains separate.
+   - Job title/trade stays in the job title field.
+   - Location stays only in location.
+   - No trade/location text will be put into company name.
 
-7. Preserve existing safeguards
-- Keep admin-only access for running the lead finder.
-- Keep duplicate detection against existing contacts.
-- Keep source validation so saved contacts have a real Checkatrade evidence page.
-- Keep the 1–25 lead limit.
+6. Fix the schema mismatch I found
+   - The code expects an `industry` field, but the live contacts table currently does not have that column even though earlier code paths reference it.
+   - I’ll add/restore the `industry` column properly so lead rows don’t need to use the fallback that strips industry.
 
-Technical details
-- Main file to update: `supabase/functions/find-local-leads/index.ts`.
-- Existing frontend invocation in `src/pages/Portal.tsx` can stay the same unless we decide to add a “Checkatrade mode” label later.
-- The implementation will use the existing `FIRECRAWL_API_KEY` and `LOVABLE_API_KEY` runtime secrets already expected by the function.
-- No database schema changes should be needed.
-
-Important limitation
-- Checkatrade may hide some contact details, use dynamic rendering, rate-limit scraping, or block pages. The scraper will be much more targeted than the current bot, but it still depends on what Checkatrade exposes to Firecrawl. If Checkatrade blocks or omits website/contact fields, those leads may be skipped rather than guessed.
+After approval, I’ll update the database schema and `find-local-leads` function, then redeploy/test the lead bot.

@@ -197,11 +197,13 @@ export type Database = {
           created_by_user_id: string | null
           email: string | null
           id: string
+          industry: string
           location: string | null
           name: string
           notes: string | null
           phone: string | null
           source: string
+          source_url: string | null
           status: string
           updated_at: string
           website: string | null
@@ -213,11 +215,13 @@ export type Database = {
           created_by_user_id?: string | null
           email?: string | null
           id?: string
+          industry?: string
           location?: string | null
           name: string
           notes?: string | null
           phone?: string | null
           source?: string
+          source_url?: string | null
           status?: string
           updated_at?: string
           website?: string | null
@@ -229,11 +233,13 @@ export type Database = {
           created_by_user_id?: string | null
           email?: string | null
           id?: string
+          industry?: string
           location?: string | null
           name?: string
           notes?: string | null
           phone?: string | null
           source?: string
+          source_url?: string | null
           status?: string
           updated_at?: string
           website?: string | null
@@ -360,6 +366,39 @@ export type Database = {
           id?: string
           token?: string
           used_at?: string | null
+        }
+        Relationships: []
+      }
+      lead_search_history: {
+        Row: {
+          created_at: string
+          id: string
+          location: string | null
+          outcome: string
+          reason: string | null
+          source_url: string
+          trade: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          outcome?: string
+          reason?: string | null
+          source_url: string
+          trade?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          outcome?: string
+          reason?: string | null
+          source_url?: string
+          trade?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

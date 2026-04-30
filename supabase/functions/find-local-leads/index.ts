@@ -269,12 +269,15 @@ function pageFromSearchResult(result: SearchResult): ScrapedPage {
 }
 
 function isLikelyDuplicate(candidate: Candidate, existing: Array<Record<string, unknown>>) {
+  const sourceUrl = normalizeUrl(candidate.source_url);
   const name = normalize(candidate.name);
   const phone = normalizePhone(candidate.phone);
   const email = cleanEmail(candidate.email);
   const location = normalize(candidate.location);
 
   return existing.some((contact) => {
+    const contactSourceUrl = normalizeUrl(contact.source_url);
+    if (sourceUrl && contactSourceUrl && sourceUrl === contactSourceUrl) return true;
     const contactPhone = normalizePhone(contact.phone);
     const contactEmail = cleanEmail(contact.email);
     if (email && contactEmail && email === contactEmail) return true;
@@ -283,6 +286,20 @@ function isLikelyDuplicate(candidate: Candidate, existing: Array<Record<string, 
     const contactLocation = normalize(contact.location);
     return name && contactName && name === contactName && (!location || !contactLocation || location === contactLocation);
   });
+}
+
+function tradeQueryVariants(trade: string, location: string) {
+  const cleanTrade = cleanText(trade, 80);
+  const singularTrade = cleanTrade.replace(/s\b/i, "");
+  const pluralTrade = /s\b/i.test(cleanTrade) ? cleanTrade : `${cleanTrade}s`;
+  return unique([
+    `site:checkatrade.com/trades ${cleanTrade} ${location} Checkatrade`,
+    `site:checkatrade.com/trades ${singularTrade} ${location} Checkatrade profile`,
+    `site:checkatrade.com/trades ${pluralTrade} ${location} Checkatrade members`,
+    `site:checkatrade.com/trades ${location} ${cleanTrade} Checkatrade`,
+    `site:checkatrade.com/profile ${cleanTrade} ${location} Checkatrade`,
+    `site:checkatrade.com ${cleanTrade} near ${location} Checkatrade`,
+  ]);
 }
 
 async function requireAdmin(req: Request, supabase: ReturnType<typeof createClient>) {
@@ -383,16 +400,25 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
     await requireAdmin(req, supabase);
 
-    const queries = unique([`site:checkatrade.com/trades ${trade} ${location} Checkatrade`]);
+    const queries = tradeQueryVariants(trade, location);
 
-    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(limit * 2, 8))));
+    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(Math.max(limit * 4, 12), 20))));
     const searchResults = unique(searchBatches.flat().map((result) => JSON.stringify(result))).map((result) => JSON.parse(result) as SearchResult);
-    const profileUrls = unique(searchResults.map((result) => result.url).filter(isLikelyProfileUrl)).slice(0, Math.min(limit * 2, 10));
+    const profileUrls = unique(searchResults.map((result) => result.url).filter(isLikelyProfileUrl)).slice(0, Math.min(Math.max(limit * 10, 35), 80));
 
     const { data: existing } = await supabase
       .from("contacts")
-      .select("id, name, phone, email, location")
-      .limit(1000);
+      .select("id, name, phone, email, location, source_url")
+      .or(`source.eq.lead_agent,location.ilike.%${location.replace(/[%_,]/g, "")}%`)
+      .limit(5000);
+
+    const { data: leadHistory } = await supabase
+      .from("lead_search_history")
+      .select("source_url")
+      .eq("trade", trade.toLowerCase())
+      .eq("location", location.toLowerCase())
+      .limit(5000);
+    const seenSourceUrls = new Set((leadHistory ?? []).map((item: Record<string, unknown>) => normalizeUrl(item.source_url)).filter(Boolean));
 
     const added: Candidate[] = [];
     const skippedDuplicates: Candidate[] = [];
@@ -410,6 +436,10 @@ Deno.serve(async (req) => {
       candidatesExtracted += 1;
       const name = cleanText(candidate.name, 100);
       const sourceUrl = cleanText(candidate.source_url, 500);
+      if (seenSourceUrls.has(normalizeUrl(sourceUrl))) {
+        skippedDuplicates.push(candidate);
+        continue;
+      }
       if (!name || !sourceUrl || !isCheckatradeUrl(sourceUrl)) {
         rejectedInvalidSources.push(candidate);
         continue;
@@ -426,7 +456,18 @@ Deno.serve(async (req) => {
         candidate.phone = await revealPhoneFromProfile(firecrawlKey, sourceUrl);
       }
       added.push({ ...candidate, name, source_url: sourceUrl });
+      seenSourceUrls.add(normalizeUrl(sourceUrl));
       if (added.length >= limit) break;
+    }
+
+    const historyRows = [
+      ...added.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "added", reason: null })),
+      ...skippedDuplicates.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "skipped", reason: "duplicate" })),
+      ...rejectedWithWebsites.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "rejected", reason: "has_website" })),
+      ...rejectedInvalidSources.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "rejected", reason: "invalid_source" })),
+    ].filter((row) => row.source_url);
+    if (historyRows.length > 0) {
+      await supabase.from("lead_search_history").upsert(historyRows, { onConflict: "source_url" });
     }
 
     const rows = added.map((candidate) => {
@@ -439,17 +480,20 @@ Deno.serve(async (req) => {
         location: cleanText(candidate.location, 160) || location,
         industry,
         website: null,
+        source_url: cleanText(candidate.source_url, 500),
         notes: cleanText(candidate.trade, 80) || trade,
         source: "lead_agent",
       };
     });
 
     if (rows.length > 0) {
-      const { error } = await supabase.from("contacts").insert(rows);
+      const { error } = await supabase.from("contacts").upsert(rows, { onConflict: "source_url", ignoreDuplicates: true });
       if (error && /contact_name.*schema cache|column.*contact_name|industry.*schema cache|column.*industry/i.test(error.message)) {
         const fallbackRows = rows.map(({ contact_name: _contactName, industry: _industry, ...row }) => row);
-        const { error: fallbackError } = await supabase.from("contacts").insert(fallbackRows);
+        const { error: fallbackError } = await supabase.from("contacts").upsert(fallbackRows, { onConflict: "source_url", ignoreDuplicates: true });
         if (fallbackError) throw new Error(fallbackError.message);
+      } else if (error && /duplicate key|unique constraint|23505/i.test(error.message)) {
+        // Another run already saved one of these Checkatrade profiles; application-level checks will skip it next time.
       } else if (error) throw new Error(error.message);
     }
 
