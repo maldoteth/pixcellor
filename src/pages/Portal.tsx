@@ -2223,7 +2223,7 @@ export default function Portal() {
                             <span className="font-medium">{c.name}</span>
                             {orderStats && <Badge variant="secondary">Client</Badge>}
                           </div>
-                          <div className="text-xs text-muted-foreground">{[c.email, c.location, c.industry].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
+                          <div className="text-xs text-muted-foreground">{[c.email, c.location, c.industry, c.website].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
                           {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
                         </div>
                         <div className="mt-1 space-y-1">
@@ -2234,6 +2234,7 @@ export default function Portal() {
                           ) : (
                             <div className="text-xs text-muted-foreground">{c.phone}</div>
                           ))}
+                          {c.website && formatWebsiteHref(c.website) && <a href={formatWebsiteHref(c.website)!} target="_blank" rel="noopener noreferrer" className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" onClick={(event) => event.stopPropagation()}>{c.website}</a>}
                           {c.notes && <LinkifiedText text={c.notes} className="block text-xs text-muted-foreground" stopPropagation />}
                         </div>
                       </div>
@@ -2282,6 +2283,7 @@ export default function Portal() {
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                         <Input placeholder="Industry e.g. construction" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
+                        <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
                         <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
                           <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
