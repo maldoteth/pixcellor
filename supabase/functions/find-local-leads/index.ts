@@ -8,7 +8,30 @@ const corsHeaders = {
 
 const FIRECRAWL_V2 = "https://api.firecrawl.dev/v2";
 const CHECKATRADE_HOST_RE = /(^|\.)checkatrade\.com$/i;
-const DIRECTORY_HOSTS = ["checkatrade.com", "yell.com", "tripadvisor.co.uk", "restaurantguru.com", "trustatrader.com", "ratedpeople.com", "mybuilder.com", "bark.com", "facebook.com", "instagram.com"];
+// Known directory/listing hosts — used for platform recognition + to identify "not a real own-domain" sources
+const DIRECTORY_HOSTS = [
+  "checkatrade.com", "yell.com", "tripadvisor.co.uk", "tripadvisor.com",
+  "restaurantguru.com", "trustatrader.com", "ratedpeople.com", "mybuilder.com",
+  "bark.com", "facebook.com", "instagram.com", "google.com", "goo.gl",
+  "maps.google.com", "bing.com", "apple.com", "nextdoor.co.uk", "nextdoor.com",
+  "thomsonlocal.com", "cylex-uk.co.uk", "hotfrog.co.uk", "freeindex.co.uk",
+  "scoot.co.uk", "yelp.com", "yelp.co.uk", "192.com", "tupalo.co.uk",
+  "opendi.co.uk", "brownbook.net", "linkedin.com", "x.com", "twitter.com",
+  "tiktok.com", "youtube.com",
+];
+// Hosts to outright reject as "source" — junk, infra, news, encyclopedia
+const EXCLUDED_HOSTS = new Set([
+  "wikipedia.org", "wikimedia.org", "wiktionary.org",
+  "bbc.co.uk", "bbc.com", "theguardian.com", "dailymail.co.uk", "telegraph.co.uk",
+  "indeed.com", "indeed.co.uk", "reed.co.uk", "totaljobs.com", "glassdoor.com",
+  "gov.uk", "parliament.uk", "europa.eu",
+  "schema.org", "w3.org", "gstatic.com", "googleapis.com", "googletagmanager.com",
+  "google-analytics.com", "doubleclick.net", "cloudfront.net", "cookielaw.org",
+  "onetrust.com", "sentry.io", "stripe.com", "microsoft.com",
+  "amazon.com", "amazon.co.uk", "ebay.co.uk", "ebay.com",
+  "reddit.com", "quora.com", "pinterest.com", "pinterest.co.uk",
+  "trustpilot.com",
+]);
 const IGNORED_EXTERNAL_HOSTS = new Set([
   "facebook.com",
   "instagram.com",
