@@ -308,9 +308,13 @@ function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: s
   const websites = externalWebsiteLinks(page);
   const phones = extractPhones(text);
   const emails = extractEmails(text).filter((email) => !email.endsWith("@checkatrade.com"));
+  const socialUrl = (page.links.find((link) => /facebook\.com|instagram\.com/i.test(link)) ?? "");
+  const sourcePlatform = getSourcePlatform(page.url);
+  const websiteStatus = websites.length > 0 ? "has_website" : socialUrl ? "social_only" : "no_website_found";
+  const score = Math.min(100, Math.max(10, 55 + (websites.length === 0 ? 25 : -20) + (socialUrl ? 10 : 0) + (phones[0] ? 8 : 0) + (emails[0] ? 5 : 0) + (sourcePlatform === "Checkatrade" ? 5 : 0)));
   const evidence = cleanText(
-    page.markdown.split("\n").find((line) => /electric|website|phone|contact|about|services|based/i.test(line) && line.length > 30) ??
-      `Checkatrade profile inspected for ${name}.`,
+    page.markdown.split("\n").find((line) => /website|phone|contact|about|services|based|menu|booking|reviews|address/i.test(line) && line.length > 30) ??
+      `${sourcePlatform} profile inspected for ${name}.`,
     220,
   );
 
@@ -322,9 +326,14 @@ function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: s
     email: emails[0] ?? "",
     location,
     source_url: page.url,
+    source_platform: sourcePlatform,
     evidence,
     has_standalone_website: websites.length > 0,
     website_url: websites[0] ?? "",
+    social_url: socialUrl,
+    website_status: websiteStatus,
+    lead_score: score,
+    lead_score_reason: cleanText(`${websiteStatus.replace(/_/g, " ")}; ${phones[0] ? "phone found" : "phone missing"}; found via ${sourcePlatform}. ${evidence}`, 500),
   };
 }
 
