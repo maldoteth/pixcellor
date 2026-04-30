@@ -2013,6 +2013,10 @@ export default function Portal() {
                   {status.label}
                 </Button>
               ))}
+              <div className="ml-auto flex items-center gap-2">
+                <Button variant={contactsSortOrder === "newest" ? "default" : "outline"} size="sm" className="rounded-none shadow-none" onClick={() => setContactsSortOrder("newest")}>Newest</Button>
+                <Button variant={contactsSortOrder === "oldest" ? "default" : "outline"} size="sm" className="rounded-none shadow-none" onClick={() => setContactsSortOrder("oldest")}>Earliest</Button>
+              </div>
             </div>
 
             {contactFormCard}
