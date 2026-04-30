@@ -511,6 +511,53 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
   }).filter((item: SearchResult) => item.url && isAcceptedSourceUrl(item.url));
 }
 
+// Verify whether a company has its OWN domain on the open web.
+// Returns { ownDomainUrl: string | "", socialUrl: string | "" }.
+async function verifyOwnWebsite(apiKey: string, name: string, location: string): Promise<{ ownDomainUrl: string; socialUrl: string }> {
+  const cleanName = cleanText(name, 120);
+  if (!cleanName) return { ownDomainUrl: "", socialUrl: "" };
+  try {
+    const response = await fetch(`${FIRECRAWL_V2}/search`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ query: `"${cleanName}" ${location} official website`, limit: 8, country: "gb" }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) return { ownDomainUrl: "", socialUrl: "" };
+    const rawResults = Array.isArray(data?.data) ? data.data : Array.isArray(data?.web) ? data.web : [];
+    let ownDomainUrl = "";
+    let socialUrl = "";
+    const nameTokens = cleanName.toLowerCase().replace(/[^a-z0-9 ]/g, "").split(/\s+/).filter((t) => t.length >= 3);
+    for (const item of rawResults) {
+      const metadata = (item.metadata ?? {}) as Record<string, unknown>;
+      const url = cleanText(item.url ?? item.sourceURL ?? item.link ?? metadata.sourceURL, 500);
+      if (!url) continue;
+      try {
+        const host = new URL(url).hostname.replace(/^www\./i, "").toLowerCase();
+        if (/facebook\.com|instagram\.com/i.test(host)) {
+          if (!socialUrl) socialUrl = url;
+          continue;
+        }
+        if (isDirectoryHost(url)) continue;
+        if (EXCLUDED_HOSTS.has(host)) continue;
+        for (const blocked of EXCLUDED_HOSTS) {
+          if (host.endsWith(`.${blocked}`)) { continue; }
+        }
+        // Heuristic: domain should contain at least one name token, OR the name appears in title
+        const title = cleanText(item.title ?? metadata.title, 200).toLowerCase();
+        const hostNoTld = host.split(".").slice(0, -1).join("");
+        const matchesName = nameTokens.some((tok) => hostNoTld.includes(tok)) || nameTokens.every((tok) => title.includes(tok));
+        if (matchesName && !ownDomainUrl) {
+          ownDomainUrl = `https://${host}`;
+        }
+      } catch { /* skip */ }
+    }
+    return { ownDomainUrl, socialUrl };
+  } catch {
+    return { ownDomainUrl: "", socialUrl: "" };
+  }
+}
+
 async function revealPhoneFromProfile(apiKey: string, url: string) {
   const selectors = [
     "button[aria-label*='Show number' i]",
