@@ -191,6 +191,7 @@ export type Database = {
       }
       contacts: {
         Row: {
+          contact_name: string | null
           created_at: string
           created_by_email: string | null
           created_by_user_id: string | null
@@ -206,6 +207,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          contact_name?: string | null
           created_at?: string
           created_by_email?: string | null
           created_by_user_id?: string | null
@@ -221,6 +223,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          contact_name?: string | null
           created_at?: string
           created_by_email?: string | null
           created_by_user_id?: string | null
@@ -844,6 +847,19 @@ export type Database = {
             }
             Returns: Json
           }
+        | {
+            Args: {
+              _contact_name?: string
+              _email?: string
+              _industry?: string
+              _location?: string
+              _name: string
+              _notes?: string
+              _phone?: string
+              _website?: string
+            }
+            Returns: Json
+          }
       portal_create_contact_event:
         | {
             Args: {
@@ -937,6 +953,20 @@ export type Database = {
         | {
             Args: {
               _contact_id: string
+              _email?: string
+              _industry?: string
+              _location?: string
+              _name: string
+              _notes?: string
+              _phone?: string
+              _website?: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _contact_id: string
+              _contact_name?: string
               _email?: string
               _industry?: string
               _location?: string

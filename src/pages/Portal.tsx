@@ -180,6 +180,7 @@ type Inquiry = {
 type Contact = {
   id: string;
   name: string;
+  contact_name: string | null;
   phone: string | null;
   email: string | null;
   location: string | null;
@@ -326,12 +327,13 @@ function LinkifiedText({ text, className, stopPropagation = false }: { text: str
 }
 
 const contactWizardFields = [
-  { key: "name", label: "Name", placeholder: "Contact name", required: true, inputMode: "text" },
+  { key: "name", label: "Company name", placeholder: "Company name", required: true, inputMode: "text" },
   { key: "phone", label: "Number", placeholder: "Phone number", required: true, inputMode: "tel" },
   { key: "email", label: "Email", placeholder: "Email address", required: false, inputMode: "email" },
   { key: "location", label: "Location", placeholder: "Town or area", required: false, inputMode: "text" },
   { key: "industry", label: "Industry", placeholder: "Industry", required: false, inputMode: "text" },
   { key: "website", label: "Website", placeholder: "Website domain", required: false, inputMode: "url" },
+  { key: "contact_name", label: "Contact name", placeholder: "Contact name", required: false, inputMode: "text" },
   { key: "notes", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
 ] as const;
 
@@ -384,9 +386,9 @@ export default function Portal() {
   const [mobileOrdersDrawerOpen, setMobileOrdersDrawerOpen] = useState(false);
   const [mobileContactStep, setMobileContactStep] = useState(0);
   const [mobileSalesStep, setMobileSalesStep] = useState(0);
-  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+  const [contactForm, setContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
-  const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+  const [editContactForm, setEditContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
@@ -928,7 +930,7 @@ export default function Portal() {
     if (!query) return sortedContacts;
 
     return sortedContacts.filter(contact =>
-      [`${contact.name}${contact.email ? ` · ${contact.email}` : ""}`, contact.name, contact.email, contact.phone, contact.location, contact.industry, contact.notes]
+      [`${contact.name}${contact.email ? ` · ${contact.email}` : ""}`, contact.name, contact.contact_name, contact.email, contact.phone, contact.location, contact.industry, contact.notes]
         .some(value => value?.toLowerCase().includes(query))
     );
   }, [contacts, eventContactSearch]);
@@ -994,6 +996,7 @@ export default function Portal() {
     setEditingContactId(contact.id);
     setEditContactForm({
       name: contact.name,
+      contact_name: contact.contact_name ?? "",
       phone: contact.phone ?? "",
       email: contact.email ?? "",
       location: contact.location ?? "",
@@ -1082,11 +1085,12 @@ export default function Portal() {
   const createContact = async () => {
     const name = contactForm.name.trim();
     if (!name) {
-      toast.error("Contact name is required.");
+      toast.error("Company name is required.");
       return;
     }
     const { data, error } = await (supabase as any).rpc("portal_create_contact", {
       _name: name,
+      _contact_name: contactForm.contact_name,
       _phone: contactForm.phone,
       _email: contactForm.email,
       _location: contactForm.location,
@@ -1103,7 +1107,7 @@ export default function Portal() {
       setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
       setContactDetailDrawerId(newContact.id);
     }
-    setContactForm({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+    setContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
@@ -1141,12 +1145,13 @@ export default function Portal() {
     if (!editingContactId) return;
     const name = editContactForm.name.trim();
     if (!name) {
-      toast.error("Contact name is required.");
+      toast.error("Company name is required.");
       return;
     }
     const { error } = await (supabase as any).rpc("portal_update_contact", {
       _contact_id: editingContactId,
       _name: name,
+      _contact_name: editContactForm.contact_name,
       _phone: editContactForm.phone,
       _email: editContactForm.email,
       _location: editContactForm.location,
@@ -1159,7 +1164,7 @@ export default function Portal() {
       return;
     }
     setEditingContactId(null);
-    setEditContactForm({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+    setEditContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
     await loadPortalSnapshot();
     toast.success("Contact updated.");
   };
@@ -1463,12 +1468,13 @@ export default function Portal() {
   const contactFormCard = showContactForm && (
     <Card>
       <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-        <Input placeholder="Name" value={contactForm.name} onChange={(e) => setContactForm(f => ({ ...f, name: e.target.value }))} />
+        <Input placeholder="Company name" value={contactForm.name} onChange={(e) => setContactForm(f => ({ ...f, name: e.target.value }))} />
         <Input placeholder="Phone number" value={contactForm.phone} onChange={(e) => setContactForm(f => ({ ...f, phone: e.target.value }))} />
         <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
         <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
         <Input placeholder="Industry" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
         <Input placeholder="Website domain" value={contactForm.website} onChange={(e) => setContactForm(f => ({ ...f, website: e.target.value }))} />
+        <Input placeholder="Contact name" value={contactForm.contact_name} onChange={(e) => setContactForm(f => ({ ...f, contact_name: e.target.value }))} />
         <div className="relative">
           <Input
             placeholder="Job title"
@@ -2248,6 +2254,7 @@ export default function Portal() {
                             <span className="font-medium">{c.name}</span>
                             {orderStats && <Badge variant="secondary">Client</Badge>}
                           </div>
+                          {c.contact_name && <div className="text-xs text-muted-foreground">Contact: {c.contact_name}</div>}
                           <div className="text-xs text-muted-foreground">{[c.email, c.location, c.industry, c.website].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
                           {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
                         </div>
@@ -2306,12 +2313,13 @@ export default function Portal() {
                     </div>
                     {editingContactId === c.id && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-none border border-border p-3" onClick={(event) => event.stopPropagation()}>
-                        <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
+                        <Input placeholder="Company name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
                         <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                         <Input placeholder="Industry" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
                         <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
+                        <Input placeholder="Contact name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
                         <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
                           <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
@@ -2431,6 +2439,7 @@ export default function Portal() {
                   ) : (
                     <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.phone}</div>
                   ))}
+                  {contactDetailDrawerContact.contact_name && <div className="text-sm text-muted-foreground">Contact: {contactDetailDrawerContact.contact_name}</div>}
                   {contactDetailDrawerContact.industry && <Badge variant="outline" className="rounded-none capitalize">{contactDetailDrawerContact.industry}</Badge>}
                   {contactDetailDrawerContact.website && formatWebsiteHref(contactDetailDrawerContact.website) && <a href={formatWebsiteHref(contactDetailDrawerContact.website)!} target="_blank" rel="noopener noreferrer" className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline">{contactDetailDrawerContact.website}</a>}
                   {contactDetailDrawerContact.notes && <LinkifiedText text={contactDetailDrawerContact.notes} className="block text-sm text-muted-foreground" />}
@@ -2465,12 +2474,13 @@ export default function Portal() {
               </div>
               {editingContactId === contactDetailDrawerContact.id && (
                 <div className="grid grid-cols-1 gap-3 rounded-none border border-border p-3 md:grid-cols-2">
-                  <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
+                  <Input placeholder="Company name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
                   <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                   <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                   <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                   <Input placeholder="Industry" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
                   <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
+                  <Input placeholder="Contact name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
                   <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                   <div className="flex gap-2 md:col-span-2">
                     <Button onClick={updateContact}>Save changes</Button>
