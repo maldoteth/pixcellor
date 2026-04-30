@@ -433,6 +433,7 @@ Deno.serve(async (req) => {
       const industry = cleanText(candidate.industry, 80) || inferIndustry(candidate.trade || trade);
       return {
         name: cleanText(candidate.name, 100),
+        contact_name: null,
         phone: cleanText(candidate.phone, 40) || null,
         email: cleanEmail(candidate.email) || null,
         location: cleanText(candidate.location, 160) || location,
@@ -445,8 +446,8 @@ Deno.serve(async (req) => {
 
     if (rows.length > 0) {
       const { error } = await supabase.from("contacts").insert(rows);
-      if (error && /industry.*schema cache|column.*industry/i.test(error.message)) {
-        const fallbackRows = rows.map(({ industry: _industry, ...row }) => row);
+      if (error && /contact_name.*schema cache|column.*contact_name|industry.*schema cache|column.*industry/i.test(error.message)) {
+        const fallbackRows = rows.map(({ contact_name: _contactName, industry: _industry, ...row }) => row);
         const { error: fallbackError } = await supabase.from("contacts").insert(fallbackRows);
         if (fallbackError) throw new Error(fallbackError.message);
       } else if (error) throw new Error(error.message);
