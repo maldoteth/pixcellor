@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const FIRECRAWL_V2 = "https://api.firecrawl.dev/v2";
 const CHECKATRADE_HOST_RE = /(^|\.)checkatrade\.com$/i;
+const DIRECTORY_HOSTS = ["checkatrade.com", "yell.com", "tripadvisor.co.uk", "restaurantguru.com", "trustatrader.com", "ratedpeople.com", "mybuilder.com", "bark.com", "facebook.com", "instagram.com"];
 const IGNORED_EXTERNAL_HOSTS = new Set([
   "facebook.com",
   "instagram.com",
@@ -51,9 +52,14 @@ type Candidate = {
   email?: string;
   location?: string;
   source_url?: string;
+  source_platform?: string;
   evidence?: string;
   has_standalone_website?: boolean;
   website_url?: string;
+  social_url?: string;
+  website_status?: string;
+  lead_score?: number;
+  lead_score_reason?: string;
 };
 
 type SearchResult = {
