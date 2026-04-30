@@ -401,10 +401,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
     await requireAdmin(req, supabase);
 
-    const queries = unique([
-      `site:checkatrade.com/trades ${trade} ${location} Checkatrade`,
-      `site:checkatrade.com ${trade} ${location} Checkatrade`,
-    ]);
+    const queries = unique([`site:checkatrade.com/trades ${trade} ${location} Checkatrade`]);
 
     const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(limit * 2, 8))));
     const searchResults = unique(searchBatches.flat().map((result) => JSON.stringify(result))).map((result) => JSON.parse(result) as SearchResult);
