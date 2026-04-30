@@ -386,10 +386,6 @@ Deno.serve(async (req) => {
         rejectedWithWebsites.push(candidate);
         continue;
       }
-      if (!cleanText(candidate.phone, 40) && !cleanEmail(candidate.email)) {
-        rejectedInvalid.push(candidate);
-        continue;
-      }
       if (isLikelyDuplicate(candidate, [...(existing ?? []), ...added])) {
         skippedDuplicates.push(candidate);
         continue;
@@ -407,7 +403,7 @@ Deno.serve(async (req) => {
       website: null,
       notes: [
         `Trade: ${cleanText(candidate.trade, 80) || trade}`,
-        "No website button found on Checkatrade profile.",
+        "Lightweight Checkatrade lead from search result.",
         cleanText(candidate.evidence, 220),
         candidate.source_url ? `Source: ${cleanText(candidate.source_url, 400)}` : "",
       ].filter(Boolean).join("\n"),
@@ -433,7 +429,7 @@ Deno.serve(async (req) => {
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
       contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
-      message: `Added ${rows.length}. Checkatrade results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons, ${rejectedInvalidSources.length} invalid sources, ${rejectedInvalid.length} without contact details in search data.`,
+      message: `Added ${rows.length}. Checkatrade results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons and ${rejectedInvalidSources.length} invalid sources.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
