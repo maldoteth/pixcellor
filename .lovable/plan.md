@@ -1,68 +1,73 @@
-## Goal
-Make the lead agent work for **any** type of business, not just construction/hospitality/etc. Specifically: find companies that show up on Google (Maps, business listings, directories) but have **no real website of their own**, and save them as high-score leads.
+## Why the last lead-gen request failed
 
-## What's wrong today
-- Source URLs are restricted to a hardcoded directory whitelist (Checkatrade, Yell, TripAdvisor, etc.). A generic Google-search hit (Google Maps page, local council listing, niche directory) gets thrown away.
-- Queries are industry-routed — if your trade doesn't match construction/hospitality/beauty/etc., you fall back to Checkatrade-only queries.
-- No explicit "Google Maps / Google Business" pass.
-- Scoring penalises any standalone website even if it's clearly social-only or a directory profile.
+The edge function logs show:
 
-## Plan
-
-### 1. New "general" search mode (any industry)
-Add a generic query set that runs for every search and is the **only** set used when industry = "general". Targets Google's local index broadly:
-- `"<trade>" "<location>" -site:checkatrade.com -site:yell.com` (open web)
-- `site:google.com/maps <trade> <location>`
-- `"<trade>" "<location>" "Facebook"` / `"Instagram"`
-- `"<trade>" "<location>" phone -site:facebook.com` (companies surfacing only via local listings)
-- `"<trade>" "<location>" site:yell.com OR site:bing.com/maps OR site:apple.com/maps`
-- `"<trade>" near "<location>" no website`
-- `"<trade>" "<location>" small business contact`
-
-Industry-specific queries still run as a bonus when detected, but general queries always run too.
-
-### 2. Drop the strict directory whitelist
-Replace `isAcceptedSourceUrl` (directory-only) with a softer rule:
-- Accept any http(s) URL **except** clearly junk hosts (asset CDNs, trackers, wikipedia, gov.uk policy pages, news sites).
-- Keep an `EXCLUDED_HOSTS` blocklist (analytics, image CDNs, news, wiki, jobs boards) instead of a whitelist.
-- Add Google Maps, Bing Maps, Apple Maps, Nextdoor, Thomson Local, Cylex, Hotfrog, FreeIndex, Scoot, Bing Places to recognised platforms in `getSourcePlatform`.
-
-### 3. Better "do they have a website?" check
-For each candidate's company name + location:
-- Run a Firecrawl search: `"<company name>" "<location>" official website` and check whether any returned URL is the company's own domain (i.e. not a directory/social/maps host).
-- If none found → mark `website_status = "no_website_found"`, score 85–95.
-- If only Facebook/Instagram → `website_status = "social_only"`, score 75–85.
-- If a real domain is found → `website_status = "has_website"`, score 30–50, still saved but lower priority (no longer rejected outright unless score < 50, configurable).
-
-This is the key change that makes it actually answer "active on Google with no website".
-
-### 4. Google Maps profile parsing
-When a Google Maps URL is found, scrape it with Firecrawl and extract: business name, phone, address, and the "Website" button (if any). If no website button → strong "no website" signal.
-
-### 5. Scoring tweak
-Promote "no real website" as the dominant factor:
 ```
-+40  no real website found anywhere
-+25  social-only presence
-+15  phone present
-+10  email present
-+5   listed on Google Maps (proves they're active)
--25  has own domain (kept but deprioritised)
+ERROR Http: connection closed before message completed
 ```
 
-### 6. UI / behaviour
-No frontend changes required — the existing Lead Score and Website Status badges in `Portal.tsx` will reflect the richer data automatically. Optionally add an "Any industry" hint under the Trade input.
+That's the classic edge-function timeout / forced disconnect — the request started, ran for ages, and the runtime killed the connection before a response was sent. No "Firecrawl error", no validation error — just "ran too long".
+
+### Why it now runs too long
+
+When we switched the bot to "any industry", we made it do drastically more work per request:
+
+1. **Many more searches.** `tradeQueryVariants` always merges in the new `generalQueryVariants` set (12+ queries) on top of any industry-specific ones. Each query is a Firecrawl `/v2/search` call (~1–4s each). Even with `Promise.all`, Firecrawl rate-limits in parallel.
+2. **More candidate pages to consider.** `profileUrls` cap raised to up to 80 URLs.
+3. **A new secondary Firecrawl search per candidate** — `verifyOwnWebsite` runs once for *every* candidate that survives initial parsing, sequentially inside the `for` loop. With 30–80 candidates, that alone is 30–80 extra Firecrawl calls back-to-back.
+4. **Plus** `revealPhoneFromProfile` doing further Firecrawl scrapes when phone is missing.
+
+End result: tens of seconds to several minutes of synchronous work in one HTTP request → connection closed before completion. The function never gets to write anything to the DB, so from the UI it just "didn't work".
+
+This matches the known Lovable Cloud edge-function constraint: ~2s CPU budget and a wall-clock cap; long Firecrawl chains must be backgrounded.
+
+## Plan to fix it properly
+
+Split the function into **enqueue + background worker**, polled from the UI. Same feature, no timeouts.
+
+### 1. New `processing_jobs` table (DB migration)
+Columns: `id uuid pk`, `job_type text` (`'find_leads'`), `status text` (`queued|processing|complete|failed`), `progress int`, `payload jsonb`, `result jsonb`, `error text`, `created_by uuid`, `created_at`, `updated_at`. RLS: only admins can select/insert/update their own rows (via `has_role`).
+
+### 2. Refactor `find-local-leads` edge function
+- On invoke: validate input + admin, insert a `processing_jobs` row with `status='queued'`, return `{ job_id }` immediately (sub-second response).
+- Kick off the heavy work via `EdgeRuntime.waitUntil(runLeadGeneration(job_id, …))`.
+- Inside `runLeadGeneration`:
+  - Update status to `processing`, set `progress` as it advances (0 → 25 after searches, → 60 after candidate parsing, → 100 on save).
+  - Cap parallelism: chunk Firecrawl searches in groups of 4 with `await` between groups.
+  - Cap `verifyOwnWebsite` calls: run only on the top N (e.g. 12) candidates after a cheap pre-filter, not all 80.
+  - Cap `revealPhoneFromProfile` to top 6 candidates.
+  - Add a hard wall-clock guard (e.g. 90s) — if exceeded, finalize with whatever's been added and mark `complete` with a `partial: true` note instead of crashing.
+  - Catch errors → update job to `failed` with the error message.
+  - On success → write result `{ added, skippedDuplicates, rejectedWithWebsites, rejectedInvalidSources, profilePagesScraped, candidatesExtracted }` and set `status='complete'`.
+
+### 3. New tiny `get-job-status` edge function (or RPC)
+Admin-only, returns `{ status, progress, result, error }` for a given job id. Cheaper than going through the snapshot RPC.
+
+### 4. UI changes in `src/pages/Portal.tsx` (lead-finder box)
+- On submit, call `find-local-leads` → get `job_id`, store it in state, show a progress bar / "Searching… X%" status using the existing button area.
+- Poll `get-job-status` every 2s until `status` is `complete` or `failed` (max ~120s).
+- On complete: render the same toast/snapshot refresh as today using `result`.
+- On failed: surface `error` in a toast and unlock the form.
+- Keep the existing remembered trade/location inputs.
+
+### 5. Reduce wasted work even with backgrounding
+- Drop the universal query list from 12 → 8 by removing low-signal duplicates (`"no website"`, `"small business phone email"` – Firecrawl returns mostly noise).
+- Skip `verifyOwnWebsite` entirely when the source URL is *already* the company's own domain (we already know).
+- Skip it when source is Facebook/Instagram (we already classify as `social_only`).
+- This alone should cut Firecrawl calls per run by ~60–70%.
 
 ## Technical changes
-- `supabase/functions/find-local-leads/index.ts`
-  - Add `generalQueryVariants(trade, location)` and merge it into `tradeQueryVariants` for all industries.
-  - Replace `DIRECTORY_HOSTS` whitelist with `EXCLUDED_HOSTS` blocklist; rewrite `isAcceptedSourceUrl` accordingly.
-  - Extend `getSourcePlatform` with Google Maps, Bing/Apple Maps, Nextdoor, Cylex, Hotfrog, FreeIndex, Scoot, Thomson Local.
-  - Add `verifyOwnWebsite(apiKey, name, location)` helper that searches the open web for the company's own domain.
-  - Update `parseCandidateFromProfile` to call the verifier and set `website_status` / `lead_score` from the new rules.
-  - Loosen the rejection: only reject candidates with a confirmed own-domain website **and** score < 50.
-
-No DB migration needed — all required columns (`source_platform`, `actual_website_url`, `social_url`, `website_status`, `lead_score`, `lead_score_reason`) already exist.
+- **DB migration**: create `processing_jobs` with admin-only RLS using `has_role`.
+- **`supabase/functions/find-local-leads/index.ts`**: rewrite handler to enqueue + `EdgeRuntime.waitUntil`. Move existing logic into `runLeadGeneration(jobId, supabase, …)`. Add chunked `Promise.all`, candidate caps, wall-clock guard, progress updates.
+- **`supabase/functions/get-job-status/index.ts`** (new): admin-checked select from `processing_jobs`.
+- **`src/pages/Portal.tsx`**: replace single `invoke` with invoke → poll loop, add progress UI in the lead-finder card.
+- No frontend types changes besides adding a small `JobStatus` type locally.
 
 ## Out of scope
-- Direct Google Places API integration (would need a separate paid key). Firecrawl + Google Maps scraping covers the same ground for now; we can add Places later if results aren't dense enough.
+- Showing a job history list (we just keep the latest job in state).
+- Cancellation of in-flight jobs.
+
+## Expected outcome
+- Submit returns instantly with a job id and a progress bar.
+- The bot completes universal searches reliably without "connection closed" errors.
+- If something does go wrong inside the background work, you see the actual error in the UI instead of a silent failure.
