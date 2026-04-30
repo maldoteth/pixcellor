@@ -249,6 +249,26 @@ const formatWebsiteHref = (value?: string | null) => {
 
 const normalizePhoneDigits = (value?: string | null) => (value ?? "").replace(/\D/g, "");
 
+const leadSearchMemoryKey = "pixcellor-lead-search-memory";
+const readLeadSearchMemory = () => {
+  if (typeof window === "undefined") return { trades: [] as string[], locations: [] as string[] };
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(leadSearchMemoryKey) ?? "{}");
+    return {
+      trades: Array.isArray(parsed.trades) ? parsed.trades.filter((item: unknown): item is string => typeof item === "string") : [],
+      locations: Array.isArray(parsed.locations) ? parsed.locations.filter((item: unknown): item is string => typeof item === "string") : [],
+    };
+  } catch {
+    return { trades: [] as string[], locations: [] as string[] };
+  }
+};
+
+const rememberLeadSearchValue = (items: string[], value: string) => {
+  const clean = value.trim();
+  if (!clean) return items;
+  return [clean, ...items.filter(item => item.toLowerCase() !== clean.toLowerCase())].slice(0, 30);
+};
+
 const formatDateTimeLocal = (date: Date) => {
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60_000);
@@ -403,6 +423,7 @@ export default function Portal() {
   const [contactJobTitleSuggestionsOpen, setContactJobTitleSuggestionsOpen] = useState(false);
   const [leadTradeSuggestionsOpen, setLeadTradeSuggestionsOpen] = useState(false);
   const [leadLocationSuggestionsOpen, setLeadLocationSuggestionsOpen] = useState(false);
+  const [leadSearchMemory, setLeadSearchMemory] = useState(readLeadSearchMemory);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [manualReply, setManualReply] = useState("");
   const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
