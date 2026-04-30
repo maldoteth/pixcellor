@@ -386,9 +386,9 @@ export default function Portal() {
   const [mobileOrdersDrawerOpen, setMobileOrdersDrawerOpen] = useState(false);
   const [mobileContactStep, setMobileContactStep] = useState(0);
   const [mobileSalesStep, setMobileSalesStep] = useState(0);
-  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+  const [contactForm, setContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
-  const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+  const [editContactForm, setEditContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
