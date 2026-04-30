@@ -325,6 +325,46 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
   }).filter((item: SearchResult) => item.url && isCheckatradeUrl(item.url));
 }
 
+async function revealPhoneFromProfile(apiKey: string, url: string) {
+  const selectors = [
+    "button[aria-label*='Show number' i]",
+    "button[aria-label*='phone' i]",
+    "button[data-testid*='phone' i]",
+    "a[href^='tel:']",
+  ];
+
+  for (const selector of selectors) {
+    const response = await fetch(`${FIRECRAWL_V2}/scrape`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url,
+        formats: ["markdown", "html"],
+        onlyMainContent: false,
+        maxAge: 0,
+        waitFor: 300,
+        location: { country: "GB", languages: ["en-GB", "en"] },
+        actions: [
+          { type: "wait", milliseconds: 300 },
+          { type: "click", selector },
+          { type: "wait", milliseconds: 700 },
+        ],
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) continue;
+    const payload = data?.data ?? data;
+    const actionScrapes = Array.isArray(payload?.actions?.scrapes) ? payload.actions.scrapes : [];
+    const text = [payload?.markdown, payload?.html, ...actionScrapes.flatMap((scrape: Record<string, unknown>) => [scrape.markdown, scrape.html])]
+      .map((value) => cleanText(value, 12000))
+      .join("\n");
+    const phone = extractPhones(text)[0];
+    if (phone) return phone;
+  }
+
+  return "";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
