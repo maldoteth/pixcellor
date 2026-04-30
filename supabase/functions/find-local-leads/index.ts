@@ -325,6 +325,46 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
   }).filter((item: SearchResult) => item.url && isCheckatradeUrl(item.url));
 }
 
+async function revealPhoneFromProfile(apiKey: string, url: string) {
+  const selectors = [
+    "button[aria-label*='Show number' i]",
+    "button[aria-label*='phone' i]",
+    "button[data-testid*='phone' i]",
+    "a[href^='tel:']",
+  ];
+
+  for (const selector of selectors) {
+    const response = await fetch(`${FIRECRAWL_V2}/scrape`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url,
+        formats: ["markdown", "html"],
+        onlyMainContent: false,
+        maxAge: 0,
+        waitFor: 300,
+        location: { country: "GB", languages: ["en-GB", "en"] },
+        actions: [
+          { type: "wait", milliseconds: 300 },
+          { type: "click", selector },
+          { type: "wait", milliseconds: 700 },
+        ],
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) continue;
+    const payload = data?.data ?? data;
+    const actionScrapes = Array.isArray(payload?.actions?.scrapes) ? payload.actions.scrapes : [];
+    const text = [payload?.markdown, payload?.html, ...actionScrapes.flatMap((scrape: Record<string, unknown>) => [scrape.markdown, scrape.html])]
+      .map((value) => cleanText(value, 12000))
+      .join("\n");
+    const phone = extractPhones(text)[0];
+    if (phone) return phone;
+  }
+
+  return "";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -382,6 +422,9 @@ Deno.serve(async (req) => {
         skippedDuplicates.push(candidate);
         continue;
       }
+      if (!cleanText(candidate.phone, 40)) {
+        candidate.phone = await revealPhoneFromProfile(firecrawlKey, sourceUrl);
+      }
       added.push({ ...candidate, name, source_url: sourceUrl });
       if (added.length >= limit) break;
     }
@@ -393,21 +436,20 @@ Deno.serve(async (req) => {
         phone: cleanText(candidate.phone, 40) || null,
         email: cleanEmail(candidate.email) || null,
         location: cleanText(candidate.location, 160) || location,
+        industry,
         website: null,
-        notes: [
-          `Trade: ${cleanText(candidate.trade, 80) || trade}`,
-          `Industry: ${industry}`,
-          "Lightweight Checkatrade lead from search result.",
-          cleanText(candidate.evidence, 220),
-          candidate.source_url ? `Source: ${cleanText(candidate.source_url, 400)}` : "",
-        ].filter(Boolean).join("\n"),
+        notes: cleanText(candidate.trade, 80) || trade,
         source: "lead_agent",
       };
     });
 
     if (rows.length > 0) {
       const { error } = await supabase.from("contacts").insert(rows);
-      if (error) throw new Error(error.message);
+      if (error && /industry.*schema cache|column.*industry/i.test(error.message)) {
+        const fallbackRows = rows.map(({ industry: _industry, ...row }) => row);
+        const { error: fallbackError } = await supabase.from("contacts").insert(fallbackRows);
+        if (fallbackError) throw new Error(fallbackError.message);
+      } else if (error) throw new Error(error.message);
     }
 
     return new Response(JSON.stringify({
@@ -423,7 +465,7 @@ Deno.serve(async (req) => {
       rejected_with_websites: rejectedWithWebsites.length,
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
-      contacts: rows.map((row) => ({ name: row.name, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
+      contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
       message: `Added ${rows.length}. Checkatrade results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons and ${rejectedInvalidSources.length} invalid sources.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
