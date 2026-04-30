@@ -191,6 +191,7 @@ export type Database = {
       }
       contacts: {
         Row: {
+          actual_website_url: string | null
           contact_name: string | null
           created_at: string
           created_by_email: string | null
@@ -198,17 +199,23 @@ export type Database = {
           email: string | null
           id: string
           industry: string
+          lead_score: number | null
+          lead_score_reason: string | null
           location: string | null
           name: string
           notes: string | null
           phone: string | null
+          social_url: string | null
           source: string
+          source_platform: string | null
           source_url: string | null
           status: string
           updated_at: string
           website: string | null
+          website_status: string
         }
         Insert: {
+          actual_website_url?: string | null
           contact_name?: string | null
           created_at?: string
           created_by_email?: string | null
@@ -216,17 +223,23 @@ export type Database = {
           email?: string | null
           id?: string
           industry?: string
+          lead_score?: number | null
+          lead_score_reason?: string | null
           location?: string | null
           name: string
           notes?: string | null
           phone?: string | null
+          social_url?: string | null
           source?: string
+          source_platform?: string | null
           source_url?: string | null
           status?: string
           updated_at?: string
           website?: string | null
+          website_status?: string
         }
         Update: {
+          actual_website_url?: string | null
           contact_name?: string | null
           created_at?: string
           created_by_email?: string | null
@@ -234,15 +247,20 @@ export type Database = {
           email?: string | null
           id?: string
           industry?: string
+          lead_score?: number | null
+          lead_score_reason?: string | null
           location?: string | null
           name?: string
           notes?: string | null
           phone?: string | null
+          social_url?: string | null
           source?: string
+          source_platform?: string | null
           source_url?: string | null
           status?: string
           updated_at?: string
           website?: string | null
+          website_status?: string
         }
         Relationships: []
       }
