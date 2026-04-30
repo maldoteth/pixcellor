@@ -392,6 +392,8 @@ export default function Portal() {
   const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
   const [eventContactSuggestionsOpen, setEventContactSuggestionsOpen] = useState(false);
   const [contactJobTitleSuggestionsOpen, setContactJobTitleSuggestionsOpen] = useState(false);
+  const [leadTradeSuggestionsOpen, setLeadTradeSuggestionsOpen] = useState(false);
+  const [leadLocationSuggestionsOpen, setLeadLocationSuggestionsOpen] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [manualReply, setManualReply] = useState("");
   const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
@@ -404,7 +406,7 @@ export default function Portal() {
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("sales");
   const [devChatOpen, setDevChatOpen] = useState(false);
-  const [leadAgentForm, setLeadAgentForm] = useState({ trade: "", location: "", limit: "5" });
+  const [leadAgentForm, setLeadAgentForm] = useState({ trade: "", location: "", limit: "3" });
   const [leadAgentLoading, setLeadAgentLoading] = useState(false);
   const [leadAgentSummary, setLeadAgentSummary] = useState<string | null>(null);
 
@@ -900,6 +902,25 @@ export default function Portal() {
       .slice(0, 8);
   }, [contacts, contactForm.notes]);
 
+  const leadTradeSuggestions = useMemo(() => {
+    const typed = leadAgentForm.trade.trim().toLowerCase();
+    if (!typed) return [];
+    const trades = Array.from(new Set(
+      contacts.flatMap(contact => {
+        const noteTrade = contact.notes?.match(/^Trade:\s*(.+)$/im)?.[1]?.trim();
+        return [noteTrade, contact.industry].filter((value): value is string => Boolean(value && value !== "general"));
+      })
+    )).sort((a, b) => a.localeCompare(b));
+    return trades.filter(trade => trade.toLowerCase().includes(typed) && trade.toLowerCase() !== typed).slice(0, 8);
+  }, [contacts, leadAgentForm.trade]);
+
+  const leadLocationSuggestions = useMemo(() => {
+    const typed = leadAgentForm.location.trim().toLowerCase();
+    if (!typed) return [];
+    const locations = Array.from(new Set(contacts.map(contact => contact.location?.trim()).filter((value): value is string => Boolean(value)))).sort((a, b) => a.localeCompare(b));
+    return locations.filter(location => location.toLowerCase().includes(typed) && location.toLowerCase() !== typed).slice(0, 8);
+  }, [contacts, leadAgentForm.location]);
+
   const eventContactSuggestions = useMemo(() => {
     const query = eventContactSearch.trim().toLowerCase();
     const sortedContacts = [...contacts].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -1092,7 +1113,7 @@ export default function Portal() {
   const runLeadAgent = async () => {
     const trade = leadAgentForm.trade.trim();
     const location = leadAgentForm.location.trim();
-    const limit = Math.min(Math.max(Number(leadAgentForm.limit) || 5, 1), 8);
+    const limit = Math.min(Math.max(Number(leadAgentForm.limit) || 3, 1), 5);
     if (!trade || !location) {
       toast.error("Add a trade and location first.");
       return;
@@ -1423,6 +1444,18 @@ export default function Portal() {
         </button>
       )) : (
         <div className="px-3 py-3 text-sm text-muted-foreground">No matching job titles</div>
+      )}
+    </div>
+  );
+
+  const renderLeadSuggestionList = (items: string[], field: "trade" | "location", close: () => void) => (
+    <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 max-h-56 overflow-y-auto rounded-none border border-border bg-popover shadow-xl">
+      {items.length > 0 ? items.map(item => (
+        <button key={item} type="button" className="flex min-h-11 w-full items-center border-b border-border px-3 py-2 text-left text-sm last:border-b-0" onClick={() => { setLeadAgentForm(f => ({ ...f, [field]: item })); close(); }}>
+          <span className="truncate font-medium text-foreground">{item}</span>
+        </button>
+      )) : (
+        <div className="px-3 py-3 text-sm text-muted-foreground">No matching {field === "trade" ? "trades" : "locations"}</div>
       )}
     </div>
   );
@@ -2164,9 +2197,15 @@ export default function Portal() {
                 <CardTitle className="text-base">AI lead finder</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-3 md:grid-cols-[1fr_1fr_120px_auto]">
-                <Input placeholder="Trade e.g. electricians" value={leadAgentForm.trade} onChange={(e) => setLeadAgentForm(f => ({ ...f, trade: e.target.value }))} />
-                <Input placeholder="Location e.g. Bristol" value={leadAgentForm.location} onChange={(e) => setLeadAgentForm(f => ({ ...f, location: e.target.value }))} />
-                <Input type="number" min={1} max={8} value={leadAgentForm.limit} onChange={(e) => setLeadAgentForm(f => ({ ...f, limit: e.target.value }))} />
+                <div className="relative">
+                  <Input placeholder="Trade e.g. electricians" value={leadAgentForm.trade} onChange={(e) => { setLeadAgentForm(f => ({ ...f, trade: e.target.value })); setLeadTradeSuggestionsOpen(Boolean(e.target.value.trim())); }} onFocus={() => setLeadTradeSuggestionsOpen(Boolean(leadAgentForm.trade.trim()))} onBlur={() => window.setTimeout(() => setLeadTradeSuggestionsOpen(false), 120)} />
+                  {leadTradeSuggestionsOpen && renderLeadSuggestionList(leadTradeSuggestions, "trade", () => setLeadTradeSuggestionsOpen(false))}
+                </div>
+                <div className="relative">
+                  <Input placeholder="Location e.g. Bristol" value={leadAgentForm.location} onChange={(e) => { setLeadAgentForm(f => ({ ...f, location: e.target.value })); setLeadLocationSuggestionsOpen(Boolean(e.target.value.trim())); }} onFocus={() => setLeadLocationSuggestionsOpen(Boolean(leadAgentForm.location.trim()))} onBlur={() => window.setTimeout(() => setLeadLocationSuggestionsOpen(false), 120)} />
+                  {leadLocationSuggestionsOpen && renderLeadSuggestionList(leadLocationSuggestions, "location", () => setLeadLocationSuggestionsOpen(false))}
+                </div>
+                <Input type="number" min={1} max={5} value={leadAgentForm.limit} onChange={(e) => setLeadAgentForm(f => ({ ...f, limit: e.target.value }))} />
                 <Button onClick={runLeadAgent} disabled={leadAgentLoading} className="gap-2">
                   {leadAgentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserSearch className="h-4 w-4" />}
                   Find leads

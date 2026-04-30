@@ -257,6 +257,17 @@ function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: s
   };
 }
 
+function pageFromSearchResult(result: SearchResult): ScrapedPage {
+  return {
+    url: normalizeUrl(result.url) || result.url,
+    title: result.title,
+    markdown: cleanText(`${result.title}\n${result.description}\n${result.markdown}`, 18000),
+    html: "",
+    links: [],
+    statusCode: 200,
+  };
+}
+
 function isLikelyDuplicate(candidate: Candidate, existing: Array<Record<string, unknown>>) {
   const name = normalize(candidate.name);
   const phone = normalizePhone(candidate.phone);
@@ -289,7 +300,7 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
   const response = await fetch(`${FIRECRAWL_V2}/search`, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ query, limit, country: "gb", scrapeOptions: { formats: ["markdown", "links"], onlyMainContent: true } }),
+    body: JSON.stringify({ query, limit, country: "gb" }),
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(`Firecrawl search failed (${response.status}): ${data?.error ?? "unknown error"}`);
@@ -309,60 +320,9 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
       url: cleanText(sourceUrl, 500),
       title: cleanText(item.title ?? metadata.title, 180),
       description: cleanText(item.description ?? item.snippet ?? metadata.description, 300),
-      markdown: cleanText(item.markdown ?? item.content, 6000),
+      markdown: cleanText(item.markdown ?? item.content ?? item.description ?? item.snippet, 1200),
     };
   }).filter((item: SearchResult) => item.url && isCheckatradeUrl(item.url));
-}
-
-async function scrapeFirecrawl(apiKey: string, url: string, options: { revealPhone?: boolean; fullPage?: boolean } = {}): Promise<ScrapedPage | null> {
-  const body: Record<string, unknown> = {
-    url,
-    formats: ["markdown", "html", "links"],
-    onlyMainContent: options.fullPage ? false : true,
-    waitFor: options.revealPhone ? 1800 : 1200,
-    location: { country: "GB", languages: ["en-GB", "en"] },
-  };
-
-  if (options.revealPhone) {
-    body.maxAge = 0;
-    body.actions = [
-      { type: "wait", milliseconds: 800 },
-      { type: "click", selector: "button[aria-label*='Show number' i]" },
-      { type: "wait", milliseconds: 800 },
-    ];
-  }
-
-  const response = await fetch(`${FIRECRAWL_V2}/scrape`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) return null;
-  const payload = data?.data ?? data;
-  const sourceUrl = cleanText(payload?.metadata?.sourceURL, 800) || url;
-  const statusCode = Number(payload?.metadata?.statusCode ?? 0);
-  const actionScrapes = Array.isArray(payload?.actions?.scrapes) ? payload.actions.scrapes : [];
-  const actionText = actionScrapes.map((scrape: Record<string, unknown>) => `${cleanText(scrape.markdown, 12000)}\n${cleanText(scrape.html, 12000)}`).join("\n");
-  const page = {
-    url: normalizeUrl(sourceUrl) || url,
-    title: cleanText(payload?.metadata?.title, 220),
-    markdown: cleanText(`${payload?.markdown ?? ""}\n${actionText}`, 50000),
-    html: cleanText(`${payload?.html ?? ""}\n${actionText}`, 50000),
-    links: Array.isArray(payload?.links) ? payload.links.map((link: unknown) => cleanText(link, 1000)).filter(Boolean) : [],
-    statusCode,
-  };
-  if (statusCode >= 400) return null;
-  if (!isCheckatradeUrl(page.url)) return null;
-  return page;
-}
-
-async function scrapeCheckatradeProfile(apiKey: string, url: string): Promise<ScrapedPage | null> {
-  const basic = await scrapeFirecrawl(apiKey, url, { fullPage: true });
-  if (!basic) return null;
-  const text = `${basic.title}\n${basic.markdown}\n${basic.html}`;
-  if (externalWebsiteLinks(basic).length > 0 || extractPhones(text).length > 0 || extractEmails(text).length > 0) return basic;
-  return (await scrapeFirecrawl(apiKey, url, { revealPhone: true, fullPage: true })) ?? basic;
 }
 
 Deno.serve(async (req) => {
@@ -372,7 +332,7 @@ Deno.serve(async (req) => {
     const { trade: rawTrade, location: rawLocation, limit: rawLimit } = await req.json();
     const trade = cleanText(rawTrade, 80);
     const location = cleanText(rawLocation, 120);
-    const limit = Math.min(Math.max(Number(rawLimit) || 5, 1), 8);
+    const limit = Math.min(Math.max(Number(rawLimit) || 3, 1), 5);
     if (!trade || !location) throw new Error("Trade and location are required");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -383,21 +343,11 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
     await requireAdmin(req, supabase);
 
-    const queries = unique([
-      `site:checkatrade.com/trades ${trade} ${location} Checkatrade`,
-      `site:checkatrade.com ${trade} ${location} Checkatrade`,
-    ]);
+    const queries = unique([`site:checkatrade.com/trades ${trade} ${location} Checkatrade`]);
 
-    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(limit * 3, 12))));
+    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(limit * 2, 8))));
     const searchResults = unique(searchBatches.flat().map((result) => JSON.stringify(result))).map((result) => JSON.parse(result) as SearchResult);
-    const listingUrls = unique(searchResults.map((result) => result.url).filter((url) => isCheckatradeUrl(url))).slice(0, Math.min(limit * 2, 12));
-    const listingPages: ScrapedPage[] = [];
-    for (const url of listingUrls) {
-      const page = await scrapeFirecrawl(firecrawlKey, url);
-      if (page) listingPages.push(page);
-      if (listingPages.length >= Math.min(limit, 6)) break;
-    }
-    const profileUrls = extractProfileUrls(searchResults, listingPages).slice(0, Math.min(limit * 3, 18));
+    const profileUrls = unique(searchResults.map((result) => result.url).filter(isLikelyProfileUrl)).slice(0, Math.min(limit * 2, 10));
 
     const { data: existing } = await supabase
       .from("contacts")
@@ -413,8 +363,7 @@ Deno.serve(async (req) => {
     let candidatesExtracted = 0;
 
     for (const url of profileUrls) {
-      const page = await scrapeCheckatradeProfile(firecrawlKey, url);
-      if (!page) continue;
+      const page = pageFromSearchResult(searchResults.find((result) => normalizeUrl(result.url) === normalizeUrl(url)) ?? { url, title: "", description: "", markdown: "" });
       profilePagesScraped += 1;
       const candidate = parseCandidateFromProfile(page, trade, location);
       if (!candidate) continue;
@@ -427,10 +376,6 @@ Deno.serve(async (req) => {
       }
       if (candidate.has_standalone_website === true) {
         rejectedWithWebsites.push(candidate);
-        continue;
-      }
-      if (!cleanText(candidate.phone, 40) && !cleanEmail(candidate.email)) {
-        rejectedInvalid.push(candidate);
         continue;
       }
       if (isLikelyDuplicate(candidate, [...(existing ?? []), ...added])) {
@@ -450,7 +395,7 @@ Deno.serve(async (req) => {
       website: null,
       notes: [
         `Trade: ${cleanText(candidate.trade, 80) || trade}`,
-        "No website button found on Checkatrade profile.",
+        "Lightweight Checkatrade lead from search result.",
         cleanText(candidate.evidence, 220),
         candidate.source_url ? `Source: ${cleanText(candidate.source_url, 400)}` : "",
       ].filter(Boolean).join("\n"),
@@ -466,7 +411,7 @@ Deno.serve(async (req) => {
       ok: true,
       query: queries.join(" | "),
       searched: searchResults.length,
-      checkatrade_pages_searched: listingPages.length,
+      checkatrade_pages_searched: searchResults.length,
       profile_pages_scraped: profilePagesScraped,
       candidates_extracted: candidatesExtracted,
       extracted: candidatesExtracted,
@@ -476,7 +421,7 @@ Deno.serve(async (req) => {
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
       contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
-      message: `Added ${rows.length}. Checkatrade pages searched ${listingPages.length}, profiles scraped ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons, ${rejectedInvalidSources.length} invalid sources, ${rejectedInvalid.length} without revealed contact details.`,
+      message: `Added ${rows.length}. Checkatrade results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons and ${rejectedInvalidSources.length} invalid sources.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
