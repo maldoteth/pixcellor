@@ -392,6 +392,8 @@ export default function Portal() {
   const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
   const [eventContactSuggestionsOpen, setEventContactSuggestionsOpen] = useState(false);
   const [contactJobTitleSuggestionsOpen, setContactJobTitleSuggestionsOpen] = useState(false);
+  const [leadTradeSuggestionsOpen, setLeadTradeSuggestionsOpen] = useState(false);
+  const [leadLocationSuggestionsOpen, setLeadLocationSuggestionsOpen] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [manualReply, setManualReply] = useState("");
   const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
@@ -404,7 +406,7 @@ export default function Portal() {
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("sales");
   const [devChatOpen, setDevChatOpen] = useState(false);
-  const [leadAgentForm, setLeadAgentForm] = useState({ trade: "", location: "", limit: "5" });
+  const [leadAgentForm, setLeadAgentForm] = useState({ trade: "", location: "", limit: "3" });
   const [leadAgentLoading, setLeadAgentLoading] = useState(false);
   const [leadAgentSummary, setLeadAgentSummary] = useState<string | null>(null);
 
