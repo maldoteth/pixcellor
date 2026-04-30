@@ -464,10 +464,10 @@ Deno.serve(async (req) => {
     });
 
     if (rows.length > 0) {
-      const { error } = await supabase.from("contacts").insert(rows);
+      const { error } = await supabase.from("contacts").upsert(rows, { onConflict: "source_url", ignoreDuplicates: true });
       if (error && /contact_name.*schema cache|column.*contact_name|industry.*schema cache|column.*industry/i.test(error.message)) {
         const fallbackRows = rows.map(({ contact_name: _contactName, industry: _industry, ...row }) => row);
-        const { error: fallbackError } = await supabase.from("contacts").insert(fallbackRows);
+        const { error: fallbackError } = await supabase.from("contacts").upsert(fallbackRows, { onConflict: "source_url", ignoreDuplicates: true });
         if (fallbackError) throw new Error(fallbackError.message);
       } else if (error && /duplicate key|unique constraint|23505/i.test(error.message)) {
         // Another run already saved one of these Checkatrade profiles; application-level checks will skip it next time.
