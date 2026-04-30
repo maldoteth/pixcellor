@@ -277,6 +277,43 @@ const contactStatuses = [
 const getContactStatusColor = (status: Contact["status"]) =>
   contactStatuses.find(item => item.value === status)?.color ?? "hsl(var(--muted))";
 
+
+const trimLinkToken = (token: string) => {
+  const trailing = token.match(/[),.;:!?]+$/)?.[0] ?? "";
+  return { clean: trailing ? token.slice(0, -trailing.length) : token, trailing };
+};
+
+function LinkifiedText({ text, className, stopPropagation = false }: { text: string; className?: string; stopPropagation?: boolean }) {
+  const parts: Array<string | JSX.Element> = [];
+  const pattern = /(https?:\/\/[^\s<>)]+|www\.[^\s<>)]+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/gi;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+    const { clean, trailing } = trimLinkToken(match[0]);
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(clean);
+    const href = isEmail ? `mailto:${clean}` : clean.startsWith("www.") ? `https://${clean}` : clean;
+    parts.push(
+      <a
+        key={`${match.index}-${clean}`}
+        href={href}
+        target={isEmail ? undefined : "_blank"}
+        rel={isEmail ? undefined : "noopener noreferrer"}
+        className="text-primary underline underline-offset-2 hover:text-primary/80"
+        onClick={stopPropagation ? (event) => event.stopPropagation() : undefined}
+      >
+        {clean}
+      </a>
+    );
+    if (trailing) parts.push(trailing);
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+  return <span className={className}>{parts}</span>;
+}
+
 const contactWizardFields = [
   { key: "name", label: "Name", placeholder: "Contact name", required: true, inputMode: "text" },
   { key: "phone", label: "Number", placeholder: "Phone number", required: true, inputMode: "tel" },
@@ -1485,7 +1522,7 @@ export default function Portal() {
                         ) : (
                           <div className="text-xs text-muted-foreground">{contact.phone}</div>
                         ))}
-                        {e.description && <div className="text-sm whitespace-pre-wrap">{e.description}</div>}
+                        {e.description && <LinkifiedText text={e.description} className="block text-sm whitespace-pre-wrap" stopPropagation />}
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <Badge className="pricing-button rounded-none px-3 py-1 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
@@ -1608,7 +1645,7 @@ export default function Portal() {
                         <div><span className="text-muted-foreground">Colours/styles:</span> {requirements.colours_styles}</div>
                         {requirements.reference_links && <div><span className="text-muted-foreground">References:</span> {requirements.reference_links}</div>}
                         <div className="md:col-span-2"><span className="text-muted-foreground">Images/content/socials:</span> {requirements.images_content_socials}</div>
-                        {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> {requirements.extra_notes}</div>}
+                        {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={requirements.extra_notes} /></div>}
                       </div>
                     </div>
                   )}
@@ -1692,7 +1729,7 @@ export default function Portal() {
                           <div><span className="text-muted-foreground">Colours/styles:</span> {requirements.colours_styles}</div>
                           {requirements.reference_links && <div><span className="text-muted-foreground">References:</span> {requirements.reference_links}</div>}
                           <div className="md:col-span-2"><span className="text-muted-foreground">Images/content/socials:</span> {requirements.images_content_socials}</div>
-                          {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> {requirements.extra_notes}</div>}
+                          {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={requirements.extra_notes} /></div>}
                         </div>
                       </div>
                     )}
@@ -1842,7 +1879,7 @@ export default function Portal() {
                         Related order: {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)?.amount_total != null ? formatGBP(orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)!.amount_total!) : "—"}
                       </div>
                     )}
-                    <div className="rounded-none bg-muted/30 p-3 whitespace-pre-wrap text-sm flex-1 min-h-[180px] overflow-y-auto">{activeMail.body || activeMail.snippet}</div>
+                    <LinkifiedText text={activeMail.body || activeMail.snippet} className="block rounded-none bg-muted/30 p-3 whitespace-pre-wrap text-sm flex-1 min-h-[180px] overflow-y-auto" />
                     <textarea value={mailReply} onChange={(e) => setMailReply(e.target.value)} placeholder="Reply to the client…" className="min-h-[120px] max-h-[160px] w-full shrink-0 rounded-none border border-input bg-background px-3 py-2 text-sm" />
                     <Button className="shrink-0 self-start" onClick={sendMailboxReply} disabled={!mailReply.trim()}>Send reply</Button>
                   </>
@@ -1870,7 +1907,7 @@ export default function Portal() {
                     {last ? (
                       <div className="text-sm mt-1 line-clamp-2">
                         <span className="text-muted-foreground">{last.role === "user" ? "👤" : "🤖"} </span>
-                        {last.content}
+                        <LinkifiedText text={last.content} />
                       </div>
                     ) : (
                       <div className="text-xs text-muted-foreground italic mt-1">No messages</div>
@@ -1888,7 +1925,7 @@ export default function Portal() {
                   <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[80%] rounded-none p-3 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-primary text-primary-foreground" : m.role === "admin" ? "bg-accent text-accent-foreground border border-border" : "bg-muted text-foreground"}`}>
                       <div className="text-xs opacity-60 mb-1">{m.role} · {new Date(m.created_at).toLocaleTimeString()}</div>
-                      {m.content}
+                      <LinkifiedText text={m.content} />
                     </div>
                   </div>
                 ))}
@@ -1936,9 +1973,9 @@ export default function Portal() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm pt-2">
                     {p.brand_colours && <div><span className="text-muted-foreground">Colours:</span> {p.brand_colours}</div>}
                     {p.page_count != null && <div><span className="text-muted-foreground">Pages:</span> {p.page_count}</div>}
-                    {p.requirements && <div className="md:col-span-2"><span className="text-muted-foreground">Requirements:</span> {p.requirements}</div>}
-                    {p.content_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Content:</span> {p.content_notes}</div>}
-                    {p.notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> {p.notes}</div>}
+                    {p.requirements && <div className="md:col-span-2"><span className="text-muted-foreground">Requirements:</span> <LinkifiedText text={p.requirements} /></div>}
+                    {p.content_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Content:</span> <LinkifiedText text={p.content_notes} /></div>}
+                    {p.notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={p.notes} /></div>}
                   </div>
                 </CardContent>
               </Card>
@@ -1958,7 +1995,7 @@ export default function Portal() {
                     <div className="font-medium">{i.name} · <span className="text-muted-foreground">{i.email}</span></div>
                     <div className="text-xs text-muted-foreground">{new Date(i.created_at).toLocaleString()}</div>
                   </div>
-                  <div className="text-sm whitespace-pre-wrap">{i.message}</div>
+                  <LinkifiedText text={i.message} className="block text-sm whitespace-pre-wrap" />
                 </CardContent>
               </Card>
             ))}
@@ -2067,7 +2104,7 @@ export default function Portal() {
                           ) : (
                             <div className="text-xs text-muted-foreground">{c.phone}</div>
                           ))}
-                          {c.notes && <div className="text-xs text-muted-foreground">{c.notes}</div>}
+                          {c.notes && <LinkifiedText text={c.notes} className="block text-xs text-muted-foreground" stopPropagation />}
                         </div>
                       </div>
                       <div className="flex flex-col items-end justify-between gap-3 self-stretch sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:self-auto">
@@ -2154,7 +2191,7 @@ export default function Portal() {
                             <span className="font-medium">{e.title}</span>
                             <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()} · {getEventAuthorLabel(e)}</span>
                           </div>
-                          {e.description && <div className="whitespace-pre-wrap mt-1">{e.description}</div>}
+                          {e.description && <LinkifiedText text={e.description} className="block whitespace-pre-wrap mt-1" stopPropagation />}
                           {e.callback_at && <div className="text-xs text-muted-foreground mt-1">Callback: {new Date(e.callback_at).toLocaleString()}</div>}
                         </div>
                       ))}
@@ -2232,7 +2269,7 @@ export default function Portal() {
                   ) : (
                     <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.phone}</div>
                   ))}
-                  {contactDetailDrawerContact.notes && <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.notes}</div>}
+                  {contactDetailDrawerContact.notes && <LinkifiedText text={contactDetailDrawerContact.notes} className="block text-sm text-muted-foreground" />}
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2">
@@ -2300,7 +2337,7 @@ export default function Portal() {
                       <span className="font-medium capitalize">{message.role}</span>
                       <span className="text-xs text-muted-foreground">{new Date(message.created_at).toLocaleString()}</span>
                     </div>
-                    <div className="mt-1 whitespace-pre-wrap text-muted-foreground">{message.content}</div>
+                    <LinkifiedText text={message.content} className="block mt-1 whitespace-pre-wrap text-muted-foreground" />
                   </div>
                 ))}
               </div>
@@ -2313,7 +2350,7 @@ export default function Portal() {
                       <span className="font-medium">{e.title}</span>
                       <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()} · {getEventAuthorLabel(e)}</span>
                     </div>
-                    {e.description && <div className="mt-1 whitespace-pre-wrap">{e.description}</div>}
+                    {e.description && <LinkifiedText text={e.description} className="block mt-1 whitespace-pre-wrap" />}
                     {e.callback_at && <div className="mt-1 text-xs text-muted-foreground">Callback: {new Date(e.callback_at).toLocaleString()}</div>}
                   </div>
                 ))}
