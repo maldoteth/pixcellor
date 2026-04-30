@@ -72,6 +72,13 @@ type ScrapedPage = {
   statusCode: number;
 };
 
+type LeadRunStats = {
+  searched: number;
+  checkatradePagesSearched: number;
+  profilePagesScraped: number;
+  candidatesExtracted: number;
+};
+
 const cleanText = (value: unknown, max: number) =>
   typeof value === "string" ? value.replace(/\s+/g, " ").trim().slice(0, max) : "";
 
@@ -254,6 +261,17 @@ function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: s
     evidence,
     has_standalone_website: websites.length > 0,
     website_url: websites[0] ?? "",
+  };
+}
+
+function pageFromSearchResult(result: SearchResult): ScrapedPage {
+  return {
+    url: normalizeUrl(result.url) || result.url,
+    title: result.title,
+    markdown: cleanText(`${result.title}\n${result.description}\n${result.markdown}`, 18000),
+    html: "",
+    links: [],
+    statusCode: 200,
   };
 }
 
