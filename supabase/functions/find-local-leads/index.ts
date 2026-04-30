@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const FIRECRAWL_V2 = "https://api.firecrawl.dev/v2";
 const CHECKATRADE_HOST_RE = /(^|\.)checkatrade\.com$/i;
+const DIRECTORY_HOSTS = ["checkatrade.com", "yell.com", "tripadvisor.co.uk", "restaurantguru.com", "trustatrader.com", "ratedpeople.com", "mybuilder.com", "bark.com", "facebook.com", "instagram.com"];
 const IGNORED_EXTERNAL_HOSTS = new Set([
   "facebook.com",
   "instagram.com",
@@ -51,9 +52,14 @@ type Candidate = {
   email?: string;
   location?: string;
   source_url?: string;
+  source_platform?: string;
   evidence?: string;
   has_standalone_website?: boolean;
   website_url?: string;
+  social_url?: string;
+  website_status?: string;
+  lead_score?: number;
+  lead_score_reason?: string;
 };
 
 type SearchResult = {
@@ -142,6 +148,33 @@ function isCheckatradeUrl(rawUrl: unknown) {
   }
 }
 
+function getSourcePlatform(rawUrl: unknown) {
+  try {
+    const host = new URL(cleanText(rawUrl, 1000)).hostname.replace(/^www\./i, "").toLowerCase();
+    if (host.includes("checkatrade")) return "Checkatrade";
+    if (host.includes("yell")) return "Yell";
+    if (host.includes("tripadvisor")) return "Tripadvisor";
+    if (host.includes("restaurantguru")) return "Restaurant Guru";
+    if (host.includes("trustatrader")) return "TrustATrader";
+    if (host.includes("ratedpeople")) return "Rated People";
+    if (host.includes("mybuilder")) return "MyBuilder";
+    if (host.includes("facebook")) return "Facebook";
+    if (host.includes("instagram")) return "Instagram";
+    return host.split(".")[0]?.replace(/\b\w/g, (c) => c.toUpperCase()) || "Web";
+  } catch {
+    return "Web";
+  }
+}
+
+function isAcceptedSourceUrl(rawUrl: unknown) {
+  try {
+    const host = new URL(cleanText(rawUrl, 1000)).hostname.replace(/^www\./i, "").toLowerCase();
+    return DIRECTORY_HOSTS.some((domain) => host === domain || host.endsWith(`.${domain}`));
+  } catch {
+    return false;
+  }
+}
+
 function normalizeUrl(rawUrl: unknown, base = "https://www.checkatrade.com") {
   const value = cleanText(rawUrl, 1000);
   if (!value) return "";
@@ -157,8 +190,10 @@ function normalizeUrl(rawUrl: unknown, base = "https://www.checkatrade.com") {
 function isLikelyProfileUrl(rawUrl: string) {
   try {
     const url = new URL(rawUrl);
-    if (!CHECKATRADE_HOST_RE.test(url.hostname)) return false;
+    const host = url.hostname.replace(/^www\./i, "").toLowerCase();
     const path = url.pathname.toLowerCase();
+    if (!isAcceptedSourceUrl(rawUrl)) return false;
+    if (!CHECKATRADE_HOST_RE.test(url.hostname)) return !/(search|find|category|categories|near-me|best-|things-to-do|restaurants$|pubs$|cafes$)/i.test(path);
     return path.includes("/trades/") || path.includes("/trade/") || path.includes("/profile/");
   } catch {
     return false;
@@ -273,9 +308,13 @@ function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: s
   const websites = externalWebsiteLinks(page);
   const phones = extractPhones(text);
   const emails = extractEmails(text).filter((email) => !email.endsWith("@checkatrade.com"));
+  const socialUrl = (page.links.find((link) => /facebook\.com|instagram\.com/i.test(link)) ?? "");
+  const sourcePlatform = getSourcePlatform(page.url);
+  const websiteStatus = websites.length > 0 ? "has_website" : socialUrl ? "social_only" : "no_website_found";
+  const score = Math.min(100, Math.max(10, 55 + (websites.length === 0 ? 25 : -20) + (socialUrl ? 10 : 0) + (phones[0] ? 8 : 0) + (emails[0] ? 5 : 0) + (sourcePlatform === "Checkatrade" ? 5 : 0)));
   const evidence = cleanText(
-    page.markdown.split("\n").find((line) => /electric|website|phone|contact|about|services|based/i.test(line) && line.length > 30) ??
-      `Checkatrade profile inspected for ${name}.`,
+    page.markdown.split("\n").find((line) => /website|phone|contact|about|services|based|menu|booking|reviews|address/i.test(line) && line.length > 30) ??
+      `${sourcePlatform} profile inspected for ${name}.`,
     220,
   );
 
@@ -287,9 +326,14 @@ function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: s
     email: emails[0] ?? "",
     location,
     source_url: page.url,
+    source_platform: sourcePlatform,
     evidence,
     has_standalone_website: websites.length > 0,
     website_url: websites[0] ?? "",
+    social_url: socialUrl,
+    website_status: websiteStatus,
+    lead_score: score,
+    lead_score_reason: cleanText(`${websiteStatus.replace(/_/g, " ")}; ${phones[0] ? "phone found" : "phone missing"}; found via ${sourcePlatform}. ${evidence}`, 500),
   };
 }
 
@@ -328,10 +372,31 @@ function tradeQueryVariants(trade: string, location: string) {
   const cleanTrade = cleanText(trade, 80);
   const singularTrade = cleanTrade.replace(/s\b/i, "");
   const pluralTrade = /s\b/i.test(cleanTrade) ? cleanTrade : `${cleanTrade}s`;
+  const industry = inferIndustry(cleanTrade);
+  if (industry === "hospitality") return unique([
+    `site:yell.com ${cleanTrade} ${location}`,
+    `site:tripadvisor.co.uk ${cleanTrade} ${location}`,
+    `site:restaurantguru.com ${cleanTrade} ${location}`,
+    `"${cleanTrade}" "${location}" "Facebook"`,
+    `"${cleanTrade}" "${location}" "Instagram"`,
+    `"${cleanTrade}" "${location}" "no website"`,
+    `${cleanTrade} in ${location} local business phone`,
+  ]);
+  if (["beauty", "healthcare", "retail", "automotive", "property", "professional services"].includes(industry)) return unique([
+    `site:yell.com ${cleanTrade} ${location}`,
+    `site:facebook.com ${cleanTrade} ${location}`,
+    `site:instagram.com ${cleanTrade} ${location}`,
+    `"${cleanTrade}" "${location}" "no website"`,
+    `${cleanTrade} in ${location} local business phone`,
+    `${singularTrade} near ${location} contact phone`,
+  ]);
   return unique([
     `site:checkatrade.com/trades ${cleanTrade} ${location} Checkatrade`,
     `site:checkatrade.com/trades ${singularTrade} ${location} Checkatrade profile`,
     `site:checkatrade.com/trades ${pluralTrade} ${location} Checkatrade members`,
+    `site:yell.com ${cleanTrade} ${location}`,
+    `site:trustatrader.com ${cleanTrade} ${location}`,
+    `site:ratedpeople.com ${cleanTrade} ${location}`,
     `site:checkatrade.com/trades ${location} ${cleanTrade} Checkatrade`,
     `site:checkatrade.com/profile ${cleanTrade} ${location} Checkatrade`,
     `site:checkatrade.com ${cleanTrade} near ${location} Checkatrade`,
@@ -375,7 +440,7 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
       description: cleanText(item.description ?? item.snippet ?? metadata.description, 300),
       markdown: cleanText(item.markdown ?? item.content ?? item.description ?? item.snippet, 1200),
     };
-  }).filter((item: SearchResult) => item.url && isCheckatradeUrl(item.url));
+  }).filter((item: SearchResult) => item.url && isAcceptedSourceUrl(item.url));
 }
 
 async function revealPhoneFromProfile(apiKey: string, url: string) {
@@ -476,11 +541,11 @@ Deno.serve(async (req) => {
         skippedDuplicates.push(candidate);
         continue;
       }
-      if (!name || !sourceUrl || !isCheckatradeUrl(sourceUrl)) {
+      if (!name || !sourceUrl || !isAcceptedSourceUrl(sourceUrl)) {
         rejectedInvalidSources.push(candidate);
         continue;
       }
-      if (candidate.has_standalone_website === true) {
+      if (candidate.has_standalone_website === true && (candidate.lead_score ?? 0) < 70) {
         rejectedWithWebsites.push(candidate);
         continue;
       }
@@ -517,6 +582,12 @@ Deno.serve(async (req) => {
         industry,
         website: cleanText(candidate.source_url, 500),
         source_url: cleanText(candidate.source_url, 500),
+        source_platform: cleanText(candidate.source_platform, 80),
+        actual_website_url: cleanText(candidate.website_url, 500) || null,
+        social_url: cleanText(candidate.social_url, 500) || null,
+        website_status: cleanText(candidate.website_status, 80) || "unknown",
+        lead_score: candidate.lead_score ?? null,
+        lead_score_reason: cleanText(candidate.lead_score_reason, 500) || null,
         notes: cleanText(candidate.trade, 80) || trade,
         source: "lead_agent",
       };
@@ -546,8 +617,8 @@ Deno.serve(async (req) => {
       rejected_with_websites: rejectedWithWebsites.length,
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
-      contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, website: row.website, notes: row.notes })),
-      message: `Added ${rows.length}. Checkatrade results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons and ${rejectedInvalidSources.length} invalid sources.`,
+      contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, website: row.website, lead_score: row.lead_score, website_status: row.website_status, notes: row.notes })),
+      message: `Added ${rows.length}. Multi-source results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} lower-value leads with websites and ${rejectedInvalidSources.length} invalid sources.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

@@ -186,6 +186,13 @@ type Contact = {
   location: string | null;
   industry: string | null;
   website: string | null;
+  source_url?: string | null;
+  source_platform?: string | null;
+  actual_website_url?: string | null;
+  social_url?: string | null;
+  website_status?: string | null;
+  lead_score?: number | null;
+  lead_score_reason?: string | null;
   notes: string | null;
   status: "cold" | "aware" | "warm" | "hot" | "gold" | "archived";
   source: string;
@@ -796,7 +803,7 @@ export default function Portal() {
     );
     return contacts.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.actual_website_url) || matchesQuery(contactsQ, c.source_platform) || matchesQuery(contactsQ, c.website_status) || matchesQuery(contactsQ, c.lead_score_reason) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
     );
   }, [contacts, contactEvents, contactsQ]);
 
@@ -885,7 +892,7 @@ export default function Portal() {
       ));
       return (
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.actual_website_url) || matchesQuery(contactsQ, c.source_platform) || matchesQuery(contactsQ, c.website_status) || matchesQuery(contactsQ, c.lead_score_reason) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
       );
     }));
   }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactsSortOrder, contactOrderStatsByEmail]);
@@ -2253,9 +2260,11 @@ export default function Portal() {
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="font-medium">{c.name}</span>
                             {orderStats && <Badge variant="secondary">Client</Badge>}
+                            {c.lead_score != null && <Badge variant="outline" className="rounded-none">Score {c.lead_score}</Badge>}
+                            {c.website_status && c.website_status !== "unknown" && <Badge variant="secondary" className="rounded-none capitalize">{c.website_status.replace(/_/g, " ")}</Badge>}
                           </div>
                           {c.contact_name && <div className="text-xs text-muted-foreground">Client: {c.contact_name}</div>}
-                          <div className="text-xs text-muted-foreground">{[c.email, c.location, c.industry, c.website].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
+                          <div className="text-xs text-muted-foreground">{[c.email, c.location, c.industry, c.source_platform].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
                           {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
                         </div>
                         <div className="mt-1 space-y-1">
@@ -2267,6 +2276,8 @@ export default function Portal() {
                             <div className="text-xs text-muted-foreground">{c.phone}</div>
                           ))}
                           {c.website && formatWebsiteHref(c.website) && <a href={formatWebsiteHref(c.website)!} target="_blank" rel="noopener noreferrer" className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" onClick={(event) => event.stopPropagation()}>{c.website}</a>}
+                          {c.actual_website_url && formatWebsiteHref(c.actual_website_url) && <a href={formatWebsiteHref(c.actual_website_url)!} target="_blank" rel="noopener noreferrer" className="block text-xs font-medium text-primary underline-offset-4 hover:underline" onClick={(event) => event.stopPropagation()}>Actual site: {c.actual_website_url}</a>}
+                          {c.lead_score_reason && <LinkifiedText text={c.lead_score_reason} className="block text-xs text-muted-foreground" stopPropagation />}
                           {c.notes && <LinkifiedText text={c.notes} className="block text-xs text-muted-foreground" stopPropagation />}
                         </div>
                       </div>
@@ -2441,7 +2452,13 @@ export default function Portal() {
                   ))}
                   {contactDetailDrawerContact.contact_name && <div className="text-sm text-muted-foreground">Client: {contactDetailDrawerContact.contact_name}</div>}
                   {contactDetailDrawerContact.industry && <Badge variant="outline" className="rounded-none capitalize">{contactDetailDrawerContact.industry}</Badge>}
+                  {contactDetailDrawerContact.source_platform && <Badge variant="secondary" className="rounded-none">{contactDetailDrawerContact.source_platform}</Badge>}
+                  {contactDetailDrawerContact.lead_score != null && <Badge variant="outline" className="rounded-none">Lead score {contactDetailDrawerContact.lead_score}</Badge>}
+                  {contactDetailDrawerContact.website_status && contactDetailDrawerContact.website_status !== "unknown" && <Badge variant="secondary" className="rounded-none capitalize">{contactDetailDrawerContact.website_status.replace(/_/g, " ")}</Badge>}
                   {contactDetailDrawerContact.website && formatWebsiteHref(contactDetailDrawerContact.website) && <a href={formatWebsiteHref(contactDetailDrawerContact.website)!} target="_blank" rel="noopener noreferrer" className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline">{contactDetailDrawerContact.website}</a>}
+                  {contactDetailDrawerContact.actual_website_url && formatWebsiteHref(contactDetailDrawerContact.actual_website_url) && <a href={formatWebsiteHref(contactDetailDrawerContact.actual_website_url)!} target="_blank" rel="noopener noreferrer" className="block text-sm font-medium text-primary underline-offset-4 hover:underline">Actual site: {contactDetailDrawerContact.actual_website_url}</a>}
+                  {contactDetailDrawerContact.social_url && formatWebsiteHref(contactDetailDrawerContact.social_url) && <a href={formatWebsiteHref(contactDetailDrawerContact.social_url)!} target="_blank" rel="noopener noreferrer" className="block text-sm font-medium text-primary underline-offset-4 hover:underline">Social: {contactDetailDrawerContact.social_url}</a>}
+                  {contactDetailDrawerContact.lead_score_reason && <LinkifiedText text={contactDetailDrawerContact.lead_score_reason} className="block text-sm text-muted-foreground" />}
                   {contactDetailDrawerContact.notes && <LinkifiedText text={contactDetailDrawerContact.notes} className="block text-sm text-muted-foreground" />}
                   <div className="text-xs text-muted-foreground">{getContactCreatorLabel(contactDetailDrawerContact)} · {new Date(contactDetailDrawerContact.created_at).toLocaleString()}</div>
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
