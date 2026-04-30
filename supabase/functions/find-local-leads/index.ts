@@ -269,12 +269,15 @@ function pageFromSearchResult(result: SearchResult): ScrapedPage {
 }
 
 function isLikelyDuplicate(candidate: Candidate, existing: Array<Record<string, unknown>>) {
+  const sourceUrl = normalizeUrl(candidate.source_url);
   const name = normalize(candidate.name);
   const phone = normalizePhone(candidate.phone);
   const email = cleanEmail(candidate.email);
   const location = normalize(candidate.location);
 
   return existing.some((contact) => {
+    const contactSourceUrl = normalizeUrl(contact.source_url);
+    if (sourceUrl && contactSourceUrl && sourceUrl === contactSourceUrl) return true;
     const contactPhone = normalizePhone(contact.phone);
     const contactEmail = cleanEmail(contact.email);
     if (email && contactEmail && email === contactEmail) return true;
@@ -283,6 +286,20 @@ function isLikelyDuplicate(candidate: Candidate, existing: Array<Record<string, 
     const contactLocation = normalize(contact.location);
     return name && contactName && name === contactName && (!location || !contactLocation || location === contactLocation);
   });
+}
+
+function tradeQueryVariants(trade: string, location: string) {
+  const cleanTrade = cleanText(trade, 80);
+  const singularTrade = cleanTrade.replace(/s\b/i, "");
+  const pluralTrade = /s\b/i.test(cleanTrade) ? cleanTrade : `${cleanTrade}s`;
+  return unique([
+    `site:checkatrade.com/trades ${cleanTrade} ${location} Checkatrade`,
+    `site:checkatrade.com/trades ${singularTrade} ${location} Checkatrade profile`,
+    `site:checkatrade.com/trades ${pluralTrade} ${location} Checkatrade members`,
+    `site:checkatrade.com/trades ${location} ${cleanTrade} Checkatrade`,
+    `site:checkatrade.com/profile ${cleanTrade} ${location} Checkatrade`,
+    `site:checkatrade.com ${cleanTrade} near ${location} Checkatrade`,
+  ]);
 }
 
 async function requireAdmin(req: Request, supabase: ReturnType<typeof createClient>) {
