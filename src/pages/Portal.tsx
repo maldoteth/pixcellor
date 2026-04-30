@@ -186,6 +186,8 @@ type Contact = {
   notes: string | null;
   status: "cold" | "aware" | "warm" | "hot" | "gold" | "archived";
   source: string;
+  created_by_user_id?: string | null;
+  created_by_email?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -265,6 +267,8 @@ const callbackPresets = [
 ];
 
 const getEventAuthorLabel = (event: ContactEvent) => event.created_by_email ? `Logged by ${event.created_by_email}` : "Logged by admin";
+
+const getContactCreatorLabel = (contact: Contact) => contact.created_by_email ? `Created by ${contact.created_by_email}` : contact.source === "lead_agent" ? "Created by AI lead finder" : "Created by admin";
 
 const contactStatuses = [
   { value: "cold", label: "Cold", color: "hsl(217 91% 60%)" },
@@ -1003,7 +1007,7 @@ export default function Portal() {
       toast.error("Contact name is required.");
       return;
     }
-    const { error } = await (supabase as any).rpc("portal_create_contact", {
+    const { data, error } = await (supabase as any).rpc("portal_create_contact", {
       _name: name,
       _phone: contactForm.phone,
       _email: contactForm.email,
@@ -1014,11 +1018,15 @@ export default function Portal() {
       toast.error(error.message);
       return;
     }
+    const newContact = data as Contact | null;
+    if (newContact?.id) {
+      setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
+      setContactDetailDrawerId(newContact.id);
+    }
     setContactForm({ name: "", phone: "", email: "", location: "", notes: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
-    await loadPortalSnapshot();
     toast.success("Contact added.");
   };
 
@@ -1086,7 +1094,7 @@ export default function Portal() {
       toast.error("Event title is required.");
       return;
     }
-    const { error } = await (supabase as any).rpc("portal_create_contact_event", {
+    const { data, error } = await (supabase as any).rpc("portal_create_contact_event", {
       _contact_id: eventForm.contact_id,
       _title: title,
       _description: eventForm.description,
@@ -1096,13 +1104,16 @@ export default function Portal() {
       toast.error(error.message);
       return;
     }
+    const newEvent = data as ContactEvent | null;
+    if (newEvent?.id) {
+      setContactEvents(current => [newEvent, ...current.filter(event => event.id !== newEvent.id)]);
+    }
     setOpenContactId(selectedContactId);
     setEventForm({ contact_id: "", title: "", description: "", callback_at: "" });
     setEventContactSearch("");
     setShowSalesEventForm(false);
     setMobileSalesDrawerOpen(false);
     setMobileSalesStep(0);
-    await loadPortalSnapshot();
     toast.success(hasCallback ? "Callback scheduled." : "Event logged in contact history.");
   };
 
@@ -2269,6 +2280,7 @@ export default function Portal() {
             <DrawerTitle>{contactDetailDrawerContact?.name ?? "Contact"}</DrawerTitle>
             <DrawerDescription>
               {[contactDetailDrawerContact?.email, contactDetailDrawerContact?.location].filter(Boolean).join(" · ") || "Sales contact"}
+              {contactDetailDrawerContact ? ` · ${getContactCreatorLabel(contactDetailDrawerContact)}` : ""}
             </DrawerDescription>
           </DrawerHeader>
           {contactDetailDrawerContact && (
@@ -2283,6 +2295,7 @@ export default function Portal() {
                     <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.phone}</div>
                   ))}
                   {contactDetailDrawerContact.notes && <LinkifiedText text={contactDetailDrawerContact.notes} className="block text-sm text-muted-foreground" />}
+                  <div className="text-xs text-muted-foreground">{getContactCreatorLabel(contactDetailDrawerContact)} · {new Date(contactDetailDrawerContact.created_at).toLocaleString()}</div>
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2">
