@@ -268,35 +268,8 @@ function externalWebsiteLinks(page: ScrapedPage) {
 }
 
 function extractPhones(text: string) {
-  const decoded = text
-    .replace(/&phone;|&num;/gi, "")
-    .replace(/&plus;/gi, "+")
-    .replace(/&#43;|%2B/gi, "+")
-    .replace(/%20/g, " ");
-  const sources = [decoded];
-  for (const match of decoded.matchAll(/(?:href|data-[\w-]+|aria-label|title|content)=["'](?:tel:)?([^"']{8,80})["']/gi)) sources.push(match[1]);
-  for (const match of decoded.matchAll(/tel:\s*([^\s"'<>)]{8,80})/gi)) sources.push(match[1]);
-  const matches = sources.join("\n").match(/(?:\+44\s?\(?0?\)?|0|44)(?:\d[\s().-]?){9,11}\d/g) ?? [];
-  return unique(matches.map((phone) => {
-    const trimmed = phone.replace(/^44(?=\d{10}$)/, "0").replace(/\s+/g, " ").trim();
-    return trimmed.startsWith("+44") ? trimmed : trimmed.replace(/^44/, "0");
-  })).filter((phone) => normalizePhone(phone).length >= 10);
-}
-
-function extractPhoneFromRevealedPayload(payload: Record<string, unknown>) {
-  const actionScrapes = Array.isArray(payload?.actions?.scrapes) ? payload.actions.scrapes : [];
-  const actionResults = Array.isArray(payload?.actions?.results) ? payload.actions.results : [];
-  const text = [
-    payload?.markdown,
-    payload?.html,
-    payload?.rawHtml,
-    payload?.links,
-    ...actionScrapes.flatMap((scrape: Record<string, unknown>) => [scrape.markdown, scrape.html, scrape.rawHtml, scrape.links]),
-    ...actionResults.map((result: unknown) => typeof result === "string" ? result : JSON.stringify(result)),
-  ]
-    .map((value) => Array.isArray(value) ? value.join("\n") : cleanText(value, 40000))
-    .join("\n");
-  return extractPhones(text)[0] ?? "";
+  const matches = text.match(/(?:\+44\s?\(?0?\)?|0)(?:\d[\s().-]?){9,11}\d/g) ?? [];
+  return unique(matches.map((phone) => phone.replace(/\s+/g, " ").trim())).filter((phone) => normalizePhone(phone).length >= 10);
 }
 
 function extractEmails(text: string) {
@@ -472,15 +445,9 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
 
 async function revealPhoneFromProfile(apiKey: string, url: string) {
   const selectors = [
-    "button:has-text(\"Show number\")",
-    "button:has-text(\"Show Number\")",
-    "text=Show number",
     "button[aria-label*='Show number' i]",
-    "button[aria-label*='number' i]",
     "button[aria-label*='phone' i]",
     "button[data-testid*='phone' i]",
-    "button[data-testid*='number' i]",
-    "[data-testid*='show-number' i]",
     "a[href^='tel:']",
   ];
 
@@ -490,34 +457,28 @@ async function revealPhoneFromProfile(apiKey: string, url: string) {
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         url,
-        formats: ["markdown", "html", "links"],
+        formats: ["markdown", "html"],
         onlyMainContent: false,
         maxAge: 0,
-        waitFor: 900,
-        mobile: false,
+        waitFor: 300,
         location: { country: "GB", languages: ["en-GB", "en"] },
         actions: [
-          { type: "wait", milliseconds: 800 },
+          { type: "wait", milliseconds: 300 },
           { type: "click", selector },
-          { type: "wait", milliseconds: 1400 },
-          { type: "scrape" },
+          { type: "wait", milliseconds: 700 },
         ],
       }),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) continue;
     const payload = data?.data ?? data;
-    const phone = extractPhoneFromRevealedPayload(payload);
+    const actionScrapes = Array.isArray(payload?.actions?.scrapes) ? payload.actions.scrapes : [];
+    const text = [payload?.markdown, payload?.html, ...actionScrapes.flatMap((scrape: Record<string, unknown>) => [scrape.markdown, scrape.html])]
+      .map((value) => cleanText(value, 12000))
+      .join("\n");
+    const phone = extractPhones(text)[0];
     if (phone) return phone;
   }
-
-  const fallback = await fetch(`${FIRECRAWL_V2}/scrape`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ url, formats: ["markdown", "html", "links"], onlyMainContent: false, maxAge: 0, waitFor: 1200, location: { country: "GB", languages: ["en-GB", "en"] } }),
-  });
-  const fallbackData = await fallback.json().catch(() => ({}));
-  if (fallback.ok) return extractPhoneFromRevealedPayload(fallbackData?.data ?? fallbackData);
 
   return "";
 }
