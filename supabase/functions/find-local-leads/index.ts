@@ -422,38 +422,52 @@ function isLikelyDuplicate(candidate: Candidate, existing: Array<Record<string, 
   });
 }
 
+function generalQueryVariants(trade: string, location: string) {
+  const t = cleanText(trade, 80);
+  const l = cleanText(location, 120);
+  return [
+    `"${t}" "${l}" -site:checkatrade.com -site:yell.com`,
+    `${t} in ${l} local business contact phone`,
+    `"${t}" "${l}" "Facebook"`,
+    `"${t}" "${l}" "Instagram"`,
+    `"${t}" "${l}" "no website"`,
+    `site:google.com/maps ${t} ${l}`,
+    `site:yell.com ${t} ${l}`,
+    `site:facebook.com ${t} ${l}`,
+    `site:nextdoor.co.uk ${t} ${l}`,
+    `site:cylex-uk.co.uk ${t} ${l}`,
+    `site:hotfrog.co.uk ${t} ${l}`,
+    `site:freeindex.co.uk ${t} ${l}`,
+    `site:scoot.co.uk ${t} ${l}`,
+    `${t} ${l} small business phone email`,
+  ];
+}
+
 function tradeQueryVariants(trade: string, location: string) {
   const cleanTrade = cleanText(trade, 80);
   const singularTrade = cleanTrade.replace(/s\b/i, "");
   const pluralTrade = /s\b/i.test(cleanTrade) ? cleanTrade : `${cleanTrade}s`;
   const industry = inferIndustry(cleanTrade);
+  const general = generalQueryVariants(cleanTrade, location);
+
   if (industry === "hospitality") return unique([
-    `site:yell.com ${cleanTrade} ${location}`,
+    ...general,
     `site:tripadvisor.co.uk ${cleanTrade} ${location}`,
     `site:restaurantguru.com ${cleanTrade} ${location}`,
-    `"${cleanTrade}" "${location}" "Facebook"`,
-    `"${cleanTrade}" "${location}" "Instagram"`,
-    `"${cleanTrade}" "${location}" "no website"`,
-    `${cleanTrade} in ${location} local business phone`,
   ]);
-  if (["beauty", "healthcare", "retail", "automotive", "property", "professional services"].includes(industry)) return unique([
-    `site:yell.com ${cleanTrade} ${location}`,
-    `site:facebook.com ${cleanTrade} ${location}`,
-    `site:instagram.com ${cleanTrade} ${location}`,
-    `"${cleanTrade}" "${location}" "no website"`,
-    `${cleanTrade} in ${location} local business phone`,
-    `${singularTrade} near ${location} contact phone`,
-  ]);
-  return unique([
-    `site:checkatrade.com/trades ${cleanTrade} ${location} Checkatrade`,
-    `site:checkatrade.com/trades ${singularTrade} ${location} Checkatrade profile`,
-    `site:checkatrade.com/trades ${pluralTrade} ${location} Checkatrade members`,
-    `site:yell.com ${cleanTrade} ${location}`,
+  if (industry === "construction") return unique([
+    ...general,
+    `site:checkatrade.com/trades ${cleanTrade} ${location}`,
+    `site:checkatrade.com/trades ${singularTrade} ${location} profile`,
+    `site:checkatrade.com/trades ${pluralTrade} ${location} members`,
     `site:trustatrader.com ${cleanTrade} ${location}`,
     `site:ratedpeople.com ${cleanTrade} ${location}`,
-    `site:checkatrade.com/trades ${location} ${cleanTrade} Checkatrade`,
-    `site:checkatrade.com/profile ${cleanTrade} ${location} Checkatrade`,
-    `site:checkatrade.com ${cleanTrade} near ${location} Checkatrade`,
+    `site:mybuilder.com ${cleanTrade} ${location}`,
+  ]);
+  return unique([
+    ...general,
+    `site:instagram.com ${cleanTrade} ${location}`,
+    `${singularTrade} near ${location} contact phone`,
   ]);
 }
 
