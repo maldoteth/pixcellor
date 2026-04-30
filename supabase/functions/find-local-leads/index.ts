@@ -307,7 +307,7 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
   const response = await fetch(`${FIRECRAWL_V2}/search`, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ query, limit, country: "gb", scrapeOptions: { formats: ["markdown", "links"], onlyMainContent: true } }),
+    body: JSON.stringify({ query, limit, country: "gb" }),
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(`Firecrawl search failed (${response.status}): ${data?.error ?? "unknown error"}`);
@@ -327,7 +327,7 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
       url: cleanText(sourceUrl, 500),
       title: cleanText(item.title ?? metadata.title, 180),
       description: cleanText(item.description ?? item.snippet ?? metadata.description, 300),
-      markdown: cleanText(item.markdown ?? item.content, 6000),
+      markdown: cleanText(item.markdown ?? item.content ?? item.description ?? item.snippet, 1200),
     };
   }).filter((item: SearchResult) => item.url && isCheckatradeUrl(item.url));
 }
