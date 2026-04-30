@@ -436,6 +436,7 @@ Deno.serve(async (req) => {
         phone: cleanText(candidate.phone, 40) || null,
         email: cleanEmail(candidate.email) || null,
         location: cleanText(candidate.location, 160) || location,
+        industry,
         website: null,
         notes: cleanText(candidate.trade, 80) || trade,
         source: "lead_agent",
@@ -444,7 +445,11 @@ Deno.serve(async (req) => {
 
     if (rows.length > 0) {
       const { error } = await supabase.from("contacts").insert(rows);
-      if (error) throw new Error(error.message);
+      if (error && /industry.*schema cache|column.*industry/i.test(error.message)) {
+        const fallbackRows = rows.map(({ industry: _industry, ...row }) => row);
+        const { error: fallbackError } = await supabase.from("contacts").insert(fallbackRows);
+        if (fallbackError) throw new Error(fallbackError.message);
+      } else if (error) throw new Error(error.message);
     }
 
     return new Response(JSON.stringify({
@@ -460,7 +465,7 @@ Deno.serve(async (req) => {
       rejected_with_websites: rejectedWithWebsites.length,
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
-      contacts: rows.map((row) => ({ name: row.name, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
+      contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
       message: `Added ${rows.length}. Checkatrade results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons and ${rejectedInvalidSources.length} invalid sources.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
