@@ -358,52 +358,11 @@ async function scrapeFirecrawl(apiKey: string, url: string, options: { revealPho
 }
 
 async function scrapeCheckatradeProfile(apiKey: string, url: string): Promise<ScrapedPage | null> {
-  const revealed = await scrapeFirecrawl(apiKey, url, { revealPhone: true, fullPage: true });
-  if (revealed) return revealed;
-  return scrapeFirecrawl(apiKey, url, { fullPage: true });
-}
-
-async function aiNormalizeProfile(apiKey: string, trade: string, location: string, page: ScrapedPage, parsed: Candidate): Promise<Candidate> {
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      response_format: { type: "json_object" },
-      temperature: 0,
-      max_tokens: 700,
-      messages: [
-        {
-          role: "system",
-          content: "Normalize one Checkatrade profile into JSON only: {\"name\":string,\"trade\":string,\"phone\":string,\"email\":string,\"location\":string,\"evidence\":string}. Do not invent data. Keep evidence short. If unsure, use the provided parsed values.",
-        },
-        {
-          role: "user",
-          content: JSON.stringify({ trade, location, source_url: page.url, parsed, title: page.title, markdown: page.markdown.slice(0, 8000) }),
-        },
-      ],
-    }),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) return parsed;
-  try {
-    const raw = data?.choices?.[0]?.message?.content ?? "{}";
-    const normalized = JSON.parse(raw) as Candidate;
-    return {
-      ...parsed,
-      name: cleanText(normalized.name, 100) || parsed.name,
-      trade: cleanText(normalized.trade, 80) || parsed.trade || trade,
-      phone: cleanText(normalized.phone, 40) || parsed.phone || "",
-      email: cleanEmail(normalized.email) || parsed.email || "",
-      location: cleanText(normalized.location, 160) || parsed.location || location,
-      evidence: cleanText(normalized.evidence, 220) || parsed.evidence || "",
-      source_url: page.url,
-      has_standalone_website: parsed.has_standalone_website,
-      website_url: parsed.website_url,
-    };
-  } catch {
-    return parsed;
-  }
+  const basic = await scrapeFirecrawl(apiKey, url, { fullPage: true });
+  if (!basic) return null;
+  const text = `${basic.title}\n${basic.markdown}\n${basic.html}`;
+  if (externalWebsiteLinks(basic).length > 0 || extractPhones(text).length > 0 || extractEmails(text).length > 0) return basic;
+  return (await scrapeFirecrawl(apiKey, url, { revealPhone: true, fullPage: true })) ?? basic;
 }
 
 Deno.serve(async (req) => {
@@ -413,15 +372,13 @@ Deno.serve(async (req) => {
     const { trade: rawTrade, location: rawLocation, limit: rawLimit } = await req.json();
     const trade = cleanText(rawTrade, 80);
     const location = cleanText(rawLocation, 120);
-    const limit = Math.min(Math.max(Number(rawLimit) || 10, 1), 25);
+    const limit = Math.min(Math.max(Number(rawLimit) || 5, 1), 8);
     if (!trade || !location) throw new Error("Trade and location are required");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
-    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     if (!firecrawlKey) throw new Error("Firecrawl connector is not configured");
-    if (!lovableKey) throw new Error("Lovable AI is not configured");
 
     const supabase = createClient(supabaseUrl, serviceKey);
     await requireAdmin(req, supabase);
@@ -429,23 +386,18 @@ Deno.serve(async (req) => {
     const queries = unique([
       `site:checkatrade.com/trades ${trade} ${location} Checkatrade`,
       `site:checkatrade.com ${trade} ${location} Checkatrade`,
-      `Checkatrade ${trade} ${location}`,
     ]);
 
-    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(limit * 4, 25))));
+    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(limit * 3, 12))));
     const searchResults = unique(searchBatches.flat().map((result) => JSON.stringify(result))).map((result) => JSON.parse(result) as SearchResult);
-    const listingUrls = unique(searchResults.map((result) => result.url).filter((url) => isCheckatradeUrl(url))).slice(0, Math.min(limit * 4, 40));
-    const listingPages = (await Promise.all(listingUrls.map((url) => scrapeFirecrawl(firecrawlKey, url)))).filter(Boolean) as ScrapedPage[];
-    const profileUrls = extractProfileUrls(searchResults, listingPages).slice(0, Math.min(limit * 6, 60));
-    const profilePages = (await Promise.all(profileUrls.map((url) => scrapeCheckatradeProfile(firecrawlKey, url)))).filter(Boolean) as ScrapedPage[];
-
-    const deterministicCandidates = profilePages
-      .map((page) => parseCandidateFromProfile(page, trade, location))
-      .filter(Boolean) as Candidate[];
-    const extracted = await Promise.all(deterministicCandidates.map((candidate) => {
-      const page = profilePages.find((profilePage) => profilePage.url === candidate.source_url);
-      return page ? aiNormalizeProfile(lovableKey, trade, location, page, candidate) : candidate;
-    }));
+    const listingUrls = unique(searchResults.map((result) => result.url).filter((url) => isCheckatradeUrl(url))).slice(0, Math.min(limit * 2, 12));
+    const listingPages: ScrapedPage[] = [];
+    for (const url of listingUrls) {
+      const page = await scrapeFirecrawl(firecrawlKey, url);
+      if (page) listingPages.push(page);
+      if (listingPages.length >= Math.min(limit, 6)) break;
+    }
+    const profileUrls = extractProfileUrls(searchResults, listingPages).slice(0, Math.min(limit * 3, 18));
 
     const { data: existing } = await supabase
       .from("contacts")
@@ -457,8 +409,16 @@ Deno.serve(async (req) => {
     const rejectedWithWebsites: Candidate[] = [];
     const rejectedInvalidSources: Candidate[] = [];
     const rejectedInvalid: Candidate[] = [];
+    let profilePagesScraped = 0;
+    let candidatesExtracted = 0;
 
-    for (const candidate of extracted) {
+    for (const url of profileUrls) {
+      const page = await scrapeCheckatradeProfile(firecrawlKey, url);
+      if (!page) continue;
+      profilePagesScraped += 1;
+      const candidate = parseCandidateFromProfile(page, trade, location);
+      if (!candidate) continue;
+      candidatesExtracted += 1;
       const name = cleanText(candidate.name, 100);
       const sourceUrl = cleanText(candidate.source_url, 500);
       if (!name || !sourceUrl || !isCheckatradeUrl(sourceUrl)) {
@@ -507,16 +467,16 @@ Deno.serve(async (req) => {
       query: queries.join(" | "),
       searched: searchResults.length,
       checkatrade_pages_searched: listingPages.length,
-      profile_pages_scraped: profilePages.length,
-      candidates_extracted: deterministicCandidates.length,
-      extracted: extracted.length,
+      profile_pages_scraped: profilePagesScraped,
+      candidates_extracted: candidatesExtracted,
+      extracted: candidatesExtracted,
       added: rows.length,
       skipped_duplicates: skippedDuplicates.length,
       rejected_with_websites: rejectedWithWebsites.length,
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
       contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
-      message: `Added ${rows.length}. Checkatrade pages searched ${listingPages.length}, profiles scraped ${profilePages.length}, candidates ${deterministicCandidates.length}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons, ${rejectedInvalidSources.length} invalid sources, ${rejectedInvalid.length} without revealed contact details.`,
+      message: `Added ${rows.length}. Checkatrade pages searched ${listingPages.length}, profiles scraped ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons, ${rejectedInvalidSources.length} invalid sources, ${rejectedInvalid.length} without revealed contact details.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
