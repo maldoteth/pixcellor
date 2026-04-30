@@ -203,6 +203,7 @@ export type Database = {
           source: string
           status: string
           updated_at: string
+          website: string | null
         }
         Insert: {
           created_at?: string
@@ -217,6 +218,7 @@ export type Database = {
           source?: string
           status?: string
           updated_at?: string
+          website?: string | null
         }
         Update: {
           created_at?: string
@@ -231,6 +233,7 @@ export type Database = {
           source?: string
           status?: string
           updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -829,6 +832,18 @@ export type Database = {
             }
             Returns: Json
           }
+        | {
+            Args: {
+              _email?: string
+              _industry?: string
+              _location?: string
+              _name: string
+              _notes?: string
+              _phone?: string
+              _website?: string
+            }
+            Returns: Json
+          }
       portal_create_contact_event:
         | {
             Args: {
@@ -916,6 +931,19 @@ export type Database = {
               _name: string
               _notes?: string
               _phone?: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _contact_id: string
+              _email?: string
+              _industry?: string
+              _location?: string
+              _name: string
+              _notes?: string
+              _phone?: string
+              _website?: string
             }
             Returns: undefined
           }
