@@ -440,7 +440,7 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
       description: cleanText(item.description ?? item.snippet ?? metadata.description, 300),
       markdown: cleanText(item.markdown ?? item.content ?? item.description ?? item.snippet, 1200),
     };
-  }).filter((item: SearchResult) => item.url && isCheckatradeUrl(item.url));
+  }).filter((item: SearchResult) => item.url && isAcceptedSourceUrl(item.url));
 }
 
 async function revealPhoneFromProfile(apiKey: string, url: string) {
