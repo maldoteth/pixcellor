@@ -1,4 +1,4 @@
-import { Facebook, LogIn, MessageSquare, Phone, MapPin } from "lucide-react";
+import { Facebook, LogIn, MessageSquare, Phone } from "lucide-react";
 
 const Footer = () => {
   return (
