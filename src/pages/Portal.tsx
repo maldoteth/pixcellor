@@ -902,6 +902,25 @@ export default function Portal() {
       .slice(0, 8);
   }, [contacts, contactForm.notes]);
 
+  const leadTradeSuggestions = useMemo(() => {
+    const typed = leadAgentForm.trade.trim().toLowerCase();
+    if (!typed) return [];
+    const trades = Array.from(new Set(
+      contacts.flatMap(contact => {
+        const noteTrade = contact.notes?.match(/^Trade:\s*(.+)$/im)?.[1]?.trim();
+        return [noteTrade, contact.industry].filter((value): value is string => Boolean(value && value !== "general"));
+      })
+    )).sort((a, b) => a.localeCompare(b));
+    return trades.filter(trade => trade.toLowerCase().includes(typed) && trade.toLowerCase() !== typed).slice(0, 8);
+  }, [contacts, leadAgentForm.trade]);
+
+  const leadLocationSuggestions = useMemo(() => {
+    const typed = leadAgentForm.location.trim().toLowerCase();
+    if (!typed) return [];
+    const locations = Array.from(new Set(contacts.map(contact => contact.location?.trim()).filter((value): value is string => Boolean(value)))).sort((a, b) => a.localeCompare(b));
+    return locations.filter(location => location.toLowerCase().includes(typed) && location.toLowerCase() !== typed).slice(0, 8);
+  }, [contacts, leadAgentForm.location]);
+
   const eventContactSuggestions = useMemo(() => {
     const query = eventContactSearch.trim().toLowerCase();
     const sortedContacts = [...contacts].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
