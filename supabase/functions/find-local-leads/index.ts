@@ -400,16 +400,17 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
     await requireAdmin(req, supabase);
 
-    const queries = unique([`site:checkatrade.com/trades ${trade} ${location} Checkatrade`]);
+    const queries = tradeQueryVariants(trade, location);
 
-    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(limit * 2, 8))));
+    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(Math.max(limit * 4, 12), 20))));
     const searchResults = unique(searchBatches.flat().map((result) => JSON.stringify(result))).map((result) => JSON.parse(result) as SearchResult);
-    const profileUrls = unique(searchResults.map((result) => result.url).filter(isLikelyProfileUrl)).slice(0, Math.min(limit * 2, 10));
+    const profileUrls = unique(searchResults.map((result) => result.url).filter(isLikelyProfileUrl)).slice(0, Math.min(Math.max(limit * 10, 35), 80));
 
     const { data: existing } = await supabase
       .from("contacts")
-      .select("id, name, phone, email, location")
-      .limit(1000);
+      .select("id, name, phone, email, location, source_url")
+      .or(`source.eq.lead_agent,location.ilike.%${location.replace(/[%_,]/g, "")}%`)
+      .limit(5000);
 
     const added: Candidate[] = [];
     const skippedDuplicates: Candidate[] = [];
@@ -456,16 +457,17 @@ Deno.serve(async (req) => {
         location: cleanText(candidate.location, 160) || location,
         industry,
         website: null,
+        source_url: cleanText(candidate.source_url, 500),
         notes: cleanText(candidate.trade, 80) || trade,
         source: "lead_agent",
       };
     });
 
     if (rows.length > 0) {
-      const { error } = await supabase.from("contacts").insert(rows);
+      const { error } = await supabase.from("contacts").upsert(rows, { onConflict: "source_url", ignoreDuplicates: true });
       if (error && /contact_name.*schema cache|column.*contact_name|industry.*schema cache|column.*industry/i.test(error.message)) {
         const fallbackRows = rows.map(({ contact_name: _contactName, industry: _industry, ...row }) => row);
-        const { error: fallbackError } = await supabase.from("contacts").insert(fallbackRows);
+        const { error: fallbackError } = await supabase.from("contacts").upsert(fallbackRows, { onConflict: "source_url", ignoreDuplicates: true });
         if (fallbackError) throw new Error(fallbackError.message);
       } else if (error) throw new Error(error.message);
     }
