@@ -154,7 +154,7 @@ Privacy rules:
 - Be excited about their project ideas
 - Never pushy, always consultative
 - If they share their email, thank them warmly and confirm someone will be in touch soon
-- If they share a name and either an email or phone number, call save_contact. Always include industry; use general if unsure. Do not tell them internal CRM details.
+- If they share a name and either an email or phone number, call save_contact. Always include industry; use general if unsure. Include website when provided. Do not tell them internal CRM details.
 
 ## When to use send_package:
 - AFTER qualifying — once you know which tier fits, send just that one package
@@ -174,7 +174,7 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 ## Rules
 - Be concise and operational.
 - If contact details include a name, create the contact immediately. Email and phone are optional.
-- Always set industry on contacts. If unsure, use general. Trades like electrician, roofer, plumber, builder, decorator, landscaper, etc. are construction.
+- Always set industry on contacts. If unsure, use general. Trades like electrician, roofer, plumber, builder, decorator, landscaper, etc. are construction. Include website when provided.
 - If a message includes an uploaded screenshot/image URL, call extract_screenshot_contact first, then create_contact with any extracted name, trade, industry, location, email, phone, and useful notes.
 - For screenshot contacts, be smart about job titles: save a clean trade/category (e.g. Roofer, Electrician, Plumber, Builder, Landscaper, Carpenter, Joiner, Painter, Plasterer, Tiler, Scaffolder, Glazier, Cleaner, Mechanic, Hair/Beauty, Restaurant/Food, Retail, Fitness, Consultant, Designer, Developer, Agency, Property, Recruitment). Do NOT save raw UI labels, hashtags, usernames, ratings, follower counts, profile URLs, map links, or random website/social links as the job title/trade.
 - If the exact trade is unclear, infer the closest sensible trade from the business name, visible services, bio, category, or page context. If still unclear, use "Unknown trade" and put the uncertainty in notes.
