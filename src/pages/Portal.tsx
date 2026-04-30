@@ -1544,8 +1544,8 @@ export default function Portal() {
                         ))}
                         {e.description && <LinkifiedText text={e.description} className="block text-sm whitespace-pre-wrap" stopPropagation />}
                       </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <Badge className="pricing-button rounded-none px-3 py-1 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
+                      <div className="flex flex-row flex-wrap items-center justify-end gap-2">
+                        <Badge className="pricing-button h-8 rounded-none px-3 py-0 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
                         <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void completeCallback(e.id); }}>Done</Button>
                         <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void tryCallbackAgain(e.id); }}>Tried</Button>
                       </div>
@@ -2298,8 +2298,8 @@ export default function Portal() {
                   <div className="text-xs text-muted-foreground">{getContactCreatorLabel(contactDetailDrawerContact)} · {new Date(contactDetailDrawerContact.created_at).toLocaleString()}</div>
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
-                <div className="flex flex-wrap items-center justify-end gap-2">
-                  <div className="flex items-center gap-1" aria-label="Contact status">
+                <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto">
+                  <div className="flex h-9 items-center gap-1" aria-label="Contact status">
                     {contactStatuses.map(status => (
                       <button
                         key={status.value}
@@ -2307,18 +2307,18 @@ export default function Portal() {
                         title={status.label}
                         aria-label={status.label}
                         onClick={() => updateContactStatus(contactDetailDrawerContact.id, status.value)}
-                        className={`h-5 w-5 rounded-none border transition-opacity ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                        className={`h-9 w-7 rounded-none border transition-opacity md:h-5 md:w-5 ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                         style={{ backgroundColor: status.color }}
                       />
                     ))}
                   </div>
-                  <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
+                  <Button variant="pricing" size="sm" className="h-9 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
                     Edit
                   </Button>
-                  <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
+                  <Button variant="pricing" size="sm" className="h-9 rounded-none shadow-none" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
                     Create event
                   </Button>
-                  <Button variant="pricing" size="icon" className="rounded-none shadow-none" aria-label="Archive contact" title="Archive contact" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
+                  <Button variant="pricing" size="icon" className="h-9 w-9 rounded-none shadow-none" aria-label="Archive contact" title="Archive contact" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
