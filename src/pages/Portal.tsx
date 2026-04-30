@@ -2307,7 +2307,7 @@ export default function Portal() {
                         title={status.label}
                         aria-label={status.label}
                         onClick={() => updateContactStatus(contactDetailDrawerContact.id, status.value)}
-                        className={`h-9 w-7 rounded-none border transition-opacity md:h-5 md:w-5 ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                        className={`h-9 w-7 rounded-none border transition-opacity ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
                         style={{ backgroundColor: status.color }}
                       />
                     ))}
