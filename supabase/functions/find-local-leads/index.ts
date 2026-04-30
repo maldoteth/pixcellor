@@ -372,10 +372,31 @@ function tradeQueryVariants(trade: string, location: string) {
   const cleanTrade = cleanText(trade, 80);
   const singularTrade = cleanTrade.replace(/s\b/i, "");
   const pluralTrade = /s\b/i.test(cleanTrade) ? cleanTrade : `${cleanTrade}s`;
+  const industry = inferIndustry(cleanTrade);
+  if (industry === "hospitality") return unique([
+    `site:yell.com ${cleanTrade} ${location}`,
+    `site:tripadvisor.co.uk ${cleanTrade} ${location}`,
+    `site:restaurantguru.com ${cleanTrade} ${location}`,
+    `"${cleanTrade}" "${location}" "Facebook"`,
+    `"${cleanTrade}" "${location}" "Instagram"`,
+    `"${cleanTrade}" "${location}" "no website"`,
+    `${cleanTrade} in ${location} local business phone`,
+  ]);
+  if (["beauty", "healthcare", "retail", "automotive", "property", "professional services"].includes(industry)) return unique([
+    `site:yell.com ${cleanTrade} ${location}`,
+    `site:facebook.com ${cleanTrade} ${location}`,
+    `site:instagram.com ${cleanTrade} ${location}`,
+    `"${cleanTrade}" "${location}" "no website"`,
+    `${cleanTrade} in ${location} local business phone`,
+    `${singularTrade} near ${location} contact phone`,
+  ]);
   return unique([
     `site:checkatrade.com/trades ${cleanTrade} ${location} Checkatrade`,
     `site:checkatrade.com/trades ${singularTrade} ${location} Checkatrade profile`,
     `site:checkatrade.com/trades ${pluralTrade} ${location} Checkatrade members`,
+    `site:yell.com ${cleanTrade} ${location}`,
+    `site:trustatrader.com ${cleanTrade} ${location}`,
+    `site:ratedpeople.com ${cleanTrade} ${location}`,
     `site:checkatrade.com/trades ${location} ${cleanTrade} Checkatrade`,
     `site:checkatrade.com/profile ${cleanTrade} ${location} Checkatrade`,
     `site:checkatrade.com ${cleanTrade} near ${location} Checkatrade`,
