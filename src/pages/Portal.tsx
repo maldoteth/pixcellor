@@ -1979,6 +1979,22 @@ export default function Portal() {
               <Button onClick={() => setShowContactForm(v => !v)}><Plus className="w-4 h-4 mr-2" /> Add contact</Button>
             </div>
 
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">AI lead finder</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-3 md:grid-cols-[1fr_1fr_120px_auto]">
+                <Input placeholder="Trade e.g. roofers" value={leadAgentForm.trade} onChange={(e) => setLeadAgentForm(f => ({ ...f, trade: e.target.value }))} />
+                <Input placeholder="Location e.g. Bristol" value={leadAgentForm.location} onChange={(e) => setLeadAgentForm(f => ({ ...f, location: e.target.value }))} />
+                <Input type="number" min={1} max={25} value={leadAgentForm.limit} onChange={(e) => setLeadAgentForm(f => ({ ...f, limit: e.target.value }))} />
+                <Button onClick={runLeadAgent} disabled={leadAgentLoading} className="gap-2">
+                  {leadAgentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserSearch className="h-4 w-4" />}
+                  Find leads
+                </Button>
+                {leadAgentSummary && <p className="text-sm text-muted-foreground md:col-span-4">{leadAgentSummary}</p>}
+              </CardContent>
+            </Card>
+
             <div className="flex flex-wrap items-center gap-2">
               <Button variant={contactsStatusFilter === "all" ? "default" : "outline"} size="sm" className="rounded-none shadow-none" onClick={() => setContactsStatusFilter("all")}>All</Button>
               {contactStatuses.map(status => (
