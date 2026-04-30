@@ -2305,6 +2305,9 @@ export default function Portal() {
                   <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
                     Create event
                   </Button>
+                  <Button variant="pricing" size="icon" className="rounded-none shadow-none" aria-label="Archive contact" title="Archive contact" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
               {editingContactId === contactDetailDrawerContact.id && (
