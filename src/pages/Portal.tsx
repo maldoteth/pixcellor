@@ -1448,6 +1448,18 @@ export default function Portal() {
     </div>
   );
 
+  const renderLeadSuggestionList = (items: string[], field: "trade" | "location", close: () => void) => (
+    <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 max-h-56 overflow-y-auto rounded-none border border-border bg-popover shadow-xl">
+      {items.length > 0 ? items.map(item => (
+        <button key={item} type="button" className="flex min-h-11 w-full items-center border-b border-border px-3 py-2 text-left text-sm last:border-b-0" onClick={() => { setLeadAgentForm(f => ({ ...f, [field]: item })); close(); }}>
+          <span className="truncate font-medium text-foreground">{item}</span>
+        </button>
+      )) : (
+        <div className="px-3 py-3 text-sm text-muted-foreground">No matching {field === "trade" ? "trades" : "locations"}</div>
+      )}
+    </div>
+  );
+
   const contactFormCard = showContactForm && (
     <Card>
       <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
