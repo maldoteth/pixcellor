@@ -330,7 +330,7 @@ const contactWizardFields = [
   { key: "phone", label: "Number", placeholder: "Phone number", required: true, inputMode: "tel" },
   { key: "email", label: "Email", placeholder: "Email address", required: false, inputMode: "email" },
   { key: "location", label: "Location", placeholder: "Town or area", required: false, inputMode: "text" },
-  { key: "industry", label: "Industry", placeholder: "Industry e.g. construction", required: false, inputMode: "text" },
+  { key: "industry", label: "Industry", placeholder: "Industry", required: false, inputMode: "text" },
   { key: "website", label: "Website", placeholder: "Website domain", required: false, inputMode: "url" },
   { key: "notes", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
 ] as const;
@@ -1434,7 +1434,7 @@ export default function Portal() {
         <Input placeholder="Phone number" value={contactForm.phone} onChange={(e) => setContactForm(f => ({ ...f, phone: e.target.value }))} />
         <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
         <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
-        <Input placeholder="Industry e.g. construction" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
+        <Input placeholder="Industry" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
         <Input placeholder="Website domain" value={contactForm.website} onChange={(e) => setContactForm(f => ({ ...f, website: e.target.value }))} />
         <div className="relative">
           <Input
@@ -2295,7 +2295,7 @@ export default function Portal() {
                         <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
-                        <Input placeholder="Industry e.g. construction" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
+                        <Input placeholder="Industry" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
                         <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
                         <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
@@ -2454,7 +2454,7 @@ export default function Portal() {
                   <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                   <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                   <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
-                  <Input placeholder="Industry e.g. construction" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
+                  <Input placeholder="Industry" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
                   <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
                   <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                   <div className="flex gap-2 md:col-span-2">
