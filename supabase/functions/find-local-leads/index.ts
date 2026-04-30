@@ -46,6 +46,7 @@ const IGNORED_EXTERNAL_HOSTS = new Set([
 type Candidate = {
   name: string;
   trade?: string;
+  industry?: string;
   phone?: string;
   email?: string;
   location?: string;
@@ -82,6 +83,19 @@ const cleanEmail = (value: unknown) => {
 const normalize = (value: unknown) => cleanText(value, 200).toLowerCase().replace(/[^a-z0-9]+/g, "");
 const normalizePhone = (value: unknown) => cleanText(value, 40).replace(/\D/g, "");
 const unique = <T,>(items: T[]) => [...new Set(items)];
+
+function inferIndustry(value: unknown) {
+  const text = cleanText(value, 400).toLowerCase();
+  if (/(electrician|electrical|roofer|roofing|plumber|plumbing|builder|building|construction|carpenter|joiner|decorator|painter|landscap|driveway|window|glazing|heating|gas engineer|tiler|flooring|brick|scaffold|bathroom|kitchen fitter)/i.test(text)) return "construction";
+  if (/(restaurant|cafe|bar|pub|hotel|catering|takeaway|hospitality|food)/i.test(text)) return "hospitality";
+  if (/(salon|barber|beauty|spa|aesthetic|nail|hair)/i.test(text)) return "beauty";
+  if (/(gym|fitness|personal trainer|physio|clinic|health|dentist|medical)/i.test(text)) return "healthcare";
+  if (/(estate agent|property|letting|mortgage|real estate)/i.test(text)) return "property";
+  if (/(accountant|solicitor|lawyer|consultant|finance|insurance)/i.test(text)) return "professional services";
+  if (/(shop|retail|boutique|ecommerce|e-commerce|store)/i.test(text)) return "retail";
+  if (/(mechanic|garage|mot|vehicle|car dealer|automotive)/i.test(text)) return "automotive";
+  return "general";
+}
 
 function isCheckatradeUrl(rawUrl: unknown) {
   try {
@@ -232,6 +246,7 @@ function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: s
   return {
     name,
     trade,
+    industry: inferIndustry(`${trade} ${name} ${page.markdown.slice(0, 800)}`),
     phone: phones[0] ?? "",
     email: emails[0] ?? "",
     location,
@@ -468,6 +483,7 @@ Deno.serve(async (req) => {
 
     const rows = added.map((candidate) => ({
       name: cleanText(candidate.name, 100),
+      industry: cleanText(candidate.industry, 80) || inferIndustry(candidate.trade || trade),
       phone: cleanText(candidate.phone, 40) || null,
       email: cleanEmail(candidate.email) || null,
       location: cleanText(candidate.location, 160) || location,
@@ -498,7 +514,7 @@ Deno.serve(async (req) => {
       rejected_with_websites: rejectedWithWebsites.length,
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
-      contacts: rows.map((row) => ({ name: row.name, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
+      contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
       message: `Added ${rows.length}. Checkatrade pages searched ${listingPages.length}, profiles scraped ${profilePages.length}, candidates ${deterministicCandidates.length}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons, ${rejectedInvalidSources.length} invalid sources, ${rejectedInvalid.length} without revealed contact details.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
