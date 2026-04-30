@@ -386,21 +386,24 @@ Deno.serve(async (req) => {
       if (added.length >= limit) break;
     }
 
-    const rows = added.map((candidate) => ({
-      name: cleanText(candidate.name, 100),
-      industry: cleanText(candidate.industry, 80) || inferIndustry(candidate.trade || trade),
-      phone: cleanText(candidate.phone, 40) || null,
-      email: cleanEmail(candidate.email) || null,
-      location: cleanText(candidate.location, 160) || location,
-      website: null,
-      notes: [
-        `Trade: ${cleanText(candidate.trade, 80) || trade}`,
-        "Lightweight Checkatrade lead from search result.",
-        cleanText(candidate.evidence, 220),
-        candidate.source_url ? `Source: ${cleanText(candidate.source_url, 400)}` : "",
-      ].filter(Boolean).join("\n"),
-      source: "lead_agent",
-    }));
+    const rows = added.map((candidate) => {
+      const industry = cleanText(candidate.industry, 80) || inferIndustry(candidate.trade || trade);
+      return {
+        name: cleanText(candidate.name, 100),
+        phone: cleanText(candidate.phone, 40) || null,
+        email: cleanEmail(candidate.email) || null,
+        location: cleanText(candidate.location, 160) || location,
+        website: null,
+        notes: [
+          `Trade: ${cleanText(candidate.trade, 80) || trade}`,
+          `Industry: ${industry}`,
+          "Lightweight Checkatrade lead from search result.",
+          cleanText(candidate.evidence, 220),
+          candidate.source_url ? `Source: ${cleanText(candidate.source_url, 400)}` : "",
+        ].filter(Boolean).join("\n"),
+        source: "lead_agent",
+      };
+    });
 
     if (rows.length > 0) {
       const { error } = await supabase.from("contacts").insert(rows);
@@ -420,7 +423,7 @@ Deno.serve(async (req) => {
       rejected_with_websites: rejectedWithWebsites.length,
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
-      contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
+      contacts: rows.map((row) => ({ name: row.name, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
       message: `Added ${rows.length}. Checkatrade results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons and ${rejectedInvalidSources.length} invalid sources.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
