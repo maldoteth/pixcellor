@@ -2298,8 +2298,8 @@ export default function Portal() {
                   <div className="text-xs text-muted-foreground">{getContactCreatorLabel(contactDetailDrawerContact)} · {new Date(contactDetailDrawerContact.created_at).toLocaleString()}</div>
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
-                <div className="flex w-full items-center justify-end gap-2 overflow-x-auto md:w-auto md:flex-wrap md:overflow-visible">
-                  <div className="flex h-9 shrink-0 items-center gap-1" aria-label="Contact status">
+                <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:flex-row md:items-center md:justify-end md:overflow-visible">
+                  <div className="flex h-9 items-center justify-end gap-1" aria-label="Contact status">
                     {contactStatuses.map(status => (
                       <button
                         key={status.value}
@@ -2312,15 +2312,17 @@ export default function Portal() {
                       />
                     ))}
                   </div>
-                  <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
-                    Edit
-                  </Button>
-                  <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
-                    Create event
-                  </Button>
-                  <Button variant="pricing" size="icon" className="h-9 w-9 shrink-0 rounded-none shadow-none" aria-label="Archive contact" title="Archive contact" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center justify-end gap-2 overflow-x-auto md:overflow-visible">
+                    <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
+                      Edit
+                    </Button>
+                    <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
+                      Create event
+                    </Button>
+                    <Button variant="pricing" size="icon" className="h-9 w-9 shrink-0 rounded-none shadow-none" aria-label="Archive contact" title="Archive contact" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
               {editingContactId === contactDetailDrawerContact.id && (
