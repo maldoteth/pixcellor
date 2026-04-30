@@ -439,6 +439,7 @@ export default function Portal() {
   const [leadAgentForm, setLeadAgentForm] = useState({ trade: "", location: "", limit: "3" });
   const [leadAgentLoading, setLeadAgentLoading] = useState(false);
   const [leadAgentSummary, setLeadAgentSummary] = useState<string | null>(null);
+  const [leadAgentProgress, setLeadAgentProgress] = useState<number>(0);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot");
