@@ -186,6 +186,8 @@ type Contact = {
   notes: string | null;
   status: "cold" | "aware" | "warm" | "hot" | "gold" | "archived";
   source: string;
+  created_by_user_id?: string | null;
+  created_by_email?: string | null;
   created_at: string;
   updated_at: string;
 };
