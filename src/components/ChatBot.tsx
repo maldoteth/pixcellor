@@ -210,6 +210,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [quickAction, setQuickAction] = useState<"call" | "email" | null>(null);
   const [widgetSize, setWidgetSize] = useState(CHAT_WIDGET_DEFAULT_SIZE);
   const [widgetPosition, setWidgetPosition] = useState<{ x: number; y: number } | null>(null);
@@ -425,10 +426,8 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || isUploadingImage) return;
+  const uploadImageFile = async (file: File) => {
+    if (isUploadingImage) return;
     if (!file.type.startsWith("image/")) {
       setMessages((current) => [...current, { role: "assistant", content: "Please choose an image file." }]);
       return;
@@ -449,6 +448,44 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     } finally {
       setIsUploadingImage(false);
     }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    await uploadImageFile(file);
+  };
+
+  const getDraggedImageFile = (event: React.DragEvent) =>
+    Array.from(event.dataTransfer.files).find((file) => file.type.startsWith("image/")) ?? null;
+
+  const handleChatDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
+    if (Array.from(event.dataTransfer.items).some((item) => item.kind === "file" && item.type.startsWith("image/"))) {
+      event.preventDefault();
+      setIsDraggingImage(true);
+    }
+  };
+
+  const handleChatDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    if (Array.from(event.dataTransfer.items).some((item) => item.kind === "file" && item.type.startsWith("image/"))) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+      setIsDraggingImage(true);
+    }
+  };
+
+  const handleChatDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+    setIsDraggingImage(false);
+  };
+
+  const handleChatDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    const file = getDraggedImageFile(event);
+    if (!file) return;
+    event.preventDefault();
+    setIsDraggingImage(false);
+    await uploadImageFile(file);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -564,7 +601,38 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   };
 
   const chatContent = (
-    <div className="flex flex-col h-full">
+    <div
+      className="relative flex h-full flex-col"
+      onDragEnter={handleChatDragEnter}
+      onDragOver={handleChatDragOver}
+      onDragLeave={handleChatDragLeave}
+      onDrop={handleChatDrop}
+    >
+      <AnimatePresence>
+        {isDraggingImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-black/60 p-6 backdrop-blur-sm"
+          >
+            <div
+              className="flex w-full max-w-[280px] flex-col items-center gap-3 rounded-sm px-5 py-6 text-center text-white"
+              style={{
+                background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.07) 100%)",
+                border: "1px dashed rgba(255,255,255,0.45)",
+              }}
+            >
+              <ImageIcon className="h-7 w-7" />
+              <div>
+                <p className="text-sm font-semibold">Drop image to upload</p>
+                <p className="mt-1 text-xs text-white/60">Alex will read it in the chat.</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div 
         className="px-4 py-3 border-b border-white/10 md:cursor-move"
