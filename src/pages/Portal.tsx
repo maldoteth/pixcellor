@@ -2299,7 +2299,7 @@ export default function Portal() {
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
                 <div className="flex w-full items-center justify-end gap-2 overflow-x-auto md:w-auto md:flex-wrap md:overflow-visible text-left">
-                  <div className="flex h-9 shrink-0 items-center gap-1" aria-label="Contact status">
+                  <div className="mr-auto flex h-9 shrink-0 items-center gap-1 md:mr-0" aria-label="Contact status">
                     {contactStatuses.map(status => (
                       <button
                         key={status.value}
