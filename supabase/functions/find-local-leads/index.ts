@@ -412,6 +412,14 @@ Deno.serve(async (req) => {
       .or(`source.eq.lead_agent,location.ilike.%${location.replace(/[%_,]/g, "")}%`)
       .limit(5000);
 
+    const { data: leadHistory } = await supabase
+      .from("lead_search_history")
+      .select("source_url")
+      .eq("trade", trade.toLowerCase())
+      .eq("location", location.toLowerCase())
+      .limit(5000);
+    const seenSourceUrls = new Set((leadHistory ?? []).map((item: Record<string, unknown>) => normalizeUrl(item.source_url)).filter(Boolean));
+
     const added: Candidate[] = [];
     const skippedDuplicates: Candidate[] = [];
     const rejectedWithWebsites: Candidate[] = [];
@@ -428,6 +436,10 @@ Deno.serve(async (req) => {
       candidatesExtracted += 1;
       const name = cleanText(candidate.name, 100);
       const sourceUrl = cleanText(candidate.source_url, 500);
+      if (seenSourceUrls.has(normalizeUrl(sourceUrl))) {
+        skippedDuplicates.push(candidate);
+        continue;
+      }
       if (!name || !sourceUrl || !isCheckatradeUrl(sourceUrl)) {
         rejectedInvalidSources.push(candidate);
         continue;
@@ -444,7 +456,18 @@ Deno.serve(async (req) => {
         candidate.phone = await revealPhoneFromProfile(firecrawlKey, sourceUrl);
       }
       added.push({ ...candidate, name, source_url: sourceUrl });
+      seenSourceUrls.add(normalizeUrl(sourceUrl));
       if (added.length >= limit) break;
+    }
+
+    const historyRows = [
+      ...added.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "added", reason: null })),
+      ...skippedDuplicates.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "skipped", reason: "duplicate" })),
+      ...rejectedWithWebsites.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "rejected", reason: "has_website" })),
+      ...rejectedInvalidSources.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "rejected", reason: "invalid_source" })),
+    ].filter((row) => row.source_url);
+    if (historyRows.length > 0) {
+      await supabase.from("lead_search_history").upsert(historyRows, { onConflict: "source_url" });
     }
 
     const rows = added.map((candidate) => {
