@@ -1244,6 +1244,19 @@ export default function Portal() {
         toast.error(data?.error || error?.message || "Could not complete order");
         return;
       }
+      const matchingContact = contacts.find(contact => normalizeEmail(contact.email) === normalizeEmail(order.customer_email));
+      if (matchingContact && !matchingContact.website) {
+        await (supabase as any).rpc("portal_update_contact", {
+          _contact_id: matchingContact.id,
+          _name: matchingContact.name,
+          _phone: matchingContact.phone,
+          _email: matchingContact.email,
+          _location: matchingContact.location,
+          _notes: matchingContact.notes,
+          _industry: matchingContact.industry || "general",
+          _website: cleanDomain,
+        });
+      }
       await loadPortalSnapshot();
       if (data?.emailWarning) {
         toast.warning(`Order marked delivered, but the completion email failed: ${data.emailWarning}`);
