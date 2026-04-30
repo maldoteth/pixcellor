@@ -234,6 +234,11 @@ const formatPhoneHref = (value?: string | null) => {
   return /\d/.test(cleaned) ? `tel:${cleaned}` : null;
 };
 
+const formatWebsiteHref = (value?: string | null) => {
+  const website = (value ?? "").trim();
+  return website ? (website.startsWith("http://") || website.startsWith("https://") ? website : `https://${website}`) : null;
+};
+
 const normalizePhoneDigits = (value?: string | null) => (value ?? "").replace(/\D/g, "");
 
 const formatDateTimeLocal = (date: Date) => {
@@ -933,6 +938,7 @@ export default function Portal() {
       email: contact.email ?? "",
       location: contact.location ?? "",
       industry: contact.industry ?? "general",
+      website: contact.website ?? "",
       notes: contact.notes ?? "",
     });
     setOpenContactId(contact.id);
@@ -1026,6 +1032,7 @@ export default function Portal() {
       _location: contactForm.location,
       _notes: contactForm.notes,
       _industry: contactForm.industry || "general",
+      _website: contactForm.website,
     });
     if (error) {
       toast.error(error.message);
@@ -1036,7 +1043,7 @@ export default function Portal() {
       setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
       setContactDetailDrawerId(newContact.id);
     }
-    setContactForm({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
+    setContactForm({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
@@ -1085,13 +1092,14 @@ export default function Portal() {
       _location: editContactForm.location,
       _notes: editContactForm.notes,
       _industry: editContactForm.industry || "general",
+      _website: editContactForm.website,
     });
     if (error) {
       toast.error(error.message);
       return;
     }
     setEditingContactId(null);
-    setEditContactForm({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
+    setEditContactForm({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
     await loadPortalSnapshot();
     toast.success("Contact updated.");
   };
