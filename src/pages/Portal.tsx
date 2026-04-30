@@ -383,6 +383,7 @@ export default function Portal() {
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
   const [eventContactSuggestionsOpen, setEventContactSuggestionsOpen] = useState(false);
+  const [contactJobTitleSuggestionsOpen, setContactJobTitleSuggestionsOpen] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [manualReply, setManualReply] = useState("");
   const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
@@ -523,6 +524,10 @@ export default function Portal() {
   useEffect(() => {
     if (!mobileSalesDrawerOpen && !showSalesEventForm) setEventContactSuggestionsOpen(false);
   }, [mobileSalesDrawerOpen, showSalesEventForm]);
+
+  useEffect(() => {
+    if (!mobileContactDrawerOpen && !showContactForm) setContactJobTitleSuggestionsOpen(false);
+  }, [mobileContactDrawerOpen, showContactForm]);
 
   const loadMessages = async (conversationId: string) => {
     setActiveConv(conversationId);
@@ -835,13 +840,13 @@ export default function Portal() {
 
   const jobTitleSuggestions = useMemo(() => {
     const typed = contactForm.notes.trim().toLowerCase();
+    if (!typed) return [];
     const titles = Array.from(new Set(
       contacts
         .map(contact => contact.notes?.trim())
         .filter((title): title is string => Boolean(title))
     )).sort((a, b) => a.localeCompare(b));
 
-    if (!typed) return titles.slice(0, 8);
     return titles
       .filter(title => title.toLowerCase().includes(typed) && title.toLowerCase() !== typed)
       .slice(0, 8);
