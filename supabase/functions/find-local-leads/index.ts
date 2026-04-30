@@ -390,7 +390,7 @@ Deno.serve(async (req) => {
     const { trade: rawTrade, location: rawLocation, limit: rawLimit } = await req.json();
     const trade = cleanText(rawTrade, 80);
     const location = cleanText(rawLocation, 120);
-    const limit = Math.min(Math.max(Number(rawLimit) || 5, 1), 8);
+    const limit = Math.min(Math.max(Number(rawLimit) || 3, 1), 5);
     if (!trade || !location) throw new Error("Trade and location are required");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -406,16 +406,10 @@ Deno.serve(async (req) => {
       `site:checkatrade.com ${trade} ${location} Checkatrade`,
     ]);
 
-    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(limit * 3, 12))));
+    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(limit * 2, 8))));
     const searchResults = unique(searchBatches.flat().map((result) => JSON.stringify(result))).map((result) => JSON.parse(result) as SearchResult);
-    const listingUrls = unique(searchResults.map((result) => result.url).filter((url) => isCheckatradeUrl(url))).slice(0, Math.min(limit * 2, 12));
-    const listingPages: ScrapedPage[] = [];
-    for (const url of listingUrls) {
-      const page = await scrapeFirecrawl(firecrawlKey, url);
-      if (page) listingPages.push(page);
-      if (listingPages.length >= Math.min(limit, 6)) break;
-    }
-    const profileUrls = extractProfileUrls(searchResults, listingPages).slice(0, Math.min(limit * 3, 18));
+    const listingPages = searchResults.map(pageFromSearchResult);
+    const profileUrls = unique(searchResults.map((result) => result.url).filter(isLikelyProfileUrl)).slice(0, Math.min(limit * 2, 10));
 
     const { data: existing } = await supabase
       .from("contacts")
@@ -431,8 +425,7 @@ Deno.serve(async (req) => {
     let candidatesExtracted = 0;
 
     for (const url of profileUrls) {
-      const page = await scrapeCheckatradeProfile(firecrawlKey, url);
-      if (!page) continue;
+      const page = pageFromSearchResult(searchResults.find((result) => normalizeUrl(result.url) === normalizeUrl(url)) ?? { url, title: "", description: "", markdown: "" });
       profilePagesScraped += 1;
       const candidate = parseCandidateFromProfile(page, trade, location);
       if (!candidate) continue;
@@ -484,7 +477,7 @@ Deno.serve(async (req) => {
       ok: true,
       query: queries.join(" | "),
       searched: searchResults.length,
-      checkatrade_pages_searched: listingPages.length,
+      checkatrade_pages_searched: searchResults.length,
       profile_pages_scraped: profilePagesScraped,
       candidates_extracted: candidatesExtracted,
       extracted: candidatesExtracted,
@@ -494,7 +487,7 @@ Deno.serve(async (req) => {
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
       contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
-      message: `Added ${rows.length}. Checkatrade pages searched ${listingPages.length}, profiles scraped ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons, ${rejectedInvalidSources.length} invalid sources, ${rejectedInvalid.length} without revealed contact details.`,
+      message: `Added ${rows.length}. Checkatrade results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons, ${rejectedInvalidSources.length} invalid sources, ${rejectedInvalid.length} without contact details in search data.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
