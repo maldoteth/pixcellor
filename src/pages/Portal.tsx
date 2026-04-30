@@ -351,6 +351,9 @@ export default function Portal() {
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("sales");
   const [devChatOpen, setDevChatOpen] = useState(false);
+  const [leadAgentForm, setLeadAgentForm] = useState({ trade: "", location: "", limit: "10" });
+  const [leadAgentLoading, setLeadAgentLoading] = useState(false);
+  const [leadAgentSummary, setLeadAgentSummary] = useState<string | null>(null);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot");
@@ -973,6 +976,33 @@ export default function Portal() {
     setMobileContactStep(0);
     await loadPortalSnapshot();
     toast.success("Contact added.");
+  };
+
+  const runLeadAgent = async () => {
+    const trade = leadAgentForm.trade.trim();
+    const location = leadAgentForm.location.trim();
+    const limit = Math.min(Math.max(Number(leadAgentForm.limit) || 10, 1), 25);
+    if (!trade || !location) {
+      toast.error("Add a trade and location first.");
+      return;
+    }
+
+    setLeadAgentLoading(true);
+    setLeadAgentSummary(null);
+    const { data, error } = await supabase.functions.invoke("find-local-leads", {
+      body: { trade, location, limit },
+    });
+    setLeadAgentLoading(false);
+
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Lead agent failed");
+      return;
+    }
+
+    const summary = `Added ${data.added ?? 0}. Skipped ${data.skipped_duplicates ?? 0} duplicates. Rejected ${data.rejected_with_websites ?? 0} with websites.`;
+    setLeadAgentSummary(summary);
+    await loadPortalSnapshot();
+    toast.success(summary);
   };
 
   const updateContact = async () => {
