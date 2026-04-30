@@ -354,21 +354,36 @@ function guessBusinessName(page: ScrapedPage, trade: string, location: string) {
   return cleanCompanyName(heading, trade, location);
 }
 
-function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: string): Candidate | null {
+async function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: string, apiKey: string): Promise<Candidate | null> {
   const text = `${page.title}\n${page.markdown}\n${page.html}`;
   const name = guessBusinessName(page, trade, location);
   if (!name || /checkatrade|find a tradesperson|search results|reviews for/i.test(name)) return null;
 
-  const websites = externalWebsiteLinks(page);
+  const linkedWebsites = externalWebsiteLinks(page);
   const phones = extractPhones(text);
   const emails = extractEmails(text).filter((email) => !email.endsWith("@checkatrade.com"));
-  const socialUrl = (page.links.find((link) => /facebook\.com|instagram\.com/i.test(link)) ?? "");
+  const linkedSocial = page.links.find((link) => /facebook\.com|instagram\.com/i.test(link)) ?? "";
   const sourcePlatform = getSourcePlatform(page.url);
-  const websiteStatus = websites.length > 0 ? "has_website" : socialUrl ? "social_only" : "no_website_found";
-  const score = Math.min(100, Math.max(10, 55 + (websites.length === 0 ? 25 : -20) + (socialUrl ? 10 : 0) + (phones[0] ? 8 : 0) + (emails[0] ? 5 : 0) + (sourcePlatform === "Checkatrade" ? 5 : 0)));
+
+  // Verify on the open web whether this company actually has its own domain
+  const verified = await verifyOwnWebsite(apiKey, name, location);
+  const ownDomainUrl = linkedWebsites.find((u) => !isDirectoryHost(u)) || verified.ownDomainUrl || "";
+  const socialUrl = linkedSocial || verified.socialUrl || "";
+
+  const websiteStatus = ownDomainUrl ? "has_website" : socialUrl ? "social_only" : "no_website_found";
+  const onGoogleMaps = sourcePlatform === "Google Maps";
+  let score = 50;
+  if (!ownDomainUrl) score += 40;
+  else score -= 25;
+  if (!ownDomainUrl && socialUrl) score += 25;
+  if (phones[0]) score += 15;
+  if (emails[0]) score += 10;
+  if (onGoogleMaps) score += 5;
+  score = Math.min(100, Math.max(10, score));
+
   const evidence = cleanText(
     page.markdown.split("\n").find((line) => /website|phone|contact|about|services|based|menu|booking|reviews|address/i.test(line) && line.length > 30) ??
-      `${sourcePlatform} profile inspected for ${name}.`,
+      `${sourcePlatform} listing inspected for ${name}.`,
     220,
   );
 
@@ -382,12 +397,12 @@ function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: s
     source_url: page.url,
     source_platform: sourcePlatform,
     evidence,
-    has_standalone_website: websites.length > 0,
-    website_url: websites[0] ?? "",
+    has_standalone_website: !!ownDomainUrl,
+    website_url: ownDomainUrl,
     social_url: socialUrl,
     website_status: websiteStatus,
     lead_score: score,
-    lead_score_reason: cleanText(`${websiteStatus.replace(/_/g, " ")}; ${phones[0] ? "phone found" : "phone missing"}; found via ${sourcePlatform}. ${evidence}`, 500),
+    lead_score_reason: cleanText(`${websiteStatus.replace(/_/g, " ")}; ${phones[0] ? "phone found" : "phone missing"}; via ${sourcePlatform}. ${evidence}`, 500),
   };
 }
 
