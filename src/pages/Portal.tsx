@@ -1040,7 +1040,7 @@ export default function Portal() {
       return;
     }
 
-    const summary = `Added ${data.added ?? 0}. Skipped ${data.skipped_duplicates ?? 0} duplicates. Rejected ${data.rejected_with_websites ?? 0} with websites.`;
+    const summary = `Added ${data.added ?? 0}. Skipped ${data.skipped_duplicates ?? 0} duplicates. Rejected ${data.rejected_with_websites ?? 0} with websites and ${data.rejected_invalid_sources ?? 0} dead sources.`;
     setLeadAgentSummary(summary);
     await loadPortalSnapshot();
     toast.success(summary);
