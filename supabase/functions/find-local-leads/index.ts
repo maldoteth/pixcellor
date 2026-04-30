@@ -614,29 +614,39 @@ async function revealPhoneFromProfile(apiKey: string, url: string) {
   return "";
 }
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+// Run a list of async tasks with a max parallelism cap
+async function runChunked<T, R>(items: T[], concurrency: number, worker: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = [];
+  for (let i = 0; i < items.length; i += concurrency) {
+    const slice = items.slice(i, i + concurrency);
+    const settled = await Promise.allSettled(slice.map(worker));
+    for (const r of settled) {
+      if (r.status === "fulfilled") results.push(r.value);
+    }
+  }
+  return results;
+}
+
+async function runLeadGeneration(jobId: string, supabase: ReturnType<typeof createClient>, firecrawlKey: string, trade: string, location: string, limit: number) {
+  const startedAt = Date.now();
+  const wallClockBudgetMs = 110_000; // ~110s safety budget
+
+  const updateJob = async (patch: Record<string, unknown>) => {
+    await supabase.from("processing_jobs").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", jobId);
+  };
 
   try {
-    const { trade: rawTrade, location: rawLocation, limit: rawLimit } = await req.json();
-    const trade = cleanText(rawTrade, 80);
-    const location = cleanText(rawLocation, 120);
-    const limit = Math.min(Math.max(Number(rawLimit) || 3, 1), 5);
-    if (!trade || !location) throw new Error("Trade and location are required");
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
-    if (!firecrawlKey) throw new Error("Firecrawl connector is not configured");
-
-    const supabase = createClient(supabaseUrl, serviceKey);
-    await requireAdmin(req, supabase);
+    await updateJob({ status: "processing", progress: 5 });
 
     const queries = tradeQueryVariants(trade, location);
+    // Cap parallel Firecrawl searches to 4 at a time
+    const searchBatchesNested = await runChunked(queries, 4, (query) =>
+      searchFirecrawl(firecrawlKey, query, Math.min(Math.max(limit * 4, 12), 20)).catch(() => [] as SearchResult[]),
+    );
+    const searchResults = unique(searchBatchesNested.flat().map((result) => JSON.stringify(result))).map((result) => JSON.parse(result) as SearchResult);
+    const profileUrls = unique(searchResults.map((result) => result.url).filter(isLikelyProfileUrl)).slice(0, Math.min(Math.max(limit * 10, 35), 60));
 
-    const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(Math.max(limit * 4, 12), 20))));
-    const searchResults = unique(searchBatches.flat().map((result) => JSON.stringify(result))).map((result) => JSON.parse(result) as SearchResult);
-    const profileUrls = unique(searchResults.map((result) => result.url).filter(isLikelyProfileUrl)).slice(0, Math.min(Math.max(limit * 10, 35), 80));
+    await updateJob({ progress: 30 });
 
     const { data: existing } = await supabase
       .from("contacts")
@@ -659,12 +669,18 @@ Deno.serve(async (req) => {
     const rejectedInvalid: Candidate[] = [];
     let profilePagesScraped = 0;
     let candidatesExtracted = 0;
+    let verifyBudget = 12; // cap calls to verifyOwnWebsite per run
+    let phoneRevealBudget = 6; // cap calls to revealPhoneFromProfile per run
 
     for (const url of profileUrls) {
+      if (Date.now() - startedAt > wallClockBudgetMs) break;
       const page = pageFromSearchResult(searchResults.find((result) => normalizeUrl(result.url) === normalizeUrl(url)) ?? { url, title: "", description: "", markdown: "" });
       profilePagesScraped += 1;
-      const candidate = await parseCandidateFromProfile(page, trade, location, firecrawlKey);
+      const skipVerify = verifyBudget <= 0;
+      const candidate = await parseCandidateFromProfile(page, trade, location, firecrawlKey, { skipVerify });
       if (!candidate) continue;
+      // Only "spend" verify budget if a verification call would have been made
+      if (!skipVerify) verifyBudget -= 1;
       candidatesExtracted += 1;
       const name = cleanText(candidate.name, 100);
       const sourceUrl = cleanText(candidate.source_url, 500);
@@ -676,7 +692,6 @@ Deno.serve(async (req) => {
         rejectedInvalidSources.push(candidate);
         continue;
       }
-      // Only reject companies that confirmed have their own website AND scored low
       if (candidate.has_standalone_website === true && (candidate.lead_score ?? 0) < 50) {
         rejectedWithWebsites.push(candidate);
         continue;
@@ -685,19 +700,22 @@ Deno.serve(async (req) => {
         skippedDuplicates.push(candidate);
         continue;
       }
-      if (!cleanText(candidate.phone, 40)) {
-        candidate.phone = await revealPhoneFromProfile(firecrawlKey, sourceUrl);
+      if (!cleanText(candidate.phone, 40) && phoneRevealBudget > 0) {
+        phoneRevealBudget -= 1;
+        candidate.phone = await revealPhoneFromProfile(firecrawlKey, sourceUrl).catch(() => "");
       }
       added.push({ ...candidate, name, source_url: sourceUrl });
       seenSourceUrls.add(normalizeUrl(sourceUrl));
       if (added.length >= limit) break;
     }
 
+    await updateJob({ progress: 75 });
+
     const historyRows = [
-      ...added.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "added", reason: null })),
-      ...skippedDuplicates.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "skipped", reason: "duplicate" })),
-      ...rejectedWithWebsites.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "rejected", reason: "has_website" })),
-      ...rejectedInvalidSources.map((candidate) => ({ source_url: normalizeUrl(candidate.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "rejected", reason: "invalid_source" })),
+      ...added.map((c) => ({ source_url: normalizeUrl(c.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "added", reason: null })),
+      ...skippedDuplicates.map((c) => ({ source_url: normalizeUrl(c.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "skipped", reason: "duplicate" })),
+      ...rejectedWithWebsites.map((c) => ({ source_url: normalizeUrl(c.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "rejected", reason: "has_website" })),
+      ...rejectedInvalidSources.map((c) => ({ source_url: normalizeUrl(c.source_url), trade: trade.toLowerCase(), location: location.toLowerCase(), outcome: "rejected", reason: "invalid_source" })),
     ].filter((row) => row.source_url);
     if (historyRows.length > 0) {
       await supabase.from("lead_search_history").upsert(historyRows, { onConflict: "source_url" });
@@ -732,26 +750,81 @@ Deno.serve(async (req) => {
         const { error: fallbackError } = await supabase.from("contacts").upsert(fallbackRows, { onConflict: "source_url", ignoreDuplicates: true });
         if (fallbackError) throw new Error(fallbackError.message);
       } else if (error && /duplicate key|unique constraint|23505/i.test(error.message)) {
-        // Another run already saved one of these Checkatrade profiles; application-level checks will skip it next time.
+        // ignore — application-level checks will skip next time
       } else if (error) throw new Error(error.message);
     }
 
-    return new Response(JSON.stringify({
+    const partial = Date.now() - startedAt > wallClockBudgetMs;
+    const result = {
       ok: true,
+      partial,
       query: queries.join(" | "),
       searched: searchResults.length,
-      checkatrade_pages_searched: searchResults.length,
       profile_pages_scraped: profilePagesScraped,
       candidates_extracted: candidatesExtracted,
-      extracted: candidatesExtracted,
       added: rows.length,
       skipped_duplicates: skippedDuplicates.length,
       rejected_with_websites: rejectedWithWebsites.length,
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
       contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, website: row.website, lead_score: row.lead_score, website_status: row.website_status, notes: row.notes })),
-      message: `Added ${rows.length}. Multi-source results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} lower-value leads with websites and ${rejectedInvalidSources.length} invalid sources.`,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      message: `Added ${rows.length}. Checked ${searchResults.length} results, parsed ${profilePagesScraped} profiles, extracted ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates, rejected ${rejectedWithWebsites.length} with websites and ${rejectedInvalidSources.length} invalid.${partial ? " (Time budget reached — partial run.)" : ""}`,
+    };
+
+    await updateJob({ status: "complete", progress: 100, result });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    await updateJob({ status: "failed", error: message });
+  }
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  try {
+    const { trade: rawTrade, location: rawLocation, limit: rawLimit } = await req.json();
+    const trade = cleanText(rawTrade, 80);
+    const location = cleanText(rawLocation, 120);
+    const limit = Math.min(Math.max(Number(rawLimit) || 3, 1), 5);
+    if (!trade || !location) throw new Error("Trade and location are required");
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
+    if (!firecrawlKey) throw new Error("Firecrawl connector is not configured");
+
+    const supabase = createClient(supabaseUrl, serviceKey);
+
+    // Validate that the caller is an admin (reuses the access-token approach)
+    const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !userData.user) throw new Error("Admin sign-in required");
+    const { data: hasAdminRole } = await supabase.rpc("has_role", {
+      _user_id: userData.user.id,
+      _role: "admin",
+    });
+    if (!hasAdminRole) throw new Error("Admin access required");
+
+    // Create the job row, then run heavy work in the background
+    const { data: job, error: jobError } = await supabase
+      .from("processing_jobs")
+      .insert({
+        job_type: "find_leads",
+        status: "queued",
+        progress: 0,
+        payload: { trade, location, limit },
+        created_by: userData.user.id,
+      })
+      .select("id")
+      .single();
+    if (jobError || !job) throw new Error(jobError?.message || "Failed to queue job");
+
+    // @ts-ignore - EdgeRuntime is provided by the Supabase Edge runtime
+    EdgeRuntime.waitUntil(runLeadGeneration(job.id as string, supabase, firecrawlKey, trade, location, limit));
+
+    return new Response(JSON.stringify({ ok: true, job_id: job.id, status: "queued" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return new Response(JSON.stringify({ ok: false, error: message }), {
