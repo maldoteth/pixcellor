@@ -810,7 +810,7 @@ export default function Portal() {
         email: contact.email,
         location: contact.location,
         industry: contact.industry,
-        source: "Contact",
+        source: "Client",
         date: contact.updated_at,
         contactId: contact.id,
       }));
@@ -1111,7 +1111,7 @@ export default function Portal() {
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
-    toast.success("Contact added.");
+    toast.success("Client added.");
   };
 
   const runLeadAgent = async () => {
@@ -1166,12 +1166,12 @@ export default function Portal() {
     setEditingContactId(null);
     setEditContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
     await loadPortalSnapshot();
-    toast.success("Contact updated.");
+    toast.success("Client updated.");
   };
 
   const createContactEvent = async () => {
     if (!eventForm.contact_id) {
-      toast.error("Select a contact.");
+      toast.error("Select a client.");
       return;
     }
     const selectedContactId = eventForm.contact_id;
@@ -1201,7 +1201,7 @@ export default function Portal() {
     setShowSalesEventForm(false);
     setMobileSalesDrawerOpen(false);
     setMobileSalesStep(0);
-    toast.success(hasCallback ? "Callback scheduled." : "Event logged in contact history.");
+    toast.success(hasCallback ? "Callback scheduled." : "Event logged in client history.");
   };
 
   const completeCallback = async (eventId: string) => {
@@ -1242,7 +1242,7 @@ export default function Portal() {
   const archiveContact = async (contactId: string) => {
     await updateContactStatus(contactId, "archived");
     setContactDetailDrawerId(null);
-    toast.success("Contact archived.");
+    toast.success("Client archived.");
   };
 
   const markOrderDelivered = async (order: StripeSession) => {
@@ -1428,7 +1428,7 @@ export default function Portal() {
           <span className="text-xs text-muted-foreground">{[contact.email, contact.phone, contact.location, contact.industry].filter(Boolean).join(" · ") || "No extra details"}</span>
         </button>
       )) : (
-        <div className="flex h-full items-center justify-center px-3 text-sm text-muted-foreground">No contacts found</div>
+        <div className="flex h-full items-center justify-center px-3 text-sm text-muted-foreground">No clients found</div>
       )}
     </div>
   );
@@ -1474,7 +1474,7 @@ export default function Portal() {
         <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
         <Input placeholder="Industry" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
         <Input placeholder="Website domain" value={contactForm.website} onChange={(e) => setContactForm(f => ({ ...f, website: e.target.value }))} />
-        <Input placeholder="Contact name" value={contactForm.contact_name} onChange={(e) => setContactForm(f => ({ ...f, contact_name: e.target.value }))} />
+        <Input placeholder="Client name" value={contactForm.contact_name} onChange={(e) => setContactForm(f => ({ ...f, contact_name: e.target.value }))} />
         <div className="relative">
           <Input
             placeholder="Job title"
@@ -1489,7 +1489,7 @@ export default function Portal() {
           {contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
         </div>
         <div className="md:col-span-2 flex gap-2">
-          <Button onClick={createContact}>Save contact</Button>
+          <Button onClick={createClient}>Save client</Button>
           <Button variant="outline" className="rounded-none shadow-none" onClick={() => setShowContactForm(false)}>Cancel</Button>
         </div>
       </CardContent>
@@ -1501,7 +1501,7 @@ export default function Portal() {
       <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="relative">
           <Input
-            placeholder="Search contact"
+            placeholder="Search client"
             value={eventContactSearch}
             onChange={(e) => handleEventContactSearch(e.target.value)}
             onDoubleClick={() => setEventContactSuggestionsOpen(true)}
@@ -1598,14 +1598,14 @@ export default function Portal() {
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats ({filteredConversations.length})</TabsTrigger>
             <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({filteredProfiles.length})</TabsTrigger>
             <TabsTrigger value="inquiries" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Mail className="h-3.5 w-3.5 shrink-0" />Enquiries ({filteredInquiries.length})</TabsTrigger>
-            <TabsTrigger value="contacts" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserPlus className="h-3.5 w-3.5 shrink-0" />Contacts ({filteredContacts.length})</TabsTrigger>
+            <TabsTrigger value="contacts" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserPlus className="h-3.5 w-3.5 shrink-0" />Clients ({filteredContacts.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sales" className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">Sales follow-ups</h2>
-                <p className="text-sm text-muted-foreground">Log contact events and keep future callbacks visible.</p>
+                <p className="text-sm text-muted-foreground">Log client events and keep future callbacks visible.</p>
               </div>
             </div>
 
@@ -1614,11 +1614,11 @@ export default function Portal() {
               <Input
                 value={salesSearch}
                 onChange={(e) => setSalesSearch(e.target.value)}
-                placeholder="Search sales callbacks by contact, title, notes, phone, email…"
+                placeholder="Search sales callbacks by client, title, notes, phone, email…"
                 className="pl-9"
               />
               {!contactsQ && filteredContacts.length > 10 && (
-                <p className="mt-1 text-xs text-muted-foreground">Showing 10 most recent contacts. Search to find older contacts.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Showing 10 most recent clients. Search to find older clients.</p>
               )}
             </div>
 
@@ -1627,11 +1627,11 @@ export default function Portal() {
                 <Plus className="w-4 h-4 mr-2" /> Create event
               </Button>
               <Button onClick={() => setShowContactForm(v => !v)}>
-                <UserPlus className="w-4 h-4 mr-2" /> Create contact
+                <UserPlus className="w-4 h-4 mr-2" /> Create client
               </Button>
             </div>
 
-            {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a contact first, then you can create sales events.</p>}
+            {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a client first, then you can create sales events.</p>}
 
             {contactFormCard}
             {eventFormCard}
@@ -1663,7 +1663,7 @@ export default function Portal() {
                     <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
                         <div className="font-medium">{e.title}</div>
-                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown contact"} · {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
+                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
                         {contact?.phone && (phoneHref ? (
                           <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
                             {contact.phone}
@@ -2154,7 +2154,7 @@ export default function Portal() {
 
           <TabsContent value="contacts" className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold">Contact book</h2>
+              <h2 className="text-lg font-semibold">Client book</h2>
             </div>
 
             <div className="relative">
@@ -2162,13 +2162,13 @@ export default function Portal() {
               <Input
                 value={contactsSearch}
                 onChange={(e) => setContactsSearch(e.target.value)}
-                placeholder="Search contacts by name, email, phone, location, notes, history…"
+                placeholder="Search clients by name, email, phone, location, notes, history…"
                 className="pl-9"
               />
             </div>
 
             <div className="flex justify-start">
-              <Button onClick={() => setShowContactForm(v => !v)}><Plus className="w-4 h-4 mr-2" /> Add contact</Button>
+              <Button onClick={() => setShowContactForm(v => !v)}><Plus className="w-4 h-4 mr-2" /> Add client</Button>
             </div>
 
             <Card>
@@ -2221,7 +2221,7 @@ export default function Portal() {
 
             {eventFormCard}
 
-            {searchedContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {contactsQ ? "match your search" : "yet"}.</p>}
+            {searchedContacts.length === 0 && <p className="text-muted-foreground text-sm">No clients {contactsQ ? "match your search" : "yet"}.</p>}
             {searchedContacts.map(c => {
               const events = filteredContactEvents.filter(e => e.contact_id === c.id);
               const contactEmail = normalizeEmail(c.email);
@@ -2254,7 +2254,7 @@ export default function Portal() {
                             <span className="font-medium">{c.name}</span>
                             {orderStats && <Badge variant="secondary">Client</Badge>}
                           </div>
-                          {c.contact_name && <div className="text-xs text-muted-foreground">Contact: {c.contact_name}</div>}
+                          {c.contact_name && <div className="text-xs text-muted-foreground">Client: {c.contact_name}</div>}
                           <div className="text-xs text-muted-foreground">{[c.email, c.location, c.industry, c.website].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
                           {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
                         </div>
@@ -2274,14 +2274,14 @@ export default function Portal() {
                         <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
                           <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={(event) => { event.stopPropagation(); startEditingContact(c); }}>Edit</Button>
                           <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={(event) => { event.stopPropagation(); openEventFormForContact(c.id); }}>Create event</Button>
-                          <Button variant="pricing" size="icon" className="h-9 w-9 rounded-none shadow-none" aria-label="Archive contact" title="Archive contact" onClick={(event) => { event.stopPropagation(); archiveContact(c.id); }}>
+                          <Button variant="pricing" size="icon" className="h-9 w-9 rounded-none shadow-none" aria-label="Archive client" title="Archive client" onClick={(event) => { event.stopPropagation(); archiveContact(c.id); }}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="hidden items-center gap-1 md:flex" aria-label="Contact status">
+                      <div className="hidden items-center gap-1 md:flex" aria-label="Client status">
                         {contactStatuses.map(status => (
                           <button
                             key={status.value}
@@ -2297,7 +2297,7 @@ export default function Portal() {
                       <button type="button" onClick={(event) => { event.stopPropagation(); setOpenContactId(isOpen ? null : c.id); }}>
                         <Badge variant="secondary" className="cursor-pointer">{events.length} logs</Badge>
                       </button>
-                      <div className="flex items-center gap-1 md:hidden" aria-label="Contact status">
+                      <div className="flex items-center gap-1 md:hidden" aria-label="Client status">
                         {contactStatuses.map(status => (
                           <button
                             key={status.value}
@@ -2319,7 +2319,7 @@ export default function Portal() {
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                         <Input placeholder="Industry" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
                         <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
-                        <Input placeholder="Contact name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
+                        <Input placeholder="Client name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
                         <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
                           <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
@@ -2422,9 +2422,9 @@ export default function Portal() {
           }}
         >
           <DrawerHeader className="mx-auto w-full max-w-3xl px-0 text-left">
-            <DrawerTitle>{contactDetailDrawerContact?.name ?? "Contact"}</DrawerTitle>
+            <DrawerTitle>{contactDetailDrawerContact?.name ?? "Client"}</DrawerTitle>
             <DrawerDescription>
-              {[contactDetailDrawerContact?.email, contactDetailDrawerContact?.location, contactDetailDrawerContact?.industry, contactDetailDrawerContact?.website].filter(Boolean).join(" · ") || "Sales contact"}
+              {[contactDetailDrawerContact?.email, contactDetailDrawerContact?.location, contactDetailDrawerContact?.industry, contactDetailDrawerContact?.website].filter(Boolean).join(" · ") || "Sales client"}
               {contactDetailDrawerContact ? ` · ${getContactCreatorLabel(contactDetailDrawerContact)}` : ""}
             </DrawerDescription>
           </DrawerHeader>
@@ -2439,7 +2439,7 @@ export default function Portal() {
                   ) : (
                     <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.phone}</div>
                   ))}
-                  {contactDetailDrawerContact.contact_name && <div className="text-sm text-muted-foreground">Contact: {contactDetailDrawerContact.contact_name}</div>}
+                  {contactDetailDrawerContact.contact_name && <div className="text-sm text-muted-foreground">Client: {contactDetailDrawerContact.contact_name}</div>}
                   {contactDetailDrawerContact.industry && <Badge variant="outline" className="rounded-none capitalize">{contactDetailDrawerContact.industry}</Badge>}
                   {contactDetailDrawerContact.website && formatWebsiteHref(contactDetailDrawerContact.website) && <a href={formatWebsiteHref(contactDetailDrawerContact.website)!} target="_blank" rel="noopener noreferrer" className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline">{contactDetailDrawerContact.website}</a>}
                   {contactDetailDrawerContact.notes && <LinkifiedText text={contactDetailDrawerContact.notes} className="block text-sm text-muted-foreground" />}
@@ -2447,7 +2447,7 @@ export default function Portal() {
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
                 <div className="flex w-full items-center justify-end gap-2 overflow-x-auto md:w-auto md:flex-wrap md:overflow-visible text-left">
-                  <div className="mr-auto flex h-9 shrink-0 items-center gap-1 md:mr-0" aria-label="Contact status">
+                  <div className="mr-auto flex h-9 shrink-0 items-center gap-1 md:mr-0" aria-label="Client status">
                     {contactStatuses.map(status => (
                       <button
                         key={status.value}
@@ -2467,7 +2467,7 @@ export default function Portal() {
                     <Plus className="h-4 w-4 md:mr-2" />
                     <span className="hidden md:inline">Create event</span>
                   </Button>
-                  <Button variant="pricing" size="icon" className="h-9 w-9 shrink-0 rounded-none shadow-none" aria-label="Archive contact" title="Archive contact" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
+                  <Button variant="pricing" size="icon" className="h-9 w-9 shrink-0 rounded-none shadow-none" aria-label="Archive client" title="Archive client" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -2480,10 +2480,10 @@ export default function Portal() {
                   <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                   <Input placeholder="Industry" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
                   <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
-                  <Input placeholder="Contact name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
+                  <Input placeholder="Client name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
                   <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                   <div className="flex gap-2 md:col-span-2">
-                    <Button onClick={updateContact}>Save changes</Button>
+                    <Button onClick={updateClient}>Save changes</Button>
                     <Button variant="outline" className="rounded-none shadow-none" onClick={() => setEditingContactId(null)}>Cancel</Button>
                   </div>
                 </div>
@@ -2544,7 +2544,7 @@ export default function Portal() {
       <Drawer open={mobileContactDrawerOpen} onOpenChange={setMobileContactDrawerOpen}>
         <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl lg:hidden">
           <DrawerHeader className="px-0 text-left">
-            <DrawerTitle>Create contact</DrawerTitle>
+            <DrawerTitle>Create client</DrawerTitle>
             <DrawerDescription>Step {mobileContactStep + 1} of {contactWizardFields.length}</DrawerDescription>
           </DrawerHeader>
           <div className="space-y-5">
