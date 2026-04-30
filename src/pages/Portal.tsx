@@ -2255,6 +2255,9 @@ export default function Portal() {
                         <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
                           <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={(event) => { event.stopPropagation(); startEditingContact(c); }}>Edit</Button>
                           <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={(event) => { event.stopPropagation(); openEventFormForContact(c.id); }}>Create event</Button>
+                          <Button variant="pricing" size="icon" className="h-9 w-9 rounded-none shadow-none" aria-label="Archive contact" title="Archive contact" onClick={(event) => { event.stopPropagation(); archiveContact(c.id); }}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </div>
