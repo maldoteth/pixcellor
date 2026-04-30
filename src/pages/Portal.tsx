@@ -2254,6 +2254,7 @@ export default function Portal() {
                             <span className="font-medium">{c.name}</span>
                             {orderStats && <Badge variant="secondary">Client</Badge>}
                           </div>
+                          {c.contact_name && <div className="text-xs text-muted-foreground">Contact: {c.contact_name}</div>}
                           <div className="text-xs text-muted-foreground">{[c.email, c.location, c.industry, c.website].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
                           {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
                         </div>
@@ -2312,12 +2313,13 @@ export default function Portal() {
                     </div>
                     {editingContactId === c.id && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-none border border-border p-3" onClick={(event) => event.stopPropagation()}>
-                        <Input placeholder="Name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
+                        <Input placeholder="Company name" value={editContactForm.name} onChange={(e) => setEditContactForm(f => ({ ...f, name: e.target.value }))} />
                         <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                         <Input placeholder="Industry" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
                         <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
+                        <Input placeholder="Contact name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
                         <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
                           <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
