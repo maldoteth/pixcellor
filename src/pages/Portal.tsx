@@ -2197,9 +2197,15 @@ export default function Portal() {
                 <CardTitle className="text-base">AI lead finder</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-3 md:grid-cols-[1fr_1fr_120px_auto]">
-                <Input placeholder="Trade e.g. electricians" value={leadAgentForm.trade} onChange={(e) => setLeadAgentForm(f => ({ ...f, trade: e.target.value }))} />
-                <Input placeholder="Location e.g. Bristol" value={leadAgentForm.location} onChange={(e) => setLeadAgentForm(f => ({ ...f, location: e.target.value }))} />
-                <Input type="number" min={1} max={8} value={leadAgentForm.limit} onChange={(e) => setLeadAgentForm(f => ({ ...f, limit: e.target.value }))} />
+                <div className="relative">
+                  <Input placeholder="Trade e.g. electricians" value={leadAgentForm.trade} onChange={(e) => { setLeadAgentForm(f => ({ ...f, trade: e.target.value })); setLeadTradeSuggestionsOpen(Boolean(e.target.value.trim())); }} onFocus={() => setLeadTradeSuggestionsOpen(Boolean(leadAgentForm.trade.trim()))} onBlur={() => window.setTimeout(() => setLeadTradeSuggestionsOpen(false), 120)} />
+                  {leadTradeSuggestionsOpen && renderLeadSuggestionList(leadTradeSuggestions, "trade", () => setLeadTradeSuggestionsOpen(false))}
+                </div>
+                <div className="relative">
+                  <Input placeholder="Location e.g. Bristol" value={leadAgentForm.location} onChange={(e) => { setLeadAgentForm(f => ({ ...f, location: e.target.value })); setLeadLocationSuggestionsOpen(Boolean(e.target.value.trim())); }} onFocus={() => setLeadLocationSuggestionsOpen(Boolean(leadAgentForm.location.trim()))} onBlur={() => window.setTimeout(() => setLeadLocationSuggestionsOpen(false), 120)} />
+                  {leadLocationSuggestionsOpen && renderLeadSuggestionList(leadLocationSuggestions, "location", () => setLeadLocationSuggestionsOpen(false))}
+                </div>
+                <Input type="number" min={1} max={5} value={leadAgentForm.limit} onChange={(e) => setLeadAgentForm(f => ({ ...f, limit: e.target.value }))} />
                 <Button onClick={runLeadAgent} disabled={leadAgentLoading} className="gap-2">
                   {leadAgentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserSearch className="h-4 w-4" />}
                   Find leads
