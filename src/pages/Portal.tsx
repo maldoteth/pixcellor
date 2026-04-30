@@ -183,6 +183,7 @@ type Contact = {
   phone: string | null;
   email: string | null;
   location: string | null;
+  industry: string | null;
   notes: string | null;
   status: "cold" | "aware" | "warm" | "hot" | "gold" | "archived";
   source: string;
@@ -323,6 +324,7 @@ const contactWizardFields = [
   { key: "phone", label: "Number", placeholder: "Phone number", required: true, inputMode: "tel" },
   { key: "email", label: "Email", placeholder: "Email address", required: false, inputMode: "email" },
   { key: "location", label: "Location", placeholder: "Town or area", required: false, inputMode: "text" },
+  { key: "industry", label: "Industry", placeholder: "Industry e.g. construction", required: false, inputMode: "text" },
   { key: "notes", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
 ] as const;
 
@@ -374,9 +376,9 @@ export default function Portal() {
   const [mobileOrdersDrawerOpen, setMobileOrdersDrawerOpen] = useState(false);
   const [mobileContactStep, setMobileContactStep] = useState(0);
   const [mobileSalesStep, setMobileSalesStep] = useState(0);
-  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
+  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
-  const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", notes: "" });
+  const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
@@ -776,7 +778,7 @@ export default function Portal() {
     );
     return contacts.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
     );
   }, [contacts, contactEvents, contactsQ]);
 
@@ -826,7 +828,7 @@ export default function Portal() {
       ));
       return (
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
       );
     }));
   }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactsSortOrder, contactOrderStatsByEmail]);
@@ -852,7 +854,7 @@ export default function Portal() {
     if (!query) return sortedContacts;
 
     return sortedContacts.filter(contact =>
-      [`${contact.name}${contact.email ? ` · ${contact.email}` : ""}`, contact.name, contact.email, contact.phone, contact.location, contact.notes]
+      [`${contact.name}${contact.email ? ` · ${contact.email}` : ""}`, contact.name, contact.email, contact.phone, contact.location, contact.industry, contact.notes]
         .some(value => value?.toLowerCase().includes(query))
     );
   }, [contacts, eventContactSearch]);
@@ -921,6 +923,7 @@ export default function Portal() {
       phone: contact.phone ?? "",
       email: contact.email ?? "",
       location: contact.location ?? "",
+      industry: contact.industry ?? "general",
       notes: contact.notes ?? "",
     });
     setOpenContactId(contact.id);
@@ -1013,6 +1016,7 @@ export default function Portal() {
       _email: contactForm.email,
       _location: contactForm.location,
       _notes: contactForm.notes,
+      _industry: contactForm.industry || "general",
     });
     if (error) {
       toast.error(error.message);
@@ -1023,7 +1027,7 @@ export default function Portal() {
       setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
       setContactDetailDrawerId(newContact.id);
     }
-    setContactForm({ name: "", phone: "", email: "", location: "", notes: "" });
+    setContactForm({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
@@ -1071,13 +1075,14 @@ export default function Portal() {
       _email: editContactForm.email,
       _location: editContactForm.location,
       _notes: editContactForm.notes,
+      _industry: editContactForm.industry || "general",
     });
     if (error) {
       toast.error(error.message);
       return;
     }
     setEditingContactId(null);
-    setEditContactForm({ name: "", phone: "", email: "", location: "", notes: "" });
+    setEditContactForm({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
     await loadPortalSnapshot();
     toast.success("Contact updated.");
   };
@@ -1325,7 +1330,7 @@ export default function Portal() {
           onClick={() => selectEventContact(contact)}
         >
           <span className="font-medium text-foreground">{contact.name}</span>
-          <span className="text-xs text-muted-foreground">{[contact.email, contact.phone, contact.location].filter(Boolean).join(" · ") || "No extra details"}</span>
+          <span className="text-xs text-muted-foreground">{[contact.email, contact.phone, contact.location, contact.industry].filter(Boolean).join(" · ") || "No extra details"}</span>
         </button>
       )) : (
         <div className="flex h-full items-center justify-center px-3 text-sm text-muted-foreground">No contacts found</div>
@@ -1340,6 +1345,7 @@ export default function Portal() {
         <Input placeholder="Phone number" value={contactForm.phone} onChange={(e) => setContactForm(f => ({ ...f, phone: e.target.value }))} />
         <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
         <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
+        <Input placeholder="Industry e.g. construction" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
         <div className="md:col-span-2 space-y-2">
           <Input placeholder="Job title" value={contactForm.notes} onChange={(e) => setContactForm(f => ({ ...f, notes: e.target.value }))} />
           {jobTitleSuggestions.length > 0 && (
@@ -2117,7 +2123,7 @@ export default function Portal() {
                             <span className="font-medium">{c.name}</span>
                             {orderStats && <Badge variant="secondary">Client</Badge>}
                           </div>
-                          <div className="text-xs text-muted-foreground">{[c.email, c.location].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
+                          <div className="text-xs text-muted-foreground">{[c.email, c.location, c.industry].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
                           {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
                         </div>
                         <div className="mt-1 space-y-1">
@@ -2175,6 +2181,7 @@ export default function Portal() {
                         <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
+                        <Input placeholder="Industry e.g. construction" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
                         <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
                           <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
@@ -2279,7 +2286,7 @@ export default function Portal() {
           <DrawerHeader className="mx-auto w-full max-w-3xl px-0 text-left">
             <DrawerTitle>{contactDetailDrawerContact?.name ?? "Contact"}</DrawerTitle>
             <DrawerDescription>
-              {[contactDetailDrawerContact?.email, contactDetailDrawerContact?.location].filter(Boolean).join(" · ") || "Sales contact"}
+              {[contactDetailDrawerContact?.email, contactDetailDrawerContact?.location, contactDetailDrawerContact?.industry].filter(Boolean).join(" · ") || "Sales contact"}
               {contactDetailDrawerContact ? ` · ${getContactCreatorLabel(contactDetailDrawerContact)}` : ""}
             </DrawerDescription>
           </DrawerHeader>
@@ -2294,6 +2301,7 @@ export default function Portal() {
                   ) : (
                     <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.phone}</div>
                   ))}
+                  {contactDetailDrawerContact.industry && <Badge variant="outline" className="rounded-none capitalize">{contactDetailDrawerContact.industry}</Badge>}
                   {contactDetailDrawerContact.notes && <LinkifiedText text={contactDetailDrawerContact.notes} className="block text-sm text-muted-foreground" />}
                   <div className="text-xs text-muted-foreground">{getContactCreatorLabel(contactDetailDrawerContact)} · {new Date(contactDetailDrawerContact.created_at).toLocaleString()}</div>
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
@@ -2330,6 +2338,7 @@ export default function Portal() {
                   <Input placeholder="Phone number" value={editContactForm.phone} onChange={(e) => setEditContactForm(f => ({ ...f, phone: e.target.value }))} />
                   <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                   <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
+                  <Input placeholder="Industry e.g. construction" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
                   <Input className="md:col-span-2" placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                   <div className="flex gap-2 md:col-span-2">
                     <Button onClick={updateContact}>Save changes</Button>
