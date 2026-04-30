@@ -78,6 +78,54 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
   }));
 }
 
+async function validateSourceUrl(apiKey: string, rawUrl: unknown, businessName: string) {
+  const url = cleanText(rawUrl, 500);
+  if (!/^https?:\/\//i.test(url)) return { ok: false, reason: "Missing or invalid source URL" };
+
+  const response = await fetch("https://api.firecrawl.dev/v2/scrape", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      url,
+      formats: ["markdown"],
+      onlyMainContent: true,
+      waitFor: 1000,
+    }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) return { ok: false, reason: `Source could not be verified (${response.status})` };
+
+  const payload = data?.data ?? data;
+  const markdown = cleanText(payload?.markdown, 4000).toLowerCase();
+  const title = cleanText(payload?.metadata?.title, 300).toLowerCase();
+  const sourceUrl = cleanText(payload?.metadata?.sourceURL, 500).toLowerCase();
+  const statusCode = Number(payload?.metadata?.statusCode ?? 0);
+  const text = `${title}\n${markdown}`;
+  const deadPagePatterns = [
+    "sorry, we can't find that page",
+    "sorry, we can’t find that page",
+    "page not found",
+    "404 not found",
+    "old link",
+    "maybe it's moved",
+    "maybe it’s moved",
+    "doesn't exist",
+    "does not exist",
+  ];
+
+  if (statusCode >= 400) return { ok: false, reason: `Source returned ${statusCode}` };
+  if (sourceUrl && /\/404\b|not-found|page-not-found/i.test(sourceUrl)) return { ok: false, reason: "Source redirected to a not-found page" };
+  if (deadPagePatterns.some((pattern) => text.includes(pattern))) return { ok: false, reason: "Source is a dead or missing page" };
+
+  const compactName = normalize(businessName);
+  const compactText = normalize(text);
+  if (compactName && compactText && !compactText.includes(compactName.slice(0, Math.min(compactName.length, 20)))) {
+    return { ok: false, reason: "Source page does not appear to mention this business" };
+  }
+
+  return { ok: true, reason: "Source verified" };
+}
+
 async function extractCandidates(apiKey: string, trade: string, location: string, targetCount: number, searchResults: unknown[]) {
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -90,7 +138,7 @@ async function extractCandidates(apiKey: string, trade: string, location: string
       messages: [
         {
           role: "system",
-          content: "Extract CRM leads for Pixcellor. Return only JSON: {\"businesses\":[{\"name\":string,\"trade\":string,\"phone\":string,\"email\":string,\"location\":string,\"source_url\":string,\"evidence\":string,\"has_standalone_website\":boolean}]}. Only include real local businesses that appear NOT to have their own standalone website. Reject directory pages that clearly show a website/domain for the business. Do not include raw scrape clutter, ratings, followers, UI labels, or long bios. Use empty strings for missing phone/email. Evidence must be short.",
+          content: "Extract CRM leads for Pixcellor. Return only JSON: {\"businesses\":[{\"name\":string,\"trade\":string,\"phone\":string,\"email\":string,\"location\":string,\"source_url\":string,\"evidence\":string,\"has_standalone_website\":boolean}]}. Only include real local businesses that appear NOT to have their own standalone website. Reject directory pages that clearly show a website/domain for the business. The source_url must be an accessible evidence page for that exact business, not a guessed/stale directory slug, generic search page, or page that looks missing/moved/deleted. Do not include raw scrape clutter, ratings, followers, UI labels, or long bios. Use empty strings for missing phone/email. Evidence must be short.",
         },
         {
           role: "user",
@@ -138,6 +186,7 @@ Deno.serve(async (req) => {
     const added: Candidate[] = [];
     const skippedDuplicates: Candidate[] = [];
     const rejectedWithWebsites: Candidate[] = [];
+    const rejectedInvalidSources: Array<Candidate & { source_validation_reason?: string }> = [];
     const rejectedInvalid: Candidate[] = [];
 
     for (const candidate of extracted) {
@@ -148,6 +197,11 @@ Deno.serve(async (req) => {
       }
       if (candidate.has_standalone_website === true) {
         rejectedWithWebsites.push(candidate);
+        continue;
+      }
+      const sourceValidation = await validateSourceUrl(firecrawlKey, candidate.source_url, name);
+      if (!sourceValidation.ok) {
+        rejectedInvalidSources.push({ ...candidate, source_validation_reason: sourceValidation.reason });
         continue;
       }
       if (isLikelyDuplicate(candidate, [...(existing ?? []), ...added])) {
@@ -185,6 +239,7 @@ Deno.serve(async (req) => {
       added: rows.length,
       skipped_duplicates: skippedDuplicates.length,
       rejected_with_websites: rejectedWithWebsites.length,
+      rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
       contacts: rows.map((row) => ({ name: row.name, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
