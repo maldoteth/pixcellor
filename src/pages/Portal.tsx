@@ -1343,6 +1343,26 @@ export default function Portal() {
     </div>
   );
 
+  const renderJobTitleSuggestionList = (openUp = false) => (
+    <div className={`absolute left-0 right-0 z-50 max-h-56 overflow-y-auto rounded-none border border-border bg-popover shadow-xl ${openUp ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}>
+      {jobTitleSuggestions.length > 0 ? jobTitleSuggestions.map(title => (
+        <button
+          key={title}
+          type="button"
+          className="flex min-h-11 w-full items-center border-b border-border px-3 py-2 text-left text-sm last:border-b-0"
+          onClick={() => {
+            setContactForm(f => ({ ...f, notes: title }));
+            setContactJobTitleSuggestionsOpen(false);
+          }}
+        >
+          <span className="truncate font-medium text-foreground">{title}</span>
+        </button>
+      )) : (
+        <div className="px-3 py-3 text-sm text-muted-foreground">No matching job titles</div>
+      )}
+    </div>
+  );
+
   const contactFormCard = showContactForm && (
     <Card>
       <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1351,24 +1371,18 @@ export default function Portal() {
         <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
         <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
         <Input placeholder="Industry e.g. construction" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
-        <div className="md:col-span-2 space-y-2">
-          <Input placeholder="Job title" value={contactForm.notes} onChange={(e) => setContactForm(f => ({ ...f, notes: e.target.value }))} />
-          {jobTitleSuggestions.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {jobTitleSuggestions.map(title => (
-                <Button
-                  key={title}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setContactForm(f => ({ ...f, notes: title }))}
-                  className="h-8 max-w-full justify-start truncate"
-                >
-                  {title}
-                </Button>
-              ))}
-            </div>
-          )}
+        <div className="relative md:col-span-2">
+          <Input
+            placeholder="Job title"
+            value={contactForm.notes}
+            onChange={(e) => {
+              setContactForm(f => ({ ...f, notes: e.target.value }));
+              setContactJobTitleSuggestionsOpen(Boolean(e.target.value.trim()));
+            }}
+            onFocus={() => setContactJobTitleSuggestionsOpen(Boolean(contactForm.notes.trim()))}
+            onBlur={() => window.setTimeout(() => setContactJobTitleSuggestionsOpen(false), 120)}
+          />
+          {contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
         </div>
         <div className="md:col-span-2 flex gap-2">
           <Button onClick={createContact}>Save contact</Button>
