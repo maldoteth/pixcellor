@@ -2280,6 +2280,7 @@ export default function Portal() {
             <DrawerTitle>{contactDetailDrawerContact?.name ?? "Contact"}</DrawerTitle>
             <DrawerDescription>
               {[contactDetailDrawerContact?.email, contactDetailDrawerContact?.location].filter(Boolean).join(" · ") || "Sales contact"}
+              {contactDetailDrawerContact ? ` · ${getContactCreatorLabel(contactDetailDrawerContact)}` : ""}
             </DrawerDescription>
           </DrawerHeader>
           {contactDetailDrawerContact && (
@@ -2294,6 +2295,7 @@ export default function Portal() {
                     <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.phone}</div>
                   ))}
                   {contactDetailDrawerContact.notes && <LinkifiedText text={contactDetailDrawerContact.notes} className="block text-sm text-muted-foreground" />}
+                  <div className="text-xs text-muted-foreground">{getContactCreatorLabel(contactDetailDrawerContact)} · {new Date(contactDetailDrawerContact.created_at).toLocaleString()}</div>
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2">
