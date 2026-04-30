@@ -786,7 +786,10 @@ export default function Portal() {
   }, [contactEvents, filteredContacts, contactsQ]);
 
   const searchedContacts = useMemo(() => {
-    const statusFiltered = contactsStatusFilter === "all" ? filteredContacts : filteredContacts.filter(c => {
+    const archivedFiltered = contactsStatusFilter === "archived"
+      ? filteredContacts.filter(c => c.status === "archived")
+      : filteredContacts.filter(c => c.status !== "archived");
+    const statusFiltered = contactsStatusFilter === "all" || contactsStatusFilter === "archived" ? archivedFiltered : archivedFiltered.filter(c => {
       const email = normalizeEmail(c.email);
       const hasOrders = Boolean(email && contactOrderStatsByEmail.has(email));
       const effectiveStatus = hasOrders ? "gold" : c.status;
