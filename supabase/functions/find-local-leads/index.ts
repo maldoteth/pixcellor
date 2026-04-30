@@ -148,6 +148,33 @@ function isCheckatradeUrl(rawUrl: unknown) {
   }
 }
 
+function getSourcePlatform(rawUrl: unknown) {
+  try {
+    const host = new URL(cleanText(rawUrl, 1000)).hostname.replace(/^www\./i, "").toLowerCase();
+    if (host.includes("checkatrade")) return "Checkatrade";
+    if (host.includes("yell")) return "Yell";
+    if (host.includes("tripadvisor")) return "Tripadvisor";
+    if (host.includes("restaurantguru")) return "Restaurant Guru";
+    if (host.includes("trustatrader")) return "TrustATrader";
+    if (host.includes("ratedpeople")) return "Rated People";
+    if (host.includes("mybuilder")) return "MyBuilder";
+    if (host.includes("facebook")) return "Facebook";
+    if (host.includes("instagram")) return "Instagram";
+    return host.split(".")[0]?.replace(/\b\w/g, (c) => c.toUpperCase()) || "Web";
+  } catch {
+    return "Web";
+  }
+}
+
+function isAcceptedSourceUrl(rawUrl: unknown) {
+  try {
+    const host = new URL(cleanText(rawUrl, 1000)).hostname.replace(/^www\./i, "").toLowerCase();
+    return DIRECTORY_HOSTS.some((domain) => host === domain || host.endsWith(`.${domain}`));
+  } catch {
+    return false;
+  }
+}
+
 function normalizeUrl(rawUrl: unknown, base = "https://www.checkatrade.com") {
   const value = cleanText(rawUrl, 1000);
   if (!value) return "";
@@ -163,8 +190,10 @@ function normalizeUrl(rawUrl: unknown, base = "https://www.checkatrade.com") {
 function isLikelyProfileUrl(rawUrl: string) {
   try {
     const url = new URL(rawUrl);
-    if (!CHECKATRADE_HOST_RE.test(url.hostname)) return false;
+    const host = url.hostname.replace(/^www\./i, "").toLowerCase();
     const path = url.pathname.toLowerCase();
+    if (!isAcceptedSourceUrl(rawUrl)) return false;
+    if (!CHECKATRADE_HOST_RE.test(url.hostname)) return !/(search|find|category|categories|near-me|best-|things-to-do|restaurants$|pubs$|cafes$)/i.test(path);
     return path.includes("/trades/") || path.includes("/trade/") || path.includes("/profile/");
   } catch {
     return false;
