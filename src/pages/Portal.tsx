@@ -1113,7 +1113,7 @@ export default function Portal() {
   const runLeadAgent = async () => {
     const trade = leadAgentForm.trade.trim();
     const location = leadAgentForm.location.trim();
-    const limit = Math.min(Math.max(Number(leadAgentForm.limit) || 5, 1), 8);
+    const limit = Math.min(Math.max(Number(leadAgentForm.limit) || 3, 1), 5);
     if (!trade || !location) {
       toast.error("Add a trade and location first.");
       return;
