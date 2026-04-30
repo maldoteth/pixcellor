@@ -333,12 +333,12 @@ const contactWizardFields = [
   { key: "location", label: "Location", placeholder: "Town or area", required: false, inputMode: "text" },
   { key: "industry", label: "Industry", placeholder: "Industry", required: false, inputMode: "text" },
   { key: "website", label: "Website", placeholder: "Website domain", required: false, inputMode: "url" },
-  { key: "contact_name", label: "Contact name", placeholder: "Contact name", required: false, inputMode: "text" },
+  { key: "contact_name", label: "Client name", placeholder: "Client name", required: false, inputMode: "text" },
   { key: "notes", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
 ] as const;
 
 const salesEventWizardFields = [
-  { key: "contact", label: "Contact", placeholder: "Search contact", required: true, inputMode: "text" },
+  { key: "contact", label: "Client", placeholder: "Search client", required: true, inputMode: "text" },
   { key: "title", label: "Event", placeholder: "Callback, email, quote…", required: true, inputMode: "text" },
   { key: "callback_at", label: "Callback time", placeholder: "Callback time", required: false, inputMode: "text" },
   { key: "description", label: "Notes", placeholder: "Add notes", required: false, inputMode: "text" },
