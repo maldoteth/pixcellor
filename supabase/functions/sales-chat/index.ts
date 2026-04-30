@@ -154,7 +154,7 @@ Privacy rules:
 - Be excited about their project ideas
 - Never pushy, always consultative
 - If they share their email, thank them warmly and confirm someone will be in touch soon
-- If they share a name and either an email or phone number, call save_contact. Do not tell them internal CRM details.
+- If they share a name and either an email or phone number, call save_contact. Always include industry; use general if unsure. Do not tell them internal CRM details.
 
 ## When to use send_package:
 - AFTER qualifying — once you know which tier fits, send just that one package
@@ -174,7 +174,8 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 ## Rules
 - Be concise and operational.
 - If contact details include a name, create the contact immediately. Email and phone are optional.
-- If a message includes an uploaded screenshot/image URL, call extract_screenshot_contact first, then create_contact with any extracted name, trade, location, email, phone, and useful notes.
+- Always set industry on contacts. If unsure, use general. Trades like electrician, roofer, plumber, builder, decorator, landscaper, etc. are construction.
+- If a message includes an uploaded screenshot/image URL, call extract_screenshot_contact first, then create_contact with any extracted name, trade, industry, location, email, phone, and useful notes.
 - For screenshot contacts, be smart about job titles: save a clean trade/category (e.g. Roofer, Electrician, Plumber, Builder, Landscaper, Carpenter, Joiner, Painter, Plasterer, Tiler, Scaffolder, Glazier, Cleaner, Mechanic, Hair/Beauty, Restaurant/Food, Retail, Fitness, Consultant, Designer, Developer, Agency, Property, Recruitment). Do NOT save raw UI labels, hashtags, usernames, ratings, follower counts, profile URLs, map links, or random website/social links as the job title/trade.
 - If the exact trade is unclear, infer the closest sensible trade from the business name, visible services, bio, category, or page context. If still unclear, use "Unknown trade" and put the uncertainty in notes.
 - If the dev says what happened with a lead/client, create a sales event. Use find_contact first when they name the person/company.
@@ -260,6 +261,7 @@ const tools = [
           name: { type: "string", description: "Visitor's name." },
           phone: { type: "string", description: "Phone number, if provided." },
           email: { type: "string", description: "Email address, if provided." },
+          industry: { type: "string", description: "Business industry/category if known. Use general if unsure." },
           notes: { type: "string", description: "Project summary or relevant chat context." },
           schedule_callback_tomorrow: { type: "boolean", description: "True when the visitor requested a call. Creates a callback event for 1 day from now." },
           send_welcome_email: { type: "boolean", description: "True when the visitor requested package/process info by email. Sends the Pixcellor welcome sales email." },
@@ -298,6 +300,7 @@ const devTools = [
           email: { type: "string", description: "Email address, if provided." },
           location: { type: "string", description: "Location, if provided." },
           trade: { type: "string", description: "Clean trade/category only, e.g. Roofer, Electrician, Plumber, Builder. Never URLs, usernames, UI labels, or long bios." },
+          industry: { type: "string", description: "Industry bucket. Electrician/roofer/plumber/builder/etc should be construction. Use general if unsure." },
           notes: { type: "string", description: "Useful extra context only. Do not include raw links, UI labels, follower counts, ratings, or screenshot storage URLs." },
         },
         required: ["name"],
@@ -567,12 +570,26 @@ const cleanTrade = (value: unknown) => cleanText(value, 80)
   .replace(/^[@#]+/, "")
   .trim();
 
+function inferIndustry(value: unknown) {
+  const text = cleanText(value, 500).toLowerCase();
+  if (/(electrician|electrical|roofer|roofing|plumber|plumbing|builder|building|construction|carpenter|joiner|decorator|painter|landscap|driveway|window|glazing|heating|gas engineer|tiler|flooring|brick|scaffold|bathroom|kitchen fitter)/i.test(text)) return "construction";
+  if (/(restaurant|cafe|bar|pub|hotel|catering|takeaway|hospitality|food)/i.test(text)) return "hospitality";
+  if (/(salon|barber|beauty|spa|aesthetic|nail|hair)/i.test(text)) return "beauty";
+  if (/(gym|fitness|personal trainer|physio|clinic|health|dentist|medical)/i.test(text)) return "healthcare";
+  if (/(estate agent|property|letting|mortgage|real estate)/i.test(text)) return "property";
+  if (/(accountant|solicitor|lawyer|consultant|finance|insurance)/i.test(text)) return "professional services";
+  if (/(shop|retail|boutique|ecommerce|e-commerce|store)/i.test(text)) return "retail";
+  if (/(mechanic|garage|mot|vehicle|car dealer|automotive)/i.test(text)) return "automotive";
+  return "general";
+}
+
 async function createDevContact(supabase: DbClient, args: Record<string, unknown>) {
   const name = cleanText(args.name, 100);
   if (!name) return { ok: false, error: "missing_name" };
   const email = cleanText(args.email, 255).toLowerCase();
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
   const trade = cleanTrade(args.trade);
+  const industry = cleanText(args.industry, 80).toLowerCase() || inferIndustry(`${trade} ${args.name} ${args.notes}`);
   const notes = [
     trade ? `Trade: ${trade}` : "",
     cleanDevNotes(args.notes, 900),
@@ -583,6 +600,7 @@ async function createDevContact(supabase: DbClient, args: Record<string, unknown
     phone: cleanText(args.phone, 40) || null,
     email: email || null,
     location: cleanText(args.location, 160) || null,
+    industry: industry || "general",
     notes: notes || null,
     source: "dev_chat",
   };
@@ -596,6 +614,7 @@ async function saveCustomerContact(supabase: DbClient, args: Record<string, unkn
   const name = cleanText(args.name, 100);
   const email = cleanText(args.email, 255).toLowerCase();
   const phone = cleanText(args.phone, 40);
+  const industry = cleanText(args.industry, 80).toLowerCase() || "general";
   const shouldScheduleCallback = args.schedule_callback_tomorrow === true;
   const shouldSendWelcomeEmail = args.send_welcome_email === true;
   if (!name) return { ok: false, error: "missing_name" };
@@ -617,7 +636,7 @@ async function saveCustomerContact(supabase: DbClient, args: Record<string, unkn
   if (existing?.id) {
     const { data, error } = await supabase
       .from("contacts")
-      .update({ name, phone: phone || null, email: email || null, notes: [existing.notes, notes].filter(Boolean).join("\n"), updated_at: new Date().toISOString() })
+      .update({ name, phone: phone || null, email: email || null, industry, notes: [existing.notes, notes].filter(Boolean).join("\n"), updated_at: new Date().toISOString() })
       .eq("id", existing.id)
       .select("id, name, email, phone")
       .single();
@@ -628,7 +647,7 @@ async function saveCustomerContact(supabase: DbClient, args: Record<string, unkn
 
   const { data, error } = await supabase
     .from("contacts")
-    .insert({ name, phone: phone || null, email: email || null, notes, source: "chat" })
+    .insert({ name, phone: phone || null, email: email || null, industry, notes, source: "chat" })
     .select("id, name, email, phone")
     .single();
   if (error) return { ok: false, error: error.message };
@@ -678,7 +697,7 @@ async function extractScreenshotContact(apiKey: string, imageUrl: unknown) {
       messages: [{
         role: "user",
         content: [
-          { type: "text", text: "Extract visible contact details from this screenshot. Return only JSON with keys: name, trade, company, location, email, phone, notes. Use empty strings for missing fields. For trade, infer the closest clean business trade/category from visible services, bio, page category, or business name (e.g. Roofer, Electrician, Plumber, Builder, Landscaper, Carpenter, Joiner, Painter, Plasterer, Tiler, Scaffolder, Glazier, Cleaner, Mechanic, Hair/Beauty, Restaurant/Food, Retail, Fitness, Consultant, Designer, Developer, Agency, Property, Recruitment). Never put URLs, usernames, UI labels, ratings, follower counts, hashtags, or social/profile links in trade. If unclear, trade must be \"Unknown trade\". Notes should be short useful context only and must not include raw links or UI clutter. Do not invent email/phone/location." },
+          { type: "text", text: "Extract visible contact details from this screenshot. Return only JSON with keys: name, trade, industry, company, location, email, phone, notes. Use empty strings for missing fields. For trade, infer the closest clean business trade/category from visible services, bio, page category, or business name (e.g. Roofer, Electrician, Plumber, Builder, Landscaper, Carpenter, Joiner, Painter, Plasterer, Tiler, Scaffolder, Glazier, Cleaner, Mechanic, Hair/Beauty, Restaurant/Food, Retail, Fitness, Consultant, Designer, Developer, Agency, Property, Recruitment). Never put URLs, usernames, UI labels, ratings, follower counts, hashtags, or social/profile links in trade. If unclear, trade must be \"Unknown trade\". Notes should be short useful context only and must not include raw links or UI clutter. Do not invent email/phone/location." },
           { type: "image_url", image_url: { url } },
         ],
       }],
@@ -703,8 +722,8 @@ async function findDevContacts(supabase: DbClient, query: unknown) {
   const pattern = `%${q.replace(/[%_]/g, "")} %`.replace(" %", "%");
   const { data, error } = await supabase
     .from("contacts")
-    .select("id, name, email, phone, location, status")
-    .or(`name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern}`)
+    .select("id, name, email, phone, location, industry, status")
+    .or(`name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern},industry.ilike.${pattern}`)
     .order("updated_at", { ascending: false })
     .limit(5);
   if (error) return { ok: false, error: error.message, matches: [] };
