@@ -996,6 +996,7 @@ export default function Portal() {
     setEditingContactId(contact.id);
     setEditContactForm({
       name: contact.name,
+      contact_name: contact.contact_name ?? "",
       phone: contact.phone ?? "",
       email: contact.email ?? "",
       location: contact.location ?? "",
@@ -1084,11 +1085,12 @@ export default function Portal() {
   const createContact = async () => {
     const name = contactForm.name.trim();
     if (!name) {
-      toast.error("Contact name is required.");
+      toast.error("Company name is required.");
       return;
     }
     const { data, error } = await (supabase as any).rpc("portal_create_contact", {
       _name: name,
+      _contact_name: contactForm.contact_name,
       _phone: contactForm.phone,
       _email: contactForm.email,
       _location: contactForm.location,
@@ -1105,7 +1107,7 @@ export default function Portal() {
       setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
       setContactDetailDrawerId(newContact.id);
     }
-    setContactForm({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+    setContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
@@ -1143,12 +1145,13 @@ export default function Portal() {
     if (!editingContactId) return;
     const name = editContactForm.name.trim();
     if (!name) {
-      toast.error("Contact name is required.");
+      toast.error("Company name is required.");
       return;
     }
     const { error } = await (supabase as any).rpc("portal_update_contact", {
       _contact_id: editingContactId,
       _name: name,
+      _contact_name: editContactForm.contact_name,
       _phone: editContactForm.phone,
       _email: editContactForm.email,
       _location: editContactForm.location,
@@ -1161,7 +1164,7 @@ export default function Portal() {
       return;
     }
     setEditingContactId(null);
-    setEditContactForm({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+    setEditContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
     await loadPortalSnapshot();
     toast.success("Contact updated.");
   };
