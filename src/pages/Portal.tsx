@@ -323,6 +323,7 @@ export default function Portal() {
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
+  const [contactsSortOrder, setContactsSortOrder] = useState<"newest" | "oldest">("newest");
   const [openContactId, setOpenContactId] = useState<string | null>(null);
   const [contactDetailDrawerId, setContactDetailDrawerId] = useState<string | null>(null);
   const [showContactForm, setShowContactForm] = useState(false);
@@ -754,17 +755,20 @@ export default function Portal() {
       const effectiveStatus = hasOrders ? "gold" : c.status;
       return effectiveStatus === contactsStatusFilter;
     });
+    const sortContacts = (items: Contact[]) => [...items].sort((a, b) => {
+      const aTime = new Date(a.created_at).getTime();
+      const bTime = new Date(b.created_at).getTime();
+      return contactsSortOrder === "oldest" ? aTime - bTime : bTime - aTime;
+    });
     if (!contactsQ) {
-      return [...statusFiltered]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 10);
+      return sortContacts(statusFiltered).slice(0, 10);
     }
     const matchingContactIds = new Set(
       contactEvents
         .filter(e => matchesQuery(contactsQ, e.title) || matchesQuery(contactsQ, e.description) || matchesQuery(contactsQ, e.event_type) || matchesQuery(contactsQ, e.callback_at))
         .map(e => e.contact_id)
     );
-    return statusFiltered.filter(c => {
+    return sortContacts(statusFiltered.filter(c => {
       const email = normalizeEmail(c.email);
       const orderStats = email ? contactOrderStatsByEmail.get(email) : null;
       const orderMatches = Boolean(orderStats && (
@@ -780,8 +784,8 @@ export default function Portal() {
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
       matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
       );
-    });
-  }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactOrderStatsByEmail]);
+    }));
+  }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactsSortOrder, contactOrderStatsByEmail]);
 
   const jobTitleSuggestions = useMemo(() => {
     const typed = contactForm.notes.trim().toLowerCase();
