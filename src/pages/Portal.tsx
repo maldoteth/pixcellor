@@ -393,7 +393,7 @@ export default function Portal() {
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("sales");
   const [devChatOpen, setDevChatOpen] = useState(false);
-  const [leadAgentForm, setLeadAgentForm] = useState({ trade: "", location: "", limit: "10" });
+  const [leadAgentForm, setLeadAgentForm] = useState({ trade: "electricians", location: "", limit: "10" });
   const [leadAgentLoading, setLeadAgentLoading] = useState(false);
   const [leadAgentSummary, setLeadAgentSummary] = useState<string | null>(null);
 
@@ -2045,7 +2045,7 @@ export default function Portal() {
                 <CardTitle className="text-base">AI lead finder</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-3 md:grid-cols-[1fr_1fr_120px_auto]">
-                <Input placeholder="Trade e.g. roofers" value={leadAgentForm.trade} onChange={(e) => setLeadAgentForm(f => ({ ...f, trade: e.target.value }))} />
+                <Input placeholder="Trade e.g. electricians" value={leadAgentForm.trade} onChange={(e) => setLeadAgentForm(f => ({ ...f, trade: e.target.value }))} />
                 <Input placeholder="Location e.g. Bristol" value={leadAgentForm.location} onChange={(e) => setLeadAgentForm(f => ({ ...f, location: e.target.value }))} />
                 <Input type="number" min={1} max={25} value={leadAgentForm.limit} onChange={(e) => setLeadAgentForm(f => ({ ...f, limit: e.target.value }))} />
                 <Button onClick={runLeadAgent} disabled={leadAgentLoading} className="gap-2">
