@@ -72,13 +72,6 @@ type ScrapedPage = {
   statusCode: number;
 };
 
-type LeadRunStats = {
-  searched: number;
-  checkatradePagesSearched: number;
-  profilePagesScraped: number;
-  candidatesExtracted: number;
-};
-
 const cleanText = (value: unknown, max: number) =>
   typeof value === "string" ? value.replace(/\s+/g, " ").trim().slice(0, max) : "";
 
@@ -354,7 +347,6 @@ Deno.serve(async (req) => {
 
     const searchBatches = await Promise.all(queries.map((query) => searchFirecrawl(firecrawlKey, query, Math.min(limit * 2, 8))));
     const searchResults = unique(searchBatches.flat().map((result) => JSON.stringify(result))).map((result) => JSON.parse(result) as SearchResult);
-    const listingPages = searchResults.map(pageFromSearchResult);
     const profileUrls = unique(searchResults.map((result) => result.url).filter(isLikelyProfileUrl)).slice(0, Math.min(limit * 2, 10));
 
     const { data: existing } = await supabase
