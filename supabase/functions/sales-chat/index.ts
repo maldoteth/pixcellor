@@ -1131,6 +1131,17 @@ Deno.serve(async (req) => {
             console.error("Error in create_sales_event:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_sales_event_failed" }) });
           }
+        } else if (toolCall.function.name === "find_local_leads" && isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await findLocalLeads(req, args);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in find_local_leads:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "find_local_leads_failed" }) });
+          }
         } else if (toolCall.function.name === "lookup_customer") {
           needsFollowUp = true;
           try {
