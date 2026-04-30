@@ -683,7 +683,7 @@ export default function Portal() {
   useEffect(() => {
     const matchedNonClients = contacts.filter(contact => {
       const email = normalizeEmail(contact.email);
-      return email && contact.status !== "gold" && contactOrderStatsByEmail.has(email);
+      return email && contact.status !== "gold" && contact.status !== "archived" && contactOrderStatsByEmail.has(email);
     });
     if (matchedNonClients.length === 0) return;
 
