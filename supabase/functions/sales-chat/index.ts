@@ -169,6 +169,7 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - Create contacts from pasted details with create_contact.
 - Read uploaded screenshots/images and extract visible contact details with extract_screenshot_contact.
 - Create sales events/callback notes for existing contacts with create_sales_event.
+- Find local businesses that appear to have no standalone website and add them to contacts with find_local_leads.
 
 ## Rules
 - Be concise and operational.
@@ -182,6 +183,7 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - If a message both adds/imports a screenshot contact and asks for a callback for a different named contact, keep those actions separate: create the screenshot contact, then find/create the event only for the named callback contact.
 - If the dev asks for a callback/reminder for a contact they just created or just discussed, use the recent-contact context or the previous tool result only when the current message is a callback/reminder request and does not include a new screenshot/contact import.
 - If a sales event does not clearly map to one existing contact after checking recent contacts/find_contact, ask which contact to attach it to.
+- If the dev asks to find/add local businesses without websites, call find_local_leads with the requested trade, location, and lead count. Do not invent leads yourself.
 - Never invent contact details. Save uncertainty in notes/description.
 - For callback/reminder times, treat relative dates like "tomorrow", "next week", and "in 1 week" as clear. If no time is given, default to 09:00 Europe/London and include callback_at as ISO.`;
 
@@ -330,6 +332,22 @@ const devTools = [
           callback_at: { type: "string", description: "ISO date/time if a callback/reminder is clearly requested." },
         },
         required: ["contact_id", "title"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "find_local_leads",
+      description: "Find local businesses in a trade/location that appear not to have standalone websites, then add them to CRM contacts.",
+      parameters: {
+        type: "object",
+        properties: {
+          trade: { type: "string", description: "Trade/category to prospect, e.g. roofers, electricians, plumbers." },
+          location: { type: "string", description: "Town/city/area to search." },
+          limit: { type: "number", description: "Number of contacts to add. Maximum 25." },
+        },
+        required: ["trade", "location"],
       },
     },
   },
