@@ -1489,7 +1489,7 @@ export default function Portal() {
           {contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
         </div>
         <div className="md:col-span-2 flex gap-2">
-          <Button onClick={createClient}>Save client</Button>
+          <Button onClick={createContact}>Save client</Button>
           <Button variant="outline" className="rounded-none shadow-none" onClick={() => setShowContactForm(false)}>Cancel</Button>
         </div>
       </CardContent>
@@ -2483,7 +2483,7 @@ export default function Portal() {
                   <Input placeholder="Client name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
                   <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                   <div className="flex gap-2 md:col-span-2">
-                    <Button onClick={updateClient}>Save changes</Button>
+                    <Button onClick={updateContact}>Save changes</Button>
                     <Button variant="outline" className="rounded-none shadow-none" onClick={() => setEditingContactId(null)}>Cancel</Button>
                   </div>
                 </div>
@@ -2523,7 +2523,7 @@ export default function Portal() {
                 ))}
               </div>
               <div className="space-y-2">
-                <div className="text-sm font-medium">Contact history</div>
+                <div className="text-sm font-medium">Client history</div>
                 {contactDetailDrawerEvents.length === 0 && <p className="text-sm text-muted-foreground">No communications logged.</p>}
                 {contactDetailDrawerEvents.map(e => (
                   <div key={e.id} className="rounded-none border border-border bg-card/60 p-3 text-sm">
@@ -2737,7 +2737,7 @@ export default function Portal() {
           </Button>
           <Button variant={mobileContactDrawerOpen || showContactForm ? "default" : "ghost"} size="sm" onClick={openMobileContactForm} className="h-14 flex-col gap-1 px-1 text-[10px]">
             <UserPlus className="h-4 w-4" />
-            Contact
+            Client
           </Button>
           <Button variant={mobileOrdersDrawerOpen || activeTab === "orders" ? "default" : "ghost"} size="sm" onClick={openMobileOrders} className="h-14 flex-col gap-1 px-1 text-[10px]">
             <ShoppingBag className="h-4 w-4" />
