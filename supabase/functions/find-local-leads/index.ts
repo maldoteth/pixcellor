@@ -27,6 +27,20 @@ const IGNORED_EXTERNAL_HOSTS = new Set([
   "mybuilder.com",
   "bark.com",
   "checkatrade.com",
+  "schema.org",
+  "w3.org",
+  "gstatic.com",
+  "googleapis.com",
+  "googletagmanager.com",
+  "google-analytics.com",
+  "doubleclick.net",
+  "cloudfront.net",
+  "cookielaw.org",
+  "onetrust.com",
+  "sentry.io",
+  "stripe.com",
+  "apple.com",
+  "microsoft.com",
 ]);
 
 type Candidate = {
@@ -106,20 +120,44 @@ function isIgnoredExternalHost(hostname: string) {
   return [...IGNORED_EXTERNAL_HOSTS].some((ignored) => host === ignored || host.endsWith(`.${ignored}`));
 }
 
-function externalWebsiteLinks(page: ScrapedPage) {
-  const links = [...page.links];
-  const combined = `${page.markdown}\n${page.html}`;
-  for (const match of combined.matchAll(/https?:\/\/[^\s)"'<>]+/gi)) links.push(match[0]);
-  for (const match of combined.matchAll(/\[[^\]]*(?:website|visit site|web site)[^\]]*\]\(([^)]+)\)/gi)) links.push(match[1]);
+function looksLikeInfrastructureOrAssetUrl(parsed: URL) {
+  const host = parsed.hostname.replace(/^www\./i, "").toLowerCase();
+  const path = parsed.pathname.toLowerCase();
+  if (isIgnoredExternalHost(host)) return true;
+  if (/\.(?:png|jpe?g|webp|gif|svg|ico|css|js|json|woff2?|ttf|map)(?:$|[?#])/i.test(path)) return true;
+  if (/cdn|assets|static|images|fonts|analytics|tracking|tagmanager|cookie|consent/.test(host)) return true;
+  return false;
+}
 
-  return unique(links.map((link) => normalizeUrl(link)).filter(Boolean)).filter((link) => {
+function hasWebsiteContext(link: string, combined: string) {
+  const escaped = link.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const contextMatch = combined.match(new RegExp(`.{0,90}${escaped}.{0,90}`, "i"))?.[0] ?? "";
+  return /website|web site|visit site|visit website|company site|external site|business website/i.test(contextMatch);
+}
+
+function externalWebsiteLinks(page: ScrapedPage) {
+  const explicitLinks: string[] = [];
+  const passiveLinks = [...page.links];
+  const combined = `${page.markdown}\n${page.html}`;
+
+  for (const match of combined.matchAll(/\[[^\]]*(?:website|visit site|web site|company site|business website)[^\]]*\]\(([^)]+)\)/gi)) explicitLinks.push(match[1]);
+  for (const match of combined.matchAll(/<a[^>]+href=["']([^"']+)["'][^>]*>(.{0,120}?)<\/a>/gi)) {
+    if (/website|visit site|web site|company site|business website/i.test(match[2])) explicitLinks.push(match[1]);
+  }
+  for (const match of combined.matchAll(/https?:\/\/[^\s)"'<>]+/gi)) {
+    const raw = match[0];
+    if (hasWebsiteContext(raw, combined)) explicitLinks.push(raw);
+    else passiveLinks.push(raw);
+  }
+
+  return unique([...explicitLinks, ...passiveLinks].map((link) => normalizeUrl(link)).filter(Boolean)).filter((link) => {
     try {
       const parsed = new URL(link);
       if (!["http:", "https:"].includes(parsed.protocol)) return false;
       if (CHECKATRADE_HOST_RE.test(parsed.hostname)) return false;
-      if (isIgnoredExternalHost(parsed.hostname)) return false;
       if (/mailto:|tel:/i.test(link)) return false;
-      return /website|visit site|web site|http/i.test(combined) || true;
+      if (looksLikeInfrastructureOrAssetUrl(parsed)) return false;
+      return explicitLinks.map((explicit) => normalizeUrl(explicit)).includes(link) || hasWebsiteContext(link, combined);
     } catch {
       return false;
     }
@@ -315,10 +353,10 @@ Deno.serve(async (req) => {
 
   try {
     const { trade: rawTrade, location: rawLocation, limit: rawLimit } = await req.json();
-    const trade = cleanText(rawTrade, 80) || "electricians";
+    const trade = cleanText(rawTrade, 80);
     const location = cleanText(rawLocation, 120);
     const limit = Math.min(Math.max(Number(rawLimit) || 10, 1), 25);
-    if (!location) throw new Error("Location is required");
+    if (!trade || !location) throw new Error("Trade and location are required");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
