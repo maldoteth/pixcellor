@@ -2271,8 +2271,13 @@ export default function Portal() {
                 <Input type="number" min={1} max={5} value={leadAgentForm.limit} onChange={(e) => setLeadAgentForm(f => ({ ...f, limit: e.target.value }))} />
                 <Button onClick={runLeadAgent} disabled={leadAgentLoading} className="gap-2">
                   {leadAgentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserSearch className="h-4 w-4" />}
-                  Find leads
+                  {leadAgentLoading ? `Searching… ${Math.round(leadAgentProgress)}%` : "Find leads"}
                 </Button>
+                {leadAgentLoading && (
+                  <div className="md:col-span-4 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div className="h-full bg-primary transition-all duration-500" style={{ width: `${Math.max(5, leadAgentProgress)}%` }} />
+                  </div>
+                )}
                 {leadAgentSummary && <p className="text-sm text-muted-foreground md:col-span-4">{leadAgentSummary}</p>}
               </CardContent>
             </Card>
