@@ -1837,6 +1837,34 @@ export default function Portal() {
             })}
           </TabsContent>
 
+          <TabsContent value="websites" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={websitesSearch} onChange={(e) => setWebsitesSearch(e.target.value)} placeholder="Search websites by domain, client, email, industry…" className="pl-9" />
+            </div>
+            {websiteEntries.length === 0 && <p className="text-muted-foreground text-sm">No websites {websitesQ ? "match your search" : "yet"}.</p>}
+            {websiteEntries.map(entry => {
+              const href = formatWebsiteHref(entry.website);
+              return (
+                <Card key={entry.key}>
+                  <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                    <div className="min-w-0 space-y-1">
+                      <div className="font-medium">{entry.name}</div>
+                      <div className="text-xs text-muted-foreground">{[entry.email, entry.location, entry.industry, entry.source].filter(Boolean).join(" · ")}</div>
+                      {href && <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex max-w-full items-center gap-1 break-all text-sm font-medium text-primary underline-offset-4 hover:underline">
+                        {entry.website}<ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                      </a>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={entry.source === "Delivered job" ? "default" : "secondary"}>{entry.source}</Badge>
+                      {entry.contactId && <Button variant="outline" size="sm" onClick={() => openContactDrawer(entry.contactId!)}>Open contact</Button>}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </TabsContent>
+
           <TabsContent value="falloffs" className="min-w-0 space-y-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
