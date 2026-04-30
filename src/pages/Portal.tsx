@@ -930,7 +930,7 @@ export default function Portal() {
     if (!query) return sortedContacts;
 
     return sortedContacts.filter(contact =>
-      [`${contact.name}${contact.email ? ` · ${contact.email}` : ""}`, contact.name, contact.email, contact.phone, contact.location, contact.industry, contact.notes]
+      [`${contact.name}${contact.email ? ` · ${contact.email}` : ""}`, contact.name, contact.contact_name, contact.email, contact.phone, contact.location, contact.industry, contact.notes]
         .some(value => value?.toLowerCase().includes(query))
     );
   }, [contacts, eventContactSearch]);
