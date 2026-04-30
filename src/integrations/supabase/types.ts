@@ -369,6 +369,39 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_search_history: {
+        Row: {
+          created_at: string
+          id: string
+          location: string | null
+          outcome: string
+          reason: string | null
+          source_url: string
+          trade: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          outcome?: string
+          reason?: string | null
+          source_url: string
+          trade?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          outcome?: string
+          reason?: string | null
+          source_url?: string
+          trade?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_requirements: {
         Row: {
           colours_styles: string
