@@ -1151,6 +1151,13 @@ export default function Portal() {
       return;
     }
 
+    const nextLeadSearchMemory = {
+      trades: rememberLeadSearchValue(leadSearchMemory.trades, trade),
+      locations: rememberLeadSearchValue(leadSearchMemory.locations, location),
+    };
+    setLeadSearchMemory(nextLeadSearchMemory);
+    window.localStorage.setItem(leadSearchMemoryKey, JSON.stringify(nextLeadSearchMemory));
+
     setLeadAgentLoading(true);
     setLeadAgentSummary(null);
     const { data, error } = await supabase.functions.invoke("find-local-leads", {
