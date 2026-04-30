@@ -1141,6 +1141,12 @@ export default function Portal() {
     }
   };
 
+  const archiveContact = async (contactId: string) => {
+    await updateContactStatus(contactId, "archived");
+    setContactDetailDrawerId(null);
+    toast.success("Contact archived.");
+  };
+
   const markOrderDelivered = async (order: StripeSession) => {
     if (!order.customer_email) {
       toast.error("This order does not have a customer email.");
