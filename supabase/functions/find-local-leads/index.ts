@@ -440,21 +440,14 @@ function isLikelyDuplicate(candidate: Candidate, existing: Array<Record<string, 
 function generalQueryVariants(trade: string, location: string) {
   const t = cleanText(trade, 80);
   const l = cleanText(location, 120);
+  // Trimmed to high-signal queries only — fewer Firecrawl calls per run
   return [
     `"${t}" "${l}" -site:checkatrade.com -site:yell.com`,
-    `${t} in ${l} local business contact phone`,
+    `${t} in ${l} contact phone`,
     `"${t}" "${l}" "Facebook"`,
-    `"${t}" "${l}" "Instagram"`,
-    `"${t}" "${l}" "no website"`,
     `site:google.com/maps ${t} ${l}`,
     `site:yell.com ${t} ${l}`,
     `site:facebook.com ${t} ${l}`,
-    `site:nextdoor.co.uk ${t} ${l}`,
-    `site:cylex-uk.co.uk ${t} ${l}`,
-    `site:hotfrog.co.uk ${t} ${l}`,
-    `site:freeindex.co.uk ${t} ${l}`,
-    `site:scoot.co.uk ${t} ${l}`,
-    `${t} ${l} small business phone email`,
   ];
 }
 
