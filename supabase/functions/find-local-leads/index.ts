@@ -131,33 +131,51 @@ function looksLikeInfrastructureOrAssetUrl(parsed: URL) {
 
 function hasWebsiteContext(link: string, combined: string) {
   const escaped = link.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const contextMatch = combined.match(new RegExp(`.{0,90}${escaped}.{0,90}`, "i"))?.[0] ?? "";
-  return /website|web site|visit site|visit website|company site|external site|business website/i.test(contextMatch);
+  const contextMatch = combined.match(new RegExp(`.{0,140}${escaped}.{0,140}`, "i"))?.[0] ?? "";
+  return /website|web site|visit site|visit website|company site|external site|business website|profile-website|websiteurl/i.test(contextMatch);
 }
 
-function externalWebsiteLinks(page: ScrapedPage) {
+function extractWebsiteButtonLinks(page: ScrapedPage) {
   const explicitLinks: string[] = [];
-  const passiveLinks = [...page.links];
   const combined = `${page.markdown}\n${page.html}`;
 
-  for (const match of combined.matchAll(/\[[^\]]*(?:website|visit site|web site|company site|business website)[^\]]*\]\(([^)]+)\)/gi)) explicitLinks.push(match[1]);
-  for (const match of combined.matchAll(/<a[^>]+href=["']([^"']+)["'][^>]*>(.{0,120}?)<\/a>/gi)) {
-    if (/website|visit site|web site|company site|business website/i.test(match[2])) explicitLinks.push(match[1]);
+  for (const match of combined.matchAll(/\[[^\]]*(?:website|visit site|web site|company site|business website)[^\]]*\]\(([^)]+)\)/gi)) {
+    explicitLinks.push(match[1]);
   }
+
+  for (const match of combined.matchAll(/<a\b([^>]*?href=["']([^"']+)["'][^>]*)>([\s\S]{0,240}?)<\/a>/gi)) {
+    const attrs = match[1] ?? "";
+    const href = match[2] ?? "";
+    const label = `${attrs} ${match[3] ?? ""}`.replace(/<[^>]+>/g, " ");
+    if (/website|web site|visit site|visit website|company site|business website|profile-website|websiteurl/i.test(label) && !/share|save|favourite|favorite/i.test(label)) {
+      explicitLinks.push(href);
+    }
+  }
+
+  for (const match of combined.matchAll(/<(?:button|span|div)[^>]*(?:website|visit site|web site)[^>]*>[\s\S]{0,300}?<a[^>]+href=["']([^"']+)["']/gi)) {
+    explicitLinks.push(match[1]);
+  }
+
   for (const match of combined.matchAll(/https?:\/\/[^\s)"'<>]+/gi)) {
     const raw = match[0];
     if (hasWebsiteContext(raw, combined)) explicitLinks.push(raw);
-    else passiveLinks.push(raw);
   }
 
-  return unique([...explicitLinks, ...passiveLinks].map((link) => normalizeUrl(link)).filter(Boolean)).filter((link) => {
+  return unique(explicitLinks.map((link) => normalizeUrl(link, page.url)).filter(Boolean));
+}
+
+function externalWebsiteLinks(page: ScrapedPage) {
+  const explicitLinks = extractWebsiteButtonLinks(page);
+  const combined = `${page.markdown}\n${page.html}`;
+
+  return unique(explicitLinks).filter((link) => {
     try {
       const parsed = new URL(link);
       if (!["http:", "https:"].includes(parsed.protocol)) return false;
       if (CHECKATRADE_HOST_RE.test(parsed.hostname)) return false;
       if (/mailto:|tel:/i.test(link)) return false;
       if (looksLikeInfrastructureOrAssetUrl(parsed)) return false;
-      return explicitLinks.map((explicit) => normalizeUrl(explicit)).includes(link) || hasWebsiteContext(link, combined);
+      return hasWebsiteContext(link, combined) || extractWebsiteButtonLinks(page).includes(link);
     } catch {
       return false;
     }
@@ -281,28 +299,53 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
   }).filter((item: SearchResult) => item.url && isCheckatradeUrl(item.url));
 }
 
-async function scrapeFirecrawl(apiKey: string, url: string): Promise<ScrapedPage | null> {
+async function scrapeFirecrawl(apiKey: string, url: string, options: { revealPhone?: boolean; fullPage?: boolean } = {}): Promise<ScrapedPage | null> {
+  const body: Record<string, unknown> = {
+    url,
+    formats: ["markdown", "html", "links"],
+    onlyMainContent: options.fullPage ? false : true,
+    waitFor: options.revealPhone ? 1800 : 1200,
+    location: { country: "GB", languages: ["en-GB", "en"] },
+  };
+
+  if (options.revealPhone) {
+    body.maxAge = 0;
+    body.actions = [
+      { type: "wait", milliseconds: 800 },
+      { type: "click", selector: "button[aria-label*='Show number' i]" },
+      { type: "wait", milliseconds: 800 },
+    ];
+  }
+
   const response = await fetch(`${FIRECRAWL_V2}/scrape`, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ url, formats: ["markdown", "html", "links"], onlyMainContent: true, waitFor: 1200 }),
+    body: JSON.stringify(body),
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) return null;
   const payload = data?.data ?? data;
   const sourceUrl = cleanText(payload?.metadata?.sourceURL, 800) || url;
   const statusCode = Number(payload?.metadata?.statusCode ?? 0);
+  const actionScrapes = Array.isArray(payload?.actions?.scrapes) ? payload.actions.scrapes : [];
+  const actionText = actionScrapes.map((scrape: Record<string, unknown>) => `${cleanText(scrape.markdown, 12000)}\n${cleanText(scrape.html, 12000)}`).join("\n");
   const page = {
     url: normalizeUrl(sourceUrl) || url,
     title: cleanText(payload?.metadata?.title, 220),
-    markdown: cleanText(payload?.markdown, 30000),
-    html: cleanText(payload?.html, 30000),
+    markdown: cleanText(`${payload?.markdown ?? ""}\n${actionText}`, 50000),
+    html: cleanText(`${payload?.html ?? ""}\n${actionText}`, 50000),
     links: Array.isArray(payload?.links) ? payload.links.map((link: unknown) => cleanText(link, 1000)).filter(Boolean) : [],
     statusCode,
   };
   if (statusCode >= 400) return null;
   if (!isCheckatradeUrl(page.url)) return null;
   return page;
+}
+
+async function scrapeCheckatradeProfile(apiKey: string, url: string): Promise<ScrapedPage | null> {
+  const revealed = await scrapeFirecrawl(apiKey, url, { revealPhone: true, fullPage: true });
+  if (revealed) return revealed;
+  return scrapeFirecrawl(apiKey, url, { fullPage: true });
 }
 
 async function aiNormalizeProfile(apiKey: string, trade: string, location: string, page: ScrapedPage, parsed: Candidate): Promise<Candidate> {
@@ -379,7 +422,7 @@ Deno.serve(async (req) => {
     const listingUrls = unique(searchResults.map((result) => result.url).filter((url) => isCheckatradeUrl(url))).slice(0, Math.min(limit * 4, 40));
     const listingPages = (await Promise.all(listingUrls.map((url) => scrapeFirecrawl(firecrawlKey, url)))).filter(Boolean) as ScrapedPage[];
     const profileUrls = extractProfileUrls(searchResults, listingPages).slice(0, Math.min(limit * 6, 60));
-    const profilePages = (await Promise.all(profileUrls.map((url) => scrapeFirecrawl(firecrawlKey, url)))).filter(Boolean) as ScrapedPage[];
+    const profilePages = (await Promise.all(profileUrls.map((url) => scrapeCheckatradeProfile(firecrawlKey, url)))).filter(Boolean) as ScrapedPage[];
 
     const deterministicCandidates = profilePages
       .map((page) => parseCandidateFromProfile(page, trade, location))
@@ -430,7 +473,7 @@ Deno.serve(async (req) => {
       location: cleanText(candidate.location, 160) || location,
       notes: [
         `Trade: ${cleanText(candidate.trade, 80) || trade}`,
-        "No standalone website found on Checkatrade profile.",
+        "No website button found on Checkatrade profile.",
         cleanText(candidate.evidence, 220),
         candidate.source_url ? `Source: ${cleanText(candidate.source_url, 400)}` : "",
       ].filter(Boolean).join("\n"),
@@ -456,7 +499,7 @@ Deno.serve(async (req) => {
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
       contacts: rows.map((row) => ({ name: row.name, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
-      message: `Added ${rows.length}. Checkatrade pages searched ${listingPages.length}, profiles scraped ${profilePages.length}, candidates ${deterministicCandidates.length}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with websites, ${rejectedInvalidSources.length} invalid sources, ${rejectedInvalid.length} without contact details.`,
+      message: `Added ${rows.length}. Checkatrade pages searched ${listingPages.length}, profiles scraped ${profilePages.length}, candidates ${deterministicCandidates.length}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons, ${rejectedInvalidSources.length} invalid sources, ${rejectedInvalid.length} without revealed contact details.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
