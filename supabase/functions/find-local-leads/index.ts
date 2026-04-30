@@ -332,57 +332,6 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
   }).filter((item: SearchResult) => item.url && isCheckatradeUrl(item.url));
 }
 
-async function scrapeFirecrawl(apiKey: string, url: string, options: { revealPhone?: boolean; fullPage?: boolean } = {}): Promise<ScrapedPage | null> {
-  const body: Record<string, unknown> = {
-    url,
-    formats: ["markdown", "html", "links"],
-    onlyMainContent: options.fullPage ? false : true,
-    waitFor: options.revealPhone ? 1800 : 1200,
-    location: { country: "GB", languages: ["en-GB", "en"] },
-  };
-
-  if (options.revealPhone) {
-    body.maxAge = 0;
-    body.actions = [
-      { type: "wait", milliseconds: 800 },
-      { type: "click", selector: "button[aria-label*='Show number' i]" },
-      { type: "wait", milliseconds: 800 },
-    ];
-  }
-
-  const response = await fetch(`${FIRECRAWL_V2}/scrape`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) return null;
-  const payload = data?.data ?? data;
-  const sourceUrl = cleanText(payload?.metadata?.sourceURL, 800) || url;
-  const statusCode = Number(payload?.metadata?.statusCode ?? 0);
-  const actionScrapes = Array.isArray(payload?.actions?.scrapes) ? payload.actions.scrapes : [];
-  const actionText = actionScrapes.map((scrape: Record<string, unknown>) => `${cleanText(scrape.markdown, 12000)}\n${cleanText(scrape.html, 12000)}`).join("\n");
-  const page = {
-    url: normalizeUrl(sourceUrl) || url,
-    title: cleanText(payload?.metadata?.title, 220),
-    markdown: cleanText(`${payload?.markdown ?? ""}\n${actionText}`, 50000),
-    html: cleanText(`${payload?.html ?? ""}\n${actionText}`, 50000),
-    links: Array.isArray(payload?.links) ? payload.links.map((link: unknown) => cleanText(link, 1000)).filter(Boolean) : [],
-    statusCode,
-  };
-  if (statusCode >= 400) return null;
-  if (!isCheckatradeUrl(page.url)) return null;
-  return page;
-}
-
-async function scrapeCheckatradeProfile(apiKey: string, url: string): Promise<ScrapedPage | null> {
-  const basic = await scrapeFirecrawl(apiKey, url, { fullPage: true });
-  if (!basic) return null;
-  const text = `${basic.title}\n${basic.markdown}\n${basic.html}`;
-  if (externalWebsiteLinks(basic).length > 0 || extractPhones(text).length > 0 || extractEmails(text).length > 0) return basic;
-  return (await scrapeFirecrawl(apiKey, url, { revealPhone: true, fullPage: true })) ?? basic;
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
