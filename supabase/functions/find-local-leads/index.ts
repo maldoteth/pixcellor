@@ -83,6 +83,42 @@ const cleanEmail = (value: unknown) => {
 const normalize = (value: unknown) => cleanText(value, 200).toLowerCase().replace(/[^a-z0-9]+/g, "");
 const normalizePhone = (value: unknown) => cleanText(value, 40).replace(/\D/g, "");
 const unique = <T,>(items: T[]) => [...new Set(items)];
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+function cleanCompanyName(value: unknown, trade: string, location: string) {
+  let name = cleanText(value, 180)
+    .replace(/\s*\|\s*Checkatrade.*$/i, "")
+    .replace(/\s*-\s*Checkatrade.*$/i, "")
+    .replace(/^reviews?\s+for\s+/i, "")
+    .trim();
+
+  const tradeText = cleanText(trade, 80);
+  const locationText = cleanText(location, 120);
+  const tradePattern = tradeText ? escapeRegExp(tradeText).replace(/s$/i, "s?") : "";
+  const locationPattern = locationText ? escapeRegExp(locationText) : "";
+  const noisyPart = new RegExp(
+    ["checkatrade", tradePattern, locationPattern, "\\b(?:in|near|based in|serving|covering)\\b"].filter(Boolean).join("|"),
+    "i",
+  );
+
+  const parts = name.split(/\s+(?:\||-|–|—)\s+|\s*,\s+/).map((part) => cleanText(part, 120)).filter(Boolean);
+  const cleanPart = parts.find((part) => !noisyPart.test(part));
+  if (cleanPart) name = cleanPart;
+
+  if (tradePattern && locationPattern) {
+    name = name
+      .replace(new RegExp(`\\s*(?:,|\\||-|–|—)?\\s*${tradePattern}\\s*(?:in|near|around|based in|serving|covering)?\\s*${locationPattern}\\s*$`, "i"), "")
+      .replace(new RegExp(`^\\s*${tradePattern}\\s*(?:in|near|around|based in|serving|covering)\\s*${locationPattern}\\s*(?:,|\\||-|–|—)?\\s*`, "i"), "");
+  }
+  if (locationPattern) {
+    name = name.replace(new RegExp(`\\s*(?:,|\\||-|–|—)?\\s*(?:in|near|around|based in|serving|covering)\\s*${locationPattern}\\s*$`, "i"), "");
+  }
+  if (tradePattern) {
+    name = name.replace(new RegExp(`\\s*(?:,|\\||-|–|—)?\\s*${tradePattern}\\s*$`, "i"), "");
+  }
+
+  return cleanText(name.replace(/\s+(?:,|\||-|–|—)\s*$/g, ""), 100);
+}
 
 function inferIndustry(value: unknown) {
   const text = cleanText(value, 400).toLowerCase();
@@ -222,16 +258,16 @@ function extractProfileUrls(results: SearchResult[], pages: ScrapedPage[]) {
   return unique(urls).slice(0, 80);
 }
 
-function guessBusinessName(page: ScrapedPage) {
-  const title = page.title.replace(/\s*\|\s*Checkatrade.*$/i, "").replace(/\s*-\s*Checkatrade.*$/i, "").trim();
+function guessBusinessName(page: ScrapedPage, trade: string, location: string) {
+  const title = cleanCompanyName(page.title, trade, location);
   if (title && !/checkatrade|find a tradesperson|search results/i.test(title)) return cleanText(title, 100);
   const heading = page.markdown.match(/^#\s+(.+)$/m)?.[1] ?? page.markdown.match(/^##\s+(.+)$/m)?.[1] ?? "";
-  return cleanText(heading.replace(/\s*\|\s*Checkatrade.*$/i, ""), 100);
+  return cleanCompanyName(heading, trade, location);
 }
 
 function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: string): Candidate | null {
   const text = `${page.title}\n${page.markdown}\n${page.html}`;
-  const name = guessBusinessName(page);
+  const name = guessBusinessName(page, trade, location);
   if (!name || /checkatrade|find a tradesperson|search results|reviews for/i.test(name)) return null;
 
   const websites = externalWebsiteLinks(page);
