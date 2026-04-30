@@ -662,7 +662,7 @@ Deno.serve(async (req) => {
     for (const url of profileUrls) {
       const page = pageFromSearchResult(searchResults.find((result) => normalizeUrl(result.url) === normalizeUrl(url)) ?? { url, title: "", description: "", markdown: "" });
       profilePagesScraped += 1;
-      const candidate = parseCandidateFromProfile(page, trade, location);
+      const candidate = await parseCandidateFromProfile(page, trade, location, firecrawlKey);
       if (!candidate) continue;
       candidatesExtracted += 1;
       const name = cleanText(candidate.name, 100);
@@ -675,7 +675,8 @@ Deno.serve(async (req) => {
         rejectedInvalidSources.push(candidate);
         continue;
       }
-      if (candidate.has_standalone_website === true && (candidate.lead_score ?? 0) < 70) {
+      // Only reject companies that confirmed have their own website AND scored low
+      if (candidate.has_standalone_website === true && (candidate.lead_score ?? 0) < 50) {
         rejectedWithWebsites.push(candidate);
         continue;
       }
