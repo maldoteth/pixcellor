@@ -249,6 +249,26 @@ const formatWebsiteHref = (value?: string | null) => {
 
 const normalizePhoneDigits = (value?: string | null) => (value ?? "").replace(/\D/g, "");
 
+const leadSearchMemoryKey = "pixcellor-lead-search-memory";
+const readLeadSearchMemory = () => {
+  if (typeof window === "undefined") return { trades: [] as string[], locations: [] as string[] };
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(leadSearchMemoryKey) ?? "{}");
+    return {
+      trades: Array.isArray(parsed.trades) ? parsed.trades.filter((item: unknown): item is string => typeof item === "string") : [],
+      locations: Array.isArray(parsed.locations) ? parsed.locations.filter((item: unknown): item is string => typeof item === "string") : [],
+    };
+  } catch {
+    return { trades: [] as string[], locations: [] as string[] };
+  }
+};
+
+const rememberLeadSearchValue = (items: string[], value: string) => {
+  const clean = value.trim();
+  if (!clean) return items;
+  return [clean, ...items.filter(item => item.toLowerCase() !== clean.toLowerCase())].slice(0, 30);
+};
+
 const formatDateTimeLocal = (date: Date) => {
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60_000);
@@ -403,6 +423,7 @@ export default function Portal() {
   const [contactJobTitleSuggestionsOpen, setContactJobTitleSuggestionsOpen] = useState(false);
   const [leadTradeSuggestionsOpen, setLeadTradeSuggestionsOpen] = useState(false);
   const [leadLocationSuggestionsOpen, setLeadLocationSuggestionsOpen] = useState(false);
+  const [leadSearchMemory, setLeadSearchMemory] = useState(readLeadSearchMemory);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [manualReply, setManualReply] = useState("");
   const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
@@ -915,20 +936,20 @@ export default function Portal() {
     const typed = leadAgentForm.trade.trim().toLowerCase();
     if (!typed) return [];
     const trades = Array.from(new Set(
-      contacts.flatMap(contact => {
+      [...leadSearchMemory.trades, ...contacts.flatMap(contact => {
         const noteTrade = contact.notes?.match(/^Trade:\s*(.+)$/im)?.[1]?.trim();
-        return [noteTrade, contact.industry].filter((value): value is string => Boolean(value && value !== "general"));
-      })
+        return [contact.notes?.trim(), noteTrade, contact.industry].filter((value): value is string => Boolean(value && value !== "general"));
+      })]
     )).sort((a, b) => a.localeCompare(b));
     return trades.filter(trade => trade.toLowerCase().includes(typed) && trade.toLowerCase() !== typed).slice(0, 8);
-  }, [contacts, leadAgentForm.trade]);
+  }, [contacts, leadAgentForm.trade, leadSearchMemory.trades]);
 
   const leadLocationSuggestions = useMemo(() => {
     const typed = leadAgentForm.location.trim().toLowerCase();
     if (!typed) return [];
-    const locations = Array.from(new Set(contacts.map(contact => contact.location?.trim()).filter((value): value is string => Boolean(value)))).sort((a, b) => a.localeCompare(b));
+    const locations = Array.from(new Set([...leadSearchMemory.locations, ...contacts.map(contact => contact.location?.trim()).filter((value): value is string => Boolean(value))])).sort((a, b) => a.localeCompare(b));
     return locations.filter(location => location.toLowerCase().includes(typed) && location.toLowerCase() !== typed).slice(0, 8);
-  }, [contacts, leadAgentForm.location]);
+  }, [contacts, leadAgentForm.location, leadSearchMemory.locations]);
 
   const eventContactSuggestions = useMemo(() => {
     const query = eventContactSearch.trim().toLowerCase();
@@ -1129,6 +1150,13 @@ export default function Portal() {
       toast.error("Add a trade and location first.");
       return;
     }
+
+    const nextLeadSearchMemory = {
+      trades: rememberLeadSearchValue(leadSearchMemory.trades, trade),
+      locations: rememberLeadSearchValue(leadSearchMemory.locations, location),
+    };
+    setLeadSearchMemory(nextLeadSearchMemory);
+    window.localStorage.setItem(leadSearchMemoryKey, JSON.stringify(nextLeadSearchMemory));
 
     setLeadAgentLoading(true);
     setLeadAgentSummary(null);
