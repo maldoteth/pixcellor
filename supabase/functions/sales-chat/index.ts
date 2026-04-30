@@ -711,6 +711,28 @@ async function findDevContacts(supabase: DbClient, query: unknown) {
   return { ok: true, matches: data ?? [] };
 }
 
+async function findLocalLeads(req: Request, args: Record<string, unknown>) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const functionUrl = `${supabaseUrl}/functions/v1/find-local-leads`;
+  const response = await fetch(functionUrl, {
+    method: "POST",
+    headers: {
+      "Authorization": req.headers.get("Authorization") ?? `Bearer ${anonKey}`,
+      "apikey": anonKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      trade: cleanText(args.trade, 80),
+      location: cleanText(args.location, 120),
+      limit: Math.min(Math.max(Number(args.limit) || 10, 1), 25),
+    }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) return { ok: false, error: data?.error ?? `lead_finder_failed_${response.status}` };
+  return data;
+}
+
 async function loadDevRecentContactContext(supabase: DbClient) {
   const { data, error } = await supabase
     .from("contacts")
