@@ -487,6 +487,7 @@ Deno.serve(async (req) => {
       phone: cleanText(candidate.phone, 40) || null,
       email: cleanEmail(candidate.email) || null,
       location: cleanText(candidate.location, 160) || location,
+      website: null,
       notes: [
         `Trade: ${cleanText(candidate.trade, 80) || trade}`,
         "No website button found on Checkatrade profile.",

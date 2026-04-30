@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Repeat, Search, ShoppingBag, Trash2, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { Archive, Clipboard, ExternalLink, Globe, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Repeat, Search, ShoppingBag, Trash2, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 
@@ -184,6 +184,7 @@ type Contact = {
   email: string | null;
   location: string | null;
   industry: string | null;
+  website: string | null;
   notes: string | null;
   status: "cold" | "aware" | "warm" | "hot" | "gold" | "archived";
   source: string;
@@ -231,6 +232,11 @@ const formatPhoneHref = (value?: string | null) => {
   const phone = (value ?? "").trim();
   const cleaned = phone.replace(/(?!^\+)[^\d]/g, "");
   return /\d/.test(cleaned) ? `tel:${cleaned}` : null;
+};
+
+const formatWebsiteHref = (value?: string | null) => {
+  const website = (value ?? "").trim();
+  return website ? (website.startsWith("http://") || website.startsWith("https://") ? website : `https://${website}`) : null;
 };
 
 const normalizePhoneDigits = (value?: string | null) => (value ?? "").replace(/\D/g, "");
@@ -325,6 +331,7 @@ const contactWizardFields = [
   { key: "email", label: "Email", placeholder: "Email address", required: false, inputMode: "email" },
   { key: "location", label: "Location", placeholder: "Town or area", required: false, inputMode: "text" },
   { key: "industry", label: "Industry", placeholder: "Industry e.g. construction", required: false, inputMode: "text" },
+  { key: "website", label: "Website", placeholder: "Website domain", required: false, inputMode: "url" },
   { key: "notes", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
 ] as const;
 
@@ -359,6 +366,7 @@ export default function Portal() {
   const [ordersSearch, setOrdersSearch] = useState("");
   const [retainersSearch, setRetainersSearch] = useState("");
   const [completedSearch, setCompletedSearch] = useState("");
+  const [websitesSearch, setWebsitesSearch] = useState("");
   const [falloffsSearch, setFalloffsSearch] = useState("");
   const [chatsSearch, setChatsSearch] = useState("");
   const [profilesSearch, setProfilesSearch] = useState("");
@@ -376,9 +384,9 @@ export default function Portal() {
   const [mobileOrdersDrawerOpen, setMobileOrdersDrawerOpen] = useState(false);
   const [mobileContactStep, setMobileContactStep] = useState(0);
   const [mobileSalesStep, setMobileSalesStep] = useState(0);
-  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
+  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
-  const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
+  const [editContactForm, setEditContactForm] = useState({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
@@ -629,6 +637,7 @@ export default function Portal() {
   const ordersQ = ordersSearch.trim().toLowerCase();
   const retainersQ = retainersSearch.trim().toLowerCase();
   const completedQ = completedSearch.trim().toLowerCase();
+  const websitesQ = websitesSearch.trim().toLowerCase();
   const falloffsQ = falloffsSearch.trim().toLowerCase();
   const chatsQ = chatsSearch.trim().toLowerCase();
   const profilesQ = profilesSearch.trim().toLowerCase();
@@ -783,9 +792,48 @@ export default function Portal() {
     );
     return contacts.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
     );
   }, [contacts, contactEvents, contactsQ]);
+
+  const websiteEntries = useMemo(() => {
+    const manual = contacts
+      .filter(contact => Boolean(contact.website?.trim()))
+      .map(contact => ({
+        key: `contact-${contact.id}`,
+        name: contact.name,
+        website: contact.website!,
+        email: contact.email,
+        location: contact.location,
+        industry: contact.industry,
+        source: "Contact",
+        date: contact.updated_at,
+        contactId: contact.id,
+      }));
+    const delivered = completedOrders
+      .filter(order => Boolean(order.delivered_domain?.trim()))
+      .map(order => ({
+        key: `order-${order.session_id}`,
+        name: order.customer_email ?? "Delivered client",
+        website: order.delivered_domain!,
+        email: order.customer_email,
+        location: null,
+        industry: null,
+        source: "Delivered job",
+        date: order.delivered_at ?? order.created_at,
+        contactId: contacts.find(contact => normalizeEmail(contact.email) && normalizeEmail(contact.email) === normalizeEmail(order.customer_email))?.id ?? null,
+      }));
+    const seen = new Set<string>();
+    return [...manual, ...delivered]
+      .filter(entry => {
+        const key = `${entry.website.toLowerCase()}-${entry.email ?? entry.name}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .filter(entry => !websitesQ || [entry.name, entry.website, entry.email, entry.location, entry.industry, entry.source].some(value => matchesQuery(websitesQ, value)))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [contacts, completedOrders, websitesQ]);
 
   const filteredContactEvents = useMemo(() => {
     if (!contactsQ) return contactEvents;
@@ -833,7 +881,7 @@ export default function Portal() {
       ));
       return (
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
       );
     }));
   }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactsSortOrder, contactOrderStatsByEmail]);
@@ -929,6 +977,7 @@ export default function Portal() {
       email: contact.email ?? "",
       location: contact.location ?? "",
       industry: contact.industry ?? "general",
+      website: contact.website ?? "",
       notes: contact.notes ?? "",
     });
     setOpenContactId(contact.id);
@@ -1022,6 +1071,7 @@ export default function Portal() {
       _location: contactForm.location,
       _notes: contactForm.notes,
       _industry: contactForm.industry || "general",
+      _website: contactForm.website,
     });
     if (error) {
       toast.error(error.message);
@@ -1032,7 +1082,7 @@ export default function Portal() {
       setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
       setContactDetailDrawerId(newContact.id);
     }
-    setContactForm({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
+    setContactForm({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
@@ -1081,13 +1131,14 @@ export default function Portal() {
       _location: editContactForm.location,
       _notes: editContactForm.notes,
       _industry: editContactForm.industry || "general",
+      _website: editContactForm.website,
     });
     if (error) {
       toast.error(error.message);
       return;
     }
     setEditingContactId(null);
-    setEditContactForm({ name: "", phone: "", email: "", location: "", industry: "", notes: "" });
+    setEditContactForm({ name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
     await loadPortalSnapshot();
     toast.success("Contact updated.");
   };
@@ -1192,6 +1243,19 @@ export default function Portal() {
       if (error || data?.error) {
         toast.error(data?.error || error?.message || "Could not complete order");
         return;
+      }
+      const matchingContact = contacts.find(contact => normalizeEmail(contact.email) === normalizeEmail(order.customer_email));
+      if (matchingContact && !matchingContact.website) {
+        await (supabase as any).rpc("portal_update_contact", {
+          _contact_id: matchingContact.id,
+          _name: matchingContact.name,
+          _phone: matchingContact.phone,
+          _email: matchingContact.email,
+          _location: matchingContact.location,
+          _notes: matchingContact.notes,
+          _industry: matchingContact.industry || "general",
+          _website: cleanDomain,
+        });
       }
       await loadPortalSnapshot();
       if (data?.emailWarning) {
@@ -1371,6 +1435,7 @@ export default function Portal() {
         <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
         <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
         <Input placeholder="Industry e.g. construction" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
+        <Input placeholder="Website domain" value={contactForm.website} onChange={(e) => setContactForm(f => ({ ...f, website: e.target.value }))} />
         <div className="relative">
           <Input
             placeholder="Job title"
@@ -1484,11 +1549,12 @@ export default function Portal() {
           </div>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-10">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-11">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
             <TabsTrigger value="retainers" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
+            <TabsTrigger value="websites" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Globe className="h-3.5 w-3.5 shrink-0" />Website ({websiteEntries.length})</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
             <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.length})</TabsTrigger>
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats ({filteredConversations.length})</TabsTrigger>
@@ -1778,6 +1844,34 @@ export default function Portal() {
                         </div>
                       </div>
                     )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </TabsContent>
+
+          <TabsContent value="websites" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={websitesSearch} onChange={(e) => setWebsitesSearch(e.target.value)} placeholder="Search websites by domain, client, email, industry…" className="pl-9" />
+            </div>
+            {websiteEntries.length === 0 && <p className="text-muted-foreground text-sm">No websites {websitesQ ? "match your search" : "yet"}.</p>}
+            {websiteEntries.map(entry => {
+              const href = formatWebsiteHref(entry.website);
+              return (
+                <Card key={entry.key}>
+                  <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                    <div className="min-w-0 space-y-1">
+                      <div className="font-medium">{entry.name}</div>
+                      <div className="text-xs text-muted-foreground">{[entry.email, entry.location, entry.industry, entry.source].filter(Boolean).join(" · ")}</div>
+                      {href && <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex max-w-full items-center gap-1 break-all text-sm font-medium text-primary underline-offset-4 hover:underline">
+                        {entry.website}<ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                      </a>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={entry.source === "Delivered job" ? "default" : "secondary"}>{entry.source}</Badge>
+                      {entry.contactId && <Button variant="outline" size="sm" onClick={() => openContactDrawer(entry.contactId!)}>Open contact</Button>}
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -2142,7 +2236,7 @@ export default function Portal() {
                             <span className="font-medium">{c.name}</span>
                             {orderStats && <Badge variant="secondary">Client</Badge>}
                           </div>
-                          <div className="text-xs text-muted-foreground">{[c.email, c.location, c.industry].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
+                          <div className="text-xs text-muted-foreground">{[c.email, c.location, c.industry, c.website].filter(Boolean).join(" · ") || (!c.phone ? "No details added" : "")}</div>
                           {orderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(orderStats.ltv)} · {orderStats.orders.length} order{orderStats.orders.length === 1 ? "" : "s"}</div>}
                         </div>
                         <div className="mt-1 space-y-1">
@@ -2153,6 +2247,7 @@ export default function Portal() {
                           ) : (
                             <div className="text-xs text-muted-foreground">{c.phone}</div>
                           ))}
+                          {c.website && formatWebsiteHref(c.website) && <a href={formatWebsiteHref(c.website)!} target="_blank" rel="noopener noreferrer" className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" onClick={(event) => event.stopPropagation()}>{c.website}</a>}
                           {c.notes && <LinkifiedText text={c.notes} className="block text-xs text-muted-foreground" stopPropagation />}
                         </div>
                       </div>
@@ -2201,6 +2296,7 @@ export default function Portal() {
                         <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                         <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                         <Input placeholder="Industry e.g. construction" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
+                        <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
                         <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                         <div className="md:col-span-2 flex gap-2">
                           <Button onClick={(event) => { event.stopPropagation(); void updateContact(); }}>Save changes</Button>
@@ -2305,7 +2401,7 @@ export default function Portal() {
           <DrawerHeader className="mx-auto w-full max-w-3xl px-0 text-left">
             <DrawerTitle>{contactDetailDrawerContact?.name ?? "Contact"}</DrawerTitle>
             <DrawerDescription>
-              {[contactDetailDrawerContact?.email, contactDetailDrawerContact?.location, contactDetailDrawerContact?.industry].filter(Boolean).join(" · ") || "Sales contact"}
+              {[contactDetailDrawerContact?.email, contactDetailDrawerContact?.location, contactDetailDrawerContact?.industry, contactDetailDrawerContact?.website].filter(Boolean).join(" · ") || "Sales contact"}
               {contactDetailDrawerContact ? ` · ${getContactCreatorLabel(contactDetailDrawerContact)}` : ""}
             </DrawerDescription>
           </DrawerHeader>
@@ -2321,6 +2417,7 @@ export default function Portal() {
                     <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.phone}</div>
                   ))}
                   {contactDetailDrawerContact.industry && <Badge variant="outline" className="rounded-none capitalize">{contactDetailDrawerContact.industry}</Badge>}
+                  {contactDetailDrawerContact.website && formatWebsiteHref(contactDetailDrawerContact.website) && <a href={formatWebsiteHref(contactDetailDrawerContact.website)!} target="_blank" rel="noopener noreferrer" className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline">{contactDetailDrawerContact.website}</a>}
                   {contactDetailDrawerContact.notes && <LinkifiedText text={contactDetailDrawerContact.notes} className="block text-sm text-muted-foreground" />}
                   <div className="text-xs text-muted-foreground">{getContactCreatorLabel(contactDetailDrawerContact)} · {new Date(contactDetailDrawerContact.created_at).toLocaleString()}</div>
                   {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
@@ -2358,6 +2455,7 @@ export default function Portal() {
                   <Input placeholder="Email" value={editContactForm.email} onChange={(e) => setEditContactForm(f => ({ ...f, email: e.target.value }))} />
                   <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                   <Input placeholder="Industry e.g. construction" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
+                  <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
                   <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
                   <div className="flex gap-2 md:col-span-2">
                     <Button onClick={updateContact}>Save changes</Button>
