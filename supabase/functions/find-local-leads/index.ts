@@ -541,11 +541,11 @@ Deno.serve(async (req) => {
         skippedDuplicates.push(candidate);
         continue;
       }
-      if (!name || !sourceUrl || !isCheckatradeUrl(sourceUrl)) {
+      if (!name || !sourceUrl || !isAcceptedSourceUrl(sourceUrl)) {
         rejectedInvalidSources.push(candidate);
         continue;
       }
-      if (candidate.has_standalone_website === true) {
+      if (candidate.has_standalone_website === true && (candidate.lead_score ?? 0) < 70) {
         rejectedWithWebsites.push(candidate);
         continue;
       }
@@ -582,6 +582,12 @@ Deno.serve(async (req) => {
         industry,
         website: cleanText(candidate.source_url, 500),
         source_url: cleanText(candidate.source_url, 500),
+        source_platform: cleanText(candidate.source_platform, 80),
+        actual_website_url: cleanText(candidate.website_url, 500) || null,
+        social_url: cleanText(candidate.social_url, 500) || null,
+        website_status: cleanText(candidate.website_status, 80) || "unknown",
+        lead_score: candidate.lead_score ?? null,
+        lead_score_reason: cleanText(candidate.lead_score_reason, 500) || null,
         notes: cleanText(candidate.trade, 80) || trade,
         source: "lead_agent",
       };
@@ -611,8 +617,8 @@ Deno.serve(async (req) => {
       rejected_with_websites: rejectedWithWebsites.length,
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
-      contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, website: row.website, notes: row.notes })),
-      message: `Added ${rows.length}. Checkatrade results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons and ${rejectedInvalidSources.length} invalid sources.`,
+      contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, website: row.website, lead_score: row.lead_score, website_status: row.website_status, notes: row.notes })),
+      message: `Added ${rows.length}. Multi-source results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} lower-value leads with websites and ${rejectedInvalidSources.length} invalid sources.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
