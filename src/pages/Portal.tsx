@@ -1007,7 +1007,7 @@ export default function Portal() {
       toast.error("Contact name is required.");
       return;
     }
-    const { error } = await (supabase as any).rpc("portal_create_contact", {
+    const { data, error } = await (supabase as any).rpc("portal_create_contact", {
       _name: name,
       _phone: contactForm.phone,
       _email: contactForm.email,
@@ -1018,11 +1018,15 @@ export default function Portal() {
       toast.error(error.message);
       return;
     }
+    const newContact = data as Contact | null;
+    if (newContact?.id) {
+      setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
+      setContactDetailDrawerId(newContact.id);
+    }
     setContactForm({ name: "", phone: "", email: "", location: "", notes: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
-    await loadPortalSnapshot();
     toast.success("Contact added.");
   };
 
@@ -1090,7 +1094,7 @@ export default function Portal() {
       toast.error("Event title is required.");
       return;
     }
-    const { error } = await (supabase as any).rpc("portal_create_contact_event", {
+    const { data, error } = await (supabase as any).rpc("portal_create_contact_event", {
       _contact_id: eventForm.contact_id,
       _title: title,
       _description: eventForm.description,
@@ -1100,13 +1104,16 @@ export default function Portal() {
       toast.error(error.message);
       return;
     }
+    const newEvent = data as ContactEvent | null;
+    if (newEvent?.id) {
+      setContactEvents(current => [newEvent, ...current.filter(event => event.id !== newEvent.id)]);
+    }
     setOpenContactId(selectedContactId);
     setEventForm({ contact_id: "", title: "", description: "", callback_at: "" });
     setEventContactSearch("");
     setShowSalesEventForm(false);
     setMobileSalesDrawerOpen(false);
     setMobileSalesStep(0);
-    await loadPortalSnapshot();
     toast.success(hasCallback ? "Callback scheduled." : "Event logged in contact history.");
   };
 
