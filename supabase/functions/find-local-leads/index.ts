@@ -8,7 +8,30 @@ const corsHeaders = {
 
 const FIRECRAWL_V2 = "https://api.firecrawl.dev/v2";
 const CHECKATRADE_HOST_RE = /(^|\.)checkatrade\.com$/i;
-const DIRECTORY_HOSTS = ["checkatrade.com", "yell.com", "tripadvisor.co.uk", "restaurantguru.com", "trustatrader.com", "ratedpeople.com", "mybuilder.com", "bark.com", "facebook.com", "instagram.com"];
+// Known directory/listing hosts — used for platform recognition + to identify "not a real own-domain" sources
+const DIRECTORY_HOSTS = [
+  "checkatrade.com", "yell.com", "tripadvisor.co.uk", "tripadvisor.com",
+  "restaurantguru.com", "trustatrader.com", "ratedpeople.com", "mybuilder.com",
+  "bark.com", "facebook.com", "instagram.com", "google.com", "goo.gl",
+  "maps.google.com", "bing.com", "apple.com", "nextdoor.co.uk", "nextdoor.com",
+  "thomsonlocal.com", "cylex-uk.co.uk", "hotfrog.co.uk", "freeindex.co.uk",
+  "scoot.co.uk", "yelp.com", "yelp.co.uk", "192.com", "tupalo.co.uk",
+  "opendi.co.uk", "brownbook.net", "linkedin.com", "x.com", "twitter.com",
+  "tiktok.com", "youtube.com",
+];
+// Hosts to outright reject as "source" — junk, infra, news, encyclopedia
+const EXCLUDED_HOSTS = new Set([
+  "wikipedia.org", "wikimedia.org", "wiktionary.org",
+  "bbc.co.uk", "bbc.com", "theguardian.com", "dailymail.co.uk", "telegraph.co.uk",
+  "indeed.com", "indeed.co.uk", "reed.co.uk", "totaljobs.com", "glassdoor.com",
+  "gov.uk", "parliament.uk", "europa.eu",
+  "schema.org", "w3.org", "gstatic.com", "googleapis.com", "googletagmanager.com",
+  "google-analytics.com", "doubleclick.net", "cloudfront.net", "cookielaw.org",
+  "onetrust.com", "sentry.io", "stripe.com", "microsoft.com",
+  "amazon.com", "amazon.co.uk", "ebay.co.uk", "ebay.com",
+  "reddit.com", "quora.com", "pinterest.com", "pinterest.co.uk",
+  "trustpilot.com",
+]);
 const IGNORED_EXTERNAL_HOSTS = new Set([
   "facebook.com",
   "instagram.com",
@@ -160,13 +183,44 @@ function getSourcePlatform(rawUrl: unknown) {
     if (host.includes("mybuilder")) return "MyBuilder";
     if (host.includes("facebook")) return "Facebook";
     if (host.includes("instagram")) return "Instagram";
+    if (host.includes("google.com/maps") || host === "maps.google.com" || host.includes("google.com")) return "Google Maps";
+    if (host.includes("bing.com")) return "Bing";
+    if (host.includes("apple.com")) return "Apple Maps";
+    if (host.includes("nextdoor")) return "Nextdoor";
+    if (host.includes("thomsonlocal")) return "Thomson Local";
+    if (host.includes("cylex")) return "Cylex";
+    if (host.includes("hotfrog")) return "Hotfrog";
+    if (host.includes("freeindex")) return "FreeIndex";
+    if (host.includes("scoot")) return "Scoot";
+    if (host.includes("yelp")) return "Yelp";
+    if (host.includes("192.com")) return "192.com";
+    if (host.includes("linkedin")) return "LinkedIn";
     return host.split(".")[0]?.replace(/\b\w/g, (c) => c.toUpperCase()) || "Web";
   } catch {
     return "Web";
   }
 }
 
+// Accept any http(s) URL except clearly junk hosts. Replaces the old directory whitelist.
 function isAcceptedSourceUrl(rawUrl: unknown) {
+  try {
+    const parsed = new URL(cleanText(rawUrl, 1000));
+    if (!["http:", "https:"].includes(parsed.protocol)) return false;
+    const host = parsed.hostname.replace(/^www\./i, "").toLowerCase();
+    if (!host || host.length < 4) return false;
+    for (const blocked of EXCLUDED_HOSTS) {
+      if (host === blocked || host.endsWith(`.${blocked}`)) return false;
+    }
+    // Block obvious asset/infra hosts
+    if (/cdn|assets|static|fonts|analytics|tracking|tagmanager|cookie|consent/.test(host)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// True if this URL is a directory/social/maps listing rather than a company's own website
+function isDirectoryHost(rawUrl: unknown) {
   try {
     const host = new URL(cleanText(rawUrl, 1000)).hostname.replace(/^www\./i, "").toLowerCase();
     return DIRECTORY_HOSTS.some((domain) => host === domain || host.endsWith(`.${domain}`));
@@ -300,21 +354,36 @@ function guessBusinessName(page: ScrapedPage, trade: string, location: string) {
   return cleanCompanyName(heading, trade, location);
 }
 
-function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: string): Candidate | null {
+async function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: string, apiKey: string): Promise<Candidate | null> {
   const text = `${page.title}\n${page.markdown}\n${page.html}`;
   const name = guessBusinessName(page, trade, location);
   if (!name || /checkatrade|find a tradesperson|search results|reviews for/i.test(name)) return null;
 
-  const websites = externalWebsiteLinks(page);
+  const linkedWebsites = externalWebsiteLinks(page);
   const phones = extractPhones(text);
   const emails = extractEmails(text).filter((email) => !email.endsWith("@checkatrade.com"));
-  const socialUrl = (page.links.find((link) => /facebook\.com|instagram\.com/i.test(link)) ?? "");
+  const linkedSocial = page.links.find((link) => /facebook\.com|instagram\.com/i.test(link)) ?? "";
   const sourcePlatform = getSourcePlatform(page.url);
-  const websiteStatus = websites.length > 0 ? "has_website" : socialUrl ? "social_only" : "no_website_found";
-  const score = Math.min(100, Math.max(10, 55 + (websites.length === 0 ? 25 : -20) + (socialUrl ? 10 : 0) + (phones[0] ? 8 : 0) + (emails[0] ? 5 : 0) + (sourcePlatform === "Checkatrade" ? 5 : 0)));
+
+  // Verify on the open web whether this company actually has its own domain
+  const verified = await verifyOwnWebsite(apiKey, name, location);
+  const ownDomainUrl = linkedWebsites.find((u) => !isDirectoryHost(u)) || verified.ownDomainUrl || "";
+  const socialUrl = linkedSocial || verified.socialUrl || "";
+
+  const websiteStatus = ownDomainUrl ? "has_website" : socialUrl ? "social_only" : "no_website_found";
+  const onGoogleMaps = sourcePlatform === "Google Maps";
+  let score = 50;
+  if (!ownDomainUrl) score += 40;
+  else score -= 25;
+  if (!ownDomainUrl && socialUrl) score += 25;
+  if (phones[0]) score += 15;
+  if (emails[0]) score += 10;
+  if (onGoogleMaps) score += 5;
+  score = Math.min(100, Math.max(10, score));
+
   const evidence = cleanText(
     page.markdown.split("\n").find((line) => /website|phone|contact|about|services|based|menu|booking|reviews|address/i.test(line) && line.length > 30) ??
-      `${sourcePlatform} profile inspected for ${name}.`,
+      `${sourcePlatform} listing inspected for ${name}.`,
     220,
   );
 
@@ -328,12 +397,12 @@ function parseCandidateFromProfile(page: ScrapedPage, trade: string, location: s
     source_url: page.url,
     source_platform: sourcePlatform,
     evidence,
-    has_standalone_website: websites.length > 0,
-    website_url: websites[0] ?? "",
+    has_standalone_website: !!ownDomainUrl,
+    website_url: ownDomainUrl,
     social_url: socialUrl,
     website_status: websiteStatus,
     lead_score: score,
-    lead_score_reason: cleanText(`${websiteStatus.replace(/_/g, " ")}; ${phones[0] ? "phone found" : "phone missing"}; found via ${sourcePlatform}. ${evidence}`, 500),
+    lead_score_reason: cleanText(`${websiteStatus.replace(/_/g, " ")}; ${phones[0] ? "phone found" : "phone missing"}; via ${sourcePlatform}. ${evidence}`, 500),
   };
 }
 
@@ -368,38 +437,52 @@ function isLikelyDuplicate(candidate: Candidate, existing: Array<Record<string, 
   });
 }
 
+function generalQueryVariants(trade: string, location: string) {
+  const t = cleanText(trade, 80);
+  const l = cleanText(location, 120);
+  return [
+    `"${t}" "${l}" -site:checkatrade.com -site:yell.com`,
+    `${t} in ${l} local business contact phone`,
+    `"${t}" "${l}" "Facebook"`,
+    `"${t}" "${l}" "Instagram"`,
+    `"${t}" "${l}" "no website"`,
+    `site:google.com/maps ${t} ${l}`,
+    `site:yell.com ${t} ${l}`,
+    `site:facebook.com ${t} ${l}`,
+    `site:nextdoor.co.uk ${t} ${l}`,
+    `site:cylex-uk.co.uk ${t} ${l}`,
+    `site:hotfrog.co.uk ${t} ${l}`,
+    `site:freeindex.co.uk ${t} ${l}`,
+    `site:scoot.co.uk ${t} ${l}`,
+    `${t} ${l} small business phone email`,
+  ];
+}
+
 function tradeQueryVariants(trade: string, location: string) {
   const cleanTrade = cleanText(trade, 80);
   const singularTrade = cleanTrade.replace(/s\b/i, "");
   const pluralTrade = /s\b/i.test(cleanTrade) ? cleanTrade : `${cleanTrade}s`;
   const industry = inferIndustry(cleanTrade);
+  const general = generalQueryVariants(cleanTrade, location);
+
   if (industry === "hospitality") return unique([
-    `site:yell.com ${cleanTrade} ${location}`,
+    ...general,
     `site:tripadvisor.co.uk ${cleanTrade} ${location}`,
     `site:restaurantguru.com ${cleanTrade} ${location}`,
-    `"${cleanTrade}" "${location}" "Facebook"`,
-    `"${cleanTrade}" "${location}" "Instagram"`,
-    `"${cleanTrade}" "${location}" "no website"`,
-    `${cleanTrade} in ${location} local business phone`,
   ]);
-  if (["beauty", "healthcare", "retail", "automotive", "property", "professional services"].includes(industry)) return unique([
-    `site:yell.com ${cleanTrade} ${location}`,
-    `site:facebook.com ${cleanTrade} ${location}`,
-    `site:instagram.com ${cleanTrade} ${location}`,
-    `"${cleanTrade}" "${location}" "no website"`,
-    `${cleanTrade} in ${location} local business phone`,
-    `${singularTrade} near ${location} contact phone`,
-  ]);
-  return unique([
-    `site:checkatrade.com/trades ${cleanTrade} ${location} Checkatrade`,
-    `site:checkatrade.com/trades ${singularTrade} ${location} Checkatrade profile`,
-    `site:checkatrade.com/trades ${pluralTrade} ${location} Checkatrade members`,
-    `site:yell.com ${cleanTrade} ${location}`,
+  if (industry === "construction") return unique([
+    ...general,
+    `site:checkatrade.com/trades ${cleanTrade} ${location}`,
+    `site:checkatrade.com/trades ${singularTrade} ${location} profile`,
+    `site:checkatrade.com/trades ${pluralTrade} ${location} members`,
     `site:trustatrader.com ${cleanTrade} ${location}`,
     `site:ratedpeople.com ${cleanTrade} ${location}`,
-    `site:checkatrade.com/trades ${location} ${cleanTrade} Checkatrade`,
-    `site:checkatrade.com/profile ${cleanTrade} ${location} Checkatrade`,
-    `site:checkatrade.com ${cleanTrade} near ${location} Checkatrade`,
+    `site:mybuilder.com ${cleanTrade} ${location}`,
+  ]);
+  return unique([
+    ...general,
+    `site:instagram.com ${cleanTrade} ${location}`,
+    `${singularTrade} near ${location} contact phone`,
   ]);
 }
 
@@ -441,6 +524,53 @@ async function searchFirecrawl(apiKey: string, query: string, limit: number) {
       markdown: cleanText(item.markdown ?? item.content ?? item.description ?? item.snippet, 1200),
     };
   }).filter((item: SearchResult) => item.url && isAcceptedSourceUrl(item.url));
+}
+
+// Verify whether a company has its OWN domain on the open web.
+// Returns { ownDomainUrl: string | "", socialUrl: string | "" }.
+async function verifyOwnWebsite(apiKey: string, name: string, location: string): Promise<{ ownDomainUrl: string; socialUrl: string }> {
+  const cleanName = cleanText(name, 120);
+  if (!cleanName) return { ownDomainUrl: "", socialUrl: "" };
+  try {
+    const response = await fetch(`${FIRECRAWL_V2}/search`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ query: `"${cleanName}" ${location} official website`, limit: 8, country: "gb" }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) return { ownDomainUrl: "", socialUrl: "" };
+    const rawResults = Array.isArray(data?.data) ? data.data : Array.isArray(data?.web) ? data.web : [];
+    let ownDomainUrl = "";
+    let socialUrl = "";
+    const nameTokens = cleanName.toLowerCase().replace(/[^a-z0-9 ]/g, "").split(/\s+/).filter((t) => t.length >= 3);
+    for (const item of rawResults) {
+      const metadata = (item.metadata ?? {}) as Record<string, unknown>;
+      const url = cleanText(item.url ?? item.sourceURL ?? item.link ?? metadata.sourceURL, 500);
+      if (!url) continue;
+      try {
+        const host = new URL(url).hostname.replace(/^www\./i, "").toLowerCase();
+        if (/facebook\.com|instagram\.com/i.test(host)) {
+          if (!socialUrl) socialUrl = url;
+          continue;
+        }
+        if (isDirectoryHost(url)) continue;
+        if (EXCLUDED_HOSTS.has(host)) continue;
+        for (const blocked of EXCLUDED_HOSTS) {
+          if (host.endsWith(`.${blocked}`)) { continue; }
+        }
+        // Heuristic: domain should contain at least one name token, OR the name appears in title
+        const title = cleanText(item.title ?? metadata.title, 200).toLowerCase();
+        const hostNoTld = host.split(".").slice(0, -1).join("");
+        const matchesName = nameTokens.some((tok) => hostNoTld.includes(tok)) || nameTokens.every((tok) => title.includes(tok));
+        if (matchesName && !ownDomainUrl) {
+          ownDomainUrl = `https://${host}`;
+        }
+      } catch { /* skip */ }
+    }
+    return { ownDomainUrl, socialUrl };
+  } catch {
+    return { ownDomainUrl: "", socialUrl: "" };
+  }
 }
 
 async function revealPhoneFromProfile(apiKey: string, url: string) {
@@ -532,7 +662,7 @@ Deno.serve(async (req) => {
     for (const url of profileUrls) {
       const page = pageFromSearchResult(searchResults.find((result) => normalizeUrl(result.url) === normalizeUrl(url)) ?? { url, title: "", description: "", markdown: "" });
       profilePagesScraped += 1;
-      const candidate = parseCandidateFromProfile(page, trade, location);
+      const candidate = await parseCandidateFromProfile(page, trade, location, firecrawlKey);
       if (!candidate) continue;
       candidatesExtracted += 1;
       const name = cleanText(candidate.name, 100);
@@ -545,7 +675,8 @@ Deno.serve(async (req) => {
         rejectedInvalidSources.push(candidate);
         continue;
       }
-      if (candidate.has_standalone_website === true && (candidate.lead_score ?? 0) < 70) {
+      // Only reject companies that confirmed have their own website AND scored low
+      if (candidate.has_standalone_website === true && (candidate.lead_score ?? 0) < 50) {
         rejectedWithWebsites.push(candidate);
         continue;
       }
