@@ -365,49 +365,6 @@ async function scrapeCheckatradeProfile(apiKey: string, url: string): Promise<Sc
   return (await scrapeFirecrawl(apiKey, url, { revealPhone: true, fullPage: true })) ?? basic;
 }
 
-async function aiNormalizeProfile(apiKey: string, trade: string, location: string, page: ScrapedPage, parsed: Candidate): Promise<Candidate> {
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      response_format: { type: "json_object" },
-      temperature: 0,
-      max_tokens: 700,
-      messages: [
-        {
-          role: "system",
-          content: "Normalize one Checkatrade profile into JSON only: {\"name\":string,\"trade\":string,\"phone\":string,\"email\":string,\"location\":string,\"evidence\":string}. Do not invent data. Keep evidence short. If unsure, use the provided parsed values.",
-        },
-        {
-          role: "user",
-          content: JSON.stringify({ trade, location, source_url: page.url, parsed, title: page.title, markdown: page.markdown.slice(0, 8000) }),
-        },
-      ],
-    }),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) return parsed;
-  try {
-    const raw = data?.choices?.[0]?.message?.content ?? "{}";
-    const normalized = JSON.parse(raw) as Candidate;
-    return {
-      ...parsed,
-      name: cleanText(normalized.name, 100) || parsed.name,
-      trade: cleanText(normalized.trade, 80) || parsed.trade || trade,
-      phone: cleanText(normalized.phone, 40) || parsed.phone || "",
-      email: cleanEmail(normalized.email) || parsed.email || "",
-      location: cleanText(normalized.location, 160) || parsed.location || location,
-      evidence: cleanText(normalized.evidence, 220) || parsed.evidence || "",
-      source_url: page.url,
-      has_standalone_website: parsed.has_standalone_website,
-      website_url: parsed.website_url,
-    };
-  } catch {
-    return parsed;
-  }
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
