@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Repeat, Search, ShoppingBag, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { Archive, Clipboard, Home, Inbox, Loader2, Mail, MessageSquare, PackageCheck, Plus, Repeat, Search, ShoppingBag, Trash2, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 
@@ -184,7 +184,7 @@ type Contact = {
   email: string | null;
   location: string | null;
   notes: string | null;
-  status: "cold" | "aware" | "warm" | "hot" | "gold";
+  status: "cold" | "aware" | "warm" | "hot" | "gold" | "archived";
   source: string;
   created_at: string;
   updated_at: string;
@@ -683,7 +683,7 @@ export default function Portal() {
   useEffect(() => {
     const matchedNonClients = contacts.filter(contact => {
       const email = normalizeEmail(contact.email);
-      return email && contact.status !== "gold" && contactOrderStatsByEmail.has(email);
+      return email && contact.status !== "gold" && contact.status !== "archived" && contactOrderStatsByEmail.has(email);
     });
     if (matchedNonClients.length === 0) return;
 
@@ -786,7 +786,10 @@ export default function Portal() {
   }, [contactEvents, filteredContacts, contactsQ]);
 
   const searchedContacts = useMemo(() => {
-    const statusFiltered = contactsStatusFilter === "all" ? filteredContacts : filteredContacts.filter(c => {
+    const archivedFiltered = contactsStatusFilter === "archived"
+      ? filteredContacts.filter(c => c.status === "archived")
+      : filteredContacts.filter(c => c.status !== "archived");
+    const statusFiltered = contactsStatusFilter === "all" || contactsStatusFilter === "archived" ? archivedFiltered : archivedFiltered.filter(c => {
       const email = normalizeEmail(c.email);
       const hasOrders = Boolean(email && contactOrderStatsByEmail.has(email));
       const effectiveStatus = hasOrders ? "gold" : c.status;
@@ -1136,6 +1139,12 @@ export default function Portal() {
       toast.error(error.message);
       await loadPortalSnapshot();
     }
+  };
+
+  const archiveContact = async (contactId: string) => {
+    await updateContactStatus(contactId, "archived");
+    setContactDetailDrawerId(null);
+    toast.success("Contact archived.");
   };
 
   const markOrderDelivered = async (order: StripeSession) => {
@@ -2050,6 +2059,10 @@ export default function Portal() {
                   {status.label}
                 </Button>
               ))}
+              <Button variant={contactsStatusFilter === "archived" ? "default" : "outline"} size="sm" className="gap-2 rounded-none shadow-none" onClick={() => setContactsStatusFilter("archived")}>
+                <Trash2 className="h-4 w-4" />
+                Bin
+              </Button>
               <div className="ml-auto flex items-center gap-2">
                 <Button variant={contactsSortOrder === "newest" ? "default" : "outline"} size="sm" className="rounded-none shadow-none" onClick={() => setContactsSortOrder("newest")}>Newest</Button>
                 <Button variant={contactsSortOrder === "oldest" ? "default" : "outline"} size="sm" className="rounded-none shadow-none" onClick={() => setContactsSortOrder("oldest")}>Earliest</Button>
@@ -2291,6 +2304,9 @@ export default function Portal() {
                   </Button>
                   <Button variant="pricing" size="sm" className="rounded-none shadow-none" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
                     Create event
+                  </Button>
+                  <Button variant="pricing" size="icon" className="rounded-none shadow-none" aria-label="Archive contact" title="Archive contact" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
