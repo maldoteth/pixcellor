@@ -515,7 +515,7 @@ Deno.serve(async (req) => {
         email: cleanEmail(candidate.email) || null,
         location: cleanText(candidate.location, 160) || location,
         industry,
-        website: null,
+        website: cleanText(candidate.source_url, 500),
         source_url: cleanText(candidate.source_url, 500),
         notes: cleanText(candidate.trade, 80) || trade,
         source: "lead_agent",
@@ -546,7 +546,7 @@ Deno.serve(async (req) => {
       rejected_with_websites: rejectedWithWebsites.length,
       rejected_invalid_sources: rejectedInvalidSources.length,
       rejected_invalid: rejectedInvalid.length,
-      contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, notes: row.notes })),
+      contacts: rows.map((row) => ({ name: row.name, industry: row.industry, phone: row.phone, email: row.email, location: row.location, website: row.website, notes: row.notes })),
       message: `Added ${rows.length}. Checkatrade results checked ${searchResults.length}, profiles parsed ${profilePagesScraped}, candidates ${candidatesExtracted}. Skipped ${skippedDuplicates.length} duplicates. Rejected ${rejectedWithWebsites.length} with Checkatrade website buttons and ${rejectedInvalidSources.length} invalid sources.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
