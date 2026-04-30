@@ -1,52 +1,30 @@
-I can build this as an admin-only AI prospecting agent inside your portal.
+I checked the saved contact and confirmed this lead was created by the `find-local-leads` agent at 03:17 UTC:
 
-What it will do:
+- Name: Surrey Hills Electrical
+- Source saved: `https://www.checkatrade.com/trades/surreyhillselectrical`
+- Current result: Checkatrade returns “Sorry, we can't find that page!”
 
-1. Connect Firecrawl
-- Link the existing Firecrawl connector to this project so backend functions can search/scrape the web safely without exposing keys in the browser.
-- Use it from server-side code only.
+Why it happened: the agent currently trusts the search/extraction result too much. Firecrawl search can return indexed/stale directory URLs, and the AI extractor then saved that URL because the page content/evidence suggested a business listing with no standalone website. There is no final validation step that re-fetches the chosen `source_url` and rejects it if the page is now 404, redirected to a generic error page, or contains “can’t find that page”.
 
-2. Add a lead-finder backend function
-- Create a new backend function, e.g. `find-local-leads`.
-- It will accept a trade + location + optional amount, for example:
-  - `electricians in Manchester`
-  - `roofers near Birmingham`
-  - `plumbers in Leeds, find 20`
-- It will search for local businesses likely to need a website.
-- It will extract business name, phone, email if visible, location, trade/category, and source URL.
-- It will detect whether they appear to have a real website.
+Plan to fix it:
 
-3. Only add businesses that look like they have no proper website
-- Exclude results that have a clear own-domain website.
-- Allow leads from places like directories/social profiles where no standalone website is visible.
-- Save why it was added in notes, e.g. `Trade: Roofer`, `No standalone website found`, `Found via directory/search result`.
-- Avoid dumping raw links or messy scrape text into job title/notes.
+1. Add source URL validation in the lead finder backend
+   - Before inserting a candidate into contacts, verify `candidate.source_url` server-side.
+   - Reject links that return 404/410, fail to load, redirect to generic pages, or include common dead-page text such as “can't find that page”, “page not found”, “old link”, or “moved”.
+   - Keep valid directory/social links, since those are still useful evidence when a business has no standalone website.
 
-4. Deduplicate contacts
-- Before inserting, check existing contacts by name + phone/email/location.
-- Skip duplicates instead of re-adding the same business.
-- Return a summary like: `Added 12, skipped 4 duplicates, rejected 9 because they had websites`.
+2. Tighten the AI extraction prompt
+   - Tell the extractor not to use search-result URLs that look stale, inaccessible, or generic.
+   - Require the source URL to be an accessible evidence page for the specific business, not just a guessed directory slug.
 
-5. Add a portal control for the agent
-- Add an admin UI section/button in the Contacts area such as `Find local leads`.
-- Fields:
-  - Trade/category
-  - Location
-  - Number of leads to add
-- Show progress/loading state and a clean result summary.
-- Refresh the contact list after the agent adds leads.
+3. Improve result reporting in the portal
+   - Add a count for leads rejected due to invalid/dead source links, so the AI lead finder summary explains why fewer contacts may be added.
 
-6. Optional chat command support
-- Extend the existing dev AI chat so you can type things like:
-  - `find 10 roofers in Bristol with no websites and add them to contacts`
-- The AI will call the new lead-finder function instead of trying to manually guess contacts itself.
+4. Clean up the bad existing contact
+   - Update or remove the dead Checkatrade source from Surrey Hills Electrical’s notes.
+   - If no valid alternate evidence URL is found, keep the contact but remove the dead source link and add a note that the previous source was invalid.
 
-Technical details:
-- Use the Firecrawl connector if linked; otherwise prompt to connect it first.
-- Keep all web-search/scraping logic inside a backend function.
-- Use the current `contacts` table, saving trade as the first line of `notes` in the existing format: `Trade: Electrician`.
-- Keep contacts admin-protected under the existing RLS setup.
-- Add validation and sensible limits so the agent cannot accidentally create hundreds of contacts in one run.
-
-Important limitation:
-- This will be a semi-automated prospecting agent: you give it a trade/location and it finds/imports leads. It will not run endlessly by itself unless we later add scheduled jobs and approval rules.
+Files expected to change:
+- `supabase/functions/find-local-leads/index.ts`
+- `src/pages/Portal.tsx`
+- Database contact note cleanup for the existing bad record
