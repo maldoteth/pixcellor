@@ -422,6 +422,9 @@ Deno.serve(async (req) => {
         skippedDuplicates.push(candidate);
         continue;
       }
+      if (!cleanText(candidate.phone, 40)) {
+        candidate.phone = await revealPhoneFromProfile(firecrawlKey, sourceUrl);
+      }
       added.push({ ...candidate, name, source_url: sourceUrl });
       if (added.length >= limit) break;
     }
@@ -434,13 +437,7 @@ Deno.serve(async (req) => {
         email: cleanEmail(candidate.email) || null,
         location: cleanText(candidate.location, 160) || location,
         website: null,
-        notes: [
-          `Trade: ${cleanText(candidate.trade, 80) || trade}`,
-          `Industry: ${industry}`,
-          "Lightweight Checkatrade lead from search result.",
-          cleanText(candidate.evidence, 220),
-          candidate.source_url ? `Source: ${cleanText(candidate.source_url, 400)}` : "",
-        ].filter(Boolean).join("\n"),
+        notes: cleanText(candidate.trade, 80) || trade,
         source: "lead_agent",
       };
     });
