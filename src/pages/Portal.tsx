@@ -186,6 +186,13 @@ type Contact = {
   location: string | null;
   industry: string | null;
   website: string | null;
+  source_url?: string | null;
+  source_platform?: string | null;
+  actual_website_url?: string | null;
+  social_url?: string | null;
+  website_status?: string | null;
+  lead_score?: number | null;
+  lead_score_reason?: string | null;
   notes: string | null;
   status: "cold" | "aware" | "warm" | "hot" | "gold" | "archived";
   source: string;
@@ -796,7 +803,7 @@ export default function Portal() {
     );
     return contacts.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.actual_website_url) || matchesQuery(contactsQ, c.source_platform) || matchesQuery(contactsQ, c.website_status) || matchesQuery(contactsQ, c.lead_score_reason) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
     );
   }, [contacts, contactEvents, contactsQ]);
 
@@ -885,7 +892,7 @@ export default function Portal() {
       ));
       return (
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.actual_website_url) || matchesQuery(contactsQ, c.source_platform) || matchesQuery(contactsQ, c.website_status) || matchesQuery(contactsQ, c.lead_score_reason) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
       );
     }));
   }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactsSortOrder, contactOrderStatsByEmail]);
