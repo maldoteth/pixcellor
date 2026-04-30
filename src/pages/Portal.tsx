@@ -351,6 +351,9 @@ export default function Portal() {
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("sales");
   const [devChatOpen, setDevChatOpen] = useState(false);
+  const [leadAgentForm, setLeadAgentForm] = useState({ trade: "", location: "", limit: "10" });
+  const [leadAgentLoading, setLeadAgentLoading] = useState(false);
+  const [leadAgentSummary, setLeadAgentSummary] = useState<string | null>(null);
 
   const loadPortalSnapshot = useCallback(async () => {
     const { data, error } = await (supabase as any).rpc("portal_fetch_snapshot");
@@ -973,6 +976,33 @@ export default function Portal() {
     setMobileContactStep(0);
     await loadPortalSnapshot();
     toast.success("Contact added.");
+  };
+
+  const runLeadAgent = async () => {
+    const trade = leadAgentForm.trade.trim();
+    const location = leadAgentForm.location.trim();
+    const limit = Math.min(Math.max(Number(leadAgentForm.limit) || 10, 1), 25);
+    if (!trade || !location) {
+      toast.error("Add a trade and location first.");
+      return;
+    }
+
+    setLeadAgentLoading(true);
+    setLeadAgentSummary(null);
+    const { data, error } = await supabase.functions.invoke("find-local-leads", {
+      body: { trade, location, limit },
+    });
+    setLeadAgentLoading(false);
+
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Lead agent failed");
+      return;
+    }
+
+    const summary = `Added ${data.added ?? 0}. Skipped ${data.skipped_duplicates ?? 0} duplicates. Rejected ${data.rejected_with_websites ?? 0} with websites.`;
+    setLeadAgentSummary(summary);
+    await loadPortalSnapshot();
+    toast.success(summary);
   };
 
   const updateContact = async () => {
@@ -1948,6 +1978,22 @@ export default function Portal() {
             <div className="flex justify-start">
               <Button onClick={() => setShowContactForm(v => !v)}><Plus className="w-4 h-4 mr-2" /> Add contact</Button>
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">AI lead finder</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-3 md:grid-cols-[1fr_1fr_120px_auto]">
+                <Input placeholder="Trade e.g. roofers" value={leadAgentForm.trade} onChange={(e) => setLeadAgentForm(f => ({ ...f, trade: e.target.value }))} />
+                <Input placeholder="Location e.g. Bristol" value={leadAgentForm.location} onChange={(e) => setLeadAgentForm(f => ({ ...f, location: e.target.value }))} />
+                <Input type="number" min={1} max={25} value={leadAgentForm.limit} onChange={(e) => setLeadAgentForm(f => ({ ...f, limit: e.target.value }))} />
+                <Button onClick={runLeadAgent} disabled={leadAgentLoading} className="gap-2">
+                  {leadAgentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserSearch className="h-4 w-4" />}
+                  Find leads
+                </Button>
+                {leadAgentSummary && <p className="text-sm text-muted-foreground md:col-span-4">{leadAgentSummary}</p>}
+              </CardContent>
+            </Card>
 
             <div className="flex flex-wrap items-center gap-2">
               <Button variant={contactsStatusFilter === "all" ? "default" : "outline"} size="sm" className="rounded-none shadow-none" onClick={() => setContactsStatusFilter("all")}>All</Button>
