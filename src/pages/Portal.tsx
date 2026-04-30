@@ -792,9 +792,48 @@ export default function Portal() {
     );
     return contacts.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
     );
   }, [contacts, contactEvents, contactsQ]);
+
+  const websiteEntries = useMemo(() => {
+    const manual = contacts
+      .filter(contact => Boolean(contact.website?.trim()))
+      .map(contact => ({
+        key: `contact-${contact.id}`,
+        name: contact.name,
+        website: contact.website!,
+        email: contact.email,
+        location: contact.location,
+        industry: contact.industry,
+        source: "Contact",
+        date: contact.updated_at,
+        contactId: contact.id,
+      }));
+    const delivered = completedOrders
+      .filter(order => Boolean(order.delivered_domain?.trim()))
+      .map(order => ({
+        key: `order-${order.session_id}`,
+        name: order.customer_email ?? "Delivered client",
+        website: order.delivered_domain!,
+        email: order.customer_email,
+        location: null,
+        industry: null,
+        source: "Delivered job",
+        date: order.delivered_at ?? order.created_at,
+        contactId: contacts.find(contact => normalizeEmail(contact.email) && normalizeEmail(contact.email) === normalizeEmail(order.customer_email))?.id ?? null,
+      }));
+    const seen = new Set<string>();
+    return [...manual, ...delivered]
+      .filter(entry => {
+        const key = `${entry.website.toLowerCase()}-${entry.email ?? entry.name}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .filter(entry => !websitesQ || [entry.name, entry.website, entry.email, entry.location, entry.industry, entry.source].some(value => matchesQuery(websitesQ, value)))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [contacts, completedOrders, websitesQ]);
 
   const filteredContactEvents = useMemo(() => {
     if (!contactsQ) return contactEvents;
@@ -842,7 +881,7 @@ export default function Portal() {
       ));
       return (
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.status) || matchingContactIds.has(c.id) || orderMatches
       );
     }));
   }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactsSortOrder, contactOrderStatsByEmail]);
