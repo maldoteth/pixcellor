@@ -4,14 +4,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, Eye } from "lucide-react";
+import { Loader2, Send, Eye, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import RichEmailEditor from "./email/RichEmailEditor";
+import EmailPreview from "./email/EmailPreview";
+import { STARTER_TEMPLATES } from "./email/emailTemplates";
 
 type Source = "contacts" | "customers" | "both";
 
 const STATUS_OPTIONS = ["cold", "aware", "warm", "hot", "gold"] as const;
-
-type ContactRow = { email: string | null; status: string | null; industry: string | null };
 
 export default function BroadcastCampaigns() {
   const [source, setSource] = useState<Source>("contacts");
@@ -19,7 +20,8 @@ export default function BroadcastCampaigns() {
   const [industries, setIndustries] = useState<string[]>([]);
   const [allIndustries, setAllIndustries] = useState<string[]>([]);
   const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
+  const [preheader, setPreheader] = useState("");
+  const [bodyHtml, setBodyHtml] = useState("<p></p>");
   const [testRecipient, setTestRecipient] = useState("");
   const [previewCount, setPreviewCount] = useState<number | null>(null);
   const [sample, setSample] = useState<string[]>([]);
@@ -29,13 +31,26 @@ export default function BroadcastCampaigns() {
   useEffect(() => {
     void (async () => {
       const { data } = await supabase.from("contacts").select("industry").not("industry", "is", null);
-      const uniq = Array.from(new Set((data || []).map((r: { industry: string | null }) => (r.industry || "").toLowerCase()).filter(Boolean))).sort();
+      const uniq = Array.from(
+        new Set((data || []).map((r: { industry: string | null }) => (r.industry || "").toLowerCase()).filter(Boolean))
+      ).sort();
       setAllIndustries(uniq);
     })();
   }, []);
 
   const toggle = (list: string[], value: string) =>
     list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+
+  const loadTemplate = (id: string) => {
+    const tpl = STARTER_TEMPLATES.find((t) => t.id === id);
+    if (!tpl) return;
+    if (bodyHtml && bodyHtml.replace(/<[^>]+>/g, "").trim().length > 0) {
+      if (!confirm("Replace your current draft with this template?")) return;
+    }
+    setSubject(tpl.subject);
+    setPreheader(tpl.preheader);
+    setBodyHtml(tpl.html);
+  };
 
   const runPreview = async () => {
     setPreviewing(true);
@@ -58,7 +73,8 @@ export default function BroadcastCampaigns() {
   };
 
   const send = async (testOnly: boolean) => {
-    if (!subject.trim() || !body.trim()) {
+    const plain = bodyHtml.replace(/<[^>]+>/g, "").trim();
+    if (!subject.trim() || plain.length === 0) {
       toast.error("Subject and body are required");
       return;
     }
@@ -73,7 +89,8 @@ export default function BroadcastCampaigns() {
       body: {
         action: "send",
         subject: subject.trim(),
-        bodyText: body.trim(),
+        preheader: preheader.trim() || undefined,
+        bodyHtml,
         source,
         contactStatuses: source === "customers" ? [] : statuses,
         contactIndustries: source === "customers" ? [] : industries,
@@ -89,14 +106,14 @@ export default function BroadcastCampaigns() {
     toast.success(`Sent ${result?.sent}/${result?.total} (${result?.failed} failed)`);
   };
 
-  const sourceLabel = useMemo(() => ({
-    contacts: "CRM contacts",
-    customers: "Past customers",
-    both: "CRM + customers",
-  }[source]), [source]);
+  const sourceLabel = useMemo(
+    () => ({ contacts: "CRM contacts", customers: "Past customers", both: "CRM + customers" }[source]),
+    [source],
+  );
 
   return (
     <div className="space-y-4 min-w-0">
+      {/* Audience */}
       <Card>
         <CardContent className="p-4 space-y-4">
           <div>
@@ -154,7 +171,7 @@ export default function BroadcastCampaigns() {
             </>
           )}
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <Button onClick={runPreview} disabled={previewing} variant="outline" size="sm">
               {previewing ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <Eye className="w-3.5 h-3.5 mr-2" />}
               Preview audience
@@ -169,42 +186,78 @@ export default function BroadcastCampaigns() {
         </CardContent>
       </Card>
 
+      {/* Starter templates */}
       <Card>
-        <CardContent className="p-4 space-y-3">
-          <Input
-            placeholder="Subject line"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            maxLength={200}
-          />
-          <textarea
-            placeholder="Email body (plain text — paragraphs auto-formatted)"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            className="min-h-[280px] w-full rounded-none border border-input bg-background px-3 py-2 text-sm font-mono"
-          />
-          <p className="text-xs text-muted-foreground">
-            Sent from <code>hello@mail.pixcellor.com</code>. An unsubscribe link and footer are appended automatically. Replies go to <code>hello@pixcellor.com</code>.
-          </p>
-
-          <div className="flex flex-wrap gap-2 items-center">
-            <Input
-              placeholder="Test recipient email"
-              value={testRecipient}
-              onChange={(e) => setTestRecipient(e.target.value)}
-              className="max-w-xs"
-            />
-            <Button onClick={() => send(true)} disabled={sending} variant="outline" size="sm">
-              Send test
-            </Button>
-            <div className="flex-1" />
-            <Button onClick={() => send(false)} disabled={sending || !previewCount} size="sm">
-              {sending ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <Send className="w-3.5 h-3.5 mr-2" />}
-              Send to {previewCount ?? "—"}
-            </Button>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-muted-foreground" />
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Start from a template</div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {STARTER_TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => loadTemplate(t.id)}
+                className="text-left p-3 border border-input rounded-md hover:bg-muted/50 transition-colors"
+              >
+                <div className="text-sm font-semibold">{t.name}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{t.description}</div>
+              </button>
+            ))}
           </div>
         </CardContent>
       </Card>
+
+      {/* Composer + preview */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="space-y-2">
+              <Input
+                placeholder="Subject line"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                maxLength={200}
+              />
+              <Input
+                placeholder="Preheader (preview text shown in inbox — optional)"
+                value={preheader}
+                onChange={(e) => setPreheader(e.target.value)}
+                maxLength={140}
+              />
+            </div>
+
+            <RichEmailEditor value={bodyHtml} onChange={setBodyHtml} />
+
+            <p className="text-xs text-muted-foreground">
+              From <code>hello@mail.pixcellor.com</code> · replies go to <code>hello@pixcellor.com</code> · branded header,
+              footer and unsubscribe link are added automatically.
+            </p>
+
+            <div className="flex flex-wrap gap-2 items-center pt-1">
+              <Input
+                placeholder="Test recipient email"
+                value={testRecipient}
+                onChange={(e) => setTestRecipient(e.target.value)}
+                className="max-w-xs"
+              />
+              <Button onClick={() => send(true)} disabled={sending} variant="outline" size="sm">
+                Send test
+              </Button>
+              <div className="flex-1" />
+              <Button onClick={() => send(false)} disabled={sending || !previewCount} size="sm">
+                {sending ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <Send className="w-3.5 h-3.5 mr-2" />}
+                Send to {previewCount ?? "—"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="lg:sticky lg:top-4 self-start">
+          <EmailPreview subject={subject} bodyHtml={bodyHtml} preheader={preheader} />
+        </div>
+      </div>
     </div>
   );
 }
