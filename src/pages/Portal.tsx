@@ -1135,7 +1135,7 @@ export default function Portal() {
   };
 
   const openMobileContactForm = () => {
-    setActiveTab("contacts");
+    setActiveTab("profiles");
     setShowContactForm(false);
     setMobileContactStep(0);
     setMobileContactDrawerOpen(true);
