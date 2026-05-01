@@ -1743,11 +1743,10 @@ export default function Portal() {
           </div>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-9">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-4 xl:grid-cols-8">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
-            <TabsTrigger value="retainers" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
             <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.length + inquiries.length})</TabsTrigger>
             <TabsTrigger value="campaigns" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Megaphone className="h-3.5 w-3.5 shrink-0" />Campaigns</TabsTrigger>
@@ -2019,31 +2018,6 @@ export default function Portal() {
           </TabsContent>
 
 
-          <TabsContent value="retainers" className="space-y-2">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={retainersSearch} onChange={(e) => setRetainersSearch(e.target.value)} placeholder="Search monthly retainer clients by email, order ID, status…" className="pl-9" />
-            </div>
-            {filteredRetainers.length === 0 && <p className="text-muted-foreground text-sm">No monthly retainer clients {retainersQ ? "match your search" : "yet"}.</p>}
-            {filteredRetainers.map(o => (
-              <Card key={o.session_id}>
-                <CardContent className="p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
-                      <div className="text-xs text-muted-foreground">Started {new Date(o.created_at).toLocaleString()} · Monthly retainer</div>
-                      {o.subscription_id && <div className="break-all text-xs text-muted-foreground">Subscription {o.subscription_id}</div>}
-                    </div>
-                    <div className="flex flex-wrap items-center justify-end gap-3">
-                      <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>{o.payment_status ?? "pending"}</Badge>
-                      <Badge variant="outline">{getOrderMetadataText(o, "billing") || "Monthly subscription"}</Badge>
-                      <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
 
           <TabsContent value="campaigns" className="min-w-0">
             <BroadcastCampaigns />
@@ -2274,30 +2248,65 @@ export default function Portal() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="profiles" className="space-y-2">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={profilesSearch} onChange={(e) => setProfilesSearch(e.target.value)} placeholder="Search clients by email, name, company, notes…" className="pl-9" />
-            </div>
-            {filteredProfiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles {profilesQ ? "match your search" : "yet"}.</p>}
-            {filteredProfiles.map(p => (
-              <Card key={p.email}>
-                <CardContent className="p-4 space-y-1">
-                  <div className="flex justify-between">
-                    <div className="font-medium">{p.name || p.email}</div>
-                    <div className="text-xs text-muted-foreground">{new Date(p.updated_at).toLocaleString()}</div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">{p.email}{p.company ? ` · ${p.company}` : ""}</div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm pt-2">
-                    {p.brand_colours && <div><span className="text-muted-foreground">Colours:</span> {p.brand_colours}</div>}
-                    {p.page_count != null && <div><span className="text-muted-foreground">Pages:</span> {p.page_count}</div>}
-                    {p.requirements && <div className="md:col-span-2"><span className="text-muted-foreground">Requirements:</span> <LinkifiedText text={p.requirements} /></div>}
-                    {p.content_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Content:</span> <LinkifiedText text={p.content_notes} /></div>}
-                    {p.notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={p.notes} /></div>}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <TabsContent value="profiles" className="space-y-3">
+            <Tabs defaultValue="clients" className="min-w-0">
+              <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent p-0 sm:w-auto sm:inline-grid">
+                <TabsTrigger value="clients" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({filteredProfiles.length})</TabsTrigger>
+                <TabsTrigger value="retainers" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="clients" className="space-y-2 pt-3">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input value={profilesSearch} onChange={(e) => setProfilesSearch(e.target.value)} placeholder="Search clients by email, name, company, notes…" className="pl-9" />
+                </div>
+                {filteredProfiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles {profilesQ ? "match your search" : "yet"}.</p>}
+                {filteredProfiles.map(p => (
+                  <Card key={p.email}>
+                    <CardContent className="p-4 space-y-1">
+                      <div className="flex justify-between">
+                        <div className="font-medium">{p.name || p.email}</div>
+                        <div className="text-xs text-muted-foreground">{new Date(p.updated_at).toLocaleString()}</div>
+                      </div>
+                      <div className="text-xs text-muted-foreground">{p.email}{p.company ? ` · ${p.company}` : ""}</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm pt-2">
+                        {p.brand_colours && <div><span className="text-muted-foreground">Colours:</span> {p.brand_colours}</div>}
+                        {p.page_count != null && <div><span className="text-muted-foreground">Pages:</span> {p.page_count}</div>}
+                        {p.requirements && <div className="md:col-span-2"><span className="text-muted-foreground">Requirements:</span> <LinkifiedText text={p.requirements} /></div>}
+                        {p.content_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Content:</span> <LinkifiedText text={p.content_notes} /></div>}
+                        {p.notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={p.notes} /></div>}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="retainers" className="space-y-2 pt-3">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input value={retainersSearch} onChange={(e) => setRetainersSearch(e.target.value)} placeholder="Search monthly retainer clients by email, order ID, status…" className="pl-9" />
+                </div>
+                {filteredRetainers.length === 0 && <p className="text-muted-foreground text-sm">No monthly retainer clients {retainersQ ? "match your search" : "yet"}.</p>}
+                {filteredRetainers.map(o => (
+                  <Card key={o.session_id}>
+                    <CardContent className="p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
+                          <div className="text-xs text-muted-foreground">Started {new Date(o.created_at).toLocaleString()} · Monthly retainer</div>
+                          {o.subscription_id && <div className="break-all text-xs text-muted-foreground">Subscription {o.subscription_id}</div>}
+                        </div>
+                        <div className="flex flex-wrap items-center justify-end gap-3">
+                          <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>{o.payment_status ?? "pending"}</Badge>
+                          <Badge variant="outline">{getOrderMetadataText(o, "billing") || "Monthly subscription"}</Badge>
+                          <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
         </Tabs>
