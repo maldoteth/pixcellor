@@ -1799,7 +1799,7 @@ export default function Portal() {
 
           <TabsContent value="orders" className="space-y-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/50 p-3">
@@ -1918,7 +1918,7 @@ export default function Portal() {
 
           <TabsContent value="completed" className="space-y-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search completed orders by email, order ID, status, domain…" className="pl-9" />
             </div>
             <div className="flex flex-wrap items-center gap-2 rounded-none border border-border bg-card/50 p-3">
@@ -1977,7 +1977,7 @@ export default function Portal() {
 
           <TabsContent value="retainers" className="space-y-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={retainersSearch} onChange={(e) => setRetainersSearch(e.target.value)} placeholder="Search monthly retainer clients by email, order ID, status…" className="pl-9" />
             </div>
             {filteredRetainers.length === 0 && <p className="text-muted-foreground text-sm">No monthly retainer clients {retainersQ ? "match your search" : "yet"}.</p>}
@@ -2008,7 +2008,7 @@ export default function Portal() {
 
           <TabsContent value="falloffs" className="min-w-0 space-y-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={falloffsSearch} onChange={(e) => setFalloffsSearch(e.target.value)} placeholder="Search falloffs by company, email, IP, location, session…" className="pl-9" />
             </div>
             {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
@@ -2099,7 +2099,7 @@ export default function Portal() {
             <div className="space-y-3 md:max-h-[70vh] md:overflow-hidden md:flex md:flex-col md:min-h-0">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input value={mailboxSearch} onChange={(e) => setMailboxSearch(e.target.value)} placeholder="Search inbox" className="pl-9" />
                 </div>
                 <Button variant="outline" onClick={loadMailbox} disabled={mailboxLoading}>{mailboxLoading ? "…" : "Load"}</Button>
@@ -2162,7 +2162,7 @@ export default function Portal() {
           <TabsContent value="chats" className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
             <div className="space-y-2 max-h-[70vh] overflow-y-auto">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input value={chatsSearch} onChange={(e) => setChatsSearch(e.target.value)} placeholder="Search chats by client, message, role…" className="pl-9" />
               </div>
               {filteredConversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations {chatsQ ? "match your search" : "yet"}.</p>}
@@ -2229,7 +2229,7 @@ export default function Portal() {
 
           <TabsContent value="profiles" className="space-y-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={profilesSearch} onChange={(e) => setProfilesSearch(e.target.value)} placeholder="Search clients by email, name, company, notes…" className="pl-9" />
             </div>
             {filteredProfiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles {profilesQ ? "match your search" : "yet"}.</p>}
@@ -2259,7 +2259,7 @@ export default function Portal() {
             </div>
 
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={contactsSearch}
                 onChange={(e) => setContactsSearch(e.target.value)}
