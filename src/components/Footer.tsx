@@ -1,4 +1,4 @@
-import { Facebook, LogIn, MessageSquare, Phone } from "lucide-react";
+import { Facebook, Linkedin, LogIn, MessageSquare, Phone } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -25,6 +25,15 @@ const Footer = () => {
           className="flex items-center hover:text-foreground transition-colors"
         >
           <Facebook className="w-3.5 h-3.5" />
+        </a>
+        <a
+          href="https://www.linkedin.com/company/pixcellor/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Pixcellor on LinkedIn"
+          className="flex items-center hover:text-foreground transition-colors"
+        >
+          <Linkedin className="w-3.5 h-3.5" />
         </a>
         <button
           type="button"
