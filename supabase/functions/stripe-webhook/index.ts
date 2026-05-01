@@ -65,6 +65,18 @@ serve(async (req) => {
       event.type === "checkout.session.async_payment_succeeded"
     ) {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // Stripe is shared with another app — only process Pixcellor checkouts.
+      // create-checkout tags every Pixcellor session with metadata.source = "pixcellor_site".
+      const sessionSource = typeof session.metadata?.source === "string" ? session.metadata.source : null;
+      if (sessionSource !== "pixcellor_site") {
+        console.log(`Skipping non-Pixcellor session ${session.id} (source=${sessionSource ?? "none"})`);
+        return new Response(JSON.stringify({ received: true, skipped: "non_pixcellor_source" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       const paymentStatus =
         typeof session.payment_status === "string" ? session.payment_status : null;
       const mode = session.mode ?? null;
