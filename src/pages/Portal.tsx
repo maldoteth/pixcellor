@@ -2109,15 +2109,19 @@ export default function Portal() {
                 </div>
                 <Button variant="outline" onClick={loadMailbox} disabled={mailboxLoading}>{mailboxLoading ? "…" : "Load"}</Button>
               </div>
-              {mailboxMessages.length === 0 && <p className="text-sm text-muted-foreground">Load the connected mailbox to see Pixcellor user replies only.</p>}
+              {combinedMailboxMessages.length === 0 && <p className="text-sm text-muted-foreground">Load the connected mailbox to see Pixcellor user replies and website enquiries together.</p>}
               <div className="space-y-2 max-h-[70vh] md:max-h-none md:flex-1 md:min-h-0 overflow-y-auto pr-1">
-                {mailboxMessages.map(message => {
+                {combinedMailboxMessages.map(message => {
                   const relatedOrder = orders.find(order => order.customer_email?.toLowerCase() === message.fromEmail);
+                  const isInquiry = message.id.startsWith("inquiry:");
                   return (
                     <button key={message.id} onClick={() => setActiveMail(message)} className={`w-full text-left p-3 rounded-none border transition-colors ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
                       <div className="flex items-center justify-between gap-2">
                         <div className="font-medium truncate">{message.from}</div>
-                        {message.unread && <Badge>New</Badge>}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isInquiry && <Badge variant="secondary">Enquiry</Badge>}
+                          {message.unread && !isInquiry && <Badge>New</Badge>}
+                        </div>
                       </div>
                       <div className="text-sm truncate">{message.subject}</div>
                       <div className="text-xs text-muted-foreground line-clamp-2">{message.snippet}</div>
