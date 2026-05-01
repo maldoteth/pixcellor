@@ -1720,11 +1720,544 @@ export default function Portal() {
             </div>
 
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-...
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-...
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={salesSearch}
+                onChange={(e) => setSalesSearch(e.target.value)}
+                placeholder="Search sales callbacks by client, title, notes, phone, email…"
+                className="pl-9"
+              />
+              {!contactsQ && filteredContacts.length > 10 && (
+                <p className="mt-1 text-xs text-muted-foreground">Showing 10 most recent clients. Search to find older clients.</p>
+              )}
+            </div>
+
+            <div className="flex flex-wrap justify-start gap-2">
+              <Button onClick={() => setShowSalesEventForm(v => !v)} disabled={contacts.length === 0}>
+                <Plus className="w-4 h-4 mr-2" /> Create event
+              </Button>
+              <Button onClick={() => setShowContactForm(v => !v)}>
+                <UserPlus className="w-4 h-4 mr-2" /> Create client
+              </Button>
+            </div>
+
+            {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a client first, then you can create sales events.</p>}
+
+            {contactFormCard}
+            {eventFormCard}
+
+            <div className="space-y-2">
+              <h3 className="font-medium">Callbacks waiting</h3>
+              {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting{salesQ ? " match your search" : ""}.</p>}
+              {salesCallbacks.map(e => {
+                const contact = getContact(e.contact_id);
+                const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
+                const statusColor = contact ? getContactStatusColor(contact.status) : "hsl(var(--muted))";
+                const phoneHref = formatPhoneHref(contact?.phone);
+                return (
+                  <Card
+                    key={e.id}
+                    role="button"
+                    tabIndex={0}
+                    className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    onClick={() => contact && openContactDrawer(contact.id)}
+                    onKeyDown={(event) => {
+                      if (!contact || (event.key !== "Enter" && event.key !== " ")) return;
+                      event.preventDefault();
+                      openContactDrawer(contact.id);
+                    }}
+                    style={{
+                      background: `linear-gradient(135deg, ${statusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--card)) 34%, hsl(var(--card)) 100%)`,
+                    }}
+                  >
+                    <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="font-medium">{e.title}</div>
+                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
+                        {contact?.phone && (phoneHref ? (
+                          <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
+                            {contact.phone}
+                          </a>
+                        ) : (
+                          <div className="text-xs text-muted-foreground">{contact.phone}</div>
+                        ))}
+                        {e.description && <LinkifiedText text={e.description} className="block text-sm whitespace-pre-wrap" stopPropagation />}
+                      </div>
+                      <div className="flex flex-row flex-wrap items-center justify-end gap-2">
+                        <Badge className="pricing-button h-8 rounded-none px-3 py-0 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
+                        <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void completeCallback(e.id); }}>Done</Button>
+                        <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void tryCallbackAgain(e.id); }}>Tried</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="orders" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/50 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground">Requirements</span>
+                <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
+                <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
+                <Button variant={orderReqsFilter === "edits" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("edits")}>Edits</Button>
+                <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
+              </div>
+            </div>
+            {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
+            {filteredOrders.map(o => {
+              const requirements = requirementsBySession.get(o.session_id);
+              const emailStatus = orderEmailStatusBySession.get(o.session_id);
+              const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
+              return (
+              <Card key={o.session_id}>
+                <CardContent className="p-4 space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
+                      <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
+                      {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
+                    </div>
+                    <div className="flex flex-wrap items-center justify-end gap-3">
+                      <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>
+                        {o.payment_status ?? "pending"}
+                      </Badge>
+                      <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
+                        {o.order_status === "delivered" ? "Delivered" : "Live"}
+                      </Badge>
+                      <Badge variant={requirements ? "default" : "outline"}>
+                        {requirements ? "Requirements received" : "Needs requirements"}
+                      </Badge>
+                      {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
+                      <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => sendOrderConfirmation(o)}
+                        disabled={!o.customer_email || sendingConfirmationId === o.session_id}
+                      >
+                        {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
+                      </Button>
+                      {canSendReminder && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => sendRequirementsReminder(o)}
+                          disabled={sendingReminderId === o.session_id}
+                        >
+                          {sendingReminderId === o.session_id ? "Sending…" : "Send reminder"}
+                        </Button>
+                      )}
+                      {o.order_status !== "delivered" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => markOrderDelivered(o)}
+                          disabled={deliveringOrderId === o.session_id}
+                        >
+                          {deliveringOrderId === o.session_id ? (
+                            <span className="inline-flex items-center gap-2">
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              Processing…
+                            </span>
+                          ) : "Mark delivered"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {editRequestsBySession.has(o.session_id) && (
+                    <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
+                      <div className="mb-3 font-medium">Edit requests</div>
+                      <div className="space-y-3">
+                        {editRequestsBySession.get(o.session_id)!.map((request) => (
+                          <div key={request.id} className="rounded-none border border-border/70 p-3">
+                            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                              <span className="font-medium">Request #{request.request_number}</span>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge variant={request.status === "done" ? "default" : request.status === "in_progress" ? "secondary" : "outline"}>{request.status.replace("_", " ")}</Badge>
+                                <Button variant="outline" size="sm" onClick={() => updateEditRequestStatus(request.id, "in_progress")} disabled={request.status === "in_progress"}>In progress</Button>
+                                <Button variant="outline" size="sm" onClick={() => updateEditRequestStatus(request.id, "done")} disabled={request.status === "done"}>Done</Button>
+                              </div>
+                            </div>
+                            <p className="whitespace-pre-wrap text-muted-foreground">{request.request_details}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {requirements && (
+                    <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <div className="font-medium">{requirements.site_name}</div>
+                        <div className="text-xs text-muted-foreground">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div><span className="text-muted-foreground">Contents:</span> {requirements.site_contents}</div>
+                        <div><span className="text-muted-foreground">Pages:</span> {requirements.pages_details}</div>
+                        <div><span className="text-muted-foreground">Colours/styles:</span> {requirements.colours_styles}</div>
+                        {requirements.reference_links && <div><span className="text-muted-foreground">References:</span> {requirements.reference_links}</div>}
+                        <div className="md:col-span-2"><span className="text-muted-foreground">Images/content/socials:</span> {requirements.images_content_socials}</div>
+                        {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={requirements.extra_notes} /></div>}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+            })}
+          </TabsContent>
+
+          <TabsContent value="completed" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search completed orders by email, order ID, status, domain…" className="pl-9" />
+            </div>
+            <div className="flex flex-wrap items-center gap-2 rounded-none border border-border bg-card/50 p-3">
+              <span className="text-xs font-medium text-muted-foreground">Requirements</span>
+              <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
+              <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
+              <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
+            </div>
+            {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No completed orders {completedQ ? "match your search" : "yet"}.</p>}
+            {completedOrders.map(o => {
+              const requirements = requirementsBySession.get(o.session_id);
+              const emailStatus = orderEmailStatusBySession.get(o.session_id);
+              return (
+                <Card key={o.session_id}>
+                  <CardContent className="p-4 space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
+                        <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
+                        {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}{o.delivered_domain ? ` · ${o.delivered_domain}` : ""}</div>}
+                      </div>
+                      <div className="flex flex-wrap items-center justify-end gap-3">
+                        <Badge variant="default">Delivered</Badge>
+                        {emailStatus?.completionSent && <Badge variant="secondary">Completion sent</Badge>}
+                        <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
+                        {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
+                        <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                        <Button variant="outline" size="sm" onClick={() => markOrderUndelivered(o.session_id)}>
+                          Mark undelivered
+                        </Button>
+                      </div>
+                    </div>
+
+                    {requirements && (
+                      <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-medium">{requirements.site_name}</div>
+                          <div className="text-xs text-muted-foreground">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div><span className="text-muted-foreground">Contents:</span> {requirements.site_contents}</div>
+                          <div><span className="text-muted-foreground">Pages:</span> {requirements.pages_details}</div>
+                          <div><span className="text-muted-foreground">Colours/styles:</span> {requirements.colours_styles}</div>
+                          {requirements.reference_links && <div><span className="text-muted-foreground">References:</span> {requirements.reference_links}</div>}
+                          <div className="md:col-span-2"><span className="text-muted-foreground">Images/content/socials:</span> {requirements.images_content_socials}</div>
+                          {requirements.extra_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={requirements.extra_notes} /></div>}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </TabsContent>
+
+
+          <TabsContent value="retainers" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={retainersSearch} onChange={(e) => setRetainersSearch(e.target.value)} placeholder="Search monthly retainer clients by email, order ID, status…" className="pl-9" />
+            </div>
+            {filteredRetainers.length === 0 && <p className="text-muted-foreground text-sm">No monthly retainer clients {retainersQ ? "match your search" : "yet"}.</p>}
+            {filteredRetainers.map(o => (
+              <Card key={o.session_id}>
+                <CardContent className="p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
+                      <div className="text-xs text-muted-foreground">Started {new Date(o.created_at).toLocaleString()} · Monthly retainer</div>
+                      {o.subscription_id && <div className="break-all text-xs text-muted-foreground">Subscription {o.subscription_id}</div>}
+                    </div>
+                    <div className="flex flex-wrap items-center justify-end gap-3">
+                      <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>{o.payment_status ?? "pending"}</Badge>
+                      <Badge variant="outline">{getOrderMetadataText(o, "billing") || "Monthly subscription"}</Badge>
+                      <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="campaigns" className="min-w-0">
+            <BroadcastCampaigns />
+          </TabsContent>
+
+
+          <TabsContent value="falloffs" className="min-w-0 space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={falloffsSearch} onChange={(e) => setFalloffsSearch(e.target.value)} placeholder="Search falloffs by company, email, IP, location, session…" className="pl-9" />
+            </div>
+            {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
+            {filteredFalloffs.map(f => (
+               <Card key={f.id} className="min-w-0 overflow-hidden">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="break-words font-medium">{f.company_name ?? f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
+                      <div className="text-xs text-muted-foreground">{[f.company_domain, f.company_type, f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(" · ") || "Company/location unknown"}</div>
+                      <div className="break-words text-xs text-muted-foreground">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? f.ip_timezone ?? "timezone unknown"}</div>
+                      <div className="break-all text-xs text-muted-foreground">Visitor {f.visitor_id} · Session {f.session_id}</div>
+                    </div>
+                    <div className="flex min-w-0 flex-wrap items-center justify-start gap-2 md:justify-end">
+                      {f.checkout_session_id && <Badge variant="secondary">Checkout opened</Badge>}
+                      {f.buy_clicked_at && <Badge variant="secondary">Buy clicked</Badge>}
+                      {f.pricing_opened_at && <Badge variant="outline">Pricing opened</Badge>}
+                      {f.portfolio_opened_at && <Badge variant="outline">Portfolio read</Badge>}
+                      {f.package_name && <Badge variant="outline">{f.package_name}</Badge>}
+                      {f.enrichment_status && <Badge variant={f.enrichment_status === "enriched" ? "secondary" : "outline"}>{f.enrichment_status}</Badge>}
+                    </div>
+                  </div>
+                  <div className="grid gap-2 text-xs md:grid-cols-3">
+                    <div className="rounded-none border border-border p-2">
+                      <div className="font-medium">Company</div>
+                      <div className="text-muted-foreground">Name: {f.company_name ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">Domain: {f.company_domain ?? "—"}</div>
+                      <div className="text-muted-foreground">Type: {f.company_type ?? "—"}</div>
+                    </div>
+                    <div className="rounded-none border border-border p-2">
+                      <div className="font-medium">Location</div>
+                      <div className="text-muted-foreground">{[f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(", ") || "—"}</div>
+                      <div className="text-muted-foreground">Postal: {f.ip_postal ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">Coordinates: {f.ip_location ?? "—"}</div>
+                    </div>
+                    <div className="rounded-none border border-border p-2">
+                      <div className="font-medium">Network</div>
+                      <div className="text-muted-foreground">ASN: {f.asn ?? "—"}</div>
+                      <div className="text-muted-foreground">Name: {f.as_name ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">Domain: {f.as_domain ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">Route: {f.as_route ?? "—"}</div>
+                    </div>
+                  </div>
+                  <div className="grid gap-2 text-xs md:grid-cols-3">
+                    <div className="rounded-none border border-border p-2">
+                      <div className="font-medium">IP details</div>
+                      <div className="text-muted-foreground break-all">IP: {f.ip_address ?? "—"}</div>
+                      <div className="text-muted-foreground break-all">Host: {f.ip_hostname ?? "—"}</div>
+                      <div className="text-muted-foreground">IP timezone: {f.ip_timezone ?? "—"}</div>
+                    </div>
+                    <div className="rounded-none border border-border p-2">
+                      <div className="font-medium">Carrier</div>
+                      <div className="text-muted-foreground">Name: {f.carrier_name ?? "—"}</div>
+                      <div className="text-muted-foreground">MCC: {f.carrier_mcc ?? "—"}</div>
+                      <div className="text-muted-foreground">MNC: {f.carrier_mnc ?? "—"}</div>
+                    </div>
+                    <div className="rounded-none border border-border p-2">
+                      <div className="font-medium">Privacy flags</div>
+                      <div className="text-muted-foreground">{[
+                        f.privacy_vpn ? "VPN" : null,
+                        f.privacy_proxy ? "Proxy" : null,
+                        f.privacy_tor ? "Tor" : null,
+                        f.privacy_relay ? "Relay" : null,
+                        f.privacy_hosting ? "Hosting" : null,
+                      ].filter(Boolean).join(" · ") || "None detected"}</div>
+                      <div className="text-muted-foreground">Source: {f.enrichment_source ?? "—"}</div>
+                      <div className="text-muted-foreground">{f.enriched_at ? `Enriched ${new Date(f.enriched_at).toLocaleString()}` : f.enrichment_error ?? "Pending enrichment"}</div>
+                    </div>
+                  </div>
+                  <div className="grid gap-2 text-xs text-muted-foreground md:grid-cols-2">
+                    <div>Scroll depth: {f.max_scroll_percent ?? 0}%</div>
+                    <div>Portfolio pages: {f.portfolio_pages_viewed ?? 0}</div>
+                    <div>Pricing opened: {f.pricing_opened_at ? new Date(f.pricing_opened_at).toLocaleString() : "—"}</div>
+                    <div>Buy clicked: {f.buy_clicked_at ? new Date(f.buy_clicked_at).toLocaleString() : "—"}</div>
+                    <div className="md:col-span-2">Portfolio project: {f.portfolio_project_opened ?? "—"}</div>
+                    <div>Page: {f.last_page ?? f.first_page ?? "—"}</div>
+                    <div>Referrer: {f.referrer ?? "Direct"}</div>
+                    <div>Device: {f.viewport_size ?? "—"} viewport · {f.screen_size ?? "—"} screen</div>
+                    <div>Language: {f.browser_language ?? "—"}</div>
+                    <div className="md:col-span-2 break-all">User agent: {f.user_agent ?? "—"}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="mailbox" className="grid min-w-0 grid-cols-1 gap-4 items-start lg:grid-cols-[360px_minmax(0,1fr)]">
+            <div className="space-y-3 md:max-h-[70vh] md:overflow-hidden md:flex md:flex-col md:min-h-0">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input value={mailboxSearch} onChange={(e) => setMailboxSearch(e.target.value)} placeholder="Search inbox" className="pl-9" />
+                </div>
+                <Button variant="outline" onClick={loadMailbox} disabled={mailboxLoading}>{mailboxLoading ? "…" : "Load"}</Button>
+              </div>
+              {combinedMailboxMessages.length === 0 && <p className="text-sm text-muted-foreground">Load the connected mailbox to see Pixcellor user replies and website enquiries together.</p>}
+              <div className="space-y-2 max-h-[70vh] md:max-h-none md:flex-1 md:min-h-0 overflow-y-auto pr-1">
+                {combinedMailboxMessages.map(message => {
+                  const relatedOrder = orders.find(order => order.customer_email?.toLowerCase() === message.fromEmail);
+                  const isInquiry = message.id.startsWith("inquiry:");
+                  return (
+                    <button key={message.id} onClick={() => setActiveMail(message)} className={`w-full text-left p-3 rounded-none border transition-colors ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-medium truncate">{message.from}</div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isInquiry && <Badge variant="secondary">Enquiry</Badge>}
+                          {message.unread && !isInquiry && <Badge>New</Badge>}
+                        </div>
+                      </div>
+                      <div className="text-sm truncate">{message.subject}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-2">{message.snippet}</div>
+                      {relatedOrder && <div className="text-xs text-muted-foreground mt-1">Linked order · {relatedOrder.amount_total != null ? formatGBP(relatedOrder.amount_total) : "—"}</div>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <Card className="md:h-[70vh] md:max-h-[70vh] min-w-0 overflow-hidden flex flex-col">
+              <CardContent className="p-4 space-y-4 min-h-0 flex-1 flex flex-col overflow-hidden">
+                {!activeMail ? (
+                  <div className="min-h-[360px] flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
+                    <Mail className="w-8 h-8" />
+                    <p>Select an email to read and reply.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-start justify-between gap-3 shrink-0">
+                      <div>
+                        <h2 className="text-lg font-semibold">{activeMail.subject}</h2>
+                        <p className="text-sm text-muted-foreground">{activeMail.from} · {activeMail.date ? new Date(activeMail.date).toLocaleString() : ""}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        {!activeMail.id.startsWith("inquiry:") && activeMail.unread && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "markRead")}>Mark read</Button>}
+                        {!activeMail.id.startsWith("inquiry:") && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "archive")}><Archive className="w-4 h-4 mr-2" />Archive</Button>}
+                      </div>
+                    </div>
+                    {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail) && (
+                      <div className="rounded-none border border-border p-3 text-sm text-muted-foreground shrink-0">
+                        Related order: {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)?.amount_total != null ? formatGBP(orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail)!.amount_total!) : "—"}
+                      </div>
+                    )}
+                    <LinkifiedText text={activeMail.body || activeMail.snippet} className="block rounded-none bg-muted/30 p-3 whitespace-pre-wrap text-sm flex-1 min-h-[180px] overflow-y-auto" />
+                    <textarea value={mailReply} onChange={(e) => setMailReply(e.target.value)} placeholder="Reply to the client…" className="min-h-[120px] max-h-[160px] w-full shrink-0 rounded-none border border-input bg-background px-3 py-2 text-sm" />
+                    <Button className="shrink-0 self-start" onClick={sendMailboxReply} disabled={!mailReply.trim()}>Send reply</Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="chats" className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+            <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input value={chatsSearch} onChange={(e) => setChatsSearch(e.target.value)} placeholder="Search chats by client, message, role…" className="pl-9" />
+              </div>
+              {filteredConversations.length === 0 && <p className="text-muted-foreground text-sm">No conversations {chatsQ ? "match your search" : "yet"}.</p>}
+              {filteredConversations.map(c => {
+                const last = lastMessages[c.id];
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => loadMessages(c.id)}
+                    className={`w-full text-left p-3 rounded-none border transition-colors ${activeConv === c.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}
+                  >
+                    <div className="text-xs font-mono truncate text-muted-foreground">{c.client_id}</div>
+                    {last ? (
+                      <div className="text-sm mt-1 line-clamp-2">
+                        <span className="text-muted-foreground">{last.role === "user" ? "👤" : "🤖"} </span>
+                        <LinkifiedText text={last.content} />
+                      </div>
+                    ) : (
+                      <div className="text-xs text-muted-foreground italic mt-1">No messages</div>
+                    )}
+                    <div className="text-[10px] text-muted-foreground mt-1">{new Date(c.updated_at).toLocaleString()}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <Card className="min-w-0 max-h-[70vh] overflow-hidden flex flex-col">
+              <CardContent className="p-4 overflow-y-auto space-y-3 flex-1">
+                {!activeConv && <p className="text-muted-foreground text-sm">Pick a conversation to view messages.</p>}
+                {activeConv && messages.length === 0 && <p className="text-muted-foreground text-sm">No messages.</p>}
+                {messages.map(m => (
+                  <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[80%] rounded-none p-3 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-primary text-primary-foreground" : m.role === "admin" ? "bg-accent text-accent-foreground border border-border" : "bg-muted text-foreground"}`}>
+                      <div className="text-xs opacity-60 mb-1">{m.role} · {new Date(m.created_at).toLocaleTimeString()}</div>
+                      <LinkifiedText text={m.content} />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+              {activeConv && (
+                <div className="border-t border-border p-3 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    {conversations.find(c => c.id === activeConv)?.bot_paused ? (
+                      <Badge variant="secondary">Manual mode</Badge>
+                    ) : (
+                      <Badge variant="outline">Bot active</Badge>
+                    )}
+                    <Button variant="outline" size="sm" onClick={closeChatCase}>Case closed</Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={manualReply}
+                      onChange={(e) => setManualReply(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") sendManualReply();
+                      }}
+                      placeholder="Type a manual reply…"
+                    />
+                    <Button onClick={sendManualReply}>Send</Button>
+                  </div>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="profiles" className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={profilesSearch} onChange={(e) => setProfilesSearch(e.target.value)} placeholder="Search clients by email, name, company, notes…" className="pl-9" />
+            </div>
+            {filteredProfiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles {profilesQ ? "match your search" : "yet"}.</p>}
+            {filteredProfiles.map(p => (
+              <Card key={p.email}>
+                <CardContent className="p-4 space-y-1">
+                  <div className="flex justify-between">
+                    <div className="font-medium">{p.name || p.email}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(p.updated_at).toLocaleString()}</div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">{p.email}{p.company ? ` · ${p.company}` : ""}</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm pt-2">
+                    {p.brand_colours && <div><span className="text-muted-foreground">Colours:</span> {p.brand_colours}</div>}
+                    {p.page_count != null && <div><span className="text-muted-foreground">Pages:</span> {p.page_count}</div>}
+                    {p.requirements && <div className="md:col-span-2"><span className="text-muted-foreground">Requirements:</span> <LinkifiedText text={p.requirements} /></div>}
+                    {p.content_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Content:</span> <LinkifiedText text={p.content_notes} /></div>}
+                    {p.notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={p.notes} /></div>}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="contacts" className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold">Client book</h2>
+            </div>
+
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={contactsSearch}
                 onChange={(e) => setContactsSearch(e.target.value)}
