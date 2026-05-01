@@ -16,7 +16,7 @@ const json = (body: unknown, status = 200) =>
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 const FROM_DEFAULT = "Pixcellor <hello@mail.pixcellor.com>";
-const REPLY_TO_DEFAULT = "hello@pixcellor.com";
+const REPLY_TO_DEFAULT = "help@pixcellor.com";
 const LOGO_URL = "https://pixcellor.com/pixcellor-email-logo.png";
 const SITE = "https://pixcellor.com";
 
