@@ -2258,25 +2258,6 @@ export default function Portal() {
             ))}
           </TabsContent>
 
-          <TabsContent value="inquiries" className="space-y-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={inquiriesSearch} onChange={(e) => setInquiriesSearch(e.target.value)} placeholder="Search enquiries by name, email, message…" className="pl-9" />
-            </div>
-            {filteredInquiries.length === 0 && <p className="text-muted-foreground text-sm">No inquiries {inquiriesQ ? "match your search" : "yet"}.</p>}
-            {filteredInquiries.map(i => (
-              <Card key={i.id}>
-                <CardContent className="p-4 space-y-1">
-                  <div className="flex justify-between">
-                    <div className="font-medium">{i.name} · <span className="text-muted-foreground">{i.email}</span></div>
-                    <div className="text-xs text-muted-foreground">{new Date(i.created_at).toLocaleString()}</div>
-                  </div>
-                  <LinkifiedText text={i.message} className="block text-sm whitespace-pre-wrap" />
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-
           <TabsContent value="contacts" className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-lg font-semibold">Client book</h2>
