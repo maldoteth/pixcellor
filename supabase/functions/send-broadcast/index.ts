@@ -15,7 +15,7 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
-const FROM_DEFAULT = "Pixcellor <hello@mail.pixcellor.com>";
+const FROM_DEFAULT = "Pixcellor <hello@notify.pixcellor.com>";
 const REPLY_TO_DEFAULT = "help@pixcellor.com";
 const LOGO_URL = "https://rkgjkvghejcmostuqkgw.supabase.co/storage/v1/object/public/email-assets/pixcellor-email-logo.png?v=2";
 const SITE = "https://pixcellor.com";
