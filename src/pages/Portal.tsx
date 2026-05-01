@@ -400,7 +400,7 @@ export default function Portal() {
   const [falloffsSearch, setFalloffsSearch] = useState("");
   const [chatsSearch, setChatsSearch] = useState("");
   const [profilesSearch, setProfilesSearch] = useState("");
-  const [inquiriesSearch, setInquiriesSearch] = useState("");
+  
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
@@ -675,7 +675,7 @@ export default function Portal() {
   const falloffsQ = falloffsSearch.trim().toLowerCase();
   const chatsQ = chatsSearch.trim().toLowerCase();
   const profilesQ = profilesSearch.trim().toLowerCase();
-  const inquiriesQ = inquiriesSearch.trim().toLowerCase();
+  
   const matchesQuery = (query: string, s: string | null | undefined) => !!s && s.toLowerCase().includes(query);
   const orderMatchesQuery = (query: string, order: StripeSession) =>
     matchesQuery(query, order.customer_email) || matchesQuery(query, order.session_id) ||
@@ -811,13 +811,6 @@ export default function Portal() {
       matchesQuery(profilesQ, p.page_count?.toString())
     );
   }, [profiles, profilesQ]);
-
-  const filteredInquiries = useMemo(() => {
-    if (!inquiriesQ) return inquiries;
-    return inquiries.filter(i =>
-      matchesQuery(inquiriesQ, i.name) || matchesQuery(inquiriesQ, i.email) || matchesQuery(inquiriesQ, i.message)
-    );
-  }, [inquiries, inquiriesQ]);
 
   // Convert inquiries (contact form submissions) into MailboxMessage-shaped entries
   // so they show up alongside Gmail mail in the unified inbox.
