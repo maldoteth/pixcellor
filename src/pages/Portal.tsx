@@ -2068,6 +2068,9 @@ export default function Portal() {
                       <div className="break-all text-xs text-muted-foreground">Visitor {f.visitor_id} · Session {f.session_id}</div>
                     </div>
                     <div className="flex min-w-0 flex-wrap items-center justify-start gap-2 md:justify-end">
+                      {((f as VisitorFalloff & { _duplicateCount?: number })._duplicateCount ?? 1) > 1 && (
+                        <Badge>×{(f as VisitorFalloff & { _duplicateCount?: number })._duplicateCount} visits{(f as VisitorFalloff & { _sessionCount?: number })._sessionCount && (f as VisitorFalloff & { _sessionCount?: number })._sessionCount! > 1 ? ` · ${(f as VisitorFalloff & { _sessionCount?: number })._sessionCount} sessions` : ""}</Badge>
+                      )}
                       {f.checkout_session_id && <Badge variant="secondary">Checkout opened</Badge>}
                       {f.buy_clicked_at && <Badge variant="secondary">Buy clicked</Badge>}
                       {f.pricing_opened_at && <Badge variant="outline">Pricing opened</Badge>}
