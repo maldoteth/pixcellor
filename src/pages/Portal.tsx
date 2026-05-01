@@ -400,7 +400,7 @@ export default function Portal() {
   const [falloffsSearch, setFalloffsSearch] = useState("");
   const [chatsSearch, setChatsSearch] = useState("");
   const [profilesSearch, setProfilesSearch] = useState("");
-  const [inquiriesSearch, setInquiriesSearch] = useState("");
+  
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
@@ -675,7 +675,7 @@ export default function Portal() {
   const falloffsQ = falloffsSearch.trim().toLowerCase();
   const chatsQ = chatsSearch.trim().toLowerCase();
   const profilesQ = profilesSearch.trim().toLowerCase();
-  const inquiriesQ = inquiriesSearch.trim().toLowerCase();
+  
   const matchesQuery = (query: string, s: string | null | undefined) => !!s && s.toLowerCase().includes(query);
   const orderMatchesQuery = (query: string, order: StripeSession) =>
     matchesQuery(query, order.customer_email) || matchesQuery(query, order.session_id) ||
@@ -812,12 +812,37 @@ export default function Portal() {
     );
   }, [profiles, profilesQ]);
 
-  const filteredInquiries = useMemo(() => {
-    if (!inquiriesQ) return inquiries;
-    return inquiries.filter(i =>
-      matchesQuery(inquiriesQ, i.name) || matchesQuery(inquiriesQ, i.email) || matchesQuery(inquiriesQ, i.message)
-    );
-  }, [inquiries, inquiriesQ]);
+  // Convert inquiries (contact form submissions) into MailboxMessage-shaped entries
+  // so they show up alongside Gmail mail in the unified inbox.
+  const inquiryMessages = useMemo<MailboxMessage[]>(() => {
+    const q = mailboxSearch.trim().toLowerCase();
+    const filtered = q
+      ? inquiries.filter(i =>
+          (i.name || "").toLowerCase().includes(q) ||
+          (i.email || "").toLowerCase().includes(q) ||
+          (i.message || "").toLowerCase().includes(q)
+        )
+      : inquiries;
+    return filtered.map(i => ({
+      id: `inquiry:${i.id}`,
+      threadId: "",
+      from: i.name ? `${i.name} <${i.email}>` : i.email,
+      fromEmail: (i.email || "").toLowerCase(),
+      subject: "Website enquiry",
+      snippet: (i.message || "").slice(0, 160),
+      body: i.message || "",
+      date: i.created_at,
+      unread: true,
+    }));
+  }, [inquiries, mailboxSearch]);
+
+  const combinedMailboxMessages = useMemo<MailboxMessage[]>(() => {
+    return [...inquiryMessages, ...mailboxMessages].sort((a, b) => {
+      const da = a.date ? new Date(a.date).getTime() : 0;
+      const db = b.date ? new Date(b.date).getTime() : 0;
+      return db - da;
+    });
+  }, [inquiryMessages, mailboxMessages]);
 
   const filteredContacts = useMemo(() => {
     if (!contactsQ) return contacts;
@@ -1673,17 +1698,16 @@ export default function Portal() {
           </div>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-6 xl:grid-cols-11">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5 xl:grid-cols-10">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
             <TabsTrigger value="retainers" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
-            <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.length})</TabsTrigger>
+            <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.length + inquiries.length})</TabsTrigger>
             <TabsTrigger value="campaigns" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Megaphone className="h-3.5 w-3.5 shrink-0" />Campaigns</TabsTrigger>
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats ({filteredConversations.length})</TabsTrigger>
             <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({filteredProfiles.length})</TabsTrigger>
-            <TabsTrigger value="inquiries" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Mail className="h-3.5 w-3.5 shrink-0" />Enquiries ({filteredInquiries.length})</TabsTrigger>
             <TabsTrigger value="contacts" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserPlus className="h-3.5 w-3.5 shrink-0" />Clients ({filteredContacts.length})</TabsTrigger>
           </TabsList>
 
@@ -2078,15 +2102,19 @@ export default function Portal() {
                 </div>
                 <Button variant="outline" onClick={loadMailbox} disabled={mailboxLoading}>{mailboxLoading ? "…" : "Load"}</Button>
               </div>
-              {mailboxMessages.length === 0 && <p className="text-sm text-muted-foreground">Load the connected mailbox to see Pixcellor user replies only.</p>}
+              {combinedMailboxMessages.length === 0 && <p className="text-sm text-muted-foreground">Load the connected mailbox to see Pixcellor user replies and website enquiries together.</p>}
               <div className="space-y-2 max-h-[70vh] md:max-h-none md:flex-1 md:min-h-0 overflow-y-auto pr-1">
-                {mailboxMessages.map(message => {
+                {combinedMailboxMessages.map(message => {
                   const relatedOrder = orders.find(order => order.customer_email?.toLowerCase() === message.fromEmail);
+                  const isInquiry = message.id.startsWith("inquiry:");
                   return (
                     <button key={message.id} onClick={() => setActiveMail(message)} className={`w-full text-left p-3 rounded-none border transition-colors ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
                       <div className="flex items-center justify-between gap-2">
                         <div className="font-medium truncate">{message.from}</div>
-                        {message.unread && <Badge>New</Badge>}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isInquiry && <Badge variant="secondary">Enquiry</Badge>}
+                          {message.unread && !isInquiry && <Badge>New</Badge>}
+                        </div>
                       </div>
                       <div className="text-sm truncate">{message.subject}</div>
                       <div className="text-xs text-muted-foreground line-clamp-2">{message.snippet}</div>
@@ -2111,8 +2139,8 @@ export default function Portal() {
                         <p className="text-sm text-muted-foreground">{activeMail.from} · {activeMail.date ? new Date(activeMail.date).toLocaleString() : ""}</p>
                       </div>
                       <div className="flex gap-2">
-                        {activeMail.unread && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "markRead")}>Mark read</Button>}
-                        <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "archive")}><Archive className="w-4 h-4 mr-2" />Archive</Button>
+                        {!activeMail.id.startsWith("inquiry:") && activeMail.unread && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "markRead")}>Mark read</Button>}
+                        {!activeMail.id.startsWith("inquiry:") && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "archive")}><Archive className="w-4 h-4 mr-2" />Archive</Button>}
                       </div>
                     </div>
                     {orders.find(order => order.customer_email?.toLowerCase() === activeMail.fromEmail) && (
@@ -2218,25 +2246,6 @@ export default function Portal() {
                     {p.content_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Content:</span> <LinkifiedText text={p.content_notes} /></div>}
                     {p.notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={p.notes} /></div>}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-
-          <TabsContent value="inquiries" className="space-y-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={inquiriesSearch} onChange={(e) => setInquiriesSearch(e.target.value)} placeholder="Search enquiries by name, email, message…" className="pl-9" />
-            </div>
-            {filteredInquiries.length === 0 && <p className="text-muted-foreground text-sm">No inquiries {inquiriesQ ? "match your search" : "yet"}.</p>}
-            {filteredInquiries.map(i => (
-              <Card key={i.id}>
-                <CardContent className="p-4 space-y-1">
-                  <div className="flex justify-between">
-                    <div className="font-medium">{i.name} · <span className="text-muted-foreground">{i.email}</span></div>
-                    <div className="text-xs text-muted-foreground">{new Date(i.created_at).toLocaleString()}</div>
-                  </div>
-                  <LinkifiedText text={i.message} className="block text-sm whitespace-pre-wrap" />
                 </CardContent>
               </Card>
             ))}
