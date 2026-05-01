@@ -1719,14 +1719,16 @@ export default function Portal() {
               </div>
             </div>
 
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={salesSearch}
-                onChange={(e) => setSalesSearch(e.target.value)}
-                placeholder="Search sales callbacks by client, title, notes, phone, email…"
-                className="pl-9"
-              />
+            <div>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={salesSearch}
+                  onChange={(e) => setSalesSearch(e.target.value)}
+                  placeholder="Search sales callbacks by client, title, notes, phone, email…"
+                  className="pl-9"
+                />
+              </div>
               {!contactsQ && filteredContacts.length > 10 && (
                 <p className="mt-1 text-xs text-muted-foreground">Showing 10 most recent clients. Search to find older clients.</p>
               )}
