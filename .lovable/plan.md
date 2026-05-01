@@ -1,67 +1,56 @@
-# Beautifully formatted broadcast emails
+## Why the logo shows as broken
 
-Right now broadcasts send as a plain `<p>` of text inside a bare HTML shell. Two things to upgrade:
+The image at `https://pixcellor.com/pixcellor-email-logo.png` itself is fine (200 OK, ~7.6 KB PNG). But Lovable's preview is fronted by Cloudflare which sets a `__cf_bm` bot-challenge cookie. Email image proxies (Gmail's `googleusercontent.com`, Yahoo, etc.) sometimes get served an HTML challenge page instead of the PNG. Once that happens, the proxy **caches the broken response for days** for that exact URL — so the logo permanently appears broken for those recipients, even though the URL works in a browser.
 
-1. **Composer** — a real rich-text editor in the Campaigns tab, plus quick blocks (heading, button/CTA, image, divider).
-2. **Email template** — a branded, mobile-tested HTML wrapper around your content so every send looks like Pixcellor (not a generic Resend email).
+There are three robust ways to fix this. I recommend doing **all three** because each covers a different failure mode.
 
----
+## Plan
 
-## 1. Rich editor (Campaigns tab)
+### 1. Serve the logo from Supabase Storage (CDN, no bot-challenge)
 
-Replace the plain `<textarea>` with a Tiptap editor (already a common, lightweight choice). Toolbar:
+Upload `pixcellor-email-logo.png` to a **public** Supabase Storage bucket (`email-assets`). Supabase's public CDN URLs are not behind Cloudflare bot protection and have no cookies — Gmail/Outlook image proxies fetch them reliably.
 
-- Bold / italic / underline
-- H1 / H2 / paragraph
-- Bullet + numbered lists
-- Link
-- **Insert image** (upload to a new `email-assets` storage bucket, public read)
-- **Insert button** (CTA — label + URL, renders as a styled button block)
-- Divider
-- Undo / redo
+- New URL pattern: `https://rkgjkvghejcmostuqkgw.supabase.co/storage/v1/object/public/email-assets/pixcellor-email-logo.png`
+- Append a cache-buster query (`?v=2`) so any email proxy that already cached the broken version fetches fresh.
 
-The editor stores HTML, which gets passed to the edge function as `bodyHtml` (already supported).
+### 2. Update every email template to use the new URL + safer img markup
 
-A **live preview pane** sits next to the editor (or below on mobile) showing exactly what recipients will see, rendered inside the branded template at ~600px width — same view on desktop, narrow, and dark-mode-clipped.
+Replace the `LOGO_URL` constant in:
+- `src/components/email/emailTemplate.ts` (broadcast preview + shell)
+- `supabase/functions/send-broadcast/index.ts` (duplicate constant)
+- All 6 transactional templates under `supabase/functions/_shared/transactional-email-templates/` (sales-welcome-info, project-requirements-reminder, order-complete, retainer-order-confirmation, elite-order-confirmation, full-works-order-confirmation)
 
-## 2. Branded email template
+Also harden the `<img>` tag in the broadcast shell so it degrades gracefully when a recipient has images blocked (Outlook desktop default, corporate clients):
 
-Rebuild `buildHtml()` in `send-broadcast/index.ts` as a proper marketing-email layout:
+```html
+<img src="..." alt="Pixcellor"
+     width="150" height="40"
+     style="display:block;border:0;outline:none;
+            color:#ffffff;font-family:-apple-system,...;
+            font-size:18px;font-weight:700;
+            letter-spacing:-0.02em;line-height:40px;text-align:center;">
+```
+The inline `color`, `font-*` and explicit `width`/`height` mean that when images are blocked, the alt text "Pixcellor" still renders as styled white text on the black background — looks intentional, not broken.
 
-- 600px centered container, white card on light grey body background
-- **Header**: Pixcellor wordmark logo (hosted PNG), centered, ~32px tall
-- **Body**: the editor's HTML, restyled with email-safe inline CSS (system font stack, 16px / 1.6 line-height, dark text, headings styled, links underlined in brand color, images responsive `max-width:100%`, CTA buttons rendered as bulletproof table-based buttons that work in Outlook)
-- **Footer**: smaller grey text — short tagline, social links (LinkedIn, Instagram, Facebook, X), physical line "Pixcellor™ · UK", and the unsubscribe link
-- Plain-text fallback auto-generated from the HTML (strip tags) and sent in the `text` field for better deliverability
+### 3. Add a wordmark text fallback under the image
 
-Email-safe rules baked in:
-- Inline styles only (no `<style>` blocks except a tiny `@media` for mobile)
-- Table-based layout for the outer shell (Outlook-safe)
-- No web fonts — system stack
-- `role="presentation"` on layout tables
-- Preheader text (hidden preview snippet) — pulled from the first 90 chars of body or settable in the composer
+In the broadcast shell header, add a hidden-when-images-load text wordmark so even hostile clients (Outlook 2016, secure gateways stripping images entirely) show "Pixcellor" branding.
 
-## 3. Reusable templates (small bonus)
+## Files to change
 
-Add 3 starter templates the user can load into the editor with one click:
+- `src/components/email/emailTemplate.ts` — update `LOGO_URL`, harden `<img>` styling
+- `supabase/functions/send-broadcast/index.ts` — same updates (mirror of above)
+- `supabase/functions/_shared/transactional-email-templates/*.tsx` (6 files) — update `LOGO_URL` constant and add the same `style` props to `<Img>`
 
-- **Announcement** — heading, paragraph, CTA button
-- **Newsletter** — heading, two short sections, image, CTA
-- **Plain note** — just a heading and paragraph (closer to a personal email)
+## Setup step (one-off, done by me via migration + storage)
 
-Stored as static HTML snippets in the frontend; clicking loads them into the editor.
+1. Create public bucket `email-assets` (idempotent).
+2. Upload the existing `public/pixcellor-email-logo.png` to it.
+3. Confirm the new public URL returns the PNG with no cookies / no challenge.
+4. Redeploy all touched edge functions (`send-broadcast`, `send-transactional-email`).
 
----
+## What this won't fix
 
-## Technical changes
+- Recipients who have **"Don't display external images"** turned on in Outlook/Apple Mail — no sender can override this. The new alt-text styling at least makes it look like an intentional logo wordmark instead of a broken icon.
 
-- `package.json`: add `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-link`, `@tiptap/extension-image`
-- New `src/components/email/RichEmailEditor.tsx` — Tiptap wrapper with the toolbar above
-- New `src/components/email/EmailPreview.tsx` — renders the same branded template client-side for live preview
-- New `src/components/email/emailTemplate.ts` — single source of truth for the HTML wrapper (used by both preview and edge function via duplicated string, since edge functions can't import from `src/`)
-- New Supabase storage bucket `email-assets` (public read, admin-only write) for inline images
-- `supabase/functions/send-broadcast/index.ts`: replace `buildHtml()` with the new branded template; auto-generate plain-text fallback; add preheader support
-- `BroadcastCampaigns.tsx`: swap textarea for `RichEmailEditor`, add preview pane, add template-picker buttons, add optional preheader input
-
-No DB schema changes needed beyond the storage bucket. Existing send pipeline, suppression, logging, and rate-pacing all stay the same.
-
+Approve and I'll implement.

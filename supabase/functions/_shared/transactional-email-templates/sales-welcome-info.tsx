@@ -3,7 +3,7 @@ import { Body, Button, Column, Container, Head, Heading, Html, Img, Preview, Row
 import type { TemplateEntry } from './registry.ts'
 
 const BRAND_NAME = 'Pixcellor™'
-const LOGO_URL = 'https://pixcellor.com/pixcellor-email-logo.png'
+const LOGO_URL = 'https://rkgjkvghejcmostuqkgw.supabase.co/storage/v1/object/public/email-assets/pixcellor-email-logo.png?v=2'
 const SITE_URL = 'https://pixcellor.com'
 
 type SalesWelcomeProps = {

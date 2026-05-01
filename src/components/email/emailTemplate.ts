@@ -2,7 +2,7 @@
 // Used by the in-app preview AND duplicated in the edge function
 // (edge functions can't import from src/).
 
-const LOGO_URL = "https://pixcellor.com/pixcellor-email-logo.png";
+const LOGO_URL = "https://rkgjkvghejcmostuqkgw.supabase.co/storage/v1/object/public/email-assets/pixcellor-email-logo.png?v=2";
 const SITE = "https://pixcellor.com";
 const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61569263824416";
 const LINKEDIN_URL = "https://www.linkedin.com/company/pixcellor/";
@@ -60,8 +60,8 @@ export function buildBrandedEmail({ subject, bodyHtml, preheader, unsubUrl }: Br
           <!-- Header -->
           <tr>
             <td align="center" style="padding:24px 24px 8px;">
-              <a href="${SITE}" style="text-decoration:none;color:#ffffff;">
-                <img src="${LOGO_URL}" alt="Pixcellor" width="150" style="display:block;border:0;outline:none;height:auto;max-width:150px;">
+              <a href="${SITE}" style="text-decoration:none;color:#ffffff;display:inline-block;">
+                <img src="${LOGO_URL}" alt="Pixcellor" width="150" height="40" style="display:block;border:0;outline:none;height:40px;width:150px;max-width:150px;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.02em;line-height:40px;text-align:center;background:#000000;">
               </a>
             </td>
           </tr>
