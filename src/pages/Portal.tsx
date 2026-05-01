@@ -1975,6 +1975,10 @@ export default function Portal() {
             ))}
           </TabsContent>
 
+          <TabsContent value="campaigns" className="min-w-0">
+            <BroadcastCampaigns />
+          </TabsContent>
+
 
           <TabsContent value="falloffs" className="min-w-0 space-y-2">
             <div className="relative">
