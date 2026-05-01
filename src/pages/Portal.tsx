@@ -784,8 +784,53 @@ export default function Portal() {
   const filteredFalloffs = useMemo(() => {
     const paidSessionIds = new Set(orders.map(o => o.session_id));
     const unpaidFalloffs = falloffs.filter(f => !f.checkout_session_id || !paidSessionIds.has(f.checkout_session_id));
-    if (!falloffsQ) return unpaidFalloffs;
-    return unpaidFalloffs.filter(f =>
+
+    // Bundle duplicates: group by visitor_id (fallback ip_address, then id) and merge into a single representative row.
+    const groups = new Map<string, VisitorFalloff[]>();
+    for (const f of unpaidFalloffs) {
+      const key = f.visitor_id || f.ip_address || f.id;
+      const arr = groups.get(key);
+      if (arr) arr.push(f); else groups.set(key, [f]);
+    }
+    const pickLatest = (arr: VisitorFalloff[]) => [...arr].sort((a, b) => new Date(b.last_seen_at).getTime() - new Date(a.last_seen_at).getTime());
+    const firstNonNull = <T,>(arr: VisitorFalloff[], key: keyof VisitorFalloff): T | null => {
+      for (const r of arr) { const v = r[key] as unknown; if (v !== null && v !== undefined && v !== "") return v as T; }
+      return null;
+    };
+    const earliest = (arr: VisitorFalloff[], key: keyof VisitorFalloff) => {
+      const vals = arr.map(r => r[key] as string | null).filter(Boolean) as string[];
+      if (!vals.length) return null;
+      return vals.reduce((a, b) => new Date(a).getTime() < new Date(b).getTime() ? a : b);
+    };
+    const merged: (VisitorFalloff & { _duplicateCount?: number; _sessionCount?: number })[] = Array.from(groups.values()).map(rows => {
+      const sorted = pickLatest(rows);
+      const latest = sorted[0];
+      const sessionCount = new Set(rows.map(r => r.session_id).filter(Boolean)).size;
+      const totalEvents = rows.reduce((sum, r) => sum + (r.event_count ?? 0), 0);
+      const maxScroll = rows.reduce((m, r) => Math.max(m, r.max_scroll_percent ?? 0), 0);
+      const portfolioPages = rows.reduce((m, r) => Math.max(m, r.portfolio_pages_viewed ?? 0), 0);
+      return {
+        ...latest,
+        event_count: totalEvents,
+        max_scroll_percent: maxScroll,
+        portfolio_pages_viewed: portfolioPages,
+        customer_email: firstNonNull<string>(sorted, "customer_email") ?? latest.customer_email,
+        company_name: firstNonNull<string>(sorted, "company_name") ?? latest.company_name,
+        company_domain: firstNonNull<string>(sorted, "company_domain") ?? latest.company_domain,
+        package_name: firstNonNull<string>(sorted, "package_name") ?? latest.package_name,
+        checkout_session_id: firstNonNull<string>(sorted, "checkout_session_id") ?? latest.checkout_session_id,
+        pricing_opened_at: earliest(rows, "pricing_opened_at") ?? latest.pricing_opened_at,
+        buy_clicked_at: earliest(rows, "buy_clicked_at") ?? latest.buy_clicked_at,
+        portfolio_opened_at: earliest(rows, "portfolio_opened_at") ?? latest.portfolio_opened_at,
+        checkout_started_at: earliest(rows, "checkout_started_at") ?? latest.checkout_started_at,
+        _duplicateCount: rows.length,
+        _sessionCount: sessionCount,
+      };
+    });
+    merged.sort((a, b) => new Date(b.last_seen_at).getTime() - new Date(a.last_seen_at).getTime());
+
+    if (!falloffsQ) return merged;
+    return merged.filter(f =>
       matchesQuery(falloffsQ, f.customer_email) || matchesQuery(falloffsQ, f.checkout_session_id) ||
       matchesQuery(falloffsQ, f.package_name) || matchesQuery(falloffsQ, f.billing) ||
       matchesQuery(falloffsQ, f.referrer) || matchesQuery(falloffsQ, f.user_agent) ||
