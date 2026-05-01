@@ -1,56 +1,30 @@
-## Why the logo shows as broken
+## Goal
 
-The image at `https://pixcellor.com/pixcellor-email-logo.png` itself is fine (200 OK, ~7.6 KB PNG). But Lovable's preview is fronted by Cloudflare which sets a `__cf_bm` bot-challenge cookie. Email image proxies (Gmail's `googleusercontent.com`, Yahoo, etc.) sometimes get served an HTML challenge page instead of the PNG. Once that happens, the proxy **caches the broken response for days** for that exact URL — so the logo permanently appears broken for those recipients, even though the URL works in a browser.
+1. Keep the existing **Clients** tab (the one backed by `client_profiles`, currently showing 52).
+2. Delete the second **Clients** tab (backed by `contacts`, currently showing only Jim).
+3. Make sure people who submit the contact form (enquiries) get saved into the **contacts** table — but since that tab is being removed from the portal UI, surface them inside the kept Clients (`client_profiles`) flow instead.
 
-There are three robust ways to fix this. I recommend doing **all three** because each covers a different failure mode.
+Re-read of your message: "people who make enquiries should be saved as contacts in our actual contacts tab" — the kept tab (`client_profiles`) becomes the single Clients/contacts hub. Jim and any other entries from the old `contacts` table that you actually want to keep can be migrated into `client_profiles`. If that's not what you meant (e.g. you actually want to keep the `contacts` tab and just rename the labels), tell me and I'll adjust before building.
 
-## Plan
+## Changes
 
-### 1. Serve the logo from Supabase Storage (CDN, no bot-challenge)
+### Portal UI (`src/pages/Portal.tsx`)
+- Remove the `<TabsTrigger value="contacts" …>` (line 1756) and its entire `<TabsContent value="contacts">` block (around line 2304+).
+- Remove related state, queries, memos and helpers that only the contacts tab used: `filteredContacts`, contact search/sort/filter state, `contactEvents` UI usage, `contactOrderStatsByEmail` if unused elsewhere, etc. Keep anything still referenced by other tabs.
+- Adjust `TabsList` grid from `xl:grid-cols-10` → `xl:grid-cols-9`.
+- Drop unused icon imports (`UserPlus`) if no longer referenced.
 
-Upload `pixcellor-email-logo.png` to a **public** Supabase Storage bucket (`email-assets`). Supabase's public CDN URLs are not behind Cloudflare bot protection and have no cookies — Gmail/Outlook image proxies fetch them reliably.
+### Inquiry → contacts persistence
+- The contact form already inserts into `contact_inquiries`. Add a lightweight upsert into `client_profiles` (by email) at the same time so every enquirer shows up in the kept Clients tab with their name, email, and the message stored in `notes`/`requirements`.
+- Realtime subscription on `client_profiles` already exists, so the Clients tab will refresh automatically.
 
-- New URL pattern: `https://rkgjkvghejcmostuqkgw.supabase.co/storage/v1/object/public/email-assets/pixcellor-email-logo.png`
-- Append a cache-buster query (`?v=2`) so any email proxy that already cached the broken version fetches fresh.
+### Optional cleanup (ask before doing)
+- The `contacts`, `contact_events`, and `lead_search_history` tables and the `find-local-leads` edge function become unused. Leave them in place for now (safe), or confirm you want them dropped in a follow-up.
 
-### 2. Update every email template to use the new URL + safer img markup
+## Out of scope
+- Migrating Jim from `contacts` into `client_profiles` — say the word and I'll copy him over before deleting the tab.
+- Renaming the kept tab label (currently "Clients"). Happy to rename to "Clients & contacts" or similar if you prefer.
 
-Replace the `LOGO_URL` constant in:
-- `src/components/email/emailTemplate.ts` (broadcast preview + shell)
-- `supabase/functions/send-broadcast/index.ts` (duplicate constant)
-- All 6 transactional templates under `supabase/functions/_shared/transactional-email-templates/` (sales-welcome-info, project-requirements-reminder, order-complete, retainer-order-confirmation, elite-order-confirmation, full-works-order-confirmation)
-
-Also harden the `<img>` tag in the broadcast shell so it degrades gracefully when a recipient has images blocked (Outlook desktop default, corporate clients):
-
-```html
-<img src="..." alt="Pixcellor"
-     width="150" height="40"
-     style="display:block;border:0;outline:none;
-            color:#ffffff;font-family:-apple-system,...;
-            font-size:18px;font-weight:700;
-            letter-spacing:-0.02em;line-height:40px;text-align:center;">
-```
-The inline `color`, `font-*` and explicit `width`/`height` mean that when images are blocked, the alt text "Pixcellor" still renders as styled white text on the black background — looks intentional, not broken.
-
-### 3. Add a wordmark text fallback under the image
-
-In the broadcast shell header, add a hidden-when-images-load text wordmark so even hostile clients (Outlook 2016, secure gateways stripping images entirely) show "Pixcellor" branding.
-
-## Files to change
-
-- `src/components/email/emailTemplate.ts` — update `LOGO_URL`, harden `<img>` styling
-- `supabase/functions/send-broadcast/index.ts` — same updates (mirror of above)
-- `supabase/functions/_shared/transactional-email-templates/*.tsx` (6 files) — update `LOGO_URL` constant and add the same `style` props to `<Img>`
-
-## Setup step (one-off, done by me via migration + storage)
-
-1. Create public bucket `email-assets` (idempotent).
-2. Upload the existing `public/pixcellor-email-logo.png` to it.
-3. Confirm the new public URL returns the PNG with no cookies / no challenge.
-4. Redeploy all touched edge functions (`send-broadcast`, `send-transactional-email`).
-
-## What this won't fix
-
-- Recipients who have **"Don't display external images"** turned on in Outlook/Apple Mail — no sender can override this. The new alt-text styling at least makes it look like an intentional logo wordmark instead of a broken icon.
-
-Approve and I'll implement.
+## Technical notes
+- The two count badges come from `filteredProfiles.length` (52, kept) and `filteredContacts.length` (1, removed).
+- Inquiry insert happens in the public contact form component; I'll mirror the insert with a `client_profiles` upsert keyed on lowercased email so duplicates merge cleanly.
