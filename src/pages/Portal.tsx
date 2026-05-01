@@ -819,6 +819,38 @@ export default function Portal() {
     );
   }, [inquiries, inquiriesQ]);
 
+  // Convert inquiries (contact form submissions) into MailboxMessage-shaped entries
+  // so they show up alongside Gmail mail in the unified inbox.
+  const inquiryMessages = useMemo<MailboxMessage[]>(() => {
+    const q = mailboxSearch.trim().toLowerCase();
+    const filtered = q
+      ? inquiries.filter(i =>
+          (i.name || "").toLowerCase().includes(q) ||
+          (i.email || "").toLowerCase().includes(q) ||
+          (i.message || "").toLowerCase().includes(q)
+        )
+      : inquiries;
+    return filtered.map(i => ({
+      id: `inquiry:${i.id}`,
+      threadId: "",
+      from: i.name ? `${i.name} <${i.email}>` : i.email,
+      fromEmail: (i.email || "").toLowerCase(),
+      subject: "Website enquiry",
+      snippet: (i.message || "").slice(0, 160),
+      body: i.message || "",
+      date: i.created_at,
+      unread: true,
+    }));
+  }, [inquiries, mailboxSearch]);
+
+  const combinedMailboxMessages = useMemo<MailboxMessage[]>(() => {
+    return [...inquiryMessages, ...mailboxMessages].sort((a, b) => {
+      const da = a.date ? new Date(a.date).getTime() : 0;
+      const db = b.date ? new Date(b.date).getTime() : 0;
+      return db - da;
+    });
+  }, [inquiryMessages, mailboxMessages]);
+
   const filteredContacts = useMemo(() => {
     if (!contactsQ) return contacts;
     const matchingContactIds = new Set(
