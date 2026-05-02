@@ -161,7 +161,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
         ) : (
           <Button
             variant="pricing"
-            className="mb-6 h-auto w-[265px] px-8 py-3 text-base font-semibold"
+            className={`mb-6 h-auto w-[265px] px-8 py-3 text-base font-semibold ${hidden ? "hidden" : ""}`}
             aria-label="View our web development pricing"
           >
             Pricing
