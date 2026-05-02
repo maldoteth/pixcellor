@@ -124,6 +124,8 @@ const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * 
 
 export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimationProps) {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
+    const introPhaseRef = useRef<AnimationPhase>("scatter");
+    const introTimersRef = useRef<number[]>([]);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
     const [packagesOpen, setPackagesOpen] = useState(false);
     const dismissedAtEndRef = useRef(false);
@@ -161,8 +163,17 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         const container = containerRef.current;
         if (!container) return;
 
+        const forceCirclePhase = () => {
+            if (introPhaseRef.current === "circle") return;
+            introPhaseRef.current = "circle";
+            setIntroPhase("circle");
+            introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+            introTimersRef.current = [];
+        };
+
         const handleWheel = (e: WheelEvent) => {
             e.preventDefault();
+            forceCirclePhase();
 
             // Apply 5x multiplier on mobile for faster scrolling (both directions)
             const isMobile = window.innerWidth < 768;
@@ -189,6 +200,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         const handleTouchMove = (e: TouchEvent) => {
             if (isInteractive(e.target)) return;
             e.preventDefault();
+            forceCirclePhase();
             const touchY = e.touches[0].clientY;
             const deltaY = touchStartY - touchY;
             touchStartY = touchY;
