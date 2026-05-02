@@ -82,7 +82,7 @@ const BUY_AGAIN_PACKAGES = [
     billing: "Monthly subscription",
     action: "Subscribe",
     featured: false,
-    features: ["Your own tech department", "Free consulting", "Websites or full apps", "Monthly billing"],
+    features: ["Your own tech department", "Larger scale operations", "Websites or full apps", "Monthly billing"],
   },
 ] as const;
 
