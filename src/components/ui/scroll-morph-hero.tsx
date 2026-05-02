@@ -261,7 +261,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
     return (
-        <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
+        <div ref={containerRef} className="relative w-full h-full bg-black overflow-x-hidden">
             {/* Subtle center stage light */}
             <div className="absolute inset-0 pointer-events-none z-0" style={{
                 background: 'radial-gradient(ellipse 60% 50% at 50% 50%, hsla(0,0%,100%,0.15) 0%, transparent 70%)',
