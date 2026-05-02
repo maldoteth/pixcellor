@@ -69,7 +69,7 @@ const BUY_AGAIN_PACKAGES = [
     billing: "One-time payment",
     action: "Buy again",
     featured: true,
-    features: ["Sites or web apps", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
+    features: ["Sites or web apps", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages"],
   },
   {
     key: "retainer",
