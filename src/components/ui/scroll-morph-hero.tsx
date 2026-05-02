@@ -583,7 +583,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 </motion.div>
 
                 {/* Main Container */}
-                <div className="relative flex items-center justify-center w-full h-full -translate-y-[30px] md:translate-y-0">
+                <div className="relative flex items-center justify-center w-full h-full -translate-y-[50px] md:translate-y-0">
                     {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
                         let target = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
 
