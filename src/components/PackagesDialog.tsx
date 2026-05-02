@@ -126,12 +126,26 @@ interface PackagesDialogProps {
 
 export default function PackagesDialog({ open, onOpenChange, mobileTop = false, hidden = false, chatOpen = false }: PackagesDialogProps = {}) {
   const isMobile = useIsMobile();
+  const [internalOpen, setInternalOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!mobileTop || !isMobile) return;
+    const handler = () => setInternalOpen(true);
+    window.addEventListener("pixcellor:open-packages", handler);
+    return () => window.removeEventListener("pixcellor:open-packages", handler);
+  }, [mobileTop, isMobile]);
 
   if (mobileTop && !isMobile) return null;
   if (isMobile && !mobileTop) return null;
 
+  const effectiveOpen = mobileTop ? internalOpen : open;
+  const handleOpenChange = (next: boolean) => {
+    if (mobileTop) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {isMobile ? (
           <motion.button
