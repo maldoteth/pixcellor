@@ -3,25 +3,18 @@ import IntroAnimation from "@/components/ui/scroll-morph-hero";
 import ChatBot from "@/components/ChatBot";
 import FalloffConsentBanner from "@/components/FalloffConsentBanner";
 import CustomerAccess from "@/components/CustomerAccess";
-import ServicesSection from "@/components/ServicesSection";
-import Footer from "@/components/Footer";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [heroScrolled, setHeroScrolled] = useState(false);
 
   return (
-    <div className="w-full overflow-x-clip">
-      {/* Tall scroll container — hero sticks inside while page scrolls into the next section */}
-      <div className="relative" style={{ height: "200vh" }}>
-        <div className="sticky top-0 h-screen w-full">
-          <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
-        </div>
+    <div className="w-full">
+      <div className="relative h-screen overflow-hidden">
+        <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
+        <CustomerAccess hidden={heroScrolled} />
+        <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled} />
       </div>
-      <CustomerAccess hidden={heroScrolled} />
-      <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled} />
-      <ServicesSection />
-      <Footer />
       <FalloffConsentBanner />
     </div>
   );
