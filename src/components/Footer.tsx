@@ -2,7 +2,7 @@ import { Facebook, Linkedin, LogIn, Mail, MessageSquare, Phone } from "lucide-re
 
 const Footer = () => {
   return (
-    <footer className="w-full border-t border-white/10 bg-background backdrop-blur-md text-foreground py-3 px-4">
+    <footer className="w-full border-t border-white/10 bg-background/60 backdrop-blur-sm text-foreground py-3 px-4">
       <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[11px] md:text-xs text-foreground/70">
         <span className="font-medium text-foreground/90 w-full md:w-auto text-center text-sm py-[5px]">
           Pixcellor™

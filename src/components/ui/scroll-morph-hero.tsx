@@ -444,7 +444,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {/* Arc Active Content (Fades in) */}
                 <motion.div
                     style={{ opacity: contentOpacity, y: contentY }}
-                    className="absolute top-[5%] bottom-[44px] left-0 right-0 z-10 flex flex-col items-center justify-start text-center pointer-events-auto px-4"
+                    className="absolute top-[5%] z-10 flex flex-col items-center justify-center text-center pointer-events-auto px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
                         You Dream It - We Build It
@@ -537,7 +537,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     y: containerSize.width < 768 ? mobileFooterY : 0,
                     pointerEvents: morphValue > 0.85 ? "auto" : "none"
                 }}
-                className="absolute bottom-0 left-0 right-0 z-30"
+                className="absolute bottom-0 left-0 right-0 z-10"
             >
                 <Footer />
             </motion.div>
