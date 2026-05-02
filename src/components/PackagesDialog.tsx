@@ -101,10 +101,10 @@ function StripeBadge() {
       </div>
       <PaymentMethodIcons />
       <div className="mt-3 text-center">
-        <p className="text-[11px] font-semibold text-foreground tracking-wide opacity-80">
+        <p className="text-[11px] font-semibold tracking-wide opacity-80 text-primary-foreground">
           28 Day Money Back Guarantee
         </p>
-        <p className="text-[10px] text-muted-foreground tracking-wide opacity-70">
+        <p className="text-[10px] tracking-wide opacity-70 text-primary-foreground">
           Unhappy? Don't pay!
         </p>
       </div>
