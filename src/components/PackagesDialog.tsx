@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Loader2, Lock, X } from "lucide-react";
+import { Check, Loader2, Lock, ShoppingBag, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
@@ -127,13 +127,23 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button
-          variant="pricing"
-          className="mb-6 h-auto w-[265px] px-8 py-3 text-base font-semibold"
-          aria-label="View our web development pricing"
-        >
-          Pricing
-        </Button>
+        {isMobile ? (
+          <button
+            type="button"
+            aria-label="View our web development pricing"
+            className="fixed right-[112px] top-4 z-[10000] flex h-[34px] w-[34px] items-center justify-center rounded-sm bg-white/10 backdrop-blur-md border border-white/20 text-foreground shadow-lg hover:bg-white/20 transition-colors"
+          >
+            <ShoppingBag className="w-4 h-4 text-white drop-shadow-lg" />
+          </button>
+        ) : (
+          <Button
+            variant="pricing"
+            className="mb-6 h-auto w-[265px] px-8 py-3 text-base font-semibold"
+            aria-label="View our web development pricing"
+          >
+            Pricing
+          </Button>
+        )}
       </DialogTrigger>
 
       {isMobile ? (
