@@ -713,7 +713,7 @@ function MobileCards() {
               <IntroductoryOfferText discount="52%" />
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.retainer.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+                  <li key={f} className="flex items-start gap-2 text-justify text-base text-muted-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>
