@@ -126,9 +126,9 @@ interface PackagesDialogProps {
 
 export default function PackagesDialog({ open, onOpenChange, mobileTop = false, hidden = false, chatOpen = false }: PackagesDialogProps = {}) {
   const isMobile = useIsMobile();
-  const [internalOpen, setInternalOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!mobileTop || !isMobile) return;
     const handler = () => setInternalOpen(true);
     window.addEventListener("pixcellor:open-packages", handler);
