@@ -15,7 +15,6 @@ const Footer = () => {
           >
             <Phone className="w-3 h-3" />
           </a>
-          </a>
         </div>
         <a
           href="https://www.facebook.com/profile.php?id=61569263824416"
