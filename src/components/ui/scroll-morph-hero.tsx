@@ -124,10 +124,17 @@ const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * 
 
 export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimationProps) {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
+    const introPhaseRef = useRef<AnimationPhase>("scatter");
+    const introTimersRef = useRef<number[]>([]);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
     const [packagesOpen, setPackagesOpen] = useState(false);
     const dismissedAtEndRef = useRef(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const onVirtualScrollChangeRef = useRef(onVirtualScrollChange);
+
+    useEffect(() => {
+        onVirtualScrollChangeRef.current = onVirtualScrollChange;
+    }, [onVirtualScrollChange]);
 
     // --- Container Size ---
     useEffect(() => {
@@ -161,8 +168,17 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         const container = containerRef.current;
         if (!container) return;
 
+        const forceCirclePhase = () => {
+            if (introPhaseRef.current === "circle") return;
+            introPhaseRef.current = "circle";
+            setIntroPhase("circle");
+            introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+            introTimersRef.current = [];
+        };
+
         const handleWheel = (e: WheelEvent) => {
             e.preventDefault();
+            forceCirclePhase();
 
             // Apply 5x multiplier on mobile for faster scrolling (both directions)
             const isMobile = window.innerWidth < 768;
@@ -171,14 +187,15 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
-            onVirtualScrollChange?.(newScroll);
+            onVirtualScrollChangeRef.current?.(newScroll);
             recordScrollDepth((newScroll / MAX_SCROLL) * 100);
         };
 
         let touchStartY = 0;
         const isInteractive = (target: EventTarget | null) => {
             const el = target as HTMLElement | null;
-            return !!el?.closest('button, a, [role="button"], input, textarea, select');
+            const interactiveEl = el?.closest('button, a, [role="button"], input, textarea, select');
+            return !!interactiveEl && !interactiveEl.closest('[data-hero-scroll-control="true"]');
         };
         const handleTouchStart = (e: TouchEvent) => {
             // Always capture starting Y so the next move has a correct baseline,
@@ -188,6 +205,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         const handleTouchMove = (e: TouchEvent) => {
             if (isInteractive(e.target)) return;
             e.preventDefault();
+            forceCirclePhase();
             const touchY = e.touches[0].clientY;
             const deltaY = touchStartY - touchY;
             touchStartY = touchY;
@@ -198,7 +216,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
-            onVirtualScrollChange?.(newScroll);
+            onVirtualScrollChangeRef.current?.(newScroll);
             recordScrollDepth((newScroll / MAX_SCROLL) * 100);
         };
 
@@ -207,19 +225,23 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         const previousTouchAction = container.style.touchAction;
         container.style.touchAction = "none";
 
+        const touchTarget = window.matchMedia("(max-width: 767px)").matches ? window : container;
+
+        const touchListenerOptions: AddEventListenerOptions = { passive: false, capture: true };
+
         container.addEventListener("wheel", handleWheel, { passive: false });
         // Non-passive touchstart commits the gesture to JS immediately, so the
         // first swipe registers instead of being eaten by the scroll heuristic.
-        container.addEventListener("touchstart", handleTouchStart, { passive: false });
-        container.addEventListener("touchmove", handleTouchMove, { passive: false });
+        touchTarget.addEventListener("touchstart", handleTouchStart, touchListenerOptions);
+        touchTarget.addEventListener("touchmove", handleTouchMove, touchListenerOptions);
 
         return () => {
             container.removeEventListener("wheel", handleWheel);
-            container.removeEventListener("touchstart", handleTouchStart);
-            container.removeEventListener("touchmove", handleTouchMove);
+            touchTarget.removeEventListener("touchstart", handleTouchStart, touchListenerOptions);
+            touchTarget.removeEventListener("touchmove", handleTouchMove, touchListenerOptions);
             container.style.touchAction = previousTouchAction;
         };
-    }, [onVirtualScrollChange, virtualScroll]);
+    }, [virtualScroll]);
 
     const morphProgress = useTransform(virtualScroll, [0, 600], [0, 1]);
     const smoothMorph = useSpring(morphProgress, { stiffness: 40, damping: 20 });
@@ -248,9 +270,17 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
     // --- Intro Sequence ---
     useEffect(() => {
-        const timer1 = setTimeout(() => setIntroPhase("line"), 500);
-        const timer2 = setTimeout(() => setIntroPhase("circle"), 2500);
-        return () => { clearTimeout(timer1); clearTimeout(timer2); };
+        const setPhase = (phase: AnimationPhase) => {
+            introPhaseRef.current = phase;
+            setIntroPhase(phase);
+        };
+        const timer1 = window.setTimeout(() => setPhase("line"), 500);
+        const timer2 = window.setTimeout(() => setPhase("circle"), 2500);
+        introTimersRef.current = [timer1, timer2];
+        return () => {
+            introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+            introTimersRef.current = [];
+        };
     }, []);
 
     // --- Random Scatter Positions ---
@@ -342,7 +372,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 const v = start + (end - start) * eased;
                                 scrollRef.current = v;
                                 virtualScroll.set(v);
-                                onVirtualScrollChange?.(v);
+                                onVirtualScrollChangeRef.current?.(v);
                                 if (t < 1) requestAnimationFrame(step);
                             };
                             requestAnimationFrame(step);
@@ -366,6 +396,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {/* Mobile-only scroll arrow — bottom of screen, aligned with chat button */}
                 <button
                     type="button"
+                    data-hero-scroll-control="true"
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
@@ -380,7 +411,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             const v = start + (end - start) * eased;
                             scrollRef.current = v;
                             virtualScroll.set(v);
-                            onVirtualScrollChange?.(v);
+                            onVirtualScrollChangeRef.current?.(v);
                             if (t < 1) requestAnimationFrame(step);
                         };
                         requestAnimationFrame(step);
