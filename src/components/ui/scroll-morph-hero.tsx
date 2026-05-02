@@ -354,15 +354,17 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
-            {/* Subtle center stage light — wide on hero, rotates to narrow vertical on portfolio */}
-            <motion.div className="absolute inset-0 pointer-events-none z-0" style={{
-                opacity: useTransform(virtualScroll, [0, 500, 700], [1, 1, 0]),
-                background: 'radial-gradient(ellipse 60% 50% at 50% 50%, hsla(0,0%,100%,0.15) 0%, transparent 70%)',
-            }} />
-            <motion.div className="absolute inset-0 pointer-events-none z-0" style={{
-                opacity: useTransform(virtualScroll, [500, 700], [0, 1]),
-                background: 'radial-gradient(ellipse 30% 75% at 50% 50%, hsla(0,0%,100%,0.18) 0%, transparent 70%)',
-            }} />
+            {/* Subtle center stage light — smoothly morphs from wide horizontal to narrow vertical */}
+            {(() => {
+                const glowW = useTransform(virtualScroll, [0, 400, 800], [60, 45, 30]);
+                const glowH = useTransform(virtualScroll, [0, 400, 800], [50, 60, 75]);
+                const glowBg = useTransform([glowW, glowH], ([w, h]: number[]) =>
+                    `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,0.16) 0%, transparent 70%)`
+                );
+                return (
+                    <motion.div className="absolute inset-0 pointer-events-none z-0" style={{ background: glowBg }} />
+                );
+            })()}
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
