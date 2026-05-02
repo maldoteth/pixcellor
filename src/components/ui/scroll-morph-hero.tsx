@@ -473,7 +473,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
                             className="pricing-button text-foreground transition h-auto w-[180px] px-4 py-2 text-xs font-semibold rounded-md"
                         >
-                            Request Callback
+                            Callback
                         </button>
                     </div>
                     {/* Desktop: row */}
@@ -514,7 +514,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
                             className="pricing-button text-foreground transition h-auto px-6 py-2.5 text-sm font-semibold rounded-md"
                         >
-                            Request Callback
+                            Callback
                         </button>
                     </div>
                 </motion.div>
