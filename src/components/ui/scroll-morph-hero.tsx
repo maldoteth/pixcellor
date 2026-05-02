@@ -316,21 +316,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        const start = scrollRef.current;
-                        const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
-                        console.log("[arrow-mobile] click", { start, end });
-                        const duration = 1200;
-                        const t0 = performance.now();
-                        const step = (now: number) => {
-                            const t = Math.min((now - t0) / duration, 1);
-                            const eased = 1 - Math.pow(1 - t, 3);
-                            const v = start + (end - start) * eased;
-                            scrollRef.current = v;
-                            virtualScroll.set(v);
-                            onVirtualScrollChange?.(v);
-                            if (t < 1) requestAnimationFrame(step);
-                        };
-                        requestAnimationFrame(step);
+                        const target = window.scrollY + window.innerHeight * 0.9;
+                        window.scrollTo({ top: target, behavior: "smooth" });
                     }}
                     aria-label="Scroll down"
                     className="md:hidden fixed left-1/2 -translate-x-1/2 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center"
