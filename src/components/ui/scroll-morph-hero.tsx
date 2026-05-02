@@ -393,14 +393,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             };
                             requestAnimationFrame(step);
                         }}
-                        initial={{ opacity: 0 }}
-                        animate={introPhase === "circle" ? {} : { opacity: 0 }}
-                        transition={{ duration: 1, delay: 0.4 }}
                         aria-label="Scroll down"
                         className="md:hidden mt-5 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
-                        style={introPhase === "circle"
-                            ? { opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }
-                            : { filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
+                        style={{ opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
                             animate={{ y: [0, 4, 0] }}
@@ -430,14 +425,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             };
                             requestAnimationFrame(step);
                         }}
-                        initial={{ opacity: 0 }}
-                        animate={introPhase === "circle" ? {} : { opacity: 0 }}
-                        transition={{ duration: 1, delay: 0.4 }}
                         aria-label="Scroll down"
                         className="hidden md:block mt-6 md:mt-10 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
-                        style={introPhase === "circle"
-                            ? { opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }
-                            : { filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
+                        style={{ opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
                             animate={{ y: [0, 4, 0] }}
@@ -450,10 +440,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
                 {/* Hero CTA buttons anchored at bottom of hero viewport */}
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={introPhase === "circle" ? {} : { opacity: 0 }}
-                    transition={{ duration: 1, delay: 0.35 }}
-                    style={introPhase === "circle" ? { opacity: ctaOpacity } : undefined}
+                    style={{ opacity: ctaOpacity }}
                     className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[24px] md:bottom-12 w-full md:w-auto px-[1.5rem] md:px-0"
                 >
                     {/* Mobile: stacked */}
