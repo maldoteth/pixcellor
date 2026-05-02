@@ -488,21 +488,21 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
-                            className="pricing-button text-foreground transition h-11 w-[160px] flex items-center justify-center text-sm font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Pricing
                         </button>
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-services")); }}
-                            className="pricing-button text-foreground transition h-11 w-[160px] flex items-center justify-center text-sm font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Services
                         </button>
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "call" } })); }}
-                            className="pricing-button text-foreground transition h-11 w-[160px] flex items-center justify-center text-sm font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Callback
                         </button>
