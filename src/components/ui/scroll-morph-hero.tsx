@@ -469,7 +469,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         <button
                             type="button"
                             data-hero-scroll-control="true"
-                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "call" } })); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Callback
@@ -493,7 +493,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         </button>
                         <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "call" } })); }}
                             className="pricing-button text-foreground transition h-11 w-[160px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Callback
