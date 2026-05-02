@@ -354,12 +354,18 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
     // Background glow morph: wide horizontal → narrow vertical as portfolio loads
     const isMobileViewport = containerSize.width > 0 && containerSize.width < 768;
-    const glowW = useTransform(virtualScroll, [0, 400, 800], isMobileViewport ? [130, 110, 90] : [60, 45, 30]);
+    const isTabletViewport = containerSize.width >= 768 && containerSize.width < 1024;
+    const isSmallViewport = isMobileViewport || isTabletViewport;
+    const glowW = useTransform(
+        virtualScroll,
+        [0, 400, 800],
+        isSmallViewport ? [130, 110, 90] : [60, 45, 30]
+    );
     const glowH = useTransform(virtualScroll, [0, 400, 800], [50, 60, 75]);
     const smoothGlowW = useSpring(glowW, { stiffness: 60, damping: 22 });
     const smoothGlowH = useSpring(glowH, { stiffness: 60, damping: 22 });
-    const glowFadeStop = isMobileViewport ? 95 : 70;
-    const glowCenterAlpha = isMobileViewport ? 0.13 : 0.16;
+    const glowFadeStop = isSmallViewport ? 95 : 70;
+    const glowCenterAlpha = isSmallViewport ? 0.13 : 0.16;
     const glowBg = useTransform([smoothGlowW, smoothGlowH], ([w, h]: number[]) =>
         `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,${glowCenterAlpha}) 0%, hsla(0,0%,100%,${glowCenterAlpha * 0.5}) 35%, transparent ${glowFadeStop}%)`
     );
