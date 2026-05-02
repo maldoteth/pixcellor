@@ -436,9 +436,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[24px] md:bottom-12 w-full md:w-auto px-[2.25rem] md:px-0"
                 >
                     {/* Mobile: stacked */}
-                    <div className="md:hidden flex flex-col items-stretch gap-2 w-full">
+                    <div data-hero-scroll-control="true" className="md:hidden flex flex-col items-stretch gap-2 w-full">
                         <button
                             type="button"
+                            data-hero-scroll-control="true"
                             onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
@@ -446,6 +447,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         </button>
                         <button
                             type="button"
+                            data-hero-scroll-control="true"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -470,6 +472,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         </button>
                         <button
                             type="button"
+                            data-hero-scroll-control="true"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
