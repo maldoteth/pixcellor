@@ -227,16 +227,18 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
         const touchTarget = window.matchMedia("(max-width: 767px)").matches ? window : container;
 
+        const touchListenerOptions: AddEventListenerOptions = { passive: false, capture: true };
+
         container.addEventListener("wheel", handleWheel, { passive: false });
         // Non-passive touchstart commits the gesture to JS immediately, so the
         // first swipe registers instead of being eaten by the scroll heuristic.
-        touchTarget.addEventListener("touchstart", handleTouchStart, { passive: false });
-        touchTarget.addEventListener("touchmove", handleTouchMove, { passive: false });
+        touchTarget.addEventListener("touchstart", handleTouchStart, touchListenerOptions);
+        touchTarget.addEventListener("touchmove", handleTouchMove, touchListenerOptions);
 
         return () => {
             container.removeEventListener("wheel", handleWheel);
-            touchTarget.removeEventListener("touchstart", handleTouchStart);
-            touchTarget.removeEventListener("touchmove", handleTouchMove);
+            touchTarget.removeEventListener("touchstart", handleTouchStart, touchListenerOptions);
+            touchTarget.removeEventListener("touchmove", handleTouchMove, touchListenerOptions);
             container.style.touchAction = previousTouchAction;
         };
     }, [virtualScroll]);
