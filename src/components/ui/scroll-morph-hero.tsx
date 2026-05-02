@@ -291,21 +291,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            const start = scrollRef.current;
-                            const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
-                            console.log("[arrow-desktop] scroll", { start, end });
-                            const duration = 1200;
-                            const t0 = performance.now();
-                            const step = (now: number) => {
-                                const t = Math.min((now - t0) / duration, 1);
-                                const eased = 1 - Math.pow(1 - t, 3);
-                                const v = start + (end - start) * eased;
-                                scrollRef.current = v;
-                                virtualScroll.set(v);
-                                onVirtualScrollChange?.(v);
-                                if (t < 1) requestAnimationFrame(step);
-                            };
-                            requestAnimationFrame(step);
+                            const target = window.scrollY + window.innerHeight * 0.9;
+                            window.scrollTo({ top: target, behavior: "smooth" });
                         }}
                         initial={{ opacity: 0 }}
                         animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.9 - morphValue * 3 } : { opacity: 0 }}
