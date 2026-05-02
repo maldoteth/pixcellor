@@ -268,14 +268,8 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
         setError("Could not send this request. Please try again.");
         return;
       }
-      // Best-effort: also save the enquirer into the Clients (client_profiles) book.
-      // We don't block submission on this — RLS may prevent it for anon users, that's fine.
-      void supabase.from("client_profiles").upsert({
-        email: cleanForm.email.toLowerCase(),
-        name: cleanForm.name || null,
-        company: cleanForm.company || null,
-        notes: `Enterprise enquiry · ${cleanForm.number || "no phone"}`,
-      }, { onConflict: "email" });
+      // Enterprise enquiries stay in the inbox (contact_inquiries) and are NOT written
+      // into the clients book. A contact only becomes a client when marked gold in the portal.
       setSubmitted(true);
     }
   };
