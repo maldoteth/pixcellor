@@ -440,7 +440,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         <button
                             type="button"
                             data-hero-scroll-control="true"
-                            onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-packages")); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Pricing
