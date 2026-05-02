@@ -433,7 +433,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     initial={{ opacity: 0 }}
                     animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.95 - morphValue * 3 } : { opacity: 0 }}
                     transition={{ duration: 1, delay: 0.35 }}
-                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[39px] md:bottom-12 w-full md:w-auto px-[2.25rem] md:px-0"
+                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[24px] md:bottom-12 w-full md:w-auto px-[2.25rem] md:px-0"
                 >
                     {/* Mobile: stacked */}
                     <div className="md:hidden flex flex-col items-stretch gap-2 w-full">
