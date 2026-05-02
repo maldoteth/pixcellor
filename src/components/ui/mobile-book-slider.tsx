@@ -18,6 +18,7 @@ import dhbDocsImg from '@/assets/portfolio/dhb-docs.png';
 import tikupImg from '@/assets/portfolio/tikup.png';
 import bricksImg from '@/assets/portfolio/bricks.png';
 import arvoxAgencyImg from '@/assets/portfolio/arvox-agency.png';
+import highwoodVillageImg from '@/assets/portfolio/highwood-village.png';
 
 const portfolioData = [
   {
