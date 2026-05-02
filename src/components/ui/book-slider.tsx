@@ -20,6 +20,7 @@ import dhbDocsImg from '@/assets/portfolio/dhb-docs.png';
 import tikupImg from '@/assets/portfolio/tikup.png';
 import bricksImg from '@/assets/portfolio/bricks.png';
 import arvoxAgencyImg from '@/assets/portfolio/arvox-agency.png';
+import highwoodVillageImg from '@/assets/portfolio/highwood-village.png';
 
 const portfolioData = [
   {
@@ -99,6 +100,13 @@ const portfolioData = [
     url: "dehub.io",
     description: "Full stack app, large scale YouTube and X alternative packed with features.",
     screenshot: dehubImg
+  },
+  {
+    name: "Highwood Village",
+    url: "berkeleygroup.co.uk",
+    fullUrl: "https://www.berkeleygroup.co.uk/developments/west-sussex/horsham/highwood-village",
+    description: "Berkeley Group new homes development in Horsham, West Sussex. Provided all agency freelancers and secured nationwide PSL.",
+    screenshot: highwoodVillageImg
   }
 ];
 
@@ -262,7 +270,7 @@ function BookSlider() {
                       e.stopPropagation();
                       e.preventDefault();
                       void recordFalloff({ event: "portfolio_project_opened", projectName: site.name, projectUrl: site.url });
-                      window.open(`https://${site.url}`, '_blank', 'noopener,noreferrer');
+                      window.open((site as any).fullUrl ?? `https://${site.url}`, '_blank', 'noopener,noreferrer');
                     }}
                     className="text-primary text-sm mb-3 hover:underline inline-block cursor-pointer"
                     aria-label={`Visit ${site.name} at ${site.url}`}
