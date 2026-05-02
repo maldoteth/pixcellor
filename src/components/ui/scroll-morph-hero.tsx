@@ -181,7 +181,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             return !!el?.closest('button, a, [role="button"], input, textarea, select');
         };
         const handleTouchStart = (e: TouchEvent) => {
-            if (isInteractive(e.target)) return;
+            // Always capture starting Y so the next move has a correct baseline,
+            // even if the gesture began on an interactive element.
             touchStartY = e.touches[0].clientY;
         };
         const handleTouchMove = (e: TouchEvent) => {
@@ -201,14 +202,22 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             recordScrollDepth((newScroll / MAX_SCROLL) * 100);
         };
 
+        // Lock native scroll/zoom on the hero so the browser doesn't waste the
+        // first swipe deciding between native scroll and our handler.
+        const previousTouchAction = container.style.touchAction;
+        container.style.touchAction = "none";
+
         container.addEventListener("wheel", handleWheel, { passive: false });
-        container.addEventListener("touchstart", handleTouchStart, { passive: true });
+        // Non-passive touchstart commits the gesture to JS immediately, so the
+        // first swipe registers instead of being eaten by the scroll heuristic.
+        container.addEventListener("touchstart", handleTouchStart, { passive: false });
         container.addEventListener("touchmove", handleTouchMove, { passive: false });
 
         return () => {
             container.removeEventListener("wheel", handleWheel);
             container.removeEventListener("touchstart", handleTouchStart);
             container.removeEventListener("touchmove", handleTouchMove);
+            container.style.touchAction = previousTouchAction;
         };
     }, [onVirtualScrollChange, virtualScroll]);
 
