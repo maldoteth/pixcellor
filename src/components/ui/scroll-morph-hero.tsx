@@ -354,9 +354,14 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
-            {/* Subtle center stage light */}
-            <div className="absolute inset-0 pointer-events-none z-0" style={{
+            {/* Subtle center stage light — wide on hero, rotates to narrow vertical on portfolio */}
+            <motion.div className="absolute inset-0 pointer-events-none z-0" style={{
+                opacity: useTransform(virtualScroll, [0, 500, 700], [1, 1, 0]),
                 background: 'radial-gradient(ellipse 60% 50% at 50% 50%, hsla(0,0%,100%,0.15) 0%, transparent 70%)',
+            }} />
+            <motion.div className="absolute inset-0 pointer-events-none z-0" style={{
+                opacity: useTransform(virtualScroll, [500, 700], [0, 1]),
+                background: 'radial-gradient(ellipse 18% 75% at 50% 50%, hsla(0,0%,100%,0.18) 0%, transparent 70%)',
             }} />
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
