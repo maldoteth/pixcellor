@@ -286,22 +286,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
-
-    // Services section: fades in around mid-scroll, fades out before portfolio
-    const servicesOpacity = useTransform(virtualScroll, [800, 1100, 1900, 2200], [0, 1, 1, 0]);
-    const smoothServicesOpacity = useSpring(servicesOpacity, { stiffness: 50, damping: 22 });
-    const servicesY = useTransform(virtualScroll, [800, 1100], [40, 0]);
-
-    // Portfolio section: takes over at the bottom of the virtual scroll
-    const portfolioOpacity = useTransform(virtualScroll, [2100, 2400], [0, 1]);
-    const smoothPortfolioOpacity = useSpring(portfolioOpacity, { stiffness: 50, damping: 22 });
-    const portfolioY = useTransform(virtualScroll, [2100, 2400], [40, 0]);
-
-    // Headline (top) fades out once Services takes the stage
-    const headlineOpacity = useTransform(virtualScroll, [600, 900, 2400, 2700], [0, 1, 1, 0]);
-
     // Mobile: footer slides up into view as user scrolls (instead of lifting page content)
-    const footerRevealProgress = useTransform(virtualScroll, [2400, 2900], [0, 1]);
+    const footerRevealProgress = useTransform(virtualScroll, [900, 1900], [0, 1]);
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
     const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
@@ -415,9 +401,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     </motion.div>
                 </button>
 
-                {/* Headline + Pricing CTA (first reveal) */}
+                {/* Arc Active Content (Fades in) */}
                 <motion.div
-                    style={{ opacity: headlineOpacity, y: contentY }}
+                    style={{ opacity: contentOpacity, y: contentY }}
                     className="absolute top-[5%] z-10 flex flex-col items-center justify-center text-center pointer-events-auto px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
@@ -427,46 +413,6 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         From quick websites in a day, to full stack turn key solutions. Whatever you need, we're here to help.
                     </p>
                     <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} />
-                </motion.div>
-
-                {/* Services Section (mid scroll) */}
-                <motion.div
-                    style={{ opacity: smoothServicesOpacity, y: servicesY, pointerEvents: "none" }}
-                    className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-4"
-                >
-                    <div className="max-w-5xl w-full pointer-events-auto">
-                        <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-3">
-                            What We Build
-                        </h2>
-                        <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8 md:mb-10">
-                            Full stack delivery across web, mobile, Web3 and bespoke business platforms.
-                        </p>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                            {[
-                                { title: "Web Apps & SaaS", desc: "Production-ready full stack platforms with auth, payments and dashboards." },
-                                { title: "Marketing Sites", desc: "Fast, beautifully animated brand sites that convert." },
-                                { title: "Web3 & Onchain", desc: "Token tools, analytics, holder gating and decentralised apps." },
-                                { title: "Creator & Agency Tools", desc: "TikTok, social and creator-network platforms with live integrations." },
-                                { title: "Recruitment & HR", desc: "Bespoke hiring, payroll and workforce management apps." },
-                                { title: "Retainers & Support", desc: "Ongoing build, iteration and maintenance for live products." },
-                            ].map((s) => (
-                                <div
-                                    key={s.title}
-                                    className="border border-white/15 bg-white/5 backdrop-blur-sm p-4 md:p-5 text-left rounded-sm"
-                                >
-                                    <h3 className="text-sm md:text-base font-semibold text-foreground mb-1.5">{s.title}</h3>
-                                    <p className="text-[11px] md:text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Portfolio (last reveal) */}
-                <motion.div
-                    style={{ opacity: smoothPortfolioOpacity, y: portfolioY }}
-                    className="absolute top-[5%] z-10 flex flex-col items-center justify-center text-center pointer-events-auto px-4 w-full"
-                >
                     <BookSlider />
                 </motion.div>
 
