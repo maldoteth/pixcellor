@@ -141,7 +141,7 @@ function BookSlider() {
     <motion.div 
       className="flex items-center justify-center w-full cursor-pointer mt-[33px] [&_.stf__parent]:border [&_.stf__parent]:border-white/30 [&_.stf__parent]:rounded-sm"
       animate={{ 
-        x: isOpened ? 7 : -134.1 
+        x: isOpened ? 8 : -160.9 
       }}
       transition={{ 
         type: "spring", 
@@ -153,13 +153,13 @@ function BookSlider() {
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
-        width={309}
-        height={412}
+        width={371}
+        height={494}
         size="stretch"
-        minWidth={258}
-        maxWidth={412}
-        minHeight={361}
-        maxHeight={515}
+        minWidth={310}
+        maxWidth={494}
+        minHeight={433}
+        maxHeight={618}
         showCover={true}
         mobileScrollSupport={true}
         className=""
