@@ -447,7 +447,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     className="absolute top-[5%] z-10 flex flex-col items-center justify-center text-center pointer-events-auto px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
-                        What We Do
+                        You Dream It - We Build It
                     </h2>
                     <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8">
                         A full stack digital services studio for websites, apps, AI agents and an array of bespoke business solutions.
