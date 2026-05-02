@@ -162,6 +162,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         if (!container) return;
 
         const handleWheel = (e: WheelEvent) => {
+            // Release control to native scroll once virtual scroll is exhausted
+            if (e.deltaY > 0 && scrollRef.current >= MAX_SCROLL) return;
+            if (e.deltaY < 0 && scrollRef.current <= 0 && window.scrollY > 0) return;
             e.preventDefault();
 
             // Apply 5x multiplier on mobile for faster scrolling (both directions)
