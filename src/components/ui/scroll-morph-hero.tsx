@@ -415,9 +415,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     </motion.div>
                 </button>
 
-                {/* Arc Active Content (Fades in) */}
+                {/* Headline + Pricing CTA (first reveal) */}
                 <motion.div
-                    style={{ opacity: contentOpacity, y: contentY }}
+                    style={{ opacity: headlineOpacity, y: contentY }}
                     className="absolute top-[5%] z-10 flex flex-col items-center justify-center text-center pointer-events-auto px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
@@ -427,6 +427,46 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         From quick websites in a day, to full stack turn key solutions. Whatever you need, we're here to help.
                     </p>
                     <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} />
+                </motion.div>
+
+                {/* Services Section (mid scroll) */}
+                <motion.div
+                    style={{ opacity: smoothServicesOpacity, y: servicesY, pointerEvents: "none" }}
+                    className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-4"
+                >
+                    <div className="max-w-5xl w-full pointer-events-auto">
+                        <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-3">
+                            What We Build
+                        </h2>
+                        <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8 md:mb-10">
+                            Full stack delivery across web, mobile, Web3 and bespoke business platforms.
+                        </p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                            {[
+                                { title: "Web Apps & SaaS", desc: "Production-ready full stack platforms with auth, payments and dashboards." },
+                                { title: "Marketing Sites", desc: "Fast, beautifully animated brand sites that convert." },
+                                { title: "Web3 & Onchain", desc: "Token tools, analytics, holder gating and decentralised apps." },
+                                { title: "Creator & Agency Tools", desc: "TikTok, social and creator-network platforms with live integrations." },
+                                { title: "Recruitment & HR", desc: "Bespoke hiring, payroll and workforce management apps." },
+                                { title: "Retainers & Support", desc: "Ongoing build, iteration and maintenance for live products." },
+                            ].map((s) => (
+                                <div
+                                    key={s.title}
+                                    className="border border-white/15 bg-white/5 backdrop-blur-sm p-4 md:p-5 text-left rounded-sm"
+                                >
+                                    <h3 className="text-sm md:text-base font-semibold text-foreground mb-1.5">{s.title}</h3>
+                                    <p className="text-[11px] md:text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Portfolio (last reveal) */}
+                <motion.div
+                    style={{ opacity: smoothPortfolioOpacity, y: portfolioY }}
+                    className="absolute top-[5%] z-10 flex flex-col items-center justify-center text-center pointer-events-auto px-4 w-full"
+                >
                     <BookSlider />
                 </motion.div>
 
