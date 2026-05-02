@@ -447,7 +447,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     animate={introPhase === "circle" ? {} : { opacity: 0 }}
                     transition={{ duration: 1, delay: 0.35 }}
                     style={introPhase === "circle" ? { opacity: ctaOpacity } : undefined}
-                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[24px] md:bottom-12 w-full md:w-auto px-[1.875rem] md:px-0"
+                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[24px] md:bottom-12 w-full md:w-auto px-[1.5rem] md:px-0"
                 >
                     {/* Mobile: stacked */}
                     <div data-hero-scroll-control="true" className="md:hidden flex flex-col items-stretch gap-2 w-full">
