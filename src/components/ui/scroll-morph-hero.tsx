@@ -286,8 +286,22 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
+
+    // Services section: fades in around mid-scroll, fades out before portfolio
+    const servicesOpacity = useTransform(virtualScroll, [800, 1100, 1900, 2200], [0, 1, 1, 0]);
+    const smoothServicesOpacity = useSpring(servicesOpacity, { stiffness: 50, damping: 22 });
+    const servicesY = useTransform(virtualScroll, [800, 1100], [40, 0]);
+
+    // Portfolio section: takes over at the bottom of the virtual scroll
+    const portfolioOpacity = useTransform(virtualScroll, [2100, 2400], [0, 1]);
+    const smoothPortfolioOpacity = useSpring(portfolioOpacity, { stiffness: 50, damping: 22 });
+    const portfolioY = useTransform(virtualScroll, [2100, 2400], [40, 0]);
+
+    // Headline (top) fades out once Services takes the stage
+    const headlineOpacity = useTransform(virtualScroll, [600, 900, 2400, 2700], [0, 1, 1, 0]);
+
     // Mobile: footer slides up into view as user scrolls (instead of lifting page content)
-    const footerRevealProgress = useTransform(virtualScroll, [900, 1900], [0, 1]);
+    const footerRevealProgress = useTransform(virtualScroll, [2400, 2900], [0, 1]);
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
     const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
