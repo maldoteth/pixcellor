@@ -201,7 +201,7 @@ const tools = [
           package_id: {
             type: "string",
             enum: ["fullWorks", "elite", "retainer"],
-            description: "Which package to show: fullWorks (£150 website, up to 3 pages), elite (£500 or £60/mo, up to 10 pages, unlimited edits, SEO/AEO), or retainer (£1,200/mo or £12,000/yr tech department)",
+            description: "Which package to show: fullWorks (£150 website, up to 3 pages), elite (£500 or £60/mo, up to 10 pages, unlimited edits, SEO/AEO), or retainer (£2,500/mo or £20,000/yr tech department)",
           },
           billing: {
             type: "string",
