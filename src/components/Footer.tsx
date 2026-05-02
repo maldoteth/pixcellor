@@ -22,7 +22,6 @@ const Footer = () => {
             className="flex items-center gap-1.5 hover:text-foreground transition-colors"
           >
             <Mail className="w-3 h-3" />
-            <span className="hidden md:inline">help@pixcellor.com</span>
           </a>
         </div>
         <a
