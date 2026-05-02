@@ -325,6 +325,13 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
+    // Hero intro elements: opacity tracks the morph spring directly so scroll-up
+    // reveals them instantly (matching the circle/cards behavior) instead of
+    // running a separate 1s tween via animate={}.
+    const titleOpacity = useTransform(smoothMorph, [0, 0.5], [1, 0]);
+    const subtitleOpacity = useTransform(smoothMorph, [0, 0.5], [0.8, 0]);
+    const ctaOpacity = useTransform(smoothMorph, [0, 0.3], [0.95, 0]);
+    const arrowOpacity = useTransform(smoothMorph, [0, 0.3], [0.9, 0]);
     // Mobile: footer slides up into view as user scrolls (instead of lifting page content)
     const footerRevealProgress = useTransform(virtualScroll, [900, 1900], [0, 1]);
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
@@ -342,16 +349,18 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-1/2 -translate-y-[calc(50%+40px)] md:-translate-y-1/2">
                     <motion.h1
                         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                        animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2, y: 0, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
+                        animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
                         transition={{ duration: 1 }}
+                        style={introPhase === "circle" ? { opacity: titleOpacity } : undefined}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground"
                     >
                         <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[3.6rem] md:h-[8.84rem] lg:h-[7rem] w-auto" />
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
-                        animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 0.8 - morphValue * 1.6 } : { opacity: 0 }}
+                        animate={introPhase === "circle" ? {} : { opacity: 0 }}
                         transition={{ duration: 1, delay: 0.2 }}
+                        style={introPhase === "circle" ? { opacity: subtitleOpacity } : undefined}
                         className="-mt-2 text-xs md:text-sm lg:text-base font-normal tracking-[0.2em] text-foreground/90"
                     >
                         The Digital Builders
@@ -378,11 +387,13 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             requestAnimationFrame(step);
                         }}
                         initial={{ opacity: 0 }}
-                        animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.9 - morphValue * 3 } : { opacity: 0 }}
+                        animate={introPhase === "circle" ? {} : { opacity: 0 }}
                         transition={{ duration: 1, delay: 0.4 }}
                         aria-label="Scroll down"
                         className="md:hidden mt-5 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
-                        style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
+                        style={introPhase === "circle"
+                            ? { opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }
+                            : { filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
                             animate={{ y: [0, 4, 0] }}
@@ -413,11 +424,13 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             requestAnimationFrame(step);
                         }}
                         initial={{ opacity: 0 }}
-                        animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.9 - morphValue * 3 } : { opacity: 0 }}
+                        animate={introPhase === "circle" ? {} : { opacity: 0 }}
                         transition={{ duration: 1, delay: 0.4 }}
                         aria-label="Scroll down"
                         className="hidden md:block mt-6 md:mt-10 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
-                        style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
+                        style={introPhase === "circle"
+                            ? { opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }
+                            : { filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
                             animate={{ y: [0, 4, 0] }}
@@ -431,8 +444,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {/* Hero CTA buttons anchored at bottom of hero viewport */}
                 <motion.div
                     initial={{ opacity: 0 }}
-                    animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.95 - morphValue * 3 } : { opacity: 0 }}
+                    animate={introPhase === "circle" ? {} : { opacity: 0 }}
                     transition={{ duration: 1, delay: 0.35 }}
+                    style={introPhase === "circle" ? { opacity: ctaOpacity } : undefined}
                     className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[24px] md:bottom-12 w-full md:w-auto px-[2.25rem] md:px-0"
                 >
                     {/* Mobile: stacked */}
