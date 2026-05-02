@@ -466,7 +466,7 @@ function MobileCards() {
             <div className="mt-3 mb-4 text-3xl font-extrabold text-foreground">{SERVICES.other.price}</div>
             <ul className="space-y-2 flex-1 mb-4">
               {SERVICES.other.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+                <li key={f} className="flex items-start gap-2 text-justify text-base text-muted-foreground">
                   <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                   {f}
                 </li>
