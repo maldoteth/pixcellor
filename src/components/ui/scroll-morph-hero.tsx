@@ -428,6 +428,97 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     </motion.button>
                 </div>
 
+                {/* Hero CTA buttons anchored at bottom of hero viewport */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.95 - morphValue * 3 } : { opacity: 0 }}
+                    transition={{ duration: 1, delay: 0.35 }}
+                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-16 md:bottom-12"
+                >
+                    {/* Mobile: stacked */}
+                    <div className="md:hidden flex flex-col items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
+                            className="pricing-button text-foreground transition h-auto w-[180px] px-4 py-2 text-xs font-semibold rounded-md"
+                        >
+                            Pricing
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                const start = scrollRef.current;
+                                const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
+                                const duration = 1200;
+                                const t0 = performance.now();
+                                const step = (now: number) => {
+                                    const t = Math.min((now - t0) / duration, 1);
+                                    const eased = 1 - Math.pow(1 - t, 3);
+                                    const v = start + (end - start) * eased;
+                                    scrollRef.current = v;
+                                    virtualScroll.set(v);
+                                    onVirtualScrollChangeRef.current?.(v);
+                                    if (t < 1) requestAnimationFrame(step);
+                                };
+                                requestAnimationFrame(step);
+                            }}
+                            className="pricing-button text-foreground transition h-auto w-[180px] px-4 py-2 text-xs font-semibold rounded-md"
+                        >
+                            Services
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
+                            className="pricing-button text-foreground transition h-auto w-[180px] px-4 py-2 text-xs font-semibold rounded-md"
+                        >
+                            Request Callback
+                        </button>
+                    </div>
+                    {/* Desktop: row */}
+                    <div className="hidden md:flex gap-3">
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
+                            className="pricing-button text-foreground transition h-auto px-6 py-2.5 text-sm font-semibold rounded-md"
+                        >
+                            Pricing
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                const start = scrollRef.current;
+                                const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
+                                const duration = 1200;
+                                const t0 = performance.now();
+                                const step = (now: number) => {
+                                    const t = Math.min((now - t0) / duration, 1);
+                                    const eased = 1 - Math.pow(1 - t, 3);
+                                    const v = start + (end - start) * eased;
+                                    scrollRef.current = v;
+                                    virtualScroll.set(v);
+                                    onVirtualScrollChangeRef.current?.(v);
+                                    if (t < 1) requestAnimationFrame(step);
+                                };
+                                requestAnimationFrame(step);
+                            }}
+                            className="pricing-button text-foreground transition h-auto px-6 py-2.5 text-sm font-semibold rounded-md"
+                        >
+                            Services
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
+                            className="pricing-button text-foreground transition h-auto px-6 py-2.5 text-sm font-semibold rounded-md"
+                        >
+                            Request Callback
+                        </button>
+                    </div>
+                </motion.div>
+
                 {/* Mobile-only scroll arrow — bottom of screen, aligned with chat button */}
                 <button
                     type="button"
