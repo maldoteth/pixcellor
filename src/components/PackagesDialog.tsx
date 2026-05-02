@@ -719,7 +719,7 @@ function MobileCards() {
                   </li>
                 ))}
                 {retainerBilling === "yearly" && (
-                  <li className="flex items-start gap-2 text-base text-muted-foreground">
+                  <li className="flex items-start gap-2 text-justify text-base text-muted-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     Billed yearly (save £2,400)
                   </li>
