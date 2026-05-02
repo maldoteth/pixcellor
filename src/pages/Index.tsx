@@ -11,7 +11,7 @@ const Index = () => {
   const [heroScrolled, setHeroScrolled] = useState(false);
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-clip">
       {/* Tall scroll container — hero sticks inside while page scrolls into the next section */}
       <div className="relative" style={{ height: "200vh" }}>
         <div className="sticky top-0 h-screen w-full">
