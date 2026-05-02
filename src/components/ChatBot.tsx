@@ -261,9 +261,16 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   }, [isMobile, widgetSize.height, widgetSize.width]);
 
   useEffect(() => {
-    const openChat = () => setIsOpen(true);
-    window.addEventListener("pixcellor:open-chat", openChat);
-    return () => window.removeEventListener("pixcellor:open-chat", openChat);
+    const openChat = (e: Event) => {
+      setIsOpen(true);
+      const detail = (e as CustomEvent<{ action?: "call" | "email" }>).detail;
+      if (detail?.action === "call" || detail?.action === "email") {
+        // Defer until chat is open and history loaded
+        setTimeout(() => startQuickAction(detail.action!), 350);
+      }
+    };
+    window.addEventListener("pixcellor:open-chat", openChat as EventListener);
+    return () => window.removeEventListener("pixcellor:open-chat", openChat as EventListener);
   }, [setIsOpen]);
 
   useEffect(() => {
