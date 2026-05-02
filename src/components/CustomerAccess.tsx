@@ -89,9 +89,10 @@ function CustomerAuthForm() {
 
 interface CustomerAccessProps {
   hidden?: boolean;
+  chatOpen?: boolean;
 }
 
-export default function CustomerAccess({ hidden = false }: CustomerAccessProps) {
+export default function CustomerAccess({ hidden = false, chatOpen = false }: CustomerAccessProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
