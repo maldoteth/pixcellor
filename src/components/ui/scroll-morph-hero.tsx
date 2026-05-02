@@ -217,6 +217,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             container.removeEventListener("wheel", handleWheel);
             container.removeEventListener("touchstart", handleTouchStart);
             container.removeEventListener("touchmove", handleTouchMove);
+            container.style.touchAction = previousTouchAction;
         };
     }, [onVirtualScrollChange, virtualScroll]);
 
