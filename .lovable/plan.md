@@ -1,30 +1,28 @@
-## Goal
+## Problem
 
-1. Keep the existing **Clients** tab (the one backed by `client_profiles`, currently showing 52).
-2. Delete the second **Clients** tab (backed by `contacts`, currently showing only Jim).
-3. Make sure people who submit the contact form (enquiries) get saved into the **contacts** table — but since that tab is being removed from the portal UI, surface them inside the kept Clients (`client_profiles`) flow instead.
+On a Samsung S24 (and other modern mobile browsers with a dynamic URL/toolbar), the footer is invisible at the bottom of the page when scrolled to the end of the hero animation.
 
-Re-read of your message: "people who make enquiries should be saved as contacts in our actual contacts tab" — the kept tab (`client_profiles`) becomes the single Clients/contacts hub. Jim and any other entries from the old `contacts` table that you actually want to keep can be migrated into `client_profiles`. If that's not what you meant (e.g. you actually want to keep the `contacts` tab and just rename the labels), tell me and I'll adjust before building.
+**Root cause:** The hero container in `src/pages/Index.tsx` uses `h-screen` (CSS `100vh`). On mobile browsers, `100vh` corresponds to the *largest* viewport — i.e. the area that exists when the browser's address bar is hidden. With the address bar visible, the bottom ~60–100px of that container sits *underneath* the browser chrome. The Footer is positioned `absolute bottom-0` inside that container, so it gets pushed off-screen behind the toolbar.
 
-## Changes
+## Fix
 
-### Portal UI (`src/pages/Portal.tsx`)
-- Remove the `<TabsTrigger value="contacts" …>` (line 1756) and its entire `<TabsContent value="contacts">` block (around line 2304+).
-- Remove related state, queries, memos and helpers that only the contacts tab used: `filteredContacts`, contact search/sort/filter state, `contactEvents` UI usage, `contactOrderStatsByEmail` if unused elsewhere, etc. Keep anything still referenced by other tabs.
-- Adjust `TabsList` grid from `xl:grid-cols-10` → `xl:grid-cols-9`.
-- Drop unused icon imports (`UserPlus`) if no longer referenced.
+Switch the hero container from `h-screen` to `h-dvh` (dynamic viewport height). `100dvh` updates as the browser UI shows/hides, so the footer always sits at the visible bottom of the screen on mobile, and behaves identically to `100vh` on desktop.
 
-### Inquiry → contacts persistence
-- The contact form already inserts into `contact_inquiries`. Add a lightweight upsert into `client_profiles` (by email) at the same time so every enquirer shows up in the kept Clients tab with their name, email, and the message stored in `notes`/`requirements`.
-- Realtime subscription on `client_profiles` already exists, so the Clients tab will refresh automatically.
+### Changes
 
-### Optional cleanup (ask before doing)
-- The `contacts`, `contact_events`, and `lead_search_history` tables and the `find-local-leads` edge function become unused. Leave them in place for now (safe), or confirm you want them dropped in a follow-up.
+1. **`src/pages/Index.tsx`** (line 13)
+   - Change `className="relative h-screen overflow-hidden"` to `className="relative h-dvh overflow-hidden"`.
 
-## Out of scope
-- Migrating Jim from `contacts` into `client_profiles` — say the word and I'll copy him over before deleting the tab.
-- Renaming the kept tab label (currently "Clients"). Happy to rename to "Clients & contacts" or similar if you prefer.
+2. **`src/components/ui/scroll-morph-hero.tsx`** — sanity check
+   - The hero root uses `h-full` and reads `containerSize` via ResizeObserver, so it will pick up the new dynamic height automatically. No changes needed there.
 
-## Technical notes
-- The two count badges come from `filteredProfiles.length` (52, kept) and `filteredContacts.length` (1, removed).
-- Inquiry insert happens in the public contact form component; I'll mirror the insert with a `client_profiles` upsert keyed on lowercased email so duplicates merge cleanly.
+### Why not other approaches
+
+- Adding bottom padding / `safe-area-inset-bottom`: doesn't help because the issue is browser chrome (URL bar), not iOS safe areas.
+- `min-h-screen` with scrolling: the page is intentionally a single viewport with virtual scroll; we don't want real page scroll.
+- JS-based `--vh` workaround: unnecessary now that `dvh` is well supported in all modern mobile browsers (including Samsung Internet 21+ and Chrome 108+).
+
+## QA
+
+- Verify on the requested mobile viewport that the Footer (Pixcellor wordmark, phone, social icons) is visible at the bottom once the hero animation completes.
+- Verify desktop layout is unchanged.
