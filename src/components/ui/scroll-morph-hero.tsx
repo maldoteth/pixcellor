@@ -339,7 +339,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
-                <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-1/2 -translate-y-[calc(50%+20px)] md:-translate-y-1/2">
+                <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-1/2 -translate-y-[calc(50%+30px)] md:-translate-y-1/2">
                     <motion.h1
                         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2, y: 0, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
@@ -583,7 +583,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 </motion.div>
 
                 {/* Main Container */}
-                <div className="relative flex items-center justify-center w-full h-full -translate-y-5 md:translate-y-0">
+                <div className="relative flex items-center justify-center w-full h-full -translate-y-[30px] md:translate-y-0">
                     {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
                         let target = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
 
