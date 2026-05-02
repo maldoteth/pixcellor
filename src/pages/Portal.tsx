@@ -340,7 +340,7 @@ function LinkifiedText({ text, className, stopPropagation = false }: { text: str
         href={href}
         target={isEmail ? undefined : "_blank"}
         rel={isEmail ? undefined : "noopener noreferrer"}
-        className="text-primary underline underline-offset-2 hover:text-primary/80"
+        className="underline underline-offset-2 text-primary-foreground"
         onClick={stopPropagation ? (event) => event.stopPropagation() : undefined}
       >
         {clean}
