@@ -184,15 +184,15 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
       </DialogTrigger>
 
       {isMobile ? (
-        <DialogContent className="top-[44%] max-w-4xl bg-transparent border-none p-6 max-h-[88vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:hidden">
-          <div className="fixed right-1 top-1 z-[60]">
-            <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none px-[8px] my-0 mx-[15px]">
+        <DialogContent className="top-[50%] max-w-4xl bg-transparent border-none p-4 max-h-[92vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:hidden">
+          <div className="fixed right-2 top-2 z-[60]">
+            <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
             </DialogClose>
           </div>
           <DialogHeader>
-            <DialogTitle className="tracking-tight text-2xl font-bold text-foreground text-center mb-2 -mt-[23px] my-[203px] py-[18px]">
+            <DialogTitle className="tracking-tight text-2xl font-bold text-foreground text-center mb-2">
               Our Pricing
             </DialogTitle>
             <StripeBadge />
