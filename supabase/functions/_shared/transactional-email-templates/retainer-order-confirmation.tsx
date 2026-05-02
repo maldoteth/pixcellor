@@ -255,7 +255,7 @@ export const template = createOrderEmail({
     customerEmail: 'client@example.com',
     orderId: 'PXC-ABCD-1234',
     packageName: 'Retainer',
-    amount: '£1,200.00',
+    amount: '£2,500.00',
     billing: 'Subscription',
   },
 })
