@@ -541,7 +541,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         requestAnimationFrame(step);
                     }}
                     aria-label="Scroll down"
-                    className="md:hidden fixed left-1/2 -translate-x-1/2 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center"
+                    className="hidden fixed left-1/2 -translate-x-1/2 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center"
                     style={{
                         bottom: "16px",
                         height: "64px",
