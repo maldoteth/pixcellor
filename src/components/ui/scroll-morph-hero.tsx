@@ -261,9 +261,17 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
     // --- Intro Sequence ---
     useEffect(() => {
-        const timer1 = setTimeout(() => setIntroPhase("line"), 500);
-        const timer2 = setTimeout(() => setIntroPhase("circle"), 2500);
-        return () => { clearTimeout(timer1); clearTimeout(timer2); };
+        const setPhase = (phase: AnimationPhase) => {
+            introPhaseRef.current = phase;
+            setIntroPhase(phase);
+        };
+        const timer1 = window.setTimeout(() => setPhase("line"), 500);
+        const timer2 = window.setTimeout(() => setPhase("circle"), 2500);
+        introTimersRef.current = [timer1, timer2];
+        return () => {
+            introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+            introTimersRef.current = [];
+        };
     }, []);
 
     // --- Random Scatter Positions ---
