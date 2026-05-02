@@ -130,6 +130,11 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const [packagesOpen, setPackagesOpen] = useState(false);
     const dismissedAtEndRef = useRef(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const onVirtualScrollChangeRef = useRef(onVirtualScrollChange);
+
+    useEffect(() => {
+        onVirtualScrollChangeRef.current = onVirtualScrollChange;
+    }, [onVirtualScrollChange]);
 
     // --- Container Size ---
     useEffect(() => {
@@ -182,7 +187,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
-            onVirtualScrollChange?.(newScroll);
+            onVirtualScrollChangeRef.current?.(newScroll);
             recordScrollDepth((newScroll / MAX_SCROLL) * 100);
         };
 
@@ -211,7 +216,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
-            onVirtualScrollChange?.(newScroll);
+            onVirtualScrollChangeRef.current?.(newScroll);
             recordScrollDepth((newScroll / MAX_SCROLL) * 100);
         };
 
@@ -234,7 +239,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             touchTarget.removeEventListener("touchmove", handleTouchMove);
             container.style.touchAction = previousTouchAction;
         };
-    }, [onVirtualScrollChange, virtualScroll]);
+    }, [virtualScroll]);
 
     const morphProgress = useTransform(virtualScroll, [0, 600], [0, 1]);
     const smoothMorph = useSpring(morphProgress, { stiffness: 40, damping: 20 });
