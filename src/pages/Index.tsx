@@ -4,6 +4,7 @@ import ChatBot from "@/components/ChatBot";
 import FalloffConsentBanner from "@/components/FalloffConsentBanner";
 import CustomerAccess from "@/components/CustomerAccess";
 import ServicesSection from "@/components/ServicesSection";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
