@@ -201,8 +201,8 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
         </DialogContent>
       ) : (
         <DialogContent className="top-[54%] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent" }}>
-          <div className="absolute top-3 right-3 z-50">
-            <DialogClose className="rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
+          <div className="fixed top-3 right-3 z-[60]">
+            <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
             </DialogClose>
