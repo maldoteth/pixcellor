@@ -102,7 +102,7 @@ export default function ServicesDialog({ open, onOpenChange }: ServicesDialogPro
           className="top-[54%] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
           style={{ background: "transparent" }}
         >
-          <div className="absolute -top-8 right-3 z-50 md:-top-10">
+          <div className="absolute top-3 right-3 z-50">
             <DialogClose className="rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none py-[8px] my-0 mx-[10px] mt-0 mb-0">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
