@@ -365,10 +365,14 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const smoothGlowW = useSpring(glowW, { stiffness: 60, damping: 22 });
     const smoothGlowH = useSpring(glowH, { stiffness: 60, damping: 22 });
     const glowFadeStop = isSmallViewport ? 95 : 70;
-    const glowCenterAlpha = isSmallViewport ? 0.13 : 0.16;
-    const glowBg = useTransform([smoothGlowW, smoothGlowH], ([w, h]: number[]) =>
-        `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,${glowCenterAlpha}) 0%, hsla(0,0%,100%,${glowCenterAlpha * 0.5}) 35%, transparent ${glowFadeStop}%)`
-    );
+    const glowBaseAlpha = isSmallViewport ? 0.13 : 0.16;
+    // Desktop: fade glow ~20% softer as second page loads
+    const glowAlphaScale = useTransform(virtualScroll, [0, 400, 800], isSmallViewport ? [1, 1, 1] : [1, 0.9, 0.8]);
+    const smoothGlowAlphaScale = useSpring(glowAlphaScale, { stiffness: 60, damping: 22 });
+    const glowBg = useTransform([smoothGlowW, smoothGlowH, smoothGlowAlphaScale], ([w, h, a]: number[]) => {
+        const center = glowBaseAlpha * a;
+        return `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,${center}) 0%, hsla(0,0%,100%,${center * 0.5}) 35%, transparent ${glowFadeStop}%)`;
+    });
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
