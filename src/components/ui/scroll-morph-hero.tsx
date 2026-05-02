@@ -361,7 +361,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             }} />
             <motion.div className="absolute inset-0 pointer-events-none z-0" style={{
                 opacity: useTransform(virtualScroll, [500, 700], [0, 1]),
-                background: 'radial-gradient(ellipse 18% 75% at 50% 50%, hsla(0,0%,100%,0.18) 0%, transparent 70%)',
+                background: 'radial-gradient(ellipse 30% 75% at 50% 50%, hsla(0,0%,100%,0.18) 0%, transparent 70%)',
             }} />
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
