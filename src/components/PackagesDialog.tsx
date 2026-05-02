@@ -185,8 +185,8 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
 
       {isMobile ? (
         <DialogContent className="top-[50%] max-w-4xl bg-transparent border-none p-4 max-h-[92vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:hidden">
-          <div className="fixed right-2 top-2 z-[60]">
-            <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
+          <div className="absolute right-3 top-3 z-[60]">
+            <DialogClose className="flex h-10 w-10 items-center justify-center rounded-sm text-foreground/80 transition-opacity hover:bg-accent/20 hover:opacity-100 focus:outline-none">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
             </DialogClose>
