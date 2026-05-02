@@ -34,11 +34,11 @@ const PACKAGES = {
     monthlyPriceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
     yearlyPriceId: "price_1TJrbOBtUjwejeUwOhhNyliQ",
     mode: "subscription" as const,
-    features: ["Your own tech department", "Web and mobile apps", "Websites or full apps"],
+    features: ["Your own tech department", "Daily updates", "Websites or full apps"],
   },
   enterprise: {
     name: "Enterprise",
-    features: ["Web and mobile apps", "Infrastructure and ecosystems", "Endless Possibilities"],
+    features: ["Daily updates", "Infrastructure and ecosystems", "Endless Possibilities"],
   },
 };
 
