@@ -12,9 +12,9 @@ const Index = () => {
 
   return (
     <div className="w-full overflow-x-hidden">
-      {/* Tall scroll container — hero sticks inside while page scrolls */}
-      <div className="relative" style={{ height: "260vh" }}>
-        <div className="sticky top-0 h-screen w-full overflow-hidden">
+      {/* Tall scroll container — hero sticks inside while page scrolls into the next section */}
+      <div className="relative" style={{ height: "200vh" }}>
+        <div className="sticky top-0 h-screen w-full">
           <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
         </div>
       </div>
