@@ -847,15 +847,33 @@ export default function Portal() {
     );
   }, [falloffs, orders, falloffsQ]);
 
-  const filteredProfiles = useMemo(() => {
-    if (!profilesQ) return profiles;
-    return profiles.filter(p =>
-      matchesQuery(profilesQ, p.email) || matchesQuery(profilesQ, p.name) || matchesQuery(profilesQ, p.company) ||
-      matchesQuery(profilesQ, p.brand_colours) || matchesQuery(profilesQ, p.requirements) ||
-      matchesQuery(profilesQ, p.content_notes) || matchesQuery(profilesQ, p.notes) ||
-      matchesQuery(profilesQ, p.page_count?.toString())
+  // Clients tab now shows the full contact book.
+  // Gold-status contacts (anyone who has bought) are treated as clients and shown first.
+  const clientBookContacts = useMemo(() => {
+    const visible = contacts.filter(c => c.status !== "archived");
+    const matchingEventContactIds = new Set(
+      contactEvents
+        .filter(e => matchesQuery(profilesQ, e.title) || matchesQuery(profilesQ, e.description) || matchesQuery(profilesQ, e.event_type))
+        .map(e => e.contact_id)
     );
-  }, [profiles, profilesQ]);
+    const filtered = !profilesQ ? visible : visible.filter(c =>
+      matchesQuery(profilesQ, c.name) || matchesQuery(profilesQ, c.contact_name) ||
+      matchesQuery(profilesQ, c.phone) || matchesQuery(profilesQ, c.email) ||
+      matchesQuery(profilesQ, c.location) || matchesQuery(profilesQ, c.industry) ||
+      matchesQuery(profilesQ, c.website) || matchesQuery(profilesQ, c.actual_website_url) ||
+      matchesQuery(profilesQ, c.source_platform) || matchesQuery(profilesQ, c.notes) ||
+      matchesQuery(profilesQ, c.status) || matchingEventContactIds.has(c.id) ||
+      (c.status === "gold" && matchesQuery(profilesQ, "client"))
+    );
+    return [...filtered].sort((a, b) => {
+      const aClient = a.status === "gold" ? 0 : 1;
+      const bClient = b.status === "gold" ? 0 : 1;
+      if (aClient !== bClient) return aClient - bClient;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [contacts, contactEvents, profilesQ]);
+
+  const goldClientCount = useMemo(() => contacts.filter(c => c.status === "gold").length, [contacts]);
 
   // Convert inquiries (contact form submissions) into MailboxMessage-shaped entries
   // so they show up alongside Gmail mail in the unified inbox.
