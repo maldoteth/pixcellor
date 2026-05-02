@@ -1,4 +1,4 @@
-import { Facebook, Linkedin, LogIn, Mail, MessageSquare, Phone } from "lucide-react";
+import { Facebook, Linkedin, LogIn, MessageSquare, Phone } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -14,13 +14,6 @@ const Footer = () => {
             className="flex items-center gap-1.5 hover:text-foreground transition-colors"
           >
             <Phone className="w-3 h-3" />
-          </a>
-          <a
-            href="mailto:help@pixcellor.com"
-            aria-label="Email Pixcellor"
-            className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-          >
-            <Mail className="w-3 h-3" />
           </a>
         </div>
         <a
