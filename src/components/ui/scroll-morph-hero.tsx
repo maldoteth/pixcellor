@@ -325,6 +325,13 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
+    // Hero intro elements: opacity tracks the morph spring directly so scroll-up
+    // reveals them instantly (matching the circle/cards behavior) instead of
+    // running a separate 1s tween via animate={}.
+    const titleOpacity = useTransform(smoothMorph, [0, 0.5], [1, 0]);
+    const subtitleOpacity = useTransform(smoothMorph, [0, 0.5], [0.8, 0]);
+    const ctaOpacity = useTransform(smoothMorph, [0, 0.3], [0.95, 0]);
+    const arrowOpacity = useTransform(smoothMorph, [0, 0.3], [0.9, 0]);
     // Mobile: footer slides up into view as user scrolls (instead of lifting page content)
     const footerRevealProgress = useTransform(virtualScroll, [900, 1900], [0, 1]);
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
