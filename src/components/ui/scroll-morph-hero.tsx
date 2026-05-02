@@ -481,24 +481,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         </button>
                         <button
                             type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                const start = scrollRef.current;
-                                const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
-                                const duration = 1200;
-                                const t0 = performance.now();
-                                const step = (now: number) => {
-                                    const t = Math.min((now - t0) / duration, 1);
-                                    const eased = 1 - Math.pow(1 - t, 3);
-                                    const v = start + (end - start) * eased;
-                                    scrollRef.current = v;
-                                    virtualScroll.set(v);
-                                    onVirtualScrollChangeRef.current?.(v);
-                                    if (t < 1) requestAnimationFrame(step);
-                                };
-                                requestAnimationFrame(step);
-                            }}
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-services")); }}
                             className="pricing-button text-foreground transition h-11 w-[160px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Services
