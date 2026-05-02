@@ -178,7 +178,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         let touchStartY = 0;
         const isInteractive = (target: EventTarget | null) => {
             const el = target as HTMLElement | null;
-            return !!el?.closest('button, a, [role="button"], input, textarea, select');
+            const interactiveEl = el?.closest('button, a, [role="button"], input, textarea, select');
+            return !!interactiveEl && !interactiveEl.closest('[data-hero-scroll-control="true"]');
         };
         const handleTouchStart = (e: TouchEvent) => {
             // Always capture starting Y so the next move has a correct baseline,
@@ -366,6 +367,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {/* Mobile-only scroll arrow — bottom of screen, aligned with chat button */}
                 <button
                     type="button"
+                    data-hero-scroll-control="true"
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
