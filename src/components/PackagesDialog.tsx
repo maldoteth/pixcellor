@@ -759,9 +759,9 @@ function MobileCards() {
               </div>
               <div className="mb-1 flex items-baseline gap-2">
                 <div className="text-3xl font-extrabold text-foreground">
-                  {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
+                  {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
                 </div>
-                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£2,500/mo" : "£25,000/yr"}</span>
+                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
               <IntroductoryOfferText discount="52%" />
               <ul className="space-y-2 flex-1 mb-4">
