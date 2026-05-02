@@ -450,7 +450,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         You Dream It - We Build It
                     </h2>
                     <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8">
-                        A full stack digital services studio building apps, sites, AI agents and business solutions.
+                        A full stack digital services studio for websites, apps, AI agents and an array of bespoke business solutions.
                     </p>
                     <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} />
                     <BookSlider />
