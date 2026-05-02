@@ -28,12 +28,12 @@ const PACKAGES = {
   },
   retainer: {
     name: "Retainer",
-    price: "£1,200/mo or £12,000/yr",
-    rrp: "£3,600/mo (or £36,000/yr)",
-    monthlyPriceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
-    yearlyPriceId: "price_1TJrbOBtUjwejeUwOhhNyliQ",
+    price: "£2,500/mo or £20,000/yr",
+    rrp: "£4,000/mo (or £40,000/yr)",
+    monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
+    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription",
-    features: ["Your own tech department", "Websites or full apps", "Daily turnarounds (monthly) / Save £2,400 (yearly)"],
+    features: ["Your own tech department", "Websites or full apps", "Daily turnarounds (monthly) / Save £10,000 (yearly)"],
   },
 };
 
