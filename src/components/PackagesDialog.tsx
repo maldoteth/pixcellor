@@ -119,10 +119,16 @@ function IntroductoryOfferText({ discount }: { discount: string }) {
 interface PackagesDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  mobileTop?: boolean;
+  hidden?: boolean;
+  chatOpen?: boolean;
 }
 
-export default function PackagesDialog({ open, onOpenChange }: PackagesDialogProps = {}) {
+export default function PackagesDialog({ open, onOpenChange, mobileTop = false, hidden = false, chatOpen = false }: PackagesDialogProps = {}) {
   const isMobile = useIsMobile();
+
+  if (mobileTop && !isMobile) return null;
+  if (isMobile && !mobileTop) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -133,7 +139,7 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
             aria-label="View our web development pricing"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            className="absolute right-[112px] top-4 z-[10000] flex h-[34px] w-[34px] items-center justify-center rounded-sm"
+            className={`absolute right-[112px] top-4 z-[10000] flex h-[34px] w-[34px] items-center justify-center rounded-sm transition-opacity duration-200 lg:pointer-events-auto lg:opacity-100 ${hidden ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100"} ${chatOpen ? "lg:flex hidden" : "flex"}`}
             style={{
               background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
               backdropFilter: "blur(20px)",
