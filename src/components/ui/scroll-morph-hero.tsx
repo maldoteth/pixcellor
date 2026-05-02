@@ -444,7 +444,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {/* Arc Active Content (Fades in) */}
                 <motion.div
                     style={{ opacity: contentOpacity, y: contentY }}
-                    className="absolute top-[5%] bottom-[60px] z-10 flex flex-col items-center justify-start text-center pointer-events-auto px-4 overflow-y-auto w-full"
+                    className="absolute top-[5%] bottom-[44px] left-0 right-0 z-10 flex flex-col items-center justify-start text-center pointer-events-auto px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
                         You Dream It - We Build It
