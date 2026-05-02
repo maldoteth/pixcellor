@@ -12,7 +12,7 @@ const Index = () => {
     <div className="w-full">
       <div className="relative h-screen overflow-hidden">
         <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
-        <CustomerAccess hidden={heroScrolled} />
+        <CustomerAccess hidden={heroScrolled} chatOpen={chatOpen} />
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled} />
       </div>
       <FalloffConsentBanner />
