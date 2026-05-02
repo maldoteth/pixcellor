@@ -31,8 +31,8 @@ const PACKAGES = {
   },
   retainer: {
     name: "Retainer",
-    monthlyPriceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
-    yearlyPriceId: "price_1TJrbOBtUjwejeUwOhhNyliQ",
+    monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
+    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription" as const,
     features: ["Your own tech department", "Daily updates", "Websites or full apps"],
   },
