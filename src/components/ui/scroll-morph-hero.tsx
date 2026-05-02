@@ -357,8 +357,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const glowH = useTransform(virtualScroll, [0, 400, 800], [50, 60, 75]);
     const smoothGlowW = useSpring(glowW, { stiffness: 60, damping: 22 });
     const smoothGlowH = useSpring(glowH, { stiffness: 60, damping: 22 });
-    const glowBg = useTransform([smoothGlowW, smoothGlowH], ([w, h]: number[]) =>
-        `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,0.16) 0%, transparent 70%)`
+    const glowFade = useTransform(virtualScroll, [0, 400, 800], [70, 60, 50]);
+    const smoothGlowFade = useSpring(glowFade, { stiffness: 60, damping: 22 });
+    const glowBg = useTransform([smoothGlowW, smoothGlowH, smoothGlowFade], ([w, h, f]: number[]) =>
+        `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,0.16) 0%, hsla(0,0%,100%,0.05) ${f * 0.5}%, transparent ${f}%)`
     );
 
     return (
