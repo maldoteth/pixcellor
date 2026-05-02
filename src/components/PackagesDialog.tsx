@@ -34,7 +34,7 @@ const PACKAGES = {
     monthlyPriceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
     yearlyPriceId: "price_1TJrbOBtUjwejeUwOhhNyliQ",
     mode: "subscription" as const,
-    features: ["Your own tech department", "Build anything you want", "Array of digital services"],
+    features: ["Your own tech department", "Free consulting", "Websites or full apps"],
   },
   enterprise: {
     name: "Enterprise",
@@ -155,7 +155,7 @@ export default function PackagesDialog({ open, onOpenChange }: PackagesDialogPro
       ) : (
         <DialogContent className="top-[54%] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent" }}>
           <div className="absolute top-3 right-3 z-50">
-            <DialogClose className="rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none py-[8px] my-0 mx-[10px] mt-0 mb-0">
+            <DialogClose className="rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
             </DialogClose>
@@ -345,7 +345,7 @@ function DesktopCards() {
         <IntroductoryOfferText discount="60%" />
         <ul className="mb-6 space-y-2 text-base text-muted-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-justify">
+            <li key={f} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
@@ -399,7 +399,7 @@ function DesktopCards() {
         <IntroductoryOfferText discount="67%" />
         <ul className="mb-6 space-y-2 text-lg text-muted-foreground">
           {PACKAGES.elite.features.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-justify">
+            <li key={f} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-1 shrink-0" />
               {f}
             </li>
@@ -492,13 +492,13 @@ function DesktopCards() {
               <IntroductoryOfferText discount="52%" />
               <ul className="mb-6 space-y-2 text-base text-muted-foreground">
                 {PACKAGES.retainer.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-justify">
+                  <li key={f} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>
                 ))}
                 {retainerBilling === "yearly" && (
-                  <li className="flex items-start gap-2 text-justify">
+                  <li className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     Billed yearly (save £2,400)
                   </li>
@@ -547,7 +547,7 @@ function DesktopCards() {
               <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
               <ul className="mb-6 space-y-2 text-base text-muted-foreground">
                 {PACKAGES.enterprise.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-justify">
+                  <li key={f} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>
@@ -610,7 +610,7 @@ function MobileCards() {
         <IntroductoryOfferText discount="60%" />
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.fullWorks.features.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-justify text-base text-muted-foreground">
+            <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
@@ -642,7 +642,7 @@ function MobileCards() {
         <IntroductoryOfferText discount="67%" />
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-justify text-base text-muted-foreground">
+            <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
@@ -713,13 +713,13 @@ function MobileCards() {
               <IntroductoryOfferText discount="52%" />
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.retainer.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-justify text-base text-muted-foreground">
+                  <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>
                 ))}
                 {retainerBilling === "yearly" && (
-                  <li className="flex items-start gap-2 text-justify text-base text-muted-foreground">
+                  <li className="flex items-start gap-2 text-base text-muted-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     Billed yearly (save £2,400)
                   </li>
@@ -759,7 +759,7 @@ function MobileCards() {
               <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.enterprise.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-justify text-base text-muted-foreground">
+                  <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>

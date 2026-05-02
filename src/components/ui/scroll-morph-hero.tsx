@@ -5,7 +5,6 @@ import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import BookSlider from "./book-slider";
 import PackagesDialog from "@/components/PackagesDialog";
-import ServicesDialog from "@/components/ServicesDialog";
 import Footer from "@/components/Footer";
 import { recordFalloff, recordScrollDepth } from "@/lib/checkoutTracking";
 
@@ -413,10 +412,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8">
                         From quick websites in a day, to full stack turn key solutions. Whatever you need, we're here to help.
                     </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-                        <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} />
-                        <ServicesDialog />
-                    </div>
+                    <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} />
                     <BookSlider />
                 </motion.div>
 
