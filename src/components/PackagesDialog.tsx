@@ -192,7 +192,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
             </DialogClose>
           </div>
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-foreground text-center mb-2 -mt-[23px]">
+            <DialogTitle className="tracking-tight text-2xl font-bold text-foreground text-center mb-2 -mt-[23px] my-[203px] py-[18px]">
               Our Pricing
             </DialogTitle>
             <StripeBadge />
