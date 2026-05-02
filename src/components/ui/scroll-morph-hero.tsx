@@ -433,14 +433,14 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     initial={{ opacity: 0 }}
                     animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.95 - morphValue * 3 } : { opacity: 0 }}
                     transition={{ duration: 1, delay: 0.35 }}
-                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-16 md:bottom-12"
+                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[49px] md:bottom-12 w-full md:w-auto px-4 md:px-0"
                 >
                     {/* Mobile: stacked */}
-                    <div className="md:hidden flex flex-col items-center gap-2">
+                    <div className="md:hidden flex flex-col items-center gap-2 w-full">
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
-                            className="pricing-button text-foreground transition h-10 w-[180px] flex items-center justify-center text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Pricing
                         </button>
@@ -464,14 +464,14 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 };
                                 requestAnimationFrame(step);
                             }}
-                            className="pricing-button text-foreground transition h-10 w-[180px] flex items-center justify-center text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Services
                         </button>
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
-                            className="pricing-button text-foreground transition h-10 w-[180px] flex items-center justify-center text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Callback
                         </button>
