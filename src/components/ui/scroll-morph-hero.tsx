@@ -352,19 +352,20 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
     const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
+    // Background glow morph: wide horizontal → narrow vertical as portfolio loads
+    const glowW = useTransform(virtualScroll, [0, 400, 800], [60, 45, 30]);
+    const glowH = useTransform(virtualScroll, [0, 400, 800], [50, 60, 75]);
+    const smoothGlowW = useSpring(glowW, { stiffness: 60, damping: 22 });
+    const smoothGlowH = useSpring(glowH, { stiffness: 60, damping: 22 });
+    const glowBg = useTransform([smoothGlowW, smoothGlowH], ([w, h]: number[]) =>
+        `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,0.16) 0%, transparent 70%)`
+    );
+
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
             {/* Subtle center stage light — smoothly morphs from wide horizontal to narrow vertical */}
-            {(() => {
-                const glowW = useTransform(virtualScroll, [0, 400, 800], [60, 45, 30]);
-                const glowH = useTransform(virtualScroll, [0, 400, 800], [50, 60, 75]);
-                const glowBg = useTransform([glowW, glowH], ([w, h]: number[]) =>
-                    `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,0.16) 0%, transparent 70%)`
-                );
-                return (
-                    <motion.div className="absolute inset-0 pointer-events-none z-0" style={{ background: glowBg }} />
-                );
-            })()}
+            <motion.div className="absolute inset-0 pointer-events-none z-0" style={{ background: glowBg }} />
+
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
