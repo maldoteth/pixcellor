@@ -3,6 +3,7 @@ import IntroAnimation from "@/components/ui/scroll-morph-hero";
 import ChatBot from "@/components/ChatBot";
 import FalloffConsentBanner from "@/components/FalloffConsentBanner";
 import CustomerAccess from "@/components/CustomerAccess";
+import ServicesSection from "@/components/ServicesSection";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -15,6 +16,7 @@ const Index = () => {
         <CustomerAccess hidden={heroScrolled} />
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled} />
       </div>
+      <ServicesSection />
       <FalloffConsentBanner />
     </div>
   );
