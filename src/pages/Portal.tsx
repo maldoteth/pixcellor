@@ -847,15 +847,33 @@ export default function Portal() {
     );
   }, [falloffs, orders, falloffsQ]);
 
-  const filteredProfiles = useMemo(() => {
-    if (!profilesQ) return profiles;
-    return profiles.filter(p =>
-      matchesQuery(profilesQ, p.email) || matchesQuery(profilesQ, p.name) || matchesQuery(profilesQ, p.company) ||
-      matchesQuery(profilesQ, p.brand_colours) || matchesQuery(profilesQ, p.requirements) ||
-      matchesQuery(profilesQ, p.content_notes) || matchesQuery(profilesQ, p.notes) ||
-      matchesQuery(profilesQ, p.page_count?.toString())
+  // Clients tab now shows the full contact book.
+  // Gold-status contacts (anyone who has bought) are treated as clients and shown first.
+  const clientBookContacts = useMemo(() => {
+    const visible = contacts.filter(c => c.status !== "archived");
+    const matchingEventContactIds = new Set(
+      contactEvents
+        .filter(e => matchesQuery(profilesQ, e.title) || matchesQuery(profilesQ, e.description) || matchesQuery(profilesQ, e.event_type))
+        .map(e => e.contact_id)
     );
-  }, [profiles, profilesQ]);
+    const filtered = !profilesQ ? visible : visible.filter(c =>
+      matchesQuery(profilesQ, c.name) || matchesQuery(profilesQ, c.contact_name) ||
+      matchesQuery(profilesQ, c.phone) || matchesQuery(profilesQ, c.email) ||
+      matchesQuery(profilesQ, c.location) || matchesQuery(profilesQ, c.industry) ||
+      matchesQuery(profilesQ, c.website) || matchesQuery(profilesQ, c.actual_website_url) ||
+      matchesQuery(profilesQ, c.source_platform) || matchesQuery(profilesQ, c.notes) ||
+      matchesQuery(profilesQ, c.status) || matchingEventContactIds.has(c.id) ||
+      (c.status === "gold" && matchesQuery(profilesQ, "client"))
+    );
+    return [...filtered].sort((a, b) => {
+      const aClient = a.status === "gold" ? 0 : 1;
+      const bClient = b.status === "gold" ? 0 : 1;
+      if (aClient !== bClient) return aClient - bClient;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [contacts, contactEvents, profilesQ]);
+
+  const goldClientCount = useMemo(() => contacts.filter(c => c.status === "gold").length, [contacts]);
 
   // Convert inquiries (contact form submissions) into MailboxMessage-shaped entries
   // so they show up alongside Gmail mail in the unified inbox.
@@ -1751,7 +1769,7 @@ export default function Portal() {
             <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.length + inquiries.length})</TabsTrigger>
             <TabsTrigger value="campaigns" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Megaphone className="h-3.5 w-3.5 shrink-0" />Campaigns</TabsTrigger>
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats ({filteredConversations.length})</TabsTrigger>
-            <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({filteredProfiles.length})</TabsTrigger>
+            <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({goldClientCount}/{clientBookContacts.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sales" className="space-y-4">
@@ -2251,34 +2269,46 @@ export default function Portal() {
           <TabsContent value="profiles" className="space-y-3">
             <Tabs defaultValue="clients" className="min-w-0">
               <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent p-0 sm:w-auto sm:inline-grid">
-                <TabsTrigger value="clients" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({filteredProfiles.length})</TabsTrigger>
+                <TabsTrigger value="clients" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({goldClientCount}/{clientBookContacts.length})</TabsTrigger>
                 <TabsTrigger value="retainers" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
               </TabsList>
 
               <TabsContent value="clients" className="space-y-2 pt-3">
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input value={profilesSearch} onChange={(e) => setProfilesSearch(e.target.value)} placeholder="Search clients by email, name, company, notes…" className="pl-9" />
+                  <Input value={profilesSearch} onChange={(e) => setProfilesSearch(e.target.value)} placeholder="Search the contact book by name, email, company, phone, notes…" className="pl-9" />
                 </div>
-                {filteredProfiles.length === 0 && <p className="text-muted-foreground text-sm">No client profiles {profilesQ ? "match your search" : "yet"}.</p>}
-                {filteredProfiles.map(p => (
-                  <Card key={p.email}>
-                    <CardContent className="p-4 space-y-1">
-                      <div className="flex justify-between">
-                        <div className="font-medium">{p.name || p.email}</div>
-                        <div className="text-xs text-muted-foreground">{new Date(p.updated_at).toLocaleString()}</div>
-                      </div>
-                      <div className="text-xs text-muted-foreground">{p.email}{p.company ? ` · ${p.company}` : ""}</div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm pt-2">
-                        {p.brand_colours && <div><span className="text-muted-foreground">Colours:</span> {p.brand_colours}</div>}
-                        {p.page_count != null && <div><span className="text-muted-foreground">Pages:</span> {p.page_count}</div>}
-                        {p.requirements && <div className="md:col-span-2"><span className="text-muted-foreground">Requirements:</span> <LinkifiedText text={p.requirements} /></div>}
-                        {p.content_notes && <div className="md:col-span-2"><span className="text-muted-foreground">Content:</span> <LinkifiedText text={p.content_notes} /></div>}
-                        {p.notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes:</span> <LinkifiedText text={p.notes} /></div>}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                <p className="text-xs text-muted-foreground">Gold-status contacts (clients) are shown first, followed by the rest of the contact book.</p>
+                {clientBookContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {profilesQ ? "match your search" : "yet"}.</p>}
+                {clientBookContacts.map(c => {
+                  const stats = contactOrderStatsByEmail.get(normalizeEmail(c.email) ?? "");
+                  const statusColor = getContactStatusColor(c.status);
+                  const statusLabel = contactStatuses.find(s => s.value === c.status)?.label ?? c.status;
+                  return (
+                    <Card
+                      key={c.id}
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      onClick={() => openContactDrawer(c.id)}
+                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openContactDrawer(c.id); } }}
+                    >
+                      <CardContent className="space-y-1 p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-medium">{c.name || c.email || "Unnamed contact"}</div>
+                          <div className="flex items-center gap-2">
+                            <Badge style={{ backgroundColor: statusColor, color: "hsl(var(--background))" }} className="rounded-none">{statusLabel}</Badge>
+                            {stats && <Badge variant="outline" className="rounded-none">LTV {formatGBP(stats.ltv)}</Badge>}
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {[c.email, c.phone, c.location, c.industry].filter(Boolean).join(" · ") || "No details on file"}
+                        </div>
+                        {c.notes && <LinkifiedText text={c.notes} className="block text-sm text-muted-foreground" stopPropagation />}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </TabsContent>
 
               <TabsContent value="retainers" className="space-y-2 pt-3">
