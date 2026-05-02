@@ -197,6 +197,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             const interactiveEl = el?.closest('button, a, [role="button"], input, textarea, select');
             return !!interactiveEl && !interactiveEl.closest('[data-hero-scroll-control="true"]');
         };
+        const isInsideOverlay = (target: EventTarget | null) => {
+            const el = target as HTMLElement | null;
+            return !!el?.closest('[role="dialog"], [role="alertdialog"], [data-radix-popper-content-wrapper], [data-radix-dialog-content], [data-radix-dialog-overlay]');
+        };
         const handleTouchStart = (e: TouchEvent) => {
             // Always capture starting Y so the next move has a correct baseline,
             // even if the gesture began on an interactive element.
@@ -204,6 +208,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         };
         const handleTouchMove = (e: TouchEvent) => {
             if (isInteractive(e.target)) return;
+            if (isInsideOverlay(e.target)) return;
             e.preventDefault();
             forceCirclePhase();
             const touchY = e.touches[0].clientY;
