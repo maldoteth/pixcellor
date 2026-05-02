@@ -171,42 +171,34 @@ function BookSlider() {
         useMouseEvents={true}
         onFlip={handleFlip}
       >
-        {/* Cover Page - Dark Leather Style */}
-        <div className="relative flex items-center justify-center h-full w-full"
+        {/* Cover Page - Pricing button style */}
+        <div
+          className="relative flex items-center justify-center h-full w-full overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, #0a0a0a 100%), #0a0a0a',
-            borderTop: '2px solid rgba(255,255,255,0.35)',
-            borderLeft: '2px solid rgba(255,255,255,0.25)',
-            borderRight: '1px solid rgba(255,255,255,0.08)',
-            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid hsl(0 0% 100% / 0.2)',
+            background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.15) 0%, hsl(0 0% 100% / 0.05) 100%)',
             boxShadow: `
-              0 12px 40px rgba(0,0,0,0.5),
-              0 4px 16px rgba(0,0,0,0.3),
-              inset 0 2px 3px rgba(255,255,255,0.3),
-              inset 0 -2px 3px rgba(0,0,0,0.3),
-              inset 2px 0 3px rgba(255,255,255,0.15),
-              inset -2px 0 3px rgba(0,0,0,0.2)
+              0 8px 32px hsl(0 0% 0% / 0.3),
+              inset 0 1px 1px hsl(0 0% 100% / 0.3),
+              inset 0 -1px 1px hsl(0 0% 0% / 0.1)
             `,
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
           }}
         >
-          {/* Inner glow overlay */}
-          <div className="absolute inset-1 opacity-60 pointer-events-none"
+          {/* Inner sheen overlay (matches .pricing-button::before) */}
+          <div
+            className="absolute pointer-events-none"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)',
+              inset: '0.25rem',
+              opacity: 0.6,
+              background: 'linear-gradient(135deg, hsl(0 0% 100% / 0.25) 0%, transparent 50%)',
             }}
           />
-          
-          {/* Subtle border frame */}
-          <div className="absolute"
-            style={{
-              top: '12px', right: '12px', bottom: '12px', left: '12px',
-              border: '1px solid rgba(255,255,255,0.15)',
-            }}
-          />
-          
+
           {/* Center content */}
           <div className="relative z-10 text-center flex flex-col items-center justify-center h-full px-8 py-12">
-            <h1 
+            <h1
               className="text-2xl font-bold tracking-widest uppercase mb-2 text-foreground"
               style={{
                 textShadow: '0 2px 4px rgba(0,0,0,0.8)',
@@ -215,14 +207,14 @@ function BookSlider() {
             >
               Portfolio
             </h1>
-            
+
             {/* Divider */}
             <div className="flex items-center justify-center gap-2 my-3">
-              <div style={{ width: '30px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4))' }}/>
+              <div style={{ width: '30px', height: '1px', background: 'linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.4))' }}/>
               <div className="w-1.5 h-1.5 bg-foreground/40 rotate-45" />
-              <div style={{ width: '30px', height: '1px', background: 'linear-gradient(90deg, rgba(255,255,255,0.4), transparent)' }}/>
+              <div style={{ width: '30px', height: '1px', background: 'linear-gradient(90deg, hsl(0 0% 100% / 0.4), transparent)' }}/>
             </div>
-            
+
             <p className="text-xs tracking-wider text-muted-foreground italic">
               Flip to explore our work
             </p>
