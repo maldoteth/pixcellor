@@ -4,6 +4,7 @@ import ChatBot from "@/components/ChatBot";
 import FalloffConsentBanner from "@/components/FalloffConsentBanner";
 import CustomerAccess from "@/components/CustomerAccess";
 import PackagesDialog from "@/components/PackagesDialog";
+import ServicesDialog from "@/components/ServicesDialog";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -16,6 +17,7 @@ const Index = () => {
         <PackagesDialog mobileTop hidden={heroScrolled} chatOpen={chatOpen} />
         <CustomerAccess hidden={heroScrolled} chatOpen={chatOpen} />
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled} />
+        <ServicesDialog />
       </div>
       <FalloffConsentBanner />
     </div>
