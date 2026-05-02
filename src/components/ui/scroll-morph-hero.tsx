@@ -537,7 +537,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     y: containerSize.width < 768 ? mobileFooterY : 0,
                     pointerEvents: morphValue > 0.85 ? "auto" : "none"
                 }}
-                className="absolute bottom-0 left-0 right-0 z-10"
+                className="absolute bottom-0 left-0 right-0 z-30"
             >
                 <Footer />
             </motion.div>
