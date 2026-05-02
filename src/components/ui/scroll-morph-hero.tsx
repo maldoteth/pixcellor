@@ -353,7 +353,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
     // Background glow morph: wide horizontal → narrow vertical as portfolio loads
-    const glowW = useTransform(virtualScroll, [0, 400, 800], [60, 45, 30]);
+    const isMobileViewport = containerSize.width > 0 && containerSize.width < 768;
+    const glowW = useTransform(virtualScroll, [0, 400, 800], isMobileViewport ? [90, 70, 55] : [60, 45, 30]);
     const glowH = useTransform(virtualScroll, [0, 400, 800], [50, 60, 75]);
     const smoothGlowW = useSpring(glowW, { stiffness: 60, damping: 22 });
     const smoothGlowH = useSpring(glowH, { stiffness: 60, damping: 22 });
