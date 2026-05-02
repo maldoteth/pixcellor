@@ -578,7 +578,12 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8">
                         A full stack digital services studio for websites, apps, AI agents and an array of bespoke business solutions.
                     </p>
-                    <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} />
+                    <div className="md:hidden contents">
+                        <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} />
+                    </div>
+                    <div className="hidden md:contents">
+                        <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} hidden />
+                    </div>
                     <BookSlider />
                 </motion.div>
 
