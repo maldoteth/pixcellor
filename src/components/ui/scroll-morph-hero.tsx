@@ -158,65 +158,28 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const scrollRef = useRef(0);
 
     useEffect(() => {
-        const container = containerRef.current;
-        if (!container) return;
-
-        const handleWheel = (e: WheelEvent) => {
-            // Release control to native scroll once virtual scroll is exhausted
-            if (e.deltaY > 0 && scrollRef.current >= MAX_SCROLL) return;
-            if (e.deltaY < 0 && scrollRef.current <= 0 && window.scrollY > 0) return;
-            e.preventDefault();
-
-            // Apply 5x multiplier on mobile for faster scrolling (both directions)
-            const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? e.deltaY * 24 : e.deltaY;
-
-            const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
+        const updateFromScroll = () => {
+            // The page wraps the hero in a 260vh tall container with sticky child;
+            // available scroll distance for animation is 160vh.
+            const vh = window.innerHeight;
+            const available = vh * 1.6;
+            const progress = Math.min(Math.max(window.scrollY / available, 0), 1);
+            const newScroll = progress * MAX_SCROLL;
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
             onVirtualScrollChange?.(newScroll);
-            recordScrollDepth((newScroll / MAX_SCROLL) * 100);
+            recordScrollDepth(progress * 100);
         };
 
-        let touchStartY = 0;
-        const isInteractive = (target: EventTarget | null) => {
-            const el = target as HTMLElement | null;
-            return !!el?.closest('button, a, [role="button"], input, textarea, select');
-        };
-        const handleTouchStart = (e: TouchEvent) => {
-            if (isInteractive(e.target)) return;
-            touchStartY = e.touches[0].clientY;
-        };
-        const handleTouchMove = (e: TouchEvent) => {
-            if (isInteractive(e.target)) return;
-            const touchY = e.touches[0].clientY;
-            const deltaY = touchStartY - touchY;
-
-            if (deltaY > 0 && scrollRef.current >= MAX_SCROLL) return;
-            if (deltaY < 0 && scrollRef.current <= 0 && window.scrollY > 0) return;
-            e.preventDefault();
-            touchStartY = touchY;
-
-            const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? deltaY * 24 : deltaY;
-
-            const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
-            scrollRef.current = newScroll;
-            virtualScroll.set(newScroll);
-            onVirtualScrollChange?.(newScroll);
-            recordScrollDepth((newScroll / MAX_SCROLL) * 100);
-        };
-
-        container.addEventListener("wheel", handleWheel, { passive: false });
-        container.addEventListener("touchstart", handleTouchStart, { passive: true });
-        container.addEventListener("touchmove", handleTouchMove, { passive: false });
-
+        updateFromScroll();
+        window.addEventListener("scroll", updateFromScroll, { passive: true });
+        window.addEventListener("resize", updateFromScroll);
         return () => {
-            container.removeEventListener("wheel", handleWheel);
-            container.removeEventListener("touchstart", handleTouchStart);
-            container.removeEventListener("touchmove", handleTouchMove);
+            window.removeEventListener("scroll", updateFromScroll);
+            window.removeEventListener("resize", updateFromScroll);
         };
     }, [onVirtualScrollChange, virtualScroll]);
+
 
     const morphProgress = useTransform(virtualScroll, [0, 600], [0, 1]);
     const smoothMorph = useSpring(morphProgress, { stiffness: 40, damping: 20 });
@@ -298,7 +261,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
     return (
-        <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
+        <div ref={containerRef} className="relative w-full h-full bg-black overflow-x-hidden">
             {/* Subtle center stage light */}
             <div className="absolute inset-0 pointer-events-none z-0" style={{
                 background: 'radial-gradient(ellipse 60% 50% at 50% 50%, hsla(0,0%,100%,0.15) 0%, transparent 70%)',
@@ -328,21 +291,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            const start = scrollRef.current;
-                            const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
-                            console.log("[arrow-desktop] scroll", { start, end });
-                            const duration = 1200;
-                            const t0 = performance.now();
-                            const step = (now: number) => {
-                                const t = Math.min((now - t0) / duration, 1);
-                                const eased = 1 - Math.pow(1 - t, 3);
-                                const v = start + (end - start) * eased;
-                                scrollRef.current = v;
-                                virtualScroll.set(v);
-                                onVirtualScrollChange?.(v);
-                                if (t < 1) requestAnimationFrame(step);
-                            };
-                            requestAnimationFrame(step);
+                            const target = window.scrollY + window.innerHeight * 0.9;
+                            window.scrollTo({ top: target, behavior: "smooth" });
                         }}
                         initial={{ opacity: 0 }}
                         animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.9 - morphValue * 3 } : { opacity: 0 }}
@@ -366,21 +316,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        const start = scrollRef.current;
-                        const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
-                        console.log("[arrow-mobile] click", { start, end });
-                        const duration = 1200;
-                        const t0 = performance.now();
-                        const step = (now: number) => {
-                            const t = Math.min((now - t0) / duration, 1);
-                            const eased = 1 - Math.pow(1 - t, 3);
-                            const v = start + (end - start) * eased;
-                            scrollRef.current = v;
-                            virtualScroll.set(v);
-                            onVirtualScrollChange?.(v);
-                            if (t < 1) requestAnimationFrame(step);
-                        };
-                        requestAnimationFrame(step);
+                        const target = window.scrollY + window.innerHeight * 0.9;
+                        window.scrollTo({ top: target, behavior: "smooth" });
                     }}
                     aria-label="Scroll down"
                     className="md:hidden fixed left-1/2 -translate-x-1/2 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center"

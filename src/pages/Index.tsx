@@ -11,12 +11,15 @@ const Index = () => {
   const [heroScrolled, setHeroScrolled] = useState(false);
 
   return (
-    <div className="w-full">
-      <div className="relative h-screen overflow-hidden">
-        <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
-        <CustomerAccess hidden={heroScrolled} />
-        <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled} />
+    <div className="w-full overflow-x-clip">
+      {/* Tall scroll container — hero sticks inside while page scrolls into the next section */}
+      <div className="relative" style={{ height: "200vh" }}>
+        <div className="sticky top-0 h-screen w-full">
+          <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
+        </div>
       </div>
+      <CustomerAccess hidden={heroScrolled} />
+      <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled} />
       <ServicesSection />
       <Footer />
       <FalloffConsentBanner />
