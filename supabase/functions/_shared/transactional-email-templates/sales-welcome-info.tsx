@@ -45,7 +45,7 @@ const SalesWelcomeEmail = ({ name }: SalesWelcomeProps) => (
           <Text style={sectionTitle}>Pick the right build</Text>
           <PackageBlock name="Full Works" price="£150" href={`${SITE_URL}/#pricing`} body="A sharp custom website for standard brands, up to 3 pages, with our lifetime guarantee. Best for simple launch-ready sites." />
           <PackageBlock name="Elite" price="£500 one-time" href={`${SITE_URL}/#pricing`} body="Our most popular option: up to 10 pages, SEO & AEO optimisation, unlimited edit requests and a higher-end finish." />
-          <PackageBlock name="Retainer" price="£1,200/mo or £12,000/yr" href={`${SITE_URL}/#pricing`} body="Your own tech department for large sites, full apps, automations and ongoing development with rapid turnarounds." />
+          <PackageBlock name="Retainer" price="£2,500/mo or £20,000/yr" href={`${SITE_URL}/#pricing`} body="Your own tech department for large sites, full apps, automations and ongoing development with rapid turnarounds." />
         </Section>
 
         <Section style={sectionAlt}>

@@ -31,8 +31,8 @@ const PACKAGES = {
   },
   retainer: {
     name: "Retainer",
-    monthlyPriceId: "price_1TJrb1BtUjwejeUwrx9BnRXI",
-    yearlyPriceId: "price_1TJrbOBtUjwejeUwOhhNyliQ",
+    monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
+    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription" as const,
     features: ["Your own tech department", "Daily updates", "Websites or full apps"],
   },
@@ -538,9 +538,9 @@ function DesktopCards() {
               </div>
               <div className="mb-1 flex items-baseline gap-2">
                 <div className="text-3xl font-extrabold text-foreground">
-                  {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
+                  {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
                 </div>
-                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£2,500/mo" : "£25,000/yr"}</span>
+                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
               <IntroductoryOfferText discount="52%" />
               <ul className="mb-6 space-y-2 text-base text-muted-foreground">
@@ -759,9 +759,9 @@ function MobileCards() {
               </div>
               <div className="mb-1 flex items-baseline gap-2">
                 <div className="text-3xl font-extrabold text-foreground">
-                  {retainerBilling === "monthly" ? "£1,200/mo" : "£12,000/yr"}
+                  {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
                 </div>
-                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£2,500/mo" : "£25,000/yr"}</span>
+                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
               <IntroductoryOfferText discount="52%" />
               <ul className="space-y-2 flex-1 mb-4">
