@@ -339,7 +339,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
-                <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-1/2 -translate-y-1/2">
+                <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-1/2 -translate-y-[calc(50%+30px)] md:-translate-y-1/2">
                     <motion.h1
                         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2, y: 0, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
@@ -433,14 +433,14 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     initial={{ opacity: 0 }}
                     animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.95 - morphValue * 3 } : { opacity: 0 }}
                     transition={{ duration: 1, delay: 0.35 }}
-                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-16 md:bottom-12"
+                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[39px] md:bottom-12 w-full md:w-auto px-6 md:px-0"
                 >
                     {/* Mobile: stacked */}
-                    <div className="md:hidden flex flex-col items-center gap-2">
+                    <div className="md:hidden flex flex-col items-stretch gap-2 w-full">
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
-                            className="pricing-button text-foreground transition h-10 w-[180px] flex items-center justify-center text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Pricing
                         </button>
@@ -464,14 +464,14 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 };
                                 requestAnimationFrame(step);
                             }}
-                            className="pricing-button text-foreground transition h-10 w-[180px] flex items-center justify-center text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Services
                         </button>
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
-                            className="pricing-button text-foreground transition h-10 w-[180px] flex items-center justify-center text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Callback
                         </button>
@@ -583,7 +583,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 </motion.div>
 
                 {/* Main Container */}
-                <div className="relative flex items-center justify-center w-full h-full">
+                <div className="relative flex items-center justify-center w-full h-full -translate-y-[30px] md:translate-y-0">
                     {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
                         let target = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
 
