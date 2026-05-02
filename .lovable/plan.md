@@ -1,30 +1,34 @@
-## Goal
+I’ll fix this by removing the hard viewport boundary that currently separates the hero/portfolio animation from the services page.
 
-1. Keep the existing **Clients** tab (the one backed by `client_profiles`, currently showing 52).
-2. Delete the second **Clients** tab (backed by `contacts`, currently showing only Jim).
-3. Make sure people who submit the contact form (enquiries) get saved into the **contacts** table — but since that tab is being removed from the portal UI, surface them inside the kept Clients (`client_profiles`) flow instead.
+What I’ll change:
 
-Re-read of your message: "people who make enquiries should be saved as contacts in our actual contacts tab" — the kept tab (`client_profiles`) becomes the single Clients/contacts hub. Jim and any other entries from the old `contacts` table that you actually want to keep can be migrated into `client_profiles`. If that's not what you meant (e.g. you actually want to keep the `contacts` tab and just rename the labels), tell me and I'll adjust before building.
+1. Make the hero/portfolio area taller than one screen
+   - Replace the current `h-screen overflow-hidden` wrapper with a taller, continuous section.
+   - This lets the services section physically overlap/follow the animated portfolio area instead of starting after a clipped 100vh box.
 
-## Changes
+2. Stop hijacking all scroll until the animation is complete
+   - Change the animation from a fully intercepted “virtual scroll” to a scroll-position-driven animation.
+   - As the user scrolls normally, the animation will keep progressing, but the page will also move down naturally at the same time.
+   - This means users can start entering the services section before the card arc animation fully finishes.
 
-### Portal UI (`src/pages/Portal.tsx`)
-- Remove the `<TabsTrigger value="contacts" …>` (line 1756) and its entire `<TabsContent value="contacts">` block (around line 2304+).
-- Remove related state, queries, memos and helpers that only the contacts tab used: `filteredContacts`, contact search/sort/filter state, `contactEvents` UI usage, `contactOrderStatsByEmail` if unused elsewhere, etc. Keep anything still referenced by other tabs.
-- Adjust `TabsList` grid from `xl:grid-cols-10` → `xl:grid-cols-9`.
-- Drop unused icon imports (`UserPlus`) if no longer referenced.
+3. Let the animation flow into page 2
+   - Remove the hero component’s `overflow-hidden` clipping on the vertical axis so the card arc can visually extend beyond the first-screen boundary.
+   - Keep horizontal overflow controlled so the page doesn’t create sideways scrolling.
 
-### Inquiry → contacts persistence
-- The contact form already inserts into `contact_inquiries`. Add a lightweight upsert into `client_profiles` (by email) at the same time so every enquirer shows up in the kept Clients tab with their name, email, and the message stored in `notes`/`requirements`.
-- Realtime subscription on `client_profiles` already exists, so the Clients tab will refresh automatically.
+4. Blend the services section into the portfolio area
+   - Pull the services section upward with negative margin / overlapping layout so there is no visible straight “invisible line” at the top.
+   - Adjust its background/radial lighting so it feels like a continuation of the same black stage rather than a new page.
 
-### Optional cleanup (ask before doing)
-- The `contacts`, `contact_events`, and `lead_search_history` tables and the `find-local-leads` edge function become unused. Leave them in place for now (safe), or confirm you want them dropped in a follow-up.
+5. Keep floating controls sane
+   - Keep Customer Access and ChatBot tied to early hero scroll state, but update the threshold if needed so they don’t disappear too early or linger into the services content.
 
-## Out of scope
-- Migrating Jim from `contacts` into `client_profiles` — say the word and I'll copy him over before deleting the tab.
-- Renaming the kept tab label (currently "Clients"). Happy to rename to "Clients & contacts" or similar if you prefer.
+Files to update:
+- `src/pages/Index.tsx`
+- `src/components/ui/scroll-morph-hero.tsx`
+- `src/components/ServicesSection.tsx`
 
-## Technical notes
-- The two count badges come from `filteredProfiles.length` (52, kept) and `filteredContacts.length` (1, removed).
-- Inquiry insert happens in the public contact form component; I'll mirror the insert with a `client_profiles` upsert keyed on lowercased email so duplicates merge cleanly.
+Expected result:
+- The portfolio cards can continue animating while the page scrolls down.
+- The services section begins naturally below/behind the animation instead of only appearing after animation completion.
+- No hard horizontal seam or invisible line between portfolio and services.
+- Footer remains at the true bottom after services.
