@@ -189,9 +189,12 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         };
         const handleTouchMove = (e: TouchEvent) => {
             if (isInteractive(e.target)) return;
-            e.preventDefault();
             const touchY = e.touches[0].clientY;
             const deltaY = touchStartY - touchY;
+
+            if (deltaY > 0 && scrollRef.current >= MAX_SCROLL) return;
+            if (deltaY < 0 && scrollRef.current <= 0 && window.scrollY > 0) return;
+            e.preventDefault();
             touchStartY = touchY;
 
             const isMobile = window.innerWidth < 768;
