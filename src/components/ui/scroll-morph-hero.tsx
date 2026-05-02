@@ -472,7 +472,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             const isMobile = containerSize.width < 768;
                             const minDimension = Math.min(containerSize.width, containerSize.height);
 
-                            const circleRadius = isMobile ? Math.min(minDimension * 0.35, 350) : Math.min(minDimension * 0.2975, 297.5);
+                            const circleRadius = isMobile ? Math.min(minDimension * 0.35, 350) : Math.min(minDimension * 0.26775, 267.75);
 
                             const circleAngle = (i / TOTAL_IMAGES) * 360;
                             const circleRad = (circleAngle * Math.PI) / 180;
