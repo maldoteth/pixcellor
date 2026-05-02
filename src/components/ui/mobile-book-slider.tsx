@@ -110,7 +110,7 @@ const portfolioData = [
     name: "Highwood Village",
     url: "berkeleygroup.co.uk",
     fullUrl: "https://www.berkeleygroup.co.uk/developments/west-sussex/horsham/highwood-village",
-    description: "Berkeley Group homes development. Provided agency freelancers and secured nationwide PSL.",
+    description: "Secured exclusive suppliers list and provided all agency freelancers to Highwood.",
     screenshot: highwoodVillageImg
   }
 ];
