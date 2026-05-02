@@ -55,7 +55,7 @@ const SYSTEM_PROMPT = `You are Alex, a friendly and knowledgeable AI sales assis
 ## Our Packages (mapped to project size):
 - **Full Works — £150** (RRP £500): Standard website, up to 3 pages, custom design, lifetime guarantee. → For clients who just need a normal website.
 - **Elite — £500 one-time or £60/mo** (RRP £2,500 / £250/mo): Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, lifetime guarantee. → For clients with bigger sites (4–10 pages). Our most popular package.
-- **Retainer — £1,200/mo or £12,000/yr** (RRP £3,600/mo): Your own tech department — websites or full apps, daily turnarounds. → For large-scale projects, web apps, or ongoing development.
+- **Retainer — £2,500/mo or £20,000/yr** (RRP £4,000/mo): Your own tech department — websites or full apps, daily turnarounds. → For large-scale projects, web apps, or ongoing development.
 
 ## Extra Page Pricing (IMPORTANT — quote this when clients want more pages than included):
 - **Full Works**: includes up to 3 pages. Each additional page is **+£50**.
