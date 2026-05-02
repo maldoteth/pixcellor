@@ -356,6 +356,51 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     >
                         The Digital Builders
                     </motion.p>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={introPhase === "circle" && morphValue < 0.3 ? { opacity: 0.95 - morphValue * 3 } : { opacity: 0 }}
+                        transition={{ duration: 1, delay: 0.35 }}
+                        className="hidden md:flex mt-8 gap-3 pointer-events-auto"
+                    >
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
+                            className="pricing-button text-foreground transition h-auto px-6 py-2.5 text-sm font-semibold rounded-md"
+                        >
+                            Pricing
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                const start = scrollRef.current;
+                                const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
+                                const duration = 1200;
+                                const t0 = performance.now();
+                                const step = (now: number) => {
+                                    const t = Math.min((now - t0) / duration, 1);
+                                    const eased = 1 - Math.pow(1 - t, 3);
+                                    const v = start + (end - start) * eased;
+                                    scrollRef.current = v;
+                                    virtualScroll.set(v);
+                                    onVirtualScrollChangeRef.current?.(v);
+                                    if (t < 1) requestAnimationFrame(step);
+                                };
+                                requestAnimationFrame(step);
+                            }}
+                            className="pricing-button text-foreground transition h-auto px-6 py-2.5 text-sm font-semibold rounded-md"
+                        >
+                            Services
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
+                            className="pricing-button text-foreground transition h-auto px-6 py-2.5 text-sm font-semibold rounded-md"
+                        >
+                            Request Callback
+                        </button>
+                    </motion.div>
                     <motion.button
                         type="button"
                         onClick={(e) => {
