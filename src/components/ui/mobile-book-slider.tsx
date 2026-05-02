@@ -98,6 +98,13 @@ const portfolioData = [
     url: "dehub.io",
     description: "Full stack app, large scale YouTube and X alternative packed with features.",
     screenshot: dehubImg
+  },
+  {
+    name: "Highwood Village",
+    url: "berkeleygroup.co.uk",
+    fullUrl: "https://www.berkeleygroup.co.uk/developments/west-sussex/horsham/highwood-village",
+    description: "Berkeley Group new homes development in Horsham, West Sussex. Provided all agency freelancers and secured nationwide PSL.",
+    screenshot: highwoodVillageImg
   }
 ];
 
