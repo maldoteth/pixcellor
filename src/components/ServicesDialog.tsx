@@ -307,7 +307,7 @@ function DesktopCards() {
             <div className="mb-4 text-3xl font-extrabold text-foreground">{SERVICES.audit.price}</div>
             <ul className="mb-6 space-y-2 text-base text-muted-foreground">
               {SERVICES.audit.features.map((f) => (
-                <li key={f} className="flex items-start gap-2">
+                <li key={f} className="flex items-start gap-2 text-justify">
                   <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                   {f}
                 </li>
@@ -350,7 +350,7 @@ function DesktopCards() {
             <p className="mb-4 text-xs font-semibold text-foreground">Introductary offer — 47% off</p>
             <ul className="mb-6 space-y-2 text-lg text-muted-foreground">
               {SERVICES.rebrand.features.map((f) => (
-                <li key={f} className="flex items-start gap-2">
+                <li key={f} className="flex items-start gap-2 text-justify">
                   <Check className="w-5 h-5 text-foreground mt-1 shrink-0" />
                   {f}
                 </li>
@@ -382,7 +382,7 @@ function DesktopCards() {
             <div className="mb-4 text-3xl font-extrabold text-foreground">{SERVICES.other.price}</div>
             <ul className="mb-6 space-y-2 text-base text-muted-foreground">
               {SERVICES.other.features.map((f) => (
-                <li key={f} className="flex items-start gap-2">
+                <li key={f} className="flex items-start gap-2 text-justify">
                   <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                   {f}
                 </li>
@@ -419,7 +419,7 @@ function MobileCards() {
             <div className="mt-3 mb-4 text-3xl font-extrabold text-foreground">{SERVICES.audit.price}</div>
             <ul className="space-y-2 flex-1 mb-4">
               {SERVICES.audit.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+                <li key={f} className="flex items-start gap-2 text-justify text-base text-muted-foreground">
                   <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                   {f}
                 </li>
@@ -446,7 +446,7 @@ function MobileCards() {
             <p className="mb-4 text-xs font-semibold text-foreground">Introductary offer — 47% off</p>
             <ul className="space-y-2 flex-1 mb-4">
               {SERVICES.rebrand.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+                <li key={f} className="flex items-start gap-2 text-justify text-base text-muted-foreground">
                   <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                   {f}
                 </li>
@@ -466,7 +466,7 @@ function MobileCards() {
             <div className="mt-3 mb-4 text-3xl font-extrabold text-foreground">{SERVICES.other.price}</div>
             <ul className="space-y-2 flex-1 mb-4">
               {SERVICES.other.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+                <li key={f} className="flex items-start gap-2 text-justify text-base text-muted-foreground">
                   <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                   {f}
                 </li>
