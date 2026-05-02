@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
+import { motion, useTransform, useSpring, useMotionValue, animate, useMotionTemplate } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import BookSlider from "./book-slider";
 import PackagesDialog from "@/components/PackagesDialog";
@@ -328,10 +328,20 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     // Hero intro elements: opacity tracks the morph spring directly so scroll-up
     // reveals them instantly (matching the circle/cards behavior) instead of
     // running a separate 1s tween via animate={}.
-    const titleOpacity = useTransform(smoothMorph, [0, 0.5], [1, 0]);
-    const subtitleOpacity = useTransform(smoothMorph, [0, 0.5], [0.8, 0]);
-    const ctaOpacity = useTransform(smoothMorph, [0, 0.3], [0.95, 0]);
-    const arrowOpacity = useTransform(smoothMorph, [0, 0.3], [0.9, 0]);
+    // A separate fade-in multiplier handles the initial intro entrance once the
+    // circle phase begins (0 → 1 over ~700ms), then scroll controls the rest.
+    const introFadeIn = useMotionValue(0);
+    useEffect(() => {
+        if (introPhase !== "circle") return;
+        const controls = animate(introFadeIn, 1, { duration: 0.7, ease: "easeOut" });
+        return () => controls.stop();
+    }, [introPhase, introFadeIn]);
+    const morphFade = useTransform(smoothMorph, [0, 0.5], [1, 0]);
+    const morphFadeFast = useTransform(smoothMorph, [0, 0.3], [1, 0]);
+    const titleOpacity = useTransform([introFadeIn, morphFade], ([f, m]: number[]) => f * m);
+    const subtitleOpacity = useTransform([introFadeIn, morphFade], ([f, m]: number[]) => f * m * 0.8);
+    const ctaOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.95);
+    const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
     // Mobile: footer slides up into view as user scrolls (instead of lifting page content)
     const footerRevealProgress = useTransform(virtualScroll, [900, 1900], [0, 1]);
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
