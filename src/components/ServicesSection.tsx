@@ -36,9 +36,10 @@ const services = [
 
 export default function ServicesSection() {
   return (
-    <section className="relative w-full bg-black text-foreground py-24 md:py-32 px-6">
+    <section className="relative w-full bg-black text-foreground pt-12 md:pt-20 pb-24 md:pb-32 px-6 -mt-24 md:-mt-32 z-10">
+      <div className="absolute inset-x-0 -top-24 h-24 pointer-events-none bg-gradient-to-b from-transparent to-black" />
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: "radial-gradient(ellipse 70% 50% at 50% 0%, hsla(0,0%,100%,0.08) 0%, transparent 70%)",
+        background: "radial-gradient(ellipse 70% 50% at 50% 30%, hsla(0,0%,100%,0.06) 0%, transparent 70%)",
       }} />
       <div className="relative max-w-6xl mx-auto">
         <motion.div
