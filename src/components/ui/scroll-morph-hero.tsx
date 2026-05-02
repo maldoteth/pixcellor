@@ -358,19 +358,16 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {/* Intro Text (Fades out) */}
                 <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-1/2 -translate-y-[calc(50%+40px)] md:-translate-y-1/2">
                     <motion.h1
-                        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                        animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
+                        initial={{ y: 20, filter: "blur(10px)" }}
+                        animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { filter: "blur(10px)" }}
                         transition={{ duration: 1 }}
-                        style={introPhase === "circle" ? { opacity: titleOpacity } : undefined}
+                        style={{ opacity: titleOpacity }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground"
                     >
                         <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[3.6rem] md:h-[8.84rem] lg:h-[7rem] w-auto" />
                     </motion.h1>
                     <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={introPhase === "circle" ? {} : { opacity: 0 }}
-                        transition={{ duration: 1, delay: 0.2 }}
-                        style={introPhase === "circle" ? { opacity: subtitleOpacity } : undefined}
+                        style={{ opacity: subtitleOpacity }}
                         className="-mt-2 text-xs md:text-sm lg:text-base font-normal tracking-[0.2em] text-foreground/90"
                     >
                         The Digital Builders
