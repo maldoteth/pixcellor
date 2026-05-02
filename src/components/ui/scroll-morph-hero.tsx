@@ -440,7 +440,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
-                            className="pricing-button text-foreground transition h-auto w-[180px] px-4 py-2 text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-10 w-[180px] flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Pricing
                         </button>
@@ -464,24 +464,24 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 };
                                 requestAnimationFrame(step);
                             }}
-                            className="pricing-button text-foreground transition h-auto w-[180px] px-4 py-2 text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-10 w-[180px] flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Services
                         </button>
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
-                            className="pricing-button text-foreground transition h-auto w-[180px] px-4 py-2 text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-10 w-[180px] flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Callback
                         </button>
                     </div>
                     {/* Desktop: row */}
-                    <div className="hidden md:flex gap-3">
+                    <div className="hidden md:flex justify-center items-center gap-3">
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
-                            className="pricing-button text-foreground transition h-auto px-6 py-2.5 text-sm font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-11 w-[160px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Pricing
                         </button>
@@ -505,14 +505,14 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 };
                                 requestAnimationFrame(step);
                             }}
-                            className="pricing-button text-foreground transition h-auto px-6 py-2.5 text-sm font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-11 w-[160px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Services
                         </button>
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-chat")); }}
-                            className="pricing-button text-foreground transition h-auto px-6 py-2.5 text-sm font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-11 w-[160px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Callback
                         </button>
