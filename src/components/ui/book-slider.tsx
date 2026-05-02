@@ -270,7 +270,7 @@ function BookSlider() {
                       e.stopPropagation();
                       e.preventDefault();
                       void recordFalloff({ event: "portfolio_project_opened", projectName: site.name, projectUrl: site.url });
-                      window.open(`https://${site.url}`, '_blank', 'noopener,noreferrer');
+                      window.open((site as any).fullUrl ?? `https://${site.url}`, '_blank', 'noopener,noreferrer');
                     }}
                     className="text-primary text-sm mb-3 hover:underline inline-block cursor-pointer"
                     aria-label={`Visit ${site.name} at ${site.url}`}
