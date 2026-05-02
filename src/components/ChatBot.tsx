@@ -879,7 +879,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       {isMobile ? (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerContent 
-            className="h-[85vh] border-0 border-t-0 [&>div:first-child]:hidden"
+            className="h-[75vh] max-h-[calc(100vh-6rem)] border-0 border-t-0 [&>div:first-child]:hidden"
             style={glassStyle}
           >
             <DrawerHeader className="sr-only">
