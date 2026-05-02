@@ -1073,11 +1073,11 @@ Deno.serve(async (req) => {
               } else if (pkgId === "retainer") {
                 if (billing === "yearly") {
                   priceId = (pkg as any).yearlyPriceId;
-                  price = "£12,000/yr";
+                  price = "£20,000/yr";
                   mode = "subscription";
                 } else {
                   priceId = (pkg as any).monthlyPriceId;
-                  price = "£1,200/mo";
+                  price = "£2,500/mo";
                   mode = "subscription";
                 }
               }
