@@ -18,6 +18,7 @@ const Index = () => {
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled} />
       </div>
       <ServicesSection />
+      <Footer />
       <FalloffConsentBanner />
     </div>
   );
