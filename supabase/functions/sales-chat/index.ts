@@ -358,6 +358,21 @@ const devTools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "send_welcome_email",
+      description: "Send the Pixcellor welcome/info email (sales-welcome-info template) to a recipient. Use this whenever the dev says to email info / send info / email the welcome / send the welcome to someone. Pass either contact_id (preferred — looks up the contact's email) OR a raw email. Optionally pass a name. After a successful send, the system automatically logs a CRM communication event on the contact.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string", description: "Existing contact UUID (preferred — used to look up email and attach a CRM event)." },
+          email: { type: "string", description: "Recipient email if no contact_id is known." },
+          name: { type: "string", description: "Recipient first name to personalise the email, optional." },
+        },
+      },
+    },
+  },
 ];
 
 // Look up everything we know about a customer by email
