@@ -38,6 +38,7 @@ interface FlipCardProps {
     total: number;
     phase: AnimationPhase;
     target: { x: number; y: number; rotation: number; scale: number; opacity: number };
+    onViewDetails?: () => void;
 }
 
 // --- FlipCard Component ---
@@ -49,6 +50,7 @@ function FlipCard({
     index,
     phase,
     target,
+    onViewDetails,
 }: FlipCardProps) {
     return (
         <motion.div
@@ -97,10 +99,14 @@ function FlipCard({
                     className="absolute inset-0 h-full w-full overflow-hidden rounded-none shadow-lg bg-card flex flex-col items-center justify-center p-4 border border-border"
                     style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                 >
-                    <div className="text-center">
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onViewDetails?.(); }}
+                        className="text-center cursor-pointer pointer-events-auto"
+                    >
                         <p className="text-[8px] font-bold text-primary uppercase tracking-widest mb-1">View</p>
                         <p className="text-xs font-medium text-foreground">Details</p>
-                    </div>
+                    </button>
                 </div>
             </motion.div>
         </motion.div>
@@ -797,6 +803,13 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 total={TOTAL_IMAGES}
                                 phase={introPhase}
                                 target={target}
+                                onViewDetails={() => {
+                                    if (galleryItems.length === 0) return;
+                                    const pick = galleryItems[Math.floor(Math.random() * galleryItems.length)];
+                                    const raw = pick.photo.by;
+                                    const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+                                    window.open(url, "_blank", "noopener,noreferrer");
+                                }}
                             />
                         );
                     })}
