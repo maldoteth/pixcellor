@@ -1,8 +1,10 @@
-// Send a marketing broadcast via Resend.
-// Admin-only. Pulls recipients from the `contacts` table and/or
-// past customers from `stripe_checkout_sessions`, then sends
-// individual emails through the Resend gateway. Each send is
-// rate-paced and logs to email_send_log.
+// Send a marketing broadcast through Lovable's email pipeline (same path as
+// order confirmations). Each recipient is enqueued individually into the
+// transactional_emails pgmq queue and the dispatcher (process-email-queue)
+// handles delivery, retries, rate-limit backoff and logging.
+//
+// Admin-only. Pulls recipients from the `contacts` table and/or past
+// customers from `stripe_checkout_sessions`.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -14,10 +16,12 @@ const corsHeaders = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
-const FROM_DEFAULT = "Pixcellor <hello@notify.pixcellor.com>";
-const REPLY_TO_DEFAULT = "help@pixcellor.com";
-const LOGO_URL = "https://rkgjkvghejcmostuqkgw.supabase.co/storage/v1/object/public/email-assets/pixcellor-email-logo.png?v=2";
+// Must match send-transactional-email constants.
+const SITE_NAME = "Pixcellor™";
+const SENDER_DOMAIN = "notify.pixcellor.com";
+const FROM_DOMAIN = "pixcellor.com";
+const FROM_DEFAULT = `${SITE_NAME} <projects@${FROM_DOMAIN}>`;
+const REPLY_TO_DEFAULT = `help@${FROM_DOMAIN}`;
 const SITE = "https://pixcellor.com";
 
 type Source = "contacts" | "customers" | "both";
@@ -41,7 +45,6 @@ const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const escapeHtml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-// ---- Branded email shell (kept in sync with src/components/email/emailTemplate.ts) ----
 const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61569263824416";
 const LINKEDIN_URL = "https://www.linkedin.com/company/pixcellor/";
 
@@ -119,6 +122,12 @@ function htmlToPlainText(html: string): string {
     .trim();
 }
 
+function generateToken(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -126,8 +135,6 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
@@ -185,9 +192,6 @@ Deno.serve(async (req) => {
     }
 
     // ----- Send -----
-    if (!LOVABLE_API_KEY) return json({ error: "Email gateway is not configured" }, 500);
-    if (!RESEND_API_KEY) return json({ error: "Resend connection is missing" }, 500);
-
     const subject = String(body.subject || "").trim();
     const rawHtml = (body.bodyHtml || "").trim();
     const rawText = (body.bodyText || "").trim();
@@ -208,66 +212,106 @@ Deno.serve(async (req) => {
     if (toSend.length === 0) return json({ error: "No valid recipients found" }, 400);
 
     const broadcastId = crypto.randomUUID();
-    let sent = 0;
+    let queued = 0;
     let failed = 0;
     const errors: { email: string; error: string }[] = [];
 
     for (const email of toSend) {
-      const unsubUrl = `https://pixcellor.com/unsubscribe?token=${encodeURIComponent(broadcastId + ":" + email)}`;
-      const html = buildBrandedEmail(subject, innerHtml, preheader, unsubUrl);
       try {
-        const resp = await fetch(`${GATEWAY_URL}/emails`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-            "X-Connection-Api-Key": RESEND_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from,
-            to: [email],
-            subject,
-            html,
-            text: plainFallback || undefined,
-            reply_to: replyTo,
-            headers: {
-              "List-Unsubscribe": `<${unsubUrl}>`,
-              "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-            },
-            tags: [{ name: "type", value: "broadcast" }, { name: "broadcast_id", value: broadcastId }],
-          }),
-        });
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) {
-          failed += 1;
-          errors.push({ email, error: data?.message || data?.error || `HTTP ${resp.status}` });
+        // Get or create unsubscribe token (one per email).
+        let unsubscribeToken: string | null = null;
+        const { data: existingToken } = await admin
+          .from("email_unsubscribe_tokens")
+          .select("token, used_at")
+          .eq("email", email)
+          .maybeSingle();
+        if (existingToken && !existingToken.used_at) {
+          unsubscribeToken = existingToken.token;
+        } else if (!existingToken) {
+          const newToken = generateToken();
+          await admin
+            .from("email_unsubscribe_tokens")
+            .upsert({ token: newToken, email }, { onConflict: "email", ignoreDuplicates: true });
+          const { data: stored } = await admin
+            .from("email_unsubscribe_tokens")
+            .select("token")
+            .eq("email", email)
+            .maybeSingle();
+          unsubscribeToken = stored?.token ?? newToken;
+        } else {
+          // Token already used → recipient unsubscribed; skip.
           await admin.from("email_send_log").insert({
             message_id: `${broadcastId}:${email}`,
             template_name: "broadcast",
             recipient_email: email,
+            status: "suppressed",
+            metadata: { broadcast_id: broadcastId, subject },
+          });
+          continue;
+        }
+
+        const unsubUrl = `${SITE}/unsubscribe?token=${encodeURIComponent(unsubscribeToken!)}`;
+        const html = buildBrandedEmail(subject, innerHtml, preheader, unsubUrl);
+        const messageId = crypto.randomUUID();
+
+        // Log pending then enqueue (same pattern as send-transactional-email).
+        await admin.from("email_send_log").insert({
+          message_id: messageId,
+          template_name: "broadcast",
+          recipient_email: email,
+          status: "pending",
+          metadata: { broadcast_id: broadcastId, subject, reply_to: replyTo },
+        });
+
+        const { error: enqueueError } = await admin.rpc("enqueue_email", {
+          queue_name: "transactional_emails",
+          payload: {
+            message_id: messageId,
+            to: email,
+            from,
+            reply_to: replyTo,
+            sender_domain: SENDER_DOMAIN,
+            subject,
+            html,
+            text: plainFallback || undefined,
+            purpose: "transactional",
+            label: "broadcast",
+            idempotency_key: `${broadcastId}:${email}`,
+            unsubscribe_token: unsubscribeToken,
+            email_log_metadata: { broadcast_id: broadcastId, subject, reply_to: replyTo },
+            queued_at: new Date().toISOString(),
+          },
+        });
+
+        if (enqueueError) {
+          failed += 1;
+          errors.push({ email, error: enqueueError.message });
+          await admin.from("email_send_log").insert({
+            message_id: messageId,
+            template_name: "broadcast",
+            recipient_email: email,
             status: "failed",
-            error_message: String(data?.message || data?.error || resp.status),
+            error_message: enqueueError.message,
             metadata: { broadcast_id: broadcastId, subject },
           });
         } else {
-          sent += 1;
-          await admin.from("email_send_log").insert({
-            message_id: data?.id || `${broadcastId}:${email}`,
-            template_name: "broadcast",
-            recipient_email: email,
-            status: "sent",
-            metadata: { broadcast_id: broadcastId, subject, resend_id: data?.id },
-          });
+          queued += 1;
         }
       } catch (e) {
         failed += 1;
         const msg = e instanceof Error ? e.message : String(e);
         errors.push({ email, error: msg });
       }
-      await new Promise((r) => setTimeout(r, 600));
     }
 
-    return json({ broadcastId, sent, failed, total: toSend.length, errors: errors.slice(0, 20) });
+    return json({
+      broadcastId,
+      sent: queued, // for backwards-compat with the UI; emails are queued and dispatched within seconds
+      queued,
+      failed,
+      total: toSend.length,
+      errors: errors.slice(0, 20),
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Broadcast failed";
     return json({ error: message }, 500);
