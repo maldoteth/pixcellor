@@ -192,6 +192,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         };
 
         let touchStartY = 0;
+        let touchStartX = 0;
+        let gestureAxis: "none" | "vertical" | "horizontal" = "none";
         const getEventElement = (target: EventTarget | null) => {
             if (target instanceof Element) return target;
             if (target instanceof Node) return target.parentElement;
@@ -206,22 +208,47 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             const path = event.composedPath();
             return path.some((node) => {
                 if (!(node instanceof Element)) return false;
-                return !!node.closest('[data-pixcellor-mobile-drawer="true"], [role="dialog"], [role="alertdialog"], [data-radix-popper-content-wrapper], [data-radix-dialog-content], [data-radix-dialog-overlay]');
+                return !!node.closest('[data-pixcellor-mobile-drawer="true"], [role="dialog"], [role="alertdialog"], [data-radix-popper-content-wrapper], [data-radix-dialog-content], [data-radix-dialog-overlay], .stf__parent');
             });
         };
+        const isInsideHorizontalSwipeZone = (target: EventTarget | null) => {
+            const el = getEventElement(target);
+            return !!el?.closest('.stf__parent, [data-pixcellor-horizontal-swipe="true"]');
+        };
         const handleTouchStart = (e: TouchEvent) => {
-            // Always capture starting Y so the next move has a correct baseline,
-            // even if the gesture began on an interactive element.
             touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+            gestureAxis = "none";
         };
         const handleTouchMove = (e: TouchEvent) => {
             if (isInteractive(e.target)) return;
             if (isInsideOverlay(e)) return;
+
+            const touchY = e.touches[0].clientY;
+            const touchX = e.touches[0].clientX;
+            const deltaY = touchStartY - touchY;
+            const deltaX = touchStartX - touchX;
+
+            if (gestureAxis === "none") {
+                const absX = Math.abs(touchX - touchStartX);
+                const absY = Math.abs(touchY - touchStartY);
+                if (absX < 6 && absY < 6) return;
+                if (absX > absY && isInsideHorizontalSwipeZone(e.target)) {
+                    gestureAxis = "horizontal";
+                } else {
+                    gestureAxis = "vertical";
+                }
+            }
+
+            if (gestureAxis === "horizontal") {
+                // Let the flipbook handle horizontal swipes natively
+                return;
+            }
+
             e.preventDefault();
             forceCirclePhase();
-            const touchY = e.touches[0].clientY;
-            const deltaY = touchStartY - touchY;
             touchStartY = touchY;
+            touchStartX = touchX;
 
             const isMobile = window.innerWidth < 768;
             const scrollDelta = isMobile ? deltaY * 24 : deltaY;
