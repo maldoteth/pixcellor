@@ -517,7 +517,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     const reply = {
       role: "assistant" as const,
       content: action === "call"
-        ? "Absolutely — leave your name and phone number and I’ll get a callback booked for tomorrow."
+        ? "Absolutely — leave your name and phone number and I’ll get a call booked for tomorrow."
         : "Sure — leave your name and email and I’ll send over our full package guide, process breakdown, portfolio and buy links.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
