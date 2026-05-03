@@ -790,6 +790,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         <div className="flex min-w-0 items-center gap-2">
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           <input
+            ref={textInputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
