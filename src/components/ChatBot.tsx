@@ -521,6 +521,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         : "Sure — leave your name and email and I’ll send over our full package guide, process breakdown, portfolio and buy links.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
+    // Focus input synchronously so mobile browsers open the keyboard
+    requestAnimationFrame(() => textInputRef.current?.focus());
+    textInputRef.current?.focus();
   };
 
   const toggleListening = () => {
