@@ -1818,14 +1818,13 @@ export default function Portal() {
               <Button onClick={() => setShowSalesEventForm(v => !v)} disabled={contacts.length === 0}>
                 <Plus className="w-4 h-4 mr-2" /> Create event
               </Button>
-              <Button onClick={() => setShowContactForm(v => !v)}>
+              <Button onClick={openMobileContactForm}>
                 <UserPlus className="w-4 h-4 mr-2" /> Create client
               </Button>
             </div>
 
             {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a client first, then you can create sales events.</p>}
 
-            {contactFormCard}
             {eventFormCard}
 
             <div className="space-y-2">
@@ -2301,11 +2300,10 @@ export default function Portal() {
                   <TabsTrigger value="clients" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({goldClientCount}/{clientBookContacts.length})</TabsTrigger>
                   <TabsTrigger value="retainers" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
                 </TabsList>
-                <Button onClick={() => setShowContactForm(v => !v)} className="h-9">
+                <Button onClick={openMobileContactForm} className="h-9">
                   <UserPlus className="w-4 h-4 mr-2" /> Add contact
                 </Button>
               </div>
-              {showContactForm && <div className="pt-3">{contactFormCard}</div>}
 
               <TabsContent value="clients" className="space-y-2 pt-3">
                 <div className="relative">
@@ -2551,7 +2549,7 @@ export default function Portal() {
       </Drawer>
 
       <Drawer open={mobileContactDrawerOpen} onOpenChange={setMobileContactDrawerOpen}>
-        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl lg:hidden">
+        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
           <DrawerHeader className="px-0 text-left">
             <DrawerTitle>Create client</DrawerTitle>
             <DrawerDescription>Step {mobileContactStep + 1} of {contactWizardFields.length}</DrawerDescription>
