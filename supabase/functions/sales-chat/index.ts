@@ -879,6 +879,8 @@ async function devSendWelcomeEmail(supabase: DbClient, args: Record<string, unkn
 
   return { ok: true, email, contact_id: contactId || null, template: "sales-welcome-info" };
 }
+
+function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
   const lines: string[] = [];
   lines.push(`## Known client context (loaded from database for this email)`);
 
