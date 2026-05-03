@@ -944,13 +944,15 @@ async function extractScreenshotContact(apiKey: string, imageUrl: unknown) {
 async function findDevContacts(supabase: DbClient, query: unknown) {
   const q = cleanText(query, 120);
   if (!q) return { ok: false, error: "missing_query", matches: [] };
-  const pattern = `%${q.replace(/[%_]/g, "")} %`.replace(" %", "%");
+  const safe = q.replace(/[%_,()]/g, "").trim();
+  if (!safe) return { ok: false, error: "missing_query", matches: [] };
+  const pattern = `%${safe}%`;
   const { data, error } = await supabase
     .from("contacts")
-    .select("id, name, email, phone, location, industry, status")
-    .or(`name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern},industry.ilike.${pattern}`)
+    .select("id, name, contact_name, email, phone, location, industry, website, status, updated_at")
+    .or(`name.ilike.${pattern},contact_name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern},industry.ilike.${pattern},website.ilike.${pattern},location.ilike.${pattern},status.ilike.${pattern}`)
     .order("updated_at", { ascending: false })
-    .limit(5);
+    .limit(8);
   if (error) return { ok: false, error: error.message, matches: [] };
   return { ok: true, matches: data ?? [] };
 }
