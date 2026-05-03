@@ -256,11 +256,11 @@ const tools = [
     type: "function" as const,
     function: {
       name: "save_contact",
-      description: "Create or update a sales contact when the visitor provides a name plus either email or phone number. Use this for customer-facing lead capture.",
+      description: "Create or update a sales contact. Call this AS SOON AS you have ANY contact info (email OR phone), even without a real name. If no name yet, pass the email (or phone) as the name placeholder. Call again later with the real name to update the same record. Never wait — capture leads immediately so we don't lose them.",
       parameters: {
         type: "object",
         properties: {
-          name: { type: "string", description: "Visitor's name." },
+          name: { type: "string", description: "Visitor's name. If unknown, pass the email or phone as a placeholder." },
           phone: { type: "string", description: "Phone number, if provided." },
           email: { type: "string", description: "Email address, if provided." },
           website: { type: "string", description: "Website domain or URL, if provided." },
