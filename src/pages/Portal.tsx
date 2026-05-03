@@ -217,6 +217,18 @@ type ContactEvent = {
   updated_at: string;
 };
 
+type ContactPerson = {
+  id: string;
+  contact_id: string;
+  name: string;
+  job_title: string | null;
+  phone: string | null;
+  email: string | null;
+  created_by_email?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type MailboxMessage = {
   id: string;
   threadId: string;
@@ -391,6 +403,10 @@ export default function Portal() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
+  const [contactPersons, setContactPersons] = useState<ContactPerson[]>([]);
+  const [personDrawerContactId, setPersonDrawerContactId] = useState<string | null>(null);
+  const [personForm, setPersonForm] = useState({ name: "", job_title: "", phone: "" });
+  const [personSubmitting, setPersonSubmitting] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [salesSearch, setSalesSearch] = useState("");
   const [ordersSearch, setOrdersSearch] = useState("");
@@ -457,6 +473,7 @@ export default function Portal() {
       inquiries?: Inquiry[];
       contacts?: Contact[];
       contactEvents?: ContactEvent[];
+      contactPersons?: ContactPerson[];
       projectRequirements?: ProjectRequirement[];
       editRequests?: EditRequest[];
       emailLogs?: EmailLog[];
@@ -469,6 +486,7 @@ export default function Portal() {
     setInquiries(snapshot.inquiries ?? []);
     setContacts(snapshot.contacts ?? []);
     setContactEvents(snapshot.contactEvents ?? []);
+    setContactPersons(snapshot.contactPersons ?? []);
     setProjectRequirements(snapshot.projectRequirements ?? []);
     setEditRequests(snapshot.editRequests ?? []);
     setEmailLogs(snapshot.emailLogs ?? []);
@@ -1230,6 +1248,44 @@ export default function Portal() {
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
     toast.success("Client added.");
+    return newContact;
+  };
+
+  const openPersonDrawerForContact = (contactId: string) => {
+    setPersonForm({ name: "", job_title: "", phone: "" });
+    setPersonDrawerContactId(contactId);
+  };
+
+  const createContactPerson = async () => {
+    if (!personDrawerContactId) return;
+    const name = personForm.name.trim();
+    if (!name) { toast.error("Contact name is required."); return; }
+    setPersonSubmitting(true);
+    const { data, error } = await (supabase as any).rpc("portal_add_contact_person", {
+      _contact_id: personDrawerContactId,
+      _name: name,
+      _job_title: personForm.job_title || null,
+      _phone: personForm.phone || null,
+    });
+    setPersonSubmitting(false);
+    if (error) { toast.error(error.message); return; }
+    const created = data as ContactPerson | null;
+    if (created?.id) setContactPersons(curr => [created, ...curr]);
+    setPersonForm({ name: "", job_title: "", phone: "" });
+    setPersonDrawerContactId(null);
+    toast.success("Contact added.");
+  };
+
+  const deleteContactPerson = async (personId: string) => {
+    const { error } = await (supabase as any).rpc("portal_delete_contact_person", { _person_id: personId });
+    if (error) { toast.error(error.message); return; }
+    setContactPersons(curr => curr.filter(p => p.id !== personId));
+  };
+
+  const addContactFromWizard = async () => {
+    if (!contactForm.name.trim()) { toast.error("Enter the company name first."); return; }
+    const newContact = await createContact();
+    if (newContact?.id) openPersonDrawerForContact(newContact.id);
   };
 
   const runLeadAgent = async () => {
@@ -2331,6 +2387,9 @@ export default function Portal() {
                           <div className="flex items-center gap-2">
                             <Badge style={{ backgroundColor: statusColor, color: "hsl(var(--background))" }} className="rounded-none">{statusLabel}</Badge>
                             {stats && <Badge variant="outline" className="rounded-none">LTV {formatGBP(stats.ltv)}</Badge>}
+                            {contactPersons.filter(p => p.contact_id === c.id).length > 0 && (
+                              <Badge variant="outline" className="rounded-none">{contactPersons.filter(p => p.contact_id === c.id).length} contact{contactPersons.filter(p => p.contact_id === c.id).length === 1 ? "" : "s"}</Badge>
+                            )}
                           </div>
                         </div>
                         <div className="text-xs text-muted-foreground">
@@ -2474,6 +2533,10 @@ export default function Portal() {
                     <Plus className="h-4 w-4 md:mr-2" />
                     <span className="hidden md:inline">Create event</span>
                   </Button>
+                  <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => openPersonDrawerForContact(contactDetailDrawerContact.id)}>
+                    <UserPlus className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">Add contact</span>
+                  </Button>
                   <Button variant="pricing" size="icon" className="h-9 w-9 shrink-0 rounded-none shadow-none" aria-label="Archive client" title="Archive client" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -2495,6 +2558,28 @@ export default function Portal() {
                   </div>
                 </div>
               )}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">Contacts ({contactPersons.filter(p => p.contact_id === contactDetailDrawerContact.id).length})</div>
+                  <Button size="sm" variant="outline" className="h-8 rounded-none" onClick={() => openPersonDrawerForContact(contactDetailDrawerContact.id)}>
+                    <UserPlus className="h-3.5 w-3.5 mr-1" /> Add contact
+                  </Button>
+                </div>
+                {contactPersons.filter(p => p.contact_id === contactDetailDrawerContact.id).length === 0 && (
+                  <p className="text-sm text-muted-foreground">No contact people added yet.</p>
+                )}
+                {contactPersons.filter(p => p.contact_id === contactDetailDrawerContact.id).map(person => (
+                  <div key={person.id} className="flex items-start justify-between gap-2 rounded-none border border-border bg-card/60 p-3 text-sm">
+                    <div className="min-w-0">
+                      <div className="font-medium">{person.name}</div>
+                      <div className="text-xs text-muted-foreground">{[person.job_title, person.phone].filter(Boolean).join(" · ") || "—"}</div>
+                    </div>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Remove" onClick={() => deleteContactPerson(person.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
               {contactDetailDrawerOrderStats && (
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Order history</div>
@@ -2548,6 +2633,24 @@ export default function Portal() {
         </DrawerContent>
       </Drawer>
 
+      <Drawer open={Boolean(personDrawerContactId)} onOpenChange={(open) => !open && setPersonDrawerContactId(null)}>
+        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
+          <DrawerHeader className="px-0 text-left">
+            <DrawerTitle>Add contact person</DrawerTitle>
+            <DrawerDescription>{getContact(personDrawerContactId ?? "")?.name ?? ""}</DrawerDescription>
+          </DrawerHeader>
+          <div className="space-y-3">
+            <Input autoFocus placeholder="Contact name *" value={personForm.name} onChange={(e) => setPersonForm(f => ({ ...f, name: e.target.value }))} className="h-12 text-base" />
+            <Input placeholder="Job title" value={personForm.job_title} onChange={(e) => setPersonForm(f => ({ ...f, job_title: e.target.value }))} className="h-12 text-base" />
+            <Input placeholder="Phone (optional)" inputMode="tel" value={personForm.phone} onChange={(e) => setPersonForm(f => ({ ...f, phone: e.target.value }))} className="h-12 text-base" />
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" className="rounded-none" onClick={() => setPersonDrawerContactId(null)}>Cancel</Button>
+              <Button onClick={createContactPerson} disabled={personSubmitting}>{personSubmitting ? "Saving…" : "Save contact"}</Button>
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
       <Drawer open={mobileContactDrawerOpen} onOpenChange={setMobileContactDrawerOpen}>
         <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
           <DrawerHeader className="px-0 text-left">
@@ -2585,6 +2688,11 @@ export default function Portal() {
                   </Button>
                 </div>
               </div>
+              {currentContactField.key === "name" && contactForm.name.trim() && (
+                <Button type="button" variant="outline" className="w-full rounded-none" onClick={addContactFromWizard}>
+                  <UserPlus className="mr-2 h-4 w-4" /> Save & add contact person
+                </Button>
+              )}
               {currentContactField.key === "notes" && contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
             </div>
             <div className="grid grid-cols-2 gap-2">
