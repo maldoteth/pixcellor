@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue, animate } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import BookSlider from "./book-slider";
+import PortfolioGallery from "@/components/PortfolioGallery";
 import PackagesDialog from "@/components/PackagesDialog";
 import Footer from "@/components/Footer";
 import { recordFalloff, recordScrollDepth } from "@/lib/checkoutTracking";
