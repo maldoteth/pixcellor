@@ -115,6 +115,14 @@ const portfolioData = [
   }
 ];
 
+// Preload all portfolio screenshots once at module load so flicking is instant
+if (typeof window !== "undefined") {
+  portfolioData.forEach((p) => {
+    const img = new Image();
+    img.src = p.screenshot;
+  });
+}
+
 function MobileBookSlider() {
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
