@@ -403,6 +403,10 @@ export default function Portal() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactEvents, setContactEvents] = useState<ContactEvent[]>([]);
+  const [contactPersons, setContactPersons] = useState<ContactPerson[]>([]);
+  const [personDrawerContactId, setPersonDrawerContactId] = useState<string | null>(null);
+  const [personForm, setPersonForm] = useState({ name: "", job_title: "", phone: "" });
+  const [personSubmitting, setPersonSubmitting] = useState(false);
   const [activeConv, setActiveConv] = useState<string | null>(null);
   const [salesSearch, setSalesSearch] = useState("");
   const [ordersSearch, setOrdersSearch] = useState("");
@@ -469,6 +473,7 @@ export default function Portal() {
       inquiries?: Inquiry[];
       contacts?: Contact[];
       contactEvents?: ContactEvent[];
+      contactPersons?: ContactPerson[];
       projectRequirements?: ProjectRequirement[];
       editRequests?: EditRequest[];
       emailLogs?: EmailLog[];
@@ -481,6 +486,7 @@ export default function Portal() {
     setInquiries(snapshot.inquiries ?? []);
     setContacts(snapshot.contacts ?? []);
     setContactEvents(snapshot.contactEvents ?? []);
+    setContactPersons(snapshot.contactPersons ?? []);
     setProjectRequirements(snapshot.projectRequirements ?? []);
     setEditRequests(snapshot.editRequests ?? []);
     setEmailLogs(snapshot.emailLogs ?? []);
