@@ -2296,10 +2296,16 @@ export default function Portal() {
 
           <TabsContent value="profiles" className="space-y-3">
             <Tabs defaultValue="clients" className="min-w-0">
-              <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent p-0 sm:w-auto sm:inline-grid">
-                <TabsTrigger value="clients" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({goldClientCount}/{clientBookContacts.length})</TabsTrigger>
-                <TabsTrigger value="retainers" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
-              </TabsList>
+              <div className="flex flex-wrap items-center gap-2">
+                <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent p-0 sm:w-auto sm:inline-grid">
+                  <TabsTrigger value="clients" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({goldClientCount}/{clientBookContacts.length})</TabsTrigger>
+                  <TabsTrigger value="retainers" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
+                </TabsList>
+                <Button onClick={() => setShowContactForm(v => !v)} className="h-9">
+                  <UserPlus className="w-4 h-4 mr-2" /> Add contact
+                </Button>
+              </div>
+              {showContactForm && <div className="pt-3">{contactFormCard}</div>}
 
               <TabsContent value="clients" className="space-y-2 pt-3">
                 <div className="relative">
