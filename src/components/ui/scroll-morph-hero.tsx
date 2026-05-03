@@ -109,12 +109,10 @@ function FlipCard({
 
 // --- Main Hero Component ---
 const TOTAL_IMAGES = 20;
-const MAX_SCROLL = 3000;
 const HERO_MORPH_END = 600;
+const CAROUSEL_SCROLL_END = HERO_MORPH_END + 8000;
+const MAX_SCROLL = CAROUSEL_SCROLL_END;
 const SCROLL_BREAK_DURATION = 650;
-const POST_HERO_SCROLL_SENSITIVITY = 0.2;
-const MOBILE_GALLERY_SCROLL_START = 900;
-const DESKTOP_GALLERY_SCROLL_START = 900;
 
 // UI Template Images (16 unique + 4 repeated to fill 20 slots)
 const IMAGES = [
@@ -218,8 +216,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 touchNeedsReleaseRef.current = false;
             }
 
-            const scrollDelta = currentScroll >= HERO_MORPH_END ? delta * POST_HERO_SCROLL_SENSITIVITY : delta;
-            const newScroll = Math.min(Math.max(currentScroll + scrollDelta, 0), MAX_SCROLL);
+            const newScroll = Math.min(Math.max(currentScroll + delta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
             onVirtualScrollChangeRef.current?.(newScroll);
@@ -230,7 +227,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             e.preventDefault();
             forceCirclePhase();
 
-            applyVirtualScrollDelta(e.deltaY, "wheel");
+            const isMobile = window.innerWidth < 768;
+            const scrollDelta = isMobile && scrollRef.current < HERO_MORPH_END ? e.deltaY * 24 : e.deltaY;
+            applyVirtualScrollDelta(scrollDelta, "wheel");
         };
 
         let touchStartY = 0;
@@ -292,7 +291,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             touchStartY = touchY;
             touchStartX = touchX;
 
-            applyVirtualScrollDelta(deltaY, "touch");
+            const isMobile = window.innerWidth < 768;
+            const scrollDelta = isMobile && scrollRef.current < HERO_MORPH_END ? deltaY * 24 : deltaY;
+            applyVirtualScrollDelta(scrollDelta, "touch");
         };
         const handleTouchEnd = () => {
             touchNeedsReleaseRef.current = false;
@@ -474,8 +475,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             );
         })();
     }, []);
-    const galleryScrollStart = isSmallViewport ? MOBILE_GALLERY_SCROLL_START : DESKTOP_GALLERY_SCROLL_START;
-    const galleryRotation = useTransform(virtualScroll, [galleryScrollStart, MAX_SCROLL], isSmallViewport ? [0, 360] : [0, 720]);
+    const galleryRotation = useTransform(virtualScroll, [HERO_MORPH_END, CAROUSEL_SCROLL_END], isSmallViewport ? [0, 360] : [0, 720]);
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     useEffect(() => {
