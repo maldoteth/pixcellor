@@ -1864,7 +1864,7 @@ export default function Portal() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">Sales follow-ups</h2>
-                <p className="text-sm text-muted-foreground">Log client events and keep future callbacks visible.</p>
+                <p className="text-sm text-muted-foreground">Log client events and keep future follow-ups visible.</p>
               </div>
             </div>
 
