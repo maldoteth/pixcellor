@@ -200,6 +200,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
                   onClick={() => handleOpenChange(false)}
                 />
                 <motion.section
+                  ref={drawerScrollRef}
                   role="dialog"
                   aria-modal="true"
                   aria-labelledby="packages-dialog-title"
@@ -208,13 +209,9 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
                   transition={{ type: "spring", damping: 32, stiffness: 320 }}
-                  onTouchStartCapture={handleDrawerTouchStart}
-                  onTouchMoveCapture={handleDrawerTouchMove}
-                  onTouchEndCapture={resetDrawerTouch}
-                  onTouchCancelCapture={resetDrawerTouch}
                 >
                   <div className="mx-auto mt-4 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-                  <div className="sticky top-0 z-10 bg-background/95 px-4 pt-3 pb-2 text-center backdrop-blur-xl">
+                  <div className="relative px-4 pt-3 pb-2 text-center">
                     <button
                       type="button"
                       onClick={() => handleOpenChange(false)}
