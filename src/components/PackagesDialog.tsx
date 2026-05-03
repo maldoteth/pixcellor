@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Loader2, Lock, ShoppingBag, X } from "lucide-react";
+import { Check, Loader2, Lock, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDrawerTouchScroll } from "@/hooks/use-drawer-touch-scroll";
 import { supabase } from "@/integrations/supabase/client";
