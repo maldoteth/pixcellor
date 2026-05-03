@@ -173,6 +173,22 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - Create sales events/callback notes for existing contacts with create_sales_event.
 - Find local businesses that appear to have no standalone website and add them to contacts with find_local_leads.
 - **Send the Pixcellor welcome/info email** (sales-welcome-info template) to a contact or raw email with **send_welcome_email**. This actually sends the email and auto-logs a CRM communication event.
+- **Send any supported transactional email** (sales-welcome-info, project-requirements-reminder, order-complete) with **send_transactional_email**.
+- **Update an existing contact** (name, contact_name, phone, email, location, notes, industry, website) with **update_contact**, only passing the fields that change.
+- **Change lead temperature** with **update_contact_status** (cold/aware/warm/hot/gold/archived).
+- **Append a free-form note** to a contact's notes field with **append_contact_note** (use when the dev says "add a note that…" instead of creating a sales event).
+- **Tick off callbacks** with **complete_callback** when the dev says they've done it / called them back / it's handled.
+- **Add a contact person** to an existing client/company with **add_contact_person** (multi-contact feature).
+- **Look up an order or project status** by email with **lookup_customer** (returns orders, profile, project_status, prior chats).
+- **Mark orders delivered/undelivered** with **mark_order_delivered** / **mark_order_undelivered** (session_id required).
+- **Update an edit request status** (open/in_progress/done) with **update_edit_request_status**.
+- **Take over a live chat** by listing recent conversations with **list_open_chats** then replying with **send_chat_reply** (this pauses the bot for that conversation — only do it when the dev clearly asks to reply/take over).
+- **Summarise recent activity** with **recent_activity** for "what happened today?", "show open callbacks", "who hasn't replied in 7 days?".
+
+## Search & lookup rules
+- find_contact searches name, contact_name, email, phone, company website, location, status, industry — use a single keyword from any of these.
+- Before any update / status change / event / email, call find_contact (or use the recent-contact context) to get the contact_id. Never invent UUIDs.
+- For order/delivery/edit-request actions, use lookup_customer first to get the session_id or request_id.
 
 ## Email rules (CRITICAL)
 - When the dev says "email info", "send info", "send welcome", "send the welcome email", "email <person>", "email <address>" — you MUST call **send_welcome_email**. Do NOT create a sales event titled "Email Sent" or similar — that fakes a send and loses the lead.
@@ -376,6 +392,197 @@ const devTools = [
           contact_id: { type: "string", description: "Existing contact UUID (preferred — used to look up email and attach a CRM event)." },
           email: { type: "string", description: "Recipient email if no contact_id is known." },
           name: { type: "string", description: "Recipient first name to personalise the email, optional." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "send_transactional_email",
+      description: "Send any supported transactional email template to a contact or raw email. Templates: 'sales-welcome-info' (info/welcome), 'project-requirements-reminder' (chase the brief), 'order-complete' (project finished). Auto-logs a CRM communication event when contact_id is given.",
+      parameters: {
+        type: "object",
+        properties: {
+          template: { type: "string", enum: ["sales-welcome-info", "project-requirements-reminder", "order-complete"] },
+          contact_id: { type: "string", description: "Contact UUID (preferred)." },
+          email: { type: "string", description: "Recipient email if contact_id unknown." },
+          name: { type: "string", description: "Recipient name for personalisation." },
+          template_data: { type: "object", description: "Extra template variables, optional.", additionalProperties: true },
+        },
+        required: ["template"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "update_contact",
+      description: "Update an existing contact's editable fields (name, phone, email, location, notes, industry, website, contact_name). Only pass fields that should change; existing values are preserved for omitted fields.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string" },
+          name: { type: "string" },
+          contact_name: { type: "string", description: "Primary contact person's name (separate from company name)." },
+          phone: { type: "string" },
+          email: { type: "string" },
+          location: { type: "string" },
+          notes: { type: "string" },
+          industry: { type: "string" },
+          website: { type: "string" },
+        },
+        required: ["contact_id"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "update_contact_status",
+      description: "Set a contact's lead temperature/status. Allowed: cold, aware, warm, hot, gold, archived.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string" },
+          status: { type: "string", enum: ["cold", "aware", "warm", "hot", "gold", "archived"] },
+        },
+        required: ["contact_id", "status"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "append_contact_note",
+      description: "Append a short free-form note to an existing contact's notes field (does NOT create a sales event). Use when the dev says 'add a note that…' or 'just note on their record…'.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string" },
+          note: { type: "string" },
+        },
+        required: ["contact_id", "note"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "complete_callback",
+      description: "Mark a callback / contact_event as completed (ticks it off the open list).",
+      parameters: {
+        type: "object",
+        properties: { event_id: { type: "string" } },
+        required: ["event_id"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "add_contact_person",
+      description: "Add an additional contact person (multi-contact) to an existing client/company.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string", description: "Parent client/company UUID." },
+          name: { type: "string" },
+          job_title: { type: "string" },
+          phone: { type: "string" },
+          email: { type: "string" },
+        },
+        required: ["contact_id", "name"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "lookup_customer",
+      description: "Look up a customer's orders, inquiries, project brief and project status by email. Use for 'what did X buy?', 'what stage is X at?', 'has X paid?'.",
+      parameters: {
+        type: "object",
+        properties: { email: { type: "string" } },
+        required: ["email"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "mark_order_delivered",
+      description: "Mark an order/checkout session as delivered with the live domain.",
+      parameters: {
+        type: "object",
+        properties: {
+          session_id: { type: "string", description: "Stripe checkout session_id." },
+          delivered_domain: { type: "string", description: "Live domain (e.g. acme.com)." },
+        },
+        required: ["session_id", "delivered_domain"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "mark_order_undelivered",
+      description: "Revert an order back to 'open' (clears delivered domain/date).",
+      parameters: {
+        type: "object",
+        properties: { session_id: { type: "string" } },
+        required: ["session_id"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "update_edit_request_status",
+      description: "Change an edit request's status. Allowed: open, in_progress, done.",
+      parameters: {
+        type: "object",
+        properties: {
+          request_id: { type: "string" },
+          status: { type: "string", enum: ["open", "in_progress", "done"] },
+        },
+        required: ["request_id", "status"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "list_open_chats",
+      description: "List recent live-chat conversations and whether the bot is paused (manual handoff). Use to find the conversation_id before send_chat_reply.",
+      parameters: { type: "object", properties: { limit: { type: "number" } } },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "send_chat_reply",
+      description: "Take over a live-chat conversation and reply as a human admin. This pauses the bot for that conversation.",
+      parameters: {
+        type: "object",
+        properties: {
+          conversation_id: { type: "string" },
+          content: { type: "string" },
+        },
+        required: ["conversation_id", "content"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "recent_activity",
+      description: "Summarise recent CRM activity: open callbacks, today's events, contacts updated in the last N days, open edit requests. Use for 'what happened today?', 'show open callbacks', 'who hasn't replied in 7 days?'.",
+      parameters: {
+        type: "object",
+        properties: {
+          days: { type: "number", description: "Window in days, default 7." },
+          stale_days: { type: "number", description: "Flag contacts with no event/update in this many days, default 7." },
         },
       },
     },
@@ -753,13 +960,15 @@ async function extractScreenshotContact(apiKey: string, imageUrl: unknown) {
 async function findDevContacts(supabase: DbClient, query: unknown) {
   const q = cleanText(query, 120);
   if (!q) return { ok: false, error: "missing_query", matches: [] };
-  const pattern = `%${q.replace(/[%_]/g, "")} %`.replace(" %", "%");
+  const safe = q.replace(/[%_,()]/g, "").trim();
+  if (!safe) return { ok: false, error: "missing_query", matches: [] };
+  const pattern = `%${safe}%`;
   const { data, error } = await supabase
     .from("contacts")
-    .select("id, name, email, phone, location, industry, status")
-    .or(`name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern},industry.ilike.${pattern}`)
+    .select("id, name, contact_name, email, phone, location, industry, website, status, updated_at")
+    .or(`name.ilike.${pattern},contact_name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern},industry.ilike.${pattern},website.ilike.${pattern},location.ilike.${pattern},status.ilike.${pattern}`)
     .order("updated_at", { ascending: false })
-    .limit(5);
+    .limit(8);
   if (error) return { ok: false, error: error.message, matches: [] };
   return { ok: true, matches: data ?? [] };
 }
@@ -878,6 +1087,268 @@ async function devSendWelcomeEmail(supabase: DbClient, args: Record<string, unkn
   }
 
   return { ok: true, email, contact_id: contactId || null, template: "sales-welcome-info" };
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ALLOWED_TEMPLATES = new Set(["sales-welcome-info", "project-requirements-reminder", "order-complete"]);
+const TEMPLATE_LABELS: Record<string, string> = {
+  "sales-welcome-info": "Welcome / info email sent",
+  "project-requirements-reminder": "Project requirements reminder sent",
+  "order-complete": "Order complete email sent",
+};
+
+async function devSendTemplateEmail(supabase: DbClient, args: Record<string, unknown>) {
+  const template = cleanText(args.template, 80);
+  if (!ALLOWED_TEMPLATES.has(template)) return { ok: false, error: "invalid_template" };
+  const contactIdRaw = cleanText(args.contact_id, 80);
+  const contactId = UUID_RE.test(contactIdRaw) ? contactIdRaw : "";
+  let email = cleanText(args.email, 255).toLowerCase();
+  let name = cleanText(args.name, 100);
+
+  if (contactId) {
+    const { data: contact } = await supabase.from("contacts").select("id, name, email").eq("id", contactId).maybeSingle();
+    if (!contact) return { ok: false, error: "contact_not_found" };
+    if (!email) email = String(contact.email ?? "").toLowerCase();
+    if (!name) name = String(contact.name ?? "");
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+
+  const extra = (args.template_data && typeof args.template_data === "object") ? args.template_data as Record<string, unknown> : {};
+  const idempotencyKey = `dev-${template}-${contactId || email}-${Date.now()}`;
+  const { error } = await supabase.functions.invoke("send-transactional-email", {
+    body: {
+      templateName: template,
+      recipientEmail: email,
+      idempotencyKey,
+      templateData: { name: name || undefined, ...extra },
+    },
+  });
+  if (error) return { ok: false, error: "email_send_failed", detail: String(error.message ?? error) };
+
+  if (contactId) {
+    await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: TEMPLATE_LABELS[template] ?? `${template} email sent`,
+      description: `Sent ${template} template to ${email} via dev assistant.`,
+      event_type: "communication",
+    });
+  }
+  return { ok: true, email, contact_id: contactId || null, template };
+}
+
+async function devUpdateContact(supabase: DbClient, args: Record<string, unknown>) {
+  const id = cleanText(args.contact_id, 80);
+  if (!UUID_RE.test(id)) return { ok: false, error: "invalid_contact" };
+  const { data: existing, error: fetchErr } = await supabase
+    .from("contacts").select("*").eq("id", id).maybeSingle();
+  if (fetchErr || !existing) return { ok: false, error: "contact_not_found" };
+
+  const update: Record<string, unknown> = {};
+  const set = (key: string, val: unknown) => {
+    if (val === undefined || val === null) return;
+    if (typeof val === "string" && !val.trim()) return;
+    update[key] = typeof val === "string" ? val.trim() : val;
+  };
+  set("name", args.name);
+  set("contact_name", args.contact_name);
+  set("phone", args.phone);
+  set("location", args.location);
+  set("notes", args.notes);
+  if (typeof args.email === "string" && args.email.trim()) {
+    const e = args.email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return { ok: false, error: "invalid_email" };
+    update.email = e;
+  }
+  if (typeof args.industry === "string" && args.industry.trim()) update.industry = args.industry.trim().toLowerCase();
+  if (typeof args.website === "string" && args.website.trim()) {
+    const w = cleanWebsite(args.website);
+    if (w) update.website = w;
+  }
+  if (Object.keys(update).length === 0) return { ok: false, error: "nothing_to_update" };
+  update.updated_at = new Date().toISOString();
+
+  const { data, error } = await supabase.from("contacts").update(update).eq("id", id).select("id, name, contact_name, email, phone, status, industry, website, location, notes").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, contact: data, updated_fields: Object.keys(update) };
+}
+
+async function devUpdateContactStatus(supabase: DbClient, args: Record<string, unknown>) {
+  const id = cleanText(args.contact_id, 80);
+  const status = cleanText(args.status, 40).toLowerCase();
+  if (!UUID_RE.test(id)) return { ok: false, error: "invalid_contact" };
+  if (!["cold","aware","warm","hot","gold","archived"].includes(status)) return { ok: false, error: "invalid_status" };
+  const { data, error } = await supabase.from("contacts").update({ status, updated_at: new Date().toISOString() }).eq("id", id).select("id, name, status").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, contact: data };
+}
+
+async function devAppendContactNote(supabase: DbClient, args: Record<string, unknown>) {
+  const id = cleanText(args.contact_id, 80);
+  const note = cleanText(args.note, 900);
+  if (!UUID_RE.test(id)) return { ok: false, error: "invalid_contact" };
+  if (!note) return { ok: false, error: "missing_note" };
+  const { data: existing } = await supabase.from("contacts").select("notes").eq("id", id).maybeSingle();
+  if (!existing) return { ok: false, error: "contact_not_found" };
+  const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+  const merged = [existing.notes, `[${stamp}] ${note}`].filter(Boolean).join("\n");
+  const { error } = await supabase.from("contacts").update({ notes: merged, updated_at: new Date().toISOString() }).eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+async function devCompleteCallback(supabase: DbClient, args: Record<string, unknown>) {
+  const id = cleanText(args.event_id, 80);
+  if (!UUID_RE.test(id)) return { ok: false, error: "invalid_event" };
+  const { error } = await supabase.from("contact_events")
+    .update({ completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+async function devAddContactPerson(supabase: DbClient, args: Record<string, unknown>) {
+  const contactId = cleanText(args.contact_id, 80);
+  const name = cleanText(args.name, 100);
+  if (!UUID_RE.test(contactId)) return { ok: false, error: "invalid_contact" };
+  if (!name) return { ok: false, error: "missing_name" };
+  const email = cleanText(args.email, 255).toLowerCase();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+  const payload = {
+    contact_id: contactId,
+    name,
+    job_title: cleanText(args.job_title, 160) || null,
+    phone: cleanText(args.phone, 40) || null,
+    email: email || null,
+  };
+  const { data, error } = await supabase.from("contact_persons").insert(payload).select("id, name, job_title, phone, email").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, person: data };
+}
+
+async function devLookupCustomer(supabase: DbClient, args: Record<string, unknown>) {
+  const email = cleanText(args.email, 255).toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+  const [lookup, profile, status] = await Promise.all([
+    lookupCustomer(supabase, email),
+    supabase.from("client_profiles").select("*").ilike("email", email).maybeSingle(),
+    supabase.from("project_status").select("*").ilike("email", email).maybeSingle(),
+  ]);
+  return { ok: true, ...lookup, profile: profile.data ?? null, project_status: status.data ?? null };
+}
+
+async function devMarkOrderDelivered(supabase: DbClient, args: Record<string, unknown>) {
+  const sid = cleanText(args.session_id, 200);
+  const domain = cleanWebsite(args.delivered_domain);
+  if (!sid) return { ok: false, error: "missing_session" };
+  if (!domain) return { ok: false, error: "invalid_domain" };
+  const { error } = await supabase.from("stripe_checkout_sessions").update({
+    order_status: "delivered",
+    delivered_at: new Date().toISOString(),
+    delivered_domain: domain,
+    updated_at: new Date().toISOString(),
+  }).eq("session_id", sid);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, session_id: sid, delivered_domain: domain };
+}
+
+async function devMarkOrderUndelivered(supabase: DbClient, args: Record<string, unknown>) {
+  const sid = cleanText(args.session_id, 200);
+  if (!sid) return { ok: false, error: "missing_session" };
+  const { error } = await supabase.from("stripe_checkout_sessions").update({
+    order_status: "open",
+    delivered_at: null,
+    delivered_domain: null,
+    updated_at: new Date().toISOString(),
+  }).eq("session_id", sid);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, session_id: sid };
+}
+
+async function devUpdateEditRequestStatus(supabase: DbClient, args: Record<string, unknown>) {
+  const id = cleanText(args.request_id, 80);
+  const status = cleanText(args.status, 40).toLowerCase();
+  if (!UUID_RE.test(id)) return { ok: false, error: "invalid_request" };
+  if (!["open","in_progress","done"].includes(status)) return { ok: false, error: "invalid_status" };
+  const { error } = await supabase.from("edit_requests").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+async function devListOpenChats(supabase: DbClient, args: Record<string, unknown>) {
+  const limit = Math.min(Math.max(Number(args.limit) || 10, 1), 25);
+  const { data: convs, error } = await supabase
+    .from("chat_conversations")
+    .select("id, client_id, bot_paused, manual_handoff_at, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+  if (error) return { ok: false, error: error.message };
+  if (!convs || convs.length === 0) return { ok: true, conversations: [] };
+  const ids = convs.map((c: any) => c.id);
+  const { data: lastMsgs } = await supabase
+    .from("chat_messages")
+    .select("conversation_id, role, content, created_at")
+    .in("conversation_id", ids)
+    .order("created_at", { ascending: false })
+    .limit(200);
+  const lastByConv: Record<string, any> = {};
+  for (const m of (lastMsgs ?? []) as any[]) {
+    if (!lastByConv[m.conversation_id]) lastByConv[m.conversation_id] = m;
+  }
+  return {
+    ok: true,
+    conversations: convs.map((c: any) => ({
+      conversation_id: c.id,
+      client_id: c.client_id,
+      bot_paused: c.bot_paused,
+      manual_handoff_at: c.manual_handoff_at,
+      updated_at: c.updated_at,
+      last_message: lastByConv[c.id] ? { role: lastByConv[c.id].role, content: String(lastByConv[c.id].content).slice(0, 200), at: lastByConv[c.id].created_at } : null,
+    })),
+  };
+}
+
+async function devSendChatReply(supabase: DbClient, args: Record<string, unknown>) {
+  const cid = cleanText(args.conversation_id, 80);
+  const content = cleanText(args.content, 2000);
+  if (!UUID_RE.test(cid)) return { ok: false, error: "invalid_conversation" };
+  if (!content) return { ok: false, error: "missing_content" };
+  const { error: insErr } = await supabase.from("chat_messages").insert({
+    conversation_id: cid, role: "admin", content,
+  });
+  if (insErr) return { ok: false, error: insErr.message };
+  await supabase.from("chat_conversations").update({
+    bot_paused: true,
+    manual_handoff_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }).eq("id", cid);
+  return { ok: true };
+}
+
+async function devRecentActivity(supabase: DbClient, args: Record<string, unknown>) {
+  const days = Math.min(Math.max(Number(args.days) || 7, 1), 60);
+  const staleDays = Math.min(Math.max(Number(args.stale_days) || 7, 1), 90);
+  const since = new Date(Date.now() - days * 86400_000).toISOString();
+  const staleCutoff = new Date(Date.now() - staleDays * 86400_000).toISOString();
+  const nowIso = new Date().toISOString();
+
+  const [openCallbacks, todaysEvents, recentContacts, openEdits, staleContacts] = await Promise.all([
+    supabase.from("contact_events").select("id, contact_id, title, callback_at").eq("event_type", "callback").is("completed_at", null).order("callback_at", { ascending: true }).limit(20),
+    supabase.from("contact_events").select("id, contact_id, title, event_type, created_at").gte("created_at", new Date(new Date().setHours(0,0,0,0)).toISOString()).order("created_at", { ascending: false }).limit(20),
+    supabase.from("contacts").select("id, name, status, updated_at").gte("updated_at", since).order("updated_at", { ascending: false }).limit(15),
+    supabase.from("edit_requests").select("id, package_name, customer_email, status, created_at").in("status", ["open","in_progress"]).order("created_at", { ascending: false }).limit(15),
+    supabase.from("contacts").select("id, name, email, status, updated_at").lt("updated_at", staleCutoff).in("status", ["warm","hot","aware"]).order("updated_at", { ascending: true }).limit(15),
+  ]);
+
+  return {
+    ok: true,
+    window_days: days,
+    now: nowIso,
+    open_callbacks: openCallbacks.data ?? [],
+    todays_events: todaysEvents.data ?? [],
+    recent_contacts: recentContacts.data ?? [],
+    open_edit_requests: openEdits.data ?? [],
+    stale_warm_or_hot_contacts: staleContacts.data ?? [],
+  };
 }
 
 function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
@@ -1248,23 +1719,89 @@ Deno.serve(async (req) => {
             console.error("Error in send_welcome_email:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "send_welcome_email_failed" }) });
           }
+        } else if (toolCall.function.name === "send_transactional_email" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devSendTemplateEmail(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { console.error("send_transactional_email:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "send_failed" }) }); }
+        } else if (toolCall.function.name === "update_contact" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devUpdateContact(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { console.error("update_contact:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "update_failed" }) }); }
+        } else if (toolCall.function.name === "update_contact_status" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devUpdateContactStatus(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "status_failed" }) }); }
+        } else if (toolCall.function.name === "append_contact_note" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devAppendContactNote(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "note_failed" }) }); }
+        } else if (toolCall.function.name === "complete_callback" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devCompleteCallback(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "complete_failed" }) }); }
+        } else if (toolCall.function.name === "add_contact_person" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devAddContactPerson(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "add_person_failed" }) }); }
+        } else if (toolCall.function.name === "mark_order_delivered" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devMarkOrderDelivered(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "deliver_failed" }) }); }
+        } else if (toolCall.function.name === "mark_order_undelivered" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devMarkOrderUndelivered(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "undeliver_failed" }) }); }
+        } else if (toolCall.function.name === "update_edit_request_status" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devUpdateEditRequestStatus(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "edit_status_failed" }) }); }
+        } else if (toolCall.function.name === "list_open_chats" && isDevMode) {
+          needsFollowUp = true;
+          try {
+            const result = await devListOpenChats(supabase, JSON.parse(toolCall.function.arguments || "{}"));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "list_chats_failed" }) }); }
+        } else if (toolCall.function.name === "send_chat_reply" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devSendChatReply(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "reply_failed" }) }); }
+        } else if (toolCall.function.name === "recent_activity" && isDevMode) {
+          needsFollowUp = true;
+          try {
+            const result = await devRecentActivity(supabase, JSON.parse(toolCall.function.arguments || "{}"));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "activity_failed" }) }); }
         } else if (toolCall.function.name === "lookup_customer") {
           needsFollowUp = true;
           try {
             const args = JSON.parse(toolCall.function.arguments);
-            const result = await lookupCustomer(supabase, args.email);
-            aiMessages.push({
-              role: "tool",
-              tool_call_id: toolCall.id,
-              content: JSON.stringify(result),
-            });
+            const result = isDevMode
+              ? await devLookupCustomer(supabase, args)
+              : await lookupCustomer(supabase, args.email);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
           } catch (e) {
             console.error("Error in lookup_customer:", e);
-            aiMessages.push({
-              role: "tool",
-              tool_call_id: toolCall.id,
-              content: JSON.stringify({ found: false, error: "lookup_failed" }),
-            });
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ found: false, error: "lookup_failed" }) });
           }
         } else if (toolCall.function.name === "save_brief") {
           needsFollowUp = true;
