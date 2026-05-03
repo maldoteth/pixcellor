@@ -230,9 +230,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             e.preventDefault();
             forceCirclePhase();
 
-            const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? e.deltaY * 24 : e.deltaY;
-            applyVirtualScrollDelta(scrollDelta, "wheel");
+            applyVirtualScrollDelta(e.deltaY, "wheel");
         };
 
         let touchStartY = 0;
@@ -294,9 +292,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             touchStartY = touchY;
             touchStartX = touchX;
 
-            const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? deltaY * 24 : deltaY;
-            applyVirtualScrollDelta(scrollDelta, "touch");
+            applyVirtualScrollDelta(deltaY, "touch");
         };
         const handleTouchEnd = () => {
             touchNeedsReleaseRef.current = false;
