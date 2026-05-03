@@ -184,6 +184,12 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - **Update an edit request status** (open/in_progress/done) with **update_edit_request_status**.
 - **Take over a live chat** by listing recent conversations with **list_open_chats** then replying with **send_chat_reply** (this pauses the bot for that conversation — only do it when the dev clearly asks to reply/take over).
 - **Summarise recent activity** with **recent_activity** for "what happened today?", "show open callbacks", "who hasn't replied in 7 days?".
+- **Bulk status update** with **bulk_update_status** ("mark these 5 as warm").
+- **Archive a contact** with **archive_contact** (non-destructive).
+- **Schedule a callback today** with **schedule_callback_today** (defaults 09:00 Europe/London if no time given — always use this for "today" requests so the time is correct).
+- **Check if a lead has visited the site** with **lookup_visitor_activity** (by email or company website).
+- **Generate a paste-ready package recommendation** with **recommend_package**.
+- **Pull chat history** for a client_id or conversation_id with **fetch_chat_history** before replying via send_chat_reply.
 
 ## Search & lookup rules
 - find_contact searches name, contact_name, email, phone, company website, location, status, industry — use a single keyword from any of these.
@@ -583,6 +589,95 @@ const devTools = [
         properties: {
           days: { type: "number", description: "Window in days, default 7." },
           stale_days: { type: "number", description: "Flag contacts with no event/update in this many days, default 7." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "bulk_update_status",
+      description: "Set status on multiple contacts at once (e.g. 'mark these 5 as warm'). Allowed: cold, aware, warm, hot, gold, archived.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_ids: { type: "array", items: { type: "string" }, description: "Up to 50 contact UUIDs." },
+          status: { type: "string", enum: ["cold", "aware", "warm", "hot", "gold", "archived"] },
+        },
+        required: ["contact_ids", "status"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "archive_contact",
+      description: "Archive a contact (sets status='archived' — non-destructive, hides from active lists).",
+      parameters: {
+        type: "object",
+        properties: { contact_id: { type: "string" } },
+        required: ["contact_id"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "schedule_callback_today",
+      description: "Schedule a callback today (or a given date) at a UK local time. Defaults to 09:00 Europe/London if no time given. Pass either a contact_id or contact_name to find one.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string" },
+          title: { type: "string", description: "Short callback title." },
+          description: { type: "string" },
+          time: { type: "string", description: "Local UK time HH:mm, default 09:00." },
+          date: { type: "string", description: "ISO date (YYYY-MM-DD), default today in Europe/London." },
+        },
+        required: ["contact_id", "title"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "lookup_visitor_activity",
+      description: "Find recent visitor/falloff activity for a contact (did this lead visit the site recently? what pages? did they hit checkout?). Pass email or company website.",
+      parameters: {
+        type: "object",
+        properties: {
+          email: { type: "string" },
+          website: { type: "string", description: "Company website domain." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "recommend_package",
+      description: "Generate a short package recommendation summary the dev can paste into an email. Pass quick context (industry, page count, budget hints, requirements).",
+      parameters: {
+        type: "object",
+        properties: {
+          industry: { type: "string" },
+          page_count: { type: "number" },
+          needs_subscription: { type: "boolean" },
+          notes: { type: "string", description: "Free-form context about the lead." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "fetch_chat_history",
+      description: "Load a recent live-chat conversation (messages) for a given client_id, so the dev can be briefed before replying.",
+      parameters: {
+        type: "object",
+        properties: {
+          client_id: { type: "string" },
+          conversation_id: { type: "string", description: "Optional — exact conversation UUID instead of client_id." },
         },
       },
     },
@@ -1351,6 +1446,104 @@ async function devRecentActivity(supabase: DbClient, args: Record<string, unknow
   };
 }
 
+async function devBulkUpdateStatus(supabase: DbClient, args: Record<string, unknown>) {
+  const status = cleanText(args.status, 40).toLowerCase();
+  if (!["cold","aware","warm","hot","gold","archived"].includes(status)) return { ok: false, error: "invalid_status" };
+  const ids = Array.isArray(args.contact_ids) ? args.contact_ids.filter((v): v is string => typeof v === "string" && UUID_RE.test(v)).slice(0, 50) : [];
+  if (ids.length === 0) return { ok: false, error: "no_valid_ids" };
+  const { error, count } = await supabase.from("contacts").update({ status, updated_at: new Date().toISOString() }, { count: "exact" }).in("id", ids);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, updated: count ?? ids.length, status };
+}
+
+async function devArchiveContact(supabase: DbClient, args: Record<string, unknown>) {
+  return devBulkUpdateStatus(supabase, { contact_ids: [args.contact_id], status: "archived" });
+}
+
+async function devScheduleCallbackToday(supabase: DbClient, args: Record<string, unknown>) {
+  const contactId = cleanText(args.contact_id, 80);
+  const title = cleanText(args.title, 160);
+  if (!UUID_RE.test(contactId)) return { ok: false, error: "invalid_contact" };
+  if (!title) return { ok: false, error: "missing_title" };
+  const time = /^\d{2}:\d{2}$/.test(String(args.time ?? "")) ? String(args.time) : "09:00";
+  // London local date today
+  const todayLondon = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" }); // YYYY-MM-DD
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(String(args.date ?? "")) ? String(args.date) : todayLondon;
+  // Build a London-local instant. Europe/London is +00:00 in winter, +01:00 in summer; resolve via Intl.
+  const naive = new Date(`${date}T${time}:00`);
+  const londonOffsetMin = (() => {
+    const utc = new Date(naive.toISOString().slice(0, 19) + "Z").getTime();
+    const londonStr = new Date(utc).toLocaleString("en-GB", { timeZone: "Europe/London", hour12: false, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    const m = londonStr.match(/(\d{2})\/(\d{2})\/(\d{4}),\s+(\d{2}):(\d{2})/);
+    if (!m) return 0;
+    const asUtc = Date.UTC(+m[3], +m[2]-1, +m[1], +m[4], +m[5]);
+    return (asUtc - utc) / 60000;
+  })();
+  const callbackAt = new Date(naive.getTime() - londonOffsetMin * 60000).toISOString();
+  const { data, error } = await supabase.from("contact_events").insert({
+    contact_id: contactId,
+    title,
+    description: cleanText(args.description, 2000) || null,
+    event_type: "callback",
+    callback_at: callbackAt,
+  }).select("id, callback_at").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, event: data, scheduled_for_local: `${date} ${time} Europe/London` };
+}
+
+async function devLookupVisitorActivity(supabase: DbClient, args: Record<string, unknown>) {
+  const email = cleanText(args.email, 255).toLowerCase();
+  const website = cleanWebsite(args.website);
+  if (!email && !website) return { ok: false, error: "email_or_website_required" };
+  let query = supabase.from("visitor_falloffs")
+    .select("visitor_id, customer_email, company_name, company_domain, last_seen_at, max_scroll_percent, first_page, last_page, portfolio_opened_at, pricing_opened_at, buy_clicked_at, checkout_started_at, package_name")
+    .order("last_seen_at", { ascending: false })
+    .limit(10);
+  if (email && website) query = query.or(`customer_email.ilike.${email},company_domain.ilike.%${website}%`);
+  else if (email) query = query.ilike("customer_email", email);
+  else query = query.ilike("company_domain", `%${website}%`);
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, visits: data ?? [] };
+}
+
+async function devRecommendPackage(args: Record<string, unknown>) {
+  const industry = cleanText(args.industry, 80);
+  const pages = Number(args.page_count) || 0;
+  const subscription = args.needs_subscription === true;
+  const notes = cleanText(args.notes, 600);
+  let pick: "fullWorks" | "elite" | "retainer" = "fullWorks";
+  if (subscription || pages > 30) pick = "retainer";
+  else if (pages > 10 || subscription) pick = "elite";
+  const pkg = PACKAGES[pick];
+  const summary = [
+    `Recommended: **${pkg.name}** (${pkg.price})${pkg.rrp ? ` — RRP ${pkg.rrp}` : ""}`,
+    industry ? `Tailored for ${industry}.` : "",
+    pages ? `Built for around ${pages} pages.` : "",
+    `Includes: ${pkg.features.slice(0, 4).join("; ")}.`,
+    notes ? `Context: ${notes}` : "",
+  ].filter(Boolean).join("\n");
+  return { ok: true, package_id: pick, summary };
+}
+
+async function devFetchChatHistory(supabase: DbClient, args: Record<string, unknown>) {
+  const clientId = cleanText(args.client_id, 200);
+  const convId = cleanText(args.conversation_id, 80);
+  let conversationId: string | null = UUID_RE.test(convId) ? convId : null;
+  let conversation: any = null;
+  if (!conversationId && clientId) {
+    const { data } = await supabase.from("chat_conversations").select("id, client_id, bot_paused, manual_handoff_at, updated_at").eq("client_id", clientId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    conversation = data;
+    conversationId = data?.id ?? null;
+  } else if (conversationId) {
+    const { data } = await supabase.from("chat_conversations").select("id, client_id, bot_paused, manual_handoff_at, updated_at").eq("id", conversationId).maybeSingle();
+    conversation = data;
+  }
+  if (!conversationId) return { ok: false, error: "conversation_not_found" };
+  const { data: messages } = await supabase.from("chat_messages").select("role, content, created_at").eq("conversation_id", conversationId).order("created_at", { ascending: true }).limit(80);
+  return { ok: true, conversation, messages: (messages ?? []).map((m: any) => ({ role: m.role, content: String(m.content).slice(0, 600), at: m.created_at })) };
+}
+
 function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
   const lines: string[] = [];
   lines.push(`## Known client context (loaded from database for this email)`);
@@ -1791,6 +1984,30 @@ Deno.serve(async (req) => {
             const result = await devRecentActivity(supabase, JSON.parse(toolCall.function.arguments || "{}"));
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
           } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "activity_failed" }) }); }
+        } else if (toolCall.function.name === "bulk_update_status" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devBulkUpdateStatus(supabase, JSON.parse(toolCall.function.arguments))) }); }
+          catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "bulk_status_failed" }) }); }
+        } else if (toolCall.function.name === "archive_contact" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devArchiveContact(supabase, JSON.parse(toolCall.function.arguments))) }); }
+          catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "archive_failed" }) }); }
+        } else if (toolCall.function.name === "schedule_callback_today" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devScheduleCallbackToday(supabase, JSON.parse(toolCall.function.arguments))) }); }
+          catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "schedule_failed" }) }); }
+        } else if (toolCall.function.name === "lookup_visitor_activity" && isDevMode) {
+          needsFollowUp = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devLookupVisitorActivity(supabase, JSON.parse(toolCall.function.arguments))) }); }
+          catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "visitor_failed" }) }); }
+        } else if (toolCall.function.name === "recommend_package" && isDevMode) {
+          needsFollowUp = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devRecommendPackage(JSON.parse(toolCall.function.arguments || "{}"))) }); }
+          catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "recommend_failed" }) }); }
+        } else if (toolCall.function.name === "fetch_chat_history" && isDevMode) {
+          needsFollowUp = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devFetchChatHistory(supabase, JSON.parse(toolCall.function.arguments || "{}"))) }); }
+          catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "history_failed" }) }); }
         } else if (toolCall.function.name === "lookup_customer") {
           needsFollowUp = true;
           try {
