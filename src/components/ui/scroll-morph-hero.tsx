@@ -396,7 +396,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         style={{ opacity: subtitleOpacity }}
                         className="-mt-2 text-xs md:text-sm lg:text-base font-normal tracking-[0.2em] text-foreground/90"
                     >
-                        The Digital Builders
+                        Digital Services
                     </motion.p>
                     {/* Mobile-only arrow inside circle, below subtitle */}
                     <motion.button
