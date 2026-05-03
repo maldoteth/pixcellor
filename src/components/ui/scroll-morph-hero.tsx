@@ -155,14 +155,15 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         });
 
         if (typeof ResizeObserver === "undefined") {
-            window.addEventListener("resize", () => {
+            const handleWindowResize = () => {
                 if (!containerRef.current) return;
                 setContainerSize({
                     width: containerRef.current.offsetWidth,
                     height: containerRef.current.offsetHeight,
                 });
-            });
-            return;
+            };
+            window.addEventListener("resize", handleWindowResize);
+            return () => window.removeEventListener("resize", handleWindowResize);
         }
 
         const observer = new ResizeObserver(handleResize);
