@@ -679,6 +679,20 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} hidden />
                 </motion.div>
 
+                {/* Circular Portfolio Gallery — appears with What We Do title */}
+                {galleryItems.length > 0 && (
+                    <motion.div
+                        style={{ opacity: contentOpacity }}
+                        className="absolute inset-x-0 top-[28%] md:top-[32%] bottom-[18%] z-[5] pointer-events-none"
+                    >
+                        <CircularGallery
+                            items={galleryItems}
+                            radius={containerSize.width < 768 ? 280 : 460}
+                            externalRotation={galleryRotationValue}
+                        />
+                    </motion.div>
+                )}
+
                 {/* Main Container */}
                 <div className="relative flex items-start md:items-center justify-center w-full h-full pt-[180px] md:pt-0">
                     {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
