@@ -64,39 +64,54 @@ export default function ServicesDialog() {
     if (!open) return null;
 
     return createPortal(
-      <div className="fixed inset-0 z-50 flex items-end bg-background/80" role="presentation" onClick={() => setOpen(false)}>
-        <section
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="services-dialog-title"
-          className="flex h-[82dvh] max-h-[82dvh] w-full flex-col overflow-hidden rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <div className="mx-auto mt-4 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-          <div className="relative grid flex-shrink-0 gap-1.5 p-4 pb-2 text-left">
-            <button
-              type="button"
+      <AnimatePresence>
+        {open && (
+          <div className="fixed inset-0 z-50 flex items-end" role="presentation">
+            <motion.div
+              className="absolute inset-0 bg-background/80"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
               onClick={() => setOpen(false)}
-              className="absolute right-4 top-3 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
+            />
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="services-dialog-title"
+              className="relative flex h-[82dvh] max-h-[82dvh] w-full flex-col overflow-hidden rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 320 }}
             >
-              <X className="h-5 w-5" />
-              <span className="sr-only">Close</span>
-            </button>
-            <h2 id="services-dialog-title" className="text-center text-2xl font-bold text-foreground">
-              Our Services
-            </h2>
+              <div className="mx-auto mt-4 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
+              <div className="relative grid flex-shrink-0 gap-1.5 p-4 pb-2 text-left">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="absolute right-4 top-3 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
+                >
+                  <X className="h-5 w-5" />
+                  <span className="sr-only">Close</span>
+                </button>
+                <h2 id="services-dialog-title" className="text-center text-2xl font-bold text-foreground">
+                  Our Services
+                </h2>
+              </div>
+              <div
+                className="flex-1 min-h-0 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
+              >
+                <div className="flex flex-col gap-4">
+                  {SERVICE_GROUPS.map((group) => (
+                    <ServiceCard key={group.title} group={group} />
+                  ))}
+                </div>
+              </div>
+            </motion.section>
           </div>
-          <div
-            className="flex-1 min-h-0 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
-          >
-            <div className="flex flex-col gap-4">
-              {SERVICE_GROUPS.map((group) => (
-                <ServiceCard key={group.title} group={group} />
-              ))}
-            </div>
-          </div>
-        </section>
-      </div>,
+        )}
+      </AnimatePresence>,
       document.body,
     );
   }
