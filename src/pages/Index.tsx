@@ -10,22 +10,28 @@ const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [heroScrolled, setHeroScrolled] = useState(false);
   const [packagesOpen, setPackagesOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      setPackagesOpen(Boolean((e as CustomEvent<{ open: boolean }>).detail?.open));
+    const pkg = (e: Event) => setPackagesOpen(Boolean((e as CustomEvent<{ open: boolean }>).detail?.open));
+    const svc = (e: Event) => setServicesOpen(Boolean((e as CustomEvent<{ open: boolean }>).detail?.open));
+    window.addEventListener("pixcellor:packages-open-change", pkg as EventListener);
+    window.addEventListener("pixcellor:services-open-change", svc as EventListener);
+    return () => {
+      window.removeEventListener("pixcellor:packages-open-change", pkg as EventListener);
+      window.removeEventListener("pixcellor:services-open-change", svc as EventListener);
     };
-    window.addEventListener("pixcellor:packages-open-change", handler as EventListener);
-    return () => window.removeEventListener("pixcellor:packages-open-change", handler as EventListener);
   }, []);
+
+  const overlayOpen = packagesOpen || servicesOpen;
 
   return (
     <div className="w-full">
       <div className="relative h-dvh overflow-hidden">
         <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
-        <PackagesDialog mobileTop hidden={heroScrolled || packagesOpen} chatOpen={chatOpen} />
-        <CustomerAccess hidden={heroScrolled || packagesOpen} chatOpen={chatOpen} />
-        <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || packagesOpen} />
+        <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+        <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+        <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
         <ServicesDialog />
       </div>
       <FalloffConsentBanner />

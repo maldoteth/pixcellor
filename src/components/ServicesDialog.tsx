@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Code2, Megaphone, Briefcase, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 const SERVICE_GROUPS = [
   {
@@ -53,50 +54,53 @@ export default function ServicesDialog() {
     return () => window.removeEventListener("pixcellor:open-services", handler);
   }, []);
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      {isMobile ? (
-        <DialogContent
-          className="top-[54%] max-w-4xl bg-transparent border-none p-6 max-h-[88vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:hidden"
-        >
-          <div className="fixed right-1 top-1 z-[60]">
-            <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none px-[8px] my-0 mx-[15px]">
-              <X className="h-6 w-6" />
-              <span className="sr-only">Close</span>
-            </DialogClose>
-          </div>
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-foreground text-center mb-4 -mt-[23px]">
+  useEffect(() => {
+    if (!isMobile) return;
+    window.dispatchEvent(new CustomEvent("pixcellor:services-open-change", { detail: { open } }));
+  }, [open, isMobile]);
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent className="border-border bg-background/95 backdrop-blur-xl max-h-[92vh]">
+          <DrawerHeader className="pb-2">
+            <DrawerTitle className="text-2xl font-bold text-foreground text-center">
               Our Services
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-4">
-            {SERVICE_GROUPS.map((group) => (
-              <ServiceCard key={group.title} group={group} />
-            ))}
-          </div>
-        </DialogContent>
-      ) : (
-        <DialogContent
-          className="top-[54%] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
-          style={{ background: "transparent" }}
-        >
-          <div className="absolute top-3 right-3 z-50">
-            <DialogClose className="rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
-              <X className="h-6 w-6" />
-              <span className="sr-only">Close</span>
-            </DialogClose>
-          </div>
-          <div className="flex flex-col items-center gap-6 px-6">
-            <h2 className="text-3xl font-bold text-foreground text-center">Our Services</h2>
-            <div className="grid grid-cols-3 gap-5 max-w-5xl">
+            </DrawerTitle>
+          </DrawerHeader>
+          <div className="overflow-y-auto px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [&::-webkit-scrollbar]:hidden">
+            <div className="flex flex-col gap-4">
               {SERVICE_GROUPS.map((group) => (
                 <ServiceCard key={group.title} group={group} />
               ))}
             </div>
           </div>
-        </DialogContent>
-      )}
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent
+        className="top-[54%] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
+        style={{ background: "transparent" }}
+      >
+        <div className="absolute top-3 right-3 z-50">
+          <DialogClose className="rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
+            <X className="h-6 w-6" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+        </div>
+        <div className="flex flex-col items-center gap-6 px-6">
+          <h2 className="text-3xl font-bold text-foreground text-center">Our Services</h2>
+          <div className="grid grid-cols-3 gap-5 max-w-5xl">
+            {SERVICE_GROUPS.map((group) => (
+              <ServiceCard key={group.title} group={group} />
+            ))}
+          </div>
+        </div>
+      </DialogContent>
     </Dialog>
   );
 }
