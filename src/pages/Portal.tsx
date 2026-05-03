@@ -379,8 +379,8 @@ const contactWizardFields = [
 
 const salesEventWizardFields = [
   { key: "contact", label: "Client", placeholder: "Search client", required: true, inputMode: "text" },
-  { key: "title", label: "Event", placeholder: "Callback, email, quote…", required: true, inputMode: "text" },
-  { key: "callback_at", label: "Callback time", placeholder: "Callback time", required: false, inputMode: "text" },
+  { key: "title", label: "Event", placeholder: "Let's Talk, email, quote…", required: true, inputMode: "text" },
+  { key: "callback_at", label: "Let's Talk time", placeholder: "Let's Talk time", required: false, inputMode: "text" },
   { key: "description", label: "Notes", placeholder: "Add notes", required: false, inputMode: "text" },
 ] as const;
 
