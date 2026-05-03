@@ -192,14 +192,22 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         };
 
         let touchStartY = 0;
+        const getEventElement = (target: EventTarget | null) => {
+            if (target instanceof Element) return target;
+            if (target instanceof Node) return target.parentElement;
+            return null;
+        };
         const isInteractive = (target: EventTarget | null) => {
-            const el = target as HTMLElement | null;
+            const el = getEventElement(target);
             const interactiveEl = el?.closest('button, a, [role="button"], input, textarea, select');
             return !!interactiveEl && !interactiveEl.closest('[data-hero-scroll-control="true"]');
         };
-        const isInsideOverlay = (target: EventTarget | null) => {
-            const el = target as HTMLElement | null;
-            return !!el?.closest('[role="dialog"], [role="alertdialog"], [data-radix-popper-content-wrapper], [data-radix-dialog-content], [data-radix-dialog-overlay]');
+        const isInsideOverlay = (event: TouchEvent) => {
+            const path = event.composedPath();
+            return path.some((node) => {
+                if (!(node instanceof Element)) return false;
+                return !!node.closest('[data-pixcellor-mobile-drawer="true"], [role="dialog"], [role="alertdialog"], [data-radix-popper-content-wrapper], [data-radix-dialog-content], [data-radix-dialog-overlay]');
+            });
         };
         const handleTouchStart = (e: TouchEvent) => {
             // Always capture starting Y so the next move has a correct baseline,
@@ -208,7 +216,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         };
         const handleTouchMove = (e: TouchEvent) => {
             if (isInteractive(e.target)) return;
-            if (isInsideOverlay(e.target)) return;
+            if (isInsideOverlay(e)) return;
             e.preventDefault();
             forceCirclePhase();
             const touchY = e.touches[0].clientY;
@@ -230,7 +238,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         const previousTouchAction = container.style.touchAction;
         container.style.touchAction = "none";
 
-        const touchTarget = window.matchMedia("(max-width: 767px)").matches ? window : container;
+        const touchTarget = container;
 
         const touchListenerOptions: AddEventListenerOptions = { passive: false, capture: true };
 
