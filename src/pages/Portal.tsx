@@ -2743,7 +2743,7 @@ export default function Portal() {
       <Drawer open={mobileSalesDrawerOpen} onOpenChange={setMobileSalesDrawerOpen}>
         <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl lg:hidden">
           <DrawerHeader className="px-0 text-left">
-            <DrawerTitle>Create sales event</DrawerTitle>
+            <DrawerTitle>Create follow-up</DrawerTitle>
             <DrawerDescription>Step {mobileSalesStep + 1} of {salesEventWizardFields.length}</DrawerDescription>
           </DrawerHeader>
           <div className="space-y-5">
