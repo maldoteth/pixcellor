@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Clipboard, ExternalLink, Home, Inbox, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Trash2, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { Archive, Check, Clipboard, ExternalLink, Home, Inbox, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Trash2, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
@@ -445,6 +445,19 @@ export default function Portal() {
   const [manualReply, setManualReply] = useState("");
   const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
   const [mailboxSearch, setMailboxSearch] = useState("");
+  const [readInquiryIds, setReadInquiryIds] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try { return new Set(JSON.parse(localStorage.getItem("portal:readInquiryIds") || "[]")); } catch { return new Set(); }
+  });
+  const markInquiryRead = (inquiryId: string) => {
+    setReadInquiryIds(current => {
+      if (current.has(inquiryId)) return current;
+      const next = new Set(current);
+      next.add(inquiryId);
+      try { localStorage.setItem("portal:readInquiryIds", JSON.stringify(Array.from(next))); } catch { /* ignore */ }
+      return next;
+    });
+  };
   const [activeMail, setActiveMail] = useState<MailboxMessage | null>(null);
   const [mailReply, setMailReply] = useState("");
   const [mailboxLoading, setMailboxLoading] = useState(false);
@@ -913,9 +926,9 @@ export default function Portal() {
       snippet: (i.message || "").slice(0, 160),
       body: i.message || "",
       date: i.created_at,
-      unread: true,
+      unread: !readInquiryIds.has(i.id),
     }));
-  }, [inquiries, mailboxSearch]);
+  }, [inquiries, mailboxSearch, readInquiryIds]);
 
   const combinedMailboxMessages = useMemo<MailboxMessage[]>(() => {
     return [...inquiryMessages, ...mailboxMessages].sort((a, b) => {
@@ -1841,7 +1854,7 @@ export default function Portal() {
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
-            <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.filter(m => m.unread).length + inquiries.length})</TabsTrigger>
+            <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.filter(m => m.unread).length + inquiries.filter(i => !readInquiryIds.has(i.id)).length})</TabsTrigger>
             <TabsTrigger value="campaigns" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Megaphone className="h-3.5 w-3.5 shrink-0" />Campaigns</TabsTrigger>
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats ({filteredConversations.length})</TabsTrigger>
             <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({goldClientCount}/{clientBookContacts.length})</TabsTrigger>
@@ -2232,18 +2245,36 @@ export default function Portal() {
                   const relatedOrder = orders.find(order => order.customer_email?.toLowerCase() === message.fromEmail);
                   const isInquiry = message.id.startsWith("inquiry:");
                   return (
-                    <button key={message.id} onClick={() => setActiveMail(message)} className={`w-full text-left p-3 rounded-none border transition-colors ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
+                    <div key={message.id} role="button" tabIndex={0} onClick={() => setActiveMail(message)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveMail(message); } }} className={`w-full text-left p-3 rounded-none border transition-colors cursor-pointer ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
                       <div className="flex items-center justify-between gap-2">
                         <div className="font-medium truncate">{message.from}</div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           {isInquiry && <Badge variant="secondary">Enquiry</Badge>}
                           {message.unread && !isInquiry && <Badge>New</Badge>}
+                          {message.unread && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (isInquiry) {
+                                  markInquiryRead(message.id.replace(/^inquiry:/, ""));
+                                  if (activeMail?.id === message.id) setActiveMail({ ...activeMail, unread: false });
+                                } else {
+                                  updateMailboxMessage(message.id, "markRead");
+                                }
+                              }}
+                              title="Mark as read"
+                              className="p-1 rounded-none border border-border hover:bg-accent"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className="text-sm truncate">{message.subject}</div>
                       <div className="text-xs text-muted-foreground line-clamp-2">{message.snippet}</div>
                       {relatedOrder && <div className="text-xs text-muted-foreground mt-1">Linked order · {relatedOrder.amount_total != null ? formatGBP(relatedOrder.amount_total) : "—"}</div>}
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -2263,7 +2294,8 @@ export default function Portal() {
                         <p className="text-sm text-muted-foreground">{activeMail.from} · {activeMail.date ? new Date(activeMail.date).toLocaleString() : ""}</p>
                       </div>
                       <div className="flex gap-2">
-                        {!activeMail.id.startsWith("inquiry:") && activeMail.unread && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "markRead")}>Mark read</Button>}
+                        {!activeMail.id.startsWith("inquiry:") && activeMail.unread && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "markRead")}><Check className="w-4 h-4 mr-2" />Mark read</Button>}
+                        {activeMail.id.startsWith("inquiry:") && activeMail.unread && <Button variant="outline" size="sm" onClick={() => { markInquiryRead(activeMail.id.replace(/^inquiry:/, "")); setActiveMail({ ...activeMail, unread: false }); }}><Check className="w-4 h-4 mr-2" />Mark read</Button>}
                         {!activeMail.id.startsWith("inquiry:") && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "archive")}><Archive className="w-4 h-4 mr-2" />Archive</Button>}
                       </div>
                     </div>
