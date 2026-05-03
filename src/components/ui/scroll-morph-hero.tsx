@@ -7,6 +7,8 @@ import { ChevronDown } from "lucide-react";
 import PackagesDialog from "@/components/PackagesDialog";
 import Footer from "@/components/Footer";
 import { recordFalloff, recordScrollDepth } from "@/lib/checkoutTracking";
+import { CircularGallery, type GalleryItem } from "@/components/ui/circular-gallery";
+import { supabase } from "@/integrations/supabase/client";
 
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
