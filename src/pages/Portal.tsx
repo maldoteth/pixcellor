@@ -1443,7 +1443,7 @@ export default function Portal() {
     setShowSalesEventForm(false);
     setMobileSalesDrawerOpen(false);
     setMobileSalesStep(0);
-    toast.success(hasCallback ? "Callback scheduled." : "Event logged in client history.");
+    toast.success(hasCallback ? "Let's Talk scheduled." : "Event logged in client history.");
   };
 
   const completeCallback = async (eventId: string) => {
@@ -1451,7 +1451,7 @@ export default function Portal() {
     if (error) toast.error(error.message);
     else {
       await loadPortalSnapshot();
-      toast.success("Callback marked done.");
+      toast.success("Let's Talk marked done.");
     }
   };
 
@@ -1465,7 +1465,7 @@ export default function Portal() {
     if (error) toast.error(error.message);
     else {
       await loadPortalSnapshot();
-      toast.success("Callback pushed back 1 week.");
+      toast.success("Let's Talk pushed back 1 week.");
     }
   };
 
