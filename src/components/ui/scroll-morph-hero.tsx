@@ -816,17 +816,19 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 </div>
             </div>
 
-            {/* Footer fades in with arc content */}
-            <motion.div
-                style={{
-                    opacity: contentOpacity,
-                    y: containerSize.width < 768 ? mobileFooterY : 0,
-                    pointerEvents: morphValue > 0.85 ? "auto" : "none"
-                }}
-                className="absolute bottom-0 left-0 right-0 z-10"
-            >
-                <Footer />
-            </motion.div>
+            {/* Footer: always visible on mobile, fades with arc content on desktop */}
+            {containerSize.width < 768 ? (
+                <div className="absolute bottom-0 left-0 right-0 z-20 pointer-events-auto">
+                    <Footer />
+                </div>
+            ) : (
+                <motion.div
+                    style={{ opacity: contentOpacity, pointerEvents: morphValue > 0.85 ? "auto" : "none" }}
+                    className="absolute bottom-0 left-0 right-0 z-10"
+                >
+                    <Footer />
+                </motion.div>
+            )}
         </div>
     );
 }
