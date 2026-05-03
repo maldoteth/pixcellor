@@ -186,7 +186,7 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - **Summarise recent activity** with **recent_activity** for "what happened today?", "show open follow-ups", "who hasn't replied in 7 days?".
 - **Bulk status update** with **bulk_update_status** ("mark these 5 as warm").
 - **Archive a contact** with **archive_contact** (non-destructive).
-- **Schedule a callback today** with **schedule_callback_today** (defaults 09:00 Europe/London if no time given — always use this for "today" requests so the time is correct).
+- **Schedule a Let's Talk follow-up today** with **schedule_callback_today** (defaults 09:00 Europe/London if no time given — always use this for "today" requests so the time is correct).
 - **Check if a lead has visited the site** with **lookup_visitor_activity** (by email or company website).
 - **Generate a paste-ready package recommendation** with **recommend_package**.
 - **Pull chat history** for a client_id or conversation_id with **fetch_chat_history** before replying via send_chat_reply.
