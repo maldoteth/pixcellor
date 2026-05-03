@@ -587,6 +587,95 @@ const devTools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "bulk_update_status",
+      description: "Set status on multiple contacts at once (e.g. 'mark these 5 as warm'). Allowed: cold, aware, warm, hot, gold, archived.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_ids: { type: "array", items: { type: "string" }, description: "Up to 50 contact UUIDs." },
+          status: { type: "string", enum: ["cold", "aware", "warm", "hot", "gold", "archived"] },
+        },
+        required: ["contact_ids", "status"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "archive_contact",
+      description: "Archive a contact (sets status='archived' — non-destructive, hides from active lists).",
+      parameters: {
+        type: "object",
+        properties: { contact_id: { type: "string" } },
+        required: ["contact_id"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "schedule_callback_today",
+      description: "Schedule a callback today (or a given date) at a UK local time. Defaults to 09:00 Europe/London if no time given. Pass either a contact_id or contact_name to find one.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string" },
+          title: { type: "string", description: "Short callback title." },
+          description: { type: "string" },
+          time: { type: "string", description: "Local UK time HH:mm, default 09:00." },
+          date: { type: "string", description: "ISO date (YYYY-MM-DD), default today in Europe/London." },
+        },
+        required: ["contact_id", "title"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "lookup_visitor_activity",
+      description: "Find recent visitor/falloff activity for a contact (did this lead visit the site recently? what pages? did they hit checkout?). Pass email or company website.",
+      parameters: {
+        type: "object",
+        properties: {
+          email: { type: "string" },
+          website: { type: "string", description: "Company website domain." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "recommend_package",
+      description: "Generate a short package recommendation summary the dev can paste into an email. Pass quick context (industry, page count, budget hints, requirements).",
+      parameters: {
+        type: "object",
+        properties: {
+          industry: { type: "string" },
+          page_count: { type: "number" },
+          needs_subscription: { type: "boolean" },
+          notes: { type: "string", description: "Free-form context about the lead." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "fetch_chat_history",
+      description: "Load a recent live-chat conversation (messages) for a given client_id, so the dev can be briefed before replying.",
+      parameters: {
+        type: "object",
+        properties: {
+          client_id: { type: "string" },
+          conversation_id: { type: "string", description: "Optional — exact conversation UUID instead of client_id." },
+        },
+      },
+    },
+  },
 ];
 
 // Look up everything we know about a customer by email
