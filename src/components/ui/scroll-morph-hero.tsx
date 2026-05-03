@@ -109,9 +109,12 @@ function FlipCard({
 
 // --- Main Hero Component ---
 const TOTAL_IMAGES = 20;
-const MAX_SCROLL = 3000;
 const HERO_MORPH_END = 600;
+const CAROUSEL_SCROLL_END = HERO_MORPH_END + 8000;
+const MAX_SCROLL = CAROUSEL_SCROLL_END;
 const SCROLL_BREAK_DURATION = 650;
+const MOBILE_SCROLL_BOOST = 24;
+const CAROUSEL_SCROLL_SENSITIVITY = 0.2;
 
 // UI Template Images (16 unique + 4 repeated to fill 20 slots)
 const IMAGES = [
@@ -227,7 +230,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             forceCirclePhase();
 
             const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? e.deltaY * 24 : e.deltaY;
+            const scrollDelta = isMobile
+                ? e.deltaY * MOBILE_SCROLL_BOOST * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1)
+                : e.deltaY * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1);
             applyVirtualScrollDelta(scrollDelta, "wheel");
         };
 
@@ -291,7 +296,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             touchStartX = touchX;
 
             const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? deltaY * 24 : deltaY;
+            const scrollDelta = isMobile
+                ? deltaY * MOBILE_SCROLL_BOOST * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1)
+                : deltaY * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1);
             applyVirtualScrollDelta(scrollDelta, "touch");
         };
         const handleTouchEnd = () => {
@@ -474,7 +481,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             );
         })();
     }, []);
-    const galleryRotation = useTransform(virtualScroll, isSmallViewport ? [1400, 3000] : [1200, 3000], isSmallViewport ? [0, 360] : [0, 720]);
+    const galleryRotation = useTransform(virtualScroll, [HERO_MORPH_END, CAROUSEL_SCROLL_END], isSmallViewport ? [0, 360] : [0, 720]);
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     useEffect(() => {
