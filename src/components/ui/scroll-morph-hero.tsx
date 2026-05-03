@@ -7,6 +7,8 @@ import { ChevronDown } from "lucide-react";
 import PackagesDialog from "@/components/PackagesDialog";
 import Footer from "@/components/Footer";
 import { recordFalloff, recordScrollDepth } from "@/lib/checkoutTracking";
+import { CircularGallery, type GalleryItem } from "@/components/ui/circular-gallery";
+import { supabase } from "@/integrations/supabase/client";
 
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.png';
@@ -189,16 +191,6 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         };
 
         const handleWheel = (e: WheelEvent) => {
-            // Once hero is fully scrolled, release wheel to native page scroll
-            // so sections below (e.g. portfolio) become reachable.
-            if (scrollRef.current >= MAX_SCROLL && e.deltaY > 0) {
-                return;
-            }
-            // Allow scroll-up to leave the hero alone if already at top and the
-            // page itself has been scrolled.
-            if (scrollRef.current <= 0 && e.deltaY < 0 && window.scrollY > 0) {
-                return;
-            }
             e.preventDefault();
             forceCirclePhase();
 
@@ -430,6 +422,37 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         return `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,${center}) 0%, hsla(0,0%,100%,${center * 0.5}) 35%, transparent ${glowFadeStop}%)`;
     });
 
+    // Portfolio gallery items pulled from DB; rotation driven by hero virtual scroll
+    const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+    useEffect(() => {
+        (async () => {
+            const { data } = await supabase
+                .from("portfolio_projects")
+                .select("name,url,category,description")
+                .order("display_order", { ascending: true });
+            if (!data) return;
+            setGalleryItems(
+                data.map((p: { name: string; url: string; category: string | null; description: string | null }) => ({
+                    common: p.name,
+                    binomial: p.category ?? "",
+                    photo: {
+                        url: `https://image.thum.io/get/width/900/crop/1200/https://${p.url}`,
+                        text: p.description ?? p.name,
+                        pos: "50% 0%",
+                        by: p.url,
+                    },
+                }))
+            );
+        })();
+    }, []);
+    const galleryRotation = useTransform(virtualScroll, [600, 3000], [0, 360]);
+    const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
+    const [galleryRotationValue, setGalleryRotationValue] = useState(0);
+    useEffect(() => {
+        const unsub = smoothGalleryRotation.on("change", setGalleryRotationValue);
+        return () => unsub();
+    }, [smoothGalleryRotation]);
+
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
             {/* Subtle center stage light — smoothly morphs from wide horizontal to narrow vertical */}
@@ -655,6 +678,20 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     </p>
                     <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} hidden />
                 </motion.div>
+
+                {/* Circular Portfolio Gallery — appears with What We Do title */}
+                {galleryItems.length > 0 && (
+                    <motion.div
+                        style={{ opacity: contentOpacity }}
+                        className="absolute inset-x-0 top-[28%] md:top-[32%] bottom-[18%] z-[5] pointer-events-none"
+                    >
+                        <CircularGallery
+                            items={galleryItems}
+                            radius={containerSize.width < 768 ? 280 : 460}
+                            externalRotation={galleryRotationValue}
+                        />
+                    </motion.div>
+                )}
 
                 {/* Main Container */}
                 <div className="relative flex items-start md:items-center justify-center w-full h-full pt-[180px] md:pt-0">

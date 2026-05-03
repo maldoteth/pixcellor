@@ -5,7 +5,6 @@ import FalloffConsentBanner from "@/components/FalloffConsentBanner";
 import CustomerAccess from "@/components/CustomerAccess";
 import PackagesDialog from "@/components/PackagesDialog";
 import ServicesDialog from "@/components/ServicesDialog";
-import PortfolioCircularSection from "@/components/PortfolioCircularSection";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -36,7 +35,6 @@ const Index = () => {
         <ServicesDialog />
         <FalloffConsentBanner />
       </div>
-      <PortfolioCircularSection />
     </div>
   );
 };
