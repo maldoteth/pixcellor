@@ -437,8 +437,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const subtitleOpacity = useTransform([introFadeIn, morphFade], ([f, m]: number[]) => f * m * 0.8);
     const ctaOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.95);
     const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
-    // Mobile: footer slides up into view as user scrolls (instead of lifting page content)
-    const footerRevealProgress = useTransform(virtualScroll, [900, 1900], [0, 1]);
+    // Footer reveals near the end of the carousel scroll on all viewports
+    const footerRevealProgress = useTransform(virtualScroll, [MAX_SCROLL - 1500, MAX_SCROLL - 200], [0, 1]);
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
     const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
