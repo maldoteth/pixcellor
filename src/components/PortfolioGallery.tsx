@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
-import { RadialScrollGallery } from './portfolio-and-image-gallery';
-import { Badge } from './badge';
+import { RadialScrollGallery } from '@/components/ui/portfolio-and-image-gallery';
+import { Badge } from '@/components/ui/badge';
 import { recordFalloff } from '@/lib/checkoutTracking';
 
 import firstClassAgencyImg from '@/assets/portfolio/first-class-agency.png';
