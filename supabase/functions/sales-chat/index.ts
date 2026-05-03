@@ -183,7 +183,7 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - **Mark orders delivered/undelivered** with **mark_order_delivered** / **mark_order_undelivered** (session_id required).
 - **Update an edit request status** (open/in_progress/done) with **update_edit_request_status**.
 - **Take over a live chat** by listing recent conversations with **list_open_chats** then replying with **send_chat_reply** (this pauses the bot for that conversation — only do it when the dev clearly asks to reply/take over).
-- **Summarise recent activity** with **recent_activity** for "what happened today?", "show open callbacks", "who hasn't replied in 7 days?".
+- **Summarise recent activity** with **recent_activity** for "what happened today?", "show open follow-ups", "who hasn't replied in 7 days?".
 - **Bulk status update** with **bulk_update_status** ("mark these 5 as warm").
 - **Archive a contact** with **archive_contact** (non-destructive).
 - **Schedule a callback today** with **schedule_callback_today** (defaults 09:00 Europe/London if no time given — always use this for "today" requests so the time is correct).
