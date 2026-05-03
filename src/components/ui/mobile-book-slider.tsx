@@ -206,6 +206,9 @@ function MobileBookSlider() {
                 <img
                   src={site.screenshot}
                   alt={site.name}
+                  loading="eager"
+                  decoding="sync"
+                  fetchPriority="high"
                   className="w-full h-full object-cover object-top"
                 />
               </div>
