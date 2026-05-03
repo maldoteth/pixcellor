@@ -478,6 +478,7 @@ export type Database = {
           display_order: number
           full_url: string | null
           id: string
+          image_url: string | null
           name: string
           updated_at: string
           url: string
@@ -489,6 +490,7 @@ export type Database = {
           display_order?: number
           full_url?: string | null
           id?: string
+          image_url?: string | null
           name: string
           updated_at?: string
           url: string
@@ -500,6 +502,7 @@ export type Database = {
           display_order?: number
           full_url?: string | null
           id?: string
+          image_url?: string | null
           name?: string
           updated_at?: string
           url?: string

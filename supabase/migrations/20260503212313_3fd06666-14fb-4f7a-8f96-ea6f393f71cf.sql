@@ -1,0 +1,15 @@
+UPDATE public.portfolio_projects SET image_url='/portfolio/first-class-agency.png' WHERE id='5ee607ed-bbec-48c1-8b03-e50cc237b3b3';
+UPDATE public.portfolio_projects SET image_url='/portfolio/tikup.png' WHERE id='23fdc809-0d21-4135-9cf4-52c9a6d92e2f';
+UPDATE public.portfolio_projects SET image_url='/portfolio/bricks.png' WHERE id='5291cb42-8632-45f6-9033-26d5ed9ad7e6';
+UPDATE public.portfolio_projects SET image_url='/portfolio/oak-shore.png' WHERE id='2d487c1c-d6be-4814-9c86-604e4b46bc49';
+UPDATE public.portfolio_projects SET image_url='/portfolio/last-chad-standing.png' WHERE id='8ac8e74c-c9d3-4abd-b594-851472dfc547';
+UPDATE public.portfolio_projects SET image_url='/portfolio/holder-chat.png' WHERE id='3fc0f9bb-041c-4588-9719-664b8afa9d39';
+UPDATE public.portfolio_projects SET image_url='/portfolio/sec-digital.png' WHERE id='5f3ad7d8-1d14-486e-859b-15337837296f';
+UPDATE public.portfolio_projects SET image_url='/portfolio/delabs-uk.png' WHERE id='ffb3932f-57d8-4e5e-9bb9-94b1f8acdedb';
+UPDATE public.portfolio_projects SET image_url='/portfolio/the-ponzi.png' WHERE id='530db424-4e5d-441d-99b5-c372226fd48a';
+UPDATE public.portfolio_projects SET image_url='/portfolio/dhbscan.png' WHERE id='89dc7841-88d0-4595-b1ee-cd1fc5b2444f';
+UPDATE public.portfolio_projects SET image_url='/portfolio/dhb-docs.png' WHERE id='1feac771-e10c-4f6f-b381-aa355fe625dc';
+UPDATE public.portfolio_projects SET image_url='/portfolio/arvox-agency.png' WHERE id='f19d5604-52b6-4dc4-b98b-3be0c9c74cd4';
+UPDATE public.portfolio_projects SET image_url='/portfolio/dehub-network.png' WHERE id='b42b931d-3b41-465e-93fc-3e173fa6c02b';
+UPDATE public.portfolio_projects SET image_url='/portfolio/dehub.png' WHERE id='b514610c-8065-4880-a304-18a064c83ce9';
+UPDATE public.portfolio_projects SET image_url='/portfolio/highwood-village.png' WHERE id='2a94f67c-f1c5-425f-962d-40efdf17a8ef';
