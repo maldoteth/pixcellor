@@ -556,7 +556,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "call" } })); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
-                            Callback
+                            Let's Talk
                         </button>
                     </div>
                     {/* Desktop: row */}
@@ -580,7 +580,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "call" } })); }}
                             className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
-                            Callback
+                            Let's Talk
                         </button>
                     </div>
                 </motion.div>
