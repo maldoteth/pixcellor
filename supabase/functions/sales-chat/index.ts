@@ -1228,6 +1228,17 @@ Deno.serve(async (req) => {
             console.error("Error in find_local_leads:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "find_local_leads_failed" }) });
           }
+        } else if (toolCall.function.name === "send_welcome_email" && isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await devSendWelcomeEmail(supabase, args);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in send_welcome_email:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "send_welcome_email_failed" }) });
+          }
         } else if (toolCall.function.name === "lookup_customer") {
           needsFollowUp = true;
           try {
