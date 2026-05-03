@@ -445,6 +445,19 @@ export default function Portal() {
   const [manualReply, setManualReply] = useState("");
   const [mailboxMessages, setMailboxMessages] = useState<MailboxMessage[]>([]);
   const [mailboxSearch, setMailboxSearch] = useState("");
+  const [readInquiryIds, setReadInquiryIds] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try { return new Set(JSON.parse(localStorage.getItem("portal:readInquiryIds") || "[]")); } catch { return new Set(); }
+  });
+  const markInquiryRead = (inquiryId: string) => {
+    setReadInquiryIds(current => {
+      if (current.has(inquiryId)) return current;
+      const next = new Set(current);
+      next.add(inquiryId);
+      try { localStorage.setItem("portal:readInquiryIds", JSON.stringify(Array.from(next))); } catch { /* ignore */ }
+      return next;
+    });
+  };
   const [activeMail, setActiveMail] = useState<MailboxMessage | null>(null);
   const [mailReply, setMailReply] = useState("");
   const [mailboxLoading, setMailboxLoading] = useState(false);
