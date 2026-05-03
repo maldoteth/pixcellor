@@ -1923,7 +1923,7 @@ export default function Portal() {
                     <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
                         <div className="font-medium">{e.title}</div>
-                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
+                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · Follow-up: {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
                         {contact?.phone && (phoneHref ? (
                           <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
                             {contact.phone}
