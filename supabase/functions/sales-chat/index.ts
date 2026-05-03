@@ -831,7 +831,47 @@ async function createDevSalesEvent(supabase: DbClient, args: Record<string, unkn
   return { ok: true, event: data };
 }
 
-function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
+async function devSendWelcomeEmail(supabase: DbClient, args: Record<string, unknown>) {
+  const contactIdRaw = cleanText(args.contact_id, 80);
+  const contactId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(contactIdRaw) ? contactIdRaw : "";
+  let email = cleanText(args.email, 255).toLowerCase();
+  let name = cleanText(args.name, 100);
+
+  if (contactId) {
+    const { data: contact } = await supabase.from("contacts").select("id, name, email").eq("id", contactId).maybeSingle();
+    if (!contact) return { ok: false, error: "contact_not_found" };
+    if (!email) email = String(contact.email ?? "").toLowerCase();
+    if (!name) name = String(contact.name ?? "");
+  }
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+
+  const idempotencyKey = `dev-welcome-${contactId || email}-${Date.now()}`;
+  const { error } = await supabase.functions.invoke("send-transactional-email", {
+    body: {
+      templateName: "sales-welcome-info",
+      recipientEmail: email,
+      idempotencyKey,
+      templateData: { name: name || undefined },
+    },
+  });
+  if (error) {
+    console.error("devSendWelcomeEmail error:", error);
+    return { ok: false, error: "email_send_failed", detail: String(error.message ?? error) };
+  }
+
+  // Log a CRM event so the team sees it in the contact timeline
+  if (contactId) {
+    await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: "Welcome info email sent",
+      description: `Sent sales-welcome-info template to ${email} via dev assistant.`,
+      event_type: "communication",
+    });
+  }
+
+  return { ok: true, email, contact_id: contactId || null, template: "sales-welcome-info" };
+}
   const lines: string[] = [];
   lines.push(`## Known client context (loaded from database for this email)`);
 
