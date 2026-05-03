@@ -23,35 +23,18 @@ const Index = () => {
     };
   }, []);
 
-  // iOS 15 fallback: svh/dvh aren't supported, so window.innerHeight gives true visible height.
-  useEffect(() => {
-    const setAppHeight = () => {
-      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
-    };
-    setAppHeight();
-    window.addEventListener('resize', setAppHeight);
-    window.addEventListener('orientationchange', setAppHeight);
-    return () => {
-      window.removeEventListener('resize', setAppHeight);
-      window.removeEventListener('orientationchange', setAppHeight);
-    };
-  }, []);
-
   const overlayOpen = packagesOpen || servicesOpen;
 
   return (
-    <div
-      className="w-full flex flex-col overflow-hidden"
-      style={{ height: 'var(--app-height, 100vh)' }}
-    >
-      <div className="relative flex-1 min-h-0 overflow-hidden">
+    <div className="w-full">
+      <div className="relative h-screen h-dvh overflow-hidden">
         <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
         <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
         <ServicesDialog />
+        <FalloffConsentBanner />
       </div>
-      <FalloffConsentBanner />
     </div>
   );
 };
