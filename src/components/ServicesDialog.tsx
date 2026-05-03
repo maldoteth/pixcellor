@@ -184,13 +184,6 @@ function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number
         </div>
         <h3 className="text-base md:text-lg font-semibold text-foreground">{group.title}</h3>
       </div>
-      <button
-        type="button"
-        onClick={handleClick}
-        className="pricing-button text-foreground transition h-10 w-full flex items-center justify-center text-sm font-semibold rounded-md"
-      >
-        {group.action === "pricing" ? "View Pricing" : "Speak to Sales"}
-      </button>
       <ul className="flex flex-col gap-2">
         {group.items.map((item) => (
           <li key={item} className="text-sm text-foreground/80 flex items-start gap-2">
@@ -199,6 +192,13 @@ function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number
           </li>
         ))}
       </ul>
+      <button
+        type="button"
+        onClick={handleClick}
+        className="pricing-button text-foreground transition h-10 w-full flex items-center justify-center text-sm font-semibold rounded-md"
+      >
+        {group.action === "pricing" ? "View Pricing" : "Speak to Sales"}
+      </button>
     </div>
   );
 }
