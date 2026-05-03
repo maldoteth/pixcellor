@@ -1777,7 +1777,7 @@ export default function Portal() {
           <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
         </div>
         <div>
-          <label className="text-xs text-muted-foreground">Quick callback</label>
+          <label className="text-xs text-muted-foreground">Quick follow-up</label>
           <select defaultValue="" onChange={(e) => applyCallbackPreset(e.target.value)} className="h-10 w-full rounded-none border border-input bg-background px-3 text-sm">
             <option value="">Pick time</option>
             {callbackPresets.map(preset => <option key={preset.label} value={preset.label}>{preset.label}</option>)}
