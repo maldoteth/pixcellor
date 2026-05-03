@@ -379,8 +379,8 @@ const contactWizardFields = [
 
 const salesEventWizardFields = [
   { key: "contact", label: "Client", placeholder: "Search client", required: true, inputMode: "text" },
-  { key: "title", label: "Event", placeholder: "Callback, email, quote…", required: true, inputMode: "text" },
-  { key: "callback_at", label: "Callback time", placeholder: "Callback time", required: false, inputMode: "text" },
+  { key: "title", label: "Event", placeholder: "Let's Talk, email, quote…", required: true, inputMode: "text" },
+  { key: "callback_at", label: "Let's Talk time", placeholder: "Let's Talk time", required: false, inputMode: "text" },
   { key: "description", label: "Notes", placeholder: "Add notes", required: false, inputMode: "text" },
 ] as const;
 
@@ -1443,7 +1443,7 @@ export default function Portal() {
     setShowSalesEventForm(false);
     setMobileSalesDrawerOpen(false);
     setMobileSalesStep(0);
-    toast.success(hasCallback ? "Callback scheduled." : "Event logged in client history.");
+    toast.success(hasCallback ? "Let's Talk scheduled." : "Event logged in client history.");
   };
 
   const completeCallback = async (eventId: string) => {
@@ -1451,7 +1451,7 @@ export default function Portal() {
     if (error) toast.error(error.message);
     else {
       await loadPortalSnapshot();
-      toast.success("Callback marked done.");
+      toast.success("Let's Talk marked done.");
     }
   };
 
@@ -1465,7 +1465,7 @@ export default function Portal() {
     if (error) toast.error(error.message);
     else {
       await loadPortalSnapshot();
-      toast.success("Callback pushed back 1 week.");
+      toast.success("Let's Talk pushed back 1 week.");
     }
   };
 
@@ -1773,11 +1773,11 @@ export default function Portal() {
         <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
         <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
         <div>
-          <label className="text-xs text-muted-foreground">Optional callback date</label>
+          <label className="text-xs text-muted-foreground">Optional follow-up date</label>
           <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
         </div>
         <div>
-          <label className="text-xs text-muted-foreground">Quick callback</label>
+          <label className="text-xs text-muted-foreground">Quick follow-up</label>
           <select defaultValue="" onChange={(e) => applyCallbackPreset(e.target.value)} className="h-10 w-full rounded-none border border-input bg-background px-3 text-sm">
             <option value="">Pick time</option>
             {callbackPresets.map(preset => <option key={preset.label} value={preset.label}>{preset.label}</option>)}
@@ -1864,7 +1864,7 @@ export default function Portal() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">Sales follow-ups</h2>
-                <p className="text-sm text-muted-foreground">Log client events and keep future callbacks visible.</p>
+                <p className="text-sm text-muted-foreground">Log client events and keep future follow-ups visible.</p>
               </div>
             </div>
 
@@ -1874,7 +1874,7 @@ export default function Portal() {
                 <Input
                   value={salesSearch}
                   onChange={(e) => setSalesSearch(e.target.value)}
-                  placeholder="Search sales callbacks by client, title, notes, phone, email…"
+                  placeholder="Search Let's Talk items by client, title, notes, phone, email…"
                   className="pl-9"
                 />
               </div>
@@ -1897,8 +1897,8 @@ export default function Portal() {
             {eventFormCard}
 
             <div className="space-y-2">
-              <h3 className="font-medium">Callbacks waiting</h3>
-              {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting{salesQ ? " match your search" : ""}.</p>}
+              <h3 className="font-medium">Let's Talk list</h3>
+              {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No items waiting{salesQ ? " match your search" : ""}.</p>}
               {salesCallbacks.map(e => {
                 const contact = getContact(e.contact_id);
                 const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
@@ -1923,7 +1923,7 @@ export default function Portal() {
                     <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
                         <div className="font-medium">{e.title}</div>
-                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
+                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · Follow-up: {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
                         {contact?.phone && (phoneHref ? (
                           <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
                             {contact.phone}
@@ -2656,7 +2656,7 @@ export default function Portal() {
                       <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()} · {getEventAuthorLabel(e)}</span>
                     </div>
                     {e.description && <LinkifiedText text={e.description} className="block mt-1 whitespace-pre-wrap" />}
-                    {e.callback_at && <div className="mt-1 text-xs text-muted-foreground">Callback: {new Date(e.callback_at).toLocaleString()}</div>}
+                    {e.callback_at && <div className="mt-1 text-xs text-muted-foreground">Let's Talk: {new Date(e.callback_at).toLocaleString()}</div>}
                   </div>
                 ))}
               </div>
@@ -2743,7 +2743,7 @@ export default function Portal() {
       <Drawer open={mobileSalesDrawerOpen} onOpenChange={setMobileSalesDrawerOpen}>
         <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl lg:hidden">
           <DrawerHeader className="px-0 text-left">
-            <DrawerTitle>Create sales event</DrawerTitle>
+            <DrawerTitle>Create follow-up</DrawerTitle>
             <DrawerDescription>Step {mobileSalesStep + 1} of {salesEventWizardFields.length}</DrawerDescription>
           </DrawerHeader>
           <div className="space-y-5">

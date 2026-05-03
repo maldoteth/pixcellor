@@ -378,7 +378,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
 
     const visibleContent = input.trim();
     const actionInstruction = quickAction === "call"
-      ? "\n\n[Quick action: Request call. Save these details as a contact and schedule a callback for 1 day from now.]"
+      ? "\n\n[Quick action: Request call. Save these details as a contact and schedule a Let's Talk follow-up for 1 day from now.]"
       : quickAction === "email"
         ? "\n\n[Quick action: Email info. Save these details as a contact and send the Pixcellor welcome sales email.]"
         : "";
@@ -517,7 +517,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     const reply = {
       role: "assistant" as const,
       content: action === "call"
-        ? "Absolutely — leave your name and phone number and I’ll get a callback booked for tomorrow."
+        ? "Absolutely — leave your name and phone number and I’ll get a call booked for tomorrow."
         : "Sure — leave your name and email and I’ll send over our full package guide, process breakdown, portfolio and buy links.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
