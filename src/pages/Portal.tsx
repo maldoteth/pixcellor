@@ -2294,7 +2294,8 @@ export default function Portal() {
                         <p className="text-sm text-muted-foreground">{activeMail.from} · {activeMail.date ? new Date(activeMail.date).toLocaleString() : ""}</p>
                       </div>
                       <div className="flex gap-2">
-                        {!activeMail.id.startsWith("inquiry:") && activeMail.unread && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "markRead")}>Mark read</Button>}
+                        {!activeMail.id.startsWith("inquiry:") && activeMail.unread && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "markRead")}><Check className="w-4 h-4 mr-2" />Mark read</Button>}
+                        {activeMail.id.startsWith("inquiry:") && activeMail.unread && <Button variant="outline" size="sm" onClick={() => { markInquiryRead(activeMail.id.replace(/^inquiry:/, "")); setActiveMail({ ...activeMail, unread: false }); }}><Check className="w-4 h-4 mr-2" />Mark read</Button>}
                         {!activeMail.id.startsWith("inquiry:") && <Button variant="outline" size="sm" onClick={() => updateMailboxMessage(activeMail.id, "archive")}><Archive className="w-4 h-4 mr-2" />Archive</Button>}
                       </div>
                     </div>
