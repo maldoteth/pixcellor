@@ -65,7 +65,7 @@ export default function ServicesDialog() {
     return createPortal(
       <AnimatePresence>
         {open && (
-          <div className="fixed inset-0 z-50 flex items-end" role="presentation">
+          <div className="fixed inset-0 z-50 flex items-end" role="presentation" data-pixcellor-mobile-drawer="true">
             <motion.div
               className="absolute inset-0 bg-background/80"
               initial={{ opacity: 0 }}
@@ -99,7 +99,8 @@ export default function ServicesDialog() {
                 </h2>
               </div>
               <div
-                className="flex-1 min-h-0 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
+                className="flex-1 min-h-0 touch-pan-y overflow-y-scroll overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
+                data-pixcellor-drawer-scroll="true"
               >
                 <div className="flex flex-col gap-4">
                   {SERVICE_GROUPS.map((group) => (
