@@ -1482,6 +1482,25 @@ export default function Portal() {
     toast.success("Order moved back to open.");
   };
 
+  const sendTestOrderCompleteEmail = async () => {
+    const email = window.prompt("Send a real 'order complete' test email to which address?");
+    if (!email) return;
+    const cleanEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
+    toast.info(`Queuing test order-complete email to ${cleanEmail}…`);
+    const { data, error } = await supabase.functions.invoke("send-transactional-email-test", {
+      body: { recipientEmail: cleanEmail },
+    });
+    if (error || (data as { error?: string })?.error) {
+      toast.error((data as { error?: string })?.error || error?.message || "Test send failed");
+      return;
+    }
+    toast.success(`Test email queued to ${cleanEmail}. Check inbox/spam in a moment.`);
+  };
+
   const updateEditRequestStatus = async (requestId: string, status: EditRequest["status"]) => {
     const { error } = await (supabase as any).rpc("portal_update_edit_request_status", {
       _request_id: requestId,
