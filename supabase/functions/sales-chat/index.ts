@@ -1775,28 +1775,17 @@ Deno.serve(async (req) => {
             const result = await devRecentActivity(supabase, JSON.parse(toolCall.function.arguments || "{}"));
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
           } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "activity_failed" }) }); }
-        } else if (toolCall.function.name === "lookup_customer" && isDevMode) {
-          needsFollowUp = true;
-          try {
-            const result = await devLookupCustomer(supabase, JSON.parse(toolCall.function.arguments));
-            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
-          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "lookup_failed" }) }); }
+        } else if (toolCall.function.name === "lookup_customer") {
           needsFollowUp = true;
           try {
             const args = JSON.parse(toolCall.function.arguments);
-            const result = await lookupCustomer(supabase, args.email);
-            aiMessages.push({
-              role: "tool",
-              tool_call_id: toolCall.id,
-              content: JSON.stringify(result),
-            });
+            const result = isDevMode
+              ? await devLookupCustomer(supabase, args)
+              : await lookupCustomer(supabase, args.email);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
           } catch (e) {
             console.error("Error in lookup_customer:", e);
-            aiMessages.push({
-              role: "tool",
-              tool_call_id: toolCall.id,
-              content: JSON.stringify({ found: false, error: "lookup_failed" }),
-            });
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ found: false, error: "lookup_failed" }) });
           }
         } else if (toolCall.function.name === "save_brief") {
           needsFollowUp = true;
