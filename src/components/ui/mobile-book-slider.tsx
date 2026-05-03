@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import HTMLFlipBook from "react-pageflip";
+import { AnimatePresence, motion } from "framer-motion";
 import { recordFalloff } from "@/lib/checkoutTracking";
 
 // Import portfolio screenshots
@@ -116,38 +116,23 @@ const portfolioData = [
 ];
 
 function MobileBookSlider() {
-  const bookRef = useRef<any>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const totalPages = portfolioData.length + 1;
+  const [direction, setDirection] = useState(1);
+  const totalPages = portfolioData.length;
+  const site = portfolioData[currentPage];
 
-  const getPageFlip = () => bookRef.current?.pageFlip?.();
-
-  const getCurrentPage = () => {
-    const pageFlip = getPageFlip();
-    const index = pageFlip?.getCurrentPageIndex?.();
-    return typeof index === "number" ? index : currentPage;
-  };
-
-  const goToPage = (page: number) => {
-    const pageFlip = getPageFlip();
-    if (!pageFlip) return;
-
-    const current = getCurrentPage();
+  const goToPage = (page: number, nextDirection: number) => {
     const target = Math.min(Math.max(page, 0), totalPages - 1);
-    if (target === current) return;
+    if (target === currentPage) return;
 
-    try {
-      pageFlip.flip?.(target, "top");
-    } catch {
-      pageFlip.turnToPage?.(target);
-    }
-
+    setDirection(nextDirection);
     setCurrentPage(target);
+    void recordFalloff({ event: "portfolio_page_viewed", portfolioPage: target + 1 });
   };
 
-  const goToPreviousPage = () => goToPage(getCurrentPage() - 1);
-  const goToNextPage = () => goToPage(getCurrentPage() + 1);
+  const goToPreviousPage = () => goToPage(currentPage - 1, -1);
+  const goToNextPage = () => goToPage(currentPage + 1, 1);
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
@@ -189,72 +174,37 @@ function MobileBookSlider() {
     }
   };
 
-  const handleFlip = (e: any) => {
-    setCurrentPage(e.data);
-    void recordFalloff({ event: "portfolio_page_viewed", portfolioPage: e.data + 1 });
-  };
-
   return (
     <div
-      className="flex flex-col items-center justify-center w-full cursor-pointer touch-pan-y [&_.stf__parent]:border [&_.stf__parent]:border-white/30 [&_.stf__parent]:rounded-sm"
+      className="flex flex-col items-center justify-center w-full cursor-pointer touch-pan-y"
       data-pixcellor-horizontal-swipe="true"
       onTouchStartCapture={handleTouchStart}
       onTouchMoveCapture={handleTouchMove}
       onTouchEndCapture={handleTouchEnd}
     >
-      {/* @ts-ignore */}
-      <HTMLFlipBook
-        ref={bookRef}
-        width={288}
-        height={391}
-        size="fixed"
-        minWidth={288}
-        maxWidth={288}
-        minHeight={391}
-        maxHeight={391}
-        showCover={false}
-        mobileScrollSupport={true}
-        className=""
-        style={{}}
-        startPage={0}
-        drawShadow={false}
-        flippingTime={800}
-        usePortrait={true}
-        startZIndex={0}
-        autoSize={false}
-        maxShadowOpacity={0.5}
-        showPageCorners={true}
-        disableFlipByClick={true}
-        swipeDistance={999}
-        clickEventForward={true}
-        useMouseEvents={true}
-        onFlip={handleFlip}
-      >
-        {portfolioData.map((site) => (
-          <div 
+      <div className="relative h-[391px] w-[288px] overflow-hidden border border-border bg-card">
+        <AnimatePresence initial={false} custom={direction} mode="wait">
+          <motion.div
             key={site.url}
-            className="bg-card border border-border overflow-hidden"
+            custom={direction}
+            initial={{ x: direction > 0 ? 40 : -40, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction > 0 ? -40 : 40, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 280, damping: 30 }}
+            className="absolute inset-0 bg-card"
           >
             <div className="h-full flex flex-col">
-              {/* Screenshot */}
               <div className="h-36 bg-muted overflow-hidden">
-                {site.screenshot ? (
-                  <img
-                    src={site.screenshot}
-                    alt={site.name}
-                    className="w-full h-full object-cover object-top"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center">
-                    <span className="text-muted-foreground text-sm">Coming Soon</span>
-                  </div>
-                )}
+                <img
+                  src={site.screenshot}
+                  alt={site.name}
+                  className="w-full h-full object-cover object-top"
+                />
               </div>
-              
-              {/* Content with inline arrows */}
+
               <div className="flex-1 flex flex-col justify-center p-5 relative">
-                {/* Nav arrows in top corners of text area */}
                 <button
+                  type="button"
                   onClick={(e) => { e.stopPropagation(); goToPreviousPage(); }}
                   className={`absolute top-2 left-2 p-1 transition ${currentPage === 0 ? 'opacity-0 pointer-events-none' : 'opacity-90 hover:opacity-100'}`}
                   aria-label="Previous page"
@@ -262,6 +212,7 @@ function MobileBookSlider() {
                   <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
                 <button
+                  type="button"
                   onClick={(e) => { e.stopPropagation(); goToNextPage(); }}
                   className={`absolute top-2 right-2 p-1 transition ${currentPage >= totalPages - 1 ? 'opacity-0 pointer-events-none' : 'opacity-90 hover:opacity-100'}`}
                   aria-label="Next page"
@@ -273,7 +224,8 @@ function MobileBookSlider() {
                   <h2 className="text-lg font-bold text-foreground mb-1">
                     {site.name}
                   </h2>
-                  <button 
+                  <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
@@ -290,27 +242,9 @@ function MobileBookSlider() {
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-        {/* Padding page to keep total even so swipe-back works on the final entry */}
-        <div key="__end" className="bg-card border border-border overflow-hidden">
-          <div className="h-full flex flex-col items-center justify-center p-5 relative">
-            <button
-              onClick={(e) => { e.stopPropagation(); goToPreviousPage(); }}
-              className="absolute top-2 left-2 p-1 opacity-90 hover:opacity-100 transition"
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="w-5 h-5 text-foreground" />
-            </button>
-            <div className="text-center">
-              <h2 className="text-lg font-bold text-foreground mb-2">That's a wrap</h2>
-              <p className="text-muted-foreground text-xs leading-relaxed">
-                Swipe back to revisit any project, or get in touch to start your own.
-              </p>
-            </div>
-          </div>
-        </div>
-      </HTMLFlipBook>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
