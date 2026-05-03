@@ -61,7 +61,6 @@ export default function ServicesDialog() {
   }, [open, isMobile]);
 
   if (isMobile) {
-    if (!open) return null;
 
     return createPortal(
       <AnimatePresence>
