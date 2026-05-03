@@ -113,6 +113,8 @@ const MAX_SCROLL = 3000;
 const HERO_MORPH_END = 600;
 const SCROLL_BREAK_DURATION = 650;
 const POST_HERO_SCROLL_SENSITIVITY = 0.2;
+const MOBILE_GALLERY_SCROLL_START = 900;
+const DESKTOP_GALLERY_SCROLL_START = 900;
 
 // UI Template Images (16 unique + 4 repeated to fill 20 slots)
 const IMAGES = [
@@ -476,7 +478,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             );
         })();
     }, []);
-    const galleryRotation = useTransform(virtualScroll, isSmallViewport ? [1400, 3000] : [1200, 3000], isSmallViewport ? [0, 360] : [0, 720]);
+    const galleryScrollStart = isSmallViewport ? MOBILE_GALLERY_SCROLL_START : DESKTOP_GALLERY_SCROLL_START;
+    const galleryRotation = useTransform(virtualScroll, [galleryScrollStart, MAX_SCROLL], isSmallViewport ? [0, 360] : [0, 720]);
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     useEffect(() => {
