@@ -133,7 +133,7 @@ function BookSlider() {
 
   // Mobile uses completely separate component
   if (isMobile) {
-    return <div className="-mt-[15px]"><MobileBookSlider /></div>;
+    return <div className="-mt-[18px]"><MobileBookSlider /></div>;
   }
 
   // Desktop/Tablet version with cover and animation
