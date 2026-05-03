@@ -1898,7 +1898,7 @@ export default function Portal() {
 
             <div className="space-y-2">
               <h3 className="font-medium">Let's Talk list</h3>
-              {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting{salesQ ? " match your search" : ""}.</p>}
+              {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No items waiting{salesQ ? " match your search" : ""}.</p>}
               {salesCallbacks.map(e => {
                 const contact = getContact(e.contact_id);
                 const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
