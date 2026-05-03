@@ -110,6 +110,8 @@ function FlipCard({
 // --- Main Hero Component ---
 const TOTAL_IMAGES = 20;
 const MAX_SCROLL = 3000;
+const HERO_MORPH_END = 600;
+const SCROLL_BREAK_DURATION = 650;
 
 // UI Template Images (16 unique + 4 repeated to fill 20 slots)
 const IMAGES = [
@@ -177,6 +179,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     // --- Virtual Scroll Logic ---
     const virtualScroll = useMotionValue(0);
     const scrollRef = useRef(0);
+    const scrollBreakUntilRef = useRef(0);
+    const touchNeedsReleaseRef = useRef(false);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -190,18 +194,41 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             introTimersRef.current = [];
         };
 
+        const applyVirtualScrollDelta = (delta: number, source: "wheel" | "touch") => {
+            const currentScroll = scrollRef.current;
+            const now = performance.now();
+
+            if (delta > 0) {
+                if (source === "touch" && touchNeedsReleaseRef.current) return;
+                if (currentScroll >= HERO_MORPH_END && currentScroll <= HERO_MORPH_END + 1 && now < scrollBreakUntilRef.current) return;
+                if (currentScroll < HERO_MORPH_END && currentScroll + delta > HERO_MORPH_END) {
+                    scrollRef.current = HERO_MORPH_END;
+                    virtualScroll.set(HERO_MORPH_END);
+                    onVirtualScrollChangeRef.current?.(HERO_MORPH_END);
+                    recordScrollDepth((HERO_MORPH_END / MAX_SCROLL) * 100);
+                    scrollBreakUntilRef.current = now + SCROLL_BREAK_DURATION;
+                    if (source === "touch") touchNeedsReleaseRef.current = true;
+                    return;
+                }
+            } else {
+                scrollBreakUntilRef.current = 0;
+                touchNeedsReleaseRef.current = false;
+            }
+
+            const newScroll = Math.min(Math.max(currentScroll + delta, 0), MAX_SCROLL);
+            scrollRef.current = newScroll;
+            virtualScroll.set(newScroll);
+            onVirtualScrollChangeRef.current?.(newScroll);
+            recordScrollDepth((newScroll / MAX_SCROLL) * 100);
+        };
+
         const handleWheel = (e: WheelEvent) => {
             e.preventDefault();
             forceCirclePhase();
 
             const isMobile = window.innerWidth < 768;
             const scrollDelta = isMobile ? e.deltaY * 24 : e.deltaY;
-
-            const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
-            scrollRef.current = newScroll;
-            virtualScroll.set(newScroll);
-            onVirtualScrollChangeRef.current?.(newScroll);
-            recordScrollDepth((newScroll / MAX_SCROLL) * 100);
+            applyVirtualScrollDelta(scrollDelta, "wheel");
         };
 
         let touchStartY = 0;
@@ -265,12 +292,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
             const isMobile = window.innerWidth < 768;
             const scrollDelta = isMobile ? deltaY * 24 : deltaY;
-
-            const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
-            scrollRef.current = newScroll;
-            virtualScroll.set(newScroll);
-            onVirtualScrollChangeRef.current?.(newScroll);
-            recordScrollDepth((newScroll / MAX_SCROLL) * 100);
+            applyVirtualScrollDelta(scrollDelta, "touch");
+        };
+        const handleTouchEnd = () => {
+            touchNeedsReleaseRef.current = false;
         };
 
         // Lock native scroll/zoom on the hero so the browser doesn't waste the
@@ -287,11 +312,15 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         // first swipe registers instead of being eaten by the scroll heuristic.
         touchTarget.addEventListener("touchstart", handleTouchStart, touchListenerOptions);
         touchTarget.addEventListener("touchmove", handleTouchMove, touchListenerOptions);
+        touchTarget.addEventListener("touchend", handleTouchEnd, touchListenerOptions);
+        touchTarget.addEventListener("touchcancel", handleTouchEnd, touchListenerOptions);
 
         return () => {
             container.removeEventListener("wheel", handleWheel);
             touchTarget.removeEventListener("touchstart", handleTouchStart, touchListenerOptions);
             touchTarget.removeEventListener("touchmove", handleTouchMove, touchListenerOptions);
+            touchTarget.removeEventListener("touchend", handleTouchEnd, touchListenerOptions);
+            touchTarget.removeEventListener("touchcancel", handleTouchEnd, touchListenerOptions);
             container.style.touchAction = previousTouchAction;
         };
     }, [virtualScroll]);
