@@ -1897,7 +1897,7 @@ export default function Portal() {
             {eventFormCard}
 
             <div className="space-y-2">
-              <h3 className="font-medium">Callbacks waiting</h3>
+              <h3 className="font-medium">Let's Talk list</h3>
               {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No callbacks waiting{salesQ ? " match your search" : ""}.</p>}
               {salesCallbacks.map(e => {
                 const contact = getContact(e.contact_id);
