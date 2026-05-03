@@ -144,10 +144,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     onOpenChange?.(next);
   };
 
-  return (
-    <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {isMobile ? (
+  const trigger = isMobile ? (
           <motion.button
             type="button"
             aria-label="View our web development pricing"
