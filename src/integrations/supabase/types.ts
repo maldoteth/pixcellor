@@ -266,6 +266,7 @@ export type Database = {
       }
       edit_requests: {
         Row: {
+          attachments: Json
           created_at: string
           customer_email: string | null
           id: string
@@ -277,6 +278,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachments?: Json
           created_at?: string
           customer_email?: string | null
           id?: string
@@ -288,6 +290,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachments?: Json
           created_at?: string
           customer_email?: string | null
           id?: string
@@ -461,6 +464,7 @@ export type Database = {
       }
       project_requirements: {
         Row: {
+          attachments: Json
           colours_styles: string
           created_at: string
           customer_email: string | null
@@ -475,6 +479,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachments?: Json
           colours_styles: string
           created_at?: string
           customer_email?: string | null
@@ -489,6 +494,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachments?: Json
           colours_styles?: string
           created_at?: string
           customer_email?: string | null
