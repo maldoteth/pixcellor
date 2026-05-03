@@ -1248,6 +1248,44 @@ export default function Portal() {
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
     toast.success("Client added.");
+    return newContact;
+  };
+
+  const openPersonDrawerForContact = (contactId: string) => {
+    setPersonForm({ name: "", job_title: "", phone: "" });
+    setPersonDrawerContactId(contactId);
+  };
+
+  const createContactPerson = async () => {
+    if (!personDrawerContactId) return;
+    const name = personForm.name.trim();
+    if (!name) { toast.error("Contact name is required."); return; }
+    setPersonSubmitting(true);
+    const { data, error } = await (supabase as any).rpc("portal_add_contact_person", {
+      _contact_id: personDrawerContactId,
+      _name: name,
+      _job_title: personForm.job_title || null,
+      _phone: personForm.phone || null,
+    });
+    setPersonSubmitting(false);
+    if (error) { toast.error(error.message); return; }
+    const created = data as ContactPerson | null;
+    if (created?.id) setContactPersons(curr => [created, ...curr]);
+    setPersonForm({ name: "", job_title: "", phone: "" });
+    setPersonDrawerContactId(null);
+    toast.success("Contact added.");
+  };
+
+  const deleteContactPerson = async (personId: string) => {
+    const { error } = await (supabase as any).rpc("portal_delete_contact_person", { _person_id: personId });
+    if (error) { toast.error(error.message); return; }
+    setContactPersons(curr => curr.filter(p => p.id !== personId));
+  };
+
+  const addContactFromWizard = async () => {
+    if (!contactForm.name.trim()) { toast.error("Enter the company name first."); return; }
+    const newContact = await createContact();
+    if (newContact?.id) openPersonDrawerForContact(newContact.id);
   };
 
   const runLeadAgent = async () => {
