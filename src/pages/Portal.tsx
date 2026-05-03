@@ -1997,6 +1997,15 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="completed" className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs text-muted-foreground">
+                {completedOrders.length} delivered orders
+              </div>
+              <Button variant="outline" size="sm" onClick={sendTestOrderCompleteEmail}>
+                <Mail className="mr-2 h-3.5 w-3.5" />
+                Send test order-complete email
+              </Button>
+            </div>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search completed orders by email, order ID, status, domain…" className="pl-9" />
