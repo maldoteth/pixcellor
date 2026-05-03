@@ -217,7 +217,17 @@ type ContactEvent = {
   updated_at: string;
 };
 
-type MailboxMessage = {
+type ContactPerson = {
+  id: string;
+  contact_id: string;
+  name: string;
+  job_title: string | null;
+  phone: string | null;
+  email: string | null;
+  created_by_email?: string | null;
+  created_at: string;
+  updated_at: string;
+};
   id: string;
   threadId: string;
   from: string;
