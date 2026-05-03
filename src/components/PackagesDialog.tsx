@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect, useRef, type TouchEvent } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Loader2, Lock, ShoppingBag, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useDrawerTouchScroll } from "@/hooks/use-drawer-touch-scroll";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
@@ -128,26 +129,8 @@ interface PackagesDialogProps {
 export default function PackagesDialog({ open, onOpenChange, mobileTop = false, hidden = false, chatOpen = false }: PackagesDialogProps = {}) {
   const isMobile = useIsMobile();
   const [internalOpen, setInternalOpen] = useState(false);
-  const drawerTouchYRef = useRef<number | null>(null);
-
-  const handleDrawerTouchStart = (event: TouchEvent<HTMLElement>) => {
-    drawerTouchYRef.current = event.touches[0]?.clientY ?? null;
-  };
-
-  const handleDrawerTouchMove = (event: TouchEvent<HTMLElement>) => {
-    const currentY = event.touches[0]?.clientY;
-    if (drawerTouchYRef.current === null || currentY === undefined) return;
-
-    const deltaY = drawerTouchYRef.current - currentY;
-    drawerTouchYRef.current = currentY;
-    event.currentTarget.scrollTop += deltaY;
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  const resetDrawerTouch = () => {
-    drawerTouchYRef.current = null;
-  };
+  const effectiveOpen = mobileTop ? internalOpen : open;
+  const drawerScrollRef = useDrawerTouchScroll<HTMLElement>(isMobile && Boolean(effectiveOpen));
 
   useEffect(() => {
     if (!mobileTop || !isMobile) return;
@@ -155,8 +138,6 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     window.addEventListener("pixcellor:open-packages", handler);
     return () => window.removeEventListener("pixcellor:open-packages", handler);
   }, [mobileTop, isMobile]);
-
-  const effectiveOpen = mobileTop ? internalOpen : open;
 
   useEffect(() => {
     if (!mobileTop) return;
