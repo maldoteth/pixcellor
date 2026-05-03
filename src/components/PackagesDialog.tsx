@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Check, Loader2, Lock, ShoppingBag, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
@@ -186,39 +186,50 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     return (
       <>
         {trigger}
-        {effectiveOpen && createPortal(
-          <div
-            className="fixed inset-0 z-50 flex items-end bg-background/80"
-            role="presentation"
-            onClick={() => handleOpenChange(false)}
-          >
-            <section
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="packages-dialog-title"
-              className="flex h-[82dvh] max-h-[82dvh] w-full flex-col overflow-hidden rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="mx-auto mt-4 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-              <div className="relative flex-shrink-0 px-4 pt-3 pb-2 text-center">
-                <button
-                  type="button"
+        {createPortal(
+          <AnimatePresence>
+            {effectiveOpen && (
+              <div className="fixed inset-0 z-50 flex items-end" role="presentation">
+                <motion.div
+                  className="absolute inset-0 bg-background/80"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25 }}
                   onClick={() => handleOpenChange(false)}
-                  className="absolute right-4 top-3 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
+                />
+                <motion.section
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="packages-dialog-title"
+                  className="relative flex h-[82dvh] max-h-[82dvh] w-full flex-col overflow-hidden rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl"
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 32, stiffness: 320 }}
                 >
-                  <X className="h-5 w-5" />
-                  <span className="sr-only">Close</span>
-                </button>
-                <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center">
-                  Our Pricing
-                </h2>
-                <StripeBadge />
+                  <div className="mx-auto mt-4 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
+                  <div className="relative flex-shrink-0 px-4 pt-3 pb-2 text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenChange(false)}
+                      className="absolute right-4 top-3 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
+                    >
+                      <X className="h-5 w-5" />
+                      <span className="sr-only">Close</span>
+                    </button>
+                    <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center">
+                      Our Pricing
+                    </h2>
+                    <StripeBadge />
+                  </div>
+                  <div className="flex-1 min-h-0 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
+                    <MobileCards />
+                  </div>
+                </motion.section>
               </div>
-              <div className="flex-1 min-h-0 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
-                <MobileCards />
-              </div>
-            </section>
-          </div>,
+            )}
+          </AnimatePresence>,
           document.body,
         )}
       </>
