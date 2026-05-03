@@ -149,7 +149,7 @@ function MobileBookSlider() {
         autoSize={false}
         maxShadowOpacity={0.5}
         showPageCorners={true}
-        disableFlipByClick={false}
+        disableFlipByClick={true}
         swipeDistance={20}
         clickEventForward={true}
         useMouseEvents={true}
