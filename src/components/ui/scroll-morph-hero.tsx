@@ -490,10 +490,26 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         <button
                             type="button"
                             data-hero-scroll-control="true"
-                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-packages")); }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const start = scrollRef.current;
+                                const end = Math.min(Math.max(start, 0) + 2000, MAX_SCROLL);
+                                const duration = 1200;
+                                const t0 = performance.now();
+                                const step = (now: number) => {
+                                    const t = Math.min((now - t0) / duration, 1);
+                                    const eased = 1 - Math.pow(1 - t, 3);
+                                    const v = start + (end - start) * eased;
+                                    scrollRef.current = v;
+                                    virtualScroll.set(v);
+                                    onVirtualScrollChangeRef.current?.(v);
+                                    if (t < 1) requestAnimationFrame(step);
+                                };
+                                requestAnimationFrame(step);
+                            }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
-                            Pricing
+                            Portfolio
                         </button>
                         <button
                             type="button"
