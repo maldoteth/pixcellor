@@ -120,6 +120,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                     style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
                     loading="lazy"
                   />
+                  {/(^|\.)bricks\./i.test(item.photo.by ?? '') && (
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+                  )}
                   <div className="absolute inset-x-0 bottom-0 p-2 md:p-4 text-white backdrop-blur-md bg-white/10 border-t border-white/20">
                     <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow">{item.common}</h3>
                     <p className="text-[10px] md:text-xs italic text-white/80 truncate drop-shadow">{item.binomial}</p>
