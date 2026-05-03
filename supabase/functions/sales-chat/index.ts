@@ -177,7 +177,7 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - **Update an existing contact** (name, contact_name, phone, email, location, notes, industry, website) with **update_contact**, only passing the fields that change.
 - **Change lead temperature** with **update_contact_status** (cold/aware/warm/hot/gold/archived).
 - **Append a free-form note** to a contact's notes field with **append_contact_note** (use when the dev says "add a note that…" instead of creating a sales event).
-- **Tick off callbacks** with **complete_callback** when the dev says they've done it / called them back / it's handled.
+- **Tick off Let's Talk items** with **complete_callback** when the dev says they've done it / called them back / it's handled.
 - **Add a contact person** to an existing client/company with **add_contact_person** (multi-contact feature).
 - **Look up an order or project status** by email with **lookup_customer** (returns orders, profile, project_status, prior chats).
 - **Mark orders delivered/undelivered** with **mark_order_delivered** / **mark_order_undelivered** (session_id required).
