@@ -62,13 +62,13 @@ export default function ServicesDialog() {
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="border-border bg-background/95 backdrop-blur-xl max-h-[92vh]">
-          <DrawerHeader className="pb-2">
+        <DrawerContent className="border-border bg-background/95 backdrop-blur-xl max-h-[88vh] flex flex-col">
+          <DrawerHeader className="pb-2 flex-shrink-0">
             <DrawerTitle className="text-2xl font-bold text-foreground text-center">
               Our Services
             </DrawerTitle>
           </DrawerHeader>
-          <div className="overflow-y-auto px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [&::-webkit-scrollbar]:hidden">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [&::-webkit-scrollbar]:hidden">
             <div className="flex flex-col gap-4">
               {SERVICE_GROUPS.map((group) => (
                 <ServiceCard key={group.title} group={group} />
