@@ -1773,7 +1773,7 @@ export default function Portal() {
         <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
         <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
         <div>
-          <label className="text-xs text-muted-foreground">Optional callback date</label>
+          <label className="text-xs text-muted-foreground">Optional follow-up date</label>
           <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
         </div>
         <div>
