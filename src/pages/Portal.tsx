@@ -2387,6 +2387,9 @@ export default function Portal() {
                           <div className="flex items-center gap-2">
                             <Badge style={{ backgroundColor: statusColor, color: "hsl(var(--background))" }} className="rounded-none">{statusLabel}</Badge>
                             {stats && <Badge variant="outline" className="rounded-none">LTV {formatGBP(stats.ltv)}</Badge>}
+                            {contactPersons.filter(p => p.contact_id === c.id).length > 0 && (
+                              <Badge variant="outline" className="rounded-none">{contactPersons.filter(p => p.contact_id === c.id).length} contact{contactPersons.filter(p => p.contact_id === c.id).length === 1 ? "" : "s"}</Badge>
+                            )}
                           </div>
                         </div>
                         <div className="text-xs text-muted-foreground">
