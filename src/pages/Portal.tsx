@@ -1482,6 +1482,25 @@ export default function Portal() {
     toast.success("Order moved back to open.");
   };
 
+  const sendTestOrderCompleteEmail = async () => {
+    const email = window.prompt("Send a real 'order complete' test email to which address?");
+    if (!email) return;
+    const cleanEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
+    toast.info(`Queuing test order-complete email to ${cleanEmail}…`);
+    const { data, error } = await supabase.functions.invoke("send-transactional-email-test", {
+      body: { recipientEmail: cleanEmail },
+    });
+    if (error || (data as { error?: string })?.error) {
+      toast.error((data as { error?: string })?.error || error?.message || "Test send failed");
+      return;
+    }
+    toast.success(`Test email queued to ${cleanEmail}. Check inbox/spam in a moment.`);
+  };
+
   const updateEditRequestStatus = async (requestId: string, status: EditRequest["status"]) => {
     const { error } = await (supabase as any).rpc("portal_update_edit_request_status", {
       _request_id: requestId,
@@ -1978,6 +1997,15 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="completed" className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs text-muted-foreground">
+                {completedOrders.length} delivered orders
+              </div>
+              <Button variant="outline" size="sm" onClick={sendTestOrderCompleteEmail}>
+                <Mail className="mr-2 h-3.5 w-3.5" />
+                Send test order-complete email
+              </Button>
+            </div>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search completed orders by email, order ID, status, domain…" className="pl-9" />
