@@ -189,10 +189,19 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         };
 
         const handleWheel = (e: WheelEvent) => {
+            // Once hero is fully scrolled, release wheel to native page scroll
+            // so sections below (e.g. portfolio) become reachable.
+            if (scrollRef.current >= MAX_SCROLL && e.deltaY > 0) {
+                return;
+            }
+            // Allow scroll-up to leave the hero alone if already at top and the
+            // page itself has been scrolled.
+            if (scrollRef.current <= 0 && e.deltaY < 0 && window.scrollY > 0) {
+                return;
+            }
             e.preventDefault();
             forceCirclePhase();
 
-            // Apply 5x multiplier on mobile for faster scrolling (both directions)
             const isMobile = window.innerWidth < 768;
             const scrollDelta = isMobile ? e.deltaY * 24 : e.deltaY;
 
