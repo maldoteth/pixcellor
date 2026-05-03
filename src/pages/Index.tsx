@@ -27,7 +27,7 @@ const Index = () => {
 
   return (
     <div className="w-full">
-      <div className="relative h-dvh overflow-hidden">
+      <div className="relative h-screen h-dvh overflow-hidden">
         <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
         <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
