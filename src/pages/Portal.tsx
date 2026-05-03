@@ -1818,7 +1818,7 @@ export default function Portal() {
               <Button onClick={() => setShowSalesEventForm(v => !v)} disabled={contacts.length === 0}>
                 <Plus className="w-4 h-4 mr-2" /> Create event
               </Button>
-              <Button onClick={() => setShowContactForm(v => !v)}>
+              <Button onClick={openMobileContactForm}>
                 <UserPlus className="w-4 h-4 mr-2" /> Create client
               </Button>
             </div>
