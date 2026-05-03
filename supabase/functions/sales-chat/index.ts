@@ -380,6 +380,197 @@ const devTools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "send_transactional_email",
+      description: "Send any supported transactional email template to a contact or raw email. Templates: 'sales-welcome-info' (info/welcome), 'project-requirements-reminder' (chase the brief), 'order-complete' (project finished). Auto-logs a CRM communication event when contact_id is given.",
+      parameters: {
+        type: "object",
+        properties: {
+          template: { type: "string", enum: ["sales-welcome-info", "project-requirements-reminder", "order-complete"] },
+          contact_id: { type: "string", description: "Contact UUID (preferred)." },
+          email: { type: "string", description: "Recipient email if contact_id unknown." },
+          name: { type: "string", description: "Recipient name for personalisation." },
+          template_data: { type: "object", description: "Extra template variables, optional.", additionalProperties: true },
+        },
+        required: ["template"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "update_contact",
+      description: "Update an existing contact's editable fields (name, phone, email, location, notes, industry, website, contact_name). Only pass fields that should change; existing values are preserved for omitted fields.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string" },
+          name: { type: "string" },
+          contact_name: { type: "string", description: "Primary contact person's name (separate from company name)." },
+          phone: { type: "string" },
+          email: { type: "string" },
+          location: { type: "string" },
+          notes: { type: "string" },
+          industry: { type: "string" },
+          website: { type: "string" },
+        },
+        required: ["contact_id"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "update_contact_status",
+      description: "Set a contact's lead temperature/status. Allowed: cold, aware, warm, hot, gold, archived.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string" },
+          status: { type: "string", enum: ["cold", "aware", "warm", "hot", "gold", "archived"] },
+        },
+        required: ["contact_id", "status"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "append_contact_note",
+      description: "Append a short free-form note to an existing contact's notes field (does NOT create a sales event). Use when the dev says 'add a note that…' or 'just note on their record…'.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string" },
+          note: { type: "string" },
+        },
+        required: ["contact_id", "note"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "complete_callback",
+      description: "Mark a callback / contact_event as completed (ticks it off the open list).",
+      parameters: {
+        type: "object",
+        properties: { event_id: { type: "string" } },
+        required: ["event_id"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "add_contact_person",
+      description: "Add an additional contact person (multi-contact) to an existing client/company.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string", description: "Parent client/company UUID." },
+          name: { type: "string" },
+          job_title: { type: "string" },
+          phone: { type: "string" },
+          email: { type: "string" },
+        },
+        required: ["contact_id", "name"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "lookup_customer",
+      description: "Look up a customer's orders, inquiries, project brief and project status by email. Use for 'what did X buy?', 'what stage is X at?', 'has X paid?'.",
+      parameters: {
+        type: "object",
+        properties: { email: { type: "string" } },
+        required: ["email"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "mark_order_delivered",
+      description: "Mark an order/checkout session as delivered with the live domain.",
+      parameters: {
+        type: "object",
+        properties: {
+          session_id: { type: "string", description: "Stripe checkout session_id." },
+          delivered_domain: { type: "string", description: "Live domain (e.g. acme.com)." },
+        },
+        required: ["session_id", "delivered_domain"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "mark_order_undelivered",
+      description: "Revert an order back to 'open' (clears delivered domain/date).",
+      parameters: {
+        type: "object",
+        properties: { session_id: { type: "string" } },
+        required: ["session_id"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "update_edit_request_status",
+      description: "Change an edit request's status. Allowed: open, in_progress, done.",
+      parameters: {
+        type: "object",
+        properties: {
+          request_id: { type: "string" },
+          status: { type: "string", enum: ["open", "in_progress", "done"] },
+        },
+        required: ["request_id", "status"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "list_open_chats",
+      description: "List recent live-chat conversations and whether the bot is paused (manual handoff). Use to find the conversation_id before send_chat_reply.",
+      parameters: { type: "object", properties: { limit: { type: "number" } } },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "send_chat_reply",
+      description: "Take over a live-chat conversation and reply as a human admin. This pauses the bot for that conversation.",
+      parameters: {
+        type: "object",
+        properties: {
+          conversation_id: { type: "string" },
+          content: { type: "string" },
+        },
+        required: ["conversation_id", "content"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "recent_activity",
+      description: "Summarise recent CRM activity: open callbacks, today's events, contacts updated in the last N days, open edit requests. Use for 'what happened today?', 'show open callbacks', 'who hasn't replied in 7 days?'.",
+      parameters: {
+        type: "object",
+        properties: {
+          days: { type: "number", description: "Window in days, default 7." },
+          stale_days: { type: "number", description: "Flag contacts with no event/update in this many days, default 7." },
+        },
+      },
+    },
+  },
 ];
 
 // Look up everything we know about a customer by email
