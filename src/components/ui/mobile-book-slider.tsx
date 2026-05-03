@@ -257,50 +257,6 @@ function MobileBookSlider() {
           ))}
         </motion.div>
       </div>
-
-              <div className="flex-1 flex flex-col justify-center p-5 relative">
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); goToPreviousPage(); }}
-                  className={`absolute top-2 left-2 p-1 transition ${currentPage === 0 ? 'opacity-0 pointer-events-none' : 'opacity-90 hover:opacity-100'}`}
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft className="w-5 h-5 text-foreground" />
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); goToNextPage(); }}
-                  className={`absolute top-2 right-2 p-1 transition ${currentPage >= totalPages - 1 ? 'opacity-0 pointer-events-none' : 'opacity-90 hover:opacity-100'}`}
-                  aria-label="Next page"
-                >
-                  <ChevronRight className="w-5 h-5 text-foreground" />
-                </button>
-
-                <div className="text-center">
-                  <h2 className="text-lg font-bold text-foreground mb-1">
-                    {site.name}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      void recordFalloff({ event: "portfolio_project_opened", projectName: site.name, projectUrl: site.url });
-                      window.open((site as any).fullUrl ?? `https://${site.url}`, '_blank', 'noopener,noreferrer');
-                    }}
-                    className="text-primary text-xs mb-2 hover:underline inline-block cursor-pointer"
-                  >
-                    {site.url}
-                  </button>
-                  <p className="text-muted-foreground text-xs leading-relaxed mt-2">
-                    {site.description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
     </div>
   );
 }
