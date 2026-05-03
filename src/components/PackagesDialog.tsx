@@ -189,7 +189,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
         {createPortal(
           <AnimatePresence>
             {effectiveOpen && (
-              <div className="fixed inset-0 z-50 flex items-end touch-none" role="presentation" data-pixcellor-mobile-drawer="true">
+              <div className="fixed inset-0 z-50 flex items-end" role="presentation" data-pixcellor-mobile-drawer="true">
                 <motion.div
                   className="absolute inset-0 bg-background/80"
                   initial={{ opacity: 0 }}
