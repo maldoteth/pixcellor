@@ -422,6 +422,37 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         return `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,${center}) 0%, hsla(0,0%,100%,${center * 0.5}) 35%, transparent ${glowFadeStop}%)`;
     });
 
+    // Portfolio gallery items pulled from DB; rotation driven by hero virtual scroll
+    const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+    useEffect(() => {
+        (async () => {
+            const { data } = await supabase
+                .from("portfolio_projects")
+                .select("name,url,category,description")
+                .order("display_order", { ascending: true });
+            if (!data) return;
+            setGalleryItems(
+                data.map((p: { name: string; url: string; category: string | null; description: string | null }) => ({
+                    common: p.name,
+                    binomial: p.category ?? "",
+                    photo: {
+                        url: `https://image.thum.io/get/width/900/crop/1200/https://${p.url}`,
+                        text: p.description ?? p.name,
+                        pos: "50% 0%",
+                        by: p.url,
+                    },
+                }))
+            );
+        })();
+    }, []);
+    const galleryRotation = useTransform(virtualScroll, [600, 3000], [0, 360]);
+    const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
+    const [galleryRotationValue, setGalleryRotationValue] = useState(0);
+    useEffect(() => {
+        const unsub = smoothGalleryRotation.on("change", setGalleryRotationValue);
+        return () => unsub();
+    }, [smoothGalleryRotation]);
+
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
             {/* Subtle center stage light — smoothly morphs from wide horizontal to narrow vertical */}
