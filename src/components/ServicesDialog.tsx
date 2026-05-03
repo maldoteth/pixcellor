@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Code2, Megaphone, Briefcase, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useDrawerTouchScroll } from "@/hooks/use-drawer-touch-scroll";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 
 const SERVICE_GROUPS = [
@@ -48,6 +49,7 @@ const SERVICE_GROUPS = [
 export default function ServicesDialog() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const drawerScrollRef = useDrawerTouchScroll<HTMLElement>(isMobile && open);
 
   useEffect(() => {
     const handler = () => setOpen(true);
@@ -75,17 +77,18 @@ export default function ServicesDialog() {
               onClick={() => setOpen(false)}
             />
             <motion.section
+              ref={drawerScrollRef}
               role="dialog"
               aria-modal="true"
               aria-labelledby="services-dialog-title"
-              className="relative flex h-[82dvh] max-h-[82dvh] w-full flex-col overflow-hidden rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl"
+              className="relative h-[82dvh] max-h-[82dvh] w-full touch-none overflow-y-scroll overscroll-contain rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 32, stiffness: 320 }}
             >
               <div className="mx-auto mt-4 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-              <div className="relative grid flex-shrink-0 gap-1.5 p-4 pb-2 text-left">
+              <div className="relative grid gap-1.5 p-4 pb-2 text-left">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
@@ -99,7 +102,7 @@ export default function ServicesDialog() {
                 </h2>
               </div>
               <div
-                className="flex-1 min-h-0 touch-pan-y overflow-y-scroll overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
+                className="px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
                 data-pixcellor-drawer-scroll="true"
               >
                 <div className="flex flex-col gap-4">

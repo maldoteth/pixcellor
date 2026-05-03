@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Loader2, Lock, ShoppingBag, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useDrawerTouchScroll } from "@/hooks/use-drawer-touch-scroll";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
@@ -128,6 +129,8 @@ interface PackagesDialogProps {
 export default function PackagesDialog({ open, onOpenChange, mobileTop = false, hidden = false, chatOpen = false }: PackagesDialogProps = {}) {
   const isMobile = useIsMobile();
   const [internalOpen, setInternalOpen] = useState(false);
+  const effectiveOpen = mobileTop ? internalOpen : open;
+  const drawerScrollRef = useDrawerTouchScroll<HTMLElement>(isMobile && Boolean(effectiveOpen));
 
   useEffect(() => {
     if (!mobileTop || !isMobile) return;
@@ -135,8 +138,6 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     window.addEventListener("pixcellor:open-packages", handler);
     return () => window.removeEventListener("pixcellor:open-packages", handler);
   }, [mobileTop, isMobile]);
-
-  const effectiveOpen = mobileTop ? internalOpen : open;
 
   useEffect(() => {
     if (!mobileTop) return;
@@ -199,17 +200,18 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
                   onClick={() => handleOpenChange(false)}
                 />
                 <motion.section
+                  ref={drawerScrollRef}
                   role="dialog"
                   aria-modal="true"
                   aria-labelledby="packages-dialog-title"
-                  className="relative flex h-[82dvh] max-h-[82dvh] w-full flex-col overflow-hidden rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl"
+                  className="relative h-[82dvh] max-h-[82dvh] w-full touch-none overflow-y-scroll overscroll-contain rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
                   transition={{ type: "spring", damping: 32, stiffness: 320 }}
                 >
                   <div className="mx-auto mt-4 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-                  <div className="relative flex-shrink-0 px-4 pt-3 pb-2 text-center">
+                  <div className="relative px-4 pt-3 pb-2 text-center">
                     <button
                       type="button"
                       onClick={() => handleOpenChange(false)}
@@ -223,7 +225,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
                     </h2>
                     <StripeBadge />
                   </div>
-                  <div className="flex-1 min-h-0 touch-pan-y overflow-y-scroll overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden" data-pixcellor-drawer-scroll="true">
+                  <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]" data-pixcellor-drawer-scroll="true">
                     <MobileCards />
                   </div>
                 </motion.section>
