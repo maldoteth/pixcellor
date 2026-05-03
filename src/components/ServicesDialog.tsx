@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
 import { Code2, Megaphone, Briefcase, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useDrawerTouchScroll } from "@/hooks/use-drawer-touch-scroll";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 type ServiceAction = "pricing" | "sales";
 
