@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Code2, Megaphone, Briefcase, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 const SERVICE_GROUPS = [
   {
@@ -61,9 +61,13 @@ export default function ServicesDialog() {
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={setOpen}>
+      <Drawer open={open} onOpenChange={setOpen} handleOnly shouldScaleBackground={false}>
         <DrawerContent className="h-[82dvh] max-h-[82dvh] overflow-hidden border-border bg-background/95 backdrop-blur-xl flex flex-col">
-          <DrawerHeader className="pb-2 flex-shrink-0">
+          <DrawerHeader className="relative pb-2 flex-shrink-0">
+            <DrawerClose className="absolute right-4 top-3 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none">
+              <X className="h-5 w-5" />
+              <span className="sr-only">Close</span>
+            </DrawerClose>
             <DrawerTitle className="text-2xl font-bold text-foreground text-center">
               Our Services
             </DrawerTitle>
