@@ -80,7 +80,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         >
           {items.map((item, i) => {
             const itemAngle = i * anglePerItem;
-            const totalRotation = rotation % 360;
+            const totalRotation = effectiveRotation % 360;
             const relativeAngle = (itemAngle + totalRotation + 360) % 360;
             const normalizedAngle = Math.abs(
               relativeAngle > 180 ? 360 - relativeAngle : relativeAngle
@@ -90,9 +90,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             return (
               <div
                 key={i}
-                className="absolute top-1/2 left-1/2 w-[260px] h-[360px] -ml-[130px] -mt-[180px]"
+                className="absolute top-1/2 left-1/2 w-[180px] h-[240px] -ml-[90px] -mt-[120px]"
                 style={{
-                  transform: `rotateY(${itemAngle + rotation}deg) translateZ(${radius}px)`,
+                  transform: `rotateY(${itemAngle + effectiveRotation}deg) translateZ(${radius}px)`,
                   transformStyle: 'preserve-3d',
                   opacity,
                   transition: 'opacity 0.3s ease-out',
