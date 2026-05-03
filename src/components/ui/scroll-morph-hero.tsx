@@ -437,8 +437,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const subtitleOpacity = useTransform([introFadeIn, morphFade], ([f, m]: number[]) => f * m * 0.8);
     const ctaOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.95);
     const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
-    // Footer reveals as soon as the carousel appears (right after hero morph completes)
-    const footerRevealProgress = useTransform(virtualScroll, [HERO_MORPH_END - 200, HERO_MORPH_END + 400], [0, 1]);
+    // Footer appears at full opacity as soon as carousel begins (no fade)
+    const footerRevealProgress = useTransform(virtualScroll, (v) => (v >= HERO_MORPH_END ? 1 : 0));
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
     const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
