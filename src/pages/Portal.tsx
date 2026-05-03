@@ -2630,6 +2630,24 @@ export default function Portal() {
         </DrawerContent>
       </Drawer>
 
+      <Drawer open={Boolean(personDrawerContactId)} onOpenChange={(open) => !open && setPersonDrawerContactId(null)}>
+        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
+          <DrawerHeader className="px-0 text-left">
+            <DrawerTitle>Add contact person</DrawerTitle>
+            <DrawerDescription>{getContact(personDrawerContactId ?? "")?.name ?? ""}</DrawerDescription>
+          </DrawerHeader>
+          <div className="space-y-3">
+            <Input autoFocus placeholder="Contact name *" value={personForm.name} onChange={(e) => setPersonForm(f => ({ ...f, name: e.target.value }))} className="h-12 text-base" />
+            <Input placeholder="Job title" value={personForm.job_title} onChange={(e) => setPersonForm(f => ({ ...f, job_title: e.target.value }))} className="h-12 text-base" />
+            <Input placeholder="Phone (optional)" inputMode="tel" value={personForm.phone} onChange={(e) => setPersonForm(f => ({ ...f, phone: e.target.value }))} className="h-12 text-base" />
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" className="rounded-none" onClick={() => setPersonDrawerContactId(null)}>Cancel</Button>
+              <Button onClick={createContactPerson} disabled={personSubmitting}>{personSubmitting ? "Saving…" : "Save contact"}</Button>
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
       <Drawer open={mobileContactDrawerOpen} onOpenChange={setMobileContactDrawerOpen}>
         <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
           <DrawerHeader className="px-0 text-left">
