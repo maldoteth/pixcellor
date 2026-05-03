@@ -926,9 +926,9 @@ export default function Portal() {
       snippet: (i.message || "").slice(0, 160),
       body: i.message || "",
       date: i.created_at,
-      unread: true,
+      unread: !readInquiryIds.has(i.id),
     }));
-  }, [inquiries, mailboxSearch]);
+  }, [inquiries, mailboxSearch, readInquiryIds]);
 
   const combinedMailboxMessages = useMemo<MailboxMessage[]>(() => {
     return [...inquiryMessages, ...mailboxMessages].sort((a, b) => {
