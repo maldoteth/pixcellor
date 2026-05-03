@@ -2245,18 +2245,36 @@ export default function Portal() {
                   const relatedOrder = orders.find(order => order.customer_email?.toLowerCase() === message.fromEmail);
                   const isInquiry = message.id.startsWith("inquiry:");
                   return (
-                    <button key={message.id} onClick={() => setActiveMail(message)} className={`w-full text-left p-3 rounded-none border transition-colors ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
+                    <div key={message.id} role="button" tabIndex={0} onClick={() => setActiveMail(message)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveMail(message); } }} className={`w-full text-left p-3 rounded-none border transition-colors cursor-pointer ${activeMail?.id === message.id ? "bg-accent border-accent" : "border-border hover:bg-accent/30"}`}>
                       <div className="flex items-center justify-between gap-2">
                         <div className="font-medium truncate">{message.from}</div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           {isInquiry && <Badge variant="secondary">Enquiry</Badge>}
                           {message.unread && !isInquiry && <Badge>New</Badge>}
+                          {message.unread && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (isInquiry) {
+                                  markInquiryRead(message.id.replace(/^inquiry:/, ""));
+                                  if (activeMail?.id === message.id) setActiveMail({ ...activeMail, unread: false });
+                                } else {
+                                  updateMailboxMessage(message.id, "markRead");
+                                }
+                              }}
+                              title="Mark as read"
+                              className="p-1 rounded-none border border-border hover:bg-accent"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className="text-sm truncate">{message.subject}</div>
                       <div className="text-xs text-muted-foreground line-clamp-2">{message.snippet}</div>
                       {relatedOrder && <div className="text-xs text-muted-foreground mt-1">Linked order · {relatedOrder.amount_total != null ? formatGBP(relatedOrder.amount_total) : "—"}</div>}
-                    </button>
+                    </div>
                   );
                 })}
               </div>
