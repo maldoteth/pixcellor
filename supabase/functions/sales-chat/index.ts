@@ -1073,6 +1073,268 @@ async function devSendWelcomeEmail(supabase: DbClient, args: Record<string, unkn
   return { ok: true, email, contact_id: contactId || null, template: "sales-welcome-info" };
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ALLOWED_TEMPLATES = new Set(["sales-welcome-info", "project-requirements-reminder", "order-complete"]);
+const TEMPLATE_LABELS: Record<string, string> = {
+  "sales-welcome-info": "Welcome / info email sent",
+  "project-requirements-reminder": "Project requirements reminder sent",
+  "order-complete": "Order complete email sent",
+};
+
+async function devSendTemplateEmail(supabase: DbClient, args: Record<string, unknown>) {
+  const template = cleanText(args.template, 80);
+  if (!ALLOWED_TEMPLATES.has(template)) return { ok: false, error: "invalid_template" };
+  const contactIdRaw = cleanText(args.contact_id, 80);
+  const contactId = UUID_RE.test(contactIdRaw) ? contactIdRaw : "";
+  let email = cleanText(args.email, 255).toLowerCase();
+  let name = cleanText(args.name, 100);
+
+  if (contactId) {
+    const { data: contact } = await supabase.from("contacts").select("id, name, email").eq("id", contactId).maybeSingle();
+    if (!contact) return { ok: false, error: "contact_not_found" };
+    if (!email) email = String(contact.email ?? "").toLowerCase();
+    if (!name) name = String(contact.name ?? "");
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+
+  const extra = (args.template_data && typeof args.template_data === "object") ? args.template_data as Record<string, unknown> : {};
+  const idempotencyKey = `dev-${template}-${contactId || email}-${Date.now()}`;
+  const { error } = await supabase.functions.invoke("send-transactional-email", {
+    body: {
+      templateName: template,
+      recipientEmail: email,
+      idempotencyKey,
+      templateData: { name: name || undefined, ...extra },
+    },
+  });
+  if (error) return { ok: false, error: "email_send_failed", detail: String(error.message ?? error) };
+
+  if (contactId) {
+    await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: TEMPLATE_LABELS[template] ?? `${template} email sent`,
+      description: `Sent ${template} template to ${email} via dev assistant.`,
+      event_type: "communication",
+    });
+  }
+  return { ok: true, email, contact_id: contactId || null, template };
+}
+
+async function devUpdateContact(supabase: DbClient, args: Record<string, unknown>) {
+  const id = cleanText(args.contact_id, 80);
+  if (!UUID_RE.test(id)) return { ok: false, error: "invalid_contact" };
+  const { data: existing, error: fetchErr } = await supabase
+    .from("contacts").select("*").eq("id", id).maybeSingle();
+  if (fetchErr || !existing) return { ok: false, error: "contact_not_found" };
+
+  const update: Record<string, unknown> = {};
+  const set = (key: string, val: unknown) => {
+    if (val === undefined || val === null) return;
+    if (typeof val === "string" && !val.trim()) return;
+    update[key] = typeof val === "string" ? val.trim() : val;
+  };
+  set("name", args.name);
+  set("contact_name", args.contact_name);
+  set("phone", args.phone);
+  set("location", args.location);
+  set("notes", args.notes);
+  if (typeof args.email === "string" && args.email.trim()) {
+    const e = args.email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return { ok: false, error: "invalid_email" };
+    update.email = e;
+  }
+  if (typeof args.industry === "string" && args.industry.trim()) update.industry = args.industry.trim().toLowerCase();
+  if (typeof args.website === "string" && args.website.trim()) {
+    const w = cleanWebsite(args.website);
+    if (w) update.website = w;
+  }
+  if (Object.keys(update).length === 0) return { ok: false, error: "nothing_to_update" };
+  update.updated_at = new Date().toISOString();
+
+  const { data, error } = await supabase.from("contacts").update(update).eq("id", id).select("id, name, contact_name, email, phone, status, industry, website, location, notes").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, contact: data, updated_fields: Object.keys(update) };
+}
+
+async function devUpdateContactStatus(supabase: DbClient, args: Record<string, unknown>) {
+  const id = cleanText(args.contact_id, 80);
+  const status = cleanText(args.status, 40).toLowerCase();
+  if (!UUID_RE.test(id)) return { ok: false, error: "invalid_contact" };
+  if (!["cold","aware","warm","hot","gold","archived"].includes(status)) return { ok: false, error: "invalid_status" };
+  const { data, error } = await supabase.from("contacts").update({ status, updated_at: new Date().toISOString() }).eq("id", id).select("id, name, status").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, contact: data };
+}
+
+async function devAppendContactNote(supabase: DbClient, args: Record<string, unknown>) {
+  const id = cleanText(args.contact_id, 80);
+  const note = cleanText(args.note, 900);
+  if (!UUID_RE.test(id)) return { ok: false, error: "invalid_contact" };
+  if (!note) return { ok: false, error: "missing_note" };
+  const { data: existing } = await supabase.from("contacts").select("notes").eq("id", id).maybeSingle();
+  if (!existing) return { ok: false, error: "contact_not_found" };
+  const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+  const merged = [existing.notes, `[${stamp}] ${note}`].filter(Boolean).join("\n");
+  const { error } = await supabase.from("contacts").update({ notes: merged, updated_at: new Date().toISOString() }).eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+async function devCompleteCallback(supabase: DbClient, args: Record<string, unknown>) {
+  const id = cleanText(args.event_id, 80);
+  if (!UUID_RE.test(id)) return { ok: false, error: "invalid_event" };
+  const { error } = await supabase.from("contact_events")
+    .update({ completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+async function devAddContactPerson(supabase: DbClient, args: Record<string, unknown>) {
+  const contactId = cleanText(args.contact_id, 80);
+  const name = cleanText(args.name, 100);
+  if (!UUID_RE.test(contactId)) return { ok: false, error: "invalid_contact" };
+  if (!name) return { ok: false, error: "missing_name" };
+  const email = cleanText(args.email, 255).toLowerCase();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+  const payload = {
+    contact_id: contactId,
+    name,
+    job_title: cleanText(args.job_title, 160) || null,
+    phone: cleanText(args.phone, 40) || null,
+    email: email || null,
+  };
+  const { data, error } = await supabase.from("contact_persons").insert(payload).select("id, name, job_title, phone, email").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, person: data };
+}
+
+async function devLookupCustomer(supabase: DbClient, args: Record<string, unknown>) {
+  const email = cleanText(args.email, 255).toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+  const [lookup, profile, status] = await Promise.all([
+    lookupCustomer(supabase, email),
+    supabase.from("client_profiles").select("*").ilike("email", email).maybeSingle(),
+    supabase.from("project_status").select("*").ilike("email", email).maybeSingle(),
+  ]);
+  return { ok: true, ...lookup, profile: profile.data ?? null, project_status: status.data ?? null };
+}
+
+async function devMarkOrderDelivered(supabase: DbClient, args: Record<string, unknown>) {
+  const sid = cleanText(args.session_id, 200);
+  const domain = cleanWebsite(args.delivered_domain);
+  if (!sid) return { ok: false, error: "missing_session" };
+  if (!domain) return { ok: false, error: "invalid_domain" };
+  const { error } = await supabase.from("stripe_checkout_sessions").update({
+    order_status: "delivered",
+    delivered_at: new Date().toISOString(),
+    delivered_domain: domain,
+    updated_at: new Date().toISOString(),
+  }).eq("session_id", sid);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, session_id: sid, delivered_domain: domain };
+}
+
+async function devMarkOrderUndelivered(supabase: DbClient, args: Record<string, unknown>) {
+  const sid = cleanText(args.session_id, 200);
+  if (!sid) return { ok: false, error: "missing_session" };
+  const { error } = await supabase.from("stripe_checkout_sessions").update({
+    order_status: "open",
+    delivered_at: null,
+    delivered_domain: null,
+    updated_at: new Date().toISOString(),
+  }).eq("session_id", sid);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, session_id: sid };
+}
+
+async function devUpdateEditRequestStatus(supabase: DbClient, args: Record<string, unknown>) {
+  const id = cleanText(args.request_id, 80);
+  const status = cleanText(args.status, 40).toLowerCase();
+  if (!UUID_RE.test(id)) return { ok: false, error: "invalid_request" };
+  if (!["open","in_progress","done"].includes(status)) return { ok: false, error: "invalid_status" };
+  const { error } = await supabase.from("edit_requests").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+async function devListOpenChats(supabase: DbClient, args: Record<string, unknown>) {
+  const limit = Math.min(Math.max(Number(args.limit) || 10, 1), 25);
+  const { data: convs, error } = await supabase
+    .from("chat_conversations")
+    .select("id, client_id, bot_paused, manual_handoff_at, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+  if (error) return { ok: false, error: error.message };
+  if (!convs || convs.length === 0) return { ok: true, conversations: [] };
+  const ids = convs.map((c: any) => c.id);
+  const { data: lastMsgs } = await supabase
+    .from("chat_messages")
+    .select("conversation_id, role, content, created_at")
+    .in("conversation_id", ids)
+    .order("created_at", { ascending: false })
+    .limit(200);
+  const lastByConv: Record<string, any> = {};
+  for (const m of (lastMsgs ?? []) as any[]) {
+    if (!lastByConv[m.conversation_id]) lastByConv[m.conversation_id] = m;
+  }
+  return {
+    ok: true,
+    conversations: convs.map((c: any) => ({
+      conversation_id: c.id,
+      client_id: c.client_id,
+      bot_paused: c.bot_paused,
+      manual_handoff_at: c.manual_handoff_at,
+      updated_at: c.updated_at,
+      last_message: lastByConv[c.id] ? { role: lastByConv[c.id].role, content: String(lastByConv[c.id].content).slice(0, 200), at: lastByConv[c.id].created_at } : null,
+    })),
+  };
+}
+
+async function devSendChatReply(supabase: DbClient, args: Record<string, unknown>) {
+  const cid = cleanText(args.conversation_id, 80);
+  const content = cleanText(args.content, 2000);
+  if (!UUID_RE.test(cid)) return { ok: false, error: "invalid_conversation" };
+  if (!content) return { ok: false, error: "missing_content" };
+  const { error: insErr } = await supabase.from("chat_messages").insert({
+    conversation_id: cid, role: "admin", content,
+  });
+  if (insErr) return { ok: false, error: insErr.message };
+  await supabase.from("chat_conversations").update({
+    bot_paused: true,
+    manual_handoff_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }).eq("id", cid);
+  return { ok: true };
+}
+
+async function devRecentActivity(supabase: DbClient, args: Record<string, unknown>) {
+  const days = Math.min(Math.max(Number(args.days) || 7, 1), 60);
+  const staleDays = Math.min(Math.max(Number(args.stale_days) || 7, 1), 90);
+  const since = new Date(Date.now() - days * 86400_000).toISOString();
+  const staleCutoff = new Date(Date.now() - staleDays * 86400_000).toISOString();
+  const nowIso = new Date().toISOString();
+
+  const [openCallbacks, todaysEvents, recentContacts, openEdits, staleContacts] = await Promise.all([
+    supabase.from("contact_events").select("id, contact_id, title, callback_at").eq("event_type", "callback").is("completed_at", null).order("callback_at", { ascending: true }).limit(20),
+    supabase.from("contact_events").select("id, contact_id, title, event_type, created_at").gte("created_at", new Date(new Date().setHours(0,0,0,0)).toISOString()).order("created_at", { ascending: false }).limit(20),
+    supabase.from("contacts").select("id, name, status, updated_at").gte("updated_at", since).order("updated_at", { ascending: false }).limit(15),
+    supabase.from("edit_requests").select("id, package_name, customer_email, status, created_at").in("status", ["open","in_progress"]).order("created_at", { ascending: false }).limit(15),
+    supabase.from("contacts").select("id, name, email, status, updated_at").lt("updated_at", staleCutoff).in("status", ["warm","hot","aware"]).order("updated_at", { ascending: true }).limit(15),
+  ]);
+
+  return {
+    ok: true,
+    window_days: days,
+    now: nowIso,
+    open_callbacks: openCallbacks.data ?? [],
+    todays_events: todaysEvents.data ?? [],
+    recent_contacts: recentContacts.data ?? [],
+    open_edit_requests: openEdits.data ?? [],
+    stale_warm_or_hot_contacts: staleContacts.data ?? [],
+  };
+}
+
 function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
   const lines: string[] = [];
   lines.push(`## Known client context (loaded from database for this email)`);
