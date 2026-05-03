@@ -26,6 +26,7 @@ const RequirementsSchema = AccessSchema.extend({
   referenceLinks: z.string().trim().max(4000).optional().default(""),
   imagesContentSocials: z.string().trim().min(1, "Images, content, and socials are required").max(6000),
   extraNotes: z.string().trim().max(3000).optional().default(""),
+  attachments: z.array(z.string().trim().url()).max(30).optional().default([]),
 });
 
 serve(async (req) => {
@@ -85,6 +86,7 @@ serve(async (req) => {
         reference_links: parsed.data.referenceLinks || null,
         images_content_socials: parsed.data.imagesContentSocials,
         extra_notes: parsed.data.extraNotes || null,
+        attachments: parsed.data.attachments ?? [],
       },
     );
 
