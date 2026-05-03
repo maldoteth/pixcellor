@@ -77,6 +77,7 @@ export default function ServicesDialog() {
               onClick={() => setOpen(false)}
             />
             <motion.section
+              ref={drawerScrollRef}
               role="dialog"
               aria-modal="true"
               aria-labelledby="services-dialog-title"
@@ -85,13 +86,9 @@ export default function ServicesDialog() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 32, stiffness: 320 }}
-              onTouchStartCapture={handleDrawerTouchStart}
-              onTouchMoveCapture={handleDrawerTouchMove}
-              onTouchEndCapture={resetDrawerTouch}
-              onTouchCancelCapture={resetDrawerTouch}
             >
               <div className="mx-auto mt-4 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-              <div className="sticky top-0 z-10 grid gap-1.5 bg-background/95 p-4 pb-2 text-left backdrop-blur-xl">
+              <div className="relative grid gap-1.5 p-4 pb-2 text-left">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
