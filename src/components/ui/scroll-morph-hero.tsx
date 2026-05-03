@@ -437,8 +437,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const subtitleOpacity = useTransform([introFadeIn, morphFade], ([f, m]: number[]) => f * m * 0.8);
     const ctaOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.95);
     const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
-    // Mobile: footer slides up into view as user scrolls (instead of lifting page content)
-    const footerRevealProgress = useTransform(virtualScroll, [900, 1900], [0, 1]);
+    // Footer reveals near the end of the carousel scroll on all viewports
+    const footerRevealProgress = useTransform(virtualScroll, [MAX_SCROLL - 1500, MAX_SCROLL - 200], [0, 1]);
     const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
     const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
@@ -816,19 +816,13 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 </div>
             </div>
 
-            {/* Footer: always visible on mobile, fades with arc content on desktop */}
-            {containerSize.width < 768 ? (
-                <div className="absolute bottom-0 left-0 right-0 z-20 pointer-events-auto">
-                    <Footer />
-                </div>
-            ) : (
-                <motion.div
-                    style={{ opacity: contentOpacity, pointerEvents: morphValue > 0.85 ? "auto" : "none" }}
-                    className="absolute bottom-0 left-0 right-0 z-10"
-                >
-                    <Footer />
-                </motion.div>
-            )}
+            {/* Footer: anchored to bottom, fades in near end of scroll on all viewports */}
+            <motion.div
+                style={{ opacity: footerRevealProgress }}
+                className="absolute bottom-0 left-0 right-0 z-20 pointer-events-auto"
+            >
+                <Footer />
+            </motion.div>
         </div>
     );
 }
