@@ -726,7 +726,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                     ))}
                   </div>
                 )}
-                {!isDevMode && i === 0 && msg.role === "assistant" && (
+                {!isDevMode && i === 0 && msg.role === "assistant" && !quickAction && (
                   <div className="mt-2 flex w-[80%] flex-wrap gap-2">
                     <motion.button
                       type="button"
