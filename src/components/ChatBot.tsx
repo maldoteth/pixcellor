@@ -260,18 +260,26 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     return () => window.removeEventListener("resize", clampWidgetToViewport);
   }, [isMobile, widgetSize.height, widgetSize.width]);
 
+  const pendingActionRef = useRef<"call" | "email" | null>(null);
   useEffect(() => {
     const openChat = (e: Event) => {
       setIsOpen(true);
       const detail = (e as CustomEvent<{ action?: "call" | "email" }>).detail;
       if (detail?.action === "call" || detail?.action === "email") {
-        // Defer until chat is open and history loaded
-        setTimeout(() => startQuickAction(detail.action!), 350);
+        pendingActionRef.current = detail.action;
       }
     };
     window.addEventListener("pixcellor:open-chat", openChat as EventListener);
     return () => window.removeEventListener("pixcellor:open-chat", openChat as EventListener);
   }, [setIsOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !hasStarted || isLoading || isLoadingHistory) return;
+    const action = pendingActionRef.current;
+    if (!action) return;
+    pendingActionRef.current = null;
+    startQuickAction(action);
+  }, [isOpen, hasStarted, isLoading, isLoadingHistory]);
 
   useEffect(() => {
     if (!conversationId) return;
