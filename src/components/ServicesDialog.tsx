@@ -6,10 +6,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useDrawerTouchScroll } from "@/hooks/use-drawer-touch-scroll";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 
+type ServiceAction = "pricing" | "sales";
+
 const SERVICE_GROUPS = [
   {
     icon: Code2,
     title: "Apps & Sites",
+    action: "pricing" as ServiceAction,
     items: [
       "Landing pages",
       "Animated marketing sites",
@@ -23,6 +26,7 @@ const SERVICE_GROUPS = [
   {
     icon: Megaphone,
     title: "Marketing Solutions",
+    action: "sales" as ServiceAction,
     items: [
       "Telesales campaigns",
       "Email marketing campaigns",
@@ -35,6 +39,7 @@ const SERVICE_GROUPS = [
   {
     icon: Briefcase,
     title: "Business Solutions",
+    action: "sales" as ServiceAction,
     items: [
       "Recruitment systems",
       "Payroll & HR tooling",
@@ -109,7 +114,7 @@ export default function ServicesDialog() {
               >
                 <div className="flex flex-col gap-4">
                   {SERVICE_GROUPS.map((group) => (
-                    <ServiceCard key={group.title} group={group} />
+                    <ServiceCard key={group.title} group={group} onClose={() => setOpen(false)} />
                   ))}
                 </div>
               </div>
@@ -137,7 +142,7 @@ export default function ServicesDialog() {
           <h2 className="text-3xl font-bold text-foreground text-center">Our Services</h2>
           <div className="grid grid-cols-3 gap-5 max-w-5xl">
             {SERVICE_GROUPS.map((group) => (
-              <ServiceCard key={group.title} group={group} />
+              <ServiceCard key={group.title} group={group} onClose={() => setOpen(false)} />
             ))}
           </div>
         </div>
@@ -146,8 +151,16 @@ export default function ServicesDialog() {
   );
 }
 
-function ServiceCard({ group }: { group: (typeof SERVICE_GROUPS)[number] }) {
+function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number]; onClose: () => void }) {
   const Icon = group.icon;
+  const handleClick = () => {
+    onClose();
+    if (group.action === "pricing") {
+      window.dispatchEvent(new Event("pixcellor:open-packages"));
+    } else {
+      window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "call" } }));
+    }
+  };
   return (
     <div
       className="rounded-2xl p-5 md:p-6 flex flex-col gap-4"
@@ -171,6 +184,13 @@ function ServiceCard({ group }: { group: (typeof SERVICE_GROUPS)[number] }) {
         </div>
         <h3 className="text-base md:text-lg font-semibold text-foreground">{group.title}</h3>
       </div>
+      <button
+        type="button"
+        onClick={handleClick}
+        className="pricing-button text-foreground transition h-10 w-full flex items-center justify-center text-sm font-semibold rounded-md"
+      >
+        {group.action === "pricing" ? "View Pricing" : "Speak to Sales"}
+      </button>
       <ul className="flex flex-col gap-2">
         {group.items.map((item) => (
           <li key={item} className="text-sm text-foreground/80 flex items-start gap-2">
