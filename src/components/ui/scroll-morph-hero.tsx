@@ -497,7 +497,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
-                <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-[180px] md:top-1/2 md:-translate-y-1/2">
+                <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-[210px] md:top-[calc(50%+30px)] md:-translate-y-1/2">
                     <motion.h1
                         initial={{ y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { filter: "blur(10px)" }}
@@ -582,7 +582,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {/* Hero CTA buttons anchored at bottom of hero viewport */}
                 <motion.div
                     style={{ opacity: ctaOpacity }}
-                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[44px] md:bottom-[38px] w-full md:w-auto px-[1.5rem] md:px-0"
+                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[74px] md:bottom-[68px] w-full md:w-auto px-[1.5rem] md:px-0"
                 >
                     {/* Mobile: stacked */}
                     <div data-hero-scroll-control="true" className="md:hidden flex flex-col items-stretch gap-2 w-full">
@@ -730,7 +730,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 )}
 
                 {/* Main Container */}
-                <div className="relative flex items-start md:items-center justify-center w-full h-full pt-[180px] md:pt-0">
+                <div className="relative flex items-start md:items-center justify-center w-full h-full pt-[210px] md:pt-0 md:translate-y-[30px]">
                     {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
                         let target = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
 
