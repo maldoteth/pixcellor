@@ -151,10 +151,10 @@ export default function ServicesDialog() {
   );
 }
 
-function ServiceCard({ group }: { group: (typeof SERVICE_GROUPS)[number] }) {
+function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number]; onClose: () => void }) {
   const Icon = group.icon;
   const handleClick = () => {
-    window.dispatchEvent(new CustomEvent("pixcellor:services-open-change", { detail: { open: false } }));
+    onClose();
     if (group.action === "pricing") {
       window.dispatchEvent(new Event("pixcellor:open-packages"));
     } else {
