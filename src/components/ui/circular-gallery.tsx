@@ -18,16 +18,20 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
   items: GalleryItem[];
   radius?: number;
   autoRotateSpeed?: number;
+  /** External rotation driver in degrees (e.g. from a parent scroll value). When provided, window scroll is ignored. */
+  externalRotation?: number;
 }
 
 const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
-  ({ items, className, radius = 600, autoRotateSpeed = 0.02, ...props }, ref) => {
+  ({ items, className, radius = 600, autoRotateSpeed = 0.02, externalRotation, ...props }, ref) => {
     const [rotation, setRotation] = useState(0);
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const animationFrameRef = useRef<number | null>(null);
+    const useExternal = externalRotation !== undefined;
 
     useEffect(() => {
+      if (useExternal) return;
       const handleScroll = () => {
         setIsScrolling(true);
         if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
@@ -44,9 +48,10 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         window.removeEventListener('scroll', handleScroll);
         if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
       };
-    }, []);
+    }, [useExternal]);
 
     useEffect(() => {
+      if (useExternal) return;
       const autoRotate = () => {
         if (!isScrolling) {
           setRotation((prev) => prev + autoRotateSpeed);
@@ -57,8 +62,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       return () => {
         if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       };
-    }, [isScrolling, autoRotateSpeed]);
+    }, [isScrolling, autoRotateSpeed, useExternal]);
 
+    const effectiveRotation = useExternal ? (externalRotation as number) : rotation;
     const anglePerItem = 360 / items.length;
 
     return (
