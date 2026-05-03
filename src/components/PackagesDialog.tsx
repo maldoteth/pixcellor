@@ -154,28 +154,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     onOpenChange?.(next);
   };
 
-  const trigger = isMobile ? (
-    <motion.button
-      type="button"
-      aria-label="View our web development pricing"
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.95 }}
-      className={`absolute right-[112px] top-4 z-[10000] flex h-[34px] w-[34px] items-center justify-center rounded-sm transition-opacity duration-200 lg:pointer-events-auto lg:opacity-100 ${hidden ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100"} ${chatOpen ? "lg:flex hidden" : "flex"}`}
-      style={{
-        background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        border: "1px solid rgba(255,255,255,0.2)",
-        boxShadow: `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.1)`,
-      }}
-    >
-      <div
-        className="absolute inset-1 rounded-sm opacity-60"
-        style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)" }}
-      />
-      <ShoppingBag className="relative z-10 h-4 w-4 text-white drop-shadow-lg" />
-    </motion.button>
-  ) : (
+  const trigger = isMobile ? null : (
     <Button
       variant="pricing"
       className={`mb-6 h-auto w-[265px] px-8 py-3 text-base font-semibold ${hidden ? "hidden" : ""}`}
