@@ -445,7 +445,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             );
         })();
     }, []);
-    const galleryRotation = useTransform(virtualScroll, [600, 3000], isSmallViewport ? [0, 144] : [0, 720]);
+    const galleryRotation = useTransform(virtualScroll, isSmallViewport ? [1400, 3000] : [1200, 3000], isSmallViewport ? [0, 144] : [0, 720]);
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     useEffect(() => {
