@@ -497,7 +497,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
                 {/* Intro Text (Fades out) */}
-                <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-[180px] md:top-1/2 md:-translate-y-1/2">
+                <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-[210px] md:top-[calc(50%+30px)] md:-translate-y-1/2">
                     <motion.h1
                         initial={{ y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { filter: "blur(10px)" }}
