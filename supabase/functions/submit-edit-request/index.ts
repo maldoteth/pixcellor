@@ -17,6 +17,7 @@ const EditRequestSchema = z.object({
   orderCode: z.string().trim().regex(/^PXC-[A-HJ-NP-Z]{4}-\d{4}$/, "Invalid order link"),
   requirementsToken: z.string().trim().regex(/^[A-Fa-f0-9]{64}$/, "Invalid order access token"),
   requestDetails: z.string().trim().min(1, "Tell us what needs changing").max(6000),
+  attachments: z.array(z.string().trim().url()).max(20).optional().default([]),
 });
 
 const normalizePackage = (value: unknown) => (typeof value === "string" ? value.trim().toLowerCase() : "");
@@ -87,6 +88,7 @@ serve(async (req) => {
       request_number: requestNumber,
       request_details: parsed.data.requestDetails,
       status: "open",
+      attachments: parsed.data.attachments ?? [],
     });
 
     if (insertError) throw insertError;

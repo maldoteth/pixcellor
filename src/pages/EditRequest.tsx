@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 
 const editRequestSchema = z.object({
   requestDetails: z.string().trim().min(1, "Tell us what needs changing").max(6000, "Keep this under 6000 characters"),
@@ -32,6 +33,7 @@ export default function EditRequest() {
   const orderCode = params.get("order") ?? "";
   const requirementsToken = params.get("token") ?? "";
   const [form, setForm] = useState<EditRequestForm>({ requestDetails: "" });
+  const [attachments, setAttachments] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -58,7 +60,7 @@ export default function EditRequest() {
 
     setSubmitting(true);
     const { data, error: submitError } = await supabase.functions.invoke("submit-edit-request", {
-      body: { orderCode, requirementsToken, ...parsed.data },
+      body: { orderCode, requirementsToken, ...parsed.data, attachments },
     });
     setSubmitting(false);
 
@@ -134,6 +136,17 @@ export default function EditRequest() {
                   className="min-h-52 resize-y"
                 />
                 {error && <p className="text-sm text-destructive">{error}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Reference images (optional)</Label>
+                <ImageAttachmentUploader
+                  value={attachments}
+                  onChange={setAttachments}
+                  max={20}
+                  prefix={`edit-requests/${orderCode || "unknown"}`}
+                  disabled={submitting || !validAccess}
+                />
               </div>
 
               <div className="flex flex-wrap justify-end gap-3 pt-2">
