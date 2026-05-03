@@ -428,15 +428,15 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         (async () => {
             const { data } = await supabase
                 .from("portfolio_projects")
-                .select("name,url,category,description")
+                .select("name,url,category,description,image_url")
                 .order("display_order", { ascending: true });
             if (!data) return;
             setGalleryItems(
-                data.map((p: { name: string; url: string; category: string | null; description: string | null }) => ({
+                data.map((p: { name: string; url: string; category: string | null; description: string | null; image_url: string | null }) => ({
                     common: p.name,
                     binomial: p.category ?? "",
                     photo: {
-                        url: `https://image.thum.io/get/width/900/crop/1200/https://${p.url}`,
+                        url: p.image_url ?? `https://image.thum.io/get/width/900/crop/1200/https://${p.url}`,
                         text: p.description ?? p.name,
                         pos: "50% 0%",
                         by: p.url,
