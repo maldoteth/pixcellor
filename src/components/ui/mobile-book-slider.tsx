@@ -117,8 +117,77 @@ const portfolioData = [
 
 function MobileBookSlider() {
   const bookRef = useRef<any>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const totalPages = portfolioData.length;
+  const totalPages = portfolioData.length + 1;
+
+  const getPageFlip = () => bookRef.current?.pageFlip?.();
+
+  const getCurrentPage = () => {
+    const pageFlip = getPageFlip();
+    const index = pageFlip?.getCurrentPageIndex?.();
+    return typeof index === "number" ? index : currentPage;
+  };
+
+  const goToPage = (page: number) => {
+    const pageFlip = getPageFlip();
+    if (!pageFlip) return;
+
+    const current = getCurrentPage();
+    const target = Math.min(Math.max(page, 0), totalPages - 1);
+    if (target === current) return;
+
+    try {
+      pageFlip.flip?.(target, "top");
+    } catch {
+      pageFlip.turnToPage?.(target);
+    }
+
+    setCurrentPage(target);
+  };
+
+  const goToPreviousPage = () => goToPage(getCurrentPage() - 1);
+  const goToNextPage = () => goToPage(getCurrentPage() + 1);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    if (!start) return;
+
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+
+    if (Math.abs(deltaX) > 16 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+
+    if (Math.abs(deltaX) < 36 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (deltaX > 0) {
+      goToPreviousPage();
+    } else {
+      goToNextPage();
+    }
+  };
 
   const handleFlip = (e: any) => {
     setCurrentPage(e.data);
@@ -126,7 +195,13 @@ function MobileBookSlider() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full cursor-pointer [&_.stf__parent]:border [&_.stf__parent]:border-white/30 [&_.stf__parent]:rounded-sm">
+    <div
+      className="flex flex-col items-center justify-center w-full cursor-pointer touch-pan-y [&_.stf__parent]:border [&_.stf__parent]:border-white/30 [&_.stf__parent]:rounded-sm"
+      data-pixcellor-horizontal-swipe="true"
+      onTouchStartCapture={handleTouchStart}
+      onTouchMoveCapture={handleTouchMove}
+      onTouchEndCapture={handleTouchEnd}
+    >
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
@@ -150,7 +225,7 @@ function MobileBookSlider() {
         maxShadowOpacity={0.5}
         showPageCorners={true}
         disableFlipByClick={true}
-        swipeDistance={20}
+        swipeDistance={999}
         clickEventForward={true}
         useMouseEvents={true}
         onFlip={handleFlip}
@@ -180,14 +255,14 @@ function MobileBookSlider() {
               <div className="flex-1 flex flex-col justify-center p-5 relative">
                 {/* Nav arrows in top corners of text area */}
                 <button
-                  onClick={(e) => { e.stopPropagation(); bookRef.current?.pageFlip()?.flipPrev(); }}
+                  onClick={(e) => { e.stopPropagation(); goToPreviousPage(); }}
                   className={`absolute top-2 left-2 p-1 transition ${currentPage === 0 ? 'opacity-0 pointer-events-none' : 'opacity-90 hover:opacity-100'}`}
                   aria-label="Previous page"
                 >
                   <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); bookRef.current?.pageFlip()?.flipNext(); }}
+                  onClick={(e) => { e.stopPropagation(); goToNextPage(); }}
                   className={`absolute top-2 right-2 p-1 transition ${currentPage >= totalPages - 1 ? 'opacity-0 pointer-events-none' : 'opacity-90 hover:opacity-100'}`}
                   aria-label="Next page"
                 >
@@ -221,7 +296,7 @@ function MobileBookSlider() {
         <div key="__end" className="bg-card border border-border overflow-hidden">
           <div className="h-full flex flex-col items-center justify-center p-5 relative">
             <button
-              onClick={(e) => { e.stopPropagation(); bookRef.current?.pageFlip()?.flipPrev(); }}
+              onClick={(e) => { e.stopPropagation(); goToPreviousPage(); }}
               className="absolute top-2 left-2 p-1 opacity-90 hover:opacity-100 transition"
               aria-label="Previous page"
             >
