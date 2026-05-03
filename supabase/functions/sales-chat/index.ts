@@ -1703,7 +1703,84 @@ Deno.serve(async (req) => {
             console.error("Error in send_welcome_email:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "send_welcome_email_failed" }) });
           }
-        } else if (toolCall.function.name === "lookup_customer") {
+        } else if (toolCall.function.name === "send_transactional_email" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devSendTemplateEmail(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { console.error("send_transactional_email:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "send_failed" }) }); }
+        } else if (toolCall.function.name === "update_contact" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devUpdateContact(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { console.error("update_contact:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "update_failed" }) }); }
+        } else if (toolCall.function.name === "update_contact_status" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devUpdateContactStatus(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "status_failed" }) }); }
+        } else if (toolCall.function.name === "append_contact_note" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devAppendContactNote(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "note_failed" }) }); }
+        } else if (toolCall.function.name === "complete_callback" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devCompleteCallback(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "complete_failed" }) }); }
+        } else if (toolCall.function.name === "add_contact_person" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devAddContactPerson(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "add_person_failed" }) }); }
+        } else if (toolCall.function.name === "mark_order_delivered" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devMarkOrderDelivered(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "deliver_failed" }) }); }
+        } else if (toolCall.function.name === "mark_order_undelivered" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devMarkOrderUndelivered(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "undeliver_failed" }) }); }
+        } else if (toolCall.function.name === "update_edit_request_status" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devUpdateEditRequestStatus(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "edit_status_failed" }) }); }
+        } else if (toolCall.function.name === "list_open_chats" && isDevMode) {
+          needsFollowUp = true;
+          try {
+            const result = await devListOpenChats(supabase, JSON.parse(toolCall.function.arguments || "{}"));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "list_chats_failed" }) }); }
+        } else if (toolCall.function.name === "send_chat_reply" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try {
+            const result = await devSendChatReply(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "reply_failed" }) }); }
+        } else if (toolCall.function.name === "recent_activity" && isDevMode) {
+          needsFollowUp = true;
+          try {
+            const result = await devRecentActivity(supabase, JSON.parse(toolCall.function.arguments || "{}"));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "activity_failed" }) }); }
+        } else if (toolCall.function.name === "lookup_customer" && isDevMode) {
+          needsFollowUp = true;
+          try {
+            const result = await devLookupCustomer(supabase, JSON.parse(toolCall.function.arguments));
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "lookup_failed" }) }); }
           needsFollowUp = true;
           try {
             const args = JSON.parse(toolCall.function.arguments);
