@@ -153,6 +153,14 @@ export default function ServicesDialog() {
 
 function ServiceCard({ group }: { group: (typeof SERVICE_GROUPS)[number] }) {
   const Icon = group.icon;
+  const handleClick = () => {
+    window.dispatchEvent(new CustomEvent("pixcellor:services-open-change", { detail: { open: false } }));
+    if (group.action === "pricing") {
+      window.dispatchEvent(new Event("pixcellor:open-packages"));
+    } else {
+      window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "call" } }));
+    }
+  };
   return (
     <div
       className="rounded-2xl p-5 md:p-6 flex flex-col gap-4"
@@ -176,6 +184,13 @@ function ServiceCard({ group }: { group: (typeof SERVICE_GROUPS)[number] }) {
         </div>
         <h3 className="text-base md:text-lg font-semibold text-foreground">{group.title}</h3>
       </div>
+      <button
+        type="button"
+        onClick={handleClick}
+        className="pricing-button text-foreground transition h-10 w-full flex items-center justify-center text-sm font-semibold rounded-md"
+      >
+        {group.action === "pricing" ? "View Pricing" : "Speak to Sales"}
+      </button>
       <ul className="flex flex-col gap-2">
         {group.items.map((item) => (
           <li key={item} className="text-sm text-foreground/80 flex items-start gap-2">
