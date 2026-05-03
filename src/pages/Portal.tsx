@@ -2656,7 +2656,7 @@ export default function Portal() {
                       <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()} · {getEventAuthorLabel(e)}</span>
                     </div>
                     {e.description && <LinkifiedText text={e.description} className="block mt-1 whitespace-pre-wrap" />}
-                    {e.callback_at && <div className="mt-1 text-xs text-muted-foreground">Callback: {new Date(e.callback_at).toLocaleString()}</div>}
+                    {e.callback_at && <div className="mt-1 text-xs text-muted-foreground">Let's Talk: {new Date(e.callback_at).toLocaleString()}</div>}
                   </div>
                 ))}
               </div>
