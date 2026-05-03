@@ -645,7 +645,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         A full stack digital services studio for websites, apps, AI agents and an array of bespoke business solutions.
                     </p>
                     <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} hidden />
-                    <BookSlider />
+                    <PortfolioGallery />
                 </motion.div>
 
                 {/* Main Container */}
