@@ -172,6 +172,13 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - Read uploaded screenshots/images and extract visible contact details with extract_screenshot_contact.
 - Create sales events/callback notes for existing contacts with create_sales_event.
 - Find local businesses that appear to have no standalone website and add them to contacts with find_local_leads.
+- **Send the Pixcellor welcome/info email** (sales-welcome-info template) to a contact or raw email with **send_welcome_email**. This actually sends the email and auto-logs a CRM communication event.
+
+## Email rules (CRITICAL)
+- When the dev says "email info", "send info", "send welcome", "send the welcome email", "email <person>", "email <address>" — you MUST call **send_welcome_email**. Do NOT create a sales event titled "Email Sent" or similar — that fakes a send and loses the lead.
+- If you only have a name/company, first call find_contact to get the contact_id and email, then call send_welcome_email with that contact_id.
+- If the recipient has no contact yet, create_contact first (with their email), then send_welcome_email with the new contact_id.
+- If send_welcome_email returns ok:false, tell the dev the email FAILED and surface the error. Never claim success on a failure.
 
 ## Rules
 - Be concise and operational.
@@ -355,6 +362,21 @@ const devTools = [
           limit: { type: "number", description: "Number of contacts to add. Maximum 25." },
         },
         required: ["trade", "location"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "send_welcome_email",
+      description: "Send the Pixcellor welcome/info email (sales-welcome-info template) to a recipient. Use this whenever the dev says to email info / send info / email the welcome / send the welcome to someone. Pass either contact_id (preferred — looks up the contact's email) OR a raw email. Optionally pass a name. After a successful send, the system automatically logs a CRM communication event on the contact.",
+      parameters: {
+        type: "object",
+        properties: {
+          contact_id: { type: "string", description: "Existing contact UUID (preferred — used to look up email and attach a CRM event)." },
+          email: { type: "string", description: "Recipient email if no contact_id is known." },
+          name: { type: "string", description: "Recipient first name to personalise the email, optional." },
+        },
       },
     },
   },
@@ -816,6 +838,48 @@ async function createDevSalesEvent(supabase: DbClient, args: Record<string, unkn
   return { ok: true, event: data };
 }
 
+async function devSendWelcomeEmail(supabase: DbClient, args: Record<string, unknown>) {
+  const contactIdRaw = cleanText(args.contact_id, 80);
+  const contactId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(contactIdRaw) ? contactIdRaw : "";
+  let email = cleanText(args.email, 255).toLowerCase();
+  let name = cleanText(args.name, 100);
+
+  if (contactId) {
+    const { data: contact } = await supabase.from("contacts").select("id, name, email").eq("id", contactId).maybeSingle();
+    if (!contact) return { ok: false, error: "contact_not_found" };
+    if (!email) email = String(contact.email ?? "").toLowerCase();
+    if (!name) name = String(contact.name ?? "");
+  }
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
+
+  const idempotencyKey = `dev-welcome-${contactId || email}-${Date.now()}`;
+  const { error } = await supabase.functions.invoke("send-transactional-email", {
+    body: {
+      templateName: "sales-welcome-info",
+      recipientEmail: email,
+      idempotencyKey,
+      templateData: { name: name || undefined },
+    },
+  });
+  if (error) {
+    console.error("devSendWelcomeEmail error:", error);
+    return { ok: false, error: "email_send_failed", detail: String(error.message ?? error) };
+  }
+
+  // Log a CRM event so the team sees it in the contact timeline
+  if (contactId) {
+    await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: "Welcome info email sent",
+      description: `Sent sales-welcome-info template to ${email} via dev assistant.`,
+      event_type: "communication",
+    });
+  }
+
+  return { ok: true, email, contact_id: contactId || null, template: "sales-welcome-info" };
+}
+
 function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
   const lines: string[] = [];
   lines.push(`## Known client context (loaded from database for this email)`);
@@ -1172,6 +1236,17 @@ Deno.serve(async (req) => {
           } catch (e) {
             console.error("Error in find_local_leads:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "find_local_leads_failed" }) });
+          }
+        } else if (toolCall.function.name === "send_welcome_email" && isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await devSendWelcomeEmail(supabase, args);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in send_welcome_email:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "send_welcome_email_failed" }) });
           }
         } else if (toolCall.function.name === "lookup_customer") {
           needsFollowUp = true;
