@@ -1874,7 +1874,7 @@ export default function Portal() {
                 <Input
                   value={salesSearch}
                   onChange={(e) => setSalesSearch(e.target.value)}
-                  placeholder="Search sales callbacks by client, title, notes, phone, email…"
+                  placeholder="Search Let's Talk items by client, title, notes, phone, email…"
                   className="pl-9"
                 />
               </div>
