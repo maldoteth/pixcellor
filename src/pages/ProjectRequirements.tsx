@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 
 const requirementsSchema = z.object({
   siteName: z.string().trim().min(1, "Add the site or business name").max(160, "Keep this under 160 characters"),
@@ -94,6 +95,7 @@ export default function ProjectRequirements() {
   const orderCode = params.get("order") ?? "";
   const requirementsToken = params.get("token") ?? "";
   const [form, setForm] = useState<RequirementsForm>(initialForm);
+  const [attachments, setAttachments] = useState<string[]>([]);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -144,7 +146,7 @@ export default function ProjectRequirements() {
 
     setSubmitting(true);
     const { data, error } = await supabase.functions.invoke("submit-project-requirements", {
-      body: { orderCode, requirementsToken, ...parsed.data },
+      body: { orderCode, requirementsToken, ...parsed.data, attachments },
     });
     setSubmitting(false);
 
@@ -239,6 +241,17 @@ export default function ProjectRequirements() {
                   {errors[field.name] && <p className="text-sm text-destructive">{errors[field.name]}</p>}
                 </div>
               ))}
+
+              <div className="space-y-2">
+                <Label>Upload images (logos, references, screenshots, content)</Label>
+                <ImageAttachmentUploader
+                  value={attachments}
+                  onChange={setAttachments}
+                  max={30}
+                  prefix={`project-requirements/${orderCode || "unknown"}`}
+                  disabled={submitting || !validAccess}
+                />
+              </div>
 
               <div className="flex flex-wrap justify-end gap-3 pt-2">
                 <button
