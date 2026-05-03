@@ -5,7 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import applePayLogo from "@/assets/apple-pay.png";
@@ -144,78 +144,68 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     onOpenChange?.(next);
   };
 
+  const trigger = isMobile ? (
+    <motion.button
+      type="button"
+      aria-label="View our web development pricing"
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
+      className={`absolute right-[112px] top-4 z-[10000] flex h-[34px] w-[34px] items-center justify-center rounded-sm transition-opacity duration-200 lg:pointer-events-auto lg:opacity-100 ${hidden ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100"} ${chatOpen ? "lg:flex hidden" : "flex"}`}
+      style={{
+        background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        border: "1px solid rgba(255,255,255,0.2)",
+        boxShadow: `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.1)`,
+      }}
+    >
+      <div
+        className="absolute inset-1 rounded-sm opacity-60"
+        style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)" }}
+      />
+      <ShoppingBag className="relative z-10 h-4 w-4 text-white drop-shadow-lg" />
+    </motion.button>
+  ) : (
+    <Button
+      variant="pricing"
+      className={`mb-6 h-auto w-[265px] px-8 py-3 text-base font-semibold ${hidden ? "hidden" : ""}`}
+      aria-label="View our web development pricing"
+    >
+      Pricing
+    </Button>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer open={effectiveOpen} onOpenChange={handleOpenChange}>
+        <DrawerTrigger asChild>{trigger}</DrawerTrigger>
+        <DrawerContent className="border-border bg-background/95 backdrop-blur-xl max-h-[92vh]">
+          <DrawerHeader className="pb-2">
+            <DrawerTitle className="tracking-tight text-2xl font-bold text-foreground text-center">
+              Our Pricing
+            </DrawerTitle>
+            <StripeBadge />
+          </DrawerHeader>
+          <div className="overflow-y-auto px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [&::-webkit-scrollbar]:hidden">
+            <MobileCards />
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {isMobile ? (
-          <motion.button
-            type="button"
-            aria-label="View our web development pricing"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className={`absolute right-[112px] top-4 z-[10000] flex h-[34px] w-[34px] items-center justify-center rounded-sm transition-opacity duration-200 lg:pointer-events-auto lg:opacity-100 ${hidden ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100"} ${chatOpen ? "lg:flex hidden" : "flex"}`}
-            style={{
-              background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.2)",
-              boxShadow: `
-                0 8px 32px rgba(0,0,0,0.3),
-                inset 0 1px 1px rgba(255,255,255,0.3),
-                inset 0 -1px 1px rgba(0,0,0,0.1)
-              `,
-            }}
-          >
-            <div
-              className="absolute inset-1 rounded-sm opacity-60"
-              style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)" }}
-            />
-            <ShoppingBag className="relative z-10 h-4 w-4 text-white drop-shadow-lg" />
-          </motion.button>
-        ) : (
-          <Button
-            variant="pricing"
-            className={`mb-6 h-auto w-[265px] px-8 py-3 text-base font-semibold ${hidden ? "hidden" : ""}`}
-            aria-label="View our web development pricing"
-          >
-            Pricing
-          </Button>
-        )}
-      </DialogTrigger>
-
-      {isMobile ? (
-        <DialogContent
-          className="top-[50%] max-w-4xl bg-transparent border-none p-4 max-h-[92vh] overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] shadow-none [&>button]:hidden"
-          style={{
-            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 88%, transparent 100%)",
-            maskImage: "linear-gradient(to bottom, black 0%, black 88%, transparent 100%)",
-          }}
-        >
-          <div className="absolute right-3 -top-3 z-[60]">
-            <DialogClose className="flex h-10 w-10 items-center justify-center rounded-sm text-foreground/80 transition-opacity hover:bg-accent/20 hover:opacity-100 focus:outline-none">
-              <X className="h-6 w-6 py-0 my-0 mx-0" />
-              <span className="sr-only">Close</span>
-            </DialogClose>
-          </div>
-          <DialogHeader>
-            <DialogTitle className="tracking-tight text-2xl font-bold text-foreground text-center mb-2">
-              Our Pricing
-            </DialogTitle>
-            <StripeBadge />
-          </DialogHeader>
-          <MobileCards />
-        </DialogContent>
-      ) : (
-        <DialogContent className="top-[54%] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent" }}>
-          <div className="fixed top-3 right-3 z-[60]">
-            <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
-              <X className="h-6 w-6 py-0 my-0 mx-0" />
-              <span className="sr-only">Close</span>
-            </DialogClose>
-          </div>
-          <DesktopCards />
-        </DialogContent>
-      )}
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="top-[54%] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent" }}>
+        <div className="fixed top-3 right-3 z-[60]">
+          <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
+            <X className="h-6 w-6 py-0 my-0 mx-0" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+        </div>
+        <DesktopCards />
+      </DialogContent>
     </Dialog>
   );
 }
