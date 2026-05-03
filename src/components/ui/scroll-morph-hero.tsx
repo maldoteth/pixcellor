@@ -112,6 +112,7 @@ const TOTAL_IMAGES = 20;
 const MAX_SCROLL = 3000;
 const HERO_MORPH_END = 600;
 const SCROLL_BREAK_DURATION = 650;
+const POST_HERO_SCROLL_SENSITIVITY = 0.2;
 
 // UI Template Images (16 unique + 4 repeated to fill 20 slots)
 const IMAGES = [
@@ -215,7 +216,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 touchNeedsReleaseRef.current = false;
             }
 
-            const newScroll = Math.min(Math.max(currentScroll + delta, 0), MAX_SCROLL);
+            const scrollDelta = currentScroll >= HERO_MORPH_END ? delta * POST_HERO_SCROLL_SENSITIVITY : delta;
+            const newScroll = Math.min(Math.max(currentScroll + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
             virtualScroll.set(newScroll);
             onVirtualScrollChangeRef.current?.(newScroll);
