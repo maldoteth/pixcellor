@@ -1440,6 +1440,104 @@ async function devRecentActivity(supabase: DbClient, args: Record<string, unknow
   };
 }
 
+async function devBulkUpdateStatus(supabase: DbClient, args: Record<string, unknown>) {
+  const status = cleanText(args.status, 40).toLowerCase();
+  if (!["cold","aware","warm","hot","gold","archived"].includes(status)) return { ok: false, error: "invalid_status" };
+  const ids = Array.isArray(args.contact_ids) ? args.contact_ids.filter((v): v is string => typeof v === "string" && UUID_RE.test(v)).slice(0, 50) : [];
+  if (ids.length === 0) return { ok: false, error: "no_valid_ids" };
+  const { error, count } = await supabase.from("contacts").update({ status, updated_at: new Date().toISOString() }, { count: "exact" }).in("id", ids);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, updated: count ?? ids.length, status };
+}
+
+async function devArchiveContact(supabase: DbClient, args: Record<string, unknown>) {
+  return devBulkUpdateStatus(supabase, { contact_ids: [args.contact_id], status: "archived" });
+}
+
+async function devScheduleCallbackToday(supabase: DbClient, args: Record<string, unknown>) {
+  const contactId = cleanText(args.contact_id, 80);
+  const title = cleanText(args.title, 160);
+  if (!UUID_RE.test(contactId)) return { ok: false, error: "invalid_contact" };
+  if (!title) return { ok: false, error: "missing_title" };
+  const time = /^\d{2}:\d{2}$/.test(String(args.time ?? "")) ? String(args.time) : "09:00";
+  // London local date today
+  const todayLondon = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" }); // YYYY-MM-DD
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(String(args.date ?? "")) ? String(args.date) : todayLondon;
+  // Build a London-local instant. Europe/London is +00:00 in winter, +01:00 in summer; resolve via Intl.
+  const naive = new Date(`${date}T${time}:00`);
+  const londonOffsetMin = (() => {
+    const utc = new Date(naive.toISOString().slice(0, 19) + "Z").getTime();
+    const londonStr = new Date(utc).toLocaleString("en-GB", { timeZone: "Europe/London", hour12: false, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    const m = londonStr.match(/(\d{2})\/(\d{2})\/(\d{4}),\s+(\d{2}):(\d{2})/);
+    if (!m) return 0;
+    const asUtc = Date.UTC(+m[3], +m[2]-1, +m[1], +m[4], +m[5]);
+    return (asUtc - utc) / 60000;
+  })();
+  const callbackAt = new Date(naive.getTime() - londonOffsetMin * 60000).toISOString();
+  const { data, error } = await supabase.from("contact_events").insert({
+    contact_id: contactId,
+    title,
+    description: cleanText(args.description, 2000) || null,
+    event_type: "callback",
+    callback_at: callbackAt,
+  }).select("id, callback_at").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, event: data, scheduled_for_local: `${date} ${time} Europe/London` };
+}
+
+async function devLookupVisitorActivity(supabase: DbClient, args: Record<string, unknown>) {
+  const email = cleanText(args.email, 255).toLowerCase();
+  const website = cleanWebsite(args.website);
+  if (!email && !website) return { ok: false, error: "email_or_website_required" };
+  let query = supabase.from("visitor_falloffs")
+    .select("visitor_id, customer_email, company_name, company_domain, last_seen_at, max_scroll_percent, first_page, last_page, portfolio_opened_at, pricing_opened_at, buy_clicked_at, checkout_started_at, package_name")
+    .order("last_seen_at", { ascending: false })
+    .limit(10);
+  if (email && website) query = query.or(`customer_email.ilike.${email},company_domain.ilike.%${website}%`);
+  else if (email) query = query.ilike("customer_email", email);
+  else query = query.ilike("company_domain", `%${website}%`);
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, visits: data ?? [] };
+}
+
+async function devRecommendPackage(args: Record<string, unknown>) {
+  const industry = cleanText(args.industry, 80);
+  const pages = Number(args.page_count) || 0;
+  const subscription = args.needs_subscription === true;
+  const notes = cleanText(args.notes, 600);
+  let pick: "fullWorks" | "elite" | "retainer" = "fullWorks";
+  if (subscription || pages > 30) pick = "retainer";
+  else if (pages > 10 || subscription) pick = "elite";
+  const pkg = PACKAGES[pick];
+  const summary = [
+    `Recommended: **${pkg.name}** (${pkg.price})${pkg.rrp ? ` — RRP ${pkg.rrp}` : ""}`,
+    industry ? `Tailored for ${industry}.` : "",
+    pages ? `Built for around ${pages} pages.` : "",
+    `Includes: ${pkg.features.slice(0, 4).join("; ")}.`,
+    notes ? `Context: ${notes}` : "",
+  ].filter(Boolean).join("\n");
+  return { ok: true, package_id: pick, summary };
+}
+
+async function devFetchChatHistory(supabase: DbClient, args: Record<string, unknown>) {
+  const clientId = cleanText(args.client_id, 200);
+  const convId = cleanText(args.conversation_id, 80);
+  let conversationId: string | null = UUID_RE.test(convId) ? convId : null;
+  let conversation: any = null;
+  if (!conversationId && clientId) {
+    const { data } = await supabase.from("chat_conversations").select("id, client_id, bot_paused, manual_handoff_at, updated_at").eq("client_id", clientId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    conversation = data;
+    conversationId = data?.id ?? null;
+  } else if (conversationId) {
+    const { data } = await supabase.from("chat_conversations").select("id, client_id, bot_paused, manual_handoff_at, updated_at").eq("id", conversationId).maybeSingle();
+    conversation = data;
+  }
+  if (!conversationId) return { ok: false, error: "conversation_not_found" };
+  const { data: messages } = await supabase.from("chat_messages").select("role, content, created_at").eq("conversation_id", conversationId).order("created_at", { ascending: true }).limit(80);
+  return { ok: true, conversation, messages: (messages ?? []).map((m: any) => ({ role: m.role, content: String(m.content).slice(0, 600), at: m.created_at })) };
+}
+
 function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientContext>>) {
   const lines: string[] = [];
   lines.push(`## Known client context (loaded from database for this email)`);
