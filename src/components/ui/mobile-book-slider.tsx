@@ -191,27 +191,72 @@ function MobileBookSlider() {
       onTouchEndCapture={handleTouchEnd}
     >
       <div className="relative h-[391px] w-[288px] overflow-hidden border border-border bg-card">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
-          <motion.div
-            key={site.url}
-            custom={direction}
-            initial={{ x: direction > 0 ? 40 : -40, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction > 0 ? -40 : 40, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 280, damping: 30 }}
-            className="absolute inset-0 bg-card"
-          >
-            <div className="h-full flex flex-col">
-              <div className="h-36 bg-muted overflow-hidden">
+        <motion.div
+          className="absolute inset-0 flex"
+          style={{ width: `${totalPages * 100}%` }}
+          animate={{ x: `-${currentPage * (100 / totalPages)}%` }}
+          transition={{ type: "spring", stiffness: 280, damping: 32 }}
+        >
+          {portfolioData.map((p, idx) => (
+            <div
+              key={p.url}
+              className="h-full bg-card flex flex-col"
+              style={{ width: `${100 / totalPages}%` }}
+            >
+              <div className="h-36 bg-muted overflow-hidden shrink-0">
                 <img
-                  src={site.screenshot}
-                  alt={site.name}
+                  src={p.screenshot}
+                  alt={p.name}
                   loading="eager"
                   decoding="sync"
-                  fetchPriority="high"
+                  draggable={false}
                   className="w-full h-full object-cover object-top"
                 />
               </div>
+
+              <div className="flex-1 flex flex-col justify-center p-5 relative">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); goToPreviousPage(); }}
+                  className={`absolute top-2 left-2 p-1 transition ${currentPage === 0 ? 'opacity-0 pointer-events-none' : 'opacity-90 hover:opacity-100'}`}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="w-5 h-5 text-foreground" />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); goToNextPage(); }}
+                  className={`absolute top-2 right-2 p-1 transition ${currentPage >= totalPages - 1 ? 'opacity-0 pointer-events-none' : 'opacity-90 hover:opacity-100'}`}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="w-5 h-5 text-foreground" />
+                </button>
+
+                <div className="text-center">
+                  <h2 className="text-lg font-bold text-foreground mb-1">
+                    {p.name}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      void recordFalloff({ event: "portfolio_project_opened", projectName: p.name, projectUrl: p.url });
+                      window.open((p as any).fullUrl ?? `https://${p.url}`, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="text-primary text-xs mb-2 hover:underline inline-block cursor-pointer"
+                  >
+                    {p.url}
+                  </button>
+                  <p className="text-muted-foreground text-xs leading-relaxed mt-2">
+                    {p.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
 
               <div className="flex-1 flex flex-col justify-center p-5 relative">
                 <button
