@@ -513,15 +513,13 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const startQuickAction = (action: "call" | "email") => {
     if (isDevMode || isLoading) return;
     setQuickAction(action);
-    setMessages((current) => [
-      ...current,
-      {
-        role: "assistant",
-        content: action === "call"
-          ? "Absolutely — leave your name and phone number and I’ll get a callback booked for tomorrow."
-          : "Sure — leave your name and email and I’ll send over our full package guide, process breakdown, portfolio and buy links.",
-      },
-    ]);
+    const reply = {
+      role: "assistant" as const,
+      content: action === "call"
+        ? "Absolutely — leave your name and phone number and I’ll get a callback booked for tomorrow."
+        : "Sure — leave your name and email and I’ll send over our full package guide, process breakdown, portfolio and buy links.",
+    };
+    setMessages((current) => action === "call" ? [reply] : [...current, reply]);
   };
 
   const toggleListening = () => {
@@ -728,7 +726,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                     ))}
                   </div>
                 )}
-                {!isDevMode && i === 0 && msg.role === "assistant" && (
+                {!isDevMode && i === 0 && msg.role === "assistant" && !quickAction && (
                   <div className="mt-2 flex w-[80%] flex-wrap gap-2">
                     <motion.button
                       type="button"
