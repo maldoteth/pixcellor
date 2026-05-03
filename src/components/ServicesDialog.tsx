@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, type TouchEvent } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Code2, Megaphone, Briefcase, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useDrawerTouchScroll } from "@/hooks/use-drawer-touch-scroll";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 
 const SERVICE_GROUPS = [
@@ -48,26 +49,7 @@ const SERVICE_GROUPS = [
 export default function ServicesDialog() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const drawerTouchYRef = useRef<number | null>(null);
-
-  const handleDrawerTouchStart = (event: TouchEvent<HTMLElement>) => {
-    drawerTouchYRef.current = event.touches[0]?.clientY ?? null;
-  };
-
-  const handleDrawerTouchMove = (event: TouchEvent<HTMLElement>) => {
-    const currentY = event.touches[0]?.clientY;
-    if (drawerTouchYRef.current === null || currentY === undefined) return;
-
-    const deltaY = drawerTouchYRef.current - currentY;
-    drawerTouchYRef.current = currentY;
-    event.currentTarget.scrollTop += deltaY;
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  const resetDrawerTouch = () => {
-    drawerTouchYRef.current = null;
-  };
+  const drawerScrollRef = useDrawerTouchScroll<HTMLElement>(isMobile && open);
 
   useEffect(() => {
     const handler = () => setOpen(true);
