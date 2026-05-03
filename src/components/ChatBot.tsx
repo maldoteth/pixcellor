@@ -217,6 +217,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
   const clientId = useRef(getClientId(mode));
   const isDevMode = mode === "dev";
@@ -520,6 +521,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         : "Sure — leave your name and email and I’ll send over our full package guide, process breakdown, portfolio and buy links.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
+    // Focus input synchronously so mobile browsers open the keyboard
+    requestAnimationFrame(() => textInputRef.current?.focus());
+    textInputRef.current?.focus();
   };
 
   const toggleListening = () => {
@@ -789,6 +793,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         <div className="flex min-w-0 items-center gap-2">
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           <input
+            ref={textInputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
