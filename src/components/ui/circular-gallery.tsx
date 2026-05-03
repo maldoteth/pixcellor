@@ -66,12 +66,22 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
 
     const effectiveRotation = useExternal ? (externalRotation as number) : rotation;
     const anglePerItem = 360 / items.length;
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+      const check = () => setIsMobile(window.innerWidth < 768);
+      check();
+      window.addEventListener('resize', check);
+      return () => window.removeEventListener('resize', check);
+    }, []);
+    const cardW = isMobile ? 110 : 180;
+    const cardH = isMobile ? 150 : 240;
+    const effectiveRadius = isMobile ? Math.min(radius, 240) : radius;
 
     return (
       <div
         ref={ref}
         className={cn('relative w-full h-full flex items-center justify-center', className)}
-        style={{ perspective: '1200px' }}
+        style={{ perspective: isMobile ? '800px' : '1200px' }}
         {...props}
       >
         <div
@@ -90,9 +100,13 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             return (
               <div
                 key={i}
-                className="absolute top-1/2 left-1/2 w-[180px] h-[240px] -ml-[90px] -mt-[120px]"
+                className="absolute top-1/2 left-1/2"
                 style={{
-                  transform: `rotateY(${itemAngle + effectiveRotation}deg) translateZ(${radius}px)`,
+                  width: cardW,
+                  height: cardH,
+                  marginLeft: -cardW / 2,
+                  marginTop: -cardH / 2,
+                  transform: `rotateY(${itemAngle + effectiveRotation}deg) translateZ(${effectiveRadius}px)`,
                   transformStyle: 'preserve-3d',
                   opacity,
                   transition: 'opacity 0.3s ease-out',
@@ -106,10 +120,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                     style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
                     loading="lazy"
                   />
-                  <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white">
-                    <h3 className="font-semibold text-base leading-tight">{item.common}</h3>
-                    <p className="text-xs italic text-white/70">{item.binomial}</p>
-                    <p className="text-[10px] text-white/50 mt-1">Photo by: {item.photo.by}</p>
+                  <div className="absolute inset-x-0 bottom-0 p-2 md:p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white">
+                    <h3 className="font-semibold text-xs md:text-base leading-tight">{item.common}</h3>
+                    <p className="text-[10px] md:text-xs italic text-white/70 truncate">{item.binomial}</p>
                   </div>
                 </div>
               </div>
