@@ -6,7 +6,7 @@ const Footer = () => {
       className="w-full border-t border-transparent md:border-white/10 bg-background/60 backdrop-blur-sm text-foreground py-3 px-4"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
     >
-      <div className="max-w-6xl mx-auto flex flex-nowrap md:flex-wrap items-center justify-between md:justify-center gap-x-5 gap-y-1 text-[11px] md:text-xs text-foreground/70">
+      <div className="max-w-6xl mx-auto flex flex-nowrap md:flex-wrap items-center justify-between md:justify-center gap-x-5 gap-y-1 text-[11px] md:text-xs text-foreground/70 text-center">
         <span className="font-medium text-foreground/90 text-left md:text-center text-sm md:w-auto md:py-[5px]">
           Pixcellor
         </span>
