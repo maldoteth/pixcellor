@@ -116,7 +116,7 @@ export default function OrderSuccess() {
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-12">
       <section className="w-full max-w-3xl text-center space-y-6">
         <div className="mx-auto w-fit rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur-md">
-          Pixcellor checkout
+          Pixcellor™ checkout
         </div>
 
         <Card className="overflow-hidden border-border bg-card/70 backdrop-blur-xl shadow-2xl">

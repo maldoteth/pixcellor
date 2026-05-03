@@ -275,7 +275,7 @@ export default function CustomerPortal() {
                 <img src={customerPortalPLogo} alt="Pixcellor P logo" className="h-full w-full object-contain" />
               </div>
               <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                <p className="truncate text-sm font-semibold">Pixcellor</p>
+                <p className="truncate text-sm font-semibold">Pixcellor™</p>
                 <p className="truncate text-xs text-sidebar-foreground/60">Customer app</p>
               </div>
             </div>

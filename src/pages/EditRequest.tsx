@@ -83,7 +83,7 @@ export default function EditRequest() {
               <CheckCircle2 className="h-9 w-9 text-primary" />
             </div>
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-muted-foreground">Pixcellor edit request</p>
+              <p className="text-xs font-semibold text-muted-foreground">Pixcellor™ edit request</p>
               <h1 className="text-3xl font-semibold tracking-normal md:text-5xl">Edit request received</h1>
               <p className="leading-relaxed text-muted-foreground">
                 We’ve reopened your order as live work and saved your requested changes.
@@ -107,7 +107,7 @@ export default function EditRequest() {
         </Button>
 
         <div className="space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground">Pixcellor edit request</p>
+          <p className="text-xs font-semibold text-muted-foreground">Pixcellor™ edit request</p>
           <h1 className="text-4xl font-semibold tracking-normal md:text-6xl">Request website edits</h1>
           <p className="max-w-2xl leading-relaxed text-muted-foreground">Send the changes you want made to your delivered website.</p>
         </div>

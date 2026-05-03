@@ -71,7 +71,7 @@ export function buildBrandedEmail({ subject, bodyHtml, preheader, unsubUrl }: Br
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center" style="font-size:12px;line-height:1.7;color:#777;">
-                    <div style="margin:0 0 8px;font-weight:600;color:#ffffff;font-size:13px;letter-spacing:-0.01em;">Pixcellor</div>
+                    <div style="margin:0 0 8px;font-weight:600;color:#ffffff;font-size:13px;letter-spacing:-0.01em;">Pixcellor™</div>
                     <div style="margin:0 0 14px;color:#999;">Premium creative studio for brands that care about detail.</div>
                     <div style="margin:0 0 14px;">
                       <a href="${LINKEDIN_URL}" style="color:#aaa;text-decoration:none;margin:0 8px;">LinkedIn</a>·
