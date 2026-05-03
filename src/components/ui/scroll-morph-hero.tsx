@@ -149,13 +149,24 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             }
         };
 
-        const observer = new ResizeObserver(handleResize);
-        observer.observe(containerRef.current);
-
         setContainerSize({
             width: containerRef.current.offsetWidth,
             height: containerRef.current.offsetHeight,
         });
+
+        if (typeof ResizeObserver === "undefined") {
+            window.addEventListener("resize", () => {
+                if (!containerRef.current) return;
+                setContainerSize({
+                    width: containerRef.current.offsetWidth,
+                    height: containerRef.current.offsetHeight,
+                });
+            });
+            return;
+        }
+
+        const observer = new ResizeObserver(handleResize);
+        observer.observe(containerRef.current);
 
         return () => observer.disconnect();
     }, []);
@@ -205,7 +216,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             return !!interactiveEl && !interactiveEl.closest('[data-hero-scroll-control="true"]');
         };
         const isInsideOverlay = (event: TouchEvent) => {
-            const path = event.composedPath();
+            const path = typeof event.composedPath === "function" ? event.composedPath() : [event.target];
             return path.some((node) => {
                 if (!(node instanceof Element)) return false;
                 return !!node.closest('[data-pixcellor-mobile-drawer="true"], [role="dialog"], [role="alertdialog"], [data-radix-popper-content-wrapper], [data-radix-dialog-content], [data-radix-dialog-overlay], .stf__parent');
