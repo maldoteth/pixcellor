@@ -113,6 +113,8 @@ const HERO_MORPH_END = 600;
 const CAROUSEL_SCROLL_END = HERO_MORPH_END + 8000;
 const MAX_SCROLL = CAROUSEL_SCROLL_END;
 const SCROLL_BREAK_DURATION = 650;
+const MOBILE_SCROLL_BOOST = 24;
+const CAROUSEL_SCROLL_SENSITIVITY = 0.2;
 
 // UI Template Images (16 unique + 4 repeated to fill 20 slots)
 const IMAGES = [
@@ -228,7 +230,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             forceCirclePhase();
 
             const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile && scrollRef.current < HERO_MORPH_END ? e.deltaY * 24 : e.deltaY;
+            const scrollDelta = isMobile
+                ? e.deltaY * MOBILE_SCROLL_BOOST * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1)
+                : e.deltaY * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1);
             applyVirtualScrollDelta(scrollDelta, "wheel");
         };
 
@@ -292,7 +296,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             touchStartX = touchX;
 
             const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile && scrollRef.current < HERO_MORPH_END ? deltaY * 24 : deltaY;
+            const scrollDelta = isMobile
+                ? deltaY * MOBILE_SCROLL_BOOST * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1)
+                : deltaY * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1);
             applyVirtualScrollDelta(scrollDelta, "touch");
         };
         const handleTouchEnd = () => {
