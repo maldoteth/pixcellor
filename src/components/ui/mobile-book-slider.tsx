@@ -217,6 +217,24 @@ function MobileBookSlider() {
             </div>
           </div>
         ))}
+        {/* Padding page to keep total even so swipe-back works on the final entry */}
+        <div key="__end" className="bg-card border border-border overflow-hidden">
+          <div className="h-full flex flex-col items-center justify-center p-5 relative">
+            <button
+              onClick={(e) => { e.stopPropagation(); bookRef.current?.pageFlip()?.flipPrev(); }}
+              className="absolute top-2 left-2 p-1 opacity-90 hover:opacity-100 transition"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="w-5 h-5 text-foreground" />
+            </button>
+            <div className="text-center">
+              <h2 className="text-lg font-bold text-foreground mb-2">That's a wrap</h2>
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                Swipe back to revisit any project, or get in touch to start your own.
+              </p>
+            </div>
+          </div>
+        </div>
       </HTMLFlipBook>
     </div>
   );
