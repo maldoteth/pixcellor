@@ -144,6 +144,11 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     onOpenChange?.(next);
   };
 
+  useEffect(() => {
+    if (!mobileTop) return;
+    window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: effectiveOpen } }));
+  }, [effectiveOpen, mobileTop]);
+
   const trigger = isMobile ? (
     <motion.button
       type="button"
