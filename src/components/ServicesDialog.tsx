@@ -114,7 +114,7 @@ export default function ServicesDialog() {
               >
                 <div className="flex flex-col gap-4">
                   {SERVICE_GROUPS.map((group) => (
-                    <ServiceCard key={group.title} group={group} />
+                    <ServiceCard key={group.title} group={group} onClose={() => setOpen(false)} />
                   ))}
                 </div>
               </div>
@@ -142,7 +142,7 @@ export default function ServicesDialog() {
           <h2 className="text-3xl font-bold text-foreground text-center">Our Services</h2>
           <div className="grid grid-cols-3 gap-5 max-w-5xl">
             {SERVICE_GROUPS.map((group) => (
-              <ServiceCard key={group.title} group={group} />
+              <ServiceCard key={group.title} group={group} onClose={() => setOpen(false)} />
             ))}
           </div>
         </div>
