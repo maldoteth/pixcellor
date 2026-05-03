@@ -189,6 +189,53 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_persons: {
+        Row: {
+          contact_id: string
+          created_at: string
+          created_by_email: string | null
+          created_by_user_id: string | null
+          email: string | null
+          id: string
+          job_title: string | null
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          email?: string | null
+          id?: string
+          job_title?: string | null
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          email?: string | null
+          id?: string
+          job_title?: string | null
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_persons_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contacts: {
         Row: {
           actual_website_url: string | null
@@ -903,6 +950,16 @@ export type Database = {
         }
         Returns: number
       }
+      portal_add_contact_person: {
+        Args: {
+          _contact_id: string
+          _email?: string
+          _job_title?: string
+          _name: string
+          _phone?: string
+        }
+        Returns: Json
+      }
       portal_close_chat_case:
         | {
             Args: { _access_code: string; _conversation_id: string }
@@ -982,6 +1039,10 @@ export type Database = {
             }
             Returns: Json
           }
+      portal_delete_contact_person: {
+        Args: { _person_id: string }
+        Returns: undefined
+      }
       portal_fetch_messages:
         | {
             Args: { _access_code: string; _conversation_id: string }
