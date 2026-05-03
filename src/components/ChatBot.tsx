@@ -378,7 +378,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
 
     const visibleContent = input.trim();
     const actionInstruction = quickAction === "call"
-      ? "\n\n[Quick action: Request call. Save these details as a contact and schedule a callback for 1 day from now.]"
+      ? "\n\n[Quick action: Request call. Save these details as a contact and schedule a Let's Talk follow-up for 1 day from now.]"
       : quickAction === "email"
         ? "\n\n[Quick action: Email info. Save these details as a contact and send the Pixcellor welcome sales email.]"
         : "";
