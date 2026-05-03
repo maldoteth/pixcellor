@@ -58,7 +58,7 @@ export default function Unsubscribe() {
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
       <Card className="w-full max-w-md border-border/60 bg-card/80">
         <CardHeader>
-          <p className="text-xs font-semibold text-muted-foreground">Pixcellor™</p>
+          <p className="text-xs font-semibold text-muted-foreground">Pixcellor</p>
           <CardTitle>{copy[0]}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
