@@ -49,7 +49,9 @@ const SERVICE_GROUPS = [
 export default function ServicesDialog() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const drawerScrollRef = useDrawerTouchScroll<HTMLElement>(isMobile && open);
+  const drawerScrollRef = useDrawerTouchScroll<HTMLElement>(isMobile && open, {
+    onCloseDrag: () => setOpen(false),
+  });
 
   useEffect(() => {
     const handler = () => setOpen(true);
