@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, type TouchEvent } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Code2, Megaphone, Briefcase, X } from "lucide-react";
@@ -48,6 +48,26 @@ const SERVICE_GROUPS = [
 export default function ServicesDialog() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const drawerTouchYRef = useRef<number | null>(null);
+
+  const handleDrawerTouchStart = (event: TouchEvent<HTMLElement>) => {
+    drawerTouchYRef.current = event.touches[0]?.clientY ?? null;
+  };
+
+  const handleDrawerTouchMove = (event: TouchEvent<HTMLElement>) => {
+    const currentY = event.touches[0]?.clientY;
+    if (drawerTouchYRef.current === null || currentY === undefined) return;
+
+    const deltaY = drawerTouchYRef.current - currentY;
+    drawerTouchYRef.current = currentY;
+    event.currentTarget.scrollTop += deltaY;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const resetDrawerTouch = () => {
+    drawerTouchYRef.current = null;
+  };
 
   useEffect(() => {
     const handler = () => setOpen(true);
@@ -78,14 +98,18 @@ export default function ServicesDialog() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="services-dialog-title"
-              className="relative flex h-[82dvh] max-h-[82dvh] w-full flex-col overflow-hidden rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl"
+              className="relative h-[82dvh] max-h-[82dvh] w-full touch-none overflow-y-scroll overscroll-contain rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              onTouchStartCapture={handleDrawerTouchStart}
+              onTouchMoveCapture={handleDrawerTouchMove}
+              onTouchEndCapture={resetDrawerTouch}
+              onTouchCancelCapture={resetDrawerTouch}
             >
               <div className="mx-auto mt-4 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-              <div className="relative grid flex-shrink-0 gap-1.5 p-4 pb-2 text-left">
+              <div className="sticky top-0 z-10 grid gap-1.5 bg-background/95 p-4 pb-2 text-left backdrop-blur-xl">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
@@ -99,7 +123,7 @@ export default function ServicesDialog() {
                 </h2>
               </div>
               <div
-                className="flex-1 min-h-0 touch-pan-y overflow-y-scroll overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
+                className="px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
                 data-pixcellor-drawer-scroll="true"
               >
                 <div className="flex flex-col gap-4">
