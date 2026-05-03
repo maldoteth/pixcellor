@@ -174,7 +174,7 @@ export default function ProjectRequirements() {
               <CheckCircle2 className="h-9 w-9 text-primary" />
             </div>
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-muted-foreground">Pixcellor™ project brief</p>
+              <p className="text-xs font-semibold text-muted-foreground">Pixcellor project brief</p>
               <h1 className="text-3xl md:text-5xl font-semibold tracking-normal">{alreadySubmitted ? "Already submitted!" : "Requirements received"}</h1>
               <p className="text-muted-foreground leading-relaxed">{alreadySubmitted ? "Thanks — your project brief is already saved and linked to your order." : "We’ve saved your project details and linked them to your order."}</p>
             </div>
@@ -200,7 +200,7 @@ export default function ProjectRequirements() {
         </Button>
 
         <div className="space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground">Pixcellor™ project brief</p>
+          <p className="text-xs font-semibold text-muted-foreground">Pixcellor project brief</p>
           <h1 className="text-4xl md:text-6xl font-semibold tracking-normal">Add your website requirements</h1>
           <p className="max-w-2xl text-muted-foreground leading-relaxed">Send us the key details we need to shape your build: site name, page structure, style direction, references, assets, content, and socials.</p>
         </div>
@@ -221,7 +221,7 @@ export default function ProjectRequirements() {
                   value={form.siteName}
                   onChange={(event) => updateField("siteName", event.target.value)}
                   maxLength={160}
-                  placeholder="Example: Pixcellor™"
+                  placeholder="Example: Pixcellor"
                 />
                 {errors.siteName && <p className="text-sm text-destructive">{errors.siteName}</p>}
               </div>
