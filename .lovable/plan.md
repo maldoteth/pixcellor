@@ -1,28 +1,41 @@
-## Problem
+## Plan
 
-On a Samsung S24 (and other modern mobile browsers with a dynamic URL/toolbar), the footer is invisible at the bottom of the page when scrolled to the end of the hero animation.
+Fix the carousel so it does not preload halfway or near the end of its spin. The carousel should be at its starting rotation when it first appears, then rotate only as the user continues scrolling through the carousel section.
 
-**Root cause:** The hero container in `src/pages/Index.tsx` uses `h-screen` (CSS `100vh`). On mobile browsers, `100vh` corresponds to the *largest* viewport — i.e. the area that exists when the browser's address bar is hidden. With the address bar visible, the bottom ~60–100px of that container sits *underneath* the browser chrome. The Footer is positioned `absolute bottom-0` inside that container, so it gets pushed off-screen behind the toolbar.
+## What I will change
 
-## Fix
+1. Keep the existing hero/first animation scroll behavior unchanged.
+2. Decouple the carousel rotation from the early hero morph scroll range.
+3. Move the carousel rotation start point to after the “What We Do” / carousel reveal point, so it starts at `0°` when visible.
+4. Preserve the current rotation amount:
+   - Desktop: up to 2 full turns.
+   - Mobile/tablet: reduced rotation amount so it is less sensitive.
+5. Make sure the carousel still uses the same visible fade timing as the “What We Do” content.
 
-Switch the hero container from `h-screen` to `h-dvh` (dynamic viewport height). `100dvh` updates as the browser UI shows/hides, so the footer always sits at the visible bottom of the screen on mobile, and behaves identically to `100vh` on desktop.
+## Technical change
 
-### Changes
+In `src/components/ui/scroll-morph-hero.tsx`, update the `galleryRotation` transform so its input range starts later than the reveal phase instead of starting at `virtualScroll = 600`.
 
-1. **`src/pages/Index.tsx`** (line 13)
-   - Change `className="relative h-screen overflow-hidden"` to `className="relative h-dvh overflow-hidden"`.
+Current issue:
 
-2. **`src/components/ui/scroll-morph-hero.tsx`** — sanity check
-   - The hero root uses `h-full` and reads `containerSize` via ResizeObserver, so it will pick up the new dynamic height automatically. No changes needed there.
+```ts
+const galleryRotation = useTransform(
+  virtualScroll,
+  [600, 3000],
+  isSmallViewport ? [0, 144] : [0, 720]
+);
+```
 
-### Why not other approaches
+Because the carousel also fades in after the morph phase, the rotation has already advanced before the user can see it.
 
-- Adding bottom padding / `safe-area-inset-bottom`: doesn't help because the issue is browser chrome (URL bar), not iOS safe areas.
-- `min-h-screen` with scrolling: the page is intentionally a single viewport with virtual scroll; we don't want real page scroll.
-- JS-based `--vh` workaround: unnecessary now that `dvh` is well supported in all modern mobile browsers (including Samsung Internet 21+ and Chrome 108+).
+Planned fix:
 
-## QA
+```ts
+const galleryRotation = useTransform(
+  virtualScroll,
+  isSmallViewport ? [1400, 3000] : [1200, 3000],
+  isSmallViewport ? [0, 144] : [0, 720]
+);
+```
 
-- Verify on the requested mobile viewport that the Footer (Pixcellor wordmark, phone, social icons) is visible at the bottom once the hero animation completes.
-- Verify desktop layout is unchanged.
+This keeps the first animation intact and changes only the carousel spin timing.
