@@ -6,10 +6,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useDrawerTouchScroll } from "@/hooks/use-drawer-touch-scroll";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 
+type ServiceAction = "pricing" | "sales";
+
 const SERVICE_GROUPS = [
   {
     icon: Code2,
     title: "Apps & Sites",
+    action: "pricing" as ServiceAction,
     items: [
       "Landing pages",
       "Animated marketing sites",
@@ -23,6 +26,7 @@ const SERVICE_GROUPS = [
   {
     icon: Megaphone,
     title: "Marketing Solutions",
+    action: "sales" as ServiceAction,
     items: [
       "Telesales campaigns",
       "Email marketing campaigns",
@@ -35,6 +39,7 @@ const SERVICE_GROUPS = [
   {
     icon: Briefcase,
     title: "Business Solutions",
+    action: "sales" as ServiceAction,
     items: [
       "Recruitment systems",
       "Payroll & HR tooling",
