@@ -228,6 +228,8 @@ type ContactPerson = {
   created_at: string;
   updated_at: string;
 };
+
+type MailboxMessage = {
   id: string;
   threadId: string;
   from: string;
