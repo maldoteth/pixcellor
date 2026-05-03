@@ -195,7 +195,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             forceCirclePhase();
 
             const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? e.deltaY * 1.2 : e.deltaY;
+            const scrollDelta = isMobile ? e.deltaY * 24 : e.deltaY;
 
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
@@ -264,7 +264,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             touchStartX = touchX;
 
             const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile ? deltaY * 1.2 : deltaY;
+            const scrollDelta = isMobile ? deltaY * 24 : deltaY;
 
             const newScroll = Math.min(Math.max(scrollRef.current + scrollDelta, 0), MAX_SCROLL);
             scrollRef.current = newScroll;
@@ -445,7 +445,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             );
         })();
     }, []);
-    const galleryRotation = useTransform(virtualScroll, [600, 3000], [0, 720]);
+    const galleryRotation = useTransform(virtualScroll, [600, 3000], isSmallViewport ? [0, 144] : [0, 720]);
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     useEffect(() => {
