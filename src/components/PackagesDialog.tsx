@@ -135,19 +135,20 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     return () => window.removeEventListener("pixcellor:open-packages", handler);
   }, [mobileTop, isMobile]);
 
-  if (mobileTop && !isMobile) return null;
-  if (isMobile && !mobileTop) return null;
-
   const effectiveOpen = mobileTop ? internalOpen : open;
-  const handleOpenChange = (next: boolean) => {
-    if (mobileTop) setInternalOpen(next);
-    onOpenChange?.(next);
-  };
 
   useEffect(() => {
     if (!mobileTop) return;
     window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: effectiveOpen } }));
   }, [effectiveOpen, mobileTop]);
+
+  if (mobileTop && !isMobile) return null;
+  if (isMobile && !mobileTop) return null;
+
+  const handleOpenChange = (next: boolean) => {
+    if (mobileTop) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   const trigger = isMobile ? (
     <motion.button
