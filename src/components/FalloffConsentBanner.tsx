@@ -50,7 +50,13 @@ export default function FalloffConsentBanner() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-border bg-card text-card-foreground shadow-2xl"
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.6 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 80 || info.velocity.y > 400) choose(true);
+              }}
+              className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-border bg-card text-card-foreground shadow-2xl touch-pan-y"
               style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
             >
               <div className="mx-auto mt-3 mb-4 h-1.5 w-12 rounded-full bg-muted" />
