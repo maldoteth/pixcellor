@@ -52,8 +52,21 @@ function FlipCard({
     target,
     onViewDetails,
 }: FlipCardProps) {
+    const handleOpen = (event: React.MouseEvent | React.KeyboardEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+        onViewDetails?.();
+    };
+
     return (
         <motion.div
+            onClick={handleOpen}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") handleOpen(event);
+            }}
+            role="link"
+            tabIndex={0}
+            aria-label="Open a random portfolio project"
             animate={{
                 x: target.x,
                 y: target.y,
@@ -72,6 +85,8 @@ function FlipCard({
                 height: IMG_HEIGHT,
                 transformStyle: "preserve-3d",
                 perspective: "1000px",
+                zIndex: 45,
+                pointerEvents: "auto",
             }}
             className="cursor-pointer group"
         >
@@ -101,7 +116,7 @@ function FlipCard({
                 >
                     <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); onViewDetails?.(); }}
+                        onClick={handleOpen}
                         className="text-center cursor-pointer pointer-events-auto"
                     >
                         <p className="text-[8px] font-bold text-primary uppercase tracking-widest mb-1">View</p>
@@ -477,6 +492,15 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
     // Portfolio gallery items pulled from DB; rotation driven by hero virtual scroll
     const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+    const portfolioLinksRef = useRef<string[]>([]);
+    const openRandomPortfolioLink = () => {
+        const links = portfolioLinksRef.current;
+        if (links.length === 0) return;
+        const raw = links[Math.floor(Math.random() * links.length)];
+        const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+        window.open(url, "_blank", "noopener,noreferrer");
+    };
+
     useEffect(() => {
         (async () => {
             const { data } = await supabase
@@ -484,6 +508,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 .select("name,url,category,description,image_url")
                 .order("display_order", { ascending: true });
             if (!data) return;
+            portfolioLinksRef.current = data.map((p: { url: string }) => p.url).filter(Boolean);
             setGalleryItems(
                 data.map((p: { name: string; url: string; category: string | null; description: string | null; image_url: string | null }) => ({
                     common: p.name,
@@ -814,13 +839,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 total={TOTAL_IMAGES}
                                 phase={introPhase}
                                 target={target}
-                                onViewDetails={() => {
-                                    if (galleryItems.length === 0) return;
-                                    const pick = galleryItems[Math.floor(Math.random() * galleryItems.length)];
-                                    const raw = pick.photo.by;
-                                    const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-                                    window.open(url, "_blank", "noopener,noreferrer");
-                                }}
+                                onViewDetails={openRandomPortfolioLink}
                             />
                         );
                     })}
