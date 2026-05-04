@@ -876,9 +876,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     requestAnimationFrame(step);
                 }}
                 style={{ opacity: footerRevealProgress, top: "calc(env(safe-area-inset-top, 0px) + 1rem)", right: "calc(env(safe-area-inset-right, 0px) + 1rem)" }}
-                className="md:hidden absolute z-50 flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white/90 hover:text-white pointer-events-auto"
+                className="md:hidden absolute z-50 flex items-center justify-center w-7 h-7 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white/90 hover:text-white pointer-events-auto"
             >
-                <X className="w-5 h-5" strokeWidth={2.25} />
+                <X className="w-3.5 h-3.5" strokeWidth={2.25} />
             </motion.button>
         </div>
     );
