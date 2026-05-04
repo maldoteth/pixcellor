@@ -630,20 +630,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            const start = scrollRef.current;
-                            const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
-                            const duration = 1200;
-                            const t0 = performance.now();
-                            const step = (now: number) => {
-                                const t = Math.min((now - t0) / duration, 1);
-                                const eased = 1 - Math.pow(1 - t, 3);
-                                const v = start + (end - start) * eased;
-                                scrollRef.current = v;
-                                virtualScroll.set(v);
-                                onVirtualScrollChangeRef.current?.(v);
-                                if (t < 1) requestAnimationFrame(step);
-                            };
-                            requestAnimationFrame(step);
+                            advanceHeroFromArrow();
                         }}
                         aria-label="Scroll down"
                         data-hero-scroll-control="true"
@@ -662,21 +649,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            const start = scrollRef.current;
-                            const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
-                            console.log("[arrow-desktop] scroll", { start, end });
-                            const duration = 1200;
-                            const t0 = performance.now();
-                            const step = (now: number) => {
-                                const t = Math.min((now - t0) / duration, 1);
-                                const eased = 1 - Math.pow(1 - t, 3);
-                                const v = start + (end - start) * eased;
-                                scrollRef.current = v;
-                                virtualScroll.set(v);
-                                onVirtualScrollChangeRef.current?.(v);
-                                if (t < 1) requestAnimationFrame(step);
-                            };
-                            requestAnimationFrame(step);
+                            advanceHeroFromArrow();
                         }}
                         aria-label="Scroll down"
                         data-hero-scroll-control="true"
