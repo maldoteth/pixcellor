@@ -589,6 +589,11 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         };
         requestAnimationFrame(step);
     };
+
+    useEffect(() => {
+        (async () => {
+            const { data } = await supabase
+                .from("portfolio_projects")
                 .select("name,url,category,description,image_url")
                 .order("display_order", { ascending: true });
             if (!data) return;
