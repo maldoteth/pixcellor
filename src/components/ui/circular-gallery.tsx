@@ -100,7 +100,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             return (
               <div
                 key={i}
-                className="absolute top-1/2 left-1/2"
+                className="absolute top-1/2 left-1/2 pointer-events-auto"
                 style={{
                   width: cardW,
                   height: cardH,
