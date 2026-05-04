@@ -492,6 +492,15 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
     // Portfolio gallery items pulled from DB; rotation driven by hero virtual scroll
     const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+    const portfolioLinksRef = useRef<string[]>([]);
+    const openRandomPortfolioLink = () => {
+        const links = portfolioLinksRef.current;
+        if (links.length === 0) return;
+        const raw = links[Math.floor(Math.random() * links.length)];
+        const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+        window.open(url, "_blank", "noopener,noreferrer");
+    };
+
     useEffect(() => {
         (async () => {
             const { data } = await supabase
@@ -499,6 +508,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 .select("name,url,category,description,image_url")
                 .order("display_order", { ascending: true });
             if (!data) return;
+            portfolioLinksRef.current = data.map((p: { url: string }) => p.url).filter(Boolean);
             setGalleryItems(
                 data.map((p: { name: string; url: string; category: string | null; description: string | null; image_url: string | null }) => ({
                     common: p.name,
