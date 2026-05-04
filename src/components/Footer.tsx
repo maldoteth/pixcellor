@@ -3,13 +3,9 @@ import { Facebook, Linkedin, LogIn, MessageSquare, Phone } from "lucide-react";
 const Footer = () => {
   return (
     <footer
-      className="relative w-full text-foreground py-3 px-4 backdrop-blur-2xl backdrop-saturate-150 bg-white/5 border-t border-white/10"
+      className="relative w-full text-foreground py-3 px-4 md:backdrop-blur-2xl md:backdrop-saturate-150 md:bg-white/5 md:border-t md:border-white/10"
       style={{
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
-        WebkitBackdropFilter: 'blur(24px) saturate(150%)',
-        backgroundImage:
-          'linear-gradient(to bottom, hsl(0 0% 0% / 0) 0%, hsl(0 0% 0% / 0.25) 45%, hsl(0 0% 0% / 0.45) 100%)',
-        boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.08)',
       }}
     >
       <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[11px] md:text-xs text-foreground">
