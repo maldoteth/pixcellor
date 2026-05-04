@@ -1,4 +1,16 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://morph-glide-show.lovable.app/sitemap.xml
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: facebookexternalhit/1.1
+Allow: /
+
+User-agent: Facebot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+Sitemap: https://pixcellor.com/sitemap.xml
