@@ -13,9 +13,21 @@ const Index = () => {
   const [servicesOpen, setServicesOpen] = useState(false);
 
   useEffect(() => {
-    const updateViewportHeight = () => {
-      const height = window.visualViewport?.height ?? window.innerHeight;
+    let rafId = 0;
+    const apply = () => {
+      // Samsung Internet/older Android WebViews can report stale values
+      // for visualViewport.height during toolbar transitions. Use the
+      // smallest reliable height to guarantee the footer stays in view.
+      const vv = window.visualViewport?.height ?? 0;
+      const inner = window.innerHeight || 0;
+      const docEl = document.documentElement.clientHeight || 0;
+      const candidates = [vv, inner, docEl].filter((n) => n > 0);
+      const height = candidates.length ? Math.min(...candidates) : inner;
       document.documentElement.style.setProperty("--pixcellor-viewport-height", `${height}px`);
+    };
+    const updateViewportHeight = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(apply);
     };
 
     updateViewportHeight();
@@ -23,12 +35,15 @@ const Index = () => {
     window.visualViewport?.addEventListener("scroll", updateViewportHeight);
     window.addEventListener("resize", updateViewportHeight);
     window.addEventListener("orientationchange", updateViewportHeight);
+    window.addEventListener("scroll", updateViewportHeight, { passive: true });
 
     return () => {
+      cancelAnimationFrame(rafId);
       window.visualViewport?.removeEventListener("resize", updateViewportHeight);
       window.visualViewport?.removeEventListener("scroll", updateViewportHeight);
       window.removeEventListener("resize", updateViewportHeight);
       window.removeEventListener("orientationchange", updateViewportHeight);
+      window.removeEventListener("scroll", updateViewportHeight);
       document.documentElement.style.removeProperty("--pixcellor-viewport-height");
     };
   }, []);
