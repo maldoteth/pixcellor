@@ -207,8 +207,8 @@ All colors MUST be HSL.
     isolation: isolate;
     overflow: hidden;
     border-top: 1px solid hsl(var(--foreground) / 0.26);
-    background-color: hsl(var(--background) / 0.96);
-    background:
+    background-color: hsl(var(--background) / 0.98);
+    background-image:
       linear-gradient(180deg, hsl(var(--foreground) / 0.16), hsl(var(--background) / 0.96) 28%, hsl(var(--background) / 1)),
       linear-gradient(135deg, hsl(var(--foreground) / 0.16), hsl(var(--foreground) / 0) 58%);
     box-shadow:
