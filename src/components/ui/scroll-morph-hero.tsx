@@ -624,7 +624,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {/* Hero CTA buttons anchored at bottom of hero viewport */}
                 <motion.div
                     style={{ opacity: ctaOpacity }}
-                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[79px] md:bottom-[38px] w-full md:w-auto px-[1.5rem] md:px-0"
+                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[54px] md:bottom-[38px] w-full md:w-auto px-[1.5rem] md:px-0"
                 >
                     {/* Mobile: stacked */}
                     <div data-hero-scroll-control="true" className="md:hidden flex flex-col items-stretch gap-2 w-full">
