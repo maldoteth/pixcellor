@@ -52,8 +52,21 @@ function FlipCard({
     target,
     onViewDetails,
 }: FlipCardProps) {
+    const handleOpen = (event: React.MouseEvent | React.KeyboardEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+        onViewDetails?.();
+    };
+
     return (
         <motion.div
+            onClick={handleOpen}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") handleOpen(event);
+            }}
+            role="link"
+            tabIndex={0}
+            aria-label="Open a random portfolio project"
             animate={{
                 x: target.x,
                 y: target.y,
@@ -72,6 +85,8 @@ function FlipCard({
                 height: IMG_HEIGHT,
                 transformStyle: "preserve-3d",
                 perspective: "1000px",
+                zIndex: 45,
+                pointerEvents: "auto",
             }}
             className="cursor-pointer group"
         >
@@ -101,7 +116,7 @@ function FlipCard({
                 >
                     <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); onViewDetails?.(); }}
+                        onClick={handleOpen}
                         className="text-center cursor-pointer pointer-events-auto"
                     >
                         <p className="text-[8px] font-bold text-primary uppercase tracking-widest mb-1">View</p>
