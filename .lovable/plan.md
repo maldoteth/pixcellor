@@ -1,26 +1,22 @@
-I tested the mobile preview at the current 384x620-sized viewport. The footer does exist, but it is pinned to the bottom of the viewport as an overlay, not placed below the carousel area. On mobile this means it can be hidden behind the consent banner, browser safe-area, or visually swallowed by the bottom of the carousel. It is not behaving like a real “below the carousel” footer.
+I found the actual issue: the repeated fixes were applied to the footer blur, but the see-through area in your screenshot is the label panel inside `CircularGallery`, not the footer. That panel is currently `bg-black/55` with `backdrop-filter: blur(...)`. On 3D transformed carousel cards, browser backdrop-filter compositing can fail or look transparent because it is trying to blur content behind a transformed element rather than making the label itself opaque/glassy.
 
 Plan:
 
-1. Move the mobile footer out of the overlay behavior
-   - Keep desktop as-is if needed.
-   - On mobile, render the footer as a fixed bottom-safe foreground strip or a dedicated bottom slot that is not sharing space with the carousel cards.
-   - Ensure it appears the moment the carousel/portfolio appears, not at initial home load.
+1. Fix the carousel thumbnail label itself
+   - Update the bottom label overlay in `src/components/ui/circular-gallery.tsx`.
+   - Keep the same layout, typography, rounded card style, border, and overall look.
+   - Replace the too-transparent `bg-black/55` behavior with a stronger liquid-glass panel that looks blurry but not see-through.
 
-2. Reserve real space for it on mobile
-   - Increase the carousel’s bottom clearance based on the actual footer height plus safe-area inset.
-   - Stop the carousel cards from extending into the footer zone.
-   - This is the main reason it currently feels invisible: the carousel is using the same lower screen area.
+2. Make the liquid glass reliable on 3D cards
+   - Add a dedicated dark/black glass base behind the text so the panel never becomes transparent.
+   - Keep backdrop blur/saturation for the liquid-glass feel.
+   - Add subtle layered gradients/highlights inside the overlay so it reads as glass even where browser backdrop-filter is limited by 3D transforms.
 
-3. Make the footer visually obvious on mobile
-   - Use brighter text from the first visible frame.
-   - Give the mobile footer a stronger black/glass background so it does not blend into the black page or card shadows.
-   - Keep the Pixcellor/social icons compact but readable.
+3. Preserve carousel visuals
+   - Do not change carousel card size, carousel positioning, rotation, images, or text content.
+   - Do not change the footer or page flow.
+   - Only target the bottom thumbnail information panels.
 
-4. Prevent the consent banner from masking the issue
-   - The consent banner currently sits over the same bottom area and can completely cover the footer on first visit.
-   - I’ll either lift the carousel footer above the consent banner when needed, or add enough bottom offset so both can coexist without hiding each other.
-
-5. Verify on actual mobile aspect ratios
-   - Test 320x568, 360x800, 390x844, 414x896, and the current 384x620 preview.
-   - Confirm: hidden on first hero screen, visible immediately when portfolio/carousel appears, readable, not covered by carousel cards, and not covered by the consent banner.
+4. Verify against the screenshot issue
+   - Check the gallery at the same desktop viewport shape where the problem is visible.
+   - Confirm the bottom label bands are dark, blurry/glassy, readable, and no longer visibly transparent through to other cards/background content.
