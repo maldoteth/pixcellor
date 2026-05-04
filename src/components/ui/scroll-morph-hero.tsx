@@ -570,10 +570,25 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         requestAnimationFrame(step);
     };
 
-    useEffect(() => {
-        (async () => {
-            const { data } = await supabase
-                .from("portfolio_projects")
+    const reverseHeroFromArrow = () => {
+        const now = performance.now();
+        if (now - arrowActivationRef.current < 250) return;
+        arrowActivationRef.current = now;
+        const start = scrollRef.current;
+        const end = Math.max(start - 1500, 0);
+        const duration = 1200;
+        const t0 = performance.now();
+        const step = (frameNow: number) => {
+            const t = Math.min((frameNow - t0) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const v = start + (end - start) * eased;
+            scrollRef.current = v;
+            virtualScroll.set(v);
+            onVirtualScrollChangeRef.current?.(v);
+            if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    };
                 .select("name,url,category,description,image_url")
                 .order("display_order", { ascending: true });
             if (!data) return;
