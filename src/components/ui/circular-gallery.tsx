@@ -95,7 +95,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             const normalizedAngle = Math.abs(
               relativeAngle > 180 ? 360 - relativeAngle : relativeAngle
             );
-            const opacity = Math.max(0.3, 1 - normalizedAngle / 180);
+            const depthDim = Math.max(0.68, 1 - normalizedAngle / 420);
 
             return (
               <div
@@ -108,7 +108,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   marginTop: -cardH / 2,
                   transform: `rotateY(${itemAngle + effectiveRotation}deg) translateZ(${effectiveRadius}px)`,
                   transformStyle: 'preserve-3d',
-                  opacity,
+                  filter: `brightness(${depthDim})`,
                   transition: 'opacity 0.3s ease-out',
                 }}
               >
@@ -143,18 +143,11 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   {/(^|\.)bricks\./i.test(item.photo.by ?? '') && (
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
                   )}
-                  <div
-                    className="absolute inset-x-0 bottom-0 p-2 md:p-4 text-white border-t border-white/20"
-                    style={{
-                      backgroundColor: 'rgba(8,8,10,0.86)',
-                      backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.55), rgba(255,255,255,0.04)), linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0) 60%)',
-                      backdropFilter: 'blur(24px) saturate(160%)',
-                      WebkitBackdropFilter: 'blur(24px) saturate(160%)',
-                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
-                    }}
-                  >
-                    <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate">{item.common}</h3>
-                    <p className="hidden md:block text-[10px] md:text-xs italic text-white/80 truncate drop-shadow">{item.binomial}</p>
+                  <div className="carousel-label-glass absolute inset-x-0 bottom-0 p-2 md:p-4 text-foreground">
+                    <div className="relative z-[1]">
+                      <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate">{item.common}</h3>
+                      <p className="hidden md:block text-[10px] md:text-xs italic text-muted-foreground truncate drop-shadow">{item.binomial}</p>
+                    </div>
                   </div>
                 </div>
               </div>
