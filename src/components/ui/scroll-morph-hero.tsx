@@ -206,6 +206,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const scrollRef = useRef(0);
     const scrollBreakUntilRef = useRef(0);
     const touchNeedsReleaseRef = useRef(false);
+    const arrowActivationRef = useRef(0);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -547,6 +548,26 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         const raw = links[Math.floor(Math.random() * links.length)];
         const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
         window.open(url, "_blank", "noopener,noreferrer");
+    };
+
+    const advanceHeroFromArrow = () => {
+        const now = performance.now();
+        if (now - arrowActivationRef.current < 250) return;
+        arrowActivationRef.current = now;
+        const start = scrollRef.current;
+        const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
+        const duration = 1200;
+        const t0 = performance.now();
+        const step = (frameNow: number) => {
+            const t = Math.min((frameNow - t0) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const v = start + (end - start) * eased;
+            scrollRef.current = v;
+            virtualScroll.set(v);
+            onVirtualScrollChangeRef.current?.(v);
+            if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
     };
 
     useEffect(() => {
