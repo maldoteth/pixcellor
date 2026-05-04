@@ -8,7 +8,14 @@ const Footer = () => {
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
       }}
     >
-      <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[11px] md:text-xs text-foreground">
+      {/* Liquid-glass progressive blur: stronger at bottom, fades to clear at top */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-16 md:hidden overflow-hidden">
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)' }} />
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', maskImage: 'linear-gradient(to bottom, transparent 35%, black 65%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 35%, black 65%)' }} />
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', maskImage: 'linear-gradient(to bottom, transparent 60%, black 85%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 60%, black 85%)' }} />
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)', maskImage: 'linear-gradient(to bottom, transparent 78%, black 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 78%, black 100%)' }} />
+      </div>
+      <div className="relative max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[11px] md:text-xs text-foreground">
         <span className="font-semibold text-foreground w-full md:w-auto text-center text-sm py-[5px]">
           Pixcellor™
         </span>
