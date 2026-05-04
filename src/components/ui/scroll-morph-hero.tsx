@@ -206,6 +206,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const scrollRef = useRef(0);
     const scrollBreakUntilRef = useRef(0);
     const touchNeedsReleaseRef = useRef(false);
+    const arrowActivationRef = useRef(0);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -549,6 +550,26 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         window.open(url, "_blank", "noopener,noreferrer");
     };
 
+    const advanceHeroFromArrow = () => {
+        const now = performance.now();
+        if (now - arrowActivationRef.current < 250) return;
+        arrowActivationRef.current = now;
+        const start = scrollRef.current;
+        const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
+        const duration = 1200;
+        const t0 = performance.now();
+        const step = (frameNow: number) => {
+            const t = Math.min((frameNow - t0) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const v = start + (end - start) * eased;
+            scrollRef.current = v;
+            virtualScroll.set(v);
+            onVirtualScrollChangeRef.current?.(v);
+            if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    };
+
     useEffect(() => {
         (async () => {
             const { data } = await supabase
@@ -586,8 +607,21 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
+                <motion.button
+                    type="button"
+                    data-hero-scroll-control="true"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        advanceHeroFromArrow();
+                    }}
+                    aria-label="Scroll down"
+                    className="absolute left-1/2 top-[calc(240px+13.5rem)] md:top-[calc(50%+6.8rem)] z-[120] -translate-x-1/2 -translate-y-1/2 h-24 w-32 cursor-pointer touch-manipulation bg-transparent border-0 pointer-events-auto"
+                    style={{ opacity: arrowOpacity }}
+                />
+
                 {/* Intro Text (Fades out) */}
-                <div className="absolute z-30 flex flex-col items-center justify-center text-center pointer-events-none top-[240px] md:top-1/2 md:-translate-y-1/2">
+                <div className="absolute z-[100] flex flex-col items-center justify-center text-center pointer-events-none top-[240px] md:top-1/2 md:-translate-y-1/2">
                     <motion.h1
                         initial={{ y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { filter: "blur(10px)" }}
@@ -609,23 +643,11 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            const start = scrollRef.current;
-                            const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
-                            const duration = 1200;
-                            const t0 = performance.now();
-                            const step = (now: number) => {
-                                const t = Math.min((now - t0) / duration, 1);
-                                const eased = 1 - Math.pow(1 - t, 3);
-                                const v = start + (end - start) * eased;
-                                scrollRef.current = v;
-                                virtualScroll.set(v);
-                                onVirtualScrollChangeRef.current?.(v);
-                                if (t < 1) requestAnimationFrame(step);
-                            };
-                            requestAnimationFrame(step);
+                            advanceHeroFromArrow();
                         }}
                         aria-label="Scroll down"
-                        className="md:hidden relative z-50 mt-2 -mx-6 px-6 py-3 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center"
+                        data-hero-scroll-control="true"
+                        className="md:hidden relative z-[110] mt-1 -mx-10 px-10 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
                         style={{ opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
@@ -640,24 +662,11 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            const start = scrollRef.current;
-                            const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
-                            console.log("[arrow-desktop] scroll", { start, end });
-                            const duration = 1200;
-                            const t0 = performance.now();
-                            const step = (now: number) => {
-                                const t = Math.min((now - t0) / duration, 1);
-                                const eased = 1 - Math.pow(1 - t, 3);
-                                const v = start + (end - start) * eased;
-                                scrollRef.current = v;
-                                virtualScroll.set(v);
-                                onVirtualScrollChangeRef.current?.(v);
-                                if (t < 1) requestAnimationFrame(step);
-                            };
-                            requestAnimationFrame(step);
+                            advanceHeroFromArrow();
                         }}
                         aria-label="Scroll down"
-                        className="hidden md:flex relative z-50 mt-3 md:mt-7 -mx-8 px-8 py-3 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center"
+                        data-hero-scroll-control="true"
+                        className="hidden md:flex relative z-[110] mt-3 md:mt-7 -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation"
                         style={{ opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
