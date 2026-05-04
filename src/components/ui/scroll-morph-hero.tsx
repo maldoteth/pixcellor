@@ -580,7 +580,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         if (now - arrowActivationRef.current < 250) return;
         arrowActivationRef.current = now;
         const start = scrollRef.current;
-        const end = Math.max(start - 1500, 0);
+        const end = 0;
         const duration = 1200;
         const t0 = performance.now();
         const step = (frameNow: number) => {
