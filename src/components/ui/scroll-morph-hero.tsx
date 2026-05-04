@@ -355,12 +355,61 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         touchTarget.addEventListener("touchend", handleTouchEnd, touchListenerOptions);
         touchTarget.addEventListener("touchcancel", handleTouchEnd, touchListenerOptions);
 
+        // Keyboard navigation: arrows / PageUp-Down / Space / Home / End drive
+        // the same virtual scroll as wheel + touch, so users can navigate the
+        // whole page from the keyboard.
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const active = document.activeElement as HTMLElement | null;
+            if (active) {
+                const tag = active.tagName;
+                if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || active.isContentEditable) return;
+            }
+            // Don't fight the browser when a modifier is held (e.g. Cmd+ArrowDown).
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+            const ARROW_STEP = 220;
+            const PAGE_STEP = 900;
+            let delta = 0;
+            switch (e.key) {
+                case "ArrowDown":
+                case "ArrowRight":
+                    delta = ARROW_STEP; break;
+                case "ArrowUp":
+                case "ArrowLeft":
+                    delta = -ARROW_STEP; break;
+                case "PageDown":
+                    delta = PAGE_STEP; break;
+                case "PageUp":
+                    delta = -PAGE_STEP; break;
+                case " ":
+                case "Spacebar":
+                    delta = e.shiftKey ? -PAGE_STEP : PAGE_STEP; break;
+                case "Home":
+                    e.preventDefault();
+                    forceCirclePhase();
+                    applyVirtualScrollDelta(-MAX_SCROLL, "wheel");
+                    return;
+                case "End":
+                    e.preventDefault();
+                    forceCirclePhase();
+                    applyVirtualScrollDelta(MAX_SCROLL, "wheel");
+                    return;
+                default:
+                    return;
+            }
+            e.preventDefault();
+            forceCirclePhase();
+            applyVirtualScrollDelta(delta, "wheel");
+        };
+        window.addEventListener("keydown", handleKeyDown);
+
         return () => {
             container.removeEventListener("wheel", handleWheel);
             touchTarget.removeEventListener("touchstart", handleTouchStart, touchListenerOptions);
             touchTarget.removeEventListener("touchmove", handleTouchMove, touchListenerOptions);
             touchTarget.removeEventListener("touchend", handleTouchEnd, touchListenerOptions);
             touchTarget.removeEventListener("touchcancel", handleTouchEnd, touchListenerOptions);
+            window.removeEventListener("keydown", handleKeyDown);
             container.style.touchAction = previousTouchAction;
         };
     }, [virtualScroll]);
