@@ -1,21 +1,26 @@
-I found what’s going on: the footer is technically rendering on mobile, but it sits behind/under the carousel area because its stacking layer is too low and the carousel/cards overlap the bottom of the viewport on mobile. On the tested mobile sizes, the footer only becomes visible when the consent banner is gone, and on some aspect ratios it is partially hidden or visually swallowed by the carousel/dark overlay.
+I tested the mobile preview at the current 384x620-sized viewport. The footer does exist, but it is pinned to the bottom of the viewport as an overlay, not placed below the carousel area. On mobile this means it can be hidden behind the consent banner, browser safe-area, or visually swallowed by the bottom of the carousel. It is not behaving like a real “below the carousel” footer.
 
 Plan:
 
-1. Make the footer a true mobile foreground layer
-   - In `src/components/ui/scroll-morph-hero.tsx`, raise the footer wrapper above the carousel/cards so it is not covered by the portfolio gallery.
-   - Keep it anchored to the viewport bottom with safe-area support.
+1. Move the mobile footer out of the overlay behavior
+   - Keep desktop as-is if needed.
+   - On mobile, render the footer as a fixed bottom-safe foreground strip or a dedicated bottom slot that is not sharing space with the carousel cards.
+   - Ensure it appears the moment the carousel/portfolio appears, not at initial home load.
 
-2. Make footer visibility instant and deterministic
-   - Keep the footer hidden at the initial home state.
-   - Switch it to full opacity immediately once `virtualScroll >= HERO_MORPH_END`, i.e. when the carousel/portfolio appears.
-   - Remove the unused spring/translate code that currently suggests a fade/slide but is not actually used.
+2. Reserve real space for it on mobile
+   - Increase the carousel’s bottom clearance based on the actual footer height plus safe-area inset.
+   - Stop the carousel cards from extending into the footer zone.
+   - This is the main reason it currently feels invisible: the carousel is using the same lower screen area.
 
-3. Prevent the carousel from occupying the footer’s space on mobile
-   - Adjust the mobile gallery bottom spacing so cards do not sit directly over the footer strip.
-   - Desktop/tablet layout can stay as-is unless the same overlap is visible there.
+3. Make the footer visually obvious on mobile
+   - Use brighter text from the first visible frame.
+   - Give the mobile footer a stronger black/glass background so it does not blend into the black page or card shadows.
+   - Keep the Pixcellor/social icons compact but readable.
 
-4. Verify on mobile aspect ratios
-   - Check narrow/short phone size like `320x568`.
-   - Check standard iPhone/Samsung-like sizes like `390x844` and `414x896`.
-   - Confirm the footer is invisible on initial home view and visible at full brightness as soon as portfolio/carousel appears.
+4. Prevent the consent banner from masking the issue
+   - The consent banner currently sits over the same bottom area and can completely cover the footer on first visit.
+   - I’ll either lift the carousel footer above the consent banner when needed, or add enough bottom offset so both can coexist without hiding each other.
+
+5. Verify on actual mobile aspect ratios
+   - Test 320x568, 360x800, 390x844, 414x896, and the current 384x620 preview.
+   - Confirm: hidden on first hero screen, visible immediately when portfolio/carousel appears, readable, not covered by carousel cards, and not covered by the consent banner.
