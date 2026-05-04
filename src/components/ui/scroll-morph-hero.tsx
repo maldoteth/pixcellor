@@ -839,13 +839,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 total={TOTAL_IMAGES}
                                 phase={introPhase}
                                 target={target}
-                                onViewDetails={() => {
-                                    if (galleryItems.length === 0) return;
-                                    const pick = galleryItems[Math.floor(Math.random() * galleryItems.length)];
-                                    const raw = pick.photo.by;
-                                    const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-                                    window.open(url, "_blank", "noopener,noreferrer");
-                                }}
+                                onViewDetails={openRandomPortfolioLink}
                             />
                         );
                     })}
