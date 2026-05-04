@@ -607,7 +607,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
 
-                <button
+                <motion.button
                     type="button"
                     data-hero-scroll-control="true"
                     onClick={(e) => {
