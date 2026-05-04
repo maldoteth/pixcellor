@@ -931,7 +931,74 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 <Footer />
             </motion.div>
 
-            {/* Mobile-only "back to top" failsafe, visible once portfolio/carousel begins */}
+            {/* Up arrow above the footer — mirror of the hero down arrow */}
+            <motion.div
+                style={{ opacity: footerRevealProgress }}
+                className="absolute left-1/2 -translate-x-1/2 z-[130] pointer-events-none flex flex-col items-center"
+                aria-hidden={false}
+            >
+                {/* invisible large hitbox */}
+                <motion.button
+                    type="button"
+                    data-hero-scroll-control="true"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        reverseHeroFromArrow();
+                    }}
+                    aria-label="Scroll up"
+                    className="absolute left-1/2 -translate-x-1/2 z-[140] h-24 w-32 cursor-pointer touch-manipulation bg-transparent border-0 pointer-events-auto"
+                    style={{ top: "calc(-100% - 0.5rem)" }}
+                />
+            </motion.div>
+            <motion.div
+                style={{
+                    opacity: footerRevealProgress,
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 3.25rem)",
+                }}
+                className="absolute left-1/2 -translate-x-1/2 z-[130] pointer-events-none"
+            >
+                {/* Mobile arrow */}
+                <motion.button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        reverseHeroFromArrow();
+                    }}
+                    aria-label="Scroll up"
+                    data-hero-scroll-control="true"
+                    className="md:hidden relative z-[140] -mx-10 px-10 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
+                    style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
+                >
+                    <motion.div
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <ChevronUp className="w-5 h-5" strokeWidth={2.25} />
+                    </motion.div>
+                </motion.button>
+                {/* Desktop/tablet arrow */}
+                <motion.button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        reverseHeroFromArrow();
+                    }}
+                    aria-label="Scroll up"
+                    data-hero-scroll-control="true"
+                    className="hidden md:flex relative z-[140] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation"
+                    style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
+                >
+                    <motion.div
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <ChevronUp className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.25} />
+                    </motion.div>
+                </motion.button>
+            </motion.div>
             <motion.button
                 type="button"
                 aria-label="Back to top"
