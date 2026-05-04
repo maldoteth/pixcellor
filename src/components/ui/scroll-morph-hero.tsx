@@ -852,6 +852,34 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             >
                 <Footer />
             </motion.div>
+
+            {/* Mobile-only "back to top" failsafe, visible once portfolio/carousel begins */}
+            <motion.button
+                type="button"
+                aria-label="Back to top"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const start = scrollRef.current;
+                    const end = 0;
+                    const duration = 900;
+                    const t0 = performance.now();
+                    const step = (now: number) => {
+                        const t = Math.min((now - t0) / duration, 1);
+                        const eased = 1 - Math.pow(1 - t, 3);
+                        const v = start + (end - start) * eased;
+                        scrollRef.current = v;
+                        virtualScroll.set(v);
+                        onVirtualScrollChangeRef.current?.(v);
+                        if (t < 1) requestAnimationFrame(step);
+                    };
+                    requestAnimationFrame(step);
+                }}
+                style={{ opacity: footerRevealProgress, top: "calc(env(safe-area-inset-top, 0px) + 1rem)", right: "calc(env(safe-area-inset-right, 0px) + 1rem)" }}
+                className="md:hidden absolute z-50 flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white/90 hover:text-white pointer-events-auto"
+            >
+                <X className="w-5 h-5" strokeWidth={2.25} />
+            </motion.button>
         </div>
     );
 }
