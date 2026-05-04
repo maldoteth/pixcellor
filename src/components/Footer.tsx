@@ -9,11 +9,13 @@ const Footer = () => {
       }}
     >
       {/* Liquid-glass progressive blur: stronger at bottom, fades to clear at top */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-16 md:hidden overflow-hidden">
-        <div className="absolute inset-0" style={{ backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)' }} />
-        <div className="absolute inset-0" style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', maskImage: 'linear-gradient(to bottom, transparent 35%, black 65%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 35%, black 65%)' }} />
-        <div className="absolute inset-0" style={{ backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', maskImage: 'linear-gradient(to bottom, transparent 60%, black 85%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 60%, black 85%)' }} />
-        <div className="absolute inset-0" style={{ backdropFilter: 'blur(24px) saturate(140%)', WebkitBackdropFilter: 'blur(24px) saturate(140%)', maskImage: 'linear-gradient(to bottom, transparent 78%, black 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 78%, black 100%)' }} />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-24 md:hidden overflow-hidden">
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)' }} />
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', maskImage: 'linear-gradient(to bottom, transparent 30%, black 60%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 30%, black 60%)' }} />
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', maskImage: 'linear-gradient(to bottom, transparent 55%, black 80%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 55%, black 80%)' }} />
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(40px) saturate(160%)', WebkitBackdropFilter: 'blur(40px) saturate(160%)', maskImage: 'linear-gradient(to bottom, transparent 72%, black 95%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 72%, black 95%)' }} />
+        {/* Subtle dark tint to kill see-through at the very bottom */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 0%, transparent 50%, hsl(var(--background) / 0.55) 90%, hsl(var(--background) / 0.85) 100%)' }} />
       </div>
       <div className="relative max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[11px] md:text-xs text-foreground">
         <span className="font-semibold text-foreground w-full md:w-auto text-center text-sm py-[5px]">
