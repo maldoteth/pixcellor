@@ -112,7 +112,27 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   transition: 'opacity 0.3s ease-out',
                 }}
               >
-                <div className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black">
+                <div
+                  className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const raw = item.photo.by ?? '';
+                    if (!raw || !/\./.test(raw)) return;
+                    const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                  }}
+                  role="link"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      const raw = item.photo.by ?? '';
+                      if (!raw || !/\./.test(raw)) return;
+                      const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+                      window.open(url, '_blank', 'noopener,noreferrer');
+                    }
+                  }}
+                  aria-label={`Open ${item.common}`}
+                >
                   <img
                     src={item.photo.url}
                     alt={item.photo.text}
