@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue, animate } from "framer-motion";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 
 import PackagesDialog from "@/components/PackagesDialog";
 import Footer from "@/components/Footer";
@@ -570,6 +570,26 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         requestAnimationFrame(step);
     };
 
+    const reverseHeroFromArrow = () => {
+        const now = performance.now();
+        if (now - arrowActivationRef.current < 250) return;
+        arrowActivationRef.current = now;
+        const start = scrollRef.current;
+        const end = Math.max(start - 1500, 0);
+        const duration = 1200;
+        const t0 = performance.now();
+        const step = (frameNow: number) => {
+            const t = Math.min((frameNow - t0) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const v = start + (end - start) * eased;
+            scrollRef.current = v;
+            virtualScroll.set(v);
+            onVirtualScrollChangeRef.current?.(v);
+            if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    };
+
     useEffect(() => {
         (async () => {
             const { data } = await supabase
@@ -911,7 +931,55 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 <Footer />
             </motion.div>
 
-            {/* Mobile-only "back to top" failsafe, visible once portfolio/carousel begins */}
+            {/* Up arrow above the footer — mirror of the hero down arrow */}
+            <motion.div
+                style={{
+                    opacity: footerRevealProgress,
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 3.25rem)",
+                }}
+                className="absolute left-1/2 -translate-x-1/2 z-[130] pointer-events-none"
+            >
+                {/* Mobile arrow */}
+                <motion.button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        reverseHeroFromArrow();
+                    }}
+                    aria-label="Scroll up"
+                    data-hero-scroll-control="true"
+                    className="md:hidden relative z-[140] -mx-10 px-10 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
+                    style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
+                >
+                    <motion.div
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <ChevronUp className="w-5 h-5" strokeWidth={2.25} />
+                    </motion.div>
+                </motion.button>
+                {/* Desktop/tablet arrow */}
+                <motion.button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        reverseHeroFromArrow();
+                    }}
+                    aria-label="Scroll up"
+                    data-hero-scroll-control="true"
+                    className="hidden md:flex relative z-[140] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation"
+                    style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
+                >
+                    <motion.div
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <ChevronUp className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.25} />
+                    </motion.div>
+                </motion.button>
+            </motion.div>
             <motion.button
                 type="button"
                 aria-label="Back to top"
