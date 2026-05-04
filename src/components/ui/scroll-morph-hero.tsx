@@ -516,6 +516,11 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
     // Footer appears at full opacity as soon as carousel begins (no fade)
     const footerRevealProgress = useTransform(virtualScroll, (v) => (v >= HERO_MORPH_END ? 1 : 0));
+    const [footerInteractive, setFooterInteractive] = useState(false);
+    useEffect(() => {
+        const unsub = footerRevealProgress.on("change", (v) => setFooterInteractive(v > 0));
+        return () => unsub();
+    }, [footerRevealProgress]);
 
     // Background glow morph: wide horizontal → narrow vertical as portfolio loads
     const isMobileViewport = containerSize.width > 0 && containerSize.width < 768;
@@ -926,7 +931,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             {/* Footer: anchored to bottom on every viewport, above carousel/cards */}
             <motion.div
                 style={{ opacity: footerRevealProgress }}
-                className="absolute bottom-0 left-0 right-0 z-40 pointer-events-auto"
+                className={`absolute bottom-0 left-0 right-0 z-40 ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"}`}
             >
                 <Footer />
             </motion.div>
@@ -949,7 +954,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     }}
                     aria-label="Scroll up"
                     data-hero-scroll-control="true"
-                    className="md:hidden relative z-[140] -mx-10 px-10 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
+                    className={`md:hidden relative z-[140] -mx-10 px-10 py-6 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"}`}
                     style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                 >
                     <motion.div
@@ -969,7 +974,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     }}
                     aria-label="Scroll up"
                     data-hero-scroll-control="true"
-                    className="hidden md:flex relative z-[140] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation"
+                    className={`hidden md:flex relative z-[140] -mx-12 px-12 py-6 cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"}`}
                     style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                 >
                     <motion.div
