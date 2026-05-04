@@ -143,7 +143,13 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   {/(^|\.)bricks\./i.test(item.photo.by ?? '') && (
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
                   )}
-                  <div className="absolute inset-x-0 bottom-0 p-2 md:p-4 text-white backdrop-blur-md bg-white/10 border-t border-white/20">
+                  <div
+                    className="absolute inset-x-0 bottom-0 p-2 md:p-4 text-white bg-black/55 border-t border-white/20"
+                    style={{
+                      backdropFilter: 'blur(24px) saturate(140%)',
+                      WebkitBackdropFilter: 'blur(24px) saturate(140%)',
+                    }}
+                  >
                     <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate">{item.common}</h3>
                     <p className="hidden md:block text-[10px] md:text-xs italic text-white/80 truncate drop-shadow">{item.binomial}</p>
                   </div>
