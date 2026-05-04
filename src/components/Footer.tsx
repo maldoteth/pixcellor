@@ -9,7 +9,7 @@ const Footer = () => {
       }}
     >
       {/* Liquid-glass progressive blur: stronger at bottom, fades to clear at top */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-12 md:hidden overflow-hidden">
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-7 md:hidden overflow-hidden">
         <div className="absolute inset-0" style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)' }} />
         <div className="absolute inset-0" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', maskImage: 'linear-gradient(to bottom, transparent 30%, black 60%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 30%, black 60%)' }} />
         <div className="absolute inset-0" style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', maskImage: 'linear-gradient(to bottom, transparent 55%, black 80%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 55%, black 80%)' }} />
