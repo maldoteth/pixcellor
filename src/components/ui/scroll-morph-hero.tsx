@@ -933,25 +933,6 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
             {/* Up arrow above the footer — mirror of the hero down arrow */}
             <motion.div
-                style={{ opacity: footerRevealProgress }}
-                className="absolute left-1/2 -translate-x-1/2 z-[130] pointer-events-none flex flex-col items-center"
-                aria-hidden={false}
-            >
-                {/* invisible large hitbox */}
-                <motion.button
-                    type="button"
-                    data-hero-scroll-control="true"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        reverseHeroFromArrow();
-                    }}
-                    aria-label="Scroll up"
-                    className="absolute left-1/2 -translate-x-1/2 z-[140] h-24 w-32 cursor-pointer touch-manipulation bg-transparent border-0 pointer-events-auto"
-                    style={{ top: "calc(-100% - 0.5rem)" }}
-                />
-            </motion.div>
-            <motion.div
                 style={{
                     opacity: footerRevealProgress,
                     bottom: "calc(env(safe-area-inset-bottom, 0px) + 3.25rem)",
