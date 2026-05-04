@@ -657,7 +657,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             requestAnimationFrame(step);
                         }}
                         aria-label="Scroll down"
-                        className="hidden md:block mt-6 md:mt-10 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
+                        className="hidden md:flex relative z-50 mt-3 md:mt-7 -mx-8 px-8 py-3 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center"
                         style={{ opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
