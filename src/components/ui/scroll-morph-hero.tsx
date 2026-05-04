@@ -284,8 +284,14 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 const absX = Math.abs(touchX - touchStartX);
                 const absY = Math.abs(touchY - touchStartY);
                 if (absX < 6 && absY < 6) return;
-                if (absX > absY && isInsideHorizontalSwipeZone(e.target)) {
-                    gestureAxis = "horizontal";
+                if (absX > absY) {
+                    // Horizontal swipe inside flipbook → let it handle natively
+                    if (isInsideHorizontalSwipeZone(e.target)) {
+                        gestureAxis = "horizontal";
+                    } else {
+                        // Otherwise (e.g. on the carousel) treat as scroll input
+                        gestureAxis = "vertical";
+                    }
                 } else {
                     gestureAxis = "vertical";
                 }
@@ -301,10 +307,17 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             touchStartY = touchY;
             touchStartX = touchX;
 
+            // Combine vertical + horizontal so side-swipes on the carousel
+            // also drive the virtual scroll. Swipe left (deltaX > 0) advances.
+            const inCarousel = scrollRef.current >= HERO_MORPH_END;
+            const combinedDelta = inCarousel
+                ? (Math.abs(deltaY) >= Math.abs(deltaX) ? deltaY : deltaX)
+                : deltaY;
+
             const isMobile = window.innerWidth < 768;
             const scrollDelta = isMobile
-                ? deltaY * MOBILE_SCROLL_BOOST * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1)
-                : deltaY * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1);
+                ? combinedDelta * MOBILE_SCROLL_BOOST * (inCarousel ? CAROUSEL_SCROLL_SENSITIVITY : 1)
+                : combinedDelta * (inCarousel ? CAROUSEL_SCROLL_SENSITIVITY : 1);
             applyVirtualScrollDelta(scrollDelta, "touch");
         };
         const handleTouchEnd = () => {
