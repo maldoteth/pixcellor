@@ -3,19 +3,18 @@ import { Facebook, Linkedin, LogIn, MessageSquare, Phone } from "lucide-react";
 const Footer = () => {
   return (
     <footer
-      className="relative w-full text-foreground py-3 px-4 md:backdrop-blur-2xl md:backdrop-saturate-150 md:bg-white/5 md:border-t md:border-white/10"
+      className="relative isolate w-full overflow-visible text-foreground py-3 px-4 border-t border-border/40"
       style={{
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
       }}
     >
       {/* Liquid-glass progressive blur: stronger at bottom, fades to clear at top */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-24 md:hidden overflow-hidden">
-        <div className="absolute inset-0" style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)' }} />
-        <div className="absolute inset-0" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', maskImage: 'linear-gradient(to bottom, transparent 30%, black 60%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 30%, black 60%)' }} />
-        <div className="absolute inset-0" style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', maskImage: 'linear-gradient(to bottom, transparent 55%, black 80%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 55%, black 80%)' }} />
-        <div className="absolute inset-0" style={{ backdropFilter: 'blur(40px) saturate(160%)', WebkitBackdropFilter: 'blur(40px) saturate(160%)', maskImage: 'linear-gradient(to bottom, transparent 72%, black 95%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 72%, black 95%)' }} />
-        {/* Subtle dark tint to kill see-through at the very bottom */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 0%, transparent 50%, hsl(var(--background) / 0.55) 90%, hsl(var(--background) / 0.85) 100%)' }} />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-32 overflow-hidden">
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(10px) saturate(180%)', WebkitBackdropFilter: 'blur(10px) saturate(180%)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 22%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 22%)' }} />
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(24px) saturate(190%)', WebkitBackdropFilter: 'blur(24px) saturate(190%)', maskImage: 'linear-gradient(to bottom, transparent 18%, black 48%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 18%, black 48%)' }} />
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(44px) saturate(200%)', WebkitBackdropFilter: 'blur(44px) saturate(200%)', maskImage: 'linear-gradient(to bottom, transparent 40%, black 72%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 40%, black 72%)' }} />
+        <div className="absolute inset-0" style={{ backdropFilter: 'blur(72px) saturate(220%) brightness(0.82)', WebkitBackdropFilter: 'blur(72px) saturate(220%) brightness(0.82)', maskImage: 'linear-gradient(to bottom, transparent 58%, black 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 58%, black 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 0%, hsl(var(--background) / 0.34) 38%, hsl(var(--background) / 0.74) 78%, hsl(var(--background) / 0.9) 100%)' }} />
       </div>
       <div className="relative max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[11px] md:text-xs text-foreground">
         <span className="font-semibold text-foreground w-full md:w-auto text-center text-sm py-[5px]">
