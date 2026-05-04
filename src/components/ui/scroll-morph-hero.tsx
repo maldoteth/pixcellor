@@ -135,6 +135,7 @@ const CAROUSEL_SCROLL_END = HERO_MORPH_END + 8000;
 const MAX_SCROLL = CAROUSEL_SCROLL_END;
 const SCROLL_BREAK_DURATION = 650;
 const MOBILE_SCROLL_BOOST = 24;
+const TABLET_SCROLL_BOOST = 12;
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
 
 // UI Template Images (16 unique + 4 repeated to fill 20 slots)
@@ -250,10 +251,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             e.preventDefault();
             forceCirclePhase();
 
-            const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile
-                ? e.deltaY * MOBILE_SCROLL_BOOST * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1)
-                : e.deltaY * (scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1);
+            const w = window.innerWidth;
+            const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : 1;
+            const carouselMult = scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1;
+            const scrollDelta = e.deltaY * boost * carouselMult;
             applyVirtualScrollDelta(scrollDelta, "wheel");
         };
 
@@ -329,10 +330,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 ? (Math.abs(deltaY) >= Math.abs(deltaX) ? deltaY : deltaX)
                 : deltaY;
 
-            const isMobile = window.innerWidth < 768;
-            const scrollDelta = isMobile
-                ? combinedDelta * MOBILE_SCROLL_BOOST * (inCarousel ? CAROUSEL_SCROLL_SENSITIVITY : 1)
-                : combinedDelta * (inCarousel ? CAROUSEL_SCROLL_SENSITIVITY : 1);
+            const w = window.innerWidth;
+            const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : 1;
+            const carouselMult = inCarousel ? CAROUSEL_SCROLL_SENSITIVITY : 1;
+            const scrollDelta = combinedDelta * boost * carouselMult;
             applyVirtualScrollDelta(scrollDelta, "touch");
         };
         const handleTouchEnd = () => {
