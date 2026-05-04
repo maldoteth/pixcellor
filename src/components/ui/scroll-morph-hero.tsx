@@ -439,8 +439,6 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
     // Footer appears at full opacity as soon as carousel begins (no fade)
     const footerRevealProgress = useTransform(virtualScroll, (v) => (v >= HERO_MORPH_END ? 1 : 0));
-    const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
-    const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
     // Background glow morph: wide horizontal → narrow vertical as portfolio loads
     const isMobileViewport = containerSize.width > 0 && containerSize.width < 768;

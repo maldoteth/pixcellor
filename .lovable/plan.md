@@ -1,41 +1,21 @@
-## Plan
+I found what’s going on: the footer is technically rendering on mobile, but it sits behind/under the carousel area because its stacking layer is too low and the carousel/cards overlap the bottom of the viewport on mobile. On the tested mobile sizes, the footer only becomes visible when the consent banner is gone, and on some aspect ratios it is partially hidden or visually swallowed by the carousel/dark overlay.
 
-Fix the carousel so it does not preload halfway or near the end of its spin. The carousel should be at its starting rotation when it first appears, then rotate only as the user continues scrolling through the carousel section.
+Plan:
 
-## What I will change
+1. Make the footer a true mobile foreground layer
+   - In `src/components/ui/scroll-morph-hero.tsx`, raise the footer wrapper above the carousel/cards so it is not covered by the portfolio gallery.
+   - Keep it anchored to the viewport bottom with safe-area support.
 
-1. Keep the existing hero/first animation scroll behavior unchanged.
-2. Decouple the carousel rotation from the early hero morph scroll range.
-3. Move the carousel rotation start point to after the “What We Do” / carousel reveal point, so it starts at `0°` when visible.
-4. Preserve the current rotation amount:
-   - Desktop: up to 2 full turns.
-   - Mobile/tablet: reduced rotation amount so it is less sensitive.
-5. Make sure the carousel still uses the same visible fade timing as the “What We Do” content.
+2. Make footer visibility instant and deterministic
+   - Keep the footer hidden at the initial home state.
+   - Switch it to full opacity immediately once `virtualScroll >= HERO_MORPH_END`, i.e. when the carousel/portfolio appears.
+   - Remove the unused spring/translate code that currently suggests a fade/slide but is not actually used.
 
-## Technical change
+3. Prevent the carousel from occupying the footer’s space on mobile
+   - Adjust the mobile gallery bottom spacing so cards do not sit directly over the footer strip.
+   - Desktop/tablet layout can stay as-is unless the same overlap is visible there.
 
-In `src/components/ui/scroll-morph-hero.tsx`, update the `galleryRotation` transform so its input range starts later than the reveal phase instead of starting at `virtualScroll = 600`.
-
-Current issue:
-
-```ts
-const galleryRotation = useTransform(
-  virtualScroll,
-  [600, 3000],
-  isSmallViewport ? [0, 144] : [0, 720]
-);
-```
-
-Because the carousel also fades in after the morph phase, the rotation has already advanced before the user can see it.
-
-Planned fix:
-
-```ts
-const galleryRotation = useTransform(
-  virtualScroll,
-  isSmallViewport ? [1400, 3000] : [1200, 3000],
-  isSmallViewport ? [0, 144] : [0, 720]
-);
-```
-
-This keeps the first animation intact and changes only the carousel spin timing.
+4. Verify on mobile aspect ratios
+   - Check narrow/short phone size like `320x568`.
+   - Check standard iPhone/Samsung-like sizes like `390x844` and `414x896`.
+   - Confirm the footer is invisible on initial home view and visible at full brightness as soon as portfolio/carousel appears.
