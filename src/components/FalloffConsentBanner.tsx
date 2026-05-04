@@ -38,7 +38,8 @@ export default function FalloffConsentBanner() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 18 }}
           transition={{ duration: 0.25 }}
-          className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-2xl rounded-sm border border-border bg-card/90 p-4 text-card-foreground shadow-2xl backdrop-blur-xl"
+          className="fixed left-4 right-4 z-50 mx-auto max-w-2xl rounded-sm border border-border bg-card/90 p-4 text-card-foreground shadow-2xl backdrop-blur-xl"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 64px)' }}
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
