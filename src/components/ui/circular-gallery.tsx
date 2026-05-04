@@ -144,10 +144,13 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
                   )}
                   <div
-                    className="absolute inset-x-0 bottom-0 p-2 md:p-4 text-white bg-black/55 border-t border-white/20"
+                    className="absolute inset-x-0 bottom-0 p-2 md:p-4 text-white border-t border-white/20"
                     style={{
-                      backdropFilter: 'blur(24px) saturate(140%)',
-                      WebkitBackdropFilter: 'blur(24px) saturate(140%)',
+                      backgroundColor: 'rgba(8,8,10,0.86)',
+                      backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.55), rgba(255,255,255,0.04)), linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0) 60%)',
+                      backdropFilter: 'blur(24px) saturate(160%)',
+                      WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
                     }}
                   >
                     <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate">{item.common}</h3>
