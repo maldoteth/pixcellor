@@ -323,12 +323,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             touchStartY = touchY;
             touchStartX = touchX;
 
-            // Combine vertical + horizontal so side-swipes on the carousel
-            // also drive the virtual scroll. Swipe left (deltaX > 0) advances.
+            // Combine vertical + horizontal across the whole page so side-swipes
+            // anywhere drive the virtual scroll (swipe left = advance, right = back).
             const inCarousel = scrollRef.current >= HERO_MORPH_END;
-            const combinedDelta = inCarousel
-                ? (Math.abs(deltaY) >= Math.abs(deltaX) ? deltaY : deltaX)
-                : deltaY;
+            const combinedDelta = Math.abs(deltaY) >= Math.abs(deltaX) ? deltaY : deltaX;
 
             const w = window.innerWidth;
             const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : 1;
