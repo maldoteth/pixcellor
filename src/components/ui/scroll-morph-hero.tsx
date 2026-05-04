@@ -439,8 +439,6 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
     // Footer appears at full opacity as soon as carousel begins (no fade)
     const footerRevealProgress = useTransform(virtualScroll, (v) => (v >= HERO_MORPH_END ? 1 : 0));
-    const smoothFooterReveal = useSpring(footerRevealProgress, { stiffness: 40, damping: 20 });
-    const mobileFooterY = useTransform(smoothFooterReveal, [0, 1], [80, 0]);
 
     // Background glow morph: wide horizontal → narrow vertical as portfolio loads
     const isMobileViewport = containerSize.width > 0 && containerSize.width < 768;
@@ -725,7 +723,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {galleryItems.length > 0 && (
                     <motion.div
                         style={{ opacity: contentOpacity }}
-                        className="absolute inset-x-0 top-[calc(28%-20px)] md:top-[32%] bottom-[calc(18%+20px)] md:bottom-[18%] z-[5] pointer-events-none"
+                        className="absolute inset-x-0 top-[calc(28%-20px)] md:top-[32%] bottom-[calc(18%+64px)] md:bottom-[18%] z-[5] pointer-events-none"
                     >
                         <CircularGallery
                             items={galleryItems}
@@ -816,10 +814,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 </div>
             </div>
 
-            {/* Footer: anchored to bottom, fades in near end of scroll on all viewports */}
+            {/* Footer: anchored to bottom on every viewport, above carousel/cards */}
             <motion.div
                 style={{ opacity: footerRevealProgress }}
-                className="absolute bottom-0 left-0 right-0 z-20 pointer-events-auto"
+                className="absolute bottom-0 left-0 right-0 z-40 pointer-events-auto"
             >
                 <Footer />
             </motion.div>
