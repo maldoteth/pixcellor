@@ -931,8 +931,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             {/* Footer: anchored to bottom on every viewport, above carousel/cards */}
             <motion.div
                 style={{ opacity: footerRevealProgress }}
-                className="absolute bottom-0 left-0 right-0 z-40 pointer-events-auto"
+                className={`absolute bottom-0 left-0 right-0 z-40 ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"}`}
             >
+                <Footer />
+            </motion.div>
                 <Footer />
             </motion.div>
 
