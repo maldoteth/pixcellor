@@ -935,8 +935,6 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             >
                 <Footer />
             </motion.div>
-                <Footer />
-            </motion.div>
 
             {/* Up arrow above the footer — mirror of the hero down arrow */}
             <motion.div
