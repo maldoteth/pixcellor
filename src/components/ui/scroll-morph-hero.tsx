@@ -719,7 +719,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     <div className="md:hidden flex flex-col items-stretch gap-2 w-full">
                         <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("pixcellor:open-services")); }}
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { services: true } })); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Services
