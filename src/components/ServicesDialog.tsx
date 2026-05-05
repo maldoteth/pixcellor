@@ -78,14 +78,6 @@ export default function ServicesDialog() {
           <div className="flex h-full flex-col overflow-hidden">
             <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
             <div className="relative flex-shrink-0 px-4 pt-3 pb-2">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="absolute right-2 top-0 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
-              >
-                <X className="h-5 w-5" />
-                <span className="sr-only">Close</span>
-              </button>
               <h2 className="text-center text-2xl font-bold text-foreground my-0 py-[10px]">Our Services</h2>
             </div>
             <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
