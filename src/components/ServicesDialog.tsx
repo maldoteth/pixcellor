@@ -115,7 +115,7 @@ export default function ServicesDialog() {
         </div>
         <div className="flex flex-col items-center gap-6 px-6">
           <h2 className="text-3xl font-bold text-foreground text-center">Our Services</h2>
-          <div className="grid grid-cols-3 gap-5 max-w-5xl">
+          <div className="grid grid-cols-3 gap-5 w-[min(1200px,92vw)] items-stretch">
             {SERVICE_GROUPS.map((group) => (
               <ServiceCard key={group.title} group={group} onClose={() => setOpen(false)} />
             ))}
