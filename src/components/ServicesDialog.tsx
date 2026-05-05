@@ -83,14 +83,18 @@ export default function ServicesDialog() {
       }, 280);
       return;
     }
-    // Desktop/tablet: spin the services card out and overlap with the next dialog
-    // spinning in for a continuous flip feel.
+    // Desktop/tablet: 180° flip handoff. Services rotates 0→90 (edge on),
+    // then pricing picks up at -90 and rotates to 0 with matching timing for a
+    // single continuous spin.
     setSpinningOut(true);
+    const HALF = 300;
     if (action === "pricing") {
-      // Fire pricing open midway through services spin so it feels like one motion.
       window.setTimeout(() => {
         window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { spinIn: true } }));
-      }, 220);
+        setOpen(false);
+        setSpinningOut(false);
+      }, HALF);
+      return;
     }
     window.setTimeout(() => {
       setOpen(false);
@@ -98,7 +102,7 @@ export default function ServicesDialog() {
       if (action === "sales") {
         window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
       }
-    }, 420);
+    }, HALF + 120);
   }, [isMobile]);
 
   if (isMobile) {
@@ -293,9 +297,11 @@ function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (ac
       <motion.div
         initial={{ opacity: 0, scale: 0.96 * fitScale, y: 12, rotateY: -90 }}
         animate={spinningOut
-          ? { opacity: 0, scale: 0.85 * fitScale, rotateY: 90 }
+          ? { opacity: 1, scale: fitScale, y: 0, rotateY: 90 }
           : { opacity: 1, scale: fitScale, y: 0, rotateY: 0 }}
-        transition={{ duration: spinningOut ? 0.42 : 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={spinningOut
+          ? { duration: 0.3, ease: "linear" }
+          : { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         className="flex items-center justify-center gap-6"
         style={{
           transformStyle: "preserve-3d",
