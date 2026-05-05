@@ -17,6 +17,7 @@ import ProjectRequirements from "./pages/ProjectRequirements";
 import EditRequest from "./pages/EditRequest";
 import CustomerAuth from "./pages/CustomerAuth";
 import CustomerPortal from "./pages/CustomerPortal";
+import Legal from "./pages/Legal";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,8 @@ const App = () => (
           <Route path="/edit-request" element={<EditRequest />} />
           <Route path="/customer-login" element={<CustomerAuth />} />
           <Route path="/customer-portal" element={<CustomerPortal />} />
+          <Route path="/legal" element={<Legal />} />
+          <Route path="/legal/:doc" element={<Legal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
