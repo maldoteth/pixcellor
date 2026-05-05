@@ -254,39 +254,43 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent", perspective: "1600px" }}>
-        <motion.div
-          initial={spinIn
-            ? { opacity: 1, scale: 1, rotateY: -90 }
-            : { opacity: 0, scale: 0.96, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
-          transition={spinIn
-            ? { duration: 0.3, ease: "linear" }
-            : { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
-        >
-          <DesktopCards />
-        </motion.div>
-        <div className="mt-6 flex justify-center gap-3">
-          <Button
-            variant="pricing"
-            className="h-auto w-40 py-2 font-semibold"
-            onClick={() => {
-              handleOpenChange(false);
-              window.setTimeout(() => {
-                window.dispatchEvent(new Event("pixcellor:open-services"));
-              }, 200);
-            }}
-          >
-            Services
-          </Button>
-          <DialogClose asChild>
-            <Button variant="pricing" className="h-auto w-40 py-2 font-semibold">
-              Close
-            </Button>
-          </DialogClose>
-        </div>
+        <DesktopShell spinIn={spinIn} />
       </DialogContent>
     </Dialog>
+  );
+}
+
+function DesktopShell({ spinIn }: { spinIn: boolean }) {
+  const [servicesFlipped, setServicesFlipped] = useState(false);
+  return (
+    <>
+      <motion.div
+        initial={spinIn
+          ? { opacity: 1, scale: 1, rotateY: -90 }
+          : { opacity: 0, scale: 0.96, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
+        transition={spinIn
+          ? { duration: 0.3, ease: "linear" }
+          : { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+        style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
+      >
+        <DesktopCards servicesFlipped={servicesFlipped} />
+      </motion.div>
+      <div className="mt-6 flex justify-center gap-3">
+        <Button
+          variant="pricing"
+          className="h-auto w-40 py-2 font-semibold"
+          onClick={() => setServicesFlipped((v) => !v)}
+        >
+          {servicesFlipped ? "Pricing" : "Services"}
+        </Button>
+        <DialogClose asChild>
+          <Button variant="pricing" className="h-auto w-40 py-2 font-semibold">
+            Close
+          </Button>
+        </DialogClose>
+      </div>
+    </>
   );
 }
 
