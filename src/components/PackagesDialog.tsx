@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Loader2, Lock, X, Code2, Megaphone, Briefcase } from "lucide-react";
+import { Check, Loader2, Lock, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending, updateCheckoutPendingSessionId } from "@/lib/checkoutTracking";
@@ -41,53 +41,6 @@ const PACKAGES = {
     features: ["Web and mobile apps", "Infrastructure and ecosystems", "Endless Possibilities"],
   },
 };
-
-type ServiceAction = "pricing" | "sales";
-
-const SERVICE_GROUPS = [
-  {
-    icon: Megaphone,
-    title: "Marketing Solutions",
-    action: "sales" as ServiceAction,
-    items: [
-      "Telesales campaigns",
-      "Email marketing campaigns",
-      "Broadcast SMS & WhatsApp",
-      "Lead generation & outreach",
-      "SEO & AEO optimisation",
-      "Social media automation",
-      "Paid ads & retargeting",
-    ],
-  },
-  {
-    icon: Code2,
-    title: "Apps & Sites",
-    action: "pricing" as ServiceAction,
-    items: [
-      "Landing pages",
-      "Animated sites",
-      "Full web apps",
-      "Internal tools",
-      "CRM systems",
-      "E-commerce stores",
-      "Booking platforms",
-    ],
-  },
-  {
-    icon: Briefcase,
-    title: "Business Solutions",
-    action: "sales" as ServiceAction,
-    items: [
-      "Recruitment & ATS systems",
-      "Payroll & HR tooling",
-      "AI integrations & agents",
-      "Workflow automation",
-      "Custom analytics dashboards",
-      "API & third-party integrations",
-      "Bespoke internal software",
-    ],
-  },
-] as const;
 
 const ENTERPRISE_FIELDS = [
   { key: "email", label: "Email", placeholder: "you@company.com", inputMode: "email" },
@@ -176,51 +129,36 @@ interface PackagesDialogProps {
 export default function PackagesDialog({ open, onOpenChange, mobileTop = false, hidden = false, chatOpen = false }: PackagesDialogProps = {}) {
   const isMobile = useIsMobile();
   const [internalOpen, setInternalOpen] = useState(false);
-  const [view, setView] = useState<"pricing" | "services">("pricing");
+  const [spinIn, setSpinIn] = useState(false);
   const effectiveOpen = mobileTop ? internalOpen : open;
 
-  // Mobile: open-packages opens the pricing drawer
   useEffect(() => {
     if (!mobileTop || !isMobile) return;
-    const handler = () => {
-      setView("pricing");
-      setInternalOpen(true);
-    };
+    const handler = () => setInternalOpen(true);
     window.addEventListener("pixcellor:open-packages", handler);
     return () => window.removeEventListener("pixcellor:open-packages", handler);
   }, [mobileTop, isMobile]);
 
-  // Desktop: open-packages and open-services both open this dialog and set the view
+  // Desktop: capture spinIn intent from cross-dialog hand-offs (Services -> Pricing)
   useEffect(() => {
     if (isMobile) return;
-    const openPricing = () => {
-      setView("pricing");
-      onOpenChange?.(true);
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ spinIn?: boolean }>).detail;
+      setSpinIn(Boolean(detail?.spinIn));
     };
-    const openServices = () => {
-      setView("services");
-      onOpenChange?.(true);
-    };
-    window.addEventListener("pixcellor:open-packages", openPricing);
-    window.addEventListener("pixcellor:open-services", openServices);
-    return () => {
-      window.removeEventListener("pixcellor:open-packages", openPricing);
-      window.removeEventListener("pixcellor:open-services", openServices);
-    };
-  }, [isMobile, onOpenChange]);
+    window.addEventListener("pixcellor:open-packages", handler);
+    return () => window.removeEventListener("pixcellor:open-packages", handler);
+  }, [isMobile]);
+
+  // Reset spinIn flag once the dialog has finished opening / on close
+  useEffect(() => {
+    if (!effectiveOpen) setSpinIn(false);
+  }, [effectiveOpen]);
 
   useEffect(() => {
     if (!mobileTop) return;
     window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: effectiveOpen } }));
   }, [effectiveOpen, mobileTop]);
-
-  // Notify Index that services overlay is open via the same channel ServicesDialog used
-  useEffect(() => {
-    if (isMobile) return;
-    window.dispatchEvent(new CustomEvent("pixcellor:services-open-change", {
-      detail: { open: Boolean(effectiveOpen) && view === "services" },
-    }));
-  }, [effectiveOpen, view, isMobile]);
 
   if (mobileTop && !isMobile) return null;
   if (isMobile && !mobileTop) return null;
@@ -228,7 +166,6 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   const handleOpenChange = (next: boolean) => {
     if (mobileTop) setInternalOpen(next);
     onOpenChange?.(next);
-    if (!next) setView("pricing");
   };
 
   const trigger = isMobile ? null : (
@@ -273,18 +210,31 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   return (
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent
-        className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
-        style={{ background: "transparent", perspective: "1600px" }}
-      >
-        <FlipDeck view={view} />
+      <DialogContent className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent", perspective: "1600px" }}>
+        <motion.div
+          initial={spinIn
+            ? { opacity: 1, scale: 1, rotateY: -90 }
+            : { opacity: 0, scale: 0.96, y: 12 }}
+          animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
+          transition={spinIn
+            ? { duration: 0.3, ease: "linear" }
+            : { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
+        >
+          <DesktopCards />
+        </motion.div>
         <div className="mt-6 flex justify-center gap-3">
           <Button
             variant="pricing"
             className="h-auto w-40 py-2 font-semibold"
-            onClick={() => setView((v) => (v === "pricing" ? "services" : "pricing"))}
+            onClick={() => {
+              handleOpenChange(false);
+              window.setTimeout(() => {
+                window.dispatchEvent(new Event("pixcellor:open-services"));
+              }, 200);
+            }}
           >
-            {view === "pricing" ? "Services" : "Pricing"}
+            Services
           </Button>
           <DialogClose asChild>
             <Button variant="pricing" className="h-auto w-40 py-2 font-semibold">
@@ -294,74 +244,6 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function FlipDeck({ view }: { view: "pricing" | "services" }) {
-  // Match the existing 988px desktop card row width and scale it to fit the
-  // viewport. Both faces share the same dimensions for a clean 3D flip.
-  const INTRINSIC_WIDTH = 988;
-  // Allow extra height for the elevated center card + tilted side cards
-  const INTRINSIC_HEIGHT = 720;
-  const [fitScale, setFitScale] = useState(1);
-
-  useEffect(() => {
-    const compute = () => {
-      const avail = Math.max(320, window.innerWidth - 32);
-      setFitScale(Math.min(1, avail / INTRINSIC_WIDTH));
-    };
-    compute();
-    window.addEventListener("resize", compute);
-    return () => window.removeEventListener("resize", compute);
-  }, []);
-
-  const flipped = view === "services";
-  const w = INTRINSIC_WIDTH * fitScale;
-  const h = INTRINSIC_HEIGHT * fitScale;
-
-  return (
-    <div
-      style={{
-        width: w,
-        height: h,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        overflow: "visible",
-        perspective: 1600,
-      }}
-    >
-      <motion.div
-        animate={{ rotateY: flipped ? 180 : 0, scale: fitScale, opacity: 1, y: 0 }}
-        initial={{ rotateY: flipped ? 180 : 0, scale: fitScale, opacity: 0, y: 12 }}
-        transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
-        style={{
-          width: INTRINSIC_WIDTH,
-          height: INTRINSIC_HEIGHT,
-          position: "relative",
-          transformStyle: "preserve-3d",
-          transformOrigin: "center center",
-          flex: "0 0 auto",
-        }}
-      >
-        <div
-          className="absolute inset-0 flex items-center justify-center gap-6"
-          style={{ backfaceVisibility: "hidden", pointerEvents: flipped ? "none" : "auto" }}
-        >
-          <DesktopCards />
-        </div>
-        <div
-          className="absolute inset-0 flex items-center justify-center gap-6"
-          style={{
-            backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
-            pointerEvents: flipped ? "auto" : "none",
-          }}
-        >
-          <DesktopServicesCards />
-        </div>
-      </motion.div>
-    </div>
   );
 }
 
@@ -752,72 +634,6 @@ function DesktopCards() {
       </motion.div>
     </div>
     <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
-    </>
-  );
-}
-
-function DesktopServicesCards() {
-  const handleAction = (action: ServiceAction) => {
-    if (action === "pricing") {
-      window.dispatchEvent(new Event("pixcellor:open-packages"));
-    } else {
-      window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
-    }
-  };
-
-  return (
-    <>
-      {SERVICE_GROUPS.map((group, idx) => {
-        const isCenter = idx === 1;
-        const rotate = idx === 0 ? -6 : idx === 2 ? 6 : 0;
-        const Icon = group.icon;
-        const sharedShadow = isCenter
-          ? `0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.08), inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 1px rgba(0,0,0,0.1)`
-          : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
-        return (
-          <div
-            key={group.title}
-            className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 py-12" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
-            style={{
-              boxShadow: sharedShadow,
-              transform: `translateY(${isCenter ? -20 : 0}px) rotate(${rotate}deg) scale(${isCenter ? 1.05 : 1})`,
-            }}
-          >
-            <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
-            <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
-            <div className={`lava-blob ${isCenter ? "lava-blob-featured-3" : "lava-blob-3"}`} />
-            <div className="relative z-10 flex flex-col flex-1">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="flex h-10 w-10 items-center justify-center rounded-lg"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))",
-                    border: "1px solid rgba(255,255,255,0.2)",
-                  }}
-                >
-                  <Icon className="h-5 w-5 text-foreground" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground">{group.title}</h3>
-              </div>
-              <ul className="mb-6 space-y-2 text-base text-muted-foreground flex-1">
-                {group.items.map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                variant="pricing"
-                onClick={() => handleAction(group.action)}
-                className="h-auto w-full py-2 font-semibold"
-              >
-                {group.action === "pricing" ? "View Pricing" : "Speak to Sales"}
-              </Button>
-            </div>
-          </div>
-        );
-      })}
     </>
   );
 }
