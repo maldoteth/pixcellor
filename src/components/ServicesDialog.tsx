@@ -58,16 +58,13 @@ type ServiceGroup = (typeof SERVICE_GROUPS)[number];
 export default function ServicesDialog() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const [spinningOut, setSpinningOut] = useState(false);
 
   useEffect(() => {
-    const handler = () => {
-      setSpinningOut(false);
-      setOpen(true);
-    };
+    if (!isMobile) return;
+    const handler = () => setOpen(true);
     window.addEventListener("pixcellor:open-services", handler);
     return () => window.removeEventListener("pixcellor:open-services", handler);
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     if (!isMobile) return;
@@ -75,79 +72,39 @@ export default function ServicesDialog() {
   }, [open, isMobile]);
 
   const handleCardAction = useCallback((action: ServiceAction) => {
-    if (isMobile) {
-      setOpen(false);
-      window.setTimeout(() => {
-        if (action === "pricing") window.dispatchEvent(new Event("pixcellor:open-packages"));
-        else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
-      }, 280);
-      return;
-    }
-    // Desktop/tablet: 180° flip handoff. Services rotates 0→90 (edge on),
-    // then pricing picks up at -90 and rotates to 0 with matching timing for a
-    // single continuous spin.
-    setSpinningOut(true);
-    const HALF = 300;
-    if (action === "pricing") {
-      window.setTimeout(() => {
-        window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { spinIn: true } }));
-        setOpen(false);
-        setSpinningOut(false);
-      }, HALF);
-      return;
-    }
+    setOpen(false);
     window.setTimeout(() => {
-      setOpen(false);
-      setSpinningOut(false);
-      if (action === "sales") {
-        window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
-      }
-    }, HALF + 120);
-  }, [isMobile]);
+      if (action === "pricing") window.dispatchEvent(new Event("pixcellor:open-packages"));
+      else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+    }, 280);
+  }, []);
 
-  if (isMobile) {
-    return (
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent
-          className="h-[85vh] carousel-label-glass border-foreground/10 text-foreground [&>div:first-child]:hidden"
-        >
-          <DrawerHeader className="sr-only">
-            <DrawerTitle>Our Services</DrawerTitle>
-          </DrawerHeader>
-          <div className="flex h-full flex-col overflow-hidden">
-            <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-            <div className="relative flex-shrink-0 px-4 pt-3 pb-2">
-              <h2 className="text-center text-2xl font-bold text-foreground py-[10px] my-0">Our Services</h2>
-            </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
-              <div className="flex flex-col gap-4">
-                {SERVICE_GROUPS.map((group) => (
-                  <MobileServiceCard key={group.title} group={group} onAction={handleCardAction} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
+  // Desktop: PackagesDialog now hosts services as the back face of the flip.
+  if (!isMobile) return null;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent
-        className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
-        style={{ background: "transparent", perspective: "1600px" }}
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerContent
+        className="h-[85vh] carousel-label-glass border-foreground/10 text-foreground [&>div:first-child]:hidden"
       >
-        <DesktopServicesCards onAction={handleCardAction} spinningOut={spinningOut} />
-        <div className="mt-6 flex justify-center">
-          <DialogClose asChild>
-            <Button variant="pricing" className="h-auto px-8 py-2 font-semibold">
-              Close
-            </Button>
-          </DialogClose>
+        <DrawerHeader className="sr-only">
+          <DrawerTitle>Our Services</DrawerTitle>
+        </DrawerHeader>
+        <div className="flex h-full flex-col overflow-hidden">
+          <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
+          <div className="relative flex-shrink-0 px-4 pt-3 pb-2">
+            <h2 className="text-center text-2xl font-bold text-foreground py-[10px] my-0">Our Services</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
+            <div className="flex flex-col gap-4">
+              {SERVICE_GROUPS.map((group) => (
+                <MobileServiceCard key={group.title} group={group} onAction={handleCardAction} />
+              ))}
+            </div>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
