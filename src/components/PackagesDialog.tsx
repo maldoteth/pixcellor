@@ -724,10 +724,12 @@ function ServiceBackCard({
   variant,
   rotate,
   data,
+  onAction,
 }: {
   variant: "side" | "center";
   rotate: number;
-  data: { icon: typeof Code2; title: string; items: readonly string[] };
+  data: { icon: typeof Code2; title: string; action: ServiceAction; items: readonly string[] };
+  onAction?: (action: ServiceAction) => void;
 }) {
   const isCenter = variant === "center";
   const Icon = data.icon;
@@ -755,7 +757,7 @@ function ServiceBackCard({
           </div>
           <h3 className="text-lg font-bold text-foreground">{data.title}</h3>
         </div>
-        <ul className="space-y-2 text-base text-muted-foreground flex-1">
+        <ul className="space-y-2 text-base text-muted-foreground flex-1 mb-6">
           {data.items.map((item) => (
             <li key={item} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -763,6 +765,13 @@ function ServiceBackCard({
             </li>
           ))}
         </ul>
+        <Button
+          variant="pricing"
+          onClick={() => onAction?.(data.action)}
+          className="h-auto w-full py-2 font-semibold"
+        >
+          {data.action === "pricing" ? "View Pricing" : "Talk to Sales"}
+        </Button>
       </div>
     </div>
   );
