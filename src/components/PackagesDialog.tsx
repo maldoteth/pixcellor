@@ -34,7 +34,7 @@ const PACKAGES = {
     monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription" as const,
-    features: ["Your own tech department", "Daily updates", "Websites or full apps"],
+    features: ["Your own tech department", "Daily updates", "Daily updates from us"],
   },
   enterprise: {
     name: "Enterprise",
