@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, useParams, Navigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 type Section = { id: string; heading: string; body: React.ReactNode };
 
