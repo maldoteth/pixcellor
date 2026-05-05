@@ -434,7 +434,17 @@ function DesktopCards({ servicesFlipped = false }: { servicesFlipped?: boolean }
 
   return (
     <>
-    <div className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100">
+    <div className="relative" style={{ perspective: "1800px" }}>
+    <motion.div
+      animate={{ rotateY: servicesFlipped ? 180 : 0 }}
+      transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+      style={{ transformStyle: "preserve-3d", transformOrigin: "center center" }}
+      className="relative"
+    >
+    <div
+      className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100"
+      style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
+    >
       {/* Full Works - tilted left */}
       <motion.div
         onMouseMove={handleMouseMove}
