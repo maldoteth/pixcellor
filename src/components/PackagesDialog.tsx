@@ -240,6 +240,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
           >
             Services
           </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
