@@ -130,9 +130,6 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   const isMobile = useIsMobile();
   const [internalOpen, setInternalOpen] = useState(false);
   const effectiveOpen = mobileTop ? internalOpen : open;
-  const drawerScrollRef = useDrawerTouchScroll<HTMLElement>(isMobile && Boolean(effectiveOpen), {
-    onCloseDrag: () => handleOpenChange(false),
-  });
 
   useEffect(() => {
     if (!mobileTop || !isMobile) return;
