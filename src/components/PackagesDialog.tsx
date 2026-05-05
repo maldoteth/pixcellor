@@ -165,53 +165,35 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     return (
       <>
         {trigger}
-        {createPortal(
-          <AnimatePresence>
-            {effectiveOpen && (
-              <div className="fixed inset-0 z-50 flex items-end" role="presentation" data-pixcellor-mobile-drawer="true">
-                <motion.div
-                  className="absolute inset-0 bg-background/80"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.25 }}
+        <Drawer open={Boolean(effectiveOpen)} onOpenChange={handleOpenChange}>
+          <DrawerContent
+            className="h-[85vh] border-0 border-t-0 bg-background/95 backdrop-blur-xl [&>div:first-child]:hidden"
+          >
+            <DrawerHeader className="sr-only">
+              <DrawerTitle>Our Pricing</DrawerTitle>
+            </DrawerHeader>
+            <div className="flex h-full flex-col overflow-hidden">
+              <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
+              <div className="relative flex-shrink-0 px-4 pt-3 pb-2 text-center">
+                <button
+                  type="button"
                   onClick={() => handleOpenChange(false)}
-                />
-                <motion.section
-                  ref={drawerScrollRef}
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="packages-dialog-title"
-                  className="relative h-[82dvh] max-h-[82dvh] w-full touch-none overflow-y-scroll overscroll-contain rounded-t-[10px] border border-border bg-background/95 backdrop-blur-xl scrollbar-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  exit={{ y: "100%" }}
-                  transition={{ type: "spring", damping: 32, stiffness: 320 }}
+                  className="absolute right-4 top-2 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
                 >
-                  <div className="mx-auto mt-4 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-                  <div className="relative px-4 pt-3 pb-2 text-center">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenChange(false)}
-                      className="absolute right-4 top-3 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
-                    >
-                      <X className="h-5 w-5" />
-                      <span className="sr-only">Close</span>
-                    </button>
-                    <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center">
-                      Our Pricing
-                    </h2>
-                    <StripeBadge />
-                  </div>
-                  <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]" data-pixcellor-drawer-scroll="true">
-                    <MobileCards />
-                  </div>
-                </motion.section>
+                  <X className="h-5 w-5" />
+                  <span className="sr-only">Close</span>
+                </button>
+                <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center">
+                  Our Pricing
+                </h2>
+                <StripeBadge />
               </div>
-            )}
-          </AnimatePresence>,
-          document.body,
-        )}
+              <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
+                <MobileCards />
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
       </>
     );
   }
