@@ -147,6 +147,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
     setLoading(true);
     try {
       await recordFalloff({ event: "chat_checkout_started", priceId: card.priceId, mode: card.mode, packageName: card.name, billing: card.billing });
+      markCheckoutPending({ packageName: card.name, billing: card.billing });
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { priceId: card.priceId, mode: card.mode, packageName: card.name, billing: card.billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined },
       });
