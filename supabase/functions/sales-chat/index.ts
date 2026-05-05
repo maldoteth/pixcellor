@@ -997,11 +997,12 @@ async function handleCustomerContactFollowUps(
   details: { name: string; email: string; phone: string; shouldScheduleCallback: boolean; shouldSendWelcomeEmail: boolean }
 ) {
   if (details.shouldScheduleCallback) {
-    const callbackAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    // Same-day callback: 2 hours from now (gives time to action it today).
+    const callbackAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
     const { error } = await supabase.from("contact_events").insert({
       contact_id: contactId,
       title: "Call back requested from website chat",
-      description: `Alex chat captured callback request for ${details.name}${details.phone ? ` (${details.phone})` : ""}.`,
+      description: `Alex chat captured callback request for ${details.name}${details.phone ? ` (${details.phone})` : ""}. Call back today.`,
       event_type: "callback",
       callback_at: callbackAt,
     });
