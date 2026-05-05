@@ -58,9 +58,13 @@ type ServiceGroup = (typeof SERVICE_GROUPS)[number];
 export default function ServicesDialog() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const [spinningOut, setSpinningOut] = useState(false);
 
   useEffect(() => {
-    const handler = () => setOpen(true);
+    const handler = () => {
+      setSpinningOut(false);
+      setOpen(true);
+    };
     window.addEventListener("pixcellor:open-services", handler);
     return () => window.removeEventListener("pixcellor:open-services", handler);
   }, []);
@@ -71,17 +75,31 @@ export default function ServicesDialog() {
   }, [open, isMobile]);
 
   const handleCardAction = useCallback((action: ServiceAction) => {
-    setOpen(false);
-    // Wait for the close animation before triggering the next dialog so the
-    // hand-off feels like one continuous motion instead of a hard cut.
+    if (isMobile) {
+      setOpen(false);
+      window.setTimeout(() => {
+        if (action === "pricing") window.dispatchEvent(new Event("pixcellor:open-packages"));
+        else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+      }, 280);
+      return;
+    }
+    // Desktop/tablet: spin the services card out and overlap with the next dialog
+    // spinning in for a continuous flip feel.
+    setSpinningOut(true);
+    if (action === "pricing") {
+      // Fire pricing open midway through services spin so it feels like one motion.
+      window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { spinIn: true } }));
+      }, 220);
+    }
     window.setTimeout(() => {
-      if (action === "pricing") {
-        window.dispatchEvent(new Event("pixcellor:open-packages"));
-      } else {
+      setOpen(false);
+      setSpinningOut(false);
+      if (action === "sales") {
         window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
       }
-    }, 280);
-  }, []);
+    }, 420);
+  }, [isMobile]);
 
   if (isMobile) {
     return (
@@ -114,7 +132,7 @@ export default function ServicesDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
-        style={{ background: "transparent" }}
+        style={{ background: "transparent", perspective: "1600px" }}
       >
         <div className="fixed top-3 right-3 z-[60]">
           <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
@@ -122,7 +140,7 @@ export default function ServicesDialog() {
             <span className="sr-only">Close</span>
           </DialogClose>
         </div>
-        <DesktopServicesCards onAction={handleCardAction} />
+        <DesktopServicesCards onAction={handleCardAction} spinningOut={spinningOut} />
       </DialogContent>
     </Dialog>
   );
@@ -172,7 +190,7 @@ function MobileServiceCard({ group, onAction }: { group: ServiceGroup; onAction:
   );
 }
 
-function DesktopServicesCards({ onAction }: { onAction: (action: ServiceAction) => void }) {
+function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (action: ServiceAction) => void; spinningOut?: boolean }) {
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
@@ -246,10 +264,13 @@ function DesktopServicesCards({ onAction }: { onAction: (action: ServiceAction) 
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.96, y: 12 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+      initial={{ opacity: 0, scale: 0.96, y: 12, rotateY: -90 }}
+      animate={spinningOut
+        ? { opacity: 0, scale: 0.85, rotateY: 90 }
+        : { opacity: 1, scale: 1, y: 0, rotateY: 0 }}
+      transition={{ duration: spinningOut ? 0.42 : 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100"
+      style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
     >
       {cards}
     </motion.div>
