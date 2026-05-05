@@ -790,6 +790,9 @@ function ServiceBackCard({
         >
           {data.action === "pricing" ? "View Pricing" : "Talk to Sales"}
         </Button>
+        {isCenter && data.action === "pricing" && (
+          <div className="mt-2.5"><StripeBadge /></div>
+        )}
       </div>
     </div>
   );
