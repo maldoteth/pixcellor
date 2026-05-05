@@ -81,7 +81,7 @@ export default function ServicesDialog() {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="absolute right-4 top-2 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
+                className="absolute right-2 top-0 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
               >
                 <X className="h-5 w-5" />
                 <span className="sr-only">Close</span>
