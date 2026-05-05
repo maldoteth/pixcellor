@@ -27,7 +27,7 @@ const PACKAGES = {
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     mode: "payment" as const,
     featured: true,
-    features: ["Sites or web apps", "Lifetime warranty", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages", "4-5 day turnaround"],
+    features: ["Sites or web apps", "Lifetime warranty", "Unlimited revisions", "SEO & AEO optimisation", "10 pages - 3D Animated", "4-5 day turnaround"],
   },
   retainer: {
     name: "Retainer",
