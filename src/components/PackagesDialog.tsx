@@ -58,6 +58,7 @@ async function handleCheckout(priceId: string, mode: string, packageName: string
     body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined },
   });
   if (error) throw error;
+  if (data?.sessionId) updateCheckoutPendingSessionId(data.sessionId);
   if (data?.url) window.location.href = data.url;
 }
 
