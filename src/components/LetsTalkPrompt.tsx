@@ -203,7 +203,7 @@ const LetsTalkPrompt = () => {
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="bg-background border-foreground/10">
+        <DrawerContent className="carousel-label-glass border-foreground/10 text-foreground">
           <DrawerHeader>
             <DrawerTitle className="text-foreground text-center">Let's Talk</DrawerTitle>
           </DrawerHeader>
@@ -215,7 +215,7 @@ const LetsTalkPrompt = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[420px] bg-background/80 backdrop-blur-xl border-foreground/10">
+      <DialogContent className="sm:max-w-[420px] carousel-label-glass border-foreground/10 text-foreground">
         <DialogHeader>
           <DialogTitle className="text-foreground">Let's Talk</DialogTitle>
         </DialogHeader>
