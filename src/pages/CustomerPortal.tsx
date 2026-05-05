@@ -318,20 +318,20 @@ export default function CustomerPortal() {
             </div>
             <div className="flex items-center gap-2">
               {isAdmin && (
-                <Button asChild variant="pricing" size="sm" className="gap-2">
+                <Button asChild variant="pricing" size="sm" className="gap-2 max-md:h-9 max-md:w-9 max-md:p-0" aria-label="Admin panel">
                   <Link to="/portal">
                     <ShieldCheck className="h-4 w-4" />
-                    Admin panel
+                    <span className="max-md:hidden">Admin panel</span>
                   </Link>
                 </Button>
               )}
-              <Button variant="pricing" size="sm" className="gap-2" onClick={() => setChatOpen(true)}>
+              <Button variant="pricing" size="sm" className="gap-2 max-md:h-9 max-md:w-9 max-md:p-0" onClick={() => setChatOpen(true)} aria-label="Chat">
                 <MessageCircle className="h-4 w-4" />
-                Chat
+                <span className="max-md:hidden">Chat</span>
               </Button>
-              <Button variant="pricing" size="sm" className="gap-2" onClick={handleSignOut}>
+              <Button variant="pricing" size="sm" className="gap-2 max-md:h-9 max-md:w-9 max-md:p-0" onClick={handleSignOut} aria-label="Sign out">
                 <LogOut className="h-4 w-4" />
-                Sign out
+                <span className="max-md:hidden">Sign out</span>
               </Button>
             </div>
           </header>
