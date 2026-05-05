@@ -799,17 +799,19 @@ function ServiceBackCard({
 }
 
 function MobileShell({ initialServices = false }: { initialServices?: boolean }) {
+  const [showServices, setShowServices] = useState(initialServices);
+  useEffect(() => { setShowServices(initialServices); }, [initialServices]);
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
       <div className="relative flex-shrink-0 px-4 pt-3 pb-2 text-center">
         <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center">
-          Our Pricing
+          {showServices ? "Our Services" : "Our Pricing"}
         </h2>
-        <StripeBadge />
+        {!showServices && <StripeBadge />}
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
-        <MobileCards />
+        {showServices ? <MobileServicesList onShowPricing={() => setShowServices(false)} /> : <MobileCards />}
       </div>
     </div>
   );
