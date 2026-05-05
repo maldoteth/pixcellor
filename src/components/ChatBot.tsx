@@ -375,9 +375,10 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  const submitMessage = async (rawContent: string) => {
+    const visibleContent = rawContent.trim();
+    if (!visibleContent || isLoading) return;
 
-    const visibleContent = input.trim();
     const actionInstruction = quickAction === "call"
       ? "\n\n[Quick action: Request call. Save these details as a contact and schedule a Let's Talk follow-up for 1 day from now.]"
       : quickAction === "email"
@@ -396,7 +397,6 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     setIsLoading(true);
 
     try {
-      // Send only role+content to the API
       const apiMessages = [...messages.map(({ role, content }) => ({ role, content })), apiUserMessage];
       const { data, error } = await supabase.functions.invoke("sales-chat", {
         body: { messages: apiMessages, clientId: clientId.current, conversationId, mode },
@@ -414,6 +414,10 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const sendMessage = async () => {
+    await submitMessage(input);
   };
 
   const sendImageMessage = async (imageUrl: string, fileName: string) => {
