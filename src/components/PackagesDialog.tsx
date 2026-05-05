@@ -803,7 +803,7 @@ function MobileShell({ initialServices = false }: { initialServices?: boolean })
         {!showServices && <StripeBadge />}
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
-        {showServices ? <MobileServicesList /> : <MobileCards />}
+        {showServices ? <MobileServicesList onShowPricing={() => setShowServices(false)} /> : <MobileCards />}
       </div>
     </div>
   );
