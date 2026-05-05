@@ -138,7 +138,7 @@ function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number
   };
   return (
     <div
-      className="rounded-2xl p-5 md:p-6 flex flex-col gap-4"
+      className="rounded-2xl p-5 md:p-6 flex flex-col gap-4 h-full"
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
         backdropFilter: "blur(20px)",
