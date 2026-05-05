@@ -54,14 +54,6 @@ const Footer = () => {
         >
           <ShoppingCart className="w-3.5 h-3.5" />
         </button>
-        <button
-          type="button"
-          aria-label="View services"
-          className="flex items-center hover:text-foreground transition-colors"
-          onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { services: true } }))}
-        >
-          <ShoppingCart className="w-3.5 h-3.5" />
-        </button>
         <Link
           to="/legal"
           aria-label="Legal documents"
@@ -77,12 +69,6 @@ const Footer = () => {
         >
           <LogIn className="w-3.5 h-3.5" />
         </button>
-      </div>
-    </footer>
-  );
-};
-
-export default Footer;
       </div>
     </footer>
   );
