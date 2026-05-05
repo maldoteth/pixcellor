@@ -9,8 +9,8 @@ const Footer = () => {
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
       }}
     >
-      <div className="relative max-w-6xl mx-auto flex flex-nowrap items-center justify-center gap-x-4 text-[11px] md:text-xs text-foreground">
-        <span className="font-semibold text-foreground text-sm py-[5px]">
+      <div className="relative max-w-6xl mx-auto flex flex-nowrap items-center justify-between md:justify-center gap-x-2 md:gap-x-4 text-[11px] md:text-xs text-foreground">
+        <span className="font-semibold text-foreground text-sm py-[5px] mr-auto md:mr-0">
           Pixcellor™
         </span>
         <a
