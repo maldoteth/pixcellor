@@ -152,6 +152,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
         body: { priceId: card.priceId, mode: card.mode, packageName: card.name, billing: card.billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined },
       });
       if (error) throw error;
+      if (data?.sessionId) updateCheckoutPendingSessionId(data.sessionId);
       if (data?.url) window.open(data.url, "_blank");
     } catch (e) {
       console.error("Checkout error:", e);
