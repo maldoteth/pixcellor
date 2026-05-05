@@ -176,36 +176,51 @@ interface PackagesDialogProps {
 export default function PackagesDialog({ open, onOpenChange, mobileTop = false, hidden = false, chatOpen = false }: PackagesDialogProps = {}) {
   const isMobile = useIsMobile();
   const [internalOpen, setInternalOpen] = useState(false);
-  const [spinIn, setSpinIn] = useState(false);
+  const [view, setView] = useState<"pricing" | "services">("pricing");
   const effectiveOpen = mobileTop ? internalOpen : open;
 
+  // Mobile: open-packages opens the pricing drawer
   useEffect(() => {
     if (!mobileTop || !isMobile) return;
-    const handler = () => setInternalOpen(true);
+    const handler = () => {
+      setView("pricing");
+      setInternalOpen(true);
+    };
     window.addEventListener("pixcellor:open-packages", handler);
     return () => window.removeEventListener("pixcellor:open-packages", handler);
   }, [mobileTop, isMobile]);
 
-  // Desktop: capture spinIn intent from cross-dialog hand-offs (Services -> Pricing)
+  // Desktop: open-packages and open-services both open this dialog and set the view
   useEffect(() => {
     if (isMobile) return;
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent<{ spinIn?: boolean }>).detail;
-      setSpinIn(Boolean(detail?.spinIn));
+    const openPricing = () => {
+      setView("pricing");
+      onOpenChange?.(true);
     };
-    window.addEventListener("pixcellor:open-packages", handler);
-    return () => window.removeEventListener("pixcellor:open-packages", handler);
-  }, [isMobile]);
-
-  // Reset spinIn flag once the dialog has finished opening / on close
-  useEffect(() => {
-    if (!effectiveOpen) setSpinIn(false);
-  }, [effectiveOpen]);
+    const openServices = () => {
+      setView("services");
+      onOpenChange?.(true);
+    };
+    window.addEventListener("pixcellor:open-packages", openPricing);
+    window.addEventListener("pixcellor:open-services", openServices);
+    return () => {
+      window.removeEventListener("pixcellor:open-packages", openPricing);
+      window.removeEventListener("pixcellor:open-services", openServices);
+    };
+  }, [isMobile, onOpenChange]);
 
   useEffect(() => {
     if (!mobileTop) return;
     window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: effectiveOpen } }));
   }, [effectiveOpen, mobileTop]);
+
+  // Notify Index that services overlay is open via the same channel ServicesDialog used
+  useEffect(() => {
+    if (isMobile) return;
+    window.dispatchEvent(new CustomEvent("pixcellor:services-open-change", {
+      detail: { open: Boolean(effectiveOpen) && view === "services" },
+    }));
+  }, [effectiveOpen, view, isMobile]);
 
   if (mobileTop && !isMobile) return null;
   if (isMobile && !mobileTop) return null;
@@ -213,6 +228,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   const handleOpenChange = (next: boolean) => {
     if (mobileTop) setInternalOpen(next);
     onOpenChange?.(next);
+    if (!next) setView("pricing");
   };
 
   const trigger = isMobile ? null : (
@@ -257,31 +273,18 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   return (
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent", perspective: "1600px" }}>
-        <motion.div
-          initial={spinIn
-            ? { opacity: 1, scale: 1, rotateY: -90 }
-            : { opacity: 0, scale: 0.96, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
-          transition={spinIn
-            ? { duration: 0.3, ease: "linear" }
-            : { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
-        >
-          <DesktopCards />
-        </motion.div>
+      <DialogContent
+        className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
+        style={{ background: "transparent", perspective: "1600px" }}
+      >
+        <FlipDeck view={view} />
         <div className="mt-6 flex justify-center gap-3">
           <Button
             variant="pricing"
             className="h-auto w-40 py-2 font-semibold"
-            onClick={() => {
-              handleOpenChange(false);
-              window.setTimeout(() => {
-                window.dispatchEvent(new Event("pixcellor:open-services"));
-              }, 200);
-            }}
+            onClick={() => setView((v) => (v === "pricing" ? "services" : "pricing"))}
           >
-            Services
+            {view === "pricing" ? "Services" : "Pricing"}
           </Button>
           <DialogClose asChild>
             <Button variant="pricing" className="h-auto w-40 py-2 font-semibold">
@@ -291,6 +294,77 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function FlipDeck({ view }: { view: "pricing" | "services" }) {
+  // Match the existing 988px desktop card row width and scale it to fit the
+  // viewport. Both faces share the same dimensions for a clean 3D flip.
+  const INTRINSIC_WIDTH = 988;
+  // Allow extra height for the elevated center card + tilted side cards
+  const INTRINSIC_HEIGHT = 720;
+  const [fitScale, setFitScale] = useState(1);
+
+  useEffect(() => {
+    const compute = () => {
+      const avail = Math.max(320, window.innerWidth - 32);
+      setFitScale(Math.min(1, avail / INTRINSIC_WIDTH));
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    return () => window.removeEventListener("resize", compute);
+  }, []);
+
+  const flipped = view === "services";
+  const w = INTRINSIC_WIDTH * fitScale;
+  const h = INTRINSIC_HEIGHT * fitScale;
+
+  return (
+    <div
+      style={{
+        width: w,
+        height: h,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        overflow: "visible",
+        perspective: 1600,
+      }}
+    >
+      <motion.div
+        animate={{ rotateY: flipped ? 180 : 0, scale: fitScale }}
+        initial={{ rotateY: flipped ? 180 : 0, scale: fitScale, opacity: 0, y: 12 }}
+        transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
+        whileInView={{ opacity: 1, y: 0 }}
+        style={{
+          width: INTRINSIC_WIDTH,
+          height: INTRINSIC_HEIGHT,
+          position: "relative",
+          transformStyle: "preserve-3d",
+          transformOrigin: "center center",
+          flex: "0 0 auto",
+        }}
+        onAnimationStart={() => undefined}
+        ref={(node) => { if (node) node.style.opacity = "1"; }}
+      >
+        <div
+          className="absolute inset-0 flex items-center justify-center gap-6"
+          style={{ backfaceVisibility: "hidden", pointerEvents: flipped ? "none" : "auto" }}
+        >
+          <DesktopCards />
+        </div>
+        <div
+          className="absolute inset-0 flex items-center justify-center gap-6"
+          style={{
+            backfaceVisibility: "hidden",
+            transform: "rotateY(180deg)",
+            pointerEvents: flipped ? "auto" : "none",
+          }}
+        >
+          <DesktopServicesCards />
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
