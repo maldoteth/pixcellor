@@ -134,7 +134,7 @@ export default function ServicesDialog() {
         className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
         style={{ background: "transparent", perspective: "1600px" }}
       >
-        <div className="fixed top-3 right-3 z-[60]">
+        <div className="fixed top-[-8px] right-3 z-[60]">
           <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
@@ -219,7 +219,8 @@ function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (ac
     e.currentTarget.style.setProperty("--mouse-y", "0");
   }, []);
 
-  const cards = SERVICE_GROUPS.map((group, idx) => {
+  const desktopGroups = [SERVICE_GROUPS[1], SERVICE_GROUPS[0], SERVICE_GROUPS[2]];
+  const cards = desktopGroups.map((group, idx) => {
     const isCenter = idx === 1;
     const rotate = idx === 0 ? -6 : idx === 2 ? 6 : 0;
     const delay = 0.1 + idx * 0.1;
