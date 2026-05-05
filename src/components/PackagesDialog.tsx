@@ -390,7 +390,7 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
   );
 }
 
-function DesktopCards() {
+function DesktopCards({ servicesFlipped = false }: { servicesFlipped?: boolean }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
@@ -398,10 +398,10 @@ function DesktopCards() {
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
 
   useEffect(() => {
-    if (enterpriseOpen || retainerAutoFlipStopped) return;
+    if (enterpriseOpen || retainerAutoFlipStopped || servicesFlipped) return;
     const interval = window.setInterval(() => setRetainerFlipped((flipped) => !flipped), 5000);
     return () => window.clearInterval(interval);
-  }, [enterpriseOpen, retainerAutoFlipStopped]);
+  }, [enterpriseOpen, retainerAutoFlipStopped, servicesFlipped]);
 
   const flipRetainerManually = () => {
     setRetainerAutoFlipStopped(true);
