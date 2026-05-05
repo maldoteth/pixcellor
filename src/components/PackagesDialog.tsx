@@ -1,9 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Check, Loader2, Lock, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useDrawerTouchScroll } from "@/hooks/use-drawer-touch-scroll";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
