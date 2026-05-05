@@ -70,6 +70,7 @@ const Index = () => {
         <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
         <ServicesDialog />
+        <TryBeforeBuyDrawer />
         <FalloffConsentBanner />
       </div>
     </div>
