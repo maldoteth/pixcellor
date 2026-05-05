@@ -6,6 +6,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 type Step = "name" | "email" | "phone" | "done";
 
@@ -167,20 +168,22 @@ const LetsTalkPrompt = () => {
             {error && <p className="text-red-400 text-xs">{error}</p>}
             <div className="flex gap-2 mt-2">
               {canSkip && (
-                <button
+                <Button
                   type="button"
+                  variant="pricing"
                   onClick={handleSkip}
                   disabled={submitting}
-                  className="flex-1 h-11 rounded-md border border-foreground/15 text-foreground/80 hover:bg-foreground/5 transition text-sm font-medium disabled:opacity-50"
+                  className="flex-1 h-12 font-semibold"
                 >
                   Skip
-                </button>
+                </Button>
               )}
-              <button
+              <Button
                 type="button"
+                variant="pricing"
                 onClick={handleNext}
                 disabled={submitting}
-                className="flex-1 h-11 rounded-md bg-foreground text-background hover:opacity-90 transition text-sm font-semibold disabled:opacity-60 flex items-center justify-center"
+                className="flex-1 h-12 font-semibold"
               >
                 {submitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -189,7 +192,7 @@ const LetsTalkPrompt = () => {
                 ) : (
                   "Next"
                 )}
-              </button>
+              </Button>
             </div>
           </motion.div>
         )}
@@ -200,7 +203,7 @@ const LetsTalkPrompt = () => {
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="bg-background border-foreground/10">
+        <DrawerContent className="carousel-label-glass border-foreground/10 text-foreground">
           <DrawerHeader>
             <DrawerTitle className="text-foreground text-center">Let's Talk</DrawerTitle>
           </DrawerHeader>
@@ -212,7 +215,7 @@ const LetsTalkPrompt = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[420px] bg-background/80 backdrop-blur-xl border-foreground/10">
+      <DialogContent className="sm:max-w-[420px] carousel-label-glass border-foreground/10 text-foreground">
         <DialogHeader>
           <DialogTitle className="text-foreground">Let's Talk</DialogTitle>
         </DialogHeader>
