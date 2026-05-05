@@ -277,7 +277,13 @@ function DesktopShell({ spinIn, initialServices = false }: { spinIn: boolean; in
           : { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
         style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
       >
-        <DesktopCards servicesFlipped={servicesFlipped} />
+        <DesktopCards
+          servicesFlipped={servicesFlipped}
+          onServiceAction={(action) => {
+            if (action === "pricing") setServicesFlipped(false);
+            else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+          }}
+        />
       </motion.div>
       <div className="mt-6 flex justify-center gap-3">
         <Button
