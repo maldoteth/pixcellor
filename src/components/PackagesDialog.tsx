@@ -129,6 +129,7 @@ interface PackagesDialogProps {
 export default function PackagesDialog({ open, onOpenChange, mobileTop = false, hidden = false, chatOpen = false }: PackagesDialogProps = {}) {
   const isMobile = useIsMobile();
   const [internalOpen, setInternalOpen] = useState(false);
+  const [spinIn, setSpinIn] = useState(false);
   const effectiveOpen = mobileTop ? internalOpen : open;
 
   useEffect(() => {
@@ -137,6 +138,22 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     window.addEventListener("pixcellor:open-packages", handler);
     return () => window.removeEventListener("pixcellor:open-packages", handler);
   }, [mobileTop, isMobile]);
+
+  // Desktop: capture spinIn intent from cross-dialog hand-offs (Services -> Pricing)
+  useEffect(() => {
+    if (isMobile) return;
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ spinIn?: boolean }>).detail;
+      setSpinIn(Boolean(detail?.spinIn));
+    };
+    window.addEventListener("pixcellor:open-packages", handler);
+    return () => window.removeEventListener("pixcellor:open-packages", handler);
+  }, [isMobile]);
+
+  // Reset spinIn flag once the dialog has finished opening / on close
+  useEffect(() => {
+    if (!effectiveOpen) setSpinIn(false);
+  }, [effectiveOpen]);
 
   useEffect(() => {
     if (!mobileTop) return;
