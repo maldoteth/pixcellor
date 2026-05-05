@@ -159,7 +159,7 @@ function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number
         </div>
         <h3 className="text-base md:text-lg font-semibold text-foreground">{group.title}</h3>
       </div>
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-2 flex-1">
         {group.items.map((item) => (
           <li key={item} className="text-sm text-foreground/80 flex items-start gap-2">
             <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground/60 flex-shrink-0" />
