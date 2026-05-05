@@ -28,10 +28,11 @@ const SERVICE_GROUPS = [
     items: [
       "Telesales campaigns",
       "Email marketing campaigns",
-      "Broadcast SMS",
-      "Lead generation",
+      "Broadcast SMS & WhatsApp",
+      "Lead generation & outreach",
       "SEO & AEO optimisation",
       "Social media automation",
+      "Paid ads & retargeting",
     ],
   },
   {
@@ -39,12 +40,13 @@ const SERVICE_GROUPS = [
     title: "Business Solutions",
     action: "sales" as ServiceAction,
     items: [
-      "Recruitment systems",
+      "Recruitment & ATS systems",
       "Payroll & HR tooling",
       "AI integrations & agents",
       "Workflow automation",
       "Custom dashboards & analytics",
       "API & third-party integrations",
+      "Bespoke internal software",
     ],
   },
 ] as const;
