@@ -295,7 +295,7 @@ const tools = [
           website: { type: "string", description: "Website domain or URL, if provided." },
           industry: { type: "string", description: "Business industry/category if known. Use general if unsure." },
           notes: { type: "string", description: "Project summary or relevant chat context." },
-          schedule_callback_tomorrow: { type: "boolean", description: "True when the visitor requested a call. Creates a callback event for 1 day from now." },
+          schedule_callback_tomorrow: { type: "boolean", description: "True when the visitor requested a call. Creates a same-day callback event (2 hours from now)." },
           send_welcome_email: { type: "boolean", description: "True when the visitor requested package/process info by email. Sends the Pixcellor welcome sales email." },
         },
         required: ["name"],
