@@ -297,9 +297,11 @@ function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (ac
       <motion.div
         initial={{ opacity: 0, scale: 0.96 * fitScale, y: 12, rotateY: -90 }}
         animate={spinningOut
-          ? { opacity: 0, scale: 0.85 * fitScale, rotateY: 90 }
+          ? { opacity: 1, scale: fitScale, y: 0, rotateY: 90 }
           : { opacity: 1, scale: fitScale, y: 0, rotateY: 0 }}
-        transition={{ duration: spinningOut ? 0.42 : 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={spinningOut
+          ? { duration: 0.3, ease: "linear" }
+          : { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         className="flex items-center justify-center gap-6"
         style={{
           transformStyle: "preserve-3d",
