@@ -258,8 +258,9 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   );
 }
 
-function DesktopShell({ spinIn }: { spinIn: boolean }) {
-  const [servicesFlipped, setServicesFlipped] = useState(false);
+function DesktopShell({ spinIn, initialServices = false }: { spinIn: boolean; initialServices?: boolean }) {
+  const [servicesFlipped, setServicesFlipped] = useState(initialServices);
+  useEffect(() => { setServicesFlipped(initialServices); }, [initialServices]);
   return (
     <>
       <motion.div
