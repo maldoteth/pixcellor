@@ -759,6 +759,72 @@ function DesktopCards() {
   );
 }
 
+function DesktopServicesCards() {
+  const handleAction = (action: ServiceAction) => {
+    if (action === "pricing") {
+      window.dispatchEvent(new Event("pixcellor:open-packages"));
+    } else {
+      window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+    }
+  };
+
+  return (
+    <>
+      {SERVICE_GROUPS.map((group, idx) => {
+        const isCenter = idx === 1;
+        const rotate = idx === 0 ? -6 : idx === 2 ? 6 : 0;
+        const Icon = group.icon;
+        const sharedShadow = isCenter
+          ? `0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.08), inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 1px rgba(0,0,0,0.1)`
+          : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
+        return (
+          <div
+            key={group.title}
+            className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 py-12" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
+            style={{
+              boxShadow: sharedShadow,
+              transform: `translateY(${isCenter ? -20 : 0}px) rotate(${rotate}deg) scale(${isCenter ? 1.05 : 1})`,
+            }}
+          >
+            <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
+            <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
+            <div className={`lava-blob ${isCenter ? "lava-blob-featured-3" : "lava-blob-3"}`} />
+            <div className="relative z-10 flex flex-col flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-lg"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                  }}
+                >
+                  <Icon className="h-5 w-5 text-foreground" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground">{group.title}</h3>
+              </div>
+              <ul className="mb-6 space-y-2 text-base text-muted-foreground flex-1">
+                {group.items.map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                variant="pricing"
+                onClick={() => handleAction(group.action)}
+                className="h-auto w-full py-2 font-semibold"
+              >
+                {group.action === "pricing" ? "View Pricing" : "Speak to Sales"}
+              </Button>
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
