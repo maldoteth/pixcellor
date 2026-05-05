@@ -1,4 +1,4 @@
-import { Facebook, Linkedin, LogIn, MessageSquare, Phone, ShoppingCart } from "lucide-react";
+import { Facebook, Linkedin, LogIn, MessageSquare, Phone, ScrollText, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -54,6 +54,13 @@ const Footer = () => {
         >
           <ShoppingCart className="w-3.5 h-3.5" />
         </button>
+        <Link
+          to="/legal"
+          aria-label="Legal documents"
+          className="flex items-center hover:text-foreground transition-colors"
+        >
+          <ScrollText className="w-3.5 h-3.5" />
+        </Link>
         <button
           type="button"
           aria-label="Customer log in"
@@ -62,8 +69,6 @@ const Footer = () => {
         >
           <LogIn className="w-3.5 h-3.5" />
         </button>
-        <Link to="/legal/terms" className="text-foreground/70 hover:text-foreground transition-colors">Terms</Link>
-        <Link to="/legal/privacy" className="text-foreground/70 hover:text-foreground transition-colors">Privacy</Link>
       </div>
     </footer>
   );
