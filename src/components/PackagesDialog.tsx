@@ -173,29 +173,38 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   const isMobile = useIsMobile();
   const [internalOpen, setInternalOpen] = useState(false);
   const [spinIn, setSpinIn] = useState(false);
+  const [initialServices, setInitialServices] = useState(false);
   const effectiveOpen = mobileTop ? internalOpen : open;
 
   useEffect(() => {
     if (!mobileTop || !isMobile) return;
-    const handler = () => setInternalOpen(true);
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ services?: boolean }>).detail;
+      setInitialServices(Boolean(detail?.services));
+      setInternalOpen(true);
+    };
     window.addEventListener("pixcellor:open-packages", handler);
     return () => window.removeEventListener("pixcellor:open-packages", handler);
   }, [mobileTop, isMobile]);
 
-  // Desktop: capture spinIn intent from cross-dialog hand-offs (Services -> Pricing)
+  // Desktop: capture spinIn / initial services intent
   useEffect(() => {
     if (isMobile) return;
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent<{ spinIn?: boolean }>).detail;
+      const detail = (e as CustomEvent<{ spinIn?: boolean; services?: boolean }>).detail;
       setSpinIn(Boolean(detail?.spinIn));
+      setInitialServices(Boolean(detail?.services));
     };
     window.addEventListener("pixcellor:open-packages", handler);
     return () => window.removeEventListener("pixcellor:open-packages", handler);
   }, [isMobile]);
 
-  // Reset spinIn flag once the dialog has finished opening / on close
+  // Reset transient flags on close
   useEffect(() => {
-    if (!effectiveOpen) setSpinIn(false);
+    if (!effectiveOpen) {
+      setSpinIn(false);
+      setInitialServices(false);
+    }
   }, [effectiveOpen]);
 
   useEffect(() => {
@@ -232,18 +241,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
             <DrawerHeader className="sr-only">
               <DrawerTitle>Our Pricing</DrawerTitle>
             </DrawerHeader>
-            <div className="flex h-full flex-col overflow-hidden">
-              <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-              <div className="relative flex-shrink-0 px-4 pt-3 pb-2 text-center">
-                <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center">
-                  Our Pricing
-                </h2>
-                <StripeBadge />
-              </div>
-              <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
-                <MobileCards />
-              </div>
-            </div>
+            <MobileShell initialServices={initialServices} key={effectiveOpen ? "open" : "closed"} />
           </DrawerContent>
         </Drawer>
       </>
@@ -254,7 +252,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent", perspective: "1600px" }}>
-        <DesktopShell spinIn={spinIn} />
+        <DesktopShell spinIn={spinIn} initialServices={initialServices} />
       </DialogContent>
     </Dialog>
   );
