@@ -17,6 +17,7 @@ import ProjectRequirements from "./pages/ProjectRequirements";
 import EditRequest from "./pages/EditRequest";
 import CustomerAuth from "./pages/CustomerAuth";
 import CustomerPortal from "./pages/CustomerPortal";
+import Legal from "./pages/Legal";
 
 const queryClient = new QueryClient();
 
