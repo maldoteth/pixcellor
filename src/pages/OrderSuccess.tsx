@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { clearCheckoutPending } from "@/lib/checkoutTracking";
 
 type OrderStatus = {
   confirmed: boolean;
@@ -64,6 +65,8 @@ export default function OrderSuccess() {
   const [syncing, setSyncing] = useState(true);
   const [timedOut, setTimedOut] = useState(false);
   const confettiFired = useRef(false);
+
+  useEffect(() => { clearCheckoutPending(); }, []);
 
   useEffect(() => {
     if (!sessionId) {
