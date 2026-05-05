@@ -111,7 +111,7 @@ serve(async (req) => {
       body: JSON.stringify({
         templateName: "order-complete",
         recipientEmail: order.customer_email,
-        idempotencyKey: `order-complete-${order.session_id}-${deliveredDomain}`,
+        idempotencyKey: `order-complete-${order.session_id}-${deliveredDomain}-${Math.floor(Date.now() / 60000)}`,
         templateData: {
           sessionId: order.session_id,
           orderId: orderCode,
