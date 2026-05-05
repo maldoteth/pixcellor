@@ -17,19 +17,17 @@ const Footer = () => {
         {/* Subtle dark tint to kill see-through at the very bottom */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 0%, transparent 50%, hsl(var(--background) / 0.55) 90%, hsl(var(--background) / 0.85) 100%)' }} />
       </div>
-      <div className="relative max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[11px] md:text-xs text-foreground">
-        <span className="font-semibold text-foreground w-full md:w-auto text-center text-sm py-[5px]">
+      <div className="relative max-w-6xl mx-auto flex flex-nowrap items-center justify-center gap-x-4 text-[11px] md:text-xs text-foreground">
+        <span className="font-semibold text-foreground text-sm py-[5px]">
           Pixcellor™
         </span>
-        <div className="flex items-center justify-center gap-x-4 flex-nowrap">
-          <a
-            href="tel:+441483912430"
-            aria-label="Call Pixcellor"
-            className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-          >
-            <Phone className="w-3 h-3" />
-          </a>
-        </div>
+        <a
+          href="tel:+441483912430"
+          aria-label="Call Pixcellor"
+          className="flex items-center hover:text-foreground transition-colors"
+        >
+          <Phone className="w-3.5 h-3.5" />
+        </a>
         <a
           href="https://www.facebook.com/profile.php?id=61569263824416"
           target="_blank"
