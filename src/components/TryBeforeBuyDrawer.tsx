@@ -1,0 +1,129 @@
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, X } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { consumeCheckoutPending, clearCheckoutPending } from "@/lib/checkoutTracking";
+
+const glassPanel = {
+  background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
+  backdropFilter: "blur(24px)",
+  WebkitBackdropFilter: "blur(24px)",
+  border: "1px solid rgba(255,255,255,0.18)",
+  boxShadow: "0 12px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2)",
+} as const;
+
+const glassButton = {
+  background: "linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 100%)",
+  border: "1px solid rgba(255,255,255,0.28)",
+  boxShadow: "0 6px 20px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.25)",
+} as const;
+
+const MIN_DELAY_MS = 1500;
+
+export default function TryBeforeBuyDrawer() {
+  const [visible, setVisible] = useState(false);
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    const check = () => {
+      const pending = consumeCheckoutPending();
+      if (!pending) return;
+      // Only show after they actually came back (some delay since marking)
+      if (Date.now() - pending.startedAt < MIN_DELAY_MS) return;
+      setVisible(true);
+    };
+
+    // When user returns from the Stripe tab/page (focus/visibility return)
+    const onFocus = () => check();
+    const onVisibility = () => { if (document.visibilityState === "visible") check(); };
+    const onPageShow = () => check();
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pageshow", onPageShow);
+
+    // In case they navigated back to the same tab (mobile in-app browser flow)
+    const t = window.setTimeout(check, 2000);
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pageshow", onPageShow);
+      window.clearTimeout(t);
+    };
+  }, []);
+
+  const dismiss = () => {
+    clearCheckoutPending();
+    setVisible(false);
+  };
+
+  const openChat = () => {
+    clearCheckoutPending();
+    setVisible(false);
+    window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "trial" } }));
+  };
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[10020] bg-black/60 backdrop-blur-sm"
+            onClick={dismiss}
+          />
+          <motion.div
+            initial={{ y: isMobile ? "100%" : 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: isMobile ? "100%" : 40, opacity: 0 }}
+            transition={{ type: "spring", damping: 28, stiffness: 280 }}
+            className={
+              isMobile
+                ? "fixed inset-x-0 bottom-0 z-[10021] rounded-t-2xl p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
+                : "fixed left-1/2 bottom-8 z-[10021] -translate-x-1/2 w-[min(440px,92vw)] rounded-2xl p-6"
+            }
+            style={glassPanel}
+          >
+            <button
+              type="button"
+              onClick={dismiss}
+              aria-label="Close"
+              className="absolute right-3 top-3 rounded-sm p-1.5 text-foreground/70 transition hover:opacity-100 hover:bg-white/10 focus:outline-none"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="flex items-start gap-3">
+              <div
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05))",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                }}
+              >
+                <Sparkles className="h-5 w-5 text-foreground" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-foreground">Try before you buy!</h3>
+                <p className="mt-1 text-sm text-foreground/75 leading-relaxed">
+                  No need to pay upfront. Talk to sales today and we'll build a free preview of your site so you can check it before you commit.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={openChat}
+              className="mt-5 h-11 w-full rounded-md text-sm font-semibold text-foreground transition hover:brightness-125 focus:outline-none"
+              style={glassButton}
+            >
+              Talk to sales
+            </button>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
