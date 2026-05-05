@@ -721,10 +721,10 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         style={{ scrollPaddingInline: "calc(50vw - 168px)" }}
       >
         <div className="snap-center shrink-0 flex items-center justify-center">
-          <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.fullWorks} onAction={onServiceAction} />
+          <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.elite} onAction={onServiceAction} />
         </div>
         <div className="snap-center shrink-0 flex items-center justify-center">
-          <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.elite} onAction={onServiceAction} />
+          <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.fullWorks} onAction={onServiceAction} />
         </div>
         <div className="snap-center shrink-0 flex items-center justify-center">
           <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.retainer} onAction={onServiceAction} />
@@ -799,32 +799,17 @@ function ServiceBackCard({
 }
 
 function MobileShell({ initialServices = false }: { initialServices?: boolean }) {
-  const [showServices, setShowServices] = useState(initialServices);
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
       <div className="relative flex-shrink-0 px-4 pt-3 pb-2 text-center">
         <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center">
-          {showServices ? "Our Services" : "Our Pricing"}
+          Our Pricing
         </h2>
-        <div className="mt-3 inline-flex rounded-full bg-secondary p-1">
-          <button
-            onClick={() => setShowServices(false)}
-            className={`text-xs px-4 py-1.5 rounded-full transition font-semibold ${!showServices ? "bg-foreground text-background" : "text-muted-foreground"}`}
-          >
-            Pricing
-          </button>
-          <button
-            onClick={() => setShowServices(true)}
-            className={`text-xs px-4 py-1.5 rounded-full transition font-semibold ${showServices ? "bg-foreground text-background" : "text-muted-foreground"}`}
-          >
-            Services
-          </button>
-        </div>
-        {!showServices && <StripeBadge />}
+        <StripeBadge />
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
-        {showServices ? <MobileServicesList onShowPricing={() => setShowServices(false)} /> : <MobileCards />}
+        <MobileCards />
       </div>
     </div>
   );
