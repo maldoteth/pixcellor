@@ -374,7 +374,6 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
-  const sendMessage = async () => {
   const submitMessage = async (rawContent: string) => {
     const visibleContent = rawContent.trim();
     if (!visibleContent || isLoading) return;
