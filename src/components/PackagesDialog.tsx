@@ -690,8 +690,71 @@ function DesktopCards({ servicesFlipped = false }: { servicesFlipped?: boolean }
         </motion.div>
       </motion.div>
     </div>
+    {/* Services back side - absolutely positioned, rotated 180° */}
+    <div
+      className="absolute inset-0 flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100"
+      style={{
+        backfaceVisibility: "hidden",
+        WebkitBackfaceVisibility: "hidden",
+        transform: "rotateY(180deg)",
+      }}
+    >
+      <ServiceBackCard variant="side" rotate={-6} data={SERVICE_BACKS.fullWorks} />
+      <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.elite} />
+      <ServiceBackCard variant="side" rotate={6} data={SERVICE_BACKS.retainer} />
+    </div>
+    </motion.div>
+    </div>
     <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
     </>
+  );
+}
+
+function ServiceBackCard({
+  variant,
+  rotate,
+  data,
+}: {
+  variant: "side" | "center";
+  rotate: number;
+  data: { icon: typeof Code2; title: string; items: readonly string[] };
+}) {
+  const isCenter = variant === "center";
+  const Icon = data.icon;
+  const shadow = isCenter
+    ? `0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.08), inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 1px rgba(0,0,0,0.1)`
+    : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
+  return (
+    <div
+      className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 py-12 -translate-y-5 scale-[1.1]" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
+      style={{ transform: `rotate(${rotate}deg)${isCenter ? " translateY(-20px) scale(1.1)" : ""}`, boxShadow: shadow }}
+    >
+      <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
+      <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
+      <div className={`lava-blob ${isCenter ? "lava-blob-featured-3" : "lava-blob-3"}`} />
+      <div className="relative z-10 flex flex-col flex-1">
+        <div className="flex items-center gap-3 mb-4">
+          <div
+            className="flex h-10 w-10 items-center justify-center rounded-lg"
+            style={{
+              background: "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))",
+              border: "1px solid rgba(255,255,255,0.2)",
+            }}
+          >
+            <Icon className="h-5 w-5 text-foreground" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground">{data.title}</h3>
+        </div>
+        <ul className="space-y-2 text-base text-muted-foreground flex-1">
+          {data.items.map((item) => (
+            <li key={item} className="flex items-start gap-2">
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
