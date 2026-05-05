@@ -27,10 +27,13 @@ export default function TryBeforeBuyDrawer() {
   const [visible, setVisible] = useState(false);
   const isMobile = useIsMobile();
 
+  const shownRef = useRef(false);
+
   useEffect(() => {
+    try { if (sessionStorage.getItem(SHOWN_KEY)) shownRef.current = true; } catch { /* ignore */ }
     let checking = false;
     const check = async () => {
-      if (checking) return;
+      if (checking || shownRef.current) return;
       const pending = consumeCheckoutPending();
       if (!pending) return;
       if (Date.now() - pending.startedAt < MIN_DELAY_MS) return;
@@ -50,6 +53,9 @@ export default function TryBeforeBuyDrawer() {
             // network error: fall through and show drawer (better to ask than miss a lead)
           }
         }
+        if (shownRef.current) return;
+        shownRef.current = true;
+        try { sessionStorage.setItem(SHOWN_KEY, "1"); } catch { /* ignore */ }
         setVisible(true);
       } finally {
         checking = false;
