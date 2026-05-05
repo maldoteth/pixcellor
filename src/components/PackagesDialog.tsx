@@ -221,7 +221,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
         >
           <DesktopCards />
         </motion.div>
-        <div className="mt-6 flex justify-center">
+        <div className="mt-6 flex justify-center gap-3">
           <Button
             variant="pricing"
             className="h-auto px-8 py-2 font-semibold"
@@ -234,6 +234,11 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
           >
             Services
           </Button>
+          <DialogClose asChild>
+            <Button variant="pricing" className="h-auto px-8 py-2 font-semibold">
+              Close
+            </Button>
+          </DialogClose>
         </div>
       </DialogContent>
     </Dialog>
