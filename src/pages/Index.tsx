@@ -5,6 +5,7 @@ import FalloffConsentBanner from "@/components/FalloffConsentBanner";
 import CustomerAccess from "@/components/CustomerAccess";
 import PackagesDialog from "@/components/PackagesDialog";
 import ServicesDialog from "@/components/ServicesDialog";
+import TryBeforeBuyDrawer from "@/components/TryBeforeBuyDrawer";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
