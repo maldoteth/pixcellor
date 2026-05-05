@@ -717,8 +717,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       </div>
       {/* Tablet (md to lg): horizontal swipe carousel */}
       <div
-        className="lg:hidden flex h-full w-screen max-w-[100vw] overflow-x-auto overflow-y-hidden snap-x snap-mandatory gap-4 px-[calc(50vw-168px)] py-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        style={{ scrollPaddingInline: "calc(50vw - 168px)" }}
+        className="lg:hidden flex h-full w-screen max-w-[100vw] overflow-x-auto overflow-y-hidden snap-x snap-mandatory gap-4 px-[calc(50vw-151px)] py-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ scrollPaddingInline: "calc(50vw - 151px)" }}
       >
         <div className="snap-center shrink-0 flex items-center justify-center">
           <ServiceBackCard variant="side" rotate={0} data={SERVICE_BACKS.elite} onAction={onServiceAction} />
