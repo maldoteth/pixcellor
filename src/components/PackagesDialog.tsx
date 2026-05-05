@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Loader2, Lock, X } from "lucide-react";
+import { Check, Loader2, Lock, X, Code2, Megaphone, Briefcase } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending, updateCheckoutPendingSessionId } from "@/lib/checkoutTracking";
@@ -41,6 +41,49 @@ const PACKAGES = {
     features: ["Web and mobile apps", "Infrastructure and ecosystems", "Endless Possibilities"],
   },
 };
+
+// Services info shown on the back of each desktop pricing card when flipped.
+const SERVICE_BACKS = {
+  fullWorks: {
+    icon: Code2,
+    title: "Apps & Sites",
+    items: [
+      "Landing pages",
+      "Animated sites",
+      "Full web apps",
+      "Internal tools",
+      "CRM systems",
+      "E-commerce stores",
+      "Booking platforms",
+    ],
+  },
+  elite: {
+    icon: Megaphone,
+    title: "Marketing Solutions",
+    items: [
+      "Telesales campaigns",
+      "Email marketing campaigns",
+      "Broadcast SMS & WhatsApp",
+      "Lead generation & outreach",
+      "SEO & AEO optimisation",
+      "Social media automation",
+      "Paid ads & retargeting",
+    ],
+  },
+  retainer: {
+    icon: Briefcase,
+    title: "Business Solutions",
+    items: [
+      "Recruitment & ATS systems",
+      "Payroll & HR tooling",
+      "AI integrations & agents",
+      "Workflow automation",
+      "Custom analytics dashboards",
+      "API & third-party integrations",
+      "Bespoke internal software",
+    ],
+  },
+} as const;
 
 const ENTERPRISE_FIELDS = [
   { key: "email", label: "Email", placeholder: "you@company.com", inputMode: "email" },
@@ -211,39 +254,43 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent", perspective: "1600px" }}>
-        <motion.div
-          initial={spinIn
-            ? { opacity: 1, scale: 1, rotateY: -90 }
-            : { opacity: 0, scale: 0.96, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
-          transition={spinIn
-            ? { duration: 0.3, ease: "linear" }
-            : { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
-        >
-          <DesktopCards />
-        </motion.div>
-        <div className="mt-6 flex justify-center gap-3">
-          <Button
-            variant="pricing"
-            className="h-auto w-40 py-2 font-semibold"
-            onClick={() => {
-              handleOpenChange(false);
-              window.setTimeout(() => {
-                window.dispatchEvent(new Event("pixcellor:open-services"));
-              }, 200);
-            }}
-          >
-            Services
-          </Button>
-          <DialogClose asChild>
-            <Button variant="pricing" className="h-auto w-40 py-2 font-semibold">
-              Close
-            </Button>
-          </DialogClose>
-        </div>
+        <DesktopShell spinIn={spinIn} />
       </DialogContent>
     </Dialog>
+  );
+}
+
+function DesktopShell({ spinIn }: { spinIn: boolean }) {
+  const [servicesFlipped, setServicesFlipped] = useState(false);
+  return (
+    <>
+      <motion.div
+        initial={spinIn
+          ? { opacity: 1, scale: 1, rotateY: -90 }
+          : { opacity: 0, scale: 0.96, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
+        transition={spinIn
+          ? { duration: 0.3, ease: "linear" }
+          : { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+        style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
+      >
+        <DesktopCards servicesFlipped={servicesFlipped} />
+      </motion.div>
+      <div className="mt-6 flex justify-center gap-3">
+        <Button
+          variant="pricing"
+          className="h-auto w-40 py-2 font-semibold"
+          onClick={() => setServicesFlipped((v) => !v)}
+        >
+          {servicesFlipped ? "Pricing" : "Services"}
+        </Button>
+        <DialogClose asChild>
+          <Button variant="pricing" className="h-auto w-40 py-2 font-semibold">
+            Close
+          </Button>
+        </DialogClose>
+      </div>
+    </>
   );
 }
 
@@ -343,7 +390,7 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
   );
 }
 
-function DesktopCards() {
+function DesktopCards({ servicesFlipped = false }: { servicesFlipped?: boolean }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
@@ -351,10 +398,10 @@ function DesktopCards() {
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
 
   useEffect(() => {
-    if (enterpriseOpen || retainerAutoFlipStopped) return;
+    if (enterpriseOpen || retainerAutoFlipStopped || servicesFlipped) return;
     const interval = window.setInterval(() => setRetainerFlipped((flipped) => !flipped), 5000);
     return () => window.clearInterval(interval);
-  }, [enterpriseOpen, retainerAutoFlipStopped]);
+  }, [enterpriseOpen, retainerAutoFlipStopped, servicesFlipped]);
 
   const flipRetainerManually = () => {
     setRetainerAutoFlipStopped(true);
@@ -387,7 +434,17 @@ function DesktopCards() {
 
   return (
     <>
-    <div className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100">
+    <div className="relative" style={{ perspective: "1800px" }}>
+    <motion.div
+      animate={{ rotateY: servicesFlipped ? 180 : 0 }}
+      transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+      style={{ transformStyle: "preserve-3d", transformOrigin: "center center" }}
+      className="relative"
+    >
+    <div
+      className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100"
+      style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
+    >
       {/* Full Works - tilted left */}
       <motion.div
         onMouseMove={handleMouseMove}
@@ -633,8 +690,71 @@ function DesktopCards() {
         </motion.div>
       </motion.div>
     </div>
+    {/* Services back side - absolutely positioned, rotated 180° */}
+    <div
+      className="absolute inset-0 flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100"
+      style={{
+        backfaceVisibility: "hidden",
+        WebkitBackfaceVisibility: "hidden",
+        transform: "rotateY(180deg)",
+      }}
+    >
+      <ServiceBackCard variant="side" rotate={-6} data={SERVICE_BACKS.fullWorks} />
+      <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.elite} />
+      <ServiceBackCard variant="side" rotate={6} data={SERVICE_BACKS.retainer} />
+    </div>
+    </motion.div>
+    </div>
     <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
     </>
+  );
+}
+
+function ServiceBackCard({
+  variant,
+  rotate,
+  data,
+}: {
+  variant: "side" | "center";
+  rotate: number;
+  data: { icon: typeof Code2; title: string; items: readonly string[] };
+}) {
+  const isCenter = variant === "center";
+  const Icon = data.icon;
+  const shadow = isCenter
+    ? `0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.08), inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 1px rgba(0,0,0,0.1)`
+    : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
+  return (
+    <div
+      className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 py-12" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
+      style={{ transform: `rotate(${rotate}deg)${isCenter ? " translateY(-20px) scale(1.1)" : ""}`, boxShadow: shadow }}
+    >
+      <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
+      <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
+      <div className={`lava-blob ${isCenter ? "lava-blob-featured-3" : "lava-blob-3"}`} />
+      <div className="relative z-10 flex flex-col flex-1">
+        <div className="flex items-center gap-3 mb-4">
+          <div
+            className="flex h-10 w-10 items-center justify-center rounded-lg"
+            style={{
+              background: "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))",
+              border: "1px solid rgba(255,255,255,0.2)",
+            }}
+          >
+            <Icon className="h-5 w-5 text-foreground" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground">{data.title}</h3>
+        </div>
+        <ul className="space-y-2 text-base text-muted-foreground flex-1">
+          {data.items.map((item) => (
+            <li key={item} className="flex items-start gap-2">
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
