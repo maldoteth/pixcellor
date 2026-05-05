@@ -4,6 +4,32 @@ const CLIENT_ID_KEY = "pixcellor_checkout_client_id";
 const SESSION_ID_KEY = "pixcellor_checkout_session_id";
 const VISIT_RECORDED_KEY = "pixcellor_visit_falloff_recorded";
 export const FALL_OFF_CONSENT_KEY = "pixcellor_falloff_consent";
+const CHECKOUT_PENDING_KEY = "pixcellor_checkout_pending";
+const CHECKOUT_PENDING_HANDLED_KEY = "pixcellor_checkout_pending_handled";
+
+export const markCheckoutPending = (info: { packageName?: string; billing?: string } = {}) => {
+  try {
+    sessionStorage.setItem(
+      CHECKOUT_PENDING_KEY,
+      JSON.stringify({ ...info, startedAt: Date.now() })
+    );
+    sessionStorage.removeItem(CHECKOUT_PENDING_HANDLED_KEY);
+  } catch { /* ignore */ }
+};
+
+export const consumeCheckoutPending = (): { packageName?: string; billing?: string; startedAt: number } | null => {
+  try {
+    const raw = sessionStorage.getItem(CHECKOUT_PENDING_KEY);
+    if (!raw) return null;
+    if (sessionStorage.getItem(CHECKOUT_PENDING_HANDLED_KEY)) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+};
+
+export const clearCheckoutPending = () => {
+  sessionStorage.removeItem(CHECKOUT_PENDING_KEY);
+  sessionStorage.setItem(CHECKOUT_PENDING_HANDLED_KEY, "1");
+};
 
 let lastScrollRecordAt = 0;
 
