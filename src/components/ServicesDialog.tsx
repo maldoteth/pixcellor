@@ -1,10 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
-import { Code2, Megaphone, Briefcase, Check, X } from "lucide-react";
+import { Code2, Megaphone, Briefcase } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
 
 type ServiceAction = "pricing" | "sales";
 
