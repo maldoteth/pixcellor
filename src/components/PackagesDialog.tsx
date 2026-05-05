@@ -399,7 +399,8 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
   );
 }
 
-function DesktopCards({ servicesFlipped = false }: { servicesFlipped?: boolean }) {
+type ServiceAction = "pricing" | "sales";
+function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFlipped?: boolean; onServiceAction?: (action: ServiceAction) => void }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
