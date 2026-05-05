@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { consumeCheckoutPending, clearCheckoutPending } from "@/lib/checkoutTracking";
+import { supabase } from "@/integrations/supabase/client";
 
 const glassPanel = {
   background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
@@ -25,25 +26,43 @@ export default function TryBeforeBuyDrawer() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const check = () => {
+    let checking = false;
+    const check = async () => {
+      if (checking) return;
       const pending = consumeCheckoutPending();
       if (!pending) return;
-      // Only show after they actually came back (some delay since marking)
       if (Date.now() - pending.startedAt < MIN_DELAY_MS) return;
-      setVisible(true);
+      checking = true;
+      try {
+        // If we have a Stripe session id, verify with backend whether it was paid
+        if (pending.sessionId) {
+          try {
+            const { data } = await supabase.functions.invoke("check-order-status", {
+              body: { sessionId: pending.sessionId },
+            });
+            if (data?.confirmed) {
+              clearCheckoutPending();
+              return;
+            }
+          } catch {
+            // network error: fall through and show drawer (better to ask than miss a lead)
+          }
+        }
+        setVisible(true);
+      } finally {
+        checking = false;
+      }
     };
 
-    // When user returns from the Stripe tab/page (focus/visibility return)
-    const onFocus = () => check();
-    const onVisibility = () => { if (document.visibilityState === "visible") check(); };
-    const onPageShow = () => check();
+    const onFocus = () => { void check(); };
+    const onVisibility = () => { if (document.visibilityState === "visible") void check(); };
+    const onPageShow = () => { void check(); };
 
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("pageshow", onPageShow);
 
-    // In case they navigated back to the same tab (mobile in-app browser flow)
-    const t = window.setTimeout(check, 2000);
+    const t = window.setTimeout(() => { void check(); }, 2000);
 
     return () => {
       window.removeEventListener("focus", onFocus);

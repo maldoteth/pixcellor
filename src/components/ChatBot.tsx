@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon, Phone, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending } from "@/lib/checkoutTracking";
+import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending, updateCheckoutPendingSessionId } from "@/lib/checkoutTracking";
 import {
   Drawer,
   DrawerContent,
@@ -152,6 +152,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
         body: { priceId: card.priceId, mode: card.mode, packageName: card.name, billing: card.billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined },
       });
       if (error) throw error;
+      if (data?.sessionId) updateCheckoutPendingSessionId(data.sessionId);
       if (data?.url) window.open(data.url, "_blank");
     } catch (e) {
       console.error("Checkout error:", e);

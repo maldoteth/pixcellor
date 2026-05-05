@@ -7,7 +7,7 @@ export const FALL_OFF_CONSENT_KEY = "pixcellor_falloff_consent";
 const CHECKOUT_PENDING_KEY = "pixcellor_checkout_pending";
 const CHECKOUT_PENDING_HANDLED_KEY = "pixcellor_checkout_pending_handled";
 
-export const markCheckoutPending = (info: { packageName?: string; billing?: string } = {}) => {
+export const markCheckoutPending = (info: { packageName?: string; billing?: string; sessionId?: string } = {}) => {
   try {
     sessionStorage.setItem(
       CHECKOUT_PENDING_KEY,
@@ -17,7 +17,16 @@ export const markCheckoutPending = (info: { packageName?: string; billing?: stri
   } catch { /* ignore */ }
 };
 
-export const consumeCheckoutPending = (): { packageName?: string; billing?: string; startedAt: number } | null => {
+export const updateCheckoutPendingSessionId = (sessionId: string) => {
+  try {
+    const raw = sessionStorage.getItem(CHECKOUT_PENDING_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    sessionStorage.setItem(CHECKOUT_PENDING_KEY, JSON.stringify({ ...parsed, sessionId }));
+  } catch { /* ignore */ }
+};
+
+export const consumeCheckoutPending = (): { packageName?: string; billing?: string; sessionId?: string; startedAt: number } | null => {
   try {
     const raw = sessionStorage.getItem(CHECKOUT_PENDING_KEY);
     if (!raw) return null;
