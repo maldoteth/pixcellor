@@ -279,7 +279,16 @@ function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (ac
   });
 
   return (
-    <div style={{ width: INTRINSIC_WIDTH * fitScale }}>
+    <div
+      style={{
+        width: INTRINSIC_WIDTH * fitScale,
+        height: "auto",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        overflow: "visible",
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.96 * fitScale, y: 12, rotateY: -90 }}
         animate={spinningOut
@@ -287,7 +296,12 @@ function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (ac
           : { opacity: 1, scale: fitScale, y: 0, rotateY: 0 }}
         transition={{ duration: spinningOut ? 0.42 : 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         className="flex items-center justify-center gap-6"
-        style={{ transformStyle: "preserve-3d", transformOrigin: "top center", width: INTRINSIC_WIDTH }}
+        style={{
+          transformStyle: "preserve-3d",
+          transformOrigin: "center center",
+          width: INTRINSIC_WIDTH,
+          flex: "0 0 auto",
+        }}
       >
         {cards}
       </motion.div>
