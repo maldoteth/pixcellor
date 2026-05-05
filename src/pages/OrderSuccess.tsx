@@ -66,6 +66,8 @@ export default function OrderSuccess() {
   const [timedOut, setTimedOut] = useState(false);
   const confettiFired = useRef(false);
 
+  useEffect(() => { clearCheckoutPending(); }, []);
+
   useEffect(() => {
     if (!sessionId) {
       setSyncing(false);
