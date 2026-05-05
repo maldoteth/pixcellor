@@ -709,9 +709,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         transform: "rotateY(180deg)",
       }}
     >
-      <ServiceBackCard variant="side" rotate={-6} data={SERVICE_BACKS.fullWorks} />
-      <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.elite} />
-      <ServiceBackCard variant="side" rotate={6} data={SERVICE_BACKS.retainer} />
+      <ServiceBackCard variant="side" rotate={-6} data={SERVICE_BACKS.fullWorks} onAction={onServiceAction} />
+      <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.elite} onAction={onServiceAction} />
+      <ServiceBackCard variant="side" rotate={6} data={SERVICE_BACKS.retainer} onAction={onServiceAction} />
     </div>
     </motion.div>
     </div>
