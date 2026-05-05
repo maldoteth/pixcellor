@@ -80,7 +80,7 @@ export default function TryBeforeBuyDrawer() {
   const openChat = () => {
     clearCheckoutPending();
     setVisible(false);
-    window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "trial" } }));
+    window.dispatchEvent(new Event("pixcellor:open-letstalk"));
   };
 
   return (
