@@ -86,7 +86,7 @@ export default function ServicesDialog() {
                 <X className="h-5 w-5" />
                 <span className="sr-only">Close</span>
               </button>
-              <h2 className="text-center text-2xl font-bold text-foreground">Our Services</h2>
+              <h2 className="text-center text-2xl font-bold text-foreground my-0 py-[10px]">Our Services</h2>
             </div>
             <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
               <div className="flex flex-col gap-4">
