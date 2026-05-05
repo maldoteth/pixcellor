@@ -58,9 +58,13 @@ type ServiceGroup = (typeof SERVICE_GROUPS)[number];
 export default function ServicesDialog() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const [spinningOut, setSpinningOut] = useState(false);
 
   useEffect(() => {
-    const handler = () => setOpen(true);
+    const handler = () => {
+      setSpinningOut(false);
+      setOpen(true);
+    };
     window.addEventListener("pixcellor:open-services", handler);
     return () => window.removeEventListener("pixcellor:open-services", handler);
   }, []);
@@ -71,17 +75,27 @@ export default function ServicesDialog() {
   }, [open, isMobile]);
 
   const handleCardAction = useCallback((action: ServiceAction) => {
-    setOpen(false);
-    // Wait for the close animation before triggering the next dialog so the
-    // hand-off feels like one continuous motion instead of a hard cut.
+    if (isMobile) {
+      setOpen(false);
+      window.setTimeout(() => {
+        if (action === "pricing") window.dispatchEvent(new Event("pixcellor:open-packages"));
+        else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+      }, 280);
+      return;
+    }
+    // Desktop/tablet: spin the services card out, then hand off to next dialog
+    // which spins in from the opposite side for a continuous flip feel.
+    setSpinningOut(true);
     window.setTimeout(() => {
+      setOpen(false);
+      setSpinningOut(false);
       if (action === "pricing") {
-        window.dispatchEvent(new Event("pixcellor:open-packages"));
+        window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { spinIn: true } }));
       } else {
         window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
       }
-    }, 280);
-  }, []);
+    }, 420);
+  }, [isMobile]);
 
   if (isMobile) {
     return (
@@ -114,7 +128,7 @@ export default function ServicesDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
-        style={{ background: "transparent" }}
+        style={{ background: "transparent", perspective: "1600px" }}
       >
         <div className="fixed top-3 right-3 z-[60]">
           <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
@@ -122,7 +136,7 @@ export default function ServicesDialog() {
             <span className="sr-only">Close</span>
           </DialogClose>
         </div>
-        <DesktopServicesCards onAction={handleCardAction} />
+        <DesktopServicesCards onAction={handleCardAction} spinningOut={spinningOut} />
       </DialogContent>
     </Dialog>
   );
