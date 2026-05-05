@@ -752,10 +752,26 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     <div className="hidden md:flex justify-center items-center gap-3">
                         <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); setPackagesOpen(true); }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const start = scrollRef.current;
+                                const end = Math.min(Math.max(start, 0) + 2000, MAX_SCROLL);
+                                const duration = 1200;
+                                const t0 = performance.now();
+                                const step = (now: number) => {
+                                    const t = Math.min((now - t0) / duration, 1);
+                                    const eased = 1 - Math.pow(1 - t, 3);
+                                    const v = start + (end - start) * eased;
+                                    scrollRef.current = v;
+                                    virtualScroll.set(v);
+                                    onVirtualScrollChangeRef.current?.(v);
+                                    if (t < 1) requestAnimationFrame(step);
+                                };
+                                requestAnimationFrame(step);
+                            }}
                             className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
-                            Pricing
+                            Portfolio
                         </button>
                         <button
                             type="button"
