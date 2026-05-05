@@ -757,6 +757,78 @@ function ServiceBackCard({
   );
 }
 
+function MobileShell({ initialServices = false }: { initialServices?: boolean }) {
+  const [showServices, setShowServices] = useState(initialServices);
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
+      <div className="relative flex-shrink-0 px-4 pt-3 pb-2 text-center">
+        <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center">
+          {showServices ? "Our Services" : "Our Pricing"}
+        </h2>
+        <div className="mt-3 inline-flex rounded-full bg-secondary p-1">
+          <button
+            onClick={() => setShowServices(false)}
+            className={`text-xs px-4 py-1.5 rounded-full transition font-semibold ${!showServices ? "bg-foreground text-background" : "text-muted-foreground"}`}
+          >
+            Pricing
+          </button>
+          <button
+            onClick={() => setShowServices(true)}
+            className={`text-xs px-4 py-1.5 rounded-full transition font-semibold ${showServices ? "bg-foreground text-background" : "text-muted-foreground"}`}
+          >
+            Services
+          </button>
+        </div>
+        {!showServices && <StripeBadge />}
+      </div>
+      <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
+        {showServices ? <MobileServicesList /> : <MobileCards />}
+      </div>
+    </div>
+  );
+}
+
+function MobileServicesList() {
+  const groups = [SERVICE_BACKS.fullWorks, SERVICE_BACKS.elite, SERVICE_BACKS.retainer];
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      {groups.map((g) => {
+        const Icon = g.icon;
+        return (
+          <div key={g.title} className="rounded-none p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+            <div className="lava-blob lava-blob-1" />
+            <div className="lava-blob lava-blob-2" />
+            <div className="lava-blob lava-blob-3" />
+            <div className="relative z-10 flex flex-col flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-lg"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                  }}
+                >
+                  <Icon className="h-5 w-5 text-foreground" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground">{g.title}</h3>
+              </div>
+              <ul className="space-y-2 flex-1">
+                {g.items.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-base text-muted-foreground">
+                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
