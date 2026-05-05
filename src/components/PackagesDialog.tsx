@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, Lock, X, Code2, Megaphone, Briefcase } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
@@ -288,10 +288,23 @@ function DesktopShell({ spinIn, initialServices = false }: { spinIn: boolean; in
       <div className="mt-6 flex justify-center gap-3">
         <Button
           variant="pricing"
-          className="h-auto w-40 py-2 font-semibold"
+          className="h-auto w-40 py-2 font-semibold [perspective:600px]"
           onClick={() => setServicesFlipped((v) => !v)}
         >
-          {servicesFlipped ? "Pricing" : "Services"}
+          <span className="relative inline-block w-full h-[1.25em] [transform-style:preserve-3d]">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={servicesFlipped ? "pricing" : "services"}
+                initial={{ rotateX: -90, opacity: 0 }}
+                animate={{ rotateX: 0, opacity: 1 }}
+                exit={{ rotateX: 90, opacity: 0 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="absolute inset-0 flex items-center justify-center [backface-visibility:hidden]"
+              >
+                {servicesFlipped ? "Pricing" : "Services"}
+              </motion.span>
+            </AnimatePresence>
+          </span>
         </Button>
         <DialogClose asChild>
           <Button variant="pricing" className="h-auto w-40 py-2 font-semibold">
