@@ -332,10 +332,9 @@ function FlipDeck({ view }: { view: "pricing" | "services" }) {
       }}
     >
       <motion.div
-        animate={{ rotateY: flipped ? 180 : 0, scale: fitScale }}
+        animate={{ rotateY: flipped ? 180 : 0, scale: fitScale, opacity: 1, y: 0 }}
         initial={{ rotateY: flipped ? 180 : 0, scale: fitScale, opacity: 0, y: 12 }}
         transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
-        whileInView={{ opacity: 1, y: 0 }}
         style={{
           width: INTRINSIC_WIDTH,
           height: INTRINSIC_HEIGHT,
@@ -344,8 +343,6 @@ function FlipDeck({ view }: { view: "pricing" | "services" }) {
           transformOrigin: "center center",
           flex: "0 0 auto",
         }}
-        onAnimationStart={() => undefined}
-        ref={(node) => { if (node) node.style.opacity = "1"; }}
       >
         <div
           className="absolute inset-0 flex items-center justify-center gap-6"
