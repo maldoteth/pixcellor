@@ -3,13 +3,13 @@ import { Facebook, Linkedin, LogIn, MessageSquare, Phone } from "lucide-react";
 const Footer = () => {
   return (
     <footer
-      className="relative w-full text-foreground py-3 px-4 md:backdrop-blur-2xl md:backdrop-saturate-150 md:bg-white/5 md:border-t md:border-white/10"
+      className="relative w-full text-foreground py-3 px-4"
       style={{
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
       }}
     >
       {/* Liquid-glass progressive blur: stronger at bottom, fades to clear at top */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-2 md:hidden overflow-hidden">
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-2 overflow-hidden">
         <div className="absolute inset-0" style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)' }} />
         <div className="absolute inset-0" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', maskImage: 'linear-gradient(to bottom, transparent 30%, black 60%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 30%, black 60%)' }} />
         <div className="absolute inset-0" style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', maskImage: 'linear-gradient(to bottom, transparent 55%, black 80%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 55%, black 80%)' }} />
