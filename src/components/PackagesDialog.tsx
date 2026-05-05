@@ -210,7 +210,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   return (
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent" }}>
+      <DialogContent className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent", perspective: "1600px" }}>
         <div className="fixed top-3 right-3 z-[60]">
           <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
             <X className="h-6 w-6 py-0 my-0 mx-0" />
@@ -218,9 +218,12 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
           </DialogClose>
         </div>
         <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+          initial={spinIn
+            ? { opacity: 0, scale: 0.85, rotateY: -90 }
+            : { opacity: 0, scale: 0.96, y: 12 }}
+          animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
+          transition={{ duration: spinIn ? 0.5 : 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
         >
           <DesktopCards />
         </motion.div>
