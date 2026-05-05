@@ -219,7 +219,8 @@ function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (ac
     e.currentTarget.style.setProperty("--mouse-y", "0");
   }, []);
 
-  const cards = SERVICE_GROUPS.map((group, idx) => {
+  const desktopGroups = [SERVICE_GROUPS[1], SERVICE_GROUPS[0], SERVICE_GROUPS[2]];
+  const cards = desktopGroups.map((group, idx) => {
     const isCenter = idx === 1;
     const rotate = idx === 0 ? -6 : idx === 2 ? 6 : 0;
     const delay = 0.1 + idx * 0.1;
