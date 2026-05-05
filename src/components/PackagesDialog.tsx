@@ -42,6 +42,53 @@ const PACKAGES = {
   },
 };
 
+type ServiceAction = "pricing" | "sales";
+
+const SERVICE_GROUPS = [
+  {
+    icon: Megaphone,
+    title: "Marketing Solutions",
+    action: "sales" as ServiceAction,
+    items: [
+      "Telesales campaigns",
+      "Email marketing campaigns",
+      "Broadcast SMS & WhatsApp",
+      "Lead generation & outreach",
+      "SEO & AEO optimisation",
+      "Social media automation",
+      "Paid ads & retargeting",
+    ],
+  },
+  {
+    icon: Code2,
+    title: "Apps & Sites",
+    action: "pricing" as ServiceAction,
+    items: [
+      "Landing pages",
+      "Animated sites",
+      "Full web apps",
+      "Internal tools",
+      "CRM systems",
+      "E-commerce stores",
+      "Booking platforms",
+    ],
+  },
+  {
+    icon: Briefcase,
+    title: "Business Solutions",
+    action: "sales" as ServiceAction,
+    items: [
+      "Recruitment & ATS systems",
+      "Payroll & HR tooling",
+      "AI integrations & agents",
+      "Workflow automation",
+      "Custom analytics dashboards",
+      "API & third-party integrations",
+      "Bespoke internal software",
+    ],
+  },
+] as const;
+
 const ENTERPRISE_FIELDS = [
   { key: "email", label: "Email", placeholder: "you@company.com", inputMode: "email" },
   { key: "name", label: "Contact name", placeholder: "Your name", inputMode: "text" },
