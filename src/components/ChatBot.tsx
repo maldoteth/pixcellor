@@ -212,7 +212,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
-  const [quickAction, setQuickAction] = useState<"call" | "email" | "trial" | null>(null);
+  const [quickAction, setQuickAction] = useState<"call" | "email" | "trial" | "services" | null>(null);
   const [widgetSize, setWidgetSize] = useState(CHAT_WIDGET_DEFAULT_SIZE);
   const [widgetPosition, setWidgetPosition] = useState<{ x: number; y: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -262,12 +262,12 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     return () => window.removeEventListener("resize", clampWidgetToViewport);
   }, [isMobile, widgetSize.height, widgetSize.width]);
 
-  const pendingActionRef = useRef<"call" | "email" | "trial" | null>(null);
+  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | null>(null);
   useEffect(() => {
     const openChat = (e: Event) => {
       setIsOpen(true);
-      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" }>).detail;
-      if (detail?.action === "call" || detail?.action === "email" || detail?.action === "trial") {
+      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" }>).detail;
+      if (detail?.action === "call" || detail?.action === "email" || detail?.action === "trial" || detail?.action === "services") {
         pendingActionRef.current = detail.action;
       }
     };
@@ -384,7 +384,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         ? "\n\n[Quick action: Email info. Save these details as a contact and send the Pixcellor welcome sales email.]"
         : quickAction === "trial"
           ? "\n\n[Quick action: Try-before-you-buy lead. Save these details as a contact, capture project requirements (any uploaded screenshots/images), and flag the team to build a free preview site.]"
-          : "";
+          : quickAction === "services"
+            ? "\n\n[Quick action: Services enquiry. Capture which marketing/business services they need, save contact details, and route to the team for a tailored quote.]"
+            : "";
     const userMessage: Message = { role: "user", content: visibleContent };
     const apiUserMessage = { role: "user" as const, content: `${visibleContent}${actionInstruction}` };
     const newMessages = [...messages, userMessage];
@@ -514,7 +516,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
-  const startQuickAction = (action: "call" | "email" | "trial") => {
+  const startQuickAction = (action: "call" | "email" | "trial" | "services") => {
     if (isDevMode || isLoading) return;
     setQuickAction(action);
     const reply = {
@@ -523,7 +525,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         ? "Absolutely — leave your name and phone number and I'll get a call booked for tomorrow."
         : action === "email"
           ? "Sure — leave your name and email and I'll send over our full package guide, process breakdown, portfolio and buy links."
-          : "No need to pay upfront — we'll build a free preview so you can try before you buy. Tell me a bit about what you need (you can drop in any screenshots or reference images using the image button), plus your name, email and phone number, and I'll get the team started. We'll reach out the moment your site is ready to check.",
+          : action === "trial"
+            ? "No need to pay upfront — we'll build a free preview so you can try before you buy. Tell me a bit about what you need (you can drop in any screenshots or reference images using the image button), plus your name, email and phone number, and I'll get the team started. We'll reach out the moment your site is ready to check."
+            : "Happy to help! Tell me which services you're interested in (marketing, business solutions, automation, etc.) and a bit about your goals. Drop your name, email and phone number too and I'll get the right person to put together a tailored quote for you.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
     // Focus input synchronously so mobile browsers open the keyboard
@@ -803,7 +807,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isDevMode ? "Paste contact details or describe a sales event" : quickAction === "call" ? "Name and phone number" : quickAction === "email" ? "Name and email address" : quickAction === "trial" ? "Project details + name, email, phone" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
+            placeholder={isDevMode ? "Paste contact details or describe a sales event" : quickAction === "call" ? "Name and phone number" : quickAction === "email" ? "Name and email address" : quickAction === "trial" ? "Project details + name, email, phone" : quickAction === "services" ? "Services needed + name, email, phone" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
             className="h-9 min-w-0 flex-1 rounded-sm px-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-0 focus-visible:outline-none"
             style={{
               background: "rgba(255,255,255,0.08)",

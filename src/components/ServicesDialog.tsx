@@ -133,7 +133,7 @@ function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number
     if (group.action === "pricing") {
       window.dispatchEvent(new Event("pixcellor:open-packages"));
     } else {
-      window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "call" } }));
+      window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
     }
   };
   return (
