@@ -175,14 +175,6 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
             <div className="flex h-full flex-col overflow-hidden">
               <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
               <div className="relative flex-shrink-0 px-4 pt-3 pb-2 text-center">
-                <button
-                  type="button"
-                  onClick={() => handleOpenChange(false)}
-                  className="absolute right-4 top-2 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
-                >
-                  <X className="h-5 w-5" />
-                  <span className="sr-only">Close</span>
-                </button>
                 <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center">
                   Our Pricing
                 </h2>

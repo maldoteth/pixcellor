@@ -107,14 +107,6 @@ export default function TryBeforeBuyDrawer() {
             }
             style={glassPanel}
           >
-            <button
-              type="button"
-              onClick={dismiss}
-              aria-label="Close"
-              className="absolute right-3 top-3 rounded-sm p-1.5 text-foreground/70 transition hover:opacity-100 hover:bg-white/10 focus:outline-none"
-            >
-              <X className="h-4 w-4" />
-            </button>
             {isMobile ? (
               <>
                 <div>
