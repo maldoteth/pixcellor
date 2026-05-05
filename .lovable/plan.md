@@ -1,34 +1,15 @@
 ## Goal
-Make Google (and all browsers) display the new black/white "P" Pixcellor favicon.
+Match the footer layout in the screenshot: one centered horizontal row containing `Pixcellor™` followed inline by the phone, Facebook, LinkedIn, chat, and login icons — on every viewport.
 
-## Changes
+## Current behavior
+In `src/components/Footer.tsx`, the brand span uses `w-full md:w-auto text-center`, which forces `Pixcellor™` onto its own line on mobile and only sits inline from `md` upward. The icons are also split across two flex groups with different gaps.
 
-### 1. Delete the stale `public/favicon.ico`
-It came back into the repo and is overriding the new PNG because browsers auto-request `/favicon.ico`.
+## Changes (single file: `src/components/Footer.tsx`)
 
-### 2. Add proper favicon link tags to `index.html`
-Replace the single outdated `apple-touch-icon` line with a complete, correct set:
+1. Remove `w-full md:w-auto` from the `Pixcellor™` span so it always sits inline with the icons. Keep the small font size and weight.
+2. Flatten the icon layout: drop the inner `<div className="flex ... flex-nowrap">` wrapper around the phone link so all five icons (phone, Facebook, LinkedIn, chat, login) are direct children of the same flex container, sharing one consistent gap (e.g. `gap-x-4`).
+3. Keep the outer container as `flex items-center justify-center` with `flex-nowrap` so brand + icons stay on one line and centered, matching the screenshot.
+4. Leave the mobile progressive-blur backdrop, safe-area padding, and existing accessibility labels untouched.
 
-```html
-<!-- Favicon -->
-<link rel="icon" type="image/png" sizes="512x512" href="/favicon.png">
-<link rel="shortcut icon" type="image/png" href="/favicon.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-```
-
-This guarantees:
-- Browsers use `/favicon.png` (the new black/white P)
-- iOS uses `/apple-touch-icon.png`
-- The legacy `/favicon.ico` request no longer returns the stale image
-
-### 3. (Optional but recommended) Generate a real `favicon.ico`
-Some crawlers and old browsers strictly want an `.ico` at the root. We can generate a fresh multi-size `favicon.ico` from the new PNG and place it at `public/favicon.ico` so every client gets the new icon — including ones that ignore `<link>` tags.
-
-## After deploying
-
-Google won't update instantly. To speed it up:
-1. Re-publish the site.
-2. In **Google Search Console** → **URL Inspection** → enter `https://pixcellor.com` → click **Request Indexing**.
-3. Google typically refreshes the search-result favicon within a few days of re-crawl.
-
-Nothing else (sitemap, robots, structured data) needs to change — those are already correct.
+## Out of scope
+No changes to icons, links, colors, or the blur/glass background — only the row layout.
