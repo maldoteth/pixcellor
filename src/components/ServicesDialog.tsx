@@ -28,10 +28,11 @@ const SERVICE_GROUPS = [
     items: [
       "Telesales campaigns",
       "Email marketing campaigns",
-      "Broadcast SMS",
-      "Lead generation",
+      "Broadcast SMS & WhatsApp",
+      "Lead generation & outreach",
       "SEO & AEO optimisation",
       "Social media automation",
+      "Paid ads & retargeting",
     ],
   },
   {
@@ -39,12 +40,13 @@ const SERVICE_GROUPS = [
     title: "Business Solutions",
     action: "sales" as ServiceAction,
     items: [
-      "Recruitment systems",
+      "Recruitment & ATS systems",
       "Payroll & HR tooling",
       "AI integrations & agents",
       "Workflow automation",
       "Custom dashboards & analytics",
       "API & third-party integrations",
+      "Bespoke internal software",
     ],
   },
 ] as const;
@@ -113,7 +115,7 @@ export default function ServicesDialog() {
         </div>
         <div className="flex flex-col items-center gap-6 px-6">
           <h2 className="text-3xl font-bold text-foreground text-center">Our Services</h2>
-          <div className="grid grid-cols-3 gap-5 max-w-5xl">
+          <div className="grid grid-cols-3 gap-5 w-[min(1200px,92vw)] items-stretch">
             {SERVICE_GROUPS.map((group) => (
               <ServiceCard key={group.title} group={group} onClose={() => setOpen(false)} />
             ))}
@@ -136,7 +138,7 @@ function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number
   };
   return (
     <div
-      className="rounded-2xl p-5 md:p-6 flex flex-col gap-4"
+      className="rounded-2xl p-5 md:p-6 flex flex-col gap-4 h-full"
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
         backdropFilter: "blur(20px)",
@@ -157,7 +159,7 @@ function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number
         </div>
         <h3 className="text-base md:text-lg font-semibold text-foreground">{group.title}</h3>
       </div>
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-2 flex-1">
         {group.items.map((item) => (
           <li key={item} className="text-sm text-foreground/80 flex items-start gap-2">
             <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground/60 flex-shrink-0" />
