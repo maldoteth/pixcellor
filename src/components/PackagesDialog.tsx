@@ -42,6 +42,49 @@ const PACKAGES = {
   },
 };
 
+// Services info shown on the back of each desktop pricing card when flipped.
+const SERVICE_BACKS = {
+  fullWorks: {
+    icon: Code2,
+    title: "Apps & Sites",
+    items: [
+      "Landing pages",
+      "Animated sites",
+      "Full web apps",
+      "Internal tools",
+      "CRM systems",
+      "E-commerce stores",
+      "Booking platforms",
+    ],
+  },
+  elite: {
+    icon: Megaphone,
+    title: "Marketing Solutions",
+    items: [
+      "Telesales campaigns",
+      "Email marketing campaigns",
+      "Broadcast SMS & WhatsApp",
+      "Lead generation & outreach",
+      "SEO & AEO optimisation",
+      "Social media automation",
+      "Paid ads & retargeting",
+    ],
+  },
+  retainer: {
+    icon: Briefcase,
+    title: "Business Solutions",
+    items: [
+      "Recruitment & ATS systems",
+      "Payroll & HR tooling",
+      "AI integrations & agents",
+      "Workflow automation",
+      "Custom analytics dashboards",
+      "API & third-party integrations",
+      "Bespoke internal software",
+    ],
+  },
+} as const;
+
 const ENTERPRISE_FIELDS = [
   { key: "email", label: "Email", placeholder: "you@company.com", inputMode: "email" },
   { key: "name", label: "Contact name", placeholder: "Your name", inputMode: "text" },
