@@ -1,4 +1,4 @@
-import { Facebook, Linkedin, LogIn, MessageSquare, Phone, ShoppingCart } from "lucide-react";
+import { Facebook, Linkedin, LogIn, MessageSquare, Phone, ScrollText, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
