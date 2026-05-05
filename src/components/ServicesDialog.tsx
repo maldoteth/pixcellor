@@ -134,7 +134,7 @@ export default function ServicesDialog() {
         className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
         style={{ background: "transparent", perspective: "1600px" }}
       >
-        <div className="fixed top-[-8px] right-3 z-[60]">
+        <div className="fixed top-[-33px] right-3 z-[60]">
           <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
