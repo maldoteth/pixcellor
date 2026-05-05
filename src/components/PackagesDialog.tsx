@@ -43,23 +43,12 @@ const PACKAGES = {
 };
 
 // Services info shown on the back of each desktop pricing card when flipped.
+// Keys map to card slot: fullWorks=left, elite=center, retainer=right.
 const SERVICE_BACKS = {
   fullWorks: {
-    icon: Code2,
-    title: "Apps & Sites",
-    items: [
-      "Landing pages",
-      "Animated sites",
-      "Full web apps",
-      "Internal tools",
-      "CRM systems",
-      "E-commerce stores",
-      "Booking platforms",
-    ],
-  },
-  elite: {
     icon: Megaphone,
     title: "Marketing Solutions",
+    action: "sales" as const,
     items: [
       "Telesales campaigns",
       "Email marketing campaigns",
@@ -70,9 +59,24 @@ const SERVICE_BACKS = {
       "Paid ads & retargeting",
     ],
   },
+  elite: {
+    icon: Code2,
+    title: "Apps & Sites",
+    action: "pricing" as const,
+    items: [
+      "Landing pages",
+      "Animated sites",
+      "Full web apps",
+      "Internal tools",
+      "CRM systems",
+      "E-commerce stores",
+      "Booking platforms",
+    ],
+  },
   retainer: {
     icon: Briefcase,
     title: "Business Solutions",
+    action: "sales" as const,
     items: [
       "Recruitment & ATS systems",
       "Payroll & HR tooling",
