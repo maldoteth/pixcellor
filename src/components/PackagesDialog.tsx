@@ -18,7 +18,7 @@ const PACKAGES = {
     rrp: "£375",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment" as const,
-    features: ["Industry leading website", "Lifetime warranty", "Custom design", "Up to 3 pages", "Fast Delivery"],
+    features: ["Industry leading website", "Lifetime warranty", "Base animations ", "Up to 3 pages", "Fast Delivery"],
   },
   elite: {
     name: "Elite",
