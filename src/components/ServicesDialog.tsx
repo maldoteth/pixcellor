@@ -3,7 +3,6 @@ import { Code2, Megaphone, Briefcase, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { useDrawerTouchScroll } from "@/hooks/use-drawer-touch-scroll";
 
 type ServiceAction = "pricing" | "sales";
 
@@ -68,7 +67,38 @@ export default function ServicesDialog() {
   }, [open, isMobile]);
 
   if (isMobile) {
-    return <MobileServicesDrawer open={open} setOpen={setOpen} />;
+    return (
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent
+          className="h-[85vh] border-0 border-t-0 bg-background/95 backdrop-blur-xl [&>div:first-child]:hidden"
+        >
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>Our Services</DrawerTitle>
+          </DrawerHeader>
+          <div className="flex h-full flex-col overflow-hidden">
+            <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
+            <div className="relative flex-shrink-0 px-4 pt-3 pb-2">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="absolute right-4 top-2 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
+              >
+                <X className="h-5 w-5" />
+                <span className="sr-only">Close</span>
+              </button>
+              <h2 className="text-center text-2xl font-bold text-foreground">Our Services</h2>
+            </div>
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
+              <div className="flex flex-col gap-4">
+                {SERVICE_GROUPS.map((group) => (
+                  <ServiceCard key={group.title} group={group} onClose={() => setOpen(false)} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
   }
 
   return (
@@ -145,50 +175,5 @@ function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number
         {group.action === "pricing" ? "View Pricing" : "Speak to Sales"}
       </button>
     </div>
-  );
-}
-
-function MobileServicesDrawer({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
-  const scrollRef = useDrawerTouchScroll<HTMLDivElement>(open, {
-    onCloseDrag: () => setOpen(false),
-  });
-  return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerContent
-        className="border-0 border-t-0 bg-background/95 backdrop-blur-xl [&>div:first-child]:hidden"
-        style={{
-          height: "min(85vh, 85dvh)",
-          maxHeight: "calc(100vh - 40px)",
-        }}
-      >
-        <DrawerHeader className="sr-only">
-          <DrawerTitle>Our Services</DrawerTitle>
-        </DrawerHeader>
-        <div className="flex h-full flex-col overflow-hidden">
-          <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
-          <div className="relative flex-shrink-0 px-4 pt-3 pb-2">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="absolute right-4 top-2 rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
-            >
-              <X className="h-5 w-5" />
-              <span className="sr-only">Close</span>
-            </button>
-            <h2 className="text-center text-2xl font-bold text-foreground">Our Services</h2>
-          </div>
-          <div
-            ref={scrollRef}
-            className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch] touch-pan-y"
-          >
-            <div className="flex flex-col gap-4">
-              {SERVICE_GROUPS.map((group) => (
-                <ServiceCard key={group.title} group={group} onClose={() => setOpen(false)} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </DrawerContent>
-    </Drawer>
   );
 }
