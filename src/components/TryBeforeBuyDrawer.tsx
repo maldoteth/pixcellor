@@ -98,22 +98,11 @@ export default function TryBeforeBuyDrawer() {
             </button>
             {isMobile ? (
               <>
-                <div className="flex items-start gap-3">
-                  <div
-                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-                    style={{
-                      background: "linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05))",
-                      border: "1px solid rgba(255,255,255,0.2)",
-                    }}
-                  >
-                    <Sparkles className="h-5 w-5 text-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-base font-semibold text-foreground">Try before you buy!</h3>
-                    <p className="mt-1 text-sm text-foreground/75 leading-relaxed">
-                      No need to pay upfront. Talk to sales today and we'll build a free preview of your site so you can check it before you commit.
-                    </p>
-                  </div>
+                <div>
+                  <h3 className="text-base font-semibold text-foreground">Try before you buy!</h3>
+                  <p className="mt-1 text-sm text-foreground/75 leading-relaxed pr-6">
+                    No need to pay upfront. Talk to sales today and we'll build a free preview of your site so you can check it before you commit.
+                  </p>
                 </div>
                 <button
                   type="button"
