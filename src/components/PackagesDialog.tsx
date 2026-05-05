@@ -805,7 +805,7 @@ function MobileShell({ initialServices = false }: { initialServices?: boolean })
     <div className="flex h-full flex-col overflow-hidden">
       <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
       <div className="relative flex-shrink-0 px-4 pt-3 pb-2 text-center">
-        <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center">
+        <h2 id="packages-dialog-title" className="tracking-tight text-2xl font-bold text-foreground text-center py-[10px]">
           {showServices ? "Our Services" : "Our Pricing"}
         </h2>
         {!showServices && <StripeBadge />}
