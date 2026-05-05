@@ -484,6 +484,13 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
     // Auto-open behavior removed — packages dialog now only opens via user click.
 
+    // Desktop: listen for global open-packages event (e.g. from ServicesDialog "View Pricing")
+    useEffect(() => {
+        const handler = () => setPackagesOpen(true);
+        window.addEventListener("pixcellor:open-packages", handler);
+        return () => window.removeEventListener("pixcellor:open-packages", handler);
+    }, []);
+
     const handlePackagesOpenChange = (open: boolean) => {
         setPackagesOpen(open);
         if (open) void recordFalloff({ event: "pricing_opened" });
