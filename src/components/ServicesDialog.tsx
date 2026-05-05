@@ -46,7 +46,7 @@ const SERVICE_GROUPS = [
       "Payroll & HR tooling",
       "AI integrations & agents",
       "Workflow automation",
-      "Custom dashboards & analytics",
+      "Custom analytics dashboards",
       "API & third-party integrations",
       "Bespoke internal software",
     ],
