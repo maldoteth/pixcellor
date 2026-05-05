@@ -3,11 +3,20 @@ import { Facebook, Linkedin, LogIn, MessageSquare, Phone } from "lucide-react";
 const Footer = () => {
   return (
     <footer
-      className="relative w-full text-foreground py-3 px-4 md:backdrop-blur-2xl md:backdrop-saturate-150 md:bg-white/5 md:border-t md:border-white/10"
+      className="relative w-full text-foreground py-3 px-4 md:bg-white/5 md:border-t md:border-white/10"
       style={{
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
       }}
     >
+      {/* Desktop liquid-glass blur layer */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 hidden md:block"
+        style={{
+          backdropFilter: 'blur(24px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+        }}
+      />
       {/* Liquid-glass progressive blur: stronger at bottom, fades to clear at top */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-2 md:hidden overflow-hidden">
         <div className="absolute inset-0" style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)' }} />
