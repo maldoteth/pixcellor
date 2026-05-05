@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { consumeCheckoutPending, clearCheckoutPending } from "@/lib/checkoutTracking";
+import { supabase } from "@/integrations/supabase/client";
 
 const glassPanel = {
   background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
