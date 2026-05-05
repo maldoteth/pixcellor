@@ -233,10 +233,11 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   }, [messages]);
 
   useEffect(() => {
-    if (isOpen && !hasStarted) {
+    if (!hasStarted) {
       loadChatHistory();
     }
-  }, [isOpen, hasStarted]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (isOpen) setAdminUnreadCount(0);
