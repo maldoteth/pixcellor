@@ -295,7 +295,7 @@ const tools = [
           website: { type: "string", description: "Website domain or URL, if provided." },
           industry: { type: "string", description: "Business industry/category if known. Use general if unsure." },
           notes: { type: "string", description: "Project summary or relevant chat context." },
-          schedule_callback_tomorrow: { type: "boolean", description: "True when the visitor requested a call. Creates a callback event for 1 day from now." },
+          schedule_callback_tomorrow: { type: "boolean", description: "True when the visitor requested a call. Creates a same-day callback event (2 hours from now)." },
           send_welcome_email: { type: "boolean", description: "True when the visitor requested package/process info by email. Sends the Pixcellor welcome sales email." },
         },
         required: ["name"],
@@ -997,11 +997,12 @@ async function handleCustomerContactFollowUps(
   details: { name: string; email: string; phone: string; shouldScheduleCallback: boolean; shouldSendWelcomeEmail: boolean }
 ) {
   if (details.shouldScheduleCallback) {
-    const callbackAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    // Same-day callback: 2 hours from now (gives time to action it today).
+    const callbackAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
     const { error } = await supabase.from("contact_events").insert({
       contact_id: contactId,
       title: "Call back requested from website chat",
-      description: `Alex chat captured callback request for ${details.name}${details.phone ? ` (${details.phone})` : ""}.`,
+      description: `Alex chat captured callback request for ${details.name}${details.phone ? ` (${details.phone})` : ""}. Call back today.`,
       event_type: "callback",
       callback_at: callbackAt,
     });
