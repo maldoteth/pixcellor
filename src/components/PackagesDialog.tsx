@@ -53,6 +53,7 @@ type EnterpriseForm = Record<(typeof ENTERPRISE_FIELDS)[number]["key"], string>;
 
 async function handleCheckout(priceId: string, mode: string, packageName: string, billing: string) {
   await recordFalloff({ event: "checkout_started", priceId, mode, packageName, billing });
+  markCheckoutPending({ packageName, billing });
   const { data, error } = await supabase.functions.invoke("create-checkout", {
     body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined },
   });
