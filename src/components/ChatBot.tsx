@@ -262,12 +262,12 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     return () => window.removeEventListener("resize", clampWidgetToViewport);
   }, [isMobile, widgetSize.height, widgetSize.width]);
 
-  const pendingActionRef = useRef<"call" | "email" | null>(null);
+  const pendingActionRef = useRef<"call" | "email" | "trial" | null>(null);
   useEffect(() => {
     const openChat = (e: Event) => {
       setIsOpen(true);
-      const detail = (e as CustomEvent<{ action?: "call" | "email" }>).detail;
-      if (detail?.action === "call" || detail?.action === "email") {
+      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" }>).detail;
+      if (detail?.action === "call" || detail?.action === "email" || detail?.action === "trial") {
         pendingActionRef.current = detail.action;
       }
     };
