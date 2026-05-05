@@ -818,7 +818,7 @@ function MobileShell({ initialServices = false }: { initialServices?: boolean })
 }
 
 function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
-  const groups = [SERVICE_BACKS.fullWorks, SERVICE_BACKS.elite, SERVICE_BACKS.retainer];
+  const groups = [SERVICE_BACKS.elite, SERVICE_BACKS.fullWorks, SERVICE_BACKS.retainer];
   const handleAction = (action: ServiceAction) => {
     if (action === "pricing") onShowPricing();
     else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
