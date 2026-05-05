@@ -441,7 +441,7 @@ function DesktopCards() {
         animate={{ opacity: 1, y: -20, rotate: 0, scale: 1.1 }}
         whileHover={{ scale: 1.12 }}
         transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
-        className="relative z-20 w-[336px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-14 pb-6 shadow-xl overflow-hidden"
+        className="relative z-20 w-[336px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-10 pb-6 shadow-xl overflow-hidden"
         style={{
           willChange: "transform",
           boxShadow: `
@@ -459,7 +459,7 @@ function DesktopCards() {
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="absolute top-[29px] left-1/2 -translate-x-1/2 rounded-sm border border-foreground/30 bg-foreground px-4 py-1 text-xs font-extrabold text-background shadow z-20 uppercase tracking-wider"
+          className="absolute top-[14px] left-1/2 -translate-x-1/2 rounded-sm border border-foreground/30 bg-foreground px-4 py-1 text-xs font-extrabold text-background shadow z-20 uppercase tracking-wider"
         >
           Most Popular
         </motion.div>
