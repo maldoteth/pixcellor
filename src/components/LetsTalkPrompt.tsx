@@ -54,6 +54,20 @@ const LetsTalkPrompt = () => {
         source: "lets_talk_button",
       });
       if (error) throw error;
+
+      // Create CRM contact, schedule same-day callback if phone given,
+      // send welcome email if email given. Fire-and-forget.
+      supabase.functions
+        .invoke("process-lets-talk-lead", {
+          body: {
+            name: name.trim(),
+            email: finalEmail || null,
+            phone: finalPhone || null,
+            source: "lets_talk_button",
+          },
+        })
+        .catch((err) => console.error("process-lets-talk-lead failed:", err));
+
       setStep("done");
       setTimeout(() => setOpen(false), 1800);
     } catch (e) {
