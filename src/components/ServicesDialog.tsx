@@ -134,13 +134,14 @@ export default function ServicesDialog() {
         className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
         style={{ background: "transparent", perspective: "1600px" }}
       >
-        <div className="fixed top-[-33px] right-3 z-[60]">
-          <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
-            <X className="h-6 w-6" />
-            <span className="sr-only">Close</span>
+        <DesktopServicesCards onAction={handleCardAction} spinningOut={spinningOut} />
+        <div className="mt-6 flex justify-center">
+          <DialogClose asChild>
+            <Button variant="pricing" className="h-auto px-8 py-2 font-semibold">
+              Close
+            </Button>
           </DialogClose>
         </div>
-        <DesktopServicesCards onAction={handleCardAction} spinningOut={spinningOut} />
       </DialogContent>
     </Dialog>
   );

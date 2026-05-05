@@ -227,6 +227,20 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
         >
           <DesktopCards />
         </motion.div>
+        <div className="mt-6 flex justify-center">
+          <Button
+            variant="pricing"
+            className="h-auto px-8 py-2 font-semibold"
+            onClick={() => {
+              handleOpenChange(false);
+              window.setTimeout(() => {
+                window.dispatchEvent(new Event("pixcellor:open-services"));
+              }, 200);
+            }}
+          >
+            Services
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
