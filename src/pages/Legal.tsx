@@ -458,19 +458,28 @@ const DOCS: Record<string, { title: string; intro: string; sections: Section[]; 
   "acceptable-use": { slug: "acceptable-use", title: "Acceptable Use Policy", intro: "What you can and cannot do with our Services.", sections: ACCEPTABLE },
 };
 
+const ALL_DOCS = [DOCS.terms, DOCS.privacy, DOCS.refund, DOCS["acceptable-use"]];
+
 const Legal = () => {
-  const { doc = "terms" } = useParams();
-  const data = DOCS[doc];
+  const { doc } = useParams();
 
   useEffect(() => {
-    if (!data) return;
-    document.title = `${data.title} · Pixcellor`;
+    document.title = "Legal · Terms, Privacy, Refunds & Acceptable Use · Pixcellor";
     const meta = document.querySelector('meta[name="description"]') ?? Object.assign(document.createElement("meta"), { name: "description" });
-    meta.setAttribute("content", data.intro);
+    meta.setAttribute("content", "Pixcellor's Terms of Service, Privacy Policy, Refund Policy and Acceptable Use Policy in one place.");
     if (!meta.parentNode) document.head.appendChild(meta);
-  }, [data]);
+  }, []);
 
-  if (!data) return <Navigate to="/legal/terms" replace />;
+  // Backwards-compat: if a /legal/:doc URL is hit, scroll to that doc section.
+  useEffect(() => {
+    if (!doc) return;
+    const target = ALL_DOCS.find((d) => d.slug === doc);
+    if (target) {
+      requestAnimationFrame(() => {
+        document.getElementById(`doc-${target.slug}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [doc]);
 
   return (
     <main className="min-h-dvh bg-background text-foreground">
@@ -478,32 +487,40 @@ const Legal = () => {
         <Link to="/" className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
           ← Pixcellor
         </Link>
-        <h1 className="mt-6 text-3xl md:text-4xl font-semibold tracking-tight">{data.title}</h1>
+        <h1 className="mt-6 text-3xl md:text-4xl font-semibold tracking-tight">Legal</h1>
         <p className="mt-2 text-sm text-muted-foreground">Effective: {EFFECTIVE}</p>
-        <p className="mt-4 text-base text-muted-foreground">{data.intro}</p>
+        <p className="mt-4 text-base text-muted-foreground">
+          Everything in one place: our Terms of Service, Privacy Policy, Refund Policy and Acceptable Use Policy.
+        </p>
 
-        <nav aria-label="Legal documents" className="mt-8 flex flex-wrap gap-2 text-xs">
-          {Object.values(DOCS).map((d) => (
-            <Link
+        <nav aria-label="Jump to" className="mt-8 flex flex-wrap gap-2 text-xs">
+          {ALL_DOCS.map((d) => (
+            <a
               key={d.slug}
-              to={`/legal/${d.slug}`}
-              className={`px-3 py-1.5 rounded-full border transition-colors ${
-                d.slug === data.slug
-                  ? "bg-foreground text-background border-foreground"
-                  : "border-white/15 text-muted-foreground hover:text-foreground hover:border-white/30"
-              }`}
+              href={`#doc-${d.slug}`}
+              className="px-3 py-1.5 rounded-full border border-white/15 text-muted-foreground hover:text-foreground hover:border-white/30 transition-colors"
             >
               {d.title}
-            </Link>
+            </a>
           ))}
         </nav>
 
-        <div className="mt-10 space-y-8">
-          {data.sections.map((s) => (
-            <section key={s.id} id={s.id} className="scroll-mt-24">
-              <h2 className="text-lg md:text-xl font-semibold">{s.heading}</h2>
-              <div className="mt-3 text-sm md:text-[15px] leading-relaxed text-muted-foreground">{s.body}</div>
-            </section>
+        <div className="mt-12 space-y-16">
+          {ALL_DOCS.map((d) => (
+            <article key={d.slug} id={`doc-${d.slug}`} className="scroll-mt-24">
+              <header className="border-b border-white/10 pb-4">
+                <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">{d.title}</h2>
+                <p className="mt-2 text-sm text-muted-foreground">{d.intro}</p>
+              </header>
+              <div className="mt-8 space-y-8">
+                {d.sections.map((s) => (
+                  <section key={s.id} id={`${d.slug}-${s.id}`} className="scroll-mt-24">
+                    <h3 className="text-lg md:text-xl font-semibold">{s.heading}</h3>
+                    <div className="mt-3 text-sm md:text-[15px] leading-relaxed text-muted-foreground">{s.body}</div>
+                  </section>
+                ))}
+              </div>
+            </article>
           ))}
         </div>
 
