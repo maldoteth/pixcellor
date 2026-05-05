@@ -70,7 +70,7 @@ export default function ServicesDialog() {
     return (
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent
-          className="h-[85vh] border-0 border-t-0 bg-background/95 backdrop-blur-xl [&>div:first-child]:hidden"
+          className="h-[85vh] carousel-label-glass border-foreground/10 text-foreground [&>div:first-child]:hidden"
         >
           <DrawerHeader className="sr-only">
             <DrawerTitle>Our Services</DrawerTitle>
