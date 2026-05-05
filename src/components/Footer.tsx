@@ -56,14 +56,33 @@ const Footer = () => {
         </button>
         <button
           type="button"
+          aria-label="View services"
+          className="flex items-center hover:text-foreground transition-colors"
+          onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { services: true } }))}
+        >
+          <ShoppingCart className="w-3.5 h-3.5" />
+        </button>
+        <Link
+          to="/legal"
+          aria-label="Legal documents"
+          className="flex items-center hover:text-foreground transition-colors"
+        >
+          <ScrollText className="w-3.5 h-3.5" />
+        </Link>
+        <button
+          type="button"
           aria-label="Customer log in"
           className="flex items-center hover:text-foreground transition-colors"
           onClick={() => window.dispatchEvent(new Event("pixcellor:open-login"))}
         >
           <LogIn className="w-3.5 h-3.5" />
         </button>
-        <Link to="/legal/terms" className="text-foreground/70 hover:text-foreground transition-colors">Terms</Link>
-        <Link to="/legal/privacy" className="text-foreground/70 hover:text-foreground transition-colors">Privacy</Link>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
       </div>
     </footer>
   );
