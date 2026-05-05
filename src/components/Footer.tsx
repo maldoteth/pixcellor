@@ -6,17 +6,11 @@ const Footer = () => {
       className="relative w-full text-foreground py-3 px-4"
       style={{
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+        backgroundColor: 'hsl(var(--background) / 0.35)',
       }}
     >
-      {/* Single uniform blurred strip across the footer row */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backdropFilter: 'blur(20px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-        }}
-      />
       <div className="relative max-w-6xl mx-auto flex flex-nowrap items-center justify-center gap-x-4 text-[11px] md:text-xs text-foreground">
         <span className="font-semibold text-foreground text-sm py-[5px]">
           Pixcellor™
