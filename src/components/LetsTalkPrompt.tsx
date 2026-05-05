@@ -168,20 +168,22 @@ const LetsTalkPrompt = () => {
             {error && <p className="text-red-400 text-xs">{error}</p>}
             <div className="flex gap-2 mt-2">
               {canSkip && (
-                <button
+                <Button
                   type="button"
+                  variant="pricing"
                   onClick={handleSkip}
                   disabled={submitting}
-                  className="flex-1 h-11 rounded-md border border-foreground/15 text-foreground/80 hover:bg-foreground/5 transition text-sm font-medium disabled:opacity-50"
+                  className="flex-1 h-12 font-semibold"
                 >
                   Skip
-                </button>
+                </Button>
               )}
-              <button
+              <Button
                 type="button"
+                variant="pricing"
                 onClick={handleNext}
                 disabled={submitting}
-                className="flex-1 h-11 rounded-md bg-foreground text-background hover:opacity-90 transition text-sm font-semibold disabled:opacity-60 flex items-center justify-center"
+                className="flex-1 h-12 font-semibold"
               >
                 {submitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -190,7 +192,7 @@ const LetsTalkPrompt = () => {
                 ) : (
                   "Next"
                 )}
-              </button>
+              </Button>
             </div>
           </motion.div>
         )}
