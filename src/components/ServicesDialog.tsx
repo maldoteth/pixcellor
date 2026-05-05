@@ -280,8 +280,14 @@ function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (ac
 
   return (
     <div
-      className="flex justify-center"
-      style={{ width: INTRINSIC_WIDTH * fitScale, overflow: "visible" }}
+      style={{
+        width: INTRINSIC_WIDTH * fitScale,
+        height: "auto",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        overflow: "visible",
+      }}
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.96 * fitScale, y: 12, rotateY: -90 }}
@@ -289,8 +295,13 @@ function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (ac
           ? { opacity: 0, scale: 0.85 * fitScale, rotateY: 90 }
           : { opacity: 1, scale: fitScale, y: 0, rotateY: 0 }}
         transition={{ duration: spinningOut ? 0.42 : 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="flex items-center justify-center gap-6 flex-shrink-0"
-        style={{ transformStyle: "preserve-3d", transformOrigin: "center center", width: INTRINSIC_WIDTH }}
+        className="flex items-center justify-center gap-6"
+        style={{
+          transformStyle: "preserve-3d",
+          transformOrigin: "center center",
+          width: INTRINSIC_WIDTH,
+          flex: "0 0 auto",
+        }}
       >
         {cards}
       </motion.div>
