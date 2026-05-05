@@ -15,7 +15,7 @@ const SERVICE_GROUPS = [
     action: "pricing" as ServiceAction,
     items: [
       "Landing pages",
-      "Animated marketing sites",
+      "Animated sites",
       "Full web apps",
       "Internal tools",
       "CRM systems",
