@@ -224,7 +224,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
         <div className="mt-6 flex justify-center gap-3">
           <Button
             variant="pricing"
-            className="h-auto px-8 py-2 font-semibold"
+            className="h-auto w-40 py-2 font-semibold"
             onClick={() => {
               handleOpenChange(false);
               window.setTimeout(() => {
@@ -235,7 +235,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
             Services
           </Button>
           <DialogClose asChild>
-            <Button variant="pricing" className="h-auto px-8 py-2 font-semibold">
+            <Button variant="pricing" className="h-auto w-40 py-2 font-semibold">
               Close
             </Button>
           </DialogClose>
