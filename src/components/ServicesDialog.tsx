@@ -191,6 +191,21 @@ function MobileServiceCard({ group, onAction }: { group: ServiceGroup; onAction:
 }
 
 function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (action: ServiceAction) => void; spinningOut?: boolean }) {
+  // Cards intrinsic row ≈ 302 + 336 + 302 + gaps ≈ 988px. Scale fluidly so it
+  // always fits on tablet/desktop without being cropped by the dialog container.
+  const INTRINSIC_WIDTH = 988;
+  const [fitScale, setFitScale] = useState(1);
+
+  useEffect(() => {
+    const compute = () => {
+      const avail = Math.max(320, window.innerWidth - 32);
+      setFitScale(Math.min(1, avail / INTRINSIC_WIDTH));
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    return () => window.removeEventListener("resize", compute);
+  }, []);
+
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
