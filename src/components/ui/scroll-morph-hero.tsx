@@ -641,7 +641,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         advanceHeroFromArrow();
                     }}
                     aria-label="Scroll down"
-                    className="absolute left-1/2 top-[calc(240px+13.5rem)] md:top-[calc(50%+6.8rem)] z-[120] -translate-x-1/2 -translate-y-1/2 h-12 w-14 cursor-pointer touch-manipulation bg-transparent border-0 pointer-events-auto"
+                    className="absolute left-1/2 top-[calc(50%+6.8rem)] z-[120] hidden h-12 w-14 -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-manipulation border-0 bg-transparent pointer-events-auto md:block"
                     style={{ opacity: arrowOpacity }}
                 />
 
@@ -672,7 +672,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         }}
                         aria-label="Scroll down"
                         data-hero-scroll-control="true"
-                        className="md:hidden relative z-[110] mt-1 -mx-10 px-10 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
+                        className="md:hidden relative z-[110] mt-1 h-10 w-10 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
                         style={{ opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
