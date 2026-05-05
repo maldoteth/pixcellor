@@ -43,23 +43,12 @@ const PACKAGES = {
 };
 
 // Services info shown on the back of each desktop pricing card when flipped.
+// Keys map to card slot: fullWorks=left, elite=center, retainer=right.
 const SERVICE_BACKS = {
   fullWorks: {
-    icon: Code2,
-    title: "Apps & Sites",
-    items: [
-      "Landing pages",
-      "Animated sites",
-      "Full web apps",
-      "Internal tools",
-      "CRM systems",
-      "E-commerce stores",
-      "Booking platforms",
-    ],
-  },
-  elite: {
     icon: Megaphone,
     title: "Marketing Solutions",
+    action: "sales" as const,
     items: [
       "Telesales campaigns",
       "Email marketing campaigns",
@@ -70,9 +59,24 @@ const SERVICE_BACKS = {
       "Paid ads & retargeting",
     ],
   },
+  elite: {
+    icon: Code2,
+    title: "Apps & Sites",
+    action: "pricing" as const,
+    items: [
+      "Landing pages",
+      "Animated sites",
+      "Full web apps",
+      "Internal tools",
+      "CRM systems",
+      "E-commerce stores",
+      "Booking platforms",
+    ],
+  },
   retainer: {
     icon: Briefcase,
     title: "Business Solutions",
+    action: "sales" as const,
     items: [
       "Recruitment & ATS systems",
       "Payroll & HR tooling",
@@ -273,7 +277,13 @@ function DesktopShell({ spinIn, initialServices = false }: { spinIn: boolean; in
           : { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
         style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
       >
-        <DesktopCards servicesFlipped={servicesFlipped} />
+        <DesktopCards
+          servicesFlipped={servicesFlipped}
+          onServiceAction={(action) => {
+            if (action === "pricing") setServicesFlipped(false);
+            else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+          }}
+        />
       </motion.div>
       <div className="mt-6 flex justify-center gap-3">
         <Button
@@ -389,7 +399,8 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
   );
 }
 
-function DesktopCards({ servicesFlipped = false }: { servicesFlipped?: boolean }) {
+type ServiceAction = "pricing" | "sales";
+function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFlipped?: boolean; onServiceAction?: (action: ServiceAction) => void }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
@@ -698,9 +709,9 @@ function DesktopCards({ servicesFlipped = false }: { servicesFlipped?: boolean }
         transform: "rotateY(180deg)",
       }}
     >
-      <ServiceBackCard variant="side" rotate={-6} data={SERVICE_BACKS.fullWorks} />
-      <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.elite} />
-      <ServiceBackCard variant="side" rotate={6} data={SERVICE_BACKS.retainer} />
+      <ServiceBackCard variant="side" rotate={-6} data={SERVICE_BACKS.fullWorks} onAction={onServiceAction} />
+      <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.elite} onAction={onServiceAction} />
+      <ServiceBackCard variant="side" rotate={6} data={SERVICE_BACKS.retainer} onAction={onServiceAction} />
     </div>
     </motion.div>
     </div>
@@ -713,10 +724,12 @@ function ServiceBackCard({
   variant,
   rotate,
   data,
+  onAction,
 }: {
   variant: "side" | "center";
   rotate: number;
-  data: { icon: typeof Code2; title: string; items: readonly string[] };
+  data: { icon: typeof Code2; title: string; action: ServiceAction; items: readonly string[] };
+  onAction?: (action: ServiceAction) => void;
 }) {
   const isCenter = variant === "center";
   const Icon = data.icon;
@@ -744,7 +757,7 @@ function ServiceBackCard({
           </div>
           <h3 className="text-lg font-bold text-foreground">{data.title}</h3>
         </div>
-        <ul className="space-y-2 text-base text-muted-foreground flex-1">
+        <ul className="space-y-2 text-base text-muted-foreground flex-1 mb-6">
           {data.items.map((item) => (
             <li key={item} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -752,6 +765,13 @@ function ServiceBackCard({
             </li>
           ))}
         </ul>
+        <Button
+          variant="pricing"
+          onClick={() => onAction?.(data.action)}
+          className="h-auto w-full py-2 font-semibold"
+        >
+          {data.action === "pricing" ? "View Pricing" : "Talk to Sales"}
+        </Button>
       </div>
     </div>
   );
@@ -783,14 +803,18 @@ function MobileShell({ initialServices = false }: { initialServices?: boolean })
         {!showServices && <StripeBadge />}
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
-        {showServices ? <MobileServicesList /> : <MobileCards />}
+        {showServices ? <MobileServicesList onShowPricing={() => setShowServices(false)} /> : <MobileCards />}
       </div>
     </div>
   );
 }
 
-function MobileServicesList() {
+function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
   const groups = [SERVICE_BACKS.fullWorks, SERVICE_BACKS.elite, SERVICE_BACKS.retainer];
+  const handleAction = (action: ServiceAction) => {
+    if (action === "pricing") onShowPricing();
+    else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+  };
   return (
     <div className="grid grid-cols-1 gap-4">
       {groups.map((g) => {
@@ -813,7 +837,7 @@ function MobileServicesList() {
                 </div>
                 <h3 className="text-lg font-bold text-foreground">{g.title}</h3>
               </div>
-              <ul className="space-y-2 flex-1">
+              <ul className="space-y-2 flex-1 mb-4">
                 {g.items.map((item) => (
                   <li key={item} className="flex items-start gap-2 text-base text-muted-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -821,6 +845,13 @@ function MobileServicesList() {
                   </li>
                 ))}
               </ul>
+              <Button
+                variant="pricing"
+                onClick={() => handleAction(g.action)}
+                className="h-auto w-full py-2 font-semibold"
+              >
+                {g.action === "pricing" ? "View Pricing" : "Talk to Sales"}
+              </Button>
             </div>
           </div>
         );
