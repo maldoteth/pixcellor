@@ -3,7 +3,10 @@ import { Facebook, Linkedin, LogIn, MessageSquare, Phone } from "lucide-react";
 const Footer = () => {
   return (
     <footer
-      className="relative w-full text-foreground py-3 px-4 md:backdrop-blur-2xl md:backdrop-saturate-150 md:bg-white/5 md:border-t md:border-white/10"
+      className="relative w-full text-foreground py-3 px-4 md:bg-white/5 md:border-t md:border-white/10"
+      style={{
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
+      } as React.CSSProperties}
       style={{
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
       }}
