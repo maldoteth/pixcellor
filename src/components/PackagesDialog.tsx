@@ -38,7 +38,7 @@ const PACKAGES = {
   },
   enterprise: {
     name: "Enterprise",
-    features: ["Web and mobile apps", "Infrastructure and ecosystems", "Endless Possibilities"],
+    features: ["Larger scale operations that need scaling", "Infrastructure and ecosystems", "Endless Possibilities"],
   },
 };
 
