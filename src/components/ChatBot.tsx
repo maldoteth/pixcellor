@@ -384,7 +384,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         ? "\n\n[Quick action: Email info. Save these details as a contact and send the Pixcellor welcome sales email.]"
         : quickAction === "trial"
           ? "\n\n[Quick action: Try-before-you-buy lead. Save these details as a contact, capture project requirements (any uploaded screenshots/images), and flag the team to build a free preview site.]"
-          : "";
+          : quickAction === "services"
+            ? "\n\n[Quick action: Services enquiry. Capture which marketing/business services they need, save contact details, and route to the team for a tailored quote.]"
+            : "";
     const userMessage: Message = { role: "user", content: visibleContent };
     const apiUserMessage = { role: "user" as const, content: `${visibleContent}${actionInstruction}` };
     const newMessages = [...messages, userMessage];
