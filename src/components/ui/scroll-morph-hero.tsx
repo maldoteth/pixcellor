@@ -514,11 +514,11 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const subtitleOpacity = useTransform([introFadeIn, morphFade], ([f, m]: number[]) => f * m * 0.8);
     const ctaOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.95);
     const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
-    // Footer appears at full opacity as soon as carousel begins (no fade)
-    const footerRevealProgress = useTransform(virtualScroll, (v) => (v >= HERO_MORPH_END ? 1 : 0));
+    // Footer fades in/out smoothly with the morph progress (matches other hero elements)
+    const footerRevealProgress = useTransform(smoothMorph, [0.5, 1], [0, 1]);
     const [footerInteractive, setFooterInteractive] = useState(false);
     useEffect(() => {
-        const unsub = footerRevealProgress.on("change", (v) => setFooterInteractive(v > 0));
+        const unsub = footerRevealProgress.on("change", (v) => setFooterInteractive(v > 0.5));
         return () => unsub();
     }, [footerRevealProgress]);
 
