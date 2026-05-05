@@ -62,6 +62,8 @@ const Footer = () => {
         >
           <LogIn className="w-3.5 h-3.5" />
         </button>
+        <Link to="/legal/terms" className="text-foreground/70 hover:text-foreground transition-colors">Terms</Link>
+        <Link to="/legal/privacy" className="text-foreground/70 hover:text-foreground transition-colors">Privacy</Link>
       </div>
     </footer>
   );
