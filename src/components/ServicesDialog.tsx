@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
-import { Code2, Megaphone, Briefcase, X } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
+import { Code2, Megaphone, Briefcase, Check, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
 
 type ServiceAction = "pricing" | "sales";
 
@@ -51,6 +53,8 @@ const SERVICE_GROUPS = [
   },
 ] as const;
 
+type ServiceGroup = (typeof SERVICE_GROUPS)[number];
+
 export default function ServicesDialog() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
@@ -65,6 +69,19 @@ export default function ServicesDialog() {
     if (!isMobile) return;
     window.dispatchEvent(new CustomEvent("pixcellor:services-open-change", { detail: { open } }));
   }, [open, isMobile]);
+
+  const handleCardAction = useCallback((action: ServiceAction) => {
+    setOpen(false);
+    // Wait for the close animation before triggering the next dialog so the
+    // hand-off feels like one continuous motion instead of a hard cut.
+    window.setTimeout(() => {
+      if (action === "pricing") {
+        window.dispatchEvent(new Event("pixcellor:open-packages"));
+      } else {
+        window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+      }
+    }, 280);
+  }, []);
 
   if (isMobile) {
     return (
@@ -83,7 +100,7 @@ export default function ServicesDialog() {
             <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
               <div className="flex flex-col gap-4">
                 {SERVICE_GROUPS.map((group) => (
-                  <ServiceCard key={group.title} group={group} onClose={() => setOpen(false)} />
+                  <MobileServiceCard key={group.title} group={group} onAction={handleCardAction} />
                 ))}
               </div>
             </div>
@@ -96,41 +113,26 @@ export default function ServicesDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
-        className="top-[54%] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
+        className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden"
         style={{ background: "transparent" }}
       >
-        <div className="absolute top-3 right-3 z-50">
-          <DialogClose className="rounded-sm p-2 text-foreground/70 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
+        <div className="fixed top-3 right-3 z-[60]">
+          <DialogClose className="rounded-sm p-2 text-foreground/80 transition-opacity hover:opacity-100 hover:bg-white/10 focus:outline-none">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
           </DialogClose>
         </div>
-        <div className="flex flex-col items-center gap-6 px-6">
-          <h2 className="text-3xl font-bold text-foreground text-center">Our Services</h2>
-          <div className="grid grid-cols-3 gap-5 w-[min(1200px,92vw)] items-stretch">
-            {SERVICE_GROUPS.map((group) => (
-              <ServiceCard key={group.title} group={group} onClose={() => setOpen(false)} />
-            ))}
-          </div>
-        </div>
+        <DesktopServicesCards onAction={handleCardAction} />
       </DialogContent>
     </Dialog>
   );
 }
 
-function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number]; onClose: () => void }) {
+function MobileServiceCard({ group, onAction }: { group: ServiceGroup; onAction: (action: ServiceAction) => void }) {
   const Icon = group.icon;
-  const handleClick = () => {
-    onClose();
-    if (group.action === "pricing") {
-      window.dispatchEvent(new Event("pixcellor:open-packages"));
-    } else {
-      window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
-    }
-  };
   return (
     <div
-      className="rounded-2xl p-5 md:p-6 flex flex-col gap-4 h-full"
+      className="rounded-2xl p-5 flex flex-col gap-4"
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
         backdropFilter: "blur(20px)",
@@ -149,7 +151,7 @@ function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number
         >
           <Icon className="h-5 w-5 text-foreground" />
         </div>
-        <h3 className="text-base md:text-lg font-semibold text-foreground">{group.title}</h3>
+        <h3 className="text-base font-semibold text-foreground">{group.title}</h3>
       </div>
       <ul className="flex flex-col gap-2 flex-1">
         {group.items.map((item) => (
@@ -161,11 +163,95 @@ function ServiceCard({ group, onClose }: { group: (typeof SERVICE_GROUPS)[number
       </ul>
       <button
         type="button"
-        onClick={handleClick}
+        onClick={() => onAction(group.action)}
         className="pricing-button text-foreground transition h-10 w-full flex items-center justify-center text-sm font-semibold rounded-md"
       >
         {group.action === "pricing" ? "View Pricing" : "Speak to Sales"}
       </button>
     </div>
+  );
+}
+
+function DesktopServicesCards({ onAction }: { onAction: (action: ServiceAction) => void }) {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    e.currentTarget.style.setProperty("--mouse-x", x.toString());
+    e.currentTarget.style.setProperty("--mouse-y", y.toString());
+  }, []);
+
+  const handleMouseLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.currentTarget.style.setProperty("--mouse-x", "0");
+    e.currentTarget.style.setProperty("--mouse-y", "0");
+  }, []);
+
+  const cards = SERVICE_GROUPS.map((group, idx) => {
+    const isCenter = idx === 1;
+    const rotate = idx === 0 ? -6 : idx === 2 ? 6 : 0;
+    const delay = 0.1 + idx * 0.1;
+    const Icon = group.icon;
+
+    const sharedShadow = isCenter
+      ? `0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.08), inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 1px rgba(0,0,0,0.1)`
+      : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
+
+    return (
+      <motion.div
+        key={group.title}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        initial={{ opacity: 0, y: isCenter ? 60 : 40, rotate, scale: isCenter ? 1.05 : 1 }}
+        animate={{ opacity: 1, y: isCenter ? -20 : 0, rotate, scale: isCenter ? 1.05 : 1 }}
+        whileHover={{ scale: isCenter ? 1.07 : 1.03 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay }}
+        className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 py-12" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
+        style={{ willChange: "transform", boxShadow: sharedShadow }}
+      >
+        <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
+        <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
+        <div className={`lava-blob ${isCenter ? "lava-blob-featured-3" : "lava-blob-3"}`} />
+        <div className="relative z-10 flex flex-col flex-1">
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-lg"
+              style={{
+                background: "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))",
+                border: "1px solid rgba(255,255,255,0.2)",
+              }}
+            >
+              <Icon className="h-5 w-5 text-foreground" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground">{group.title}</h3>
+          </div>
+          <ul className="mb-6 space-y-2 text-base text-muted-foreground flex-1">
+            {group.items.map((item) => (
+              <li key={item} className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <Button
+            variant="pricing"
+            onClick={() => onAction(group.action)}
+            className="h-auto w-full py-2 font-semibold"
+          >
+            {group.action === "pricing" ? "View Pricing" : "Speak to Sales"}
+          </Button>
+        </div>
+      </motion.div>
+    );
+  });
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.96, y: 12 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100"
+    >
+      {cards}
+    </motion.div>
   );
 }
