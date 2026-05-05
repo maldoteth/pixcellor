@@ -78,7 +78,7 @@ export default function ServicesDialog() {
           <div className="flex h-full flex-col overflow-hidden">
             <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
             <div className="relative flex-shrink-0 px-4 pt-3 pb-2">
-              <h2 className="text-center text-2xl font-bold text-foreground my-0 py-[10px]">Our Services</h2>
+              <h2 className="text-center text-2xl font-bold text-foreground py-[10px] my-0">Our Services</h2>
             </div>
             <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
               <div className="flex flex-col gap-4">
