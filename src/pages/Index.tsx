@@ -4,7 +4,7 @@ import ChatBot from "@/components/ChatBot";
 import FalloffConsentBanner from "@/components/FalloffConsentBanner";
 import CustomerAccess from "@/components/CustomerAccess";
 import PackagesDialog from "@/components/PackagesDialog";
-import ServicesDialog from "@/components/ServicesDialog";
+
 import TryBeforeBuyDrawer from "@/components/TryBeforeBuyDrawer";
 import LetsTalkPrompt from "@/components/LetsTalkPrompt";
 
@@ -12,7 +12,6 @@ const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [heroScrolled, setHeroScrolled] = useState(false);
   const [packagesOpen, setPackagesOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
 
   useEffect(() => {
     let rafId = 0;
@@ -52,16 +51,13 @@ const Index = () => {
 
   useEffect(() => {
     const pkg = (e: Event) => setPackagesOpen(Boolean((e as CustomEvent<{ open: boolean }>).detail?.open));
-    const svc = (e: Event) => setServicesOpen(Boolean((e as CustomEvent<{ open: boolean }>).detail?.open));
     window.addEventListener("pixcellor:packages-open-change", pkg as EventListener);
-    window.addEventListener("pixcellor:services-open-change", svc as EventListener);
     return () => {
       window.removeEventListener("pixcellor:packages-open-change", pkg as EventListener);
-      window.removeEventListener("pixcellor:services-open-change", svc as EventListener);
     };
   }, []);
 
-  const overlayOpen = packagesOpen || servicesOpen;
+  const overlayOpen = packagesOpen;
 
   return (
     <div className="w-full">
@@ -70,7 +66,6 @@ const Index = () => {
         <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
-        <ServicesDialog />
         <TryBeforeBuyDrawer />
         <LetsTalkPrompt />
         <FalloffConsentBanner />
