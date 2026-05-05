@@ -191,6 +191,21 @@ function MobileServiceCard({ group, onAction }: { group: ServiceGroup; onAction:
 }
 
 function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (action: ServiceAction) => void; spinningOut?: boolean }) {
+  // Cards intrinsic row ≈ 302 + 336 + 302 + gaps ≈ 988px. Scale fluidly so it
+  // always fits on tablet/desktop without being cropped by the dialog container.
+  const INTRINSIC_WIDTH = 988;
+  const [fitScale, setFitScale] = useState(1);
+
+  useEffect(() => {
+    const compute = () => {
+      const avail = Math.max(320, window.innerWidth - 32);
+      setFitScale(Math.min(1, avail / INTRINSIC_WIDTH));
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    return () => window.removeEventListener("resize", compute);
+  }, []);
+
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
@@ -263,16 +278,18 @@ function DesktopServicesCards({ onAction, spinningOut = false }: { onAction: (ac
   });
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.96, y: 12, rotateY: -90 }}
-      animate={spinningOut
-        ? { opacity: 0, scale: 0.85, rotateY: 90 }
-        : { opacity: 1, scale: 1, y: 0, rotateY: 0 }}
-      transition={{ duration: spinningOut ? 0.42 : 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100"
-      style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
-    >
-      {cards}
-    </motion.div>
+    <div style={{ width: INTRINSIC_WIDTH * fitScale }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 * fitScale, y: 12, rotateY: -90 }}
+        animate={spinningOut
+          ? { opacity: 0, scale: 0.85 * fitScale, rotateY: 90 }
+          : { opacity: 1, scale: fitScale, y: 0, rotateY: 0 }}
+        transition={{ duration: spinningOut ? 0.42 : 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="flex items-center justify-center gap-6"
+        style={{ transformStyle: "preserve-3d", transformOrigin: "top center", width: INTRINSIC_WIDTH }}
+      >
+        {cards}
+      </motion.div>
+    </div>
   );
 }
