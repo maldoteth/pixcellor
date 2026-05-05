@@ -84,7 +84,7 @@ export default function TryBeforeBuyDrawer() {
             className={
               isMobile
                 ? "fixed inset-x-0 bottom-0 z-[10021] rounded-t-2xl p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
-                : "fixed left-1/2 bottom-8 z-[10021] -translate-x-1/2 w-[min(440px,92vw)] rounded-2xl p-6"
+                : "fixed inset-x-0 bottom-0 z-[10021] rounded-t-2xl p-6"
             }
             style={glassPanel}
           >
@@ -96,31 +96,52 @@ export default function TryBeforeBuyDrawer() {
             >
               <X className="h-4 w-4" />
             </button>
-            <div className="flex items-start gap-3">
-              <div
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-                style={{
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05))",
-                  border: "1px solid rgba(255,255,255,0.2)",
-                }}
-              >
-                <Sparkles className="h-5 w-5 text-foreground" />
+            {isMobile ? (
+              <>
+                <div className="flex items-start gap-3">
+                  <div
+                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05))",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                    }}
+                  >
+                    <Sparkles className="h-5 w-5 text-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-base font-semibold text-foreground">Try before you buy!</h3>
+                    <p className="mt-1 text-sm text-foreground/75 leading-relaxed">
+                      No need to pay upfront. Talk to sales today and we'll build a free preview of your site so you can check it before you commit.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={openChat}
+                  className="mt-5 h-11 w-full rounded-md text-sm font-semibold text-foreground transition hover:brightness-125 focus:outline-none"
+                  style={glassButton}
+                >
+                  Talk to sales
+                </button>
+              </>
+            ) : (
+              <div className="mx-auto flex max-w-6xl items-center gap-6 pr-8">
+                <div className="flex-1">
+                  <h3 className="text-base font-semibold text-foreground">Try before you buy!</h3>
+                  <p className="mt-1 text-sm text-foreground/75 leading-relaxed">
+                    No need to pay upfront. Talk to sales today and we'll build a free preview of your site so you can check it before you commit.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={openChat}
+                  className="h-11 flex-shrink-0 rounded-md px-6 text-sm font-semibold text-foreground transition hover:brightness-125 focus:outline-none"
+                  style={glassButton}
+                >
+                  Talk to sales
+                </button>
               </div>
-              <div className="flex-1">
-                <h3 className="text-base font-semibold text-foreground">Try before you buy!</h3>
-                <p className="mt-1 text-sm text-foreground/75 leading-relaxed">
-                  No need to pay upfront. Talk to sales today and we'll build a free preview of your site so you can check it before you commit.
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={openChat}
-              className="mt-5 h-11 w-full rounded-md text-sm font-semibold text-foreground transition hover:brightness-125 focus:outline-none"
-              style={glassButton}
-            >
-              Talk to sales
-            </button>
+            )}
           </motion.div>
         </>
       )}
