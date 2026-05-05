@@ -200,7 +200,13 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
             <span className="sr-only">Close</span>
           </DialogClose>
         </div>
-        <DesktopCards />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96, y: 12 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          <DesktopCards />
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
