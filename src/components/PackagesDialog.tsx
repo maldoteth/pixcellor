@@ -61,7 +61,7 @@ const SERVICE_BACKS = {
   },
   elite: {
     icon: Code2,
-    title: "Apps & Sites",
+    title: "Tech Solutions",
     action: "pricing" as const,
     items: [
       "Landing pages",
