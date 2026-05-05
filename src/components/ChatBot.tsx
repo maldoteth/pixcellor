@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon, Phone, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getCheckoutContext, hasFalloffConsent, recordFalloff } from "@/lib/checkoutTracking";
+import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending } from "@/lib/checkoutTracking";
 import {
   Drawer,
   DrawerContent,
