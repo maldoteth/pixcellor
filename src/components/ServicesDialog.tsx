@@ -83,15 +83,19 @@ export default function ServicesDialog() {
       }, 280);
       return;
     }
-    // Desktop/tablet: spin the services card out, then hand off to next dialog
-    // which spins in from the opposite side for a continuous flip feel.
+    // Desktop/tablet: spin the services card out and overlap with the next dialog
+    // spinning in for a continuous flip feel.
     setSpinningOut(true);
+    if (action === "pricing") {
+      // Fire pricing open midway through services spin so it feels like one motion.
+      window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { spinIn: true } }));
+      }, 220);
+    }
     window.setTimeout(() => {
       setOpen(false);
       setSpinningOut(false);
-      if (action === "pricing") {
-        window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { spinIn: true } }));
-      } else {
+      if (action === "sales") {
         window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
       }
     }, 420);
