@@ -6,6 +6,7 @@ import CustomerAccess from "@/components/CustomerAccess";
 import PackagesDialog from "@/components/PackagesDialog";
 import ServicesDialog from "@/components/ServicesDialog";
 import TryBeforeBuyDrawer from "@/components/TryBeforeBuyDrawer";
+import LetsTalkPrompt from "@/components/LetsTalkPrompt";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -71,6 +72,7 @@ const Index = () => {
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
         <ServicesDialog />
         <TryBeforeBuyDrawer />
+        <LetsTalkPrompt />
         <FalloffConsentBanner />
       </div>
     </div>
