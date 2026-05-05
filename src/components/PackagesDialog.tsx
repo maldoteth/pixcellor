@@ -809,8 +809,12 @@ function MobileShell({ initialServices = false }: { initialServices?: boolean })
   );
 }
 
-function MobileServicesList() {
+function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
   const groups = [SERVICE_BACKS.fullWorks, SERVICE_BACKS.elite, SERVICE_BACKS.retainer];
+  const handleAction = (action: ServiceAction) => {
+    if (action === "pricing") onShowPricing();
+    else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+  };
   return (
     <div className="grid grid-cols-1 gap-4">
       {groups.map((g) => {
@@ -833,7 +837,7 @@ function MobileServicesList() {
                 </div>
                 <h3 className="text-lg font-bold text-foreground">{g.title}</h3>
               </div>
-              <ul className="space-y-2 flex-1">
+              <ul className="space-y-2 flex-1 mb-4">
                 {g.items.map((item) => (
                   <li key={item} className="flex items-start gap-2 text-base text-muted-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -841,6 +845,13 @@ function MobileServicesList() {
                   </li>
                 ))}
               </ul>
+              <Button
+                variant="pricing"
+                onClick={() => handleAction(g.action)}
+                className="h-auto w-full py-2 font-semibold"
+              >
+                {g.action === "pricing" ? "View Pricing" : "Talk to Sales"}
+              </Button>
             </div>
           </div>
         );
