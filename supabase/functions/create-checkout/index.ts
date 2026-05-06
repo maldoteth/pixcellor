@@ -37,20 +37,33 @@ serve(async (req) => {
     const safeClientContext = hasTrackingConsent ? clientContext as Record<string, unknown> : {};
     const clientReferenceId = typeof safeClientContext.clientId === "string" ? safeClientContext.clientId.slice(0, 200) : undefined;
 
-    const session = await stripe.checkout.sessions.create({
+    const checkoutMode = mode || "payment";
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: mode || "payment",
+      mode: checkoutMode,
       success_url: `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment=canceled`,
       client_reference_id: clientReferenceId,
       metadata: {
         source: "pixcellor_site",
         package_name: typeof packageName === "string" ? packageName : "",
-        billing: typeof billing === "string" ? billing : mode || "payment",
+        billing: typeof billing === "string" ? billing : checkoutMode,
         client_id: clientReferenceId ?? "",
         checkout_context: hasTrackingConsent ? JSON.stringify(safeClientContext).slice(0, 500) : "",
       },
-    });
+    };
+
+    // Authorize-and-capture: for one-off payments we authorize the card now and
+    // only capture (charge) once we've reviewed the order. Stripe does NOT support
+    // manual capture on subscriptions, so subscriptions stay as immediate-charge.
+    if (checkoutMode === "payment") {
+      sessionParams.payment_intent_data = {
+        capture_method: "manual",
+        description: `Pixcellor – ${typeof packageName === "string" && packageName ? packageName : "order"}`,
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     const sessionId = typeof safeClientContext.sessionId === "string" ? safeClientContext.sessionId.slice(0, 200) : undefined;
     if (hasTrackingConsent && clientReferenceId && sessionId) {
