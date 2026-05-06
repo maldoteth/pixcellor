@@ -204,6 +204,52 @@ serve(async (req) => {
         throw new Error(`Failed to upsert checkout session: ${sessionUpsert.error.message}`);
       }
 
+      // Add buyer as a gold-status contact (one per email/phone). Safe to run on every event.
+      if (event.type === "checkout.session.completed") {
+        try {
+          const meta = (session.metadata ?? {}) as Record<string, string>;
+          const buyerEmail = (meta.buyer_email || session.customer_details?.email || "").trim().toLowerCase() || null;
+          const buyerPhone = (meta.buyer_phone || "").trim() || null;
+          const buyerName = (meta.buyer_company || meta.buyer_name || session.customer_details?.name || "Customer").trim().slice(0, 100);
+          const buyerContactName = (meta.buyer_name || "").trim().slice(0, 100) || null;
+
+          if (buyerEmail || buyerPhone) {
+            // Check for existing contact by email or phone
+            let existingId: string | null = null;
+            if (buyerEmail) {
+              const { data } = await supabase.from("contacts").select("id").ilike("email", buyerEmail).maybeSingle();
+              if (data?.id) existingId = data.id;
+            }
+            if (!existingId && buyerPhone) {
+              const { data } = await supabase.from("contacts").select("id").eq("phone", buyerPhone).maybeSingle();
+              if (data?.id) existingId = data.id;
+            }
+
+            if (existingId) {
+              await supabase.from("contacts").update({
+                status: "gold",
+                ...(buyerEmail ? { email: buyerEmail } : {}),
+                ...(buyerPhone ? { phone: buyerPhone } : {}),
+                ...(buyerContactName ? { contact_name: buyerContactName } : {}),
+                updated_at: new Date().toISOString(),
+              }).eq("id", existingId);
+            } else {
+              await supabase.from("contacts").insert({
+                name: buyerName,
+                contact_name: buyerContactName,
+                email: buyerEmail,
+                phone: buyerPhone,
+                status: "gold",
+                source: "stripe_checkout",
+                notes: `Auto-added on purchase: ${meta.package_name || "order"} (${session.id})`,
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Failed to upsert buyer contact", err);
+        }
+      }
+
       // Decide which emails to send.
       // - Subscriptions (Elite retainer, £150/yr renewals) → immediate confirmation as before.
       // - One-off payments that ended up captured immediately (wallets / non-card) → immediate confirmation.
