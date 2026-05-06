@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Archive, Check, Clipboard, ExternalLink, Home, Inbox, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Trash2, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { AlertTriangle, Archive, Check, Clipboard, ExternalLink, Home, Inbox, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Trash2, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
