@@ -48,12 +48,17 @@ serve(async (req) => {
       success_url: `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment=canceled`,
       client_reference_id: clientReferenceId,
+      ...(buyerEmail ? { customer_email: buyerEmail } : {}),
       metadata: {
         source: "pixcellor_site",
         package_name: typeof packageName === "string" ? packageName : "",
         billing: typeof billing === "string" ? billing : checkoutMode,
         client_id: clientReferenceId ?? "",
         checkout_context: hasTrackingConsent ? JSON.stringify(safeClientContext).slice(0, 500) : "",
+        buyer_name: buyerName,
+        buyer_company: buyerCompany,
+        buyer_phone: buyerPhone,
+        buyer_email: buyerEmail,
       },
     };
 
