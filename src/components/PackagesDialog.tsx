@@ -1108,6 +1108,13 @@ function MobileCards() {
       </div>
     </div>
     <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
+    <BuyDetailsPrompt
+      open={!!pending}
+      onOpenChange={(o) => { if (!o) setPending(null); }}
+      onConfirm={confirmBuy}
+      title={pending ? `Confirm – ${pending.packageName}` : "Confirm details"}
+      submitting={submittingBuyer}
+    />
     </>
   );
 }
