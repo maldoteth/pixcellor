@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_alerts: {
+        Row: {
+          context: Json
+          created_at: string
+          id: string
+          message: string | null
+          resolved_at: string | null
+          severity: string
+          source: string
+          title: string
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          id?: string
+          message?: string | null
+          resolved_at?: string | null
+          severity?: string
+          source: string
+          title: string
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          id?: string
+          message?: string | null
+          resolved_at?: string | null
+          severity?: string
+          source?: string
+          title?: string
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           bot_paused: boolean
@@ -664,6 +697,11 @@ export type Database = {
           customer_id: string | null
           delivered_at: string | null
           delivered_domain: string | null
+          dispute_amount: number | null
+          dispute_id: string | null
+          dispute_reason: string | null
+          dispute_status: string | null
+          disputed_at: string | null
           id: string
           metadata: Json
           mode: string | null
@@ -671,6 +709,9 @@ export type Database = {
           order_status: string
           payment_intent_id: string | null
           payment_status: string | null
+          refund_reason: string | null
+          refunded_amount: number | null
+          refunded_at: string | null
           requirements_token: string | null
           session_id: string
           status: string | null
@@ -691,6 +732,11 @@ export type Database = {
           customer_id?: string | null
           delivered_at?: string | null
           delivered_domain?: string | null
+          dispute_amount?: number | null
+          dispute_id?: string | null
+          dispute_reason?: string | null
+          dispute_status?: string | null
+          disputed_at?: string | null
           id?: string
           metadata?: Json
           mode?: string | null
@@ -698,6 +744,9 @@ export type Database = {
           order_status?: string
           payment_intent_id?: string | null
           payment_status?: string | null
+          refund_reason?: string | null
+          refunded_amount?: number | null
+          refunded_at?: string | null
           requirements_token?: string | null
           session_id: string
           status?: string | null
@@ -718,6 +767,11 @@ export type Database = {
           customer_id?: string | null
           delivered_at?: string | null
           delivered_domain?: string | null
+          dispute_amount?: number | null
+          dispute_id?: string | null
+          dispute_reason?: string | null
+          dispute_status?: string | null
+          disputed_at?: string | null
           id?: string
           metadata?: Json
           mode?: string | null
@@ -725,6 +779,9 @@ export type Database = {
           order_status?: string
           payment_intent_id?: string | null
           payment_status?: string | null
+          refund_reason?: string | null
+          refunded_amount?: number | null
+          refunded_at?: string | null
           requirements_token?: string | null
           session_id?: string
           status?: string | null
