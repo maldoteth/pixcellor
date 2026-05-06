@@ -16,9 +16,13 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode, packageName, billing, clientContext } = await req.json();
+    const { priceId, mode, packageName, billing, clientContext, buyer } = await req.json();
     
     if (!priceId) throw new Error("Missing priceId");
+    const buyerEmail = buyer && typeof buyer.email === "string" ? buyer.email.trim().slice(0, 200) : "";
+    const buyerName = buyer && typeof buyer.name === "string" ? buyer.name.trim().slice(0, 120) : "";
+    const buyerCompany = buyer && typeof buyer.company === "string" ? buyer.company.trim().slice(0, 200) : "";
+    const buyerPhone = buyer && typeof buyer.phone === "string" ? buyer.phone.trim().slice(0, 40) : "";
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
