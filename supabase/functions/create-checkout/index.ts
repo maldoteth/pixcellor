@@ -74,6 +74,55 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
+    // Save buyer as a "hot" lead immediately on Buy click. The stripe webhook will
+    // upgrade them to "gold" when checkout actually completes. If they fall off,
+    // they remain a hot lead with a note explaining where they dropped.
+    if (buyerEmail || buyerPhone) {
+      try {
+        const supabaseLead = createClient(supabaseUrl, supabaseServiceRoleKey);
+        const companyName = (buyerCompany || buyerName || "Buyer").slice(0, 100);
+        const contactName = buyerName.slice(0, 100) || null;
+        const note = `Fell off at buy — started checkout for ${typeof packageName === "string" && packageName ? packageName : "order"} (${session.id})`;
+
+        let existingId: string | null = null;
+        if (buyerEmail) {
+          const { data } = await supabaseLead.from("contacts").select("id,status").ilike("email", buyerEmail).maybeSingle();
+          if (data?.id) existingId = data.id;
+        }
+        if (!existingId && buyerPhone) {
+          const { data } = await supabaseLead.from("contacts").select("id,status").eq("phone", buyerPhone).maybeSingle();
+          if (data?.id) existingId = data.id;
+        }
+
+        if (existingId) {
+          // Don't downgrade an existing gold/client.
+          const { data: existing } = await supabaseLead.from("contacts").select("status").eq("id", existingId).maybeSingle();
+          const currentStatus = (existing?.status || "").toLowerCase();
+          const update: Record<string, unknown> = {
+            ...(buyerEmail ? { email: buyerEmail } : {}),
+            ...(buyerPhone ? { phone: buyerPhone } : {}),
+            ...(contactName ? { contact_name: contactName } : {}),
+            notes: note,
+            updated_at: new Date().toISOString(),
+          };
+          if (currentStatus !== "gold") update.status = "hot";
+          await supabaseLead.from("contacts").update(update).eq("id", existingId);
+        } else {
+          await supabaseLead.from("contacts").insert({
+            name: companyName,
+            contact_name: contactName,
+            email: buyerEmail || null,
+            phone: buyerPhone || null,
+            status: "hot",
+            source: "stripe_checkout_started",
+            notes: note,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to save buyer lead", err);
+      }
+    }
+
     const sessionId = typeof safeClientContext.sessionId === "string" ? safeClientContext.sessionId.slice(0, 200) : undefined;
     if (hasTrackingConsent && clientReferenceId && sessionId) {
       const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
