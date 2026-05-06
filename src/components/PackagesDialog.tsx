@@ -497,7 +497,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           <span className="text-xs text-muted-foreground line-through">RRP £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
-        <ul className="mb-6 space-y-2 text-base text-muted-foreground">
+        <ul className="mb-6 space-y-2 text-base text-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -551,7 +551,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           <span className="text-xs text-muted-foreground line-through">RRP £1,500</span>
         </div>
         <IntroductoryOfferText discount="67%" />
-        <ul className="mb-6 space-y-2 text-lg text-muted-foreground">
+        <ul className="mb-6 space-y-2 text-lg text-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-1 shrink-0" />
@@ -644,7 +644,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
               <IntroductoryOfferText discount="52%" />
-              <ul className="mb-6 space-y-2 text-base text-muted-foreground">
+              <ul className="mb-6 space-y-2 text-base text-foreground">
                 {PACKAGES.retainer.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -699,7 +699,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
               </div>
               <div className="mb-1 text-3xl font-extrabold text-foreground">Custom</div>
               <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
-              <ul className="mb-6 space-y-2 text-base text-muted-foreground">
+              <ul className="mb-6 space-y-2 text-base text-foreground">
                 {PACKAGES.enterprise.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -779,7 +779,7 @@ function ServiceBackCard({
           </div>
           <h3 className="text-lg font-bold text-foreground">{data.title}</h3>
         </div>
-        <ul className="space-y-2 text-base text-muted-foreground flex-1 mb-6">
+        <ul className="space-y-2 text-base text-foreground flex-1 mb-6">
           {data.items.map((item) => (
             <li key={item} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -851,7 +851,7 @@ function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
               </div>
               <ul className="space-y-2 flex-1 mb-4">
                 {g.items.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-base text-muted-foreground">
+                  <li key={item} className="flex items-start gap-2 text-base text-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     <span>{item}</span>
                   </li>
@@ -918,7 +918,7 @@ function MobileCards() {
         <IntroductoryOfferText discount="60%" />
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.fullWorks.features.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+            <li key={f} className="flex items-start gap-2 text-base text-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
@@ -950,7 +950,7 @@ function MobileCards() {
         <IntroductoryOfferText discount="67%" />
         <ul className="space-y-2 flex-1 mb-4">
           {PACKAGES.elite.features.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+            <li key={f} className="flex items-start gap-2 text-base text-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
@@ -1021,13 +1021,13 @@ function MobileCards() {
               <IntroductoryOfferText discount="52%" />
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.retainer.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+                  <li key={f} className="flex items-start gap-2 text-base text-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>
                 ))}
                 {retainerBilling === "yearly" && (
-                  <li className="flex items-start gap-2 text-base text-muted-foreground">
+                  <li className="flex items-start gap-2 text-base text-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     Billed yearly (save £2,400)
                   </li>
@@ -1067,7 +1067,7 @@ function MobileCards() {
               <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.enterprise.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-base text-muted-foreground">
+                  <li key={f} className="flex items-start gap-2 text-base text-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>
