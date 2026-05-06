@@ -565,6 +565,12 @@ export default function Portal() {
 
     loadPortalSnapshot();
 
+    const loadAlerts = async () => {
+      const { data } = await (supabase as any).from("admin_alerts").select("*").order("created_at", { ascending: false }).limit(100);
+      setAdminAlerts((data as any) ?? []);
+    };
+    loadAlerts();
+
     const channel = supabase
       .channel("portal-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "stripe_checkout_sessions" }, loadPortalSnapshot)
