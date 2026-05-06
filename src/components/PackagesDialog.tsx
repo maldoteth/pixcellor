@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import applePayLogo from "@/assets/apple-pay.png";
 import gpayLogo from "@/assets/gpay-logo.png";
+import BuyDetailsPrompt, { BuyerDetails } from "@/components/BuyDetailsPrompt";
 
 const PACKAGES = {
   fullWorks: {
@@ -99,11 +100,11 @@ const ENTERPRISE_FIELDS = [
 
 type EnterpriseForm = Record<(typeof ENTERPRISE_FIELDS)[number]["key"], string>;
 
-async function handleCheckout(priceId: string, mode: string, packageName: string, billing: string) {
+async function handleCheckout(priceId: string, mode: string, packageName: string, billing: string, buyer?: BuyerDetails) {
   await recordFalloff({ event: "checkout_started", priceId, mode, packageName, billing });
   markCheckoutPending({ packageName, billing });
   const { data, error } = await supabase.functions.invoke("create-checkout", {
-    body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined },
+    body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined, buyer },
   });
   if (error) throw error;
   if (data?.sessionId) updateCheckoutPendingSessionId(data.sessionId);
@@ -421,6 +422,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
+  const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
+  const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
   useEffect(() => {
     if (enterpriseOpen || retainerAutoFlipStopped || servicesFlipped) return;
@@ -446,13 +449,20 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     e.currentTarget.style.setProperty("--mouse-y", "0");
   }, []);
 
-  const buy = async (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
-    setLoading(key);
+  const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
+    setPending({ priceId, mode, key, packageName, billing });
+  };
+
+  const confirmBuy = async (buyer: BuyerDetails) => {
+    if (!pending) return;
+    setSubmittingBuyer(true);
+    setLoading(pending.key);
     try {
-      await handleCheckout(priceId, mode, packageName, billing);
+      await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer);
     } catch (e) {
       console.error(e);
     } finally {
+      setSubmittingBuyer(false);
       setLoading(null);
     }
   };
@@ -740,6 +750,13 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     </motion.div>
     </div>
     <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
+    <BuyDetailsPrompt
+      open={!!pending}
+      onOpenChange={(o) => { if (!o) setPending(null); }}
+      onConfirm={confirmBuy}
+      title={pending ? `Confirm – ${pending.packageName}` : "Confirm details"}
+      submitting={submittingBuyer}
+    />
     </>
   );
 }
@@ -880,6 +897,8 @@ function MobileCards() {
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
+  const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
+  const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
   useEffect(() => {
     if (enterpriseOpen || retainerAutoFlipStopped) return;
@@ -892,13 +911,20 @@ function MobileCards() {
     setRetainerFlipped((flipped) => !flipped);
   };
 
-  const buy = async (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
-    setLoading(key);
+  const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
+    setPending({ priceId, mode, key, packageName, billing });
+  };
+
+  const confirmBuy = async (buyer: BuyerDetails) => {
+    if (!pending) return;
+    setSubmittingBuyer(true);
+    setLoading(pending.key);
     try {
-      await handleCheckout(priceId, mode, packageName, billing);
+      await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer);
     } catch (e) {
       console.error(e);
     } finally {
+      setSubmittingBuyer(false);
       setLoading(null);
     }
   };
@@ -1082,6 +1108,13 @@ function MobileCards() {
       </div>
     </div>
     <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
+    <BuyDetailsPrompt
+      open={!!pending}
+      onOpenChange={(o) => { if (!o) setPending(null); }}
+      onConfirm={confirmBuy}
+      title={pending ? `Confirm – ${pending.packageName}` : "Confirm details"}
+      submitting={submittingBuyer}
+    />
     </>
   );
 }
