@@ -459,7 +459,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
 
   return (
     <>
-    <div data-lava-card className="relative" style={{ perspective: "1800px" }}>
+    <div className="relative" style={{ perspective: "1800px" }}>
     <motion.div
       animate={{ rotateY: servicesFlipped ? 180 : 0 }}
       transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -495,7 +495,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-1 flex items-baseline gap-2">
-          <div data-lava-card className="text-3xl font-extrabold text-foreground">£150</div>
+          <div className="text-3xl font-extrabold text-foreground">£150</div>
           <span className="text-xs text-muted-foreground line-through">RRP £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
@@ -577,7 +577,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           label="Buy Now"
         />
         </div>
-        <div data-lava-card className="mt-2.5"><StripeBadge /></div>
+        <div className="mt-2.5"><StripeBadge /></div>
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
 
@@ -640,7 +640,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 </button>
               </div>
               <div className="mb-1 flex items-baseline gap-2">
-                <div data-lava-card className="text-3xl font-extrabold text-foreground">
+                <div className="text-3xl font-extrabold text-foreground">
                   {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
                 </div>
                 <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
