@@ -34,7 +34,7 @@ const labels: Record<Step, { prompt: (name: string) => string; placeholder: stri
   company: { prompt: () => "Company or website name?", placeholder: "Acme Ltd / acme.com", type: "text", inputMode: "text" },
   name: { prompt: () => "Your full name?", placeholder: "Jane Doe", type: "text", inputMode: "text" },
   email: { prompt: (n) => `Hi ${n.split(" ")[0] || "there"}, what's your email?`, placeholder: "you@example.com", type: "email", inputMode: "email" },
-  phone: { prompt: () => "And your mobile number?", placeholder: "+44 7000 000000", type: "tel", inputMode: "tel" },
+  phone: { prompt: () => "Mobile number? (optional)", placeholder: "+44 7000 000000 (optional)", type: "tel", inputMode: "tel" },
 };
 
 interface Props {
