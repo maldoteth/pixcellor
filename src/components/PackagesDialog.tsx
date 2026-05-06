@@ -176,6 +176,7 @@ interface PackagesDialogProps {
 
 export default function PackagesDialog({ open, onOpenChange, mobileTop = false, hidden = false, chatOpen = false }: PackagesDialogProps = {}) {
   const isMobile = useIsMobile();
+  useLavaCursor();
   const [internalOpen, setInternalOpen] = useState(false);
   const [spinIn, setSpinIn] = useState(false);
   const [initialServices, setInitialServices] = useState(false);
