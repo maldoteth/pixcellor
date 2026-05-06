@@ -1,50 +1,73 @@
-# Match Services to Pricing + animate both (desktop/tablet only)
+# Switch to Authorize & Capture (avoid refund fees)
 
-Mobile drawer behavior for both dialogs stays untouched.
+## Why
+Stripe keeps the 20p–30p processing fee on every refund. If we **authorize** the card at checkout but only **capture** once we've reviewed/accepted the order, cancelling an authorization costs nothing — no fee lost, no refund needed.
 
-## 1. Restyle `ServicesDialog` desktop to match Pricing cards
+## Important constraints
+- **Manual capture only works on one-off card payments** (`mode: "payment"`). Stripe does **not** allow manual capture on subscriptions, so the **Elite retainer / £150/yr renewal subscriptions stay as today** (immediate charge). Only **Full Works one-time** and any other one-off price will become auth-only.
+- Card authorizations expire after **~7 days** (some cards 5). If we don't capture in time the auth drops off and we lose the money. We need an admin UI + a safety auto-capture.
+- Wallets (Apple/Google Pay/Link) sometimes fall back to immediate capture — we'll surface the real PI status from Stripe so the dashboard never lies.
 
-Replace the current glass cards in `src/components/ServicesDialog.tsx` (desktop branch) with the same visual language used by `DesktopCards` in `PackagesDialog.tsx`:
+## Changes
 
-- Three cards in a row, sharp-cornered (`rounded-none`), `border-border/40`, `bg-background`, with the same dual `boxShadow` (outer drop + inset highlight/shadow) used by the Full Works / Retainer cards.
-- Add the `lava-blob` background trio (`lava-blob-1/2/3`) inside each card with a `relative z-10` content wrapper, mirroring the Pricing cards.
-- Tilt layout to match Pricing: left card `rotate(-6deg)`, center card `rotate(0)` slightly elevated (`y: -20`, `scale: 1.05`) and using the heavier "featured" shadow + `lava-blob-featured-1/2/3`, right card `rotate(6deg)`.
-- Card internals:
-  - Icon chip: same 40px square with the gradient/border treatment already present, kept on top.
-  - Title: `text-lg font-bold text-foreground`.
-  - Bulleted list: replace dot bullets with `Check` icons (`w-5 h-5 text-foreground mt-0.5 shrink-0`) and `text-base text-muted-foreground`, matching Pricing.
-  - CTA: replace `pricing-button` custom class with `<GlassBuyButton>`-equivalent `<Button variant="pricing">` so it visually matches the Pricing buy buttons. Labels remain "View Pricing" / "Speak to Sales".
-- Keep mouse-tracking glow: reuse the same `handleMouseMove`/`handleMouseLeave` setting `--mouse-x` / `--mouse-y` CSS vars.
-- Width parity: outer cards `w-[302px]`, center `w-[336px]`, container `flex items-center justify-center gap-6` with `md:max-lg:scale-[0.72] md:max-lg:origin-center` so it scales down on tablet exactly like Pricing.
-- Header "Our Services" title is removed on desktop (Pricing has no in-dialog title); close button stays top-right.
+### 1. `create-checkout` edge function
+- For `mode === "payment"` add:
+  ```ts
+  payment_intent_data: {
+    capture_method: "manual",
+    description: `Pixcellor – ${packageName}`,
+  }
+  ```
+- Subscriptions untouched.
 
-## 2. Smooth open/close animations (desktop/tablet only)
+### 2. `stripe-webhook`
+- Keep handling `checkout.session.completed`, but treat `payment_status === "paid"` on a manual-capture PI as **authorized, not paid**. Look up the PI (`stripe.paymentIntents.retrieve(session.payment_intent)`) and store its `status` (`requires_capture`, `succeeded`, `canceled`).
+- New columns on `stripe_checkout_sessions`:
+  - `payment_intent_id text`
+  - `capture_status text` (`requires_capture` | `captured` | `canceled` | `expired` | `n/a`)
+  - `auth_expires_at timestamptz` (now + 7 days when first authorized)
+  - `captured_at timestamptz`
+- Also subscribe to `payment_intent.amount_capturable_updated`, `payment_intent.succeeded`, `payment_intent.canceled`, `payment_intent.payment_failed` and update the row.
+- Email logic split:
+  - **On authorization** → send a new "Order received – pending review" email (no requirements link yet, or soft link).
+  - **On capture** → send the existing order-confirmation + internal-new-order emails (move the current block out of the webhook into the capture handler).
 
-Both `PackagesDialog` and `ServicesDialog` currently rely on Radix's default dialog overlay/content animation. Upgrade to a Framer Motion entrance/exit while keeping mobile drawers untouched:
+### 3. New edge functions (admin only, JWT + `has_role(admin)`)
+- `capture-payment` — body `{ session_id }`, calls `stripe.paymentIntents.capture(pi)`, updates row, triggers confirmation emails.
+- `cancel-authorization` — body `{ session_id, reason? }`, calls `stripe.paymentIntents.cancel(pi, { cancellation_reason })`, updates row, sends "order cancelled, no charge taken" email to customer.
+- `auto-capture-expiring` — scheduled (cron every 6h): finds rows with `capture_status='requires_capture'` and `auth_expires_at < now()+24h`, captures them automatically so we don't lose the auth. Logs to a small audit table.
 
-- Wrap the desktop `DialogContent` children in a `motion.div` with:
-  - `initial={{ opacity: 0, scale: 0.96, y: 12 }}`
-  - `animate={{ opacity: 1, scale: 1, y: 0 }}`
-  - `exit={{ opacity: 0, scale: 0.96, y: 12 }}`
-  - `transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}`
-- Use `<AnimatePresence mode="wait">` around the motion wrapper, gated on `effectiveOpen`/`open` so the exit plays before unmount.
-- The card-level entrance motion (`y`, `rotate`, `scale` on each Pricing card) is preserved and reused on the new Services cards with the same staggered `delay: 0.1 / 0.2 / 0.3`.
+### 4. Admin UI (`src/pages/Admin.tsx`)
+New "Pending authorizations" panel showing rows where `capture_status='requires_capture'`:
+- Customer email, package, amount, time since auth, **time left before auth expires** (red < 24h).
+- Buttons: **Capture** / **Cancel (no fee)**. Both confirm via dialog.
+- Filter tab on existing orders list: All / Authorized / Captured / Cancelled.
 
-## 3. Smooth cross-switching between Services <-> Pricing
+### 5. Customer-facing copy updates
+- `OrderSuccess.tsx` and `check-order-status`: when `capture_status==='requires_capture'` show "Your card is authorised — we'll confirm and charge once we review your brief (usually within 24h). No charge yet." instead of "Payment received".
+- Update Legal/Terms wording to mention authorize-and-capture and the up-to-7-day auth window.
 
-Today, "View Pricing" inside the Services card calls `onClose()` then immediately dispatches `pixcellor:open-packages`, causing a hard cut. Make the handoff feel like one continuous motion:
+### 6. DB migration
+```sql
+alter table public.stripe_checkout_sessions
+  add column if not exists payment_intent_id text,
+  add column if not exists capture_status text,
+  add column if not exists auth_expires_at timestamptz,
+  add column if not exists captured_at timestamptz;
 
-- In `ServiceCard.handleClick` (services -> pricing): close Services first, then dispatch `pixcellor:open-packages` after a `~280ms` delay (slightly less than the exit duration) so the Services exit animation runs and the Pricing entrance starts as it finishes.
-- Add a symmetric Services trigger from Pricing if/when needed (not required by this request, but the same delay pattern will be used).
-- Both dialogs already broadcast `pixcellor:packages-open-change` / `pixcellor:services-open-change`; no change needed there.
+create index if not exists idx_scs_capture_status
+  on public.stripe_checkout_sessions(capture_status)
+  where capture_status = 'requires_capture';
+```
+Plus `supabase/config.toml` entries for the 3 new functions and a pg_cron schedule for `auto-capture-expiring`.
 
-## 4. Files touched
+### 7. Stripe dashboard side (manual, you do once)
+Add the new event types to the webhook endpoint:
+`payment_intent.amount_capturable_updated`, `payment_intent.succeeded`, `payment_intent.canceled`, `payment_intent.payment_failed`.
 
-- `src/components/ServicesDialog.tsx` — desktop branch rewritten to mirror Pricing card structure; add Framer Motion wrappers and delayed cross-open in `handleClick`.
-- `src/components/PackagesDialog.tsx` — wrap desktop `DialogContent` body in `AnimatePresence` + `motion.div` for open/close. No changes to mobile `Drawer` or to the existing per-card motion.
+## Out of scope / call-outs
+- Subscriptions can't be auth-only — refunds on Elite renewals still incur fees. Mitigation = strong dunning/cancellation flow, not part of this change.
+- Apple Pay / Link occasionally ignore manual capture; UI handles by showing real PI status.
+- 3DS-required cards: capture must happen within auth window even if customer SCAs at auth time — auto-capture cron covers this.
 
-## Out of scope
-
-- Mobile (`<Drawer>`) layouts and behavior — left exactly as-is.
-- Pricing card content, prices, Stripe badge, Enterprise flow.
-- Global animation tokens in `tailwind.config.ts` / `index.css` (using existing `lava-blob*`, `pricing` button variant, and Framer Motion only).
+Approve and I'll implement steps 1–6 (you'll handle step 7 in the Stripe dashboard, which I'll walk you through).

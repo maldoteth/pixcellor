@@ -653,6 +653,11 @@ export type Database = {
       stripe_checkout_sessions: {
         Row: {
           amount_total: number | null
+          auth_expires_at: string | null
+          cancel_reason: string | null
+          canceled_at: string | null
+          capture_status: string | null
+          captured_at: string | null
           created_at: string
           currency: string | null
           customer_email: string | null
@@ -664,6 +669,7 @@ export type Database = {
           mode: string | null
           order_code: string | null
           order_status: string
+          payment_intent_id: string | null
           payment_status: string | null
           requirements_token: string | null
           session_id: string
@@ -674,6 +680,11 @@ export type Database = {
         }
         Insert: {
           amount_total?: number | null
+          auth_expires_at?: string | null
+          cancel_reason?: string | null
+          canceled_at?: string | null
+          capture_status?: string | null
+          captured_at?: string | null
           created_at?: string
           currency?: string | null
           customer_email?: string | null
@@ -685,6 +696,7 @@ export type Database = {
           mode?: string | null
           order_code?: string | null
           order_status?: string
+          payment_intent_id?: string | null
           payment_status?: string | null
           requirements_token?: string | null
           session_id: string
@@ -695,6 +707,11 @@ export type Database = {
         }
         Update: {
           amount_total?: number | null
+          auth_expires_at?: string | null
+          cancel_reason?: string | null
+          canceled_at?: string | null
+          capture_status?: string | null
+          captured_at?: string | null
           created_at?: string
           currency?: string | null
           customer_email?: string | null
@@ -706,6 +723,7 @@ export type Database = {
           mode?: string | null
           order_code?: string | null
           order_status?: string
+          payment_intent_id?: string | null
           payment_status?: string | null
           requirements_token?: string | null
           session_id?: string
