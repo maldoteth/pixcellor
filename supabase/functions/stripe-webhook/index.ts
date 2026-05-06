@@ -8,6 +8,65 @@ const SITE_URL = "https://pixcellor.com";
 // auto-capture or warn before we lose the auth.
 const AUTH_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
+async function logAdminAlert(opts: {
+  supabase: ReturnType<typeof createClient>;
+  source: string;
+  severity: "info" | "warning" | "error" | "critical";
+  title: string;
+  message?: string;
+  context?: Record<string, unknown>;
+  emailNotify?: boolean;
+  supabaseUrl?: string;
+  serviceRoleKey?: string;
+}) {
+  const { supabase, source, severity, title, message, context, emailNotify, supabaseUrl, serviceRoleKey } = opts;
+  try {
+    await supabase.from("admin_alerts").insert({
+      source,
+      severity,
+      title,
+      message: message ?? null,
+      context: context ?? {},
+    });
+  } catch (err) {
+    console.error("[admin_alerts insert failed]", err);
+  }
+  if (emailNotify && supabaseUrl && serviceRoleKey) {
+    try {
+      const lines = [
+        `Severity: ${severity.toUpperCase()}`,
+        `Source: ${source}`,
+        message ? `\n${message}` : "",
+        context ? `\nContext:\n${JSON.stringify(context, null, 2)}` : "",
+      ].filter(Boolean).join("\n");
+      await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${serviceRoleKey}`,
+          "apikey": serviceRoleKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          templateName: "internal-new-order-notification",
+          recipientEmail: "projects@pixcellor.com",
+          idempotencyKey: `admin-alert-${source}-${title}-${Date.now()}`.slice(0, 120),
+          templateData: {
+            orderId: title,
+            packageName: `[ALERT] ${title}`,
+            customerEmail: (context as any)?.customer_email || "n/a",
+            amount: (context as any)?.amount || "",
+            billing: severity,
+            requirementsUrl: "https://pixcellor.com/admin",
+            extraNote: lines,
+          },
+        }),
+      });
+    } catch (err) {
+      console.error("[admin_alerts email failed]", err);
+    }
+  }
+}
+
 const formatGBP = (amount: number | null | undefined) =>
   typeof amount === "number" ? `£${(amount / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}` : undefined;
 
