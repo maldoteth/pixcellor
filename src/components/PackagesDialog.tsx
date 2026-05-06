@@ -449,13 +449,20 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     e.currentTarget.style.setProperty("--mouse-y", "0");
   }, []);
 
-  const buy = async (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
-    setLoading(key);
+  const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
+    setPending({ priceId, mode, key, packageName, billing });
+  };
+
+  const confirmBuy = async (buyer: BuyerDetails) => {
+    if (!pending) return;
+    setSubmittingBuyer(true);
+    setLoading(pending.key);
     try {
-      await handleCheckout(priceId, mode, packageName, billing);
+      await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer);
     } catch (e) {
       console.error(e);
     } finally {
+      setSubmittingBuyer(false);
       setLoading(null);
     }
   };
