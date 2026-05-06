@@ -25,10 +25,10 @@ const schemas: Record<Step, z.ZodString> = {
   phone: z
     .string()
     .trim()
-    .min(6, "Enter a valid mobile number")
     .max(30)
-    .regex(/^[0-9+()\-\s]+$/, "Numbers only"),
+    .regex(/^[0-9+()\-\s]*$/, "Numbers only"),
 };
+
 
 const labels: Record<Step, { prompt: (name: string) => string; placeholder: string; type: string; inputMode: "text" | "email" | "tel" }> = {
   company: { prompt: () => "Company or website name?", placeholder: "Acme Ltd / acme.com", type: "text", inputMode: "text" },
