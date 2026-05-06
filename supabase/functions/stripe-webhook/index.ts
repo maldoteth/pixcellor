@@ -404,12 +404,160 @@ serve(async (req) => {
       }
     }
 
+    // ---- Charge refunded ----
+    if (event.type === "charge.refunded" || event.type === "refund.created" || event.type === "refund.updated") {
+      const charge = event.type === "charge.refunded"
+        ? (event.data.object as Stripe.Charge)
+        : null;
+      const refund = event.type !== "charge.refunded" ? (event.data.object as Stripe.Refund) : null;
+      const piId = charge?.payment_intent as string | null
+        ?? (refund?.payment_intent as string | null)
+        ?? null;
+
+      if (piId) {
+        const { data: row } = await supabase
+          .from("stripe_checkout_sessions")
+          .select("session_id, customer_email, amount_total, metadata")
+          .eq("payment_intent_id", piId)
+          .maybeSingle();
+
+        const refundedAmount = charge?.amount_refunded ?? refund?.amount ?? null;
+        const refundReason = (refund?.reason as string | null) ?? (charge?.refunds?.data?.[0]?.reason as string | null) ?? null;
+
+        if (row) {
+          await supabase.from("stripe_checkout_sessions").update({
+            refunded_at: new Date().toISOString(),
+            refunded_amount: refundedAmount,
+            refund_reason: refundReason,
+            order_status: "refunded",
+          }).eq("session_id", row.session_id);
+
+          // Demote contact from gold → cool with note
+          if (row.customer_email) {
+            try {
+              const { data: contact } = await supabase.from("contacts").select("id, notes").ilike("email", row.customer_email).maybeSingle();
+              if (contact?.id) {
+                const note = `${contact.notes ? contact.notes + "\n" : ""}Refunded ${formatGBP(refundedAmount) ?? ""}${refundReason ? ` — ${refundReason}` : ""} (${row.session_id})`;
+                await supabase.from("contacts").update({ status: "cool", notes: note, updated_at: new Date().toISOString() }).eq("id", contact.id);
+              }
+            } catch (err) { console.error("Failed to demote contact on refund", err); }
+          }
+        }
+
+        await logAdminAlert({
+          supabase,
+          source: "stripe.refund",
+          severity: "warning",
+          title: `Refund issued${refundedAmount ? ` ${formatGBP(refundedAmount)}` : ""}`,
+          message: `Customer ${row?.customer_email ?? "unknown"} was refunded${refundReason ? ` — reason: ${refundReason}` : ""}.`,
+          context: { session_id: row?.session_id, payment_intent: piId, amount: formatGBP(refundedAmount), reason: refundReason, customer_email: row?.customer_email },
+          emailNotify: true,
+          supabaseUrl,
+          serviceRoleKey: supabaseServiceRoleKey,
+        });
+      }
+    }
+
+    // ---- Disputes (chargebacks) — notify immediately ----
+    if (
+      event.type === "charge.dispute.created" ||
+      event.type === "charge.dispute.updated" ||
+      event.type === "charge.dispute.closed" ||
+      event.type === "charge.dispute.funds_withdrawn" ||
+      event.type === "charge.dispute.funds_reinstated"
+    ) {
+      const dispute = event.data.object as Stripe.Dispute;
+      const piId = typeof dispute.payment_intent === "string" ? dispute.payment_intent : null;
+
+      let row: { session_id: string; customer_email: string | null } | null = null;
+      if (piId) {
+        const { data } = await supabase
+          .from("stripe_checkout_sessions")
+          .select("session_id, customer_email")
+          .eq("payment_intent_id", piId)
+          .maybeSingle();
+        row = data as any;
+      }
+
+      if (row) {
+        await supabase.from("stripe_checkout_sessions").update({
+          dispute_id: dispute.id,
+          dispute_status: dispute.status,
+          dispute_reason: dispute.reason,
+          dispute_amount: dispute.amount,
+          disputed_at: new Date().toISOString(),
+        }).eq("session_id", row.session_id);
+      }
+
+      const isNewOrLost = event.type === "charge.dispute.created" || dispute.status === "lost" || dispute.status === "needs_response";
+
+      await logAdminAlert({
+        supabase,
+        source: "stripe.dispute",
+        severity: isNewOrLost ? "critical" : "warning",
+        title: `Dispute ${dispute.status}: ${formatGBP(dispute.amount) ?? ""}`,
+        message: `Reason: ${dispute.reason}. Customer: ${row?.customer_email ?? "unknown"}. Respond in Stripe dashboard ASAP.`,
+        context: {
+          dispute_id: dispute.id,
+          status: dispute.status,
+          reason: dispute.reason,
+          amount: formatGBP(dispute.amount),
+          payment_intent: piId,
+          session_id: row?.session_id,
+          customer_email: row?.customer_email,
+          evidence_due_by: dispute.evidence_details?.due_by ? new Date(dispute.evidence_details.due_by * 1000).toISOString() : null,
+        },
+        emailNotify: true,
+        supabaseUrl,
+        serviceRoleKey: supabaseServiceRoleKey,
+      });
+    }
+
+    // ---- Payment failed (top-level alert) ----
+    if (event.type === "payment_intent.payment_failed") {
+      const intent = event.data.object as Stripe.PaymentIntent;
+      const err = intent.last_payment_error;
+      await logAdminAlert({
+        supabase,
+        source: "stripe.payment_failed",
+        severity: "warning",
+        title: `Payment failed${intent.amount ? ` ${formatGBP(intent.amount)}` : ""}`,
+        message: err?.message ?? "Payment intent failed",
+        context: {
+          payment_intent: intent.id,
+          code: err?.code,
+          decline_code: err?.decline_code,
+          amount: formatGBP(intent.amount),
+          customer_email: intent.receipt_email,
+        },
+        emailNotify: false,
+        supabaseUrl,
+        serviceRoleKey: supabaseServiceRoleKey,
+      });
+    }
+
     return new Response(JSON.stringify({ received: true }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Webhook processing failed";
+    // Best-effort log — don't throw from inside the catch.
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (supabaseUrl && supabaseServiceRoleKey) {
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+        await logAdminAlert({
+          supabase,
+          source: "stripe-webhook",
+          severity: "error",
+          title: "Webhook processing failed",
+          message,
+          context: { stack: error instanceof Error ? error.stack : null },
+        });
+      }
+    } catch (_) { /* swallow */ }
     return new Response(JSON.stringify({ error: message }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
