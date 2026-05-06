@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, Lock, X, Code2, Megaphone, Briefcase } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLavaCursor } from "@/hooks/use-lava-cursor";
+import { useLavaCursor } from "@/hooks/use-lava-cursor";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending, updateCheckoutPendingSessionId } from "@/lib/checkoutTracking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
