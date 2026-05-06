@@ -391,6 +391,7 @@ export default function Portal() {
   const [authError, setAuthError] = useState("");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
+  const [adminAlerts, setAdminAlerts] = useState<Array<{ id: string; source: string; severity: string; title: string; message: string | null; context: any; resolved_at: string | null; created_at: string }>>([]);
   const [falloffs, setFalloffs] = useState<VisitorFalloff[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
