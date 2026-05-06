@@ -302,12 +302,12 @@ All colors MUST be HSL.
   backface-visibility: hidden;
 }
 
-@media (min-width: 768px) {
+@media (hover: hover) and (pointer: fine) {
   .lava-blob {
     translate:
       calc(var(--mouse-x, 0) * var(--blob-sensitivity, 30px))
       calc(var(--mouse-y, 0) * var(--blob-sensitivity, 30px));
-    transition: translate 0.4s ease-out;
+    transition: translate 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
