@@ -146,7 +146,7 @@ function StripeBadge() {
       <div className="flex items-center justify-center gap-1.5 mt-3 opacity-40">
         <Lock className="w-3 h-3 text-foreground" />
         <span className="text-[10px] text-foreground tracking-wide">Powered by</span>
-        <span className="text-[10px] font-bold text-foreground tracking-wide">Stripe</span>
+        <span className="text-[10px] font-bold tracking-wide text-foreground">Stripe</span>
       </div>
       <PaymentMethodIcons />
       <div className="mt-3 text-center">
