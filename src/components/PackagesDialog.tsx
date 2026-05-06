@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import applePayLogo from "@/assets/apple-pay.png";
 import gpayLogo from "@/assets/gpay-logo.png";
+import BuyDetailsPrompt, { BuyerDetails } from "@/components/BuyDetailsPrompt";
 
 const PACKAGES = {
   fullWorks: {
