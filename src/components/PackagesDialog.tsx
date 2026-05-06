@@ -471,7 +471,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
     >
       {/* Full Works - tilted left */}
-      <motion.div
+      <motion.div data-lava-card
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: -6, scale: 1 }}
@@ -517,7 +517,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       </motion.div>
 
       {/* Elite - center, elevated */}
-      <motion.div
+      <motion.div data-lava-card
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 60, rotate: 0, scale: 1.1 }}
@@ -598,7 +598,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           className="relative min-h-[420px] rounded-none"
           style={{ transformStyle: "preserve-3d" }}
         >
-          <div
+          <div data-lava-card
             className={`absolute inset-0 rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`}
             style={{
               backfaceVisibility: "hidden",
@@ -679,7 +679,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             </div>
           </div>
 
-          <div
+          <div data-lava-card
             className={`absolute inset-0 rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`}
             style={{
               backfaceVisibility: "hidden",
@@ -761,7 +761,7 @@ function ServiceBackCard({
     ? `0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.08), inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 1px rgba(0,0,0,0.1)`
     : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
   return (
-    <div
+    <div data-lava-card
       className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 py-12" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
       style={{ transform: `rotate(${rotate}deg)${isCenter ? " translateY(-20px) scale(1.1)" : ""}`, boxShadow: shadow }}
     >
