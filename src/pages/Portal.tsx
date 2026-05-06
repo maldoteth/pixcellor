@@ -585,6 +585,7 @@ export default function Portal() {
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_inquiries" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contacts" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_events" }, loadPortalSnapshot)
+      .on("postgres_changes", { event: "*", schema: "public", table: "admin_alerts" }, loadAlerts)
       .subscribe();
 
     return () => {
