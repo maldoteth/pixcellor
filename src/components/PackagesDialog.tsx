@@ -422,6 +422,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
+  const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
+  const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
   useEffect(() => {
     if (enterpriseOpen || retainerAutoFlipStopped || servicesFlipped) return;
