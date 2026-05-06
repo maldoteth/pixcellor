@@ -40,12 +40,18 @@ const TERMS: Section[] = [
           covering build, hosting, domain management and maintenance. Customers who purchased before any
           price change keep the £150/year rate for the lifetime of the active subscription, provided
           payments remain current and the service is not cancelled. Lapsed subscriptions revert to the
-          then-current rate.
+          then-current rate. Annual renewal pricing is <strong>reviewed each year with your consultant</strong>
+          and may be adjusted based on actual usage, scope changes and third-party costs; any change is
+          agreed in writing before renewal and never applied retroactively.
         </li>
         <li>
-          <strong>Elite (£500):</strong> One-time build fee. A renewal fee of <strong>£150 per year</strong>
-          applies thereafter for domain hosting, management, and ongoing maintenance. Failure to pay the
-          renewal may result in suspension of the domain, hosting and related services.
+          <strong>Elite (£500):</strong> One-time build fee. An <strong>annual renewal fee</strong>
+          applies thereafter for domain hosting, management, and ongoing maintenance. The renewal amount
+          is <strong>not fixed</strong> — it is reviewed in an annual consultation with your consultant
+          and quoted based on the actual hosting, domain, bandwidth and maintenance requirements for the
+          coming year. You will be quoted the renewal price in writing and must approve it before any
+          charge is taken. Failure to pay the agreed renewal may result in suspension of the domain,
+          hosting and related services.
         </li>
         <li>
           <strong>Retainer:</strong> Monthly or annual subscription. Includes the agreed scope only. While
