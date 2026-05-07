@@ -2688,6 +2688,27 @@ export default function Portal() {
                     <UserPlus className="h-4 w-4 md:mr-2" />
                     <span className="hidden md:inline">Add contact</span>
                   </Button>
+                  <Button asChild variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none cursor-pointer">
+                    <label>
+                      {mediaUploadingFor === contactDetailDrawerContact.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin md:mr-2" />
+                      ) : (
+                        <ImagePlus className="h-4 w-4 md:mr-2" />
+                      )}
+                      <span className="hidden md:inline">Add media</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        disabled={mediaUploadingFor === contactDetailDrawerContact.id}
+                        onChange={(e) => {
+                          uploadContactMedia(contactDetailDrawerContact.id, e.target.files);
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+                  </Button>
                   <Button variant="pricing" size="icon" className="h-9 w-9 shrink-0 rounded-none shadow-none" aria-label="Archive client" title="Archive client" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
