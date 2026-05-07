@@ -217,6 +217,7 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - If a sales event does not clearly map to one existing contact after checking recent contacts/find_contact, ask which contact to attach it to.
 - If the dev asks to find/add local businesses without websites, call find_local_leads with the requested trade, location, and lead count. Do not invent leads yourself.
 - Never invent contact details. Save uncertainty in notes/description.
+- If create_contact returns existed: true (matched by email/phone), DO NOT try to create a duplicate. Treat the returned contact.id as the target and attach any callback/sales event to it via create_sales_event.
 - For callback/reminder times, treat relative dates like "tomorrow", "next week", and "in 1 week" as clear. If no time is given, default to 09:00 Europe/London and include callback_at as ISO.`;
 
 const tools = [
@@ -929,9 +930,11 @@ async function createDevContact(supabase: DbClient, args: Record<string, unknown
     cleanDevNotes(args.notes, 900),
   ].filter(Boolean).join("\n");
 
+  const phone = cleanText(args.phone, 40);
+  const normalizedPhone = phone ? phone.replace(/[^0-9+]/g, "") : "";
   const payload = {
     name,
-    phone: cleanText(args.phone, 40) || null,
+    phone: phone || null,
     email: email || null,
     location: cleanText(args.location, 160) || null,
     industry: industry || "general",
@@ -940,9 +943,28 @@ async function createDevContact(supabase: DbClient, args: Record<string, unknown
     source: "dev_chat",
   };
 
+  // Dedup: if a contact with same email or normalized phone exists, return it instead of erroring.
+  let existing: { id: string; name: string; email: string | null; phone: string | null; notes: string | null } | null = null;
+  if (email) {
+    const { data } = await supabase.from("contacts").select("id, name, email, phone, notes").ilike("email", email).limit(1).maybeSingle();
+    if (data) existing = data as typeof existing;
+  }
+  if (!existing && normalizedPhone && normalizedPhone.length >= 5) {
+    const { data } = await supabase.from("contacts").select("id, name, email, phone, notes").limit(50);
+    const match = (data ?? []).find((c) => (c.phone ?? "").replace(/[^0-9+]/g, "") === normalizedPhone);
+    if (match) existing = match as typeof existing;
+  }
+  if (existing) {
+    const mergedNotes = [existing.notes, notes].filter(Boolean).join("\n");
+    if (notes) {
+      await supabase.from("contacts").update({ notes: mergedNotes, updated_at: new Date().toISOString() }).eq("id", existing.id);
+    }
+    return { ok: true, contact: { id: existing.id, name: existing.name, email: existing.email, phone: existing.phone }, existed: true };
+  }
+
   const { data, error } = await supabase.from("contacts").insert(payload).select("id, name, email, phone").single();
   if (error) return { ok: false, error: error.message };
-  return { ok: true, contact: data };
+  return { ok: true, contact: data, existed: false };
 }
 
 async function saveCustomerContact(supabase: DbClient, args: Record<string, unknown>, conversationId: string | null) {
