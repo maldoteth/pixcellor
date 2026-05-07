@@ -217,6 +217,7 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - If a sales event does not clearly map to one existing contact after checking recent contacts/find_contact, ask which contact to attach it to.
 - If the dev asks to find/add local businesses without websites, call find_local_leads with the requested trade, location, and lead count. Do not invent leads yourself.
 - Never invent contact details. Save uncertainty in notes/description.
+- If create_contact returns existed: true (matched by email/phone), DO NOT try to create a duplicate. Treat the returned contact.id as the target and attach any callback/sales event to it via create_sales_event.
 - For callback/reminder times, treat relative dates like "tomorrow", "next week", and "in 1 week" as clear. If no time is given, default to 09:00 Europe/London and include callback_at as ISO.`;
 
 const tools = [
