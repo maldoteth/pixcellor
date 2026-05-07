@@ -74,7 +74,7 @@ function FlipCard({
                 scale: target.scale,
                 opacity: target.opacity,
             }}
-            whileHover={{ zIndex: 250 }}
+            whileHover={{ z: 200, scale: target.scale * 1.05 }}
             transition={{
                 type: "spring",
                 stiffness: 40,
