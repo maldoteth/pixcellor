@@ -74,7 +74,7 @@ function FlipCard({
                 scale: target.scale,
                 opacity: target.opacity,
             }}
-            whileHover={{ zIndex: 200 }}
+            whileHover={{ zIndex: 250 }}
             transition={{
                 type: "spring",
                 stiffness: 40,
@@ -86,7 +86,7 @@ function FlipCard({
                 height: IMG_HEIGHT,
                 transformStyle: "preserve-3d",
                 perspective: "1000px",
-                zIndex: 45,
+                zIndex: 125,
                 pointerEvents: "auto",
             }}
             className="cursor-pointer group"
