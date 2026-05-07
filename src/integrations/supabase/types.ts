@@ -282,6 +282,7 @@ export type Database = {
           lead_score: number | null
           lead_score_reason: string | null
           location: string | null
+          media: Json
           name: string
           notes: string | null
           phone: string | null
@@ -306,6 +307,7 @@ export type Database = {
           lead_score?: number | null
           lead_score_reason?: string | null
           location?: string | null
+          media?: Json
           name: string
           notes?: string | null
           phone?: string | null
@@ -330,6 +332,7 @@ export type Database = {
           lead_score?: number | null
           lead_score_reason?: string | null
           location?: string | null
+          media?: Json
           name?: string
           notes?: string | null
           phone?: string | null
@@ -1281,6 +1284,10 @@ export type Database = {
             }
             Returns: undefined
           }
+      portal_update_contact_media: {
+        Args: { _contact_id: string; _media: Json }
+        Returns: undefined
+      }
       portal_update_contact_status:
         | {
             Args: { _access_code: string; _contact_id: string; _status: string }
