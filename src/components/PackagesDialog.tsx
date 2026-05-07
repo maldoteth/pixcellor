@@ -181,13 +181,19 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   const [internalOpen, setInternalOpen] = useState(false);
   const [spinIn, setSpinIn] = useState(false);
   const [initialServices, setInitialServices] = useState(false);
+  // Mobile-only: track whether we entered via Services so closing pricing returns to services first
+  const [mobileShowServices, setMobileShowServices] = useState(false);
+  const [mobileCameFromServices, setMobileCameFromServices] = useState(false);
   const effectiveOpen = mobileTop ? internalOpen : open;
 
   useEffect(() => {
     if (!mobileTop || !isMobile) return;
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ services?: boolean }>).detail;
-      setInitialServices(Boolean(detail?.services));
+      const services = Boolean(detail?.services);
+      setInitialServices(services);
+      setMobileShowServices(services);
+      setMobileCameFromServices(services);
       setInternalOpen(true);
     };
     window.addEventListener("pixcellor:open-packages", handler);
@@ -211,6 +217,8 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     if (!effectiveOpen) {
       setSpinIn(false);
       setInitialServices(false);
+      setMobileShowServices(false);
+      setMobileCameFromServices(false);
     }
   }, [effectiveOpen]);
 
@@ -223,7 +231,15 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   if (isMobile && !mobileTop) return null;
 
   const handleOpenChange = (next: boolean) => {
-    if (mobileTop) setInternalOpen(next);
+    if (mobileTop) {
+      // Mobile: if user opened via Services then drilled into Pricing,
+      // closing the drawer should go back to Services instead of closing.
+      if (!next && mobileCameFromServices && !mobileShowServices) {
+        setMobileShowServices(true);
+        return;
+      }
+      setInternalOpen(next);
+    }
     onOpenChange?.(next);
   };
 
@@ -248,7 +264,14 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
             <DrawerHeader className="sr-only">
               <DrawerTitle>Our Pricing</DrawerTitle>
             </DrawerHeader>
-            <MobileShell initialServices={initialServices} key={effectiveOpen ? "open" : "closed"} />
+            <MobileShell
+              showServices={mobileShowServices}
+              onShowServicesChange={(v) => {
+                setMobileShowServices(v);
+                if (v) setMobileCameFromServices(true);
+              }}
+              key={effectiveOpen ? "open" : "closed"}
+            />
           </DrawerContent>
         </Drawer>
       </>
@@ -821,9 +844,13 @@ function ServiceBackCard({
   );
 }
 
-function MobileShell({ initialServices = false }: { initialServices?: boolean }) {
-  const [showServices, setShowServices] = useState(initialServices);
-  useEffect(() => { setShowServices(initialServices); }, [initialServices]);
+function MobileShell({
+  showServices,
+  onShowServicesChange,
+}: {
+  showServices: boolean;
+  onShowServicesChange: (v: boolean) => void;
+}) {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
@@ -834,7 +861,7 @@ function MobileShell({ initialServices = false }: { initialServices?: boolean })
         {!showServices && <StripeBadge />}
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
-        {showServices ? <MobileServicesList onShowPricing={() => setShowServices(false)} /> : <MobileCards />}
+        {showServices ? <MobileServicesList onShowPricing={() => onShowServicesChange(false)} /> : <MobileCards />}
       </div>
     </div>
   );
