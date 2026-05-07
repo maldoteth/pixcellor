@@ -1246,11 +1246,18 @@ export default function Portal() {
   };
 
   const createContact = async () => {
+    if (contactSubmitting) return;
     const name = contactForm.name.trim();
     if (!name) {
       toast.error("Company name is required.");
       return;
     }
+    const email = contactForm.email.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Enter a valid email address (or leave it blank).");
+      return;
+    }
+    setContactSubmitting(true);
     const { data, error } = await (supabase as any).rpc("portal_create_contact", {
       _name: name,
       _contact_name: contactForm.contact_name,
@@ -1263,6 +1270,7 @@ export default function Portal() {
     });
     if (error) {
       toast.error(error.message);
+      setContactSubmitting(false);
       return;
     }
     const newContact = data as Contact | null;
@@ -1274,6 +1282,7 @@ export default function Portal() {
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
+    setContactSubmitting(false);
     toast.success("Client added.");
     return newContact;
   };
