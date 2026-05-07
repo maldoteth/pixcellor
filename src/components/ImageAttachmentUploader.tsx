@@ -26,22 +26,25 @@ export function ImageAttachmentUploader({ value, onChange, max = 20, prefix, dis
     if (!files.length) return;
 
     if (value.length + files.length > max) {
-      toast.error(`You can only upload up to ${max} images.`);
+      toast.error(`You can only upload up to ${max} files.`);
       return;
     }
 
     setUploading(true);
     const uploaded: string[] = [];
     for (const file of files) {
-      if (!file.type.startsWith("image/")) {
-        toast.error(`${file.name} is not an image.`);
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
+      if (!isImage && !(acceptVideos && isVideo)) {
+        toast.error(`${file.name} is not a supported ${acceptVideos ? "image or video" : "image"}.`);
         continue;
       }
-      if (file.size > MAX_BYTES) {
-        toast.error(`${file.name} is over 10MB.`);
+      const limit = isVideo ? MAX_VIDEO_BYTES : MAX_BYTES;
+      if (file.size > limit) {
+        toast.error(`${file.name} is over ${isVideo ? "50MB" : "10MB"}.`);
         continue;
       }
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const ext = file.name.split(".").pop()?.toLowerCase() || (isVideo ? "mp4" : "jpg");
       const path = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
       const { error } = await supabase.storage.from("submission-attachments").upload(path, file, {
         contentType: file.type,
