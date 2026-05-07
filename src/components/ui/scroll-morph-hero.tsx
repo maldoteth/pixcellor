@@ -902,7 +902,13 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     >
                         <CircularGallery
                             items={galleryItems}
-                            radius={containerSize.width < 768 ? 280 : 460}
+                            // Scale radius with item count so cards stay nicely spaced as the portfolio grows.
+                            // Baseline tuned for 16 items; add ~14px per extra item on desktop, ~9px on mobile.
+                            radius={
+                                containerSize.width < 768
+                                    ? 280 + Math.max(0, galleryItems.length - 16) * 9
+                                    : 460 + Math.max(0, galleryItems.length - 16) * 14
+                            }
                             externalRotation={galleryRotationValue}
                         />
                     </motion.div>
