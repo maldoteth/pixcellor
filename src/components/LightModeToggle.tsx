@@ -12,12 +12,11 @@ const LightModeToggle = () => {
   }, []);
 
   useEffect(() => {
+    const root = document.documentElement;
     if (light) {
-      document.body.style.background = "#ffffff";
-      document.documentElement.style.background = "#ffffff";
+      root.classList.add("pixcellor-light");
     } else {
-      document.body.style.background = "";
-      document.documentElement.style.background = "";
+      root.classList.remove("pixcellor-light");
     }
     localStorage.setItem(STORAGE_KEY, light ? "1" : "0");
   }, [light]);
@@ -28,7 +27,6 @@ const LightModeToggle = () => {
       aria-label={light ? "Switch to dark mode" : "Switch to light mode"}
       onClick={() => setLight((v) => !v)}
       className="fixed top-3 left-3 z-[100] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md transition hover:bg-black/60"
-      style={light ? { background: "rgba(0,0,0,0.6)", color: "#fff" } : undefined}
     >
       {light ? <Moon size={16} /> : <Sun size={16} />}
     </button>
