@@ -433,6 +433,7 @@ export default function Portal() {
   const [mobileContactStep, setMobileContactStep] = useState(0);
   const [mobileSalesStep, setMobileSalesStep] = useState(0);
   const [contactForm, setContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+  const [contactSubmitting, setContactSubmitting] = useState(false);
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [editContactForm, setEditContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
