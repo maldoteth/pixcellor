@@ -52,6 +52,7 @@ function FlipCard({
     target,
     onViewDetails,
 }: FlipCardProps) {
+    const [hovered, setHovered] = React.useState(false);
     const handleOpen = (event: React.MouseEvent | React.KeyboardEvent) => {
         event.stopPropagation();
         event.preventDefault();
@@ -64,6 +65,8 @@ function FlipCard({
             onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") handleOpen(event);
             }}
+            onPointerEnter={() => setHovered(true)}
+            onPointerLeave={() => setHovered(false)}
             role="link"
             tabIndex={0}
             aria-label="Open a random portfolio project"
@@ -74,7 +77,6 @@ function FlipCard({
                 scale: target.scale,
                 opacity: target.opacity,
             }}
-            whileHover={{ zIndex: 250 }}
             transition={{
                 type: "spring",
                 stiffness: 40,
@@ -86,7 +88,7 @@ function FlipCard({
                 height: IMG_HEIGHT,
                 transformStyle: "preserve-3d",
                 perspective: "1000px",
-                zIndex: 45,
+                zIndex: hovered ? 300 : 45,
                 pointerEvents: "auto",
             }}
             className="cursor-pointer group"
@@ -95,7 +97,7 @@ function FlipCard({
                 className="relative h-full w-full"
                 style={{ transformStyle: "preserve-3d" }}
                 transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-                whileHover={{ rotateY: 180 }}
+                animate={{ rotateY: hovered ? 180 : 0 }}
             >
                 {/* Front Face */}
                 <div
