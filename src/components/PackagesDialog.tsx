@@ -231,7 +231,15 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   if (isMobile && !mobileTop) return null;
 
   const handleOpenChange = (next: boolean) => {
-    if (mobileTop) setInternalOpen(next);
+    if (mobileTop) {
+      // Mobile: if user opened via Services then drilled into Pricing,
+      // closing the drawer should go back to Services instead of closing.
+      if (!next && mobileCameFromServices && !mobileShowServices) {
+        setMobileShowServices(true);
+        return;
+      }
+      setInternalOpen(next);
+    }
     onOpenChange?.(next);
   };
 
