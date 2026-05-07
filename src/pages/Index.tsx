@@ -4,6 +4,7 @@ import ChatBot from "@/components/ChatBot";
 import FalloffConsentBanner from "@/components/FalloffConsentBanner";
 import CustomerAccess from "@/components/CustomerAccess";
 import PackagesDialog from "@/components/PackagesDialog";
+import LightModeToggle from "@/components/LightModeToggle";
 
 import TryBeforeBuyDrawer from "@/components/TryBeforeBuyDrawer";
 import LetsTalkPrompt from "@/components/LetsTalkPrompt";
@@ -69,6 +70,7 @@ const Index = () => {
         <TryBeforeBuyDrawer />
         <LetsTalkPrompt />
         <FalloffConsentBanner />
+        <LightModeToggle />
       </div>
     </div>
   );
