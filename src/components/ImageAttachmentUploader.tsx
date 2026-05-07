@@ -4,7 +4,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
-const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_BYTES = 10 * 1024 * 1024; // 10MB images
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024; // 50MB videos
 
 interface Props {
   value: string[];
@@ -12,9 +13,10 @@ interface Props {
   max?: number;
   prefix: string;
   disabled?: boolean;
+  acceptVideos?: boolean;
 }
 
-export function ImageAttachmentUploader({ value, onChange, max = 20, prefix, disabled }: Props) {
+export function ImageAttachmentUploader({ value, onChange, max = 20, prefix, disabled, acceptVideos = false }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
