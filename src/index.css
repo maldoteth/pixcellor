@@ -100,11 +100,13 @@ All colors MUST be HSL.
 
   html.pixcellor-light,
   html.pixcellor-light body {
-    background: #ffffff !important;
+    --background: 0 0% 100%;
+    background: hsl(var(--background)) !important;
   }
-  html.pixcellor-light body * [data-pixcellor-bg],
+
+  html.pixcellor-light [data-pixcellor-bg],
   html.pixcellor-light .bg-background {
-    background-color: #ffffff !important;
+    background-color: hsl(var(--background)) !important;
   }
 
   input,
