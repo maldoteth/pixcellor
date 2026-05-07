@@ -1304,6 +1304,49 @@ export default function Portal() {
     setContactPersons(curr => curr.filter(p => p.id !== personId));
   };
 
+  const [mediaUploadingFor, setMediaUploadingFor] = useState<string | null>(null);
+
+  const saveContactMedia = async (contactId: string, media: string[]) => {
+    const { error } = await (supabase as any).rpc("portal_update_contact_media", { _contact_id: contactId, _media: media });
+    if (error) { toast.error(error.message); return false; }
+    setContacts(curr => curr.map(c => c.id === contactId ? { ...c, media } : c));
+    return true;
+  };
+
+  const uploadContactMedia = async (contactId: string, files: FileList | null) => {
+    if (!files || !files.length) return;
+    const current = contacts.find(c => c.id === contactId);
+    const existing = current?.media ?? [];
+    if (existing.length + files.length > 50) {
+      toast.error("Up to 50 images per client.");
+      return;
+    }
+    setMediaUploadingFor(contactId);
+    const uploaded: string[] = [];
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith("image/")) { toast.error(`${file.name} is not an image.`); continue; }
+      if (file.size > 10 * 1024 * 1024) { toast.error(`${file.name} is over 10MB.`); continue; }
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `clients/${contactId}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+      const { error } = await supabase.storage.from("submission-attachments").upload(path, file, { contentType: file.type, upsert: false });
+      if (error) { toast.error(`Upload failed: ${error.message}`); continue; }
+      const { data } = supabase.storage.from("submission-attachments").getPublicUrl(path);
+      uploaded.push(data.publicUrl);
+    }
+    if (uploaded.length) {
+      const next = [...existing, ...uploaded];
+      const ok = await saveContactMedia(contactId, next);
+      if (ok) toast.success(`Added ${uploaded.length} image${uploaded.length === 1 ? "" : "s"}.`);
+    }
+    setMediaUploadingFor(null);
+  };
+
+  const removeContactMedia = async (contactId: string, url: string) => {
+    const current = contacts.find(c => c.id === contactId);
+    const next = (current?.media ?? []).filter(u => u !== url);
+    await saveContactMedia(contactId, next);
+  };
+
   const addContactFromWizard = async () => {
     if (!contactForm.name.trim()) { toast.error("Enter the company name first."); return; }
     const newContact = await createContact();
