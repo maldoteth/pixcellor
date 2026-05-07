@@ -433,6 +433,7 @@ export default function Portal() {
   const [mobileContactStep, setMobileContactStep] = useState(0);
   const [mobileSalesStep, setMobileSalesStep] = useState(0);
   const [contactForm, setContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+  const [contactSubmitting, setContactSubmitting] = useState(false);
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [editContactForm, setEditContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
@@ -1211,9 +1212,13 @@ export default function Portal() {
       toast.error(`${field.label} is required.`);
       return;
     }
+    if (!skip && field.key === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      toast.error("Enter a valid email address (or skip).");
+      return;
+    }
     if (skip && !field.required) setContactForm(f => ({ ...f, [field.key]: "" }));
     if (mobileContactStep < contactWizardFields.length - 1) setMobileContactStep(step => step + 1);
-    else void createContact();
+    else if (!contactSubmitting) void createContact();
   };
 
   const continueMobileSalesEvent = (skip = false) => {
@@ -1241,11 +1246,18 @@ export default function Portal() {
   };
 
   const createContact = async () => {
+    if (contactSubmitting) return;
     const name = contactForm.name.trim();
     if (!name) {
       toast.error("Company name is required.");
       return;
     }
+    const email = contactForm.email.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Enter a valid email address (or leave it blank).");
+      return;
+    }
+    setContactSubmitting(true);
     const { data, error } = await (supabase as any).rpc("portal_create_contact", {
       _name: name,
       _contact_name: contactForm.contact_name,
@@ -1258,6 +1270,7 @@ export default function Portal() {
     });
     if (error) {
       toast.error(error.message);
+      setContactSubmitting(false);
       return;
     }
     const newContact = data as Contact | null;
@@ -1269,6 +1282,7 @@ export default function Portal() {
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
+    setContactSubmitting(false);
     toast.success("Client added.");
     return newContact;
   };
@@ -2918,7 +2932,7 @@ export default function Portal() {
               <Button variant="outline" className="rounded-none shadow-none" onClick={() => mobileContactStep > 0 ? setMobileContactStep(step => step - 1) : setMobileContactDrawerOpen(false)}>
                 {mobileContactStep > 0 ? "Back" : "Cancel"}
               </Button>
-              <Button onClick={() => continueMobileContact()}>{mobileContactStep === contactWizardFields.length - 1 ? "Save" : "Next"}</Button>
+              <Button disabled={contactSubmitting} onClick={() => continueMobileContact()}>{mobileContactStep === contactWizardFields.length - 1 ? (contactSubmitting ? "Saving…" : "Save") : "Next"}</Button>
               {!currentContactField.required && (
                 <Button variant="ghost" className="col-span-2" onClick={() => continueMobileContact(true)}>Skip</Button>
               )}
