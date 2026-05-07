@@ -2932,7 +2932,7 @@ export default function Portal() {
               <Button variant="outline" className="rounded-none shadow-none" onClick={() => mobileContactStep > 0 ? setMobileContactStep(step => step - 1) : setMobileContactDrawerOpen(false)}>
                 {mobileContactStep > 0 ? "Back" : "Cancel"}
               </Button>
-              <Button onClick={() => continueMobileContact()}>{mobileContactStep === contactWizardFields.length - 1 ? "Save" : "Next"}</Button>
+              <Button disabled={contactSubmitting} onClick={() => continueMobileContact()}>{mobileContactStep === contactWizardFields.length - 1 ? (contactSubmitting ? "Saving…" : "Save") : "Next"}</Button>
               {!currentContactField.required && (
                 <Button variant="ghost" className="col-span-2" onClick={() => continueMobileContact(true)}>Skip</Button>
               )}
