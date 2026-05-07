@@ -152,7 +152,7 @@ function StripeBadge() {
       </div>
       <PaymentMethodIcons />
       <div className="mt-3 text-center flex flex-col items-center">
-        <p className="text-[11px] font-semibold tracking-wide opacity-80 text-primary-foreground">
+        <p className="font-semibold tracking-wide opacity-80 text-primary-foreground text-2xl">
           FREE SAMPLES
         </p>
         <p className="text-[10px] tracking-wide opacity-70 text-primary-foreground">
