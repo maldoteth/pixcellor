@@ -190,7 +190,10 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     if (!mobileTop || !isMobile) return;
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ services?: boolean }>).detail;
-      setInitialServices(Boolean(detail?.services));
+      const services = Boolean(detail?.services);
+      setInitialServices(services);
+      setMobileShowServices(services);
+      setMobileCameFromServices(services);
       setInternalOpen(true);
     };
     window.addEventListener("pixcellor:open-packages", handler);
