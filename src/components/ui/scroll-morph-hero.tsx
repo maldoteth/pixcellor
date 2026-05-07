@@ -733,7 +733,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         }}
                         aria-label="Scroll down"
                         data-hero-scroll-control="true"
-                        className="hidden md:flex relative z-[110] mt-3 md:mt-7 -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation"
+                        className="hidden md:flex relative z-[110] mt-3 md:mt-7 md:-translate-y-[10px] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation"
                         style={{ opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
