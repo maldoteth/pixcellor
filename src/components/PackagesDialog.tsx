@@ -264,7 +264,14 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
             <DrawerHeader className="sr-only">
               <DrawerTitle>Our Pricing</DrawerTitle>
             </DrawerHeader>
-            <MobileShell initialServices={initialServices} key={effectiveOpen ? "open" : "closed"} />
+            <MobileShell
+              showServices={mobileShowServices}
+              onShowServicesChange={(v) => {
+                setMobileShowServices(v);
+                if (v) setMobileCameFromServices(true);
+              }}
+              key={effectiveOpen ? "open" : "closed"}
+            />
           </DrawerContent>
         </Drawer>
       </>
