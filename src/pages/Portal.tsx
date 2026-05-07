@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { AlertTriangle, Archive, Check, Clipboard, ExternalLink, Home, Inbox, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Trash2, TrendingUp, UserPlus, Users, UserSearch } from "lucide-react";
+import { AlertTriangle, Archive, Check, Clipboard, ExternalLink, Home, ImagePlus, Inbox, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
@@ -195,6 +195,7 @@ type Contact = {
   lead_score?: number | null;
   lead_score_reason?: string | null;
   notes: string | null;
+  media?: string[] | null;
   status: "cold" | "aware" | "warm" | "hot" | "gold" | "archived";
   source: string;
   created_by_user_id?: string | null;
@@ -1301,6 +1302,49 @@ export default function Portal() {
     const { error } = await (supabase as any).rpc("portal_delete_contact_person", { _person_id: personId });
     if (error) { toast.error(error.message); return; }
     setContactPersons(curr => curr.filter(p => p.id !== personId));
+  };
+
+  const [mediaUploadingFor, setMediaUploadingFor] = useState<string | null>(null);
+
+  const saveContactMedia = async (contactId: string, media: string[]) => {
+    const { error } = await (supabase as any).rpc("portal_update_contact_media", { _contact_id: contactId, _media: media });
+    if (error) { toast.error(error.message); return false; }
+    setContacts(curr => curr.map(c => c.id === contactId ? { ...c, media } : c));
+    return true;
+  };
+
+  const uploadContactMedia = async (contactId: string, files: FileList | null) => {
+    if (!files || !files.length) return;
+    const current = contacts.find(c => c.id === contactId);
+    const existing = current?.media ?? [];
+    if (existing.length + files.length > 50) {
+      toast.error("Up to 50 images per client.");
+      return;
+    }
+    setMediaUploadingFor(contactId);
+    const uploaded: string[] = [];
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith("image/")) { toast.error(`${file.name} is not an image.`); continue; }
+      if (file.size > 10 * 1024 * 1024) { toast.error(`${file.name} is over 10MB.`); continue; }
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `clients/${contactId}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+      const { error } = await supabase.storage.from("submission-attachments").upload(path, file, { contentType: file.type, upsert: false });
+      if (error) { toast.error(`Upload failed: ${error.message}`); continue; }
+      const { data } = supabase.storage.from("submission-attachments").getPublicUrl(path);
+      uploaded.push(data.publicUrl);
+    }
+    if (uploaded.length) {
+      const next = [...existing, ...uploaded];
+      const ok = await saveContactMedia(contactId, next);
+      if (ok) toast.success(`Added ${uploaded.length} image${uploaded.length === 1 ? "" : "s"}.`);
+    }
+    setMediaUploadingFor(null);
+  };
+
+  const removeContactMedia = async (contactId: string, url: string) => {
+    const current = contacts.find(c => c.id === contactId);
+    const next = (current?.media ?? []).filter(u => u !== url);
+    await saveContactMedia(contactId, next);
   };
 
   const addContactFromWizard = async () => {
@@ -2644,6 +2688,27 @@ export default function Portal() {
                     <UserPlus className="h-4 w-4 md:mr-2" />
                     <span className="hidden md:inline">Add contact</span>
                   </Button>
+                  <Button asChild variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none cursor-pointer">
+                    <label>
+                      {mediaUploadingFor === contactDetailDrawerContact.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin md:mr-2" />
+                      ) : (
+                        <ImagePlus className="h-4 w-4 md:mr-2" />
+                      )}
+                      <span className="hidden md:inline">Add media</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        disabled={mediaUploadingFor === contactDetailDrawerContact.id}
+                        onChange={(e) => {
+                          uploadContactMedia(contactDetailDrawerContact.id, e.target.files);
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+                  </Button>
                   <Button variant="pricing" size="icon" className="h-9 w-9 shrink-0 rounded-none shadow-none" aria-label="Archive client" title="Archive client" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -2686,6 +2751,53 @@ export default function Portal() {
                     </Button>
                   </div>
                 ))}
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">Media ({(contactDetailDrawerContact.media ?? []).length})</div>
+                  <Button asChild size="sm" variant="outline" className="h-8 rounded-none cursor-pointer">
+                    <label>
+                      {mediaUploadingFor === contactDetailDrawerContact.id ? (
+                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                      ) : (
+                        <ImagePlus className="h-3.5 w-3.5 mr-1" />
+                      )}
+                      Add media
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        disabled={mediaUploadingFor === contactDetailDrawerContact.id}
+                        onChange={(e) => {
+                          uploadContactMedia(contactDetailDrawerContact.id, e.target.files);
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+                  </Button>
+                </div>
+                {(contactDetailDrawerContact.media ?? []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No images uploaded yet.</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                    {(contactDetailDrawerContact.media ?? []).map(url => (
+                      <div key={url} className="group relative aspect-square overflow-hidden rounded-none border border-border bg-muted">
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          <img src={url} alt="Client media" className="h-full w-full object-cover" loading="lazy" />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => removeContactMedia(contactDetailDrawerContact.id, url)}
+                          className="absolute right-1 top-1 rounded-full bg-background/80 p-1 text-foreground opacity-0 transition group-hover:opacity-100"
+                          aria-label="Remove image"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               {contactDetailDrawerOrderStats && (
                 <div className="space-y-2">
