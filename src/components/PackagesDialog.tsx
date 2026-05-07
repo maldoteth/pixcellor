@@ -151,13 +151,21 @@ function StripeBadge() {
         <span className="text-[10px] font-bold tracking-wide text-foreground">Stripe</span>
       </div>
       <PaymentMethodIcons />
-      <div className="mt-3 text-center">
+      <div className="mt-3 text-center flex flex-col items-center">
         <p className="text-[11px] font-semibold tracking-wide opacity-80 text-primary-foreground">
           FREE SAMPLES
         </p>
         <p className="text-[10px] tracking-wide opacity-70 text-primary-foreground">
           Don't pay until you're happy!
         </p>
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }))}
+          className="mt-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide text-primary-foreground bg-foreground/10 hover:bg-foreground/20 border border-foreground/20 transition"
+          aria-label="Request a free sample"
+        >
+          Request
+        </button>
       </div>
     </div>
   );
