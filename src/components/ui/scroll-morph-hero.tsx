@@ -694,7 +694,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { filter: "blur(10px)" }}
                         transition={{ duration: 1 }}
                         style={{ opacity: titleOpacity }}
-                        className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground"
+                        className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground md:mt-[10px]"
                     >
                         <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[3.6rem] md:h-[8.84rem] lg:h-[7rem] w-auto" />
                     </motion.h1>
