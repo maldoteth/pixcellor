@@ -508,27 +508,33 @@ export type Database = {
       }
       lets_talk_leads: {
         Row: {
+          attachment_urls: string[] | null
           created_at: string
           email: string | null
           id: string
           name: string
           phone: string | null
+          request_details: Json | null
           source: string | null
         }
         Insert: {
+          attachment_urls?: string[] | null
           created_at?: string
           email?: string | null
           id?: string
           name: string
           phone?: string | null
+          request_details?: Json | null
           source?: string | null
         }
         Update: {
+          attachment_urls?: string[] | null
           created_at?: string
           email?: string | null
           id?: string
           name?: string
           phone?: string | null
+          request_details?: Json | null
           source?: string | null
         }
         Relationships: []
