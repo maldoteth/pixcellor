@@ -217,6 +217,8 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     if (!effectiveOpen) {
       setSpinIn(false);
       setInitialServices(false);
+      setMobileShowServices(false);
+      setMobileCameFromServices(false);
     }
   }, [effectiveOpen]);
 
