@@ -68,7 +68,7 @@ export function ImageAttachmentUploader({ value, onChange, max = 20, prefix, dis
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept={acceptVideos ? "image/*,video/*" : "image/*"}
         multiple
         className="hidden"
         onChange={handleFiles}
@@ -81,7 +81,7 @@ export function ImageAttachmentUploader({ value, onChange, max = 20, prefix, dis
         className="gap-2"
       >
         {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
-        {uploading ? "Uploading…" : `Attach images (${value.length}/${max})`}
+        {uploading ? "Uploading…" : `${acceptVideos ? "Attach files" : "Attach images"} (${value.length}/${max})`}
       </Button>
       {value.length > 0 && (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
