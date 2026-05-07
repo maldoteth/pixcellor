@@ -181,6 +181,9 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   const [internalOpen, setInternalOpen] = useState(false);
   const [spinIn, setSpinIn] = useState(false);
   const [initialServices, setInitialServices] = useState(false);
+  // Mobile-only: track whether we entered via Services so closing pricing returns to services first
+  const [mobileShowServices, setMobileShowServices] = useState(false);
+  const [mobileCameFromServices, setMobileCameFromServices] = useState(false);
   const effectiveOpen = mobileTop ? internalOpen : open;
 
   useEffect(() => {
