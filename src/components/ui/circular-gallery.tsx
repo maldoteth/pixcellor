@@ -75,7 +75,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     }, []);
     const cardW = isMobile ? 87 : 138;
     const cardH = isMobile ? 125 : 184;
-    const effectiveRadius = isMobile ? Math.max(radius, 340) : radius;
+    const effectiveRadius = isMobile ? Math.max(radius, 340) : radius * 1.25;
 
     return (
       <div
