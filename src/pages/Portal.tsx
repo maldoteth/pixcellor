@@ -1211,9 +1211,13 @@ export default function Portal() {
       toast.error(`${field.label} is required.`);
       return;
     }
+    if (!skip && field.key === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      toast.error("Enter a valid email address (or skip).");
+      return;
+    }
     if (skip && !field.required) setContactForm(f => ({ ...f, [field.key]: "" }));
     if (mobileContactStep < contactWizardFields.length - 1) setMobileContactStep(step => step + 1);
-    else void createContact();
+    else if (!contactSubmitting) void createContact();
   };
 
   const continueMobileSalesEvent = (skip = false) => {
