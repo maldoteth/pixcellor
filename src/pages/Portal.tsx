@@ -2020,6 +2020,62 @@ export default function Portal() {
               <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
             </div>
+
+            {sampleRequests.length > 0 && (
+              <Card className="border-destructive/40">
+                <CardContent className="space-y-3 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-medium">Free sample requests ({sampleRequests.length})</div>
+                    <Badge variant="destructive">Hot leads</Badge>
+                  </div>
+                  <div className="space-y-3">
+                    {sampleRequests.map((r) => {
+                      const dream = r.request_details?.dream ?? "";
+                      const colours = r.request_details?.colours ?? "";
+                      const media = Array.isArray(r.attachment_urls) ? r.attachment_urls : [];
+                      return (
+                        <div key={r.id} className="rounded-none border border-border bg-background/50 p-3 text-sm space-y-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="space-y-0.5">
+                              <div className="font-medium">{r.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {[r.email, r.phone].filter(Boolean).join(" · ") || "No contact"} · {new Date(r.created_at).toLocaleString()}
+                              </div>
+                            </div>
+                          </div>
+                          {dream && (
+                            <div><span className="text-muted-foreground">Dream site:</span> <span className="whitespace-pre-wrap">{dream}</span></div>
+                          )}
+                          {colours && (
+                            <div><span className="text-muted-foreground">Colours/styles:</span> <span className="whitespace-pre-wrap">{colours}</span></div>
+                          )}
+                          {media.length > 0 && (
+                            <div className="space-y-1">
+                              <div className="text-muted-foreground text-xs">Attachments ({media.length})</div>
+                              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                                {media.map((url) => {
+                                  const isVideo = /\.(mp4|webm|mov|m4v|ogv)(\?|$)/i.test(url);
+                                  return (
+                                    <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-square overflow-hidden rounded-none border border-border bg-muted">
+                                      {isVideo ? (
+                                        <video src={url} className="h-full w-full object-cover" muted playsInline />
+                                      ) : (
+                                        <img src={url} alt="attachment" className="h-full w-full object-cover" loading="lazy" />
+                                      )}
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/50 p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Requirements</span>
