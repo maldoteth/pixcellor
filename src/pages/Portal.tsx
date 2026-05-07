@@ -2752,6 +2752,53 @@ export default function Portal() {
                   </div>
                 ))}
               </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">Media ({(contactDetailDrawerContact.media ?? []).length})</div>
+                  <Button asChild size="sm" variant="outline" className="h-8 rounded-none cursor-pointer">
+                    <label>
+                      {mediaUploadingFor === contactDetailDrawerContact.id ? (
+                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                      ) : (
+                        <ImagePlus className="h-3.5 w-3.5 mr-1" />
+                      )}
+                      Add media
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        disabled={mediaUploadingFor === contactDetailDrawerContact.id}
+                        onChange={(e) => {
+                          uploadContactMedia(contactDetailDrawerContact.id, e.target.files);
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+                  </Button>
+                </div>
+                {(contactDetailDrawerContact.media ?? []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No images uploaded yet.</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                    {(contactDetailDrawerContact.media ?? []).map(url => (
+                      <div key={url} className="group relative aspect-square overflow-hidden rounded-none border border-border bg-muted">
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          <img src={url} alt="Client media" className="h-full w-full object-cover" loading="lazy" />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => removeContactMedia(contactDetailDrawerContact.id, url)}
+                          className="absolute right-1 top-1 rounded-full bg-background/80 p-1 text-foreground opacity-0 transition group-hover:opacity-100"
+                          aria-label="Remove image"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               {contactDetailDrawerOrderStats && (
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Order history</div>
