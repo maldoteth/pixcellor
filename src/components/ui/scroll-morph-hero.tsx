@@ -581,7 +581,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         ([w, h, a, ox, oy]: number[]) => {
             const center = glowBaseAlpha * a;
             const cx = 50 + ox;
-            const cy = 50 + oy;
+            const cy = (isSmallViewport ? 38 : 42) + oy;
             return `radial-gradient(ellipse ${w}% ${h}% at ${cx}% ${cy}%, hsla(0,0%,100%,${center}) 0%, hsla(0,0%,100%,${center * 0.5}) 35%, transparent ${glowFadeStop}%)`;
         }
     );
