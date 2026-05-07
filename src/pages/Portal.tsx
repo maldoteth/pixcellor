@@ -401,6 +401,7 @@ export default function Portal() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [projectRequirements, setProjectRequirements] = useState<ProjectRequirement[]>([]);
   const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
+  const [sampleRequests, setSampleRequests] = useState<Array<{ id: string; name: string; email: string | null; phone: string | null; created_at: string; request_details: { dream?: string | null; colours?: string | null } | null; attachment_urls: string[] | null }>>([]);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
