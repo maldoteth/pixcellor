@@ -85,19 +85,26 @@ export function ImageAttachmentUploader({ value, onChange, max = 20, prefix, dis
       </Button>
       {value.length > 0 && (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-          {value.map((url) => (
-            <div key={url} className="group relative aspect-square overflow-hidden rounded-md border border-border bg-muted">
-              <img src={url} alt="attachment" className="h-full w-full object-cover" />
-              <button
-                type="button"
-                onClick={() => remove(url)}
-                className="absolute right-1 top-1 rounded-full bg-background/80 p-1 text-foreground opacity-0 transition group-hover:opacity-100"
-                aria-label="Remove image"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          ))}
+          {value.map((url) => {
+            const isVideo = /\.(mp4|webm|mov|m4v|ogv)(\?|$)/i.test(url);
+            return (
+              <div key={url} className="group relative aspect-square overflow-hidden rounded-md border border-border bg-muted">
+                {isVideo ? (
+                  <video src={url} className="h-full w-full object-cover" muted playsInline />
+                ) : (
+                  <img src={url} alt="attachment" className="h-full w-full object-cover" />
+                )}
+                <button
+                  type="button"
+                  onClick={() => remove(url)}
+                  className="absolute right-1 top-1 rounded-full bg-background/80 p-1 text-foreground opacity-0 transition group-hover:opacity-100"
+                  aria-label="Remove attachment"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
