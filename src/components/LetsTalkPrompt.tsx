@@ -284,6 +284,7 @@ const LetsTalkPrompt = () => {
                 onChange={setMedia}
                 max={10}
                 prefix={`lets-talk/${Date.now()}`}
+                acceptVideos
               />
             )}
 
