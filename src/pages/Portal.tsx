@@ -2021,7 +2021,7 @@ export default function Portal() {
               <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
             </div>
 
-            {sampleRequests.length > 0 && (
+            {orderReqsFilter === "samples" && sampleRequests.length > 0 && (
               <Card className="border-destructive/40">
                 <CardContent className="space-y-3 p-4">
                   <div className="flex items-center justify-between gap-2">
@@ -2075,6 +2075,9 @@ export default function Portal() {
                 </CardContent>
               </Card>
             )}
+            {orderReqsFilter === "samples" && sampleRequests.length === 0 && (
+              <p className="text-muted-foreground text-sm">No free sample requests yet.</p>
+            )}
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/50 p-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -2083,9 +2086,10 @@ export default function Portal() {
                 <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
                 <Button variant={orderReqsFilter === "edits" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("edits")}>Edits</Button>
                 <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
+                <Button variant={orderReqsFilter === "samples" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("samples")}>Samples ({sampleRequests.length})</Button>
               </div>
             </div>
-            {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
+            {orderReqsFilter !== "samples" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
             {filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
