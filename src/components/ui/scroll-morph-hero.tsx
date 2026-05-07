@@ -906,8 +906,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             // Baseline tuned for 16 items; add ~14px per extra item on desktop, ~9px on mobile.
                             radius={
                                 containerSize.width < 768
-                                    ? 300 + Math.max(0, galleryItems.length - 12) * 14
-                                    : 490 + Math.max(0, galleryItems.length - 12) * 22
+                                    ? 225 + Math.max(0, galleryItems.length - 12) * 8
+                                    : 360 + Math.max(0, galleryItems.length - 12) * 13
                             }
                             externalRotation={galleryRotationValue}
                         />
