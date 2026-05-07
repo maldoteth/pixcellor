@@ -73,8 +73,8 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       window.addEventListener('resize', check);
       return () => window.removeEventListener('resize', check);
     }, []);
-    const cardW = isMobile ? 109 : 171;
-    const cardH = isMobile ? 155 : 228;
+    const cardW = isMobile ? 76 : 120;
+    const cardH = isMobile ? 109 : 160;
     const effectiveRadius = isMobile ? Math.max(radius, 340) : radius;
 
     return (
