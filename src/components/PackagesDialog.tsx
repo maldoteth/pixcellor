@@ -844,9 +844,13 @@ function ServiceBackCard({
   );
 }
 
-function MobileShell({ initialServices = false }: { initialServices?: boolean }) {
-  const [showServices, setShowServices] = useState(initialServices);
-  useEffect(() => { setShowServices(initialServices); }, [initialServices]);
+function MobileShell({
+  showServices,
+  onShowServicesChange,
+}: {
+  showServices: boolean;
+  onShowServicesChange: (v: boolean) => void;
+}) {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
@@ -857,7 +861,7 @@ function MobileShell({ initialServices = false }: { initialServices?: boolean })
         {!showServices && <StripeBadge />}
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
-        {showServices ? <MobileServicesList onShowPricing={() => setShowServices(false)} /> : <MobileCards />}
+        {showServices ? <MobileServicesList onShowPricing={() => onShowServicesChange(false)} /> : <MobileCards />}
       </div>
     </div>
   );
