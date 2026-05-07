@@ -45,6 +45,12 @@ Deno.serve(async (req) => {
     const email = cleanText(body.email ?? "", 200).toLowerCase();
     const phone = cleanText(body.phone ?? "", 40);
     const source = cleanText(body.source ?? "lets_talk_button", 80);
+    const dream = cleanText(body.request_details?.dream ?? "", 2000);
+    const colours = cleanText(body.request_details?.colours ?? "", 2000);
+    const attachments = Array.isArray(body.attachment_urls)
+      ? body.attachment_urls.filter((u): u is string => typeof u === "string" && /^https?:\/\//i.test(u)).slice(0, 50)
+      : [];
+    const isSampleRequest = source === "free_sample_request";
 
     if (!name) return new Response(JSON.stringify({ ok: false, error: "missing_name" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (!email && !phone) return new Response(JSON.stringify({ ok: false, error: "email_or_phone_required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -57,20 +63,41 @@ Deno.serve(async (req) => {
     // Find existing contact by email or phone
     let existingId: string | null = null;
     let existingNotes = "";
+    let existingMedia: unknown[] = [];
     if (email) {
-      const { data } = await supabase.from("contacts").select("id, notes").ilike("email", email).limit(1).maybeSingle();
-      if (data) { existingId = data.id; existingNotes = data.notes ?? ""; }
+      const { data } = await supabase.from("contacts").select("id, notes, media").ilike("email", email).limit(1).maybeSingle();
+      if (data) { existingId = data.id; existingNotes = data.notes ?? ""; existingMedia = Array.isArray(data.media) ? data.media : []; }
     }
     if (!existingId && phone) {
-      const { data } = await supabase.from("contacts").select("id, notes").eq("phone", phone).limit(1).maybeSingle();
-      if (data) { existingId = data.id; existingNotes = data.notes ?? ""; }
+      const { data } = await supabase.from("contacts").select("id, notes, media").eq("phone", phone).limit(1).maybeSingle();
+      if (data) { existingId = data.id; existingNotes = data.notes ?? ""; existingMedia = Array.isArray(data.media) ? data.media : []; }
     }
 
+    const briefLines = isSampleRequest
+      ? [
+          "Free Sample Request:",
+          dream ? `Dream site: ${dream}` : "",
+          colours ? `Colours/styles: ${colours}` : "",
+          attachments.length ? `Attachments: ${attachments.length}` : "",
+        ].filter(Boolean).join("\n")
+      : "";
+
     const noteLines = [
-      `Let's Talk submission via ${source}.`,
+      isSampleRequest
+        ? `Free Sample Request via ${source}.`
+        : `Let's Talk submission via ${source}.`,
       phone ? "Requested a callback." : "",
       email ? "Requested info by email." : "",
+      briefLines,
     ].filter(Boolean).join("\n");
+
+    // Merge new attachments into contact media (dedupe, cap at 50)
+    const existingUrls = existingMedia
+      .map((m) => (typeof m === "string" ? m : (m as { url?: string })?.url))
+      .filter((u): u is string => typeof u === "string");
+    const mergedMedia = Array.from(new Set([...existingUrls, ...attachments])).slice(0, 50);
+
+    const desiredStatus = isSampleRequest ? "hot" : "warm";
 
     let contactId: string;
     if (existingId) {
@@ -81,6 +108,8 @@ Deno.serve(async (req) => {
           email: email || null,
           phone: phone || null,
           notes: [existingNotes, noteLines].filter(Boolean).join("\n"),
+          status: desiredStatus,
+          media: mergedMedia,
           updated_at: new Date().toISOString(),
         })
         .eq("id", existingId)
@@ -96,14 +125,25 @@ Deno.serve(async (req) => {
           email: email || null,
           phone: phone || null,
           industry: "general",
-          source: "lets_talk",
-          status: "warm",
+          source: isSampleRequest ? "free_sample_request" : "lets_talk",
+          status: desiredStatus,
           notes: noteLines,
+          media: mergedMedia,
         })
         .select("id")
         .single();
       if (error) throw error;
       contactId = data.id;
+    }
+
+    // Log a brief event for sample requests so admins see it on the contact timeline
+    if (isSampleRequest) {
+      await supabase.from("contact_events").insert({
+        contact_id: contactId,
+        title: "Free Sample Request submitted",
+        description: briefLines || "Visitor submitted a free sample brief.",
+        event_type: "note",
+      }).then(({ error }) => { if (error) console.error("brief event insert failed:", error); });
     }
 
     // Schedule same-day callback if phone provided
