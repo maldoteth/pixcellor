@@ -2090,7 +2090,7 @@ export default function Portal() {
               </div>
             </div>
             {orderReqsFilter !== "samples" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
-            {filteredOrders.map(o => {
+            {orderReqsFilter !== "samples" && filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
               const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
