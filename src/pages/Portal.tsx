@@ -2644,7 +2644,7 @@ export default function Portal() {
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/60 p-3">
                 <div className="min-w-0 space-y-1">
                   {contactDetailDrawerContact.phone && (contactDetailDrawerPhoneHref ? (
-                    <a href={contactDetailDrawerPhoneHref} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contactDetailDrawerContact.phone}`}>
+                    <a href={contactDetailDrawerPhoneHref} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline mx-[10px]" aria-label={`Call ${contactDetailDrawerContact.phone}`}>
                       {contactDetailDrawerContact.phone}
                     </a>
                   ) : (
@@ -2655,7 +2655,7 @@ export default function Portal() {
                   {contactDetailDrawerContact.source_platform && <Badge variant="secondary" className="rounded-none">{contactDetailDrawerContact.source_platform}</Badge>}
                   {contactDetailDrawerContact.lead_score != null && <Badge variant="outline" className="rounded-none">Lead score {contactDetailDrawerContact.lead_score}</Badge>}
                   {contactDetailDrawerContact.website_status && contactDetailDrawerContact.website_status !== "unknown" && <Badge variant="secondary" className="rounded-none capitalize">{contactDetailDrawerContact.website_status.replace(/_/g, " ")}</Badge>}
-                  {contactDetailDrawerContact.website && formatWebsiteHref(contactDetailDrawerContact.website) && <a href={formatWebsiteHref(contactDetailDrawerContact.website)!} target="_blank" rel="noopener noreferrer" className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline">{contactDetailDrawerContact.website}</a>}
+                  {contactDetailDrawerContact.website && formatWebsiteHref(contactDetailDrawerContact.website) && <a href={formatWebsiteHref(contactDetailDrawerContact.website)!} target="_blank" rel="noopener noreferrer" className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline mx-[10px]">{contactDetailDrawerContact.website}</a>}
                   {contactDetailDrawerContact.actual_website_url && formatWebsiteHref(contactDetailDrawerContact.actual_website_url) && <a href={formatWebsiteHref(contactDetailDrawerContact.actual_website_url)!} target="_blank" rel="noopener noreferrer" className="block text-sm font-medium text-primary underline-offset-4 hover:underline">Actual site: {contactDetailDrawerContact.actual_website_url}</a>}
                   {contactDetailDrawerContact.social_url && formatWebsiteHref(contactDetailDrawerContact.social_url) && <a href={formatWebsiteHref(contactDetailDrawerContact.social_url)!} target="_blank" rel="noopener noreferrer" className="block text-sm font-medium text-primary underline-offset-4 hover:underline">Social: {contactDetailDrawerContact.social_url}</a>}
                   {contactDetailDrawerContact.lead_score_reason && <LinkifiedText text={contactDetailDrawerContact.lead_score_reason} className="block text-sm text-muted-foreground" />}
