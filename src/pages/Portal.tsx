@@ -195,6 +195,7 @@ type Contact = {
   lead_score?: number | null;
   lead_score_reason?: string | null;
   notes: string | null;
+  media?: string[] | null;
   status: "cold" | "aware" | "warm" | "hot" | "gold" | "archived";
   source: string;
   created_by_user_id?: string | null;
