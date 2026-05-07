@@ -562,8 +562,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2; // -1..1
             const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
             // Subtle drift: ±5% horizontal, ±3.5% vertical
-            glowOffsetX.set(nx * 5);
-            glowOffsetY.set(ny * 3.5);
+            glowOffsetX.set(nx * 18);
+            glowOffsetY.set(ny * 12);
         };
         const onLeave = () => {
             glowOffsetX.set(0);
