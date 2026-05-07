@@ -98,17 +98,6 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 
-  html.pixcellor-light,
-  html.pixcellor-light body {
-    --background: 0 0% 100%;
-    background: hsl(var(--background)) !important;
-  }
-
-  html.pixcellor-light [data-pixcellor-bg],
-  html.pixcellor-light .bg-background {
-    background-color: hsl(var(--background)) !important;
-  }
-
   input,
   textarea,
   select {
