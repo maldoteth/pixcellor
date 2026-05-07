@@ -143,10 +143,10 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   {/(^|\.)bricks\./i.test(item.photo.by ?? '') && (
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
                   )}
-                  <div className="carousel-label-glass absolute inset-x-0 bottom-0 p-2 md:p-4 text-foreground">
-                    <div className="relative z-[1]">
-                      <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate">{item.common}</h3>
-                      <p className="hidden md:block text-[10px] md:text-xs italic text-muted-foreground truncate drop-shadow">{item.binomial}</p>
+                  <div className="carousel-label-glass absolute inset-x-0 bottom-0 px-2 py-1 md:px-3 md:py-1.5 text-foreground">
+                    <div className="relative z-[1] leading-none">
+                      <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate m-0">{item.common}</h3>
+                      <p className="hidden md:block text-[10px] md:text-xs italic text-muted-foreground truncate drop-shadow m-0 mt-0.5">{item.binomial}</p>
                     </div>
                   </div>
                 </div>
