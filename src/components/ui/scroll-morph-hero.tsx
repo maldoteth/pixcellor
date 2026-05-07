@@ -86,7 +86,7 @@ function FlipCard({
                 height: IMG_HEIGHT,
                 transformStyle: "preserve-3d",
                 perspective: "1000px",
-                zIndex: 125,
+                zIndex: 45,
                 pointerEvents: "auto",
             }}
             className="cursor-pointer group"
