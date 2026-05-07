@@ -633,7 +633,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     }, [smoothGalleryRotation]);
 
     return (
-        <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
+        <div ref={containerRef} data-pixcellor-bg="true" className="relative w-full h-full bg-background overflow-hidden">
             {/* Subtle center stage light — smoothly morphs from wide horizontal to narrow vertical */}
             <motion.div className="absolute inset-0 pointer-events-none z-0" style={{ background: glowBg }} />
 
