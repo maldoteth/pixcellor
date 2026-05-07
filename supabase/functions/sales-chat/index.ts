@@ -929,9 +929,11 @@ async function createDevContact(supabase: DbClient, args: Record<string, unknown
     cleanDevNotes(args.notes, 900),
   ].filter(Boolean).join("\n");
 
+  const phone = cleanText(args.phone, 40);
+  const normalizedPhone = phone ? phone.replace(/[^0-9+]/g, "") : "";
   const payload = {
     name,
-    phone: cleanText(args.phone, 40) || null,
+    phone: phone || null,
     email: email || null,
     location: cleanText(args.location, 160) || null,
     industry: industry || "general",
@@ -940,9 +942,28 @@ async function createDevContact(supabase: DbClient, args: Record<string, unknown
     source: "dev_chat",
   };
 
+  // Dedup: if a contact with same email or normalized phone exists, return it instead of erroring.
+  let existing: { id: string; name: string; email: string | null; phone: string | null; notes: string | null } | null = null;
+  if (email) {
+    const { data } = await supabase.from("contacts").select("id, name, email, phone, notes").ilike("email", email).limit(1).maybeSingle();
+    if (data) existing = data as typeof existing;
+  }
+  if (!existing && normalizedPhone && normalizedPhone.length >= 5) {
+    const { data } = await supabase.from("contacts").select("id, name, email, phone, notes").limit(50);
+    const match = (data ?? []).find((c) => (c.phone ?? "").replace(/[^0-9+]/g, "") === normalizedPhone);
+    if (match) existing = match as typeof existing;
+  }
+  if (existing) {
+    const mergedNotes = [existing.notes, notes].filter(Boolean).join("\n");
+    if (notes) {
+      await supabase.from("contacts").update({ notes: mergedNotes, updated_at: new Date().toISOString() }).eq("id", existing.id);
+    }
+    return { ok: true, contact: { id: existing.id, name: existing.name, email: existing.email, phone: existing.phone }, existed: true };
+  }
+
   const { data, error } = await supabase.from("contacts").insert(payload).select("id, name, email, phone").single();
   if (error) return { ok: false, error: error.message };
-  return { ok: true, contact: data };
+  return { ok: true, contact: data, existed: false };
 }
 
 async function saveCustomerContact(supabase: DbClient, args: Record<string, unknown>, conversationId: string | null) {
