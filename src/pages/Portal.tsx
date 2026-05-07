@@ -420,7 +420,7 @@ export default function Portal() {
   const [chatsSearch, setChatsSearch] = useState("");
   const [profilesSearch, setProfilesSearch] = useState("");
   
-  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting">("all");
+  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [contactsSortOrder, setContactsSortOrder] = useState<"newest" | "oldest">("newest");
@@ -1920,7 +1920,7 @@ export default function Portal() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
             <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 xl:grid-cols-9">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
-            <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length})</TabsTrigger>
+            <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length + sampleRequests.length})</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs ({filteredFalloffs.length})</TabsTrigger>
             <TabsTrigger value="mailbox" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Inbox className="h-3.5 w-3.5 shrink-0" />Inbox ({mailboxMessages.filter(m => m.unread).length + inquiries.filter(i => !readInquiryIds.has(i.id)).length})</TabsTrigger>
@@ -2021,7 +2021,7 @@ export default function Portal() {
               <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
             </div>
 
-            {sampleRequests.length > 0 && (
+            {orderReqsFilter === "samples" && sampleRequests.length > 0 && (
               <Card className="border-destructive/40">
                 <CardContent className="space-y-3 p-4">
                   <div className="flex items-center justify-between gap-2">
@@ -2075,6 +2075,9 @@ export default function Portal() {
                 </CardContent>
               </Card>
             )}
+            {orderReqsFilter === "samples" && sampleRequests.length === 0 && (
+              <p className="text-muted-foreground text-sm">No free sample requests yet.</p>
+            )}
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/50 p-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -2083,10 +2086,11 @@ export default function Portal() {
                 <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
                 <Button variant={orderReqsFilter === "edits" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("edits")}>Edits</Button>
                 <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
+                <Button variant={orderReqsFilter === "samples" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("samples")}>Samples ({sampleRequests.length})</Button>
               </div>
             </div>
-            {filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
-            {filteredOrders.map(o => {
+            {orderReqsFilter !== "samples" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
+            {orderReqsFilter !== "samples" && filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
               const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
