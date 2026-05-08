@@ -539,7 +539,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       className="relative flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100"
       style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
     >
-      <FreeSamplesBadge className="absolute -top-12 -right-8 z-30 rotate-[12deg]" />
+      <FreeSamplesBadge className="absolute top-1/2 -right-16 -translate-y-1/2 z-30 rotate-[-12deg]" />
       {/* Full Works - tilted left */}
       <motion.div data-lava-card
         onMouseMove={handleMouseMove}
