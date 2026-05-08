@@ -298,7 +298,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             const touchY = e.touches[0].clientY;
             const touchX = e.touches[0].clientX;
             const deltaY = touchStartY - touchY;
-            const deltaX = touchStartX - touchX;
+            const deltaX = touchX - touchStartX;
 
             if (gestureAxis === "none") {
                 const absX = Math.abs(touchX - touchStartX);
@@ -328,7 +328,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             touchStartX = touchX;
 
             // Combine vertical + horizontal across the whole page so side-swipes
-            // anywhere drive the virtual scroll (swipe left = advance, right = back).
+            // anywhere drive the virtual scroll (swipe right = advance, left = back).
             const inCarousel = scrollRef.current >= HERO_MORPH_END;
             const combinedDelta = Math.abs(deltaY) >= Math.abs(deltaX) ? deltaY : deltaX;
 
