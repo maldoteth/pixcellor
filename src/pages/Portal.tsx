@@ -404,6 +404,7 @@ export default function Portal() {
   const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
   const [sampleRequests, setSampleRequests] = useState<Array<{ id: string; name: string; email: string | null; phone: string | null; created_at: string; request_details: { dream?: string | null; colours?: string | null } | null; attachment_urls: string[] | null; delivered_at?: string | null; delivered_domain?: string | null; paid_at?: string | null; paid_session_id?: string | null; package_name?: string | null }>>([]);
   const [deliveringSampleId, setDeliveringSampleId] = useState<string | null>(null);
+  const { promptDomain, dialog: domainPromptDialog } = useDomainPrompt();
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
