@@ -41,7 +41,13 @@
       "alternateName": "Pixcellor",
       "description": "Digital agency building modern websites, animated interactive sites, and full-stack applications. Packages starting from £100.",
       "url": "https://pixcellor.com/",
-      "logo": "https://pixcellor.com/photo_5958498998823881726_m.jpg",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://pixcellor.com/pixcellor-email-logo.png",
+        "width": 1080,
+        "height": 1080
+      },
+      "image": "https://pixcellor.com/pixcellor-email-logo.png",
       "priceRange": "£100 - £12,000/year",
       "slogan": "You Dream It - We Build It",
       "knowsAbout": ["Web Design", "Web Development", "App Development", "SEO", "AEO", "Full Stack Development", "Web3", "Blockchain", "AI Integration"],
@@ -79,6 +85,33 @@
           }
         ]
       }
+    }
+    </script>
+
+    <!-- Organization schema — Google uses this for logo in search results -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Pixcellor™",
+      "url": "https://pixcellor.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://pixcellor.com/pixcellor-email-logo.png",
+        "width": 1080,
+        "height": 1080
+      },
+      "sameAs": []
+    }
+    </script>
+
+    <!-- WebSite schema for Google Sitelinks Search Box -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Pixcellor™",
+      "url": "https://pixcellor.com/"
     }
     </script>
 
