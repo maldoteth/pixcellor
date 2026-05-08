@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Loader2, Lock, X, Code2, Megaphone, Briefcase } from "lucide-react";
+import { Check, Loader2, Lock, X, Code2, Megaphone, Briefcase, Info } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLavaCursor } from "@/hooks/use-lava-cursor";
 import { supabase } from "@/integrations/supabase/client";
