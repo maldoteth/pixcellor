@@ -158,14 +158,14 @@ function StripeBadge() {
         <p className="text-[10px] tracking-wide opacity-70 text-primary-foreground">
           Don't pay until you're happy!
         </p>
-        <button
-          type="button"
+        <Button
+          variant="pricing"
           onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }))}
-          className="mt-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide text-primary-foreground bg-foreground/10 hover:bg-foreground/20 border border-foreground/20 transition"
+          className="mt-2 h-auto py-1.5 px-4 text-xs font-semibold"
           aria-label="Request a free sample"
         >
           Request
-        </button>
+        </Button>
       </div>
     </div>
   );
