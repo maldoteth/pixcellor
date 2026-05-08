@@ -45,6 +45,8 @@ interface FlipCardProps {
 const IMG_WIDTH = 70;
 const IMG_HEIGHT = 70;
 
+const PROXIMITY_RADIUS = 160;
+
 function FlipCard({
     src,
     index,
@@ -52,21 +54,88 @@ function FlipCard({
     target,
     onViewDetails,
 }: FlipCardProps) {
-    const [hovered, setHovered] = React.useState(false);
+    const cardRef = React.useRef<HTMLDivElement>(null);
+    const imgRef = React.useRef<HTMLImageElement>(null);
+    const [proximity, setProximity] = React.useState(0); // 0..1
+    const [glowColor, setGlowColor] = React.useState<string>("255, 255, 255");
+
     const handleOpen = (event: React.MouseEvent | React.KeyboardEvent) => {
         event.stopPropagation();
         event.preventDefault();
         onViewDetails?.();
     };
 
+    // Sample dominant color from the image once it loads
+    const handleImgLoad = React.useCallback(() => {
+        const img = imgRef.current;
+        if (!img) return;
+        try {
+            const canvas = document.createElement("canvas");
+            canvas.width = 8;
+            canvas.height = 8;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0, 8, 8);
+            const data = ctx.getImageData(0, 0, 8, 8).data;
+            let r = 0, g = 0, b = 0, count = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                r += data[i]; g += data[i + 1]; b += data[i + 2]; count++;
+            }
+            r = Math.round(r / count); g = Math.round(g / count); b = Math.round(b / count);
+            // Boost saturation a touch
+            const max = Math.max(r, g, b) || 1;
+            const boost = 200 / max;
+            r = Math.min(255, Math.round(r * boost));
+            g = Math.min(255, Math.round(g * boost));
+            b = Math.min(255, Math.round(b * boost));
+            setGlowColor(`${r}, ${g}, ${b}`);
+        } catch {
+            /* CORS or other – fallback to white */
+        }
+    }, []);
+
+    // Track pointer proximity (desktop only)
+    React.useEffect(() => {
+        if (typeof window === "undefined") return;
+        const isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+        if (!isFinePointer) return;
+
+        let raf = 0;
+        const handleMove = (e: PointerEvent) => {
+            if (raf) return;
+            raf = requestAnimationFrame(() => {
+                raf = 0;
+                const el = cardRef.current;
+                if (!el) return;
+                const rect = el.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                const dx = e.clientX - cx;
+                const dy = e.clientY - cy;
+                const dist = Math.hypot(dx, dy);
+                const next = Math.max(0, 1 - dist / PROXIMITY_RADIUS);
+                setProximity((prev) => (Math.abs(prev - next) > 0.01 ? next : prev));
+            });
+        };
+        window.addEventListener("pointermove", handleMove, { passive: true });
+        return () => {
+            window.removeEventListener("pointermove", handleMove);
+            if (raf) cancelAnimationFrame(raf);
+        };
+    }, []);
+
+    const hoverScale = 1 + proximity * 0.22;
+    const glowAlpha = 0.65 * proximity;
+    const glowBlur = 18 + proximity * 28;
+    const glowSpread = proximity * 8;
+
     return (
         <motion.div
+            ref={cardRef}
             onClick={handleOpen}
             onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") handleOpen(event);
             }}
-            onPointerEnter={() => setHovered(true)}
-            onPointerLeave={() => setHovered(false)}
             role="button"
             tabIndex={0}
             aria-label="Scroll to portfolio"
@@ -86,46 +155,31 @@ function FlipCard({
                 position: "absolute",
                 width: IMG_WIDTH,
                 height: IMG_HEIGHT,
-                transformStyle: "preserve-3d",
-                perspective: "1000px",
-                zIndex: hovered ? 300 : 45,
+                zIndex: proximity > 0.05 ? 300 : 45,
                 pointerEvents: "auto",
             }}
             className="cursor-pointer group"
         >
             <motion.div
-                className="relative h-full w-full"
-                style={{ transformStyle: "preserve-3d" }}
-                transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-                animate={{ rotateY: hovered ? 180 : 0 }}
+                className="relative h-full w-full overflow-hidden rounded-none shadow-lg bg-muted"
+                animate={{ scale: hoverScale }}
+                transition={{ type: "spring", stiffness: 220, damping: 18 }}
+                style={{
+                    boxShadow: `0 0 ${glowBlur}px ${glowSpread}px rgba(${glowColor}, ${glowAlpha})`,
+                }}
             >
-                {/* Front Face */}
+                <img
+                    ref={imgRef}
+                    src={src}
+                    alt={`hero-${index}`}
+                    onLoad={handleImgLoad}
+                    crossOrigin="anonymous"
+                    className="h-full w-full object-cover"
+                />
                 <div
-                    className="absolute inset-0 h-full w-full overflow-hidden rounded-none shadow-lg bg-muted"
-                    style={{ backfaceVisibility: "hidden" }}
-                >
-                    <img
-                        src={src}
-                        alt={`hero-${index}`}
-                        className="h-full w-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/10 transition-colors group-hover:bg-transparent" />
-                </div>
-
-                {/* Back Face */}
-                <div
-                    className="absolute inset-0 h-full w-full overflow-hidden rounded-none shadow-lg bg-card flex flex-col items-center justify-center p-4 border border-border"
-                    style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-                >
-                    <button
-                        type="button"
-                        onClick={handleOpen}
-                        className="text-center cursor-pointer pointer-events-auto"
-                    >
-                        <p className="text-[8px] font-bold text-primary uppercase tracking-widest mb-1">View</p>
-                        <p className="text-xs font-medium text-foreground">Details</p>
-                    </button>
-                </div>
+                    className="absolute inset-0 bg-black/10 transition-colors"
+                    style={{ opacity: 1 - proximity }}
+                />
             </motion.div>
         </motion.div>
     );
