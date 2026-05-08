@@ -45,14 +45,8 @@ function useDominantColor(url: string) {
         r = Math.round(r / count);
         g = Math.round(g / count);
         b = Math.round(b / count);
-        // If mostly grey, nudge dominant channel for visible tint
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
-        if (max - min < 25) {
-          if (max === r) r = Math.min(255, r + 35);
-          else if (max === g) g = Math.min(255, g + 35);
-          else b = Math.min(255, b + 35);
-        }
+        // No artificial channel boosting — keep the true average so greyscale
+        // images stay neutral instead of inventing a fake hue.
         const out = { r, g, b };
         colorCache.set(url, out);
         if (!cancelled) setColor(out);
