@@ -53,13 +53,12 @@ const SERVICE_BACKS = {
     title: "Marketing Solutions",
     action: "sales" as const,
     items: [
-      "Telesales campaigns",
-      "GTM and Lead Generation",
-      "Broadcast SMS & WhatsApp",
-      "Lead generation & GTM",
-      "SEO & AEO optimisation",
-      "Social media automation",
-      "Paid ads & retargeting",
+      { name: "Telesales campaigns", info: "Every call recorded on your custom client CRM with regular feedback and reviews." },
+      { name: "GTM and Lead Generation", info: "From industry veterans with 9 figure market caps and multi 7 figure Q1 revenue background." },
+      { name: "Broadcast SMS & WhatsApp", info: "We will help you create a buzz and get the word out with targeted messaging." },
+      { name: "SEO & AEO optimisation", info: "Get ranked instantly with our team of experts stemming from some of the largest companies in the world." },
+      { name: "Social media automation", info: "Generate leads while you sleep with automated social media management and save 90% on SMM salaries." },
+      { name: "Paid ads & retargeting", info: "Leverage the latest techniques and strategies to maximise ROI with our advertising services." },
     ],
   },
   elite: {
@@ -67,13 +66,13 @@ const SERVICE_BACKS = {
     title: "Tech Solutions",
     action: "pricing" as const,
     items: [
-      "Landing pages",
-      "Animated sites",
-      "Full web apps",
-      "Internal tools",
-      "CRM systems",
-      "E-commerce stores",
-      "Booking platforms",
+      { name: "Landing pages", info: "Save time and have our team take care of all your landing page needs." },
+      { name: "Animated sites", info: "20k websites last year are now 1k websites if you speak to the right people — we are the right people." },
+      { name: "Full web apps", info: "We've built custom solutions and full stack apps across tech, retail, web3 and more!" },
+      { name: "Internal tools", info: "Custom systems, automations, agentic flows and more saving you potentially tens of thousands a year." },
+      { name: "CRM systems", info: "Want a CRM that suits your exact needs powered by a swarm of AI agents that work to your will, saving you and your staff time and money while ensuring nothing is ever missed? Look no further." },
+      { name: "E-commerce stores", info: "Our Shopify stores have scaled tens of thousands of sales on launch days and we're ready to help you get the same results." },
+      { name: "Booking platforms", info: "Have a restaurant, salon or any service business? See how much money we can save you with a free consultation today." },
     ],
   },
   retainer: {
@@ -81,16 +80,43 @@ const SERVICE_BACKS = {
     title: "Business Solutions",
     action: "sales" as const,
     items: [
-      "Recruitment & ATS systems",
-      "Payroll & HR tooling",
-      "AI integrations & agents",
-      "Workflow automation",
-      "Custom analytics dashboards",
-      "API & third-party integrations",
-      "Bespoke internal software",
+      { name: "Recruitment & ATS systems" },
+      { name: "Payroll & HR tooling" },
+      { name: "AI integrations & agents" },
+      { name: "Workflow automation" },
+      { name: "Custom analytics dashboards" },
+      { name: "API & third-party integrations" },
+      { name: "Bespoke internal software" },
     ],
   },
 } as const;
+
+type ServiceItem = { name: string; info?: string };
+
+function ServiceItemRow({ item }: { item: ServiceItem }) {
+  return (
+    <>
+      <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+      <span className="flex-1">{item.name}</span>
+      {item.info && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              aria-label={`More info about ${item.name}`}
+              className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40"
+            >
+              <Info className="h-3.5 w-3.5" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" align="end" className="w-64 text-xs leading-relaxed">
+            {item.info}
+          </PopoverContent>
+        </Popover>
+      )}
+    </>
+  );
+}
 
 const ENTERPRISE_FIELDS = [
   { key: "email", label: "Email", placeholder: "you@company.com", inputMode: "email" },
