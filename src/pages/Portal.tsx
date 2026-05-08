@@ -1647,6 +1647,7 @@ export default function Portal() {
     }
     await loadPortalSnapshot();
     toast.success("Sample moved back to undelivered.");
+  };
 
   const markOrderUndelivered = async (sessionId: string) => {
     const confirmed = window.confirm("Move this order back to open so delivery can be redone?");
