@@ -98,6 +98,13 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             const depthDim = Math.max(0.68, 1 - normalizedAngle / 420);
             const isFrontFacing = normalizedAngle < 75;
 
+            const openLink = () => {
+              const url = item.photo.by;
+              if (!url) return;
+              const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+              window.open(href, '_blank', 'noopener,noreferrer');
+            };
+
             return (
               <div
                 key={i}
@@ -113,15 +120,30 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   WebkitBackfaceVisibility: 'hidden',
                   filter: `brightness(${depthDim})`,
                   transition: 'opacity 0.3s ease-out',
-                  pointerEvents: 'none',
+                  pointerEvents: isFrontFacing ? 'auto' : 'none',
                 }}
               >
                 <div
                   className={cn(
-                    'relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black'
+                    'relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black',
+                    isFrontFacing && 'cursor-pointer'
                   )}
-                  style={{ pointerEvents: 'none' }}
+                  style={{ pointerEvents: isFrontFacing ? 'auto' : 'none' }}
                   aria-hidden={!isFrontFacing}
+                  {...(isFrontFacing
+                    ? {
+                        role: 'link',
+                        tabIndex: 0,
+                        'aria-label': `Open ${item.common}`,
+                        onClick: openLink,
+                        onKeyDown: (e: React.KeyboardEvent) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            openLink();
+                          }
+                        },
+                      }
+                    : {})}
                 >
                   <img
                     src={item.photo.url}
@@ -133,7 +155,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   {/(^|\.)bricks\./i.test(item.photo.by ?? '') && (
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
                   )}
-                  <div className="carousel-label-glass absolute inset-x-0 bottom-0 px-2 py-1 md:px-3 md:py-1.5 text-foreground">
+                  <div className="carousel-label-glass absolute inset-x-0 bottom-0 px-2 py-1 md:px-3 md:py-1.5 text-foreground pointer-events-none">
                     <div className="relative z-[1] leading-none">
                       <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate m-0">{item.common}</h3>
                       <p className="hidden md:block text-[10px] md:text-xs italic text-muted-foreground truncate drop-shadow m-0 mt-0.5">{item.binomial}</p>
