@@ -671,10 +671,10 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           <span className="text-xs text-muted-foreground line-through">RRP £1,500</span>
         </div>
         <IntroductoryOfferText discount="67%" />
-        <ul className="mb-6 space-y-2 text-lg text-foreground">
+        <ul className="mb-4 space-y-1.5 text-base text-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-foreground mt-1 shrink-0" />
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
