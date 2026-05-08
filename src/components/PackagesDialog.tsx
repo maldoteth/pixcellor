@@ -1237,7 +1237,7 @@ function MobileCards() {
                 <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={flipRetainerManually}>Retainer</Button>
               </div>
               <div className="mt-3 mb-1">
-                <span className="text-3xl font-extrabold text-foreground">Custom</span>
+                <span className="text-3xl font-extrabold text-foreground">​Solutions</span>
               </div>
               <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
               <ul className="space-y-2 flex-1 mb-4">
