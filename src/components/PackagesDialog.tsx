@@ -85,7 +85,7 @@ const SERVICE_BACKS = {
       { name: "AI integrations & agents", info: "Automate your entire business and workflow with highly secure and sophisticated agents that work 24/7, 365, custom built to maximise your ROI." },
       { name: "Consultations and audits", info: "Speak to our team of expert senior consultants from some of the largest companies in the world, including start-up founders who scaled to half a billion market cap and multi 7 figure Q1 revenues." },
       { name: "Consultations & audits", info: "View your business like never before with a custom analytics dashboard that maps your entire company activity and cashflow, giving you information a thousand men would take years to conclude." },
-      { name: "API & third-party integrations", info: "We will help you set up systems requiring technical knowledge." },
+      { name: "API & third-party", info: "We will help you set up systems requiring technical knowledge." },
       { name: "Product/project management", info: "If you want something as stunning as this website or any of our portfolio work, then look no further." },
     ],
   },
