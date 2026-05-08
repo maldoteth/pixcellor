@@ -11,6 +11,7 @@ import { AlertTriangle, Archive, Check, Clipboard, ExternalLink, Home, ImagePlus
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
+import { useDomainPrompt } from "@/components/DomainPromptDialog";
 
 type StripeSession = {
   session_id: string;
