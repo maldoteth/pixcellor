@@ -139,6 +139,7 @@ const MAX_SCROLL = CAROUSEL_SCROLL_END;
 const SCROLL_BREAK_DURATION = 650;
 const MOBILE_SCROLL_BOOST = 24;
 const TABLET_SCROLL_BOOST = 12;
+const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for ≥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
 
 // UI Template Images (16 unique + 4 repeated to fill 20 slots)
