@@ -1606,6 +1606,48 @@ export default function Portal() {
     }
   };
 
+  const markSampleDelivered = async (sample: { id: string; email: string | null }) => {
+    if (!sample.email) {
+      toast.error("This sample request has no email address.");
+      return;
+    }
+    const deliveredDomain = window.prompt("Enter the delivered website domain, e.g. example.com");
+    if (!deliveredDomain) return;
+    const cleanDomain = deliveredDomain.trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "").replace(/^www\./i, "").toLowerCase();
+    if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(cleanDomain)) {
+      toast.error("Enter a valid delivered domain.");
+      return;
+    }
+    setDeliveringSampleId(sample.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-sample-delivered", {
+        body: { sampleId: sample.id, deliveredDomain: cleanDomain },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || "Could not deliver sample");
+        return;
+      }
+      await loadPortalSnapshot();
+      if (data?.emailWarning) {
+        toast.warning(`Sample marked delivered, but the email failed: ${data.emailWarning}`);
+      } else {
+        toast.success(`Sample delivered and email sent to ${data.recipientEmail || sample.email}.`);
+      }
+    } finally {
+      setDeliveringSampleId(null);
+    }
+  };
+
+  const markSampleUndelivered = async (sampleId: string) => {
+    if (!window.confirm("Move this sample back to undelivered?")) return;
+    const { error } = await (supabase as any).rpc("portal_mark_sample_undelivered", { _sample_id: sampleId });
+    if (error) {
+      toast.error(error.message || "Could not update sample");
+      return;
+    }
+    await loadPortalSnapshot();
+    toast.success("Sample moved back to undelivered.");
+
   const markOrderUndelivered = async (sessionId: string) => {
     const confirmed = window.confirm("Move this order back to open so delivery can be redone?");
     if (!confirmed) return;
