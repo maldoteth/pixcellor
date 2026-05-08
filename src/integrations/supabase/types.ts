@@ -510,9 +510,14 @@ export type Database = {
         Row: {
           attachment_urls: string[] | null
           created_at: string
+          delivered_at: string | null
+          delivered_domain: string | null
           email: string | null
           id: string
           name: string
+          package_name: string | null
+          paid_at: string | null
+          paid_session_id: string | null
           phone: string | null
           request_details: Json | null
           source: string | null
@@ -520,9 +525,14 @@ export type Database = {
         Insert: {
           attachment_urls?: string[] | null
           created_at?: string
+          delivered_at?: string | null
+          delivered_domain?: string | null
           email?: string | null
           id?: string
           name: string
+          package_name?: string | null
+          paid_at?: string | null
+          paid_session_id?: string | null
           phone?: string | null
           request_details?: Json | null
           source?: string | null
@@ -530,9 +540,14 @@ export type Database = {
         Update: {
           attachment_urls?: string[] | null
           created_at?: string
+          delivered_at?: string | null
+          delivered_domain?: string | null
           email?: string | null
           id?: string
           name?: string
+          package_name?: string | null
+          paid_at?: string | null
+          paid_session_id?: string | null
           phone?: string | null
           request_details?: Json | null
           source?: string | null
@@ -1221,6 +1236,14 @@ export type Database = {
             Returns: undefined
           }
         | { Args: { _session_id: string }; Returns: undefined }
+      portal_mark_sample_delivered: {
+        Args: { _delivered_domain: string; _sample_id: string }
+        Returns: undefined
+      }
+      portal_mark_sample_undelivered: {
+        Args: { _sample_id: string }
+        Returns: undefined
+      }
       portal_require_access: {
         Args: { _access_code: string }
         Returns: undefined
