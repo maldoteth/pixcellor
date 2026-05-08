@@ -401,7 +401,8 @@ export default function Portal() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [projectRequirements, setProjectRequirements] = useState<ProjectRequirement[]>([]);
   const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
-  const [sampleRequests, setSampleRequests] = useState<Array<{ id: string; name: string; email: string | null; phone: string | null; created_at: string; request_details: { dream?: string | null; colours?: string | null } | null; attachment_urls: string[] | null }>>([]);
+  const [sampleRequests, setSampleRequests] = useState<Array<{ id: string; name: string; email: string | null; phone: string | null; created_at: string; request_details: { dream?: string | null; colours?: string | null } | null; attachment_urls: string[] | null; delivered_at?: string | null; delivered_domain?: string | null; paid_at?: string | null; paid_session_id?: string | null; package_name?: string | null }>>([]);
+  const [deliveringSampleId, setDeliveringSampleId] = useState<string | null>(null);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -1605,6 +1606,49 @@ export default function Portal() {
     }
   };
 
+  const markSampleDelivered = async (sample: { id: string; email: string | null }) => {
+    if (!sample.email) {
+      toast.error("This sample request has no email address.");
+      return;
+    }
+    const deliveredDomain = window.prompt("Enter the delivered website domain, e.g. example.com");
+    if (!deliveredDomain) return;
+    const cleanDomain = deliveredDomain.trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "").replace(/^www\./i, "").toLowerCase();
+    if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(cleanDomain)) {
+      toast.error("Enter a valid delivered domain.");
+      return;
+    }
+    setDeliveringSampleId(sample.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-sample-delivered", {
+        body: { sampleId: sample.id, deliveredDomain: cleanDomain },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || "Could not deliver sample");
+        return;
+      }
+      await loadPortalSnapshot();
+      if (data?.emailWarning) {
+        toast.warning(`Sample marked delivered, but the email failed: ${data.emailWarning}`);
+      } else {
+        toast.success(`Sample delivered and email sent to ${data.recipientEmail || sample.email}.`);
+      }
+    } finally {
+      setDeliveringSampleId(null);
+    }
+  };
+
+  const markSampleUndelivered = async (sampleId: string) => {
+    if (!window.confirm("Move this sample back to undelivered?")) return;
+    const { error } = await (supabase as any).rpc("portal_mark_sample_undelivered", { _sample_id: sampleId });
+    if (error) {
+      toast.error(error.message || "Could not update sample");
+      return;
+    }
+    await loadPortalSnapshot();
+    toast.success("Sample moved back to undelivered.");
+  };
+
   const markOrderUndelivered = async (sessionId: string) => {
     const confirmed = window.confirm("Move this order back to open so delivery can be redone?");
     if (!confirmed) return;
@@ -2048,10 +2092,29 @@ export default function Portal() {
                         <div key={r.id} className="rounded-none border border-border bg-background/50 p-3 text-sm space-y-2">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="space-y-0.5">
-                              <div className="font-medium">{r.name}</div>
+                              <div className="font-medium flex flex-wrap items-center gap-2">
+                                {r.name}
+                                <Badge variant={r.paid_at ? "default" : "outline"}>{r.paid_at ? "Paid" : "Unpaid"}</Badge>
+                                <Badge variant={r.delivered_at ? "default" : "outline"}>{r.delivered_at ? "Delivered" : "Live"}</Badge>
+                              </div>
                               <div className="text-xs text-muted-foreground">
                                 {[r.email, r.phone].filter(Boolean).join(" · ") || "No contact"} · {new Date(r.created_at).toLocaleString()}
                               </div>
+                              {r.delivered_at && (
+                                <div className="text-xs text-muted-foreground">Delivered {new Date(r.delivered_at).toLocaleString()}{r.delivered_domain ? ` · ${r.delivered_domain}` : ""}</div>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {!r.delivered_at && (
+                                <Button size="sm" variant="outline" onClick={() => markSampleDelivered(r)} disabled={deliveringSampleId === r.id}>
+                                  {deliveringSampleId === r.id ? "Processing…" : "Mark delivered"}
+                                </Button>
+                              )}
+                              {r.delivered_at && (
+                                <Button size="sm" variant="outline" onClick={() => markSampleUndelivered(r.id)}>
+                                  Mark undelivered
+                                </Button>
+                              )}
                             </div>
                           </div>
                           {dream && (
