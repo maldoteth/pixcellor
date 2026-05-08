@@ -289,7 +289,7 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   return (
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="top-[54%] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent", perspective: "1600px" }}>
+      <DialogContent className="top-[calc(54%-10px)] max-w-none w-auto h-auto border-none bg-transparent p-0 shadow-none sm:rounded-none [&>button]:hidden" style={{ background: "transparent", perspective: "1600px" }}>
         <DesktopShell spinIn={spinIn} initialServices={initialServices} />
       </DialogContent>
     </Dialog>
