@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, Lock, X, Code2, Megaphone, Briefcase, Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -94,25 +94,43 @@ const SERVICE_BACKS = {
 type ServiceItem = { name: string; info?: string };
 
 function ServiceItemRow({ item }: { item: ServiceItem }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+    };
+  }, [open]);
   return (
     <>
       <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
       <span className="flex-1">{item.name}</span>
       {item.info && (
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              aria-label={`More info about ${item.name}`}
-              className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40"
+        <div ref={ref} className="relative shrink-0">
+          <button
+            type="button"
+            aria-label={`More info about ${item.name}`}
+            onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+            className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40"
+          >
+            <Info className="h-3.5 w-3.5" />
+          </button>
+          {open && (
+            <div
+              role="tooltip"
+              className="absolute right-0 bottom-full mb-2 z-50 w-60 rounded-md border border-border bg-popover p-3 text-xs leading-relaxed text-popover-foreground shadow-lg"
             >
-              <Info className="h-3.5 w-3.5" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent side="top" align="end" className="w-64 text-xs leading-relaxed">
-            {item.info}
-          </PopoverContent>
-        </Popover>
+              {item.info}
+            </div>
+          )}
+        </div>
       )}
     </>
   );
