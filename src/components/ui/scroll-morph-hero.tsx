@@ -334,7 +334,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             const combinedDelta = Math.abs(deltaY) >= Math.abs(deltaX) ? deltaY : deltaX;
 
             const w = window.innerWidth;
-            const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : 1;
+            const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : DESKTOP_TOUCH_BOOST;
             const carouselMult = inCarousel ? CAROUSEL_SCROLL_SENSITIVITY : 1;
             const scrollDelta = combinedDelta * boost * carouselMult;
             applyVirtualScrollDelta(scrollDelta, "touch");
