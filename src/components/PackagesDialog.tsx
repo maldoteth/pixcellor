@@ -856,7 +856,7 @@ function ServiceBackCard({
 }: {
   variant: "side" | "center";
   rotate: number;
-  data: { icon: typeof Code2; title: string; action: ServiceAction; items: readonly string[] };
+  data: { icon: typeof Code2; title: string; action: ServiceAction; items: readonly ServiceItem[] };
   onAction?: (action: ServiceAction) => void;
 }) {
   const isCenter = variant === "center";
