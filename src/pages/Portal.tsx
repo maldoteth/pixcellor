@@ -2281,9 +2281,9 @@ export default function Portal() {
             </div>
             <div className="flex flex-wrap items-center gap-2 rounded-none border border-border bg-card/50 p-3">
               <span className="text-xs font-medium text-muted-foreground">Requirements</span>
-              <Button variant={orderReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("all")}>All</Button>
-              <Button variant={orderReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("submitted")}>Reqs submitted</Button>
-              <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
+              <Button variant={completedReqsFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setCompletedReqsFilter("all")}>All</Button>
+              <Button variant={completedReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setCompletedReqsFilter("submitted")}>Reqs submitted</Button>
+              <Button variant={completedReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setCompletedReqsFilter("waiting")}>Waiting</Button>
             </div>
             {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No completed orders {completedQ ? "match your search" : "yet"}.</p>}
             {completedOrders.map(o => {
