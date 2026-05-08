@@ -155,7 +155,7 @@ function FlipCard({
                 position: "absolute",
                 width: IMG_WIDTH,
                 height: IMG_HEIGHT,
-                zIndex: proximity > 0.05 ? 300 : 45,
+                zIndex: proximity > 0.05 ? 46 : 45,
                 pointerEvents: "auto",
             }}
             className="cursor-pointer group"
