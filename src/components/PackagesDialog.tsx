@@ -151,23 +151,51 @@ function StripeBadge() {
         <span className="text-[10px] font-bold tracking-wide text-foreground">Stripe</span>
       </div>
       <PaymentMethodIcons />
-      <div className="mt-3 text-center flex flex-col items-center">
-        <p className="font-semibold tracking-wide opacity-80 text-primary-foreground text-2xl">
-          FREE SAMPLES
-        </p>
-        <p className="text-[10px] tracking-wide opacity-70 text-primary-foreground">
-          Don't pay until you're happy!
-        </p>
-        <Button
-          variant="pricing"
-          onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }))}
-          className="mt-2 h-auto py-1.5 px-4 text-xs font-semibold"
-          aria-label="Request a free sample"
-        >
-          Request
-        </Button>
-      </div>
     </div>
+  );
+}
+
+function FreeSamplesBadge({ className = "" }: { className?: string }) {
+  // 24-point starburst polygon
+  const points = Array.from({ length: 48 }, (_, i) => {
+    const angle = (i / 48) * Math.PI * 2 - Math.PI / 2;
+    const r = i % 2 === 0 ? 50 : 40;
+    return `${50 + r * Math.cos(angle)},${50 + r * Math.sin(angle)}`;
+  }).join(" ");
+  return (
+    <button
+      type="button"
+      onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }))}
+      aria-label="Request a free sample — don't pay until you're happy"
+      className={`group relative inline-flex items-center justify-center transition-transform hover:scale-105 active:scale-95 ${className}`}
+      style={{ width: 130, height: 130, filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.45))" }}
+    >
+      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" aria-hidden="true">
+        <polygon
+          points={points}
+          fill="hsl(var(--background))"
+          stroke="hsl(var(--foreground) / 0.5)"
+          strokeWidth="0.8"
+        />
+        <polygon
+          points={points}
+          fill="url(#fsGloss)"
+          opacity="0.25"
+        />
+        <defs>
+          <linearGradient id="fsGloss" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 leading-tight">
+        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase">Free</span>
+        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase -mt-0.5">Samples</span>
+        <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider mt-0.5">Don't pay till</span>
+        <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider">you're happy</span>
+      </div>
+    </button>
   );
 }
 
@@ -508,9 +536,10 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       className="relative"
     >
     <div
-      className="flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100"
+      className="relative flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.72] md:max-lg:origin-center lg:scale-100"
       style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
     >
+      <FreeSamplesBadge className="absolute -top-12 -right-8 z-30 rotate-[12deg]" />
       {/* Full Works - tilted left */}
       <motion.div data-lava-card
         onMouseMove={handleMouseMove}
