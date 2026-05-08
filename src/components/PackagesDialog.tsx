@@ -636,7 +636,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 60, rotate: 0, scale: 1.1 }}
-        animate={{ opacity: 1, y: -20, rotate: 0, scale: 1.1 }}
+        animate={{ opacity: 1, y: 0, rotate: 0, scale: 1.1 }}
         whileHover={{ scale: 1.12 }}
         transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
         className="relative z-20 w-[336px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-10 pb-6 shadow-xl"
@@ -656,7 +656,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           <div className="lava-blob lava-blob-featured-2" />
           <div className="lava-blob lava-blob-featured-3" />
         </div>
-        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-3 translate-y-[388px] z-30 rotate-[12deg]" />
+        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-3 translate-y-[368px] z-30 rotate-[12deg]" />
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
@@ -671,15 +671,15 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           <span className="text-xs text-muted-foreground line-through">RRP £1,500</span>
         </div>
         <IntroductoryOfferText discount="67%" />
-        <ul className="mb-6 space-y-2 text-lg text-foreground">
+        <ul className="mb-4 space-y-1.5 text-base text-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-foreground mt-1 shrink-0" />
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
         </ul>
-        <div className="mt-[18px]">
+        <div className="mt-3">
         <GlassBuyButton
           onClick={() =>
             buy(
