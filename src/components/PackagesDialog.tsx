@@ -40,7 +40,7 @@ const PACKAGES = {
   },
   enterprise: {
     name: "Enterprise",
-    features: ["Larger scale operations that need scaling", "Infrastructure and ecosystems", "Fictionalized Business Departments"],
+    features: ["Larger scale operations", "Infrastructure and ecosystems", "Fictionalized Business Departments"],
   },
 };
 
