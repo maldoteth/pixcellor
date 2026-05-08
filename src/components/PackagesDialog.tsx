@@ -817,7 +817,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 <div className="text-lg font-bold text-foreground">Enterprise</div>
                 <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={flipRetainerManually}>Retainer</Button>
               </div>
-              <div className="mb-1 text-3xl font-extrabold text-foreground">Custom</div>
+              <div className="mb-1 text-3xl font-extrabold text-foreground">​Solutions</div>
               <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
               <ul className="mb-6 space-y-2 text-base text-foreground">
                 {PACKAGES.enterprise.features.map((f) => (
