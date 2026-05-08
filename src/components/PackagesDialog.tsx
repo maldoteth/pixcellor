@@ -932,6 +932,9 @@ function MobileShell({
         {!showServices && <StripeBadge />}
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
+        <div className="mb-4">
+          <MobileFreeSamplesCard />
+        </div>
         {showServices ? <MobileServicesList onShowPricing={() => onShowServicesChange(false)} /> : <MobileCards />}
       </div>
     </div>
