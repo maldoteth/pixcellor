@@ -208,12 +208,16 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
     return `${50 + r * Math.cos(angle)},${50 + r * Math.sin(angle)}`;
   }).join(" ");
   return (
-    <button
+    <motion.button
       type="button"
       onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }))}
       aria-label="Request a free sample — don't pay until you're happy"
-      className={`group relative inline-flex items-center justify-center transition-transform hover:scale-105 active:scale-95 ${className}`}
+      className={`group relative inline-flex items-center justify-center overflow-hidden ${className}`}
       style={{ width: 130, height: 130, filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.45))" }}
+      animate={{ scale: [1, 1.06, 1] }}
+      transition={{ duration: 1.8, ease: "easeInOut", repeat: Infinity }}
+      whileHover={{ scale: 1.12 }}
+      whileTap={{ scale: 0.95 }}
     >
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" aria-hidden="true">
         <polygon
@@ -234,13 +238,25 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
           </linearGradient>
         </defs>
       </svg>
+      {/* Continuous shimmer sweep */}
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(115deg, transparent 30%, hsl(var(--foreground) / 0.55) 50%, transparent 70%)",
+          mixBlendMode: "overlay",
+        }}
+        animate={{ x: ["-120%", "120%"] }}
+        transition={{ duration: 2.2, ease: "easeInOut", repeat: Infinity, repeatDelay: 0.4 }}
+      />
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 leading-tight">
         <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase">Free</span>
         <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase -mt-0.5">Samples</span>
         <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider mt-0.5">Don't pay till</span>
         <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider">you're happy</span>
       </div>
-    </button>
+    </motion.button>
   );
 }
 
