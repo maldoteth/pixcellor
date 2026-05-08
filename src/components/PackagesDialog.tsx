@@ -53,7 +53,7 @@ const SERVICE_BACKS = {
     action: "sales" as const,
     items: [
       "Telesales campaigns",
-      "Email marketing campaigns",
+      "GTM and Lead Generation",
       "Broadcast SMS & WhatsApp",
       "Lead generation & GTM",
       "SEO & AEO optimisation",
