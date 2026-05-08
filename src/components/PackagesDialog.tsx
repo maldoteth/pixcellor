@@ -86,7 +86,7 @@ const SERVICE_BACKS = {
       { name: "Consultations and audits" },
       { name: "Custom analytics dashboards" },
       { name: "API & third-party integrations" },
-      { name: "Bespoke internal software" },
+      { name: "Product/project management" },
     ],
   },
 } as const;
