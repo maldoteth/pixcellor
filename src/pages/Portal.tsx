@@ -2092,10 +2092,29 @@ export default function Portal() {
                         <div key={r.id} className="rounded-none border border-border bg-background/50 p-3 text-sm space-y-2">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="space-y-0.5">
-                              <div className="font-medium">{r.name}</div>
+                              <div className="font-medium flex flex-wrap items-center gap-2">
+                                {r.name}
+                                <Badge variant={r.paid_at ? "default" : "outline"}>{r.paid_at ? "Paid" : "Unpaid"}</Badge>
+                                <Badge variant={r.delivered_at ? "default" : "outline"}>{r.delivered_at ? "Delivered" : "Live"}</Badge>
+                              </div>
                               <div className="text-xs text-muted-foreground">
                                 {[r.email, r.phone].filter(Boolean).join(" · ") || "No contact"} · {new Date(r.created_at).toLocaleString()}
                               </div>
+                              {r.delivered_at && (
+                                <div className="text-xs text-muted-foreground">Delivered {new Date(r.delivered_at).toLocaleString()}{r.delivered_domain ? ` · ${r.delivered_domain}` : ""}</div>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {!r.delivered_at && (
+                                <Button size="sm" variant="outline" onClick={() => markSampleDelivered(r)} disabled={deliveringSampleId === r.id}>
+                                  {deliveringSampleId === r.id ? "Processing…" : "Mark delivered"}
+                                </Button>
+                              )}
+                              {r.delivered_at && (
+                                <Button size="sm" variant="outline" onClick={() => markSampleUndelivered(r.id)}>
+                                  Mark undelivered
+                                </Button>
+                              )}
                             </div>
                           </div>
                           {dream && (
