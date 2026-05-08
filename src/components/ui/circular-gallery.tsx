@@ -97,12 +97,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             );
             const depthDim = Math.max(0.68, 1 - normalizedAngle / 420);
             const isFrontFacing = normalizedAngle < 75;
-            const openLink = () => {
-              const raw = item.photo.by ?? '';
-              if (!raw || !/\./.test(raw)) return;
-              const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-              window.open(url, '_blank', 'noopener,noreferrer');
-            };
 
             return (
               <div
@@ -119,20 +113,15 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   WebkitBackfaceVisibility: 'hidden',
                   filter: `brightness(${depthDim})`,
                   transition: 'opacity 0.3s ease-out',
-                  pointerEvents: isFrontFacing ? 'auto' : 'none',
+                  pointerEvents: 'none',
                 }}
               >
                 <div
                   className={cn(
-                    'relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black',
-                    isFrontFacing && 'cursor-pointer'
+                    'relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black'
                   )}
-                  style={{ pointerEvents: isFrontFacing ? 'auto' : 'none' }}
-                  onClick={isFrontFacing ? (e) => { e.stopPropagation(); openLink(); } : undefined}
-                  role={isFrontFacing ? 'link' : undefined}
-                  tabIndex={isFrontFacing ? 0 : -1}
-                  onKeyDown={isFrontFacing ? (e) => { if (e.key === 'Enter' || e.key === ' ') openLink(); } : undefined}
-                  aria-label={isFrontFacing ? `Open ${item.common}` : undefined}
+                  style={{ pointerEvents: 'none' }}
+                  aria-hidden={!isFrontFacing}
                 >
                   <img
                     src={item.photo.url}
