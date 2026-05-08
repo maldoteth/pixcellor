@@ -80,7 +80,7 @@ const SERVICE_BACKS = {
     title: "Business Solutions",
     action: "sales" as const,
     items: [
-      { name: "Recruitment & ATS", info: "Our team come from senior roles at the largest agencies in the world, including award-winning annual top billers across multiple sectors such as tech, medical, crypto, construction, hospitality, education and more." },
+      { name: "Recruitment & ATS", info: "Our team come from senior roles at the largest agencies in the world, including award-winning annual top billers across multiple sectors such as tech, medical, crypto, construction, hospitality, education and more. Whether it's a quick hire or your own custom recruiting software with AI agent recruitment consultants that ensure you never have to pay hefty middle-man fees again." },
       { name: "Payroll & HR tooling", info: "Access cutting-edge payroll and non-custodial solutions with instant one-day settlements and irreversible transactions." },
       { name: "AI integrations & agents", info: "Automate your entire business and workflow with highly secure and sophisticated agents that work 24/7, 365, custom built to maximise your ROI." },
       { name: "Consultations and audits", info: "Speak to our team of expert senior consultants from some of the largest companies in the world, including start-up founders who scaled to half a billion market cap and multi 7 figure Q1 revenues." },
