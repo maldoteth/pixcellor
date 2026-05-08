@@ -11,6 +11,7 @@ import { AlertTriangle, Archive, Check, Clipboard, ExternalLink, Home, ImagePlus
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
+import { useDomainPrompt } from "@/components/DomainPromptDialog";
 
 type StripeSession = {
   session_id: string;
@@ -403,6 +404,7 @@ export default function Portal() {
   const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
   const [sampleRequests, setSampleRequests] = useState<Array<{ id: string; name: string; email: string | null; phone: string | null; created_at: string; request_details: { dream?: string | null; colours?: string | null } | null; attachment_urls: string[] | null; delivered_at?: string | null; delivered_domain?: string | null; paid_at?: string | null; paid_session_id?: string | null; package_name?: string | null }>>([]);
   const [deliveringSampleId, setDeliveringSampleId] = useState<string | null>(null);
+  const { promptDomain, dialog: domainPromptDialog } = useDomainPrompt();
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -1563,7 +1565,10 @@ export default function Portal() {
       return;
     }
 
-    const deliveredDomain = window.prompt("Enter the delivered website domain, e.g. example.com");
+    const deliveredDomain = await promptDomain({
+      title: "Mark order delivered",
+      description: `Enter the live domain we delivered the website to for ${order.customer_email}.`,
+    });
     if (!deliveredDomain) return;
 
     const cleanDomain = deliveredDomain.trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "").replace(/^www\./i, "").toLowerCase();
@@ -1611,7 +1616,10 @@ export default function Portal() {
       toast.error("This sample request has no email address.");
       return;
     }
-    const deliveredDomain = window.prompt("Enter the delivered website domain, e.g. example.com");
+    const deliveredDomain = await promptDomain({
+      title: "Mark sample delivered",
+      description: `Enter the live domain we delivered the free sample to for ${sample.email}.`,
+    });
     if (!deliveredDomain) return;
     const cleanDomain = deliveredDomain.trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "").replace(/^www\./i, "").toLowerCase();
     if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(cleanDomain)) {
@@ -3219,6 +3227,7 @@ export default function Portal() {
           </Button>
         </div>
       </nav>
+      {domainPromptDialog}
     </div>
   );
 }
