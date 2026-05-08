@@ -83,7 +83,7 @@ const SERVICE_BACKS = {
       { name: "Recruitment & ATS systems" },
       { name: "Payroll & HR tooling" },
       { name: "AI integrations & agents" },
-      { name: "Workflow automation" },
+      { name: "Consultations and audits" },
       { name: "Custom analytics dashboards" },
       { name: "API & third-party integrations" },
       { name: "Bespoke internal software" },
