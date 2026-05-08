@@ -298,7 +298,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             const touchY = e.touches[0].clientY;
             const touchX = e.touches[0].clientX;
             const deltaY = touchStartY - touchY;
-            const deltaX = touchStartX - touchX;
+            const deltaX = touchX - touchStartX;
 
             if (gestureAxis === "none") {
                 const absX = Math.abs(touchX - touchStartX);
