@@ -679,7 +679,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             </li>
           ))}
         </ul>
-        <div className="mt-[18px]">
+        <div className="mt-3">
         <GlassBuyButton
           onClick={() =>
             buy(
