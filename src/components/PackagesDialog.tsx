@@ -55,7 +55,7 @@ const SERVICE_BACKS = {
       "Telesales campaigns",
       "Email marketing campaigns",
       "Broadcast SMS & WhatsApp",
-      "Lead generation & outreach",
+      "Lead generation & GTM",
       "SEO & AEO optimisation",
       "Social media automation",
       "Paid ads & retargeting",
