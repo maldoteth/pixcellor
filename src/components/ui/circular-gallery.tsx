@@ -96,11 +96,18 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
               relativeAngle > 180 ? 360 - relativeAngle : relativeAngle
             );
             const depthDim = Math.max(0.68, 1 - normalizedAngle / 420);
+            const isFrontFacing = normalizedAngle < 75;
+            const openLink = () => {
+              const raw = item.photo.by ?? '';
+              if (!raw || !/\./.test(raw)) return;
+              const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+              window.open(url, '_blank', 'noopener,noreferrer');
+            };
 
             return (
               <div
                 key={i}
-                className="absolute top-1/2 left-1/2 pointer-events-auto"
+                className="absolute top-1/2 left-1/2"
                 style={{
                   width: cardW,
                   height: cardH,
@@ -108,30 +115,24 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   marginTop: -cardH / 2,
                   transform: `rotateY(${itemAngle + effectiveRotation}deg) translateZ(${effectiveRadius}px)`,
                   transformStyle: 'preserve-3d',
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
                   filter: `brightness(${depthDim})`,
                   transition: 'opacity 0.3s ease-out',
+                  pointerEvents: isFrontFacing ? 'auto' : 'none',
                 }}
               >
                 <div
-                  className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const raw = item.photo.by ?? '';
-                    if (!raw || !/\./.test(raw)) return;
-                    const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-                    window.open(url, '_blank', 'noopener,noreferrer');
-                  }}
-                  role="link"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      const raw = item.photo.by ?? '';
-                      if (!raw || !/\./.test(raw)) return;
-                      const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-                      window.open(url, '_blank', 'noopener,noreferrer');
-                    }
-                  }}
-                  aria-label={`Open ${item.common}`}
+                  className={cn(
+                    'relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black',
+                    isFrontFacing && 'cursor-pointer'
+                  )}
+                  style={{ pointerEvents: isFrontFacing ? 'auto' : 'none' }}
+                  onClick={isFrontFacing ? (e) => { e.stopPropagation(); openLink(); } : undefined}
+                  role={isFrontFacing ? 'link' : undefined}
+                  tabIndex={isFrontFacing ? 0 : -1}
+                  onKeyDown={isFrontFacing ? (e) => { if (e.key === 'Enter' || e.key === ' ') openLink(); } : undefined}
+                  aria-label={isFrontFacing ? `Open ${item.common}` : undefined}
                 >
                   <img
                     src={item.photo.url}
