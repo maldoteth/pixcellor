@@ -887,9 +887,8 @@ function ServiceBackCard({
         </div>
         <ul className="space-y-2 text-base text-foreground flex-1 mb-6">
           {data.items.map((item) => (
-            <li key={item} className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-              <span>{item}</span>
+            <li key={item.name} className="flex items-start gap-2">
+              <ServiceItemRow item={item} />
             </li>
           ))}
         </ul>
