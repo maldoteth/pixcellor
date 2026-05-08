@@ -1616,7 +1616,10 @@ export default function Portal() {
       toast.error("This sample request has no email address.");
       return;
     }
-    const deliveredDomain = window.prompt("Enter the delivered website domain, e.g. example.com");
+    const deliveredDomain = await promptDomain({
+      title: "Mark sample delivered",
+      description: `Enter the live domain we delivered the free sample to for ${sample.email}.`,
+    });
     if (!deliveredDomain) return;
     const cleanDomain = deliveredDomain.trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "").replace(/^www\./i, "").toLowerCase();
     if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(cleanDomain)) {
