@@ -319,7 +319,7 @@ function DesktopShell({ spinIn, initialServices = false }: { spinIn: boolean; in
           }}
         />
       </motion.div>
-      <div className="mt-6 flex justify-center gap-3">
+      <div className="mt-6 -translate-y-[10px] flex justify-center gap-3">
         <Button
           variant="pricing"
           className="h-auto w-40 py-2 font-semibold [perspective:600px]"
