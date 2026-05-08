@@ -3,6 +3,72 @@ import React, { useState, useEffect, useRef, HTMLAttributes } from 'react';
 const cn = (...classes: (string | undefined | null | false)[]) =>
   classes.filter(Boolean).join(' ');
 
+// Cache extracted dominant colors per image url across renders
+const colorCache = new Map<string, { r: number; g: number; b: number }>();
+
+function useDominantColor(url: string) {
+  const [color, setColor] = useState<{ r: number; g: number; b: number } | null>(
+    () => colorCache.get(url) ?? null
+  );
+
+  useEffect(() => {
+    if (!url) return;
+    const cached = colorCache.get(url);
+    if (cached) {
+      setColor(cached);
+      return;
+    }
+    let cancelled = false;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const w = 24;
+        const h = 24;
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        // Sample bottom half (where the label sits)
+        ctx.drawImage(img, 0, img.height / 2, img.width, img.height / 2, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let r = 0, g = 0, b = 0, count = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] < 200) continue;
+          r += data[i];
+          g += data[i + 1];
+          b += data[i + 2];
+          count++;
+        }
+        if (!count) return;
+        r = Math.round(r / count);
+        g = Math.round(g / count);
+        b = Math.round(b / count);
+        // If mostly grey, nudge dominant channel for visible tint
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        if (max - min < 25) {
+          if (max === r) r = Math.min(255, r + 35);
+          else if (max === g) g = Math.min(255, g + 35);
+          else b = Math.min(255, b + 35);
+        }
+        const out = { r, g, b };
+        colorCache.set(url, out);
+        if (!cancelled) setColor(out);
+      } catch {
+        // CORS or other failures: leave color null
+      }
+    };
+    img.src = url;
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  return color;
+}
+
 export interface GalleryItem {
   common: string;
   binomial: string;
