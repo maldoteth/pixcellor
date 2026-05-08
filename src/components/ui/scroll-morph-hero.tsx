@@ -986,7 +986,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 total={TOTAL_IMAGES}
                                 phase={introPhase}
                                 target={target}
-                                onViewDetails={openRandomPortfolioLink}
+                                onViewDetails={advanceHeroFromArrow}
                             />
                         );
                     })}
