@@ -88,6 +88,77 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
   externalRotation?: number;
 }
 
+interface GalleryCardProps {
+  item: GalleryItem;
+  isFrontFacing: boolean;
+}
+
+const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
+  const color = useDominantColor(item.photo.url);
+
+  const openLink = () => {
+    const url = item.photo.by;
+    if (!url) return;
+    const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    window.open(href, '_blank', 'noopener,noreferrer');
+  };
+
+  const tintStrong = color ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.85)` : 'rgba(0,0,0,0.7)';
+  const tintMid = color ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.45)` : 'rgba(0,0,0,0.35)';
+  const glow = color ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.55)` : 'rgba(255,255,255,0.15)';
+
+  return (
+    <div
+      className={cn(
+        'relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black',
+        isFrontFacing && 'cursor-pointer'
+      )}
+      style={{
+        pointerEvents: isFrontFacing ? 'auto' : 'none',
+        boxShadow: color
+          ? `0 10px 30px -8px ${glow}, 0 0 0 1px rgba(255,255,255,0.06)`
+          : undefined,
+      }}
+      aria-hidden={!isFrontFacing}
+      {...(isFrontFacing
+        ? {
+            role: 'link',
+            tabIndex: 0,
+            'aria-label': `Open ${item.common}`,
+            onClick: openLink,
+            onKeyDown: (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openLink();
+              }
+            },
+          }
+        : {})}
+    >
+      <img
+        src={item.photo.url}
+        alt={item.photo.text}
+        crossOrigin="anonymous"
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
+        loading="lazy"
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none"
+        style={{
+          background: `linear-gradient(to top, ${tintStrong} 0%, ${tintMid} 55%, transparent 100%)`,
+        }}
+      />
+      <div className="carousel-label-glass absolute inset-x-0 bottom-0 px-2 py-1 md:px-3 md:py-1.5 text-foreground pointer-events-none">
+        <div className="relative z-[1] leading-none">
+          <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate m-0">{item.common}</h3>
+          <p className="hidden md:block text-[10px] md:text-xs italic text-muted-foreground truncate drop-shadow m-0 mt-0.5">{item.binomial}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
   ({ items, className, radius = 600, autoRotateSpeed = 0.02, externalRotation, ...props }, ref) => {
     const [rotation, setRotation] = useState(0);
