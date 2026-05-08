@@ -639,7 +639,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         animate={{ opacity: 1, y: 0, rotate: 0, scale: 1.1 }}
         whileHover={{ scale: 1.12 }}
         transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
-        className="relative z-20 w-[336px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-6 pb-6 shadow-xl"
+        className="relative z-20 mt-14 w-[336px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-6 pb-6 shadow-xl"
         style={{
           willChange: "transform",
           boxShadow: `
@@ -656,7 +656,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           <div className="lava-blob lava-blob-featured-2" />
           <div className="lava-blob lava-blob-featured-3" />
         </div>
-        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-3 translate-y-[368px] z-30 rotate-[12deg]" />
+        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-3 translate-y-[312px] z-30 rotate-[12deg]" />
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
