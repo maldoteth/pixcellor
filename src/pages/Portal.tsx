@@ -3227,6 +3227,7 @@ export default function Portal() {
           </Button>
         </div>
       </nav>
+      {domainPromptDialog}
     </div>
   );
 }
