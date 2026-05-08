@@ -3,6 +3,72 @@ import React, { useState, useEffect, useRef, HTMLAttributes } from 'react';
 const cn = (...classes: (string | undefined | null | false)[]) =>
   classes.filter(Boolean).join(' ');
 
+// Cache extracted dominant colors per image url across renders
+const colorCache = new Map<string, { r: number; g: number; b: number }>();
+
+function useDominantColor(url: string) {
+  const [color, setColor] = useState<{ r: number; g: number; b: number } | null>(
+    () => colorCache.get(url) ?? null
+  );
+
+  useEffect(() => {
+    if (!url) return;
+    const cached = colorCache.get(url);
+    if (cached) {
+      setColor(cached);
+      return;
+    }
+    let cancelled = false;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const w = 24;
+        const h = 24;
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        // Sample bottom half (where the label sits)
+        ctx.drawImage(img, 0, img.height / 2, img.width, img.height / 2, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let r = 0, g = 0, b = 0, count = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] < 200) continue;
+          r += data[i];
+          g += data[i + 1];
+          b += data[i + 2];
+          count++;
+        }
+        if (!count) return;
+        r = Math.round(r / count);
+        g = Math.round(g / count);
+        b = Math.round(b / count);
+        // If mostly grey, nudge dominant channel for visible tint
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        if (max - min < 25) {
+          if (max === r) r = Math.min(255, r + 35);
+          else if (max === g) g = Math.min(255, g + 35);
+          else b = Math.min(255, b + 35);
+        }
+        const out = { r, g, b };
+        colorCache.set(url, out);
+        if (!cancelled) setColor(out);
+      } catch {
+        // CORS or other failures: leave color null
+      }
+    };
+    img.src = url;
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  return color;
+}
+
 export interface GalleryItem {
   common: string;
   binomial: string;
@@ -21,6 +87,77 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
   /** External rotation driver in degrees (e.g. from a parent scroll value). When provided, window scroll is ignored. */
   externalRotation?: number;
 }
+
+interface GalleryCardProps {
+  item: GalleryItem;
+  isFrontFacing: boolean;
+}
+
+const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
+  const color = useDominantColor(item.photo.url);
+
+  const openLink = () => {
+    const url = item.photo.by;
+    if (!url) return;
+    const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    window.open(href, '_blank', 'noopener,noreferrer');
+  };
+
+  const tintStrong = color ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.85)` : 'rgba(0,0,0,0.7)';
+  const tintMid = color ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.45)` : 'rgba(0,0,0,0.35)';
+  const glow = color ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.55)` : 'rgba(255,255,255,0.15)';
+
+  return (
+    <div
+      className={cn(
+        'relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black',
+        isFrontFacing && 'cursor-pointer'
+      )}
+      style={{
+        pointerEvents: isFrontFacing ? 'auto' : 'none',
+        boxShadow: color
+          ? `0 10px 30px -8px ${glow}, 0 0 0 1px rgba(255,255,255,0.06)`
+          : undefined,
+      }}
+      aria-hidden={!isFrontFacing}
+      {...(isFrontFacing
+        ? {
+            role: 'link',
+            tabIndex: 0,
+            'aria-label': `Open ${item.common}`,
+            onClick: openLink,
+            onKeyDown: (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openLink();
+              }
+            },
+          }
+        : {})}
+    >
+      <img
+        src={item.photo.url}
+        alt={item.photo.text}
+        crossOrigin="anonymous"
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
+        loading="lazy"
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none"
+        style={{
+          background: `linear-gradient(to top, ${tintStrong} 0%, ${tintMid} 55%, transparent 100%)`,
+        }}
+      />
+      <div className="carousel-label-glass absolute inset-x-0 bottom-0 px-2 py-1 md:px-3 md:py-1.5 text-foreground pointer-events-none">
+        <div className="relative z-[1] leading-none">
+          <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate m-0">{item.common}</h3>
+          <p className="hidden md:block text-[10px] md:text-xs italic text-muted-foreground truncate drop-shadow m-0 mt-0.5">{item.binomial}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
   ({ items, className, radius = 600, autoRotateSpeed = 0.02, externalRotation, ...props }, ref) => {
@@ -98,13 +235,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             const depthDim = Math.max(0.68, 1 - normalizedAngle / 420);
             const isFrontFacing = normalizedAngle < 75;
 
-            const openLink = () => {
-              const url = item.photo.by;
-              if (!url) return;
-              const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
-              window.open(href, '_blank', 'noopener,noreferrer');
-            };
-
             return (
               <div
                 key={i}
@@ -123,43 +253,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   pointerEvents: isFrontFacing ? 'auto' : 'none',
                 }}
               >
-                <div
-                  className={cn(
-                    'relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black',
-                    isFrontFacing && 'cursor-pointer'
-                  )}
-                  style={{ pointerEvents: isFrontFacing ? 'auto' : 'none' }}
-                  aria-hidden={!isFrontFacing}
-                  {...(isFrontFacing
-                    ? {
-                        role: 'link',
-                        tabIndex: 0,
-                        'aria-label': `Open ${item.common}`,
-                        onClick: openLink,
-                        onKeyDown: (e: React.KeyboardEvent) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            openLink();
-                          }
-                        },
-                      }
-                    : {})}
-                >
-                  <img
-                    src={item.photo.url}
-                    alt={item.photo.text}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
-                  <div className="carousel-label-glass absolute inset-x-0 bottom-0 px-2 py-1 md:px-3 md:py-1.5 text-foreground pointer-events-none">
-                    <div className="relative z-[1] leading-none">
-                      <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate m-0">{item.common}</h3>
-                      <p className="hidden md:block text-[10px] md:text-xs italic text-muted-foreground truncate drop-shadow m-0 mt-0.5">{item.binomial}</p>
-                    </div>
-                  </div>
-                </div>
+                <GalleryCard item={item} isFrontFacing={isFrontFacing} />
               </div>
             );
           })}
