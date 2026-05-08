@@ -97,9 +97,14 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
     window.open(href, '_blank', 'noopener,noreferrer');
   };
 
-  const tintStrong = color ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.85)` : 'rgba(0,0,0,0.7)';
-  const tintMid = color ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.45)` : 'rgba(0,0,0,0.35)';
-  const glow = color ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.55)` : 'rgba(255,255,255,0.15)';
+  // Fallback to a neutral warm tone when extraction fails (CORS etc.) so every
+  // card glows with the same intensity — only the hue differs.
+  const r = color?.r ?? 200;
+  const g = color?.g ?? 200;
+  const b = color?.b ?? 200;
+  const tintStrong = `rgba(${r}, ${g}, ${b}, 0.7)`;
+  const tintMid = `rgba(${r}, ${g}, ${b}, 0.35)`;
+  const glow = `rgba(${r}, ${g}, ${b}, 0.35)`;
 
   return (
     <div
@@ -109,9 +114,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
       )}
       style={{
         pointerEvents: isFrontFacing ? 'auto' : 'none',
-        boxShadow: color
-          ? `0 10px 30px -8px ${glow}, 0 0 0 1px rgba(255,255,255,0.06)`
-          : undefined,
+        boxShadow: `0 8px 24px -10px ${glow}, 0 0 0 1px rgba(255,255,255,0.06)`,
       }}
       aria-hidden={!isFrontFacing}
       {...(isFrontFacing
