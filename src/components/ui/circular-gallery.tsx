@@ -146,10 +146,13 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
           background: `linear-gradient(to top, ${tintStrong} 0%, ${tintMid} 55%, transparent 100%)`,
         }}
       />
-      <div className="carousel-label-glass absolute inset-x-0 bottom-0 px-2 py-1 md:px-3 md:py-1.5 text-foreground pointer-events-none">
+      <div
+        className="carousel-label-glass absolute inset-x-0 bottom-0 px-2 py-1 md:px-3 md:py-1.5 text-foreground pointer-events-none"
+        style={{ transform: 'translateZ(1px)' }}
+      >
         <div className="relative z-[1] leading-none">
-          <h3 className="font-semibold text-xs md:text-base leading-tight drop-shadow truncate m-0">{item.common}</h3>
-          <p className="hidden md:block text-[10px] md:text-xs italic text-muted-foreground truncate drop-shadow m-0 mt-0.5">{item.binomial}</p>
+          <h3 className="font-semibold text-xs md:text-base leading-tight truncate m-0" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.55)' }}>{item.common}</h3>
+          <p className="hidden md:block text-[10px] md:text-xs italic text-muted-foreground truncate m-0 mt-0.5" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{item.binomial}</p>
         </div>
       </div>
     </div>
@@ -245,12 +248,16 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   transformStyle: 'preserve-3d',
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
-                  filter: `brightness(${depthDim})`,
                   transition: 'opacity 0.3s ease-out',
                   pointerEvents: isFrontFacing ? 'auto' : 'none',
                 }}
               >
                 <GalleryCard item={item} isFrontFacing={isFrontFacing} />
+                <div
+                  className="absolute inset-0 bg-black pointer-events-none rounded-2xl"
+                  style={{ opacity: 1 - depthDim }}
+                  aria-hidden
+                />
               </div>
             );
           })}
