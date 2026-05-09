@@ -189,6 +189,21 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
           borderTop: '1px solid rgba(255,255,255,0.08)',
         }}
       />
+      {/* Per-card label sitting on the glass bubble */}
+      <div className="absolute inset-x-0 bottom-0 px-2 pb-2 pt-1 pointer-events-none text-center">
+        <div
+          className="font-semibold text-foreground text-[11px] md:text-xs leading-tight truncate"
+          style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+        >
+          {item.common}
+        </div>
+        <div
+          className="italic text-foreground/80 text-[9px] md:text-[10px] leading-tight truncate mt-0.5"
+          style={{ textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}
+        >
+          {item.binomial}
+        </div>
+      </div>
       </div>
     </div>
   );
