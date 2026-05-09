@@ -1266,6 +1266,7 @@ export type Database = {
         Returns: undefined
       }
       portal_require_admin: { Args: never; Returns: undefined }
+      portal_search_customers: { Args: { _q: string }; Returns: Json }
       portal_send_chat_reply:
         | {
             Args: {

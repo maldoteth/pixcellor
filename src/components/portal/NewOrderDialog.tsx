@@ -48,9 +48,24 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
   const [notes, setNotes] = useState("");
   const [sendEmail, setSendEmail] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ email: string; name: string; source: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState<null | "email" | "name">(null);
 
   // Drawer on mobile + tablet (< 1024px), dialog on desktop
   const useDrawer = useIsBelow(1024);
+
+  // Autocomplete from existing customers (orders, contacts, profiles)
+  useEffect(() => {
+    const q = (showSuggestions === "name" ? name : email).trim();
+    if (!showSuggestions || q.length < 1) { setSuggestions([]); return; }
+    let cancel = false;
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase.rpc("portal_search_customers", { _q: q });
+      if (cancel || error) return;
+      setSuggestions((data as { email: string; name: string; source: string }[] | null) ?? []);
+    }, 150);
+    return () => { cancel = true; clearTimeout(t); };
+  }, [email, name, showSuggestions]);
 
   const reset = () => {
     setEmail(""); setName(""); setPkg("fullWorks");
@@ -126,16 +141,64 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
   const title = "New direct order";
   const description = "Record a paid offline order (bank, cash, invoice) or save a draft / quote. A matching Stripe payment for the same email + amount will auto-attach.";
 
+  const pickSuggestion = (s: { email: string; name: string }) => {
+    setEmail(s.email);
+    if (s.name) setName(s.name);
+    setShowSuggestions(null);
+    setSuggestions([]);
+  };
+
+  const SuggestionList = () => (
+    suggestions.length === 0 ? null : (
+      <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-auto rounded-none border border-border bg-popover shadow-md">
+        {suggestions.map((s) => (
+          <button
+            key={s.email + s.source}
+            type="button"
+            className="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-accent"
+            onMouseDown={(e) => { e.preventDefault(); pickSuggestion(s); }}
+          >
+            <div className="font-medium">{s.email}</div>
+            {(s.name || s.source) && (
+              <div className="text-xs text-muted-foreground">
+                {s.name || "—"} · {s.source}
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    )
+  );
+
   const form = (
     <div className="space-y-4">
-      <div className="space-y-2">
+      <div className="relative space-y-2">
         <Label htmlFor="no-email">Customer email *</Label>
-        <Input id="no-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="client@example.com" />
+        <Input
+          id="no-email"
+          type="email"
+          autoComplete="off"
+          value={email}
+          onChange={(e) => { setEmail(e.target.value); setShowSuggestions("email"); }}
+          onFocus={() => setShowSuggestions("email")}
+          onBlur={() => setTimeout(() => setShowSuggestions((cur) => (cur === "email" ? null : cur)), 150)}
+          placeholder="client@example.com — start typing to find existing clients"
+        />
+        {showSuggestions === "email" && <SuggestionList />}
       </div>
 
-      <div className="space-y-2">
+      <div className="relative space-y-2">
         <Label htmlFor="no-name">Customer name (optional)</Label>
-        <Input id="no-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Doe" />
+        <Input
+          id="no-name"
+          autoComplete="off"
+          value={name}
+          onChange={(e) => { setName(e.target.value); setShowSuggestions("name"); }}
+          onFocus={() => setShowSuggestions("name")}
+          onBlur={() => setTimeout(() => setShowSuggestions((cur) => (cur === "name" ? null : cur)), 150)}
+          placeholder="Jane Doe"
+        />
+        {showSuggestions === "name" && <SuggestionList />}
       </div>
 
       <div className="space-y-2">
