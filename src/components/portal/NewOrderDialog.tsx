@@ -48,9 +48,24 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
   const [notes, setNotes] = useState("");
   const [sendEmail, setSendEmail] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ email: string; name: string; source: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState<null | "email" | "name">(null);
 
   // Drawer on mobile + tablet (< 1024px), dialog on desktop
   const useDrawer = useIsBelow(1024);
+
+  // Autocomplete from existing customers (orders, contacts, profiles)
+  useEffect(() => {
+    const q = (showSuggestions === "name" ? name : email).trim();
+    if (!showSuggestions || q.length < 1) { setSuggestions([]); return; }
+    let cancel = false;
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase.rpc("portal_search_customers", { _q: q });
+      if (cancel || error) return;
+      setSuggestions((data as { email: string; name: string; source: string }[] | null) ?? []);
+    }, 150);
+    return () => { cancel = true; clearTimeout(t); };
+  }, [email, name, showSuggestions]);
 
   const reset = () => {
     setEmail(""); setName(""); setPkg("fullWorks");
