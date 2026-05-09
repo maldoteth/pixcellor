@@ -45,7 +45,7 @@ interface FlipCardProps {
 const IMG_WIDTH = 70;
 const IMG_HEIGHT = 70;
 
-const PROXIMITY_RADIUS = 160;
+const PROXIMITY_RADIUS = 280;
 
 function FlipCard({
     src,
