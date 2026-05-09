@@ -463,6 +463,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
               </div>
             );
           })}
+        </div>
       </div>
     );
   }
