@@ -797,14 +797,14 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {/* Hero CTA buttons anchored at bottom of hero viewport */}
                 <motion.div
                     style={{ opacity: ctaOpacity }}
-                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[34px] md:bottom-[38px] w-full md:w-auto px-[1.5rem] md:px-0"
+                    className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-auto bottom-[34px] md:bottom-[38px] w-full md:w-auto px-[1.5rem] md:px-0 [@media(orientation:landscape)_and_(max-height:500px)]:bottom-[12px] [@media(orientation:landscape)_and_(max-height:500px)]:w-auto [@media(orientation:landscape)_and_(max-height:500px)]:px-2"
                 >
-                    {/* Mobile: stacked */}
-                    <div className="md:hidden flex flex-col items-stretch gap-2 w-full">
+                    {/* Mobile: stacked (becomes a row in landscape phone) */}
+                    <div className="md:hidden flex flex-col items-stretch gap-2 w-full [@media(orientation:landscape)_and_(max-height:500px)]:flex-row [@media(orientation:landscape)_and_(max-height:500px)]:items-center [@media(orientation:landscape)_and_(max-height:500px)]:justify-center [@media(orientation:landscape)_and_(max-height:500px)]:gap-2 [@media(orientation:landscape)_and_(max-height:500px)]:w-auto">
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { services: true } })); }}
-                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md [@media(orientation:landscape)_and_(max-height:500px)]:h-[32px] [@media(orientation:landscape)_and_(max-height:500px)]:w-[110px]"
                         >
                             Services
                         </button>
@@ -827,14 +827,14 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 };
                                 requestAnimationFrame(step);
                             }}
-                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md [@media(orientation:landscape)_and_(max-height:500px)]:h-[32px] [@media(orientation:landscape)_and_(max-height:500px)]:w-[110px]"
                         >
                             Portfolio
                         </button>
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk")); }}
-                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md [@media(orientation:landscape)_and_(max-height:500px)]:h-[32px] [@media(orientation:landscape)_and_(max-height:500px)]:w-[110px]"
                         >
                             Let's Talk
                         </button>
