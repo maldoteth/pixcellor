@@ -290,13 +290,18 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     const [glowIntensities, setGlowIntensities] = useState<number[]>(() =>
       items.map(() => 0)
     );
-    const touchStateRef = useRef<{ active: boolean; x: number; y: number }>({
+    const touchStateRef = useRef<{ active: boolean; x: number; y: number; startX: number; startY: number; scrolling: boolean; armed: boolean }>({
       active: false,
       x: 0,
       y: 0,
+      startX: 0,
+      startY: 0,
+      scrolling: false,
+      armed: false,
     });
     const glowRafRef = useRef<number | null>(null);
     const fadeOutRafRef = useRef<number | null>(null);
+    const armTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
       // Reset cached refs array whenever the items count changes.
@@ -395,6 +400,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       };
     }, []);
 
+    const SCROLL_THRESHOLD = 8; // px of vertical drift before we treat as scroll
+    const ARM_DELAY = 90; // ms to wait before lighting up — gives scroll a head start
+
     const handleTouchStart = (e: React.TouchEvent) => {
       if (!isMobile) return;
       const t = e.touches[0];
@@ -405,20 +413,56 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         cancelAnimationFrame(fadeOutRafRef.current);
         fadeOutRafRef.current = null;
       }
-      touchStateRef.current = { active: true, x: t.clientX, y: t.clientY };
-      startGlowLoop();
+      touchStateRef.current = {
+        active: true,
+        x: t.clientX,
+        y: t.clientY,
+        startX: t.clientX,
+        startY: t.clientY,
+        scrolling: false,
+        armed: false,
+      };
+      if (armTimerRef.current) clearTimeout(armTimerRef.current);
+      armTimerRef.current = setTimeout(() => {
+        const s = touchStateRef.current;
+        if (s.active && !s.scrolling) {
+          s.armed = true;
+          startGlowLoop();
+        }
+      }, ARM_DELAY);
     };
     const handleTouchMove = (e: React.TouchEvent) => {
       if (!isMobile) return;
       const t = e.touches[0];
       if (!t) return;
-      touchStateRef.current.active = true;
-      touchStateRef.current.x = t.clientX;
-      touchStateRef.current.y = t.clientY;
+      const s = touchStateRef.current;
+      const dx = t.clientX - s.startX;
+      const dy = t.clientY - s.startY;
+      // If the user is clearly scrolling vertically (more vertical than horizontal
+      // and past the threshold), abort any glow — scrolling takes precedence.
+      if (!s.scrolling && Math.abs(dy) > SCROLL_THRESHOLD && Math.abs(dy) > Math.abs(dx)) {
+        s.scrolling = true;
+        s.armed = false;
+        if (armTimerRef.current) {
+          clearTimeout(armTimerRef.current);
+          armTimerRef.current = null;
+        }
+        s.active = false;
+        stopGlowLoop();
+        fadeOutGlow();
+        return;
+      }
+      s.x = t.clientX;
+      s.y = t.clientY;
     };
     const handleTouchEnd = () => {
       if (!isMobile) return;
+      if (armTimerRef.current) {
+        clearTimeout(armTimerRef.current);
+        armTimerRef.current = null;
+      }
       touchStateRef.current.active = false;
+      touchStateRef.current.armed = false;
       stopGlowLoop();
       fadeOutGlow();
     };
