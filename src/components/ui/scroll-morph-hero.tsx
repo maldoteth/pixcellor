@@ -209,19 +209,33 @@ function ProximityWords({ text, className }: { text: string; className?: string 
             if (raf) return;
             raf = requestAnimationFrame(() => {
                 raf = 0;
-                const distances: { i: number; d: number }[] = [];
+                // Group words by line (rounded top), then pick the line whose
+                // vertical range contains the cursor (or the nearest one).
+                const lines = new Map<number, { top: number; bottom: number; idxs: number[] }>();
                 for (let i = 0; i < wordRefs.current.length; i++) {
                     const w = wordRefs.current[i];
                     if (!w) continue;
                     const r = w.getBoundingClientRect();
-                    const cx = r.left + r.width / 2;
-                    const cy = r.top + r.height / 2;
-                    const dx = e.clientX - cx;
-                    const dy = e.clientY - cy;
-                    distances.push({ i, d: Math.hypot(dx, dy) });
+                    const key = Math.round(r.top);
+                    const entry = lines.get(key);
+                    if (entry) {
+                        entry.bottom = Math.max(entry.bottom, r.bottom);
+                        entry.idxs.push(i);
+                    } else {
+                        lines.set(key, { top: r.top, bottom: r.bottom, idxs: [i] });
+                    }
                 }
-                distances.sort((a, b) => a.d - b.d);
-                const top = new Set(distances.slice(0, 3).map((x) => x.i));
+                let bestIdxs: number[] = [];
+                let bestDist = Infinity;
+                lines.forEach((line) => {
+                    const inside = e.clientY >= line.top && e.clientY <= line.bottom;
+                    const d = inside ? 0 : Math.min(Math.abs(e.clientY - line.top), Math.abs(e.clientY - line.bottom));
+                    if (d < bestDist) {
+                        bestDist = d;
+                        bestIdxs = line.idxs;
+                    }
+                });
+                const top = new Set(bestIdxs);
                 setNearest((prev) => {
                     if (prev.size === top.size && [...prev].every((v) => top.has(v))) return prev;
                     return top;
