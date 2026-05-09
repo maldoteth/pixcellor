@@ -205,6 +205,23 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     const cardH = isMobile ? 125 : 184;
     const effectiveRadius = isMobile ? Math.max(radius, 340) : radius * 1.25;
 
+    // Determine which item is most front-facing for the flat overlay label.
+    let frontIndex = 0;
+    let frontDelta = Infinity;
+    items.forEach((_, i) => {
+      const itemAngle = i * anglePerItem;
+      const relativeAngle = (itemAngle + (effectiveRotation % 360) + 360) % 360;
+      const normalizedAngle = Math.abs(
+        relativeAngle > 180 ? 360 - relativeAngle : relativeAngle
+      );
+      if (normalizedAngle < frontDelta) {
+        frontDelta = normalizedAngle;
+        frontIndex = i;
+      }
+    });
+    const frontItem = items[frontIndex];
+    const frontStrength = Math.max(0, Math.min(1, 1 - frontDelta / 60));
+
     return (
       <div
         ref={ref}
@@ -253,6 +270,42 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             );
           })}
         </div>
+
+        {/* Flat 2D label rendered outside the 3D layer for crisp, non-warped text */}
+        {frontItem && (
+          <div
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none text-center px-4"
+            style={{
+              top: `calc(50% + ${cardH / 2 + 14}px)`,
+              opacity: frontStrength,
+              transition: 'opacity 200ms ease-out',
+              zIndex: 5,
+              maxWidth: 'min(90vw, 520px)',
+            }}
+            aria-live="polite"
+          >
+            <h3
+              className="font-semibold text-foreground text-sm md:text-lg leading-tight m-0"
+              style={{
+                textShadow: '0 1px 2px rgba(0,0,0,0.7)',
+                WebkitFontSmoothing: 'antialiased',
+                MozOsxFontSmoothing: 'grayscale',
+              }}
+            >
+              {frontItem.common}
+            </h3>
+            <p
+              className="text-xs md:text-sm italic text-muted-foreground m-0 mt-1"
+              style={{
+                textShadow: '0 1px 2px rgba(0,0,0,0.6)',
+                WebkitFontSmoothing: 'antialiased',
+                MozOsxFontSmoothing: 'grayscale',
+              }}
+            >
+              {frontItem.binomial}
+            </p>
+          </div>
+        )}
       </div>
     );
   }
