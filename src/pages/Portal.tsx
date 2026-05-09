@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
 import { useDomainPrompt } from "@/components/DomainPromptDialog";
+import NewOrderDialog from "@/components/portal/NewOrderDialog";
 
 type StripeSession = {
   session_id: string;
@@ -424,6 +425,7 @@ export default function Portal() {
   const [profilesSearch, setProfilesSearch] = useState("");
   
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples">("all");
+  const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
   const [completedReqsFilter, setCompletedReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
   const [contactsStatusFilter, setContactsStatusFilter] = useState<"all" | Contact["status"]>("all");
@@ -809,7 +811,7 @@ export default function Portal() {
       const hasEditRequests = editRequestsBySession.has(order.session_id);
       const reqsMatches = orderReqsFilter === "all" ||
         (orderReqsFilter === "submitted" ? hasRequirements : orderReqsFilter === "edits" ? hasEditRequests : !hasRequirements);
-      return order.order_status !== "delivered" && reqsMatches;
+      return order.order_status !== "delivered" && order.order_status !== "merged_to_manual" && reqsMatches;
     });
   }, [orders, ordersQ, orderReqsFilter, requirementsBySession, editRequestsBySession]);
 
@@ -2068,9 +2070,14 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-2">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[220px]">
+                <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
+              </div>
+              <Button size="sm" variant="outline" onClick={() => setShowNewOrderDialog(true)}>
+                <Plus className="h-4 w-4" /> New order
+              </Button>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/50 p-3">
@@ -2178,9 +2185,16 @@ export default function Portal() {
                       <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>
                         {o.payment_status ?? "pending"}
                       </Badge>
-                      <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
-                        {o.order_status === "delivered" ? "Delivered" : "Live"}
-                      </Badge>
+                      {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && o.payment_status !== "paid" ? (
+                        <Badge className="bg-amber-500 text-black hover:bg-amber-500">Draft</Badge>
+                      ) : (
+                        <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
+                          {o.order_status === "delivered" ? "Delivered" : "Live"}
+                        </Badge>
+                      )}
+                      {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
+                        <Badge variant="secondary">Manual</Badge>
+                      )}
                       <Badge variant={requirements ? "default" : "outline"}>
                         {requirements ? "Requirements received" : "Needs requirements"}
                       </Badge>
@@ -3238,6 +3252,7 @@ export default function Portal() {
         </div>
       </nav>
       {domainPromptDialog}
+      <NewOrderDialog open={showNewOrderDialog} onOpenChange={setShowNewOrderDialog} onCreated={loadPortalSnapshot} />
     </div>
   );
 }

@@ -263,6 +263,22 @@ serve(async (req) => {
         throw new Error(`Failed to upsert checkout session: ${sessionUpsert.error.message}`);
       }
 
+      // Auto-merge with a matching admin manual draft (same email + amount)
+      let mergedIntoManualId: string | null = null;
+      if (event.type === "checkout.session.completed" && paymentStatus === "paid") {
+        try {
+          const { data: matchedId } = await supabase.rpc("match_manual_order_to_stripe", {
+            _real_session_id: session.id,
+          });
+          if (typeof matchedId === "string" && matchedId.length > 0) {
+            mergedIntoManualId = matchedId;
+            console.log("Merged Stripe session into manual order", { stripe: session.id, manual: matchedId });
+          }
+        } catch (err) {
+          console.error("match_manual_order_to_stripe failed", err);
+        }
+      }
+
       // Add buyer as a gold-status contact (one per email/phone). Safe to run on every event.
       if (event.type === "checkout.session.completed") {
         try {
@@ -313,7 +329,7 @@ serve(async (req) => {
       // - Subscriptions (Elite retainer, £150/yr renewals) → immediate confirmation as before.
       // - One-off payments that ended up captured immediately (wallets / non-card) → immediate confirmation.
       // - One-off payments awaiting capture → DO NOT send confirmation yet. Capture handler will send it.
-      if (event.type === "checkout.session.completed" && session.customer_details?.email) {
+      if (event.type === "checkout.session.completed" && session.customer_details?.email && !mergedIntoManualId) {
         const isAuthorizedAwaitingCapture = mode === "payment" && captureStatus === "requires_capture";
         if (!isAuthorizedAwaitingCapture && (paymentStatus === "paid" || mode === "subscription")) {
           await sendOrderConfirmationEmails({
