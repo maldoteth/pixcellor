@@ -194,6 +194,74 @@ function FlipCard({
     );
 }
 
+// Paragraph where the 3 words nearest the cursor turn bright white.
+function ProximityWords({ text, className }: { text: string; className?: string }) {
+    const containerRef = useRef<HTMLParagraphElement | null>(null);
+    const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
+    const words = useMemo(() => text.split(" "), [text]);
+    const [nearest, setNearest] = useState<Set<number>>(new Set());
+
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        let raf = 0;
+        const handleMove = (e: PointerEvent) => {
+            if (raf) return;
+            raf = requestAnimationFrame(() => {
+                raf = 0;
+                const distances: { i: number; d: number }[] = [];
+                for (let i = 0; i < wordRefs.current.length; i++) {
+                    const w = wordRefs.current[i];
+                    if (!w) continue;
+                    const r = w.getBoundingClientRect();
+                    const cx = r.left + r.width / 2;
+                    const cy = r.top + r.height / 2;
+                    const dx = e.clientX - cx;
+                    const dy = e.clientY - cy;
+                    distances.push({ i, d: Math.hypot(dx, dy) });
+                }
+                distances.sort((a, b) => a.d - b.d);
+                const top = new Set(distances.slice(0, 3).map((x) => x.i));
+                setNearest((prev) => {
+                    if (prev.size === top.size && [...prev].every((v) => top.has(v))) return prev;
+                    return top;
+                });
+            });
+        };
+        const handleLeave = () => setNearest(new Set());
+        el.addEventListener("pointermove", handleMove);
+        el.addEventListener("pointerleave", handleLeave);
+        return () => {
+            el.removeEventListener("pointermove", handleMove);
+            el.removeEventListener("pointerleave", handleLeave);
+            if (raf) cancelAnimationFrame(raf);
+        };
+    }, [words]);
+
+    return (
+        <p
+            ref={containerRef}
+            className={className}
+            style={{ textShadow: "0 0 8px hsla(0,0%,100%,0.18), 0 0 18px hsla(0,0%,100%,0.10)" }}
+        >
+            {words.map((w, i) => (
+                <React.Fragment key={i}>
+                    <span
+                        ref={(node) => { wordRefs.current[i] = node; }}
+                        style={{
+                            color: nearest.has(i) ? "hsl(0 0% 100%)" : undefined,
+                            transition: "color 200ms ease-out",
+                        }}
+                    >
+                        {w}
+                    </span>
+                    {i < words.length - 1 ? " " : ""}
+                </React.Fragment>
+            ))}
+        </p>
+    );
+}
+
 // --- Main Hero Component ---
 const TOTAL_IMAGES = 20;
 const HERO_MORPH_END = 600;
@@ -946,9 +1014,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
                         Portfolio
                     </h2>
-                    <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8">
-                        Our team stems from some of largest companies in the world, offering an array of business solutions turbo-powered by AI.
-                    </p>
+                    <ProximityWords
+                        text="Our team stems from some of largest companies in the world, offering an array of business solutions turbo-powered by AI."
+                        className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8"
+                    />
                     <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} hidden />
                 </motion.div>
 
