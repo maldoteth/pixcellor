@@ -180,8 +180,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
           height: '30%',
           backdropFilter: 'blur(10px) saturate(140%)',
           WebkitBackdropFilter: 'blur(10px) saturate(140%)',
-          background:
-            'linear-gradient(to top, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 60%, rgba(255,255,255,0) 100%)',
+          background: 'transparent',
           maskImage:
             'linear-gradient(to top, black 0%, black 45%, transparent 100%)',
           WebkitMaskImage:
