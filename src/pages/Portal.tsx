@@ -2185,9 +2185,16 @@ export default function Portal() {
                       <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>
                         {o.payment_status ?? "pending"}
                       </Badge>
-                      <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
-                        {o.order_status === "delivered" ? "Delivered" : "Live"}
-                      </Badge>
+                      {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && o.payment_status !== "paid" ? (
+                        <Badge className="bg-amber-500 text-black hover:bg-amber-500">Draft</Badge>
+                      ) : (
+                        <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
+                          {o.order_status === "delivered" ? "Delivered" : "Live"}
+                        </Badge>
+                      )}
+                      {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
+                        <Badge variant="secondary">Manual</Badge>
+                      )}
                       <Badge variant={requirements ? "default" : "outline"}>
                         {requirements ? "Requirements received" : "Needs requirements"}
                       </Badge>
