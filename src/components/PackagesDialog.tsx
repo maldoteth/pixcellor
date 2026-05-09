@@ -635,8 +635,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       <motion.div data-lava-card
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        initial={{ opacity: 0, y: 116, rotate: 0, scale: 1.1 }}
-        animate={{ opacity: 1, y: 56, rotate: 0, scale: 1.1 }}
+        initial={{ opacity: 0, y: 60, rotate: 0, scale: 1.1 }}
+        animate={{ opacity: 1, y: 0, rotate: 0, scale: 1.1 }}
         whileHover={{ scale: 1.12 }}
         transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
         className="relative z-20 w-[336px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-6 pb-6 shadow-xl"
