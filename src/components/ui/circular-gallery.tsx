@@ -165,7 +165,10 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         crossOrigin="anonymous"
         className="absolute inset-0 w-full h-full object-cover"
         style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
-        loading="lazy"
+        loading="eager"
+        decoding="sync"
+        // @ts-expect-error fetchPriority is valid HTML
+        fetchpriority="high"
       />
       <div
         className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
