@@ -2070,9 +2070,14 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-2">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[220px]">
+                <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input value={ordersSearch} onChange={(e) => setOrdersSearch(e.target.value)} placeholder="Search orders by email, order ID, status, domain…" className="pl-9" />
+              </div>
+              <Button size="sm" variant="outline" onClick={() => setShowNewOrderDialog(true)}>
+                <Plus className="h-4 w-4" /> New order
+              </Button>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/50 p-3">
