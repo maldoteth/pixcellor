@@ -85,9 +85,16 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
 interface GalleryCardProps {
   item: GalleryItem;
   isFrontFacing: boolean;
+  mobileMode?: boolean;
+  glowIntensity?: number;
 }
 
-const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
+const GalleryCard: React.FC<GalleryCardProps> = ({
+  item,
+  isFrontFacing,
+  mobileMode = false,
+  glowIntensity = 1,
+}) => {
   const color = useDominantColor(item.photo.url);
 
   const openLink = () => {
@@ -106,16 +113,14 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
   const tintMid = `rgba(${r}, ${g}, ${b}, 0.35)`;
   const glow = `rgba(${r}, ${g}, ${b}, 0.35)`;
 
+  // Mobile: glow only when user is touching near the card (controlled by parent).
+  // Desktop: keep the original static box-shadow halo.
+  const haloOpacity = mobileMode ? Math.max(0, Math.min(1, glowIntensity)) : 0;
+
   return (
     <div
-      className={cn(
-        'relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black',
-        isFrontFacing && 'cursor-pointer'
-      )}
-      style={{
-        pointerEvents: isFrontFacing ? 'auto' : 'none',
-        boxShadow: `0 8px 24px -10px ${glow}, 0 0 0 1px rgba(255,255,255,0.06)`,
-      }}
+      className={cn('relative w-full h-full', isFrontFacing && 'cursor-pointer')}
+      style={{ pointerEvents: isFrontFacing ? 'auto' : 'none' }}
       aria-hidden={!isFrontFacing}
       {...(isFrontFacing
         ? {
@@ -132,6 +137,28 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
           }
         : {})}
     >
+      {/* Touch-driven halo (mobile only). Sits behind the card; only the ring
+          beyond the card's edge is visible because the inner card is opaque. */}
+      <div
+        aria-hidden
+        className="absolute pointer-events-none rounded-[28px]"
+        style={{
+          inset: -22,
+          background: `radial-gradient(closest-side, rgba(${r}, ${g}, ${b}, 0.9), rgba(${r}, ${g}, ${b}, 0) 70%)`,
+          filter: 'blur(18px)',
+          opacity: haloOpacity,
+          transition: 'opacity 140ms ease-out',
+          willChange: haloOpacity > 0 ? 'opacity' : undefined,
+        }}
+      />
+      <div
+        className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black"
+        style={{
+          boxShadow: mobileMode
+            ? '0 0 0 1px rgba(255,255,255,0.06)'
+            : `0 8px 24px -10px ${glow}, 0 0 0 1px rgba(255,255,255,0.06)`,
+        }}
+      >
       <img
         src={item.photo.url}
         alt={item.photo.text}
@@ -162,6 +189,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
           borderTop: '1px solid rgba(255,255,255,0.08)',
         }}
       />
+      </div>
     </div>
   );
 };
@@ -238,11 +266,138 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     const frontItem = items[frontIndex];
     const frontStrength = Math.max(0, Math.min(1, 1 - frontDelta / 60));
 
+    // --- Mobile touch-driven glow ---------------------------------------
+    // While the user is touching the gallery, light up cards near the touch
+    // point. Off entirely on desktop (which keeps its static box-shadow look).
+    const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const [glowIntensities, setGlowIntensities] = useState<number[]>(() =>
+      items.map(() => 0)
+    );
+    const touchStateRef = useRef<{ active: boolean; x: number; y: number }>({
+      active: false,
+      x: 0,
+      y: 0,
+    });
+    const glowRafRef = useRef<number | null>(null);
+    const fadeOutRafRef = useRef<number | null>(null);
+
+    useEffect(() => {
+      // Reset cached refs array whenever the items count changes.
+      cardRefs.current = cardRefs.current.slice(0, items.length);
+    }, [items.length]);
+
+    const stopGlowLoop = () => {
+      if (glowRafRef.current != null) {
+        cancelAnimationFrame(glowRafRef.current);
+        glowRafRef.current = null;
+      }
+    };
+
+    const startGlowLoop = () => {
+      if (glowRafRef.current != null) return;
+      const tick = () => {
+        const t = touchStateRef.current;
+        if (!t.active) {
+          glowRafRef.current = null;
+          return;
+        }
+        const next: number[] = new Array(cardRefs.current.length);
+        for (let i = 0; i < cardRefs.current.length; i++) {
+          const el = cardRefs.current[i];
+          if (!el) {
+            next[i] = 0;
+            continue;
+          }
+          const rect = el.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const dx = cx - t.x;
+          const dy = cy - t.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          // Falls from 1 (right on the card) to 0 over ~160px.
+          const proximity = Math.max(0, Math.min(1, 1 - dist / 160));
+          // Baseline glow while any touch is active (so dragging round the
+          // ring lights everything up softly), boosted by proximity.
+          next[i] = Math.max(0.22, proximity);
+        }
+        setGlowIntensities((prev) => {
+          let changed = false;
+          for (let i = 0; i < next.length; i++) {
+            if (Math.abs((prev[i] ?? 0) - next[i]) > 0.02) {
+              changed = true;
+              break;
+            }
+          }
+          return changed ? next : prev;
+        });
+        glowRafRef.current = requestAnimationFrame(tick);
+      };
+      glowRafRef.current = requestAnimationFrame(tick);
+    };
+
+    const fadeOutGlow = () => {
+      if (fadeOutRafRef.current != null) cancelAnimationFrame(fadeOutRafRef.current);
+      const step = () => {
+        setGlowIntensities((prev) => {
+          let stillOn = false;
+          const next = prev.map((v) => {
+            const nv = v > 0.01 ? v * 0.82 : 0;
+            if (nv > 0.01) stillOn = true;
+            return nv;
+          });
+          if (stillOn) {
+            fadeOutRafRef.current = requestAnimationFrame(step);
+          } else {
+            fadeOutRafRef.current = null;
+          }
+          return next;
+        });
+      };
+      fadeOutRafRef.current = requestAnimationFrame(step);
+    };
+
+    useEffect(() => {
+      return () => {
+        stopGlowLoop();
+        if (fadeOutRafRef.current != null) cancelAnimationFrame(fadeOutRafRef.current);
+      };
+    }, []);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+      if (!isMobile) return;
+      const t = e.touches[0];
+      if (!t) return;
+      if (fadeOutRafRef.current != null) {
+        cancelAnimationFrame(fadeOutRafRef.current);
+        fadeOutRafRef.current = null;
+      }
+      touchStateRef.current = { active: true, x: t.clientX, y: t.clientY };
+      startGlowLoop();
+    };
+    const handleTouchMove = (e: React.TouchEvent) => {
+      if (!isMobile) return;
+      const t = e.touches[0];
+      if (!t) return;
+      touchStateRef.current.active = true;
+      touchStateRef.current.x = t.clientX;
+      touchStateRef.current.y = t.clientY;
+    };
+    const handleTouchEnd = () => {
+      if (!isMobile) return;
+      touchStateRef.current.active = false;
+      stopGlowLoop();
+      fadeOutGlow();
+    };
+
     return (
       <div
         ref={ref}
         className={cn('relative w-full h-full flex items-center justify-center', className)}
         style={{ perspective: isMobile ? '800px' : '1200px' }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
         {...props}
       >
         <div
@@ -262,6 +417,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             return (
               <div
                 key={i}
+                ref={(el) => {
+                  cardRefs.current[i] = el;
+                }}
                 className="absolute top-1/2 left-1/2"
                 style={{
                   width: cardW,
@@ -276,7 +434,12 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   pointerEvents: isFrontFacing ? 'auto' : 'none',
                 }}
               >
-                <GalleryCard item={item} isFrontFacing={isFrontFacing} />
+                <GalleryCard
+                  item={item}
+                  isFrontFacing={isFrontFacing}
+                  mobileMode={isMobile}
+                  glowIntensity={glowIntensities[i] ?? 0}
+                />
                 <div
                   className="absolute inset-0 bg-black pointer-events-none rounded-2xl"
                   style={{ opacity: 1 - depthDim }}
