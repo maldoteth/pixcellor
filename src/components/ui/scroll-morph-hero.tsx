@@ -842,10 +842,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         </button>
                         <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } })); }}
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk")); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
-                            Free Sample
+                            Let's Talk
                         </button>
                     </div>
                     {/* Desktop: row */}
