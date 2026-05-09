@@ -222,27 +222,32 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
       }}
       aria-label="Request a free sample — don't pay until you're happy"
       className={`group relative inline-flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer ${className}`}
-      style={{ width: 143, height: 143, filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.45))" }}
-    >
-      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" aria-hidden="true">
-        <polygon
-          points={points}
-          fill="hsl(var(--background))"
-          stroke="hsl(var(--foreground) / 0.5)"
-          strokeWidth="0.8"
-        />
-        <polygon
-          points={points}
-          fill="url(#fsGloss)"
-          opacity="0.25"
-        />
-        <defs>
-          <linearGradient id="fsGloss" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-      </svg>
+        style={{ width: 143, height: 143, filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.45)) drop-shadow(0 0 6px rgba(212,175,55,0.55))" }}
+      >
+        <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" aria-hidden="true">
+          <polygon
+            points={points}
+            fill="hsl(var(--background))"
+            stroke="url(#fsGoldEdge)"
+            strokeWidth="1.2"
+          />
+          <polygon
+            points={points}
+            fill="url(#fsGloss)"
+            opacity="0.25"
+          />
+          <defs>
+            <linearGradient id="fsGloss" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="fsGoldEdge" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#f5e6a8" />
+              <stop offset="50%" stopColor="#d4af37" />
+              <stop offset="100%" stopColor="#8a6a1f" />
+            </linearGradient>
+          </defs>
+        </svg>
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 leading-tight">
         <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase">Free</span>
         <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase -mt-0.5">Samples</span>
