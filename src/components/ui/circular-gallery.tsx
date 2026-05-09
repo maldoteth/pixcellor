@@ -381,6 +381,8 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       if (!isMobile) return;
       const t = e.touches[0];
       if (!t) return;
+      const target = e.target as Element | null;
+      if (target && target.closest && target.closest('[data-hero-scroll-control="true"]')) return;
       if (fadeOutRafRef.current != null) {
         cancelAnimationFrame(fadeOutRafRef.current);
         fadeOutRafRef.current = null;
