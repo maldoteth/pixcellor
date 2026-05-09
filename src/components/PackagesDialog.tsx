@@ -1082,12 +1082,18 @@ function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
     <div className="grid grid-cols-1 gap-4">
       {groups.map((g) => {
         const Icon = g.icon;
+        const isFeatured = g === SERVICE_BACKS.elite;
         return (
-          <div data-lava-card key={g.title} className="rounded-none p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+          <div data-lava-card key={g.title} className={`rounded-none p-5 flex flex-col bg-background relative overflow-hidden ${isFeatured ? "border border-foreground/30 ring-1 ring-foreground/10" : "border border-border"}`}>
             <div className="lava-blob lava-blob-1" />
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
             <div className="relative z-10 flex flex-col flex-1">
+              {isFeatured && (
+                <span className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-2">
+                  Most Popular
+                </span>
+              )}
               <div className="flex items-center gap-3 mb-3">
                 <div
                   className="flex h-10 w-10 items-center justify-center rounded-lg"
