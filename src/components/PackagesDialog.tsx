@@ -205,18 +205,18 @@ function PaymentMethodIcons() {
     <div className="flex items-center justify-center gap-3.5 mt-2">
       {/* Visa */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
-        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <rect width="48" height="32" rx="0" fill="currentColor" className="text-foreground" opacity="0.5"/>
         <text x="24" y="20" textAnchor="middle" fontSize="12" fontWeight="bold" fontStyle="italic" fill="currentColor" className="text-background">VISA</text>
       </svg>
       {/* Mastercard */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
-        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <rect width="48" height="32" rx="0" fill="currentColor" className="text-foreground" opacity="0.5"/>
         <circle cx="20" cy="16" r="8" fill="currentColor" className="text-background" opacity="0.95"/>
         <circle cx="28" cy="16" r="8" fill="currentColor" className="text-background" opacity="0.7"/>
       </svg>
       {/* Amex */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
-        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <rect width="48" height="32" rx="0" fill="currentColor" className="text-foreground" opacity="0.5"/>
         <text x="24" y="18" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="currentColor" className="text-background">AMEX</text>
       </svg>
       {/* Apple Pay */}
