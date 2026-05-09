@@ -758,7 +758,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     </motion.h1>
                     <motion.p
                         style={{ opacity: subtitleOpacity }}
-                        className="-mt-2 text-xs md:text-sm lg:text-base font-normal tracking-[0.2em] text-foreground/90"
+                        className="-mt-2 text-[0.825rem] md:text-sm lg:text-base font-normal tracking-[0.2em] text-foreground/90"
                     >
                         Digital Services
                     </motion.p>
