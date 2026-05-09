@@ -173,11 +173,11 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
           background: `linear-gradient(to top, ${tintStrong} 0%, ${tintMid} 55%, transparent 100%)`,
         }}
       />
-      {/* Liquid-glass blur bubble — bottom 25%, faded out toward the top */}
+      {/* Liquid-glass blur bubble — bottom 30%, faded out toward the top */}
       <div
         className="absolute inset-x-0 bottom-0 pointer-events-none"
         style={{
-          height: '25%',
+          height: '30%',
           backdropFilter: 'blur(10px) saturate(140%)',
           WebkitBackdropFilter: 'blur(10px) saturate(140%)',
           background:
