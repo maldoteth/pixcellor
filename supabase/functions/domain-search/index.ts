@@ -51,6 +51,7 @@ async function checkDomain(domain: string, apikey: string, secret: string): Prom
     body: JSON.stringify({ apikey, secretapikey: secret }),
   });
   const json = await res.json().catch(() => ({}));
+  console.log(`[checkDomain] ${domain} status=${res.status}`, JSON.stringify(json).slice(0, 400));
   if (!res.ok || json?.status === "ERROR") {
     return { domain, available: false, isPremium: false, priceGbp: null, topUpGbp: 0, freeWithPackage: false };
   }
