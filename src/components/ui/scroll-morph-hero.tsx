@@ -754,7 +754,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         style={{ opacity: titleOpacity }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground md:mt-[20px] lg:mt-[10px]"
                     >
-                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[3.96rem] md:h-[8.4rem] lg:h-[7rem] w-auto" />
+                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[3.96rem] md:h-[7.56rem] lg:h-[7rem] w-auto" />
                     </motion.h1>
                     <motion.p
                         style={{ opacity: subtitleOpacity }}
@@ -1020,7 +1020,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 x: Math.cos(arcRad) * arcRadius + parallaxValue,
                                 y: Math.sin(arcRad) * arcRadius + arcCenterY,
                                 rotation: currentArcAngle + 90,
-                                scale: isMobile ? 1.4 : 1.8,
+                                scale: isMobile ? 1.33 : 1.8,
                             };
 
                             target = {
