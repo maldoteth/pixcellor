@@ -888,7 +888,7 @@ function ServiceBackCard({
     : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
   return (
     <div data-lava-card
-      className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 py-12" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
+      className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
       style={{ transform: `rotate(${rotate}deg)${isCenter ? " translateY(-20px) scale(1.1)" : ""}`, boxShadow: shadow }}
     >
       <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
@@ -907,7 +907,7 @@ function ServiceBackCard({
           </div>
           <h3 className="text-lg font-bold text-foreground">{data.title}</h3>
         </div>
-        <ul className="space-y-2 text-base text-foreground flex-1 mb-6">
+        <ul className={`space-y-2 text-base text-foreground ${isCenter ? "mb-4" : "flex-1 mb-6"}`}>
           {data.items.map((item) => (
             <li key={item.name} className="flex items-start gap-2">
               <ServiceItemRow item={item} />
