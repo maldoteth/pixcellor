@@ -194,12 +194,18 @@ function FlipCard({
     );
 }
 
-// Paragraph where the 3 words nearest the cursor turn bright white.
+// Paragraph where words within a soft radius around the cursor smoothly
+// brighten to white, blending out with distance.
 function ProximityWords({ text, className }: { text: string; className?: string }) {
     const containerRef = useRef<HTMLParagraphElement | null>(null);
     const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
     const words = useMemo(() => text.split(" "), [text]);
-    const [nearest, setNearest] = useState<Set<number>>(new Set());
+    const [intensities, setIntensities] = useState<number[]>(() => words.map(() => 0));
+    const RADIUS = 140;
+
+    useEffect(() => {
+        setIntensities(words.map(() => 0));
+    }, [words]);
 
     useEffect(() => {
         const el = containerRef.current;
@@ -209,40 +215,25 @@ function ProximityWords({ text, className }: { text: string; className?: string 
             if (raf) return;
             raf = requestAnimationFrame(() => {
                 raf = 0;
-                // Group words by line (rounded top), then pick the line whose
-                // vertical range contains the cursor (or the nearest one).
-                const lines = new Map<number, { top: number; bottom: number; idxs: number[] }>();
+                const next: number[] = [];
                 for (let i = 0; i < wordRefs.current.length; i++) {
                     const w = wordRefs.current[i];
-                    if (!w) continue;
+                    if (!w) { next.push(0); continue; }
                     const r = w.getBoundingClientRect();
-                    const key = Math.round(r.top);
-                    const entry = lines.get(key);
-                    if (entry) {
-                        entry.bottom = Math.max(entry.bottom, r.bottom);
-                        entry.idxs.push(i);
-                    } else {
-                        lines.set(key, { top: r.top, bottom: r.bottom, idxs: [i] });
-                    }
+                    const cx = r.left + r.width / 2;
+                    const cy = r.top + r.height / 2;
+                    const d = Math.hypot(e.clientX - cx, e.clientY - cy);
+                    const t = Math.max(0, 1 - d / RADIUS);
+                    // smoothstep for nicer blend
+                    next.push(t * t * (3 - 2 * t));
                 }
-                let bestIdxs: number[] = [];
-                let bestDist = Infinity;
-                lines.forEach((line) => {
-                    const inside = e.clientY >= line.top && e.clientY <= line.bottom;
-                    const d = inside ? 0 : Math.min(Math.abs(e.clientY - line.top), Math.abs(e.clientY - line.bottom));
-                    if (d < bestDist) {
-                        bestDist = d;
-                        bestIdxs = line.idxs;
-                    }
-                });
-                const top = new Set(bestIdxs);
-                setNearest((prev) => {
-                    if (prev.size === top.size && [...prev].every((v) => top.has(v))) return prev;
-                    return top;
+                setIntensities((prev) => {
+                    if (prev.length === next.length && prev.every((v, i) => Math.abs(v - next[i]) < 0.02)) return prev;
+                    return next;
                 });
             });
         };
-        const handleLeave = () => setNearest(new Set());
+        const handleLeave = () => setIntensities(words.map(() => 0));
         el.addEventListener("pointermove", handleMove);
         el.addEventListener("pointerleave", handleLeave);
         return () => {
@@ -258,20 +249,26 @@ function ProximityWords({ text, className }: { text: string; className?: string 
             className={className}
             style={{ textShadow: "0 0 8px hsla(0,0%,100%,0.18), 0 0 18px hsla(0,0%,100%,0.10)" }}
         >
-            {words.map((w, i) => (
-                <React.Fragment key={i}>
-                    <span
-                        ref={(node) => { wordRefs.current[i] = node; }}
-                        style={{
-                            color: nearest.has(i) ? "hsl(0 0% 100%)" : undefined,
-                            transition: "color 200ms ease-out",
-                        }}
-                    >
-                        {w}
-                    </span>
-                    {i < words.length - 1 ? " " : ""}
-                </React.Fragment>
-            ))}
+            {words.map((w, i) => {
+                const t = intensities[i] ?? 0;
+                return (
+                    <React.Fragment key={i}>
+                        <span
+                            ref={(node) => { wordRefs.current[i] = node; }}
+                            style={{
+                                color: t > 0 ? `hsl(0 0% 100% / ${0.55 + 0.45 * t})` : undefined,
+                                textShadow: t > 0
+                                    ? `0 0 ${6 + 14 * t}px hsla(0,0%,100%,${0.25 * t}), 0 0 ${12 + 22 * t}px hsla(0,0%,100%,${0.18 * t})`
+                                    : undefined,
+                                transition: "color 120ms linear, text-shadow 120ms linear",
+                            }}
+                        >
+                            {w}
+                        </span>
+                        {i < words.length - 1 ? " " : ""}
+                    </React.Fragment>
+                );
+            })}
         </p>
     );
 }
