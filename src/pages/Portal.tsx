@@ -809,7 +809,7 @@ export default function Portal() {
       const hasEditRequests = editRequestsBySession.has(order.session_id);
       const reqsMatches = orderReqsFilter === "all" ||
         (orderReqsFilter === "submitted" ? hasRequirements : orderReqsFilter === "edits" ? hasEditRequests : !hasRequirements);
-      return order.order_status !== "delivered" && reqsMatches;
+      return order.order_status !== "delivered" && order.order_status !== "merged_to_manual" && reqsMatches;
     });
   }, [orders, ordersQ, orderReqsFilter, requirementsBySession, editRequestsBySession]);
 
