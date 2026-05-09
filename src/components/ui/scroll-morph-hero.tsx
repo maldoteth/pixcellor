@@ -779,7 +779,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             animate={{ y: [0, 4, 0] }}
                             transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                         >
-                            <ChevronDown className="w-5 h-5" strokeWidth={2.25} />
+                            <ChevronDown className="w-[1.375rem] h-[1.375rem] md:w-5 md:h-5" strokeWidth={2.25} />
                         </motion.div>
                     </motion.button>
                     <motion.button
