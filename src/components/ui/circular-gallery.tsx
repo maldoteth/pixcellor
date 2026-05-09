@@ -165,7 +165,10 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         crossOrigin="anonymous"
         className="absolute inset-0 w-full h-full object-cover"
         style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
-        loading="lazy"
+        loading="eager"
+        decoding="sync"
+        // @ts-expect-error fetchPriority is valid HTML
+        fetchpriority="high"
       />
       <div
         className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
@@ -299,6 +302,21 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       // Reset cached refs array whenever the items count changes.
       cardRefs.current = cardRefs.current.slice(0, items.length);
     }, [items.length]);
+
+    // Hard-preload every carousel image once on mount so scrolling into view
+    // never triggers a fresh network/decode pass.
+    useEffect(() => {
+      const preloaded: HTMLImageElement[] = [];
+      items.forEach((it) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = it.photo.url;
+        preloaded.push(img);
+      });
+      return () => {
+        preloaded.length = 0;
+      };
+    }, [items]);
 
     const stopGlowLoop = () => {
       if (glowRafRef.current != null) {
