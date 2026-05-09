@@ -651,7 +651,6 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       </motion.div>
 
       {/* Elite - center, elevated */}
-      <div className="relative">
       <motion.div data-lava-card
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -677,6 +676,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           <div className="lava-blob lava-blob-featured-2" />
           <div className="lava-blob lava-blob-featured-3" />
         </div>
+        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-3 translate-y-[312px] z-30 rotate-[12deg]" />
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
@@ -718,8 +718,6 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="mt-2.5"><StripeBadge /></div>
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
-      <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-3 translate-y-[312px] z-30 rotate-[12deg]" />
-      </div>
 
       {/* Retainer / Enterprise flip card */}
       <motion.div
