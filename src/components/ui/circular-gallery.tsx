@@ -85,9 +85,16 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
 interface GalleryCardProps {
   item: GalleryItem;
   isFrontFacing: boolean;
+  mobileMode?: boolean;
+  glowIntensity?: number;
 }
 
-const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
+const GalleryCard: React.FC<GalleryCardProps> = ({
+  item,
+  isFrontFacing,
+  mobileMode = false,
+  glowIntensity = 1,
+}) => {
   const color = useDominantColor(item.photo.url);
 
   const openLink = () => {
@@ -106,16 +113,14 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
   const tintMid = `rgba(${r}, ${g}, ${b}, 0.35)`;
   const glow = `rgba(${r}, ${g}, ${b}, 0.35)`;
 
+  // Mobile: glow only when user is touching near the card (controlled by parent).
+  // Desktop: keep the original static box-shadow halo.
+  const haloOpacity = mobileMode ? Math.max(0, Math.min(1, glowIntensity)) : 0;
+
   return (
     <div
-      className={cn(
-        'relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black',
-        isFrontFacing && 'cursor-pointer'
-      )}
-      style={{
-        pointerEvents: isFrontFacing ? 'auto' : 'none',
-        boxShadow: `0 8px 24px -10px ${glow}, 0 0 0 1px rgba(255,255,255,0.06)`,
-      }}
+      className={cn('relative w-full h-full', isFrontFacing && 'cursor-pointer')}
+      style={{ pointerEvents: isFrontFacing ? 'auto' : 'none' }}
       aria-hidden={!isFrontFacing}
       {...(isFrontFacing
         ? {
@@ -132,6 +137,28 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
           }
         : {})}
     >
+      {/* Touch-driven halo (mobile only). Sits behind the card; only the ring
+          beyond the card's edge is visible because the inner card is opaque. */}
+      <div
+        aria-hidden
+        className="absolute pointer-events-none rounded-[28px]"
+        style={{
+          inset: -22,
+          background: `radial-gradient(closest-side, rgba(${r}, ${g}, ${b}, 0.9), rgba(${r}, ${g}, ${b}, 0) 70%)`,
+          filter: 'blur(18px)',
+          opacity: haloOpacity,
+          transition: 'opacity 140ms ease-out',
+          willChange: haloOpacity > 0 ? 'opacity' : undefined,
+        }}
+      />
+      <div
+        className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black"
+        style={{
+          boxShadow: mobileMode
+            ? '0 0 0 1px rgba(255,255,255,0.06)'
+            : `0 8px 24px -10px ${glow}, 0 0 0 1px rgba(255,255,255,0.06)`,
+        }}
+      >
       <img
         src={item.photo.url}
         alt={item.photo.text}
