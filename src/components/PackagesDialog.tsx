@@ -96,11 +96,42 @@ type ServiceItem = { name: string; info?: string };
 
 function ServiceItemRow({ item }: { item: ServiceItem }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const tipRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; placeAbove: boolean } | null>(null);
+
+  const updatePos = useCallback(() => {
+    const btn = btnRef.current;
+    if (!btn) return;
+    const r = btn.getBoundingClientRect();
+    const tipW = 240;
+    const tipH = tipRef.current?.offsetHeight ?? 96;
+    const margin = 8;
+    const placeAbove = r.top > tipH + margin + 8;
+    let left = r.right - tipW;
+    left = Math.max(margin, Math.min(left, window.innerWidth - tipW - margin));
+    const top = placeAbove ? r.top - tipH - margin : r.bottom + margin;
+    setPos({ top, left, placeAbove });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    updatePos();
+    const onScroll = () => updatePos();
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [open, updatePos]);
+
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent | TouchEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (btnRef.current?.contains(t) || tipRef.current?.contains(t)) return;
+      setOpen(false);
     };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("touchstart", onDown);
@@ -109,33 +140,45 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
       document.removeEventListener("touchstart", onDown);
     };
   }, [open]);
+
   return (
     <>
       <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
       <span className="flex-1">{item.name}</span>
       {item.info && (
-        <div ref={ref} className="relative shrink-0">
+        <div className="relative shrink-0">
           <button
+            ref={btnRef}
             type="button"
             aria-label={`More info about ${item.name}`}
             onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+            onMouseEnter={() => setOpen(true)}
+            onMouseLeave={() => setOpen(false)}
+            onFocus={() => setOpen(true)}
+            onBlur={() => setOpen(false)}
             className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40"
           >
             <Info className="h-3.5 w-3.5" />
           </button>
-          {open && (
+          {open && pos && createPortal(
             <div
+              ref={tipRef}
               role="tooltip"
-              className="absolute right-0 bottom-full mb-2 z-50 w-60 rounded-md border border-border bg-popover p-3 text-xs leading-relaxed text-popover-foreground shadow-lg"
+              onMouseEnter={() => setOpen(true)}
+              onMouseLeave={() => setOpen(false)}
+              style={{ position: "fixed", top: pos.top, left: pos.left, width: 240 }}
+              className="z-[200] rounded-md border border-border bg-popover p-3 text-xs leading-relaxed text-popover-foreground shadow-lg pointer-events-auto"
             >
               {item.info}
-            </div>
+            </div>,
+            document.body
           )}
         </div>
       )}
     </>
   );
 }
+
 
 const ENTERPRISE_FIELDS = [
   { key: "email", label: "Email", placeholder: "you@company.com", inputMode: "email" },
