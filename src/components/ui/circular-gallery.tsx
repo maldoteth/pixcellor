@@ -465,41 +465,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
           })}
         </div>
 
-        {/* Flat 2D label rendered outside the 3D layer for crisp, non-warped text */}
-        {frontItem && (
-          <div
-            className="absolute left-1/2 -translate-x-1/2 pointer-events-none text-center px-4"
-            style={{
-              top: `calc(50% + ${cardH / 2 + 14}px)`,
-              opacity: frontStrength,
-              transition: 'opacity 200ms ease-out',
-              zIndex: 5,
-              maxWidth: 'min(90vw, 520px)',
-            }}
-            aria-live="polite"
-          >
-            <h3
-              className="font-semibold text-foreground text-base md:text-xl leading-tight m-0"
-              style={{
-                textShadow: '0 1px 2px rgba(0,0,0,0.7)',
-                WebkitFontSmoothing: 'antialiased',
-                MozOsxFontSmoothing: 'grayscale',
-              }}
-            >
-              {frontItem.common}
-            </h3>
-            <p
-              className="text-sm md:text-base italic text-muted-foreground m-0 mt-1"
-              style={{
-                textShadow: '0 1px 2px rgba(0,0,0,0.6)',
-                WebkitFontSmoothing: 'antialiased',
-                MozOsxFontSmoothing: 'grayscale',
-              }}
-            >
-              {frontItem.binomial}
-            </p>
-          </div>
-        )}
       </div>
     );
   }
