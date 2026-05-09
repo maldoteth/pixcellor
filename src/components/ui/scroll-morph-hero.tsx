@@ -202,7 +202,8 @@ function ProximityWords({ text, className }: { text: string; className?: string 
     const words = useMemo(() => text.split(" ").map((word) => Array.from(word)), [text]);
     const letterCount = useMemo(() => words.reduce((total, word) => total + word.length, 0), [words]);
     const [intensities, setIntensities] = useState<number[]>(() => Array(letterCount).fill(0));
-    const RADIUS = 140;
+    const RADIUS = 220;
+    const OUTSIDE_MARGIN = 260;
 
     useEffect(() => {
         setIntensities(Array(letterCount).fill(0));
