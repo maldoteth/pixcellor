@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import IntroAnimation from "@/components/ui/scroll-morph-hero";
 import ChatBot from "@/components/ChatBot";
 import FalloffConsentBanner from "@/components/FalloffConsentBanner";
+import RotateDevicePrompt from "@/components/RotateDevicePrompt";
 import CustomerAccess from "@/components/CustomerAccess";
 import PackagesDialog from "@/components/PackagesDialog";
 
@@ -70,6 +71,7 @@ const Index = () => {
         <LetsTalkPrompt />
         <FalloffConsentBanner />
       </div>
+      <RotateDevicePrompt />
     </div>
   );
 };
