@@ -222,7 +222,7 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
       }}
       aria-label="Request a free sample — don't pay until you're happy"
       className={`group relative inline-flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer ${className}`}
-      style={{ width: 130, height: 130, filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.45))" }}
+      style={{ width: 143, height: 143, filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.45))" }}
     >
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" aria-hidden="true">
         <polygon
