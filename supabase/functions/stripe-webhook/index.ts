@@ -234,6 +234,11 @@ serve(async (req) => {
         captureStatus = "n/a";
       }
 
+      const meta = (session.metadata ?? {}) as Record<string, string>;
+      const domainToRegister = (meta.domain_to_register ?? "").trim().toLowerCase() || null;
+      const domainTopUpRaw = Number(meta.domain_top_up_gbp ?? "");
+      const domainTopUpGbp = Number.isFinite(domainTopUpRaw) && domainTopUpRaw > 0 ? domainTopUpRaw : null;
+
       const sessionUpsert = await supabase.from("stripe_checkout_sessions").upsert(
         {
           session_id: session.id,
@@ -250,6 +255,9 @@ serve(async (req) => {
           capture_status: captureStatus,
           auth_expires_at: authExpiresAt,
           captured_at: capturedAt,
+          domain: domainToRegister,
+          domain_top_up_gbp: domainTopUpGbp,
+          domain_status: domainToRegister ? "pending" : null,
           metadata: {
             ...(session.metadata ?? {}),
             client_reference_id: session.client_reference_id ?? null,
@@ -261,6 +269,25 @@ serve(async (req) => {
 
       if (sessionUpsert.error) {
         throw new Error(`Failed to upsert checkout session: ${sessionUpsert.error.message}`);
+      }
+
+      // Fire-and-forget domain registration on completed checkouts.
+      // We register on authorization (not capture) so the buyer's domain is locked in immediately.
+      // Risk window is small (~7d auth) and worst case admin eats the domain cost.
+      if (event.type === "checkout.session.completed" && domainToRegister) {
+        try {
+          fetch(`${supabaseUrl}/functions/v1/register-domain`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${supabaseServiceRoleKey}`,
+              "apikey": supabaseServiceRoleKey,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ sessionId: session.id }),
+          }).catch((err) => console.error("[register-domain invoke failed]", err));
+        } catch (err) {
+          console.error("[register-domain invoke threw]", err);
+        }
       }
 
       // Auto-merge with a matching admin manual draft (same email + amount)

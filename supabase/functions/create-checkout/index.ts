@@ -16,9 +16,18 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode, packageName, billing, clientContext, buyer } = await req.json();
+    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp } = await req.json();
     
     if (!priceId) throw new Error("Missing priceId");
+
+    // Domain add-on (optional). The domain is reserved in the basket and only
+    // registered after the webhook confirms payment. See `register-domain`.
+    const cleanDomain = typeof domain === "string"
+      ? domain.toLowerCase().trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "").slice(0, 253)
+      : "";
+    const validDomain = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/.test(cleanDomain) ? cleanDomain : "";
+    const topUpGbpNum = Number(domainTopUpGbp);
+    const safeTopUpGbp = Number.isFinite(topUpGbpNum) && topUpGbpNum >= 0 && topUpGbpNum <= 200 ? Math.round(topUpGbpNum * 100) / 100 : 0;
     const buyerEmail = buyer && typeof buyer.email === "string" ? buyer.email.trim().slice(0, 200) : "";
     const buyerName = buyer && typeof buyer.name === "string" ? buyer.name.trim().slice(0, 120) : "";
     const buyerCompany = buyer && typeof buyer.company === "string" ? buyer.company.trim().slice(0, 200) : "";
@@ -42,8 +51,26 @@ serve(async (req) => {
     const clientReferenceId = typeof safeClientContext.clientId === "string" ? safeClientContext.clientId.slice(0, 200) : undefined;
 
     const checkoutMode = mode || "payment";
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{ price: priceId, quantity: 1 }];
+
+    // Domain add-on becomes a second line item only when there's a top-up to collect.
+    // A "free with package" domain still gets registered post-payment but adds no line item.
+    if (validDomain && safeTopUpGbp > 0 && checkoutMode === "payment") {
+      lineItems.push({
+        quantity: 1,
+        price_data: {
+          currency: "gbp",
+          unit_amount: Math.round(safeTopUpGbp * 100),
+          product_data: {
+            name: `Domain registration: ${validDomain}`,
+            description: "First year, includes free WHOIS privacy and SSL.",
+          },
+        },
+      });
+    }
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: lineItems,
       mode: checkoutMode,
       success_url: `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment=canceled`,
@@ -59,6 +86,8 @@ serve(async (req) => {
         buyer_company: buyerCompany,
         buyer_phone: buyerPhone,
         buyer_email: buyerEmail,
+        domain_to_register: validDomain,
+        domain_top_up_gbp: validDomain ? String(safeTopUpGbp) : "",
       },
     };
 

@@ -347,6 +347,51 @@ export type Database = {
         }
         Relationships: []
       }
+      domain_registrations: {
+        Row: {
+          attempts: number
+          created_at: string
+          domain: string
+          error: string | null
+          expires_at: string | null
+          id: string
+          idempotency_key: string | null
+          registrar: string
+          registrar_response: Json | null
+          session_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          domain: string
+          error?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string | null
+          registrar?: string
+          registrar_response?: Json | null
+          session_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          domain?: string
+          error?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string | null
+          registrar?: string
+          registrar_response?: Json | null
+          session_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       edit_requests: {
         Row: {
           attachments: Json
@@ -726,6 +771,9 @@ export type Database = {
           dispute_reason: string | null
           dispute_status: string | null
           disputed_at: string | null
+          domain: string | null
+          domain_status: string | null
+          domain_top_up_gbp: number | null
           id: string
           metadata: Json
           mode: string | null
@@ -761,6 +809,9 @@ export type Database = {
           dispute_reason?: string | null
           dispute_status?: string | null
           disputed_at?: string | null
+          domain?: string | null
+          domain_status?: string | null
+          domain_top_up_gbp?: number | null
           id?: string
           metadata?: Json
           mode?: string | null
@@ -796,6 +847,9 @@ export type Database = {
           dispute_reason?: string | null
           dispute_status?: string | null
           disputed_at?: string | null
+          domain?: string | null
+          domain_status?: string | null
+          domain_top_up_gbp?: number | null
           id?: string
           metadata?: Json
           mode?: string | null
