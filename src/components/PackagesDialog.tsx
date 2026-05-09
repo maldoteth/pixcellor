@@ -907,7 +907,7 @@ function ServiceBackCard({
           </div>
           <h3 className="text-lg font-bold text-foreground">{data.title}</h3>
         </div>
-        <ul className="space-y-2 text-base text-foreground flex-1 mb-6">
+        <ul className={`space-y-2 text-base text-foreground ${isCenter ? "mb-4" : "flex-1 mb-6"}`}>
           {data.items.map((item) => (
             <li key={item.name} className="flex items-start gap-2">
               <ServiceItemRow item={item} />
