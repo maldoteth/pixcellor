@@ -201,9 +201,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       window.addEventListener('resize', check);
       return () => window.removeEventListener('resize', check);
     }, []);
-    const cardW = isMobile ? 87 : 138;
-    const cardH = isMobile ? 125 : 184;
-    const effectiveRadius = isMobile ? Math.max(radius, 340) : radius * 1.25;
+    const cardW = isMobile ? 100 : 138;
+    const cardH = isMobile ? 144 : 184;
+    const effectiveRadius = isMobile ? Math.max(radius * 1.1, 374) : radius * 1.25;
 
     // Determine which item is most front-facing for the flat overlay label.
     let frontIndex = 0;
