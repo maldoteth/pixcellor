@@ -329,7 +329,7 @@ serve(async (req) => {
       // - Subscriptions (Elite retainer, £150/yr renewals) → immediate confirmation as before.
       // - One-off payments that ended up captured immediately (wallets / non-card) → immediate confirmation.
       // - One-off payments awaiting capture → DO NOT send confirmation yet. Capture handler will send it.
-      if (event.type === "checkout.session.completed" && session.customer_details?.email) {
+      if (event.type === "checkout.session.completed" && session.customer_details?.email && !mergedIntoManualId) {
         const isAuthorizedAwaitingCapture = mode === "payment" && captureStatus === "requires_capture";
         if (!isAuthorizedAwaitingCapture && (paymentStatus === "paid" || mode === "subscription")) {
           await sendOrderConfirmationEmails({
