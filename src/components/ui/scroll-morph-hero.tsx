@@ -754,11 +754,11 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         style={{ opacity: titleOpacity }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground md:mt-[20px] lg:mt-[10px]"
                     >
-                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[3.96rem] md:h-[7.56rem] lg:h-[7rem] w-auto" />
+                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[4.36rem] md:h-[7.56rem] lg:h-[7rem] w-auto" />
                     </motion.h1>
                     <motion.p
                         style={{ opacity: subtitleOpacity }}
-                        className="-mt-2 text-xs md:text-sm lg:text-base font-normal tracking-[0.2em] text-foreground/90"
+                        className="-mt-2 text-[0.825rem] md:text-sm lg:text-base font-normal tracking-[0.2em] text-foreground/90"
                     >
                         Digital Services
                     </motion.p>
@@ -779,7 +779,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             animate={{ y: [0, 4, 0] }}
                             transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                         >
-                            <ChevronDown className="w-5 h-5" strokeWidth={2.25} />
+                            <ChevronDown className="w-[1.375rem] h-[1.375rem] md:w-5 md:h-5" strokeWidth={2.25} />
                         </motion.div>
                     </motion.button>
                     <motion.button
