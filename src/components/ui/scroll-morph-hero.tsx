@@ -59,12 +59,6 @@ function FlipCard({
     const [proximity, setProximity] = React.useState(0); // 0..1
     const [glowColor, setGlowColor] = React.useState<string>("255, 255, 255");
 
-    const handleOpen = (event: React.MouseEvent | React.KeyboardEvent) => {
-        event.stopPropagation();
-        event.preventDefault();
-        onViewDetails?.();
-    };
-
     // Sample dominant color from the image once it loads
     const handleImgLoad = React.useCallback(() => {
         const img = imgRef.current;
