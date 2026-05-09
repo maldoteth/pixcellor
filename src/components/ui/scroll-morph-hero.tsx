@@ -149,13 +149,6 @@ function FlipCard({
     return (
         <motion.div
             ref={cardRef}
-            onClick={handleOpen}
-            onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") handleOpen(event);
-            }}
-            role="button"
-            tabIndex={0}
-            aria-label="Scroll to portfolio"
             animate={{
                 x: target.x,
                 y: target.y,
