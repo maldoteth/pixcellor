@@ -58,7 +58,7 @@ export default function PortalAuth() {
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Pixcellor Dev Portal</CardTitle>
+          <CardTitle>Dev Portal</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-3">

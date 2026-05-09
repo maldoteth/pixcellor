@@ -1958,7 +1958,7 @@ export default function Portal() {
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 pb-28 md:p-6 md:pb-28 lg:pb-6">
       <div className="mx-auto max-w-7xl min-w-0 space-y-6">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl md:text-3xl font-semibold">Pixcellor Dev Portal</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold">Dev Portal</h1>
           <div className="flex shrink-0 items-center gap-2">
             <Button variant="pricing" size="sm" onClick={() => setDevChatOpen(true)}>
               <MessageSquare className="h-4 w-4" />
