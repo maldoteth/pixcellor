@@ -947,7 +947,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {galleryItems.length > 0 && morphValue > 0.85 && (
                     <motion.div
                         style={{ opacity: contentOpacity }}
-                        className="absolute inset-x-0 top-[calc(28%-20px)] md:top-[32%] bottom-[calc(18%+64px)] md:bottom-[18%] z-[50]"
+                        className="absolute inset-x-0 top-[calc(28%-20px)] md:top-[32%] bottom-[calc(18%+64px)] md:bottom-[18%] z-[50] [@media(orientation:landscape)_and_(max-height:500px)]:top-[14%] [@media(orientation:landscape)_and_(max-height:500px)]:bottom-[64px]"
                     >
                         <CircularGallery
                             items={galleryItems}
