@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       .filter((u): u is string => typeof u === "string");
     const mergedMedia = Array.from(new Set([...existingUrls, ...attachments])).slice(0, 50);
 
-    const desiredStatus = isSampleRequest ? "hot" : "warm";
+    const desiredStatus = "hot";
 
     let contactId: string;
     if (existingId) {
