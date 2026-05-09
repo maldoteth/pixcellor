@@ -207,12 +207,21 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
     const r = i % 2 === 0 ? 50 : 40;
     return `${50 + r * Math.cos(angle)},${50 + r * Math.sin(angle)}`;
   }).join(" ");
+  const openRequest = () =>
+    window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }));
   return (
-    <button
-      type="button"
-      onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }))}
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={openRequest}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openRequest();
+        }
+      }}
       aria-label="Request a free sample — don't pay until you're happy"
-      className={`group relative inline-flex items-center justify-center transition-transform hover:scale-105 active:scale-95 ${className}`}
+      className={`group relative inline-flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer ${className}`}
       style={{ width: 130, height: 130, filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.45))" }}
     >
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" aria-hidden="true">
@@ -239,8 +248,18 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
         <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase -mt-0.5">Samples</span>
         <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider mt-0.5">Don't pay till</span>
         <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider">you're happy</span>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            openRequest();
+          }}
+          className="mt-1 rounded-sm border border-foreground/40 bg-foreground px-2 py-[2px] text-[8px] font-extrabold uppercase tracking-wider text-background shadow transition hover:brightness-125"
+        >
+          Request
+        </button>
       </div>
-    </button>
+    </div>
   );
 }
 
