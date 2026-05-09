@@ -59,12 +59,6 @@ function FlipCard({
     const [proximity, setProximity] = React.useState(0); // 0..1
     const [glowColor, setGlowColor] = React.useState<string>("255, 255, 255");
 
-    const handleOpen = (event: React.MouseEvent | React.KeyboardEvent) => {
-        event.stopPropagation();
-        event.preventDefault();
-        onViewDetails?.();
-    };
-
     // Sample dominant color from the image once it loads
     const handleImgLoad = React.useCallback(() => {
         const img = imgRef.current;
@@ -149,13 +143,6 @@ function FlipCard({
     return (
         <motion.div
             ref={cardRef}
-            onClick={handleOpen}
-            onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") handleOpen(event);
-            }}
-            role="button"
-            tabIndex={0}
-            aria-label="Scroll to portfolio"
             animate={{
                 x: target.x,
                 y: target.y,
@@ -175,7 +162,7 @@ function FlipCard({
                 zIndex: proximity > 0.05 ? 46 : 45,
                 pointerEvents: "auto",
             }}
-            className="cursor-pointer group"
+            className="group"
         >
             <motion.div
                 className="relative h-full w-full overflow-hidden rounded-none shadow-lg bg-muted"
