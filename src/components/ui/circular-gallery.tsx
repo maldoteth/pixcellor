@@ -445,6 +445,33 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   style={{ opacity: 1 - depthDim }}
                   aria-hidden
                 />
+                {/* Billboarded label — counter-rotates so text always faces the camera and stays crisp */}
+                {isFrontFacing && (
+                  <div
+                    className="absolute left-0 right-0 pointer-events-none text-left px-1"
+                    style={{
+                      top: '100%',
+                      marginTop: 6,
+                      transform: `rotateY(${-(itemAngle + effectiveRotation)}deg)`,
+                      transformOrigin: '50% 0%',
+                      opacity: depthDim,
+                    }}
+                    aria-hidden
+                  >
+                    <h3
+                      className="font-semibold text-white text-xs md:text-sm leading-tight m-0 truncate"
+                      style={{ textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}
+                    >
+                      {item.common}
+                    </h3>
+                    <p
+                      className="italic text-white/75 text-[10px] md:text-xs leading-tight m-0 truncate"
+                      style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}
+                    >
+                      {item.binomial}
+                    </p>
+                  </div>
+                )}
               </div>
             );
           })}
