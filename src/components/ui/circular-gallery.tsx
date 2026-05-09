@@ -189,6 +189,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
           borderTop: '1px solid rgba(255,255,255,0.08)',
         }}
       />
+      </div>
     </div>
   );
 };
