@@ -947,7 +947,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         Portfolio
                     </h2>
                     <p className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8">
-                        Our team of stems from some of largest companies in the world, offering an array of business solutions turbo-powered by AI.
+                        Our team stems from some of largest companies in the world, offering an array of business solutions turbo-powered by AI.
                     </p>
                     <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} hidden />
                 </motion.div>
