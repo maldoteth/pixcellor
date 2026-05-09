@@ -166,8 +166,8 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
               role="tooltip"
               onMouseEnter={() => setOpen(true)}
               onMouseLeave={() => setOpen(false)}
-              style={{ position: "fixed", top: pos.top, left: pos.left, width: 240 }}
-              className="z-[200] rounded-md border border-border bg-popover p-3 text-xs leading-relaxed text-popover-foreground shadow-lg pointer-events-auto"
+              style={{ position: "fixed", top: pos.top, left: pos.left, width: 240, zIndex: 2147483647 }}
+              className="rounded-md border border-border bg-popover p-3 text-xs leading-relaxed text-popover-foreground shadow-lg pointer-events-auto"
             >
               {item.info}
             </div>,
