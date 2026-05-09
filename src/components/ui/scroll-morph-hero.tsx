@@ -737,7 +737,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 />
 
                 {/* Intro Text (Fades out) */}
-                <div className="absolute z-[100] flex flex-col items-center justify-center text-center pointer-events-none top-[230px] md:top-1/2 md:-translate-y-1/2">
+                <div className="absolute z-[100] flex flex-col items-center justify-center text-center pointer-events-none top-[230px] md:top-1/2 md:-translate-y-1/2 [@media(orientation:landscape)_and_(max-height:500px)]:top-[20px]">
                     <motion.h1
                         initial={{ y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { filter: "blur(10px)" }}
@@ -745,7 +745,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         style={{ opacity: titleOpacity }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground md:mt-[20px] lg:mt-[10px]"
                     >
-                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[3.96rem] md:h-[8.4rem] lg:h-[7rem] w-auto" />
+                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[3.96rem] md:h-[8.4rem] lg:h-[7rem] w-auto [@media(orientation:landscape)_and_(max-height:500px)]:h-[2.4rem]" />
                     </motion.h1>
                     <motion.p
                         style={{ opacity: subtitleOpacity }}
