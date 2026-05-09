@@ -1,74 +1,55 @@
 ## Goal
+On mobile, the per-card coloured glow should be **off by default** and only light up while the user is actively touching the screen — either tapping near a card or dragging around the circular gallery. Desktop behaviour stays exactly as it is.
 
-Let admins create orders directly from the Live tab — for offline payments (bank transfer, cash, invoice) or as parked draft quotes — and have an incoming Stripe payment automatically attach itself to a matching draft order.
+## Current state
+`src/components/ui/circular-gallery.tsx` renders each card with a static `box-shadow` glow. There is no touch tracking, and on mobile the glow is essentially invisible against the black background anyway.
 
-## UX
+## Approach (frontend only, single file)
 
-**Live tab → new "+ New Order" button** (top right, next to the search). Opens a drawer/dialog with:
+### 1. Track touch position at the gallery root
+In the `CircularGallery` forwardRef component:
+- Add state `touchPoint: {x, y} | null` and `isTouching: boolean`.
+- Attach `onTouchStart`, `onTouchMove`, `onTouchEnd`, `onTouchCancel` to the outer wrapper `<div>`.
+- On start/move: store the touch's clientX/clientY relative to the wrapper's bounding rect.
+- On end/cancel: clear `touchPoint` and set `isTouching = false` (with a short ~150ms fade-out timer so the glow eases off rather than snapping).
+- Gate all of this behind the existing `isMobile` flag — desktop ignores touch entirely and keeps current static glow.
 
-- **Customer email** (required)
-- **Customer name** (optional; shown in admin views, copied to client_profiles)
-- **Package** dropdown:
-  - Full Works (£150) / Elite (£500) / Retainer monthly (£X) / Retainer yearly (£X)
-  - **Custom…** → reveals two extra fields: custom **label** + custom **amount (GBP)**
-- **Order type** (radio):
-  - **Paid (offline)** — record as already paid (bank/cash/invoice). Marks `payment_status=paid`, `order_status=open`, `paid_at=now`.
-  - **Draft / Quote** — parked, awaiting payment. `payment_status=unpaid`, `order_status=open`, no paid timestamp.
-- **Notes / reference** (optional, free text — stored in metadata, e.g. "Bank transfer ref ABC123")
-- **Send order confirmation email + requirements link** (checkbox, default **on** for "Paid", off for "Draft")
+### 2. Compute per-card proximity
+For each card the parent already knows its on-screen position (it's positioned via 3D transform around the ring). Easiest reliable way:
+- Give each card wrapper a `ref` (array of refs).
+- In a `requestAnimationFrame` loop that runs only while `isTouching`, read each card's `getBoundingClientRect()` centre, compare to the current touch point, and compute a `proximity` value: `1` when the touch is on the card, falling to `0` past ~140px away (tunable).
+- Store proximities in a ref-backed array and force a lightweight re-render (or pass via context) so `GalleryCard` can read its own value.
 
-On submit:
-1. Insert a row into `stripe_checkout_sessions` with a synthetic `session_id` like `manual_<uuid>`, the chosen `package_name`, `amount_total` (in pence), `currency=gbp`, `mode=payment`, `metadata` carrying `{ source: "admin_manual", created_by_email, custom_label, notes }`.
-2. Generate `order_code` + `requirements_token` via existing `ensure_order_public_reference`.
-3. If Paid + email checkbox on → invoke existing `send-order-confirmation` with the session row → customer gets the same branded email + requirements link as a normal Stripe order.
-4. Toast success and refresh the snapshot. The new order shows up in the **Live** list immediately.
+Trade-off note: reading rects every frame for ~10 cards is cheap. If we want to avoid the rAF loop, we can compute proximity from the card's known angle vs the touch's angle around the ring centre — happy to use that variant if preferred (simpler, no DOM reads).
 
-**Live tab visual difference:** draft/unpaid manual orders get an amber "Draft" badge instead of the green "Live" one, so staff can chase them.
+### 3. Render the glow only when active (mobile)
+In `GalleryCard`:
+- Accept new props: `glowIntensity: number` (0–1) and `mobileMode: boolean`.
+- When `mobileMode` is true:
+  - Remove the static `box-shadow` glow.
+  - Render a sibling halo `<div>` behind the image (absolute, `inset: -20px`, radial-gradient using the card's dominant colour, `filter: blur(16px)`, `pointer-events: none`).
+  - Set its `opacity` to `glowIntensity` and transition opacity over ~120ms so it feels responsive but not jittery.
+  - Restructure the card so the halo can sit outside the image's `overflow-hidden` clip (move image + overlays into an inner `overflow-hidden` wrapper; outer wrapper is transparent and *not* clipped).
+- When `mobileMode` is false: keep today's static `box-shadow` glow exactly as is.
 
-## Auto-match Stripe payment → draft order
+### 4. Drag-around-the-ring case
+The user also wants the glow active while dragging around the circle. Two sub-cases:
+- **Vertical scroll-drag** (the existing rotation driver): treat any active touch as "interacting", regardless of whether it's directly on a card. While `isTouching` is true, every card gets a baseline glow (e.g. `0.25`), and the card closest to the touch point gets boosted toward `1.0`.
+- **Tap on a single card**: same code path — proximity to the touched card pushes its glow to `1.0`, others fade based on distance.
 
-When a real Stripe `checkout.session.completed` arrives:
+This means the rule is simply: glow opacity per card = `max(baseline-while-touching, proximity-to-touch)`.
 
-- Existing `stripe-webhook` already upserts a row keyed by Stripe's `session_id`.
-- **New step (added inside the webhook):** after upsert, if the Stripe row is `paid`, look for an existing **manual draft** with `metadata->>source = 'admin_manual'`, matching `lower(customer_email)` and matching `amount_total`, that is still `payment_status != 'paid'`. If found:
-  - Copy the Stripe `payment_intent_id`, `paid_at`, `customer_id` onto the draft row, set `payment_status='paid'`, append note in metadata: `matched_stripe_session: <real session_id>`.
-  - Mark the freshly-inserted Stripe row as `order_status='matched_to_manual'` (or simply delete it) so the order isn't duplicated in Live.
-  - Fire `send-order-confirmation` for the now-paid draft if it hadn't already been sent.
-
-This keeps reporting clean: one logical order per customer payment.
-
-## Database
-
-Single migration:
-
-1. Add a SECURITY DEFINER RPC `portal_create_manual_order(_email, _name, _package_name, _amount_pence, _mark_paid, _notes, _custom_label)`:
-   - `portal_require_admin()`
-   - Validate: email format, amount 1..1_000_000_00 pence, label ≤ 80 chars, notes ≤ 1000 chars.
-   - Insert into `stripe_checkout_sessions` with synthetic `session_id = 'manual_' || gen_random_uuid()`, `stripe_event_id = session_id`, `mode='payment'`, `currency='gbp'`, `metadata` JSON.
-   - Call `ensure_order_public_reference` to populate `order_code` + `requirements_token`.
-   - Returns the new row as jsonb (so the client can immediately invoke `send-order-confirmation`).
-
-2. Add a SECURITY DEFINER RPC `match_manual_order_to_stripe(_real_session_id text)` used by the webhook (service role) — encapsulates the lookup + merge logic above and returns the matched manual `session_id` (or null).
-
-3. Update `portal_fetch_snapshot` — no change needed, it already returns all stripe_checkout_sessions rows.
-
-## Frontend
-
-- New file `src/components/portal/NewOrderDialog.tsx` — the form/drawer described above. Reuses `Input`, `Select`, `RadioGroup`, `Switch`, `Button` from shadcn.
-- `Portal.tsx` Live tab header: add "+ New Order" button that opens the dialog. After success, calls existing `loadPortalSnapshot()`.
-- Live order rows: when `metadata.source === 'admin_manual'` and `payment_status !== 'paid'`, render an amber "Draft" badge instead of the green "Live"/"Delivered" badges.
-
-## Edge function changes
-
-- `supabase/functions/stripe-webhook/index.ts`: after the existing successful-payment upsert (around line 240–250), call the new `match_manual_order_to_stripe` RPC with the Stripe `session_id`. If it returns a manual `session_id`, optionally call `send-order-confirmation` for that manual id (only if it hadn't been sent on creation).
-- No new edge function required for creating the order — frontend hits the RPC directly via `supabase.rpc('portal_create_manual_order', …)`, then invokes the existing `send-order-confirmation` function.
+### 5. Accessibility & perf
+- `pointer-events: none` on the halo so it never intercepts taps.
+- `will-change: opacity` only while `isTouching`, removed on touchend, to avoid permanent compositor layers.
+- No changes for users with `prefers-reduced-motion` beyond the existing behaviour (the halo just fades; no large motion).
 
 ## Out of scope
+- No changes to rotation/scroll logic.
+- No changes to desktop appearance.
+- No changes to colours, sizing, or other components.
 
-- Generating Stripe payment links from the admin (not needed per your answers).
-- Subscription (retainer) draft handling for partial payments — manual retainer orders are recorded as one-off paid for now; if you later want recurring tracking we can extend.
-
-## Risks / notes
-
-- Auto-match is **email + exact amount**. If a customer pays a different amount than the draft, no match — the Stripe order shows up separately and the draft stays parked. Staff can manually merge by deleting the draft.
-- Synthetic `session_id` prefixed `manual_` keeps it clearly distinct in the DB and in Stripe-derived URLs (e.g. requirements link still works because it uses `requirements_token`, not the session id).
+## Verification
+- Mobile viewport (≤767px): cards show **no glow** at rest. Touching and holding near a card lights that card brightest with a soft falloff on neighbours; releasing fades the glow out within ~150ms. Dragging around the ring keeps a baseline glow active and the closest card boosted.
+- Desktop viewport (≥768px): visually identical to current behaviour.
+- Quick scroll/drag test: no jank, no leftover glow after lifting the finger.
