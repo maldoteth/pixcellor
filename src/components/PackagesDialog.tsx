@@ -718,6 +718,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="mt-2.5"><StripeBadge /></div>
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
+      <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-3 translate-y-[312px] z-30 rotate-[12deg]" />
+      </div>
 
       {/* Retainer / Enterprise flip card */}
       <motion.div
