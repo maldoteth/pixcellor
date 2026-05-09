@@ -754,7 +754,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         style={{ opacity: titleOpacity }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground md:mt-[20px] lg:mt-[10px]"
                     >
-                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[4.36rem] md:h-[7.56rem] lg:h-[7rem] w-auto" />
+                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[4.36rem] md:h-[6.804rem] lg:h-[7rem] w-auto" />
                     </motion.h1>
                     <motion.p
                         style={{ opacity: subtitleOpacity }}
