@@ -114,6 +114,11 @@ function FlipCard({
         const handleTouch = (e: TouchEvent) => {
             const t = e.touches[0] ?? e.changedTouches[0];
             if (!t) return;
+            const target = e.target as Element | null;
+            if (target && target.closest && target.closest('[data-hero-scroll-control="true"]')) {
+                setProximity((prev) => (prev > 0.01 ? 0 : prev));
+                return;
+            }
             updateFromPoint(t.clientX, t.clientY);
         };
         const handleTouchEnd = () => {
