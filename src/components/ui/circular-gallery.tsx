@@ -448,12 +448,11 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                 {/* Billboarded label — counter-rotates so text always faces the camera and stays crisp */}
                 {isFrontFacing && (
                   <div
-                    className="absolute left-0 right-0 pointer-events-none text-left px-1"
+                    className="absolute left-0 right-0 pointer-events-none text-left px-2 pb-1.5"
                     style={{
-                      top: '100%',
-                      marginTop: 6,
+                      bottom: 0,
                       transform: `rotateY(${-(itemAngle + effectiveRotation)}deg)`,
-                      transformOrigin: '50% 0%',
+                      transformOrigin: '50% 100%',
                       opacity: depthDim,
                     }}
                     aria-hidden
