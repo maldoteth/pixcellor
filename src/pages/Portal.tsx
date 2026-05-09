@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
 import { useDomainPrompt } from "@/components/DomainPromptDialog";
+import NewOrderDialog from "@/components/portal/NewOrderDialog";
 
 type StripeSession = {
   session_id: string;
