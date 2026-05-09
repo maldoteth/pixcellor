@@ -1,55 +1,50 @@
-## Goal
-On mobile, the per-card coloured glow should be **off by default** and only light up while the user is actively touching the screen — either tapping near a card or dragging around the circular gallery. Desktop behaviour stays exactly as it is.
+# Why the hero glow doesn't work on your Samsung
 
-## Current state
-`src/components/ui/circular-gallery.tsx` renders each card with a static `box-shadow` glow. There is no touch tracking, and on mobile the glow is essentially invisible against the black background anyway.
+The hero `FlipCard` (`src/components/ui/scroll-morph-hero.tsx`, line 97–125) starts its proximity tracker with this gate:
 
-## Approach (frontend only, single file)
+```ts
+const isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+if (!isFinePointer) return;
+```
 
-### 1. Track touch position at the gallery root
-In the `CircularGallery` forwardRef component:
-- Add state `touchPoint: {x, y} | null` and `isTouching: boolean`.
-- Attach `onTouchStart`, `onTouchMove`, `onTouchEnd`, `onTouchCancel` to the outer wrapper `<div>`.
-- On start/move: store the touch's clientX/clientY relative to the wrapper's bounding rect.
-- On end/cancel: clear `touchPoint` and set `isTouching = false` (with a short ~150ms fade-out timer so the glow eases off rather than snapping).
-- Gate all of this behind the existing `isMobile` flag — desktop ignores touch entirely and keeps current static glow.
+On a Samsung phone the browser reports `pointer: coarse` / `hover: none`, so the effect bails immediately and never attaches any listener. The Lovable dev preview "works fine" because you're viewing it on a desktop browser (fine pointer + hover) — the same code on your phone would also fail there. It has nothing to do with build vs. preview, gesture provenance, or Samsung Internet quirks. It's just a desktop-only feature today.
 
-### 2. Compute per-card proximity
-For each card the parent already knows its on-screen position (it's positioned via 3D transform around the ring). Easiest reliable way:
-- Give each card wrapper a `ref` (array of refs).
-- In a `requestAnimationFrame` loop that runs only while `isTouching`, read each card's `getBoundingClientRect()` centre, compare to the current touch point, and compute a `proximity` value: `1` when the touch is on the card, falling to `0` past ~140px away (tunable).
-- Store proximities in a ref-backed array and force a lightweight re-render (or pass via context) so `GalleryCard` can read its own value.
+The CircularGallery (the carousel ring lower down) has its own touch-driven glow loop, which is why that one does light up on mobile.
 
-Trade-off note: reading rects every frame for ~10 cards is cheap. If we want to avoid the rAF loop, we can compute proximity from the card's known angle vs the touch's angle around the ring centre — happy to use that variant if preferred (simpler, no DOM reads).
+# Plan: add touch-driven glow to the hero cards
 
-### 3. Render the glow only when active (mobile)
-In `GalleryCard`:
-- Accept new props: `glowIntensity: number` (0–1) and `mobileMode: boolean`.
-- When `mobileMode` is true:
-  - Remove the static `box-shadow` glow.
-  - Render a sibling halo `<div>` behind the image (absolute, `inset: -20px`, radial-gradient using the card's dominant colour, `filter: blur(16px)`, `pointer-events: none`).
-  - Set its `opacity` to `glowIntensity` and transition opacity over ~120ms so it feels responsive but not jittery.
-  - Restructure the card so the halo can sit outside the image's `overflow-hidden` clip (move image + overlays into an inner `overflow-hidden` wrapper; outer wrapper is transparent and *not* clipped).
-- When `mobileMode` is false: keep today's static `box-shadow` glow exactly as is.
+Mirror the pattern already used in `CircularGallery` so a finger near a hero card lights it up, and dragging across the arc lights up whichever card is closest.
 
-### 4. Drag-around-the-ring case
-The user also wants the glow active while dragging around the circle. Two sub-cases:
-- **Vertical scroll-drag** (the existing rotation driver): treat any active touch as "interacting", regardless of whether it's directly on a card. While `isTouching` is true, every card gets a baseline glow (e.g. `0.25`), and the card closest to the touch point gets boosted toward `1.0`.
-- **Tap on a single card**: same code path — proximity to the touched card pushes its glow to `1.0`, others fade based on distance.
+## Behaviour
 
-This means the rule is simply: glow opacity per card = `max(baseline-while-touching, proximity-to-touch)`.
+- Desktop (fine pointer): unchanged — current `pointermove` proximity loop stays.
+- Touch devices (coarse pointer):
+  - On `touchstart` / `touchmove` anywhere over the hero, compute proximity per card from the finger position to each card's centre (same falloff as desktop, ~280px radius scaled for mobile card size).
+  - On `touchend` / `touchcancel`, fade glow back to 0 over ~150ms.
+  - Tap directly on a card: that card briefly hits full glow, neighbours falloff naturally.
+  - Drag across the arc: the nearest card stays lit and others falloff smoothly.
 
-### 5. Accessibility & perf
-- `pointer-events: none` on the halo so it never intercepts taps.
-- `will-change: opacity` only while `isTouching`, removed on touchend, to avoid permanent compositor layers.
-- No changes for users with `prefers-reduced-motion` beyond the existing behaviour (the halo just fades; no large motion).
+## Where the change lives
+
+Single file: `src/components/ui/scroll-morph-hero.tsx`.
+
+Two small additions inside `FlipCard`:
+
+1. Replace the desktop-only gate with a branch:
+   - If fine pointer → keep the existing `pointermove` listener.
+   - Else → attach `touchstart` / `touchmove` / `touchend` / `touchcancel` to `window` (passive), driving the same `setProximity` state with the same rAF throttle and falloff math.
+2. Add a fade-out timer (rAF loop that decays `proximity` toward 0) triggered on touchend, so the glow doesn't snap off.
+
+No prop changes, no parent changes. Glow rendering (`hoverScale`, `glowAlpha`, `glowBlur`, `glowSpread`) is reused as-is, so visuals stay identical — only the input source changes.
+
+## Tuning notes
+
+- Touch radius: keep `PROXIMITY_RADIUS = 280` but consider 220 on `< 768px` viewports because the cards are smaller and closer together; otherwise every card lights up at once.
+- Listeners attach to `window` (not the card) so swipe-and-glide across the arc keeps updating proximity even as fingers leave any single card.
+- All listeners are `{ passive: true }` so we don't interfere with the existing virtual-scroll touch handler in the hero.
 
 ## Out of scope
-- No changes to rotation/scroll logic.
-- No changes to desktop appearance.
-- No changes to colours, sizing, or other components.
 
-## Verification
-- Mobile viewport (≤767px): cards show **no glow** at rest. Touching and holding near a card lights that card brightest with a soft falloff on neighbours; releasing fades the glow out within ~150ms. Dragging around the ring keeps a baseline glow active and the closest card boosted.
-- Desktop viewport (≥768px): visually identical to current behaviour.
-- Quick scroll/drag test: no jank, no leftover glow after lifting the finger.
+- The CircularGallery carousel glow (already works on mobile).
+- Any visual restyling of the glow itself.
+- Scroll/morph behaviour or card layout.
