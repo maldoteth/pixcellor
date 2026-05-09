@@ -746,7 +746,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 />
 
                 {/* Intro Text (Fades out) */}
-                <div className="absolute z-[100] flex flex-col items-center justify-center text-center pointer-events-none top-[230px] md:top-1/2 md:-translate-y-1/2 lg:translate-y-[calc(-50%+10px)]">
+                <div className="absolute z-[100] flex flex-col items-center justify-center text-center pointer-events-none top-[230px] md:top-1/2 md:-translate-y-1/2 lg:translate-y-[calc(-50%+20px)]">
                     <motion.h1
                         initial={{ y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { filter: "blur(10px)" }}
@@ -791,8 +791,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         }}
                         aria-label="Scroll down"
                         data-hero-scroll-control="true"
-                        className="hidden md:flex relative z-[110] mt-3 md:mt-7 md:-translate-y-[10px] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation"
-                        style={{ opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
+                        className="hidden md:flex relative z-[110] mt-3 md:mt-7 md:-translate-y-[10px] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-white transition-[color,filter] duration-200 items-center justify-center touch-manipulation [filter:drop-shadow(0_0_6px_hsla(0,0%,100%,0.7))_drop-shadow(0_0_12px_hsla(0,0%,100%,0.4))] hover:[filter:drop-shadow(0_0_8px_hsla(0,0%,100%,1))_drop-shadow(0_0_18px_hsla(0,0%,100%,0.9))_drop-shadow(0_0_28px_hsla(0,0%,100%,0.6))]"
+                        style={{ opacity: arrowOpacity }}
                     >
                         <motion.div
                             animate={{ y: [0, 4, 0] }}
