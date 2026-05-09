@@ -2780,12 +2780,22 @@ export default function Portal() {
             background: `linear-gradient(135deg, ${contactDetailDrawerStatusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--background) / 0.96) 34%, hsl(var(--background) / 0.96) 100%)`,
           }}
         >
-          <DrawerHeader className="mx-auto w-full max-w-3xl px-0 text-left">
+          <DrawerHeader className="relative mx-auto w-full max-w-3xl px-0 pr-24 text-left md:pr-0">
             <DrawerTitle>{contactDetailDrawerContact?.name ?? "Client"}</DrawerTitle>
             <DrawerDescription>
               {[contactDetailDrawerContact?.email, contactDetailDrawerContact?.location, contactDetailDrawerContact?.industry, contactDetailDrawerContact?.website].filter(Boolean).join(" · ") || "Sales client"}
               {contactDetailDrawerContact ? ` · ${getContactCreatorLabel(contactDetailDrawerContact)}` : ""}
             </DrawerDescription>
+            {contactDetailDrawerContact && (
+              <div className="absolute right-0 top-0 flex items-center gap-2 md:hidden">
+                <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
+                  Edit
+                </Button>
+                <Button variant="pricing" size="sm" className="h-9 w-9 shrink-0 rounded-none px-0 shadow-none" aria-label="Create event" title="Create event" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </DrawerHeader>
           {contactDetailDrawerContact && (
             <div className="mx-auto w-full max-w-3xl space-y-4 overflow-y-auto pb-2">
