@@ -791,7 +791,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         }}
                         aria-label="Scroll down"
                         data-hero-scroll-control="true"
-                        className="hidden md:flex relative z-[200] mt-3 md:mt-7 md:-translate-y-[10px] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-white transition-[color,filter] duration-200 items-center justify-center touch-manipulation [filter:drop-shadow(0_0_6px_hsla(0,0%,100%,0.7))_drop-shadow(0_0_12px_hsla(0,0%,100%,0.4))] hover:[filter:drop-shadow(0_0_4px_hsla(0,0%,100%,1))_drop-shadow(0_0_12px_hsla(0,0%,100%,1))_drop-shadow(0_0_24px_hsla(0,0%,100%,0.95))_drop-shadow(0_0_44px_hsla(0,0%,100%,0.8))_drop-shadow(0_0_72px_hsla(0,0%,100%,0.55))]"
+                        className="hidden md:flex relative z-[200] mt-3 md:mt-7 md:-translate-y-[20px] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-white transition-[color,filter] duration-200 items-center justify-center touch-manipulation [filter:drop-shadow(0_0_6px_hsla(0,0%,100%,0.7))_drop-shadow(0_0_12px_hsla(0,0%,100%,0.4))] hover:[filter:drop-shadow(0_0_4px_hsla(0,0%,100%,1))_drop-shadow(0_0_12px_hsla(0,0%,100%,1))_drop-shadow(0_0_24px_hsla(0,0%,100%,0.95))_drop-shadow(0_0_44px_hsla(0,0%,100%,0.8))_drop-shadow(0_0_72px_hsla(0,0%,100%,0.55))]"
                         style={{ opacity: arrowOpacity }}
                     >
                         <motion.div
