@@ -146,6 +146,22 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
           background: `linear-gradient(to top, ${tintStrong} 0%, ${tintMid} 55%, transparent 100%)`,
         }}
       />
+      {/* Liquid-glass blur bubble — bottom 25%, faded out toward the top */}
+      <div
+        className="absolute inset-x-0 bottom-0 pointer-events-none"
+        style={{
+          height: '25%',
+          backdropFilter: 'blur(10px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(10px) saturate(140%)',
+          background:
+            'linear-gradient(to top, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 60%, rgba(255,255,255,0) 100%)',
+          maskImage:
+            'linear-gradient(to top, black 0%, black 45%, transparent 100%)',
+          WebkitMaskImage:
+            'linear-gradient(to top, black 0%, black 45%, transparent 100%)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+        }}
+      />
     </div>
   );
 };
