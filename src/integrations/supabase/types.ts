@@ -1106,6 +1106,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      match_manual_order_to_stripe: {
+        Args: { _real_session_id: string }
+        Returns: string
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -1204,6 +1208,19 @@ export type Database = {
             }
             Returns: Json
           }
+      portal_create_manual_order: {
+        Args: {
+          _amount_pence?: number
+          _billing?: string
+          _custom_label?: string
+          _customer_email: string
+          _customer_name?: string
+          _mark_paid?: boolean
+          _notes?: string
+          _package_name?: string
+        }
+        Returns: Json
+      }
       portal_delete_contact_person: {
         Args: { _person_id: string }
         Returns: undefined
