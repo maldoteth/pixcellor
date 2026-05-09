@@ -43,7 +43,7 @@ serve(async (req) => {
   try {
     await requireAdmin(req);
     const { sessionId } = await req.json();
-    if (typeof sessionId !== "string" || !/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId)) {
+    if (typeof sessionId !== "string" || !/^(cs_(test|live)_[A-Za-z0-9]+|manual_[A-Za-z0-9]+)$/.test(sessionId)) {
       return json({ error: "Invalid order id" }, 400);
     }
 
