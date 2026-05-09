@@ -1,0 +1,1 @@
+UPDATE public.portfolio_projects SET url = 'www.berkeleygroup.co.uk/developments/west-sussex/horsham/highwood-village?utm_source=google&utm_medium=organic&utm_campaign=019076_seo_sweepup' WHERE id = '2a94f67c-f1c5-425f-962d-40efdf17a8ef';
