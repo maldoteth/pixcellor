@@ -2176,11 +2176,19 @@ export default function Portal() {
               <Card key={o.session_id}>
                 <CardContent className="p-4 space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
-                      <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
-                      {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
-                    </div>
+                     <div className="space-y-1">
+                       <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
+                       <div className="text-xs text-muted-foreground">
+                         {new Date(o.created_at).toLocaleString()} · {o.mode}
+                         {(() => {
+                           const meta = (o.metadata as Record<string, unknown> | null) ?? {};
+                           const pkgName = (meta.package_name as string | undefined) || (meta.custom_label as string | undefined);
+                           return pkgName ? ` · ${pkgName}` : "";
+                         })()}
+                         {" · "}<span className="font-semibold text-foreground">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</span>
+                       </div>
+                       {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
+                     </div>
                     <div className="flex flex-wrap items-center justify-end gap-3">
                       <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>
                         {o.payment_status ?? "pending"}
