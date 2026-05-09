@@ -285,7 +285,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             aria-live="polite"
           >
             <h3
-              className="font-semibold text-foreground text-sm md:text-lg leading-tight m-0"
+              className="font-semibold text-foreground text-base md:text-xl leading-tight m-0"
               style={{
                 textShadow: '0 1px 2px rgba(0,0,0,0.7)',
                 WebkitFontSmoothing: 'antialiased',
@@ -295,7 +295,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
               {frontItem.common}
             </h3>
             <p
-              className="text-xs md:text-sm italic text-muted-foreground m-0 mt-1"
+              className="text-sm md:text-base italic text-muted-foreground m-0 mt-1"
               style={{
                 textShadow: '0 1px 2px rgba(0,0,0,0.6)',
                 WebkitFontSmoothing: 'antialiased',
