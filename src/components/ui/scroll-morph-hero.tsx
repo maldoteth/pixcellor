@@ -168,7 +168,7 @@ function FlipCard({
                 zIndex: proximity > 0.05 ? 46 : 45,
                 pointerEvents: "auto",
             }}
-            className="cursor-pointer group"
+            className="group"
         >
             <motion.div
                 className="relative h-full w-full overflow-hidden rounded-none shadow-lg bg-muted"
