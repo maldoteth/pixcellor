@@ -665,7 +665,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           Most Popular
         </motion.div>
         <div className="relative z-10">
-        <div className="-mt-24 mb-2 text-lg font-bold text-foreground">Elite</div>
+        <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
         <div className="mb-1 flex items-baseline gap-2">
           <div className="text-5xl font-black text-foreground">£500</div>
           <span className="text-xs text-muted-foreground line-through">RRP £1,500</span>
