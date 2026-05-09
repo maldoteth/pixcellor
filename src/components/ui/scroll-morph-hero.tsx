@@ -262,6 +262,7 @@ function ProximityWords({ text, className }: { text: string; className?: string 
     );
 }
 
+// --- Main Hero Component ---
 const TOTAL_IMAGES = 20;
 const HERO_MORPH_END = 600;
 const CAROUSEL_SCROLL_END = HERO_MORPH_END + 8000;
