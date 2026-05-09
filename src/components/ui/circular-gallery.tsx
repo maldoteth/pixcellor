@@ -303,6 +303,21 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       cardRefs.current = cardRefs.current.slice(0, items.length);
     }, [items.length]);
 
+    // Hard-preload every carousel image once on mount so scrolling into view
+    // never triggers a fresh network/decode pass.
+    useEffect(() => {
+      const preloaded: HTMLImageElement[] = [];
+      items.forEach((it) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = it.photo.url;
+        preloaded.push(img);
+      });
+      return () => {
+        preloaded.length = 0;
+      };
+    }, [items]);
+
     const stopGlowLoop = () => {
       if (glowRafRef.current != null) {
         cancelAnimationFrame(glowRafRef.current);
