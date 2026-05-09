@@ -3252,6 +3252,7 @@ export default function Portal() {
         </div>
       </nav>
       {domainPromptDialog}
+      <NewOrderDialog open={showNewOrderDialog} onOpenChange={setShowNewOrderDialog} onCreated={loadPortalSnapshot} />
     </div>
   );
 }
