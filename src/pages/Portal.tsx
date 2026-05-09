@@ -2835,10 +2835,10 @@ export default function Portal() {
                       />
                     ))}
                   </div>
-                  <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
+                  <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
                     Edit
                   </Button>
-                  <Button variant="pricing" size="sm" className="h-9 w-9 shrink-0 rounded-none px-0 shadow-none md:w-auto md:px-3" aria-label="Create event" title="Create event" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
+                  <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 w-9 shrink-0 rounded-none px-0 shadow-none md:w-auto md:px-3" aria-label="Create event" title="Create event" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
                     <Plus className="h-4 w-4 md:mr-2" />
                     <span className="hidden md:inline">Create event</span>
                   </Button>
