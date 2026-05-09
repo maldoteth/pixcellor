@@ -189,6 +189,21 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
           borderTop: '1px solid rgba(255,255,255,0.08)',
         }}
       />
+      {/* Per-card title + subtitle, left-aligned over the bottom glass strip */}
+      <div className="absolute inset-x-0 bottom-0 px-2 pb-1.5 pointer-events-none text-left">
+        <h3
+          className="font-semibold text-white text-[11px] md:text-xs leading-tight m-0 truncate"
+          style={{ textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}
+        >
+          {item.common}
+        </h3>
+        <p
+          className="italic text-white/80 text-[10px] md:text-[11px] leading-tight m-0 truncate"
+          style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}
+        >
+          {item.binomial}
+        </p>
+      </div>
       </div>
     </div>
   );
