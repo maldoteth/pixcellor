@@ -94,96 +94,33 @@ function FlipCard({
         }
     }, []);
 
-    // Track pointer proximity (desktop) or finger proximity (touch devices)
+    // Track pointer proximity (desktop only)
     React.useEffect(() => {
         if (typeof window === "undefined") return;
         const isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+        if (!isFinePointer) return;
 
         let raf = 0;
-        let fadeRaf = 0;
-        const radius = isFinePointer
-            ? PROXIMITY_RADIUS
-            : (window.innerWidth < 768 ? 220 : PROXIMITY_RADIUS);
-
-        const computeProximity = (clientX: number, clientY: number) => {
-            const el = cardRef.current;
-            if (!el) return;
-            const rect = el.getBoundingClientRect();
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-            const dx = clientX - cx;
-            const dy = clientY - cy;
-            const dist = Math.hypot(dx, dy);
-            const next = Math.max(0, 1 - dist / radius);
-            setProximity((prev) => (Math.abs(prev - next) > 0.01 ? next : prev));
-        };
-
-        const stopFade = () => {
-            if (fadeRaf) {
-                cancelAnimationFrame(fadeRaf);
-                fadeRaf = 0;
-            }
-        };
-
-        const startFade = () => {
-            stopFade();
-            const step = () => {
-                let stillOn = false;
-                setProximity((prev) => {
-                    const nv = prev > 0.01 ? prev * 0.82 : 0;
-                    if (nv > 0.01) stillOn = true;
-                    return nv;
-                });
-                if (stillOn) {
-                    fadeRaf = requestAnimationFrame(step);
-                } else {
-                    fadeRaf = 0;
-                }
-            };
-            fadeRaf = requestAnimationFrame(step);
-        };
-
-        if (isFinePointer) {
-            const handleMove = (e: PointerEvent) => {
-                if (raf) return;
-                raf = requestAnimationFrame(() => {
-                    raf = 0;
-                    computeProximity(e.clientX, e.clientY);
-                });
-            };
-            window.addEventListener("pointermove", handleMove, { passive: true });
-            return () => {
-                window.removeEventListener("pointermove", handleMove);
-                if (raf) cancelAnimationFrame(raf);
-                stopFade();
-            };
-        }
-
-        // Touch devices: drive proximity from the active finger.
-        const handleTouch = (e: TouchEvent) => {
-            const t = e.touches[0];
-            if (!t) return;
-            stopFade();
+        const handleMove = (e: PointerEvent) => {
             if (raf) return;
             raf = requestAnimationFrame(() => {
                 raf = 0;
-                computeProximity(t.clientX, t.clientY);
+                const el = cardRef.current;
+                if (!el) return;
+                const rect = el.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                const dx = e.clientX - cx;
+                const dy = e.clientY - cy;
+                const dist = Math.hypot(dx, dy);
+                const next = Math.max(0, 1 - dist / PROXIMITY_RADIUS);
+                setProximity((prev) => (Math.abs(prev - next) > 0.01 ? next : prev));
             });
         };
-        const handleTouchEnd = () => {
-            startFade();
-        };
-        window.addEventListener("touchstart", handleTouch, { passive: true });
-        window.addEventListener("touchmove", handleTouch, { passive: true });
-        window.addEventListener("touchend", handleTouchEnd, { passive: true });
-        window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+        window.addEventListener("pointermove", handleMove, { passive: true });
         return () => {
-            window.removeEventListener("touchstart", handleTouch);
-            window.removeEventListener("touchmove", handleTouch);
-            window.removeEventListener("touchend", handleTouchEnd);
-            window.removeEventListener("touchcancel", handleTouchEnd);
+            window.removeEventListener("pointermove", handleMove);
             if (raf) cancelAnimationFrame(raf);
-            stopFade();
         };
     }, []);
 
