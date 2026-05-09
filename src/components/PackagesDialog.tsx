@@ -661,7 +661,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="absolute top-1.5 right-2 rounded-sm border border-foreground/30 bg-foreground px-3 py-0.5 text-[10px] font-extrabold text-background shadow z-20 uppercase tracking-wider"
+          className="absolute top-1.5 right-2 rounded-sm border border-foreground/30 bg-foreground px-3 text-[10px] font-extrabold text-background shadow z-20 uppercase tracking-wider py-[2px] mx-[2px] my-[6px]"
         >
           Most Popular
         </motion.div>
