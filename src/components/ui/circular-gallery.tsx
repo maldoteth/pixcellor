@@ -189,6 +189,21 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
           borderTop: '1px solid rgba(255,255,255,0.08)',
         }}
       />
+      {/* Per-card label sitting on the glass bubble */}
+      <div className="absolute inset-x-0 bottom-0 px-2 pb-2 pt-1 pointer-events-none text-center">
+        <div
+          className="font-semibold text-foreground text-[11px] md:text-xs leading-tight truncate"
+          style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+        >
+          {item.common}
+        </div>
+        <div
+          className="italic text-foreground/80 text-[9px] md:text-[10px] leading-tight truncate mt-0.5"
+          style={{ textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}
+        >
+          {item.binomial}
+        </div>
+      </div>
       </div>
     </div>
   );
@@ -263,8 +278,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         frontIndex = i;
       }
     });
-    const frontItem = items[frontIndex];
-    const frontStrength = Math.max(0, Math.min(1, 1 - frontDelta / 60));
 
     // --- Mobile touch-driven glow ---------------------------------------
     // While the user is touching the gallery, light up cards near the touch
@@ -450,41 +463,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
           })}
         </div>
 
-        {/* Flat 2D label rendered outside the 3D layer for crisp, non-warped text */}
-        {frontItem && (
-          <div
-            className="absolute left-1/2 -translate-x-1/2 pointer-events-none text-center px-4"
-            style={{
-              top: `calc(50% + ${cardH / 2 + 14}px)`,
-              opacity: frontStrength,
-              transition: 'opacity 200ms ease-out',
-              zIndex: 5,
-              maxWidth: 'min(90vw, 520px)',
-            }}
-            aria-live="polite"
-          >
-            <h3
-              className="font-semibold text-foreground text-base md:text-xl leading-tight m-0"
-              style={{
-                textShadow: '0 1px 2px rgba(0,0,0,0.7)',
-                WebkitFontSmoothing: 'antialiased',
-                MozOsxFontSmoothing: 'grayscale',
-              }}
-            >
-              {frontItem.common}
-            </h3>
-            <p
-              className="text-sm md:text-base italic text-muted-foreground m-0 mt-1"
-              style={{
-                textShadow: '0 1px 2px rgba(0,0,0,0.6)',
-                WebkitFontSmoothing: 'antialiased',
-                MozOsxFontSmoothing: 'grayscale',
-              }}
-            >
-              {frontItem.binomial}
-            </p>
-          </div>
-        )}
       </div>
     );
   }
