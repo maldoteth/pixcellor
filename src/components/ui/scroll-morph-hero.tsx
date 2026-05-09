@@ -842,10 +842,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         </button>
                         <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk")); }}
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } })); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
-                            Let's Talk
+                            Free Sample
                         </button>
                     </div>
                     {/* Desktop: row */}
@@ -882,10 +882,10 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         </button>
                         <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk")); }}
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } })); }}
                             className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
-                            Let's Talk
+                            Free Sample
                         </button>
                     </div>
                 </motion.div>
