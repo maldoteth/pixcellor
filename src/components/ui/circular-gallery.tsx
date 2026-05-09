@@ -141,20 +141,11 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, isFrontFacing }) => {
         loading="lazy"
       />
       <div
-        className="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none"
+        className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
         style={{
           background: `linear-gradient(to top, ${tintStrong} 0%, ${tintMid} 55%, transparent 100%)`,
         }}
       />
-      <div
-        className="carousel-label-glass absolute inset-x-0 bottom-0 px-2 py-1 md:px-3 md:py-1.5 text-foreground pointer-events-none"
-        style={{ transform: 'translateZ(1px)' }}
-      >
-        <div className="relative z-[1] leading-none">
-          <h3 className="font-semibold text-xs md:text-base leading-tight truncate m-0" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.55)' }}>{item.common}</h3>
-          <p className="hidden md:block text-[10px] md:text-xs italic text-muted-foreground truncate m-0 mt-0.5" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{item.binomial}</p>
-        </div>
-      </div>
     </div>
   );
 };
