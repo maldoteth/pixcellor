@@ -1,51 +1,55 @@
 ## Goal
-Stop the **Portfolio / Services / Let's Talk** buttons overlapping the circular hero gallery when a phone is held in landscape. Keep portrait mobile and desktop unchanged.
+On mobile, the per-card coloured glow should be **off by default** and only light up while the user is actively touching the screen — either tapping near a card or dragging around the circular gallery. Desktop behaviour stays exactly as it is.
 
-## Why it overlaps today
-In `src/components/ui/scroll-morph-hero.tsx`:
+## Current state
+`src/components/ui/circular-gallery.tsx` renders each card with a static `box-shadow` glow. There is no touch tracking, and on mobile the glow is essentially invisible against the black background anyway.
 
-- The CTA wrapper (line ~798) is anchored `bottom-[34px]` on mobile and uses the **stacked** layout (`md:hidden flex flex-col … gap-2`) — three 34px-tall buttons stack to roughly 120px tall.
-- The circular gallery (line ~947) is positioned `bottom-[calc(18%+64px)]` on mobile.
-- On a typical landscape phone (e.g. 812×375), `18% of 375 + 64 ≈ 131px` from bottom, and the stacked button group extends to ~150px from bottom → overlap.
-- The hero title block (`top-[230px]` on mobile) is also off-screen in landscape (only 375px tall), but that's a secondary issue.
+## Approach (frontend only, single file)
 
-Blocking landscape entirely isn't necessary — this is a layout problem with a small, contained fix.
+### 1. Track touch position at the gallery root
+In the `CircularGallery` forwardRef component:
+- Add state `touchPoint: {x, y} | null` and `isTouching: boolean`.
+- Attach `onTouchStart`, `onTouchMove`, `onTouchEnd`, `onTouchCancel` to the outer wrapper `<div>`.
+- On start/move: store the touch's clientX/clientY relative to the wrapper's bounding rect.
+- On end/cancel: clear `touchPoint` and set `isTouching = false` (with a short ~150ms fade-out timer so the glow eases off rather than snapping).
+- Gate all of this behind the existing `isMobile` flag — desktop ignores touch entirely and keeps current static glow.
 
-## Fix (frontend only, single file)
+### 2. Compute per-card proximity
+For each card the parent already knows its on-screen position (it's positioned via 3D transform around the ring). Easiest reliable way:
+- Give each card wrapper a `ref` (array of refs).
+- In a `requestAnimationFrame` loop that runs only while `isTouching`, read each card's `getBoundingClientRect()` centre, compare to the current touch point, and compute a `proximity` value: `1` when the touch is on the card, falling to `0` past ~140px away (tunable).
+- Store proximities in a ref-backed array and force a lightweight re-render (or pass via context) so `GalleryCard` can read its own value.
 
-Edit `src/components/ui/scroll-morph-hero.tsx`. Use a **landscape-phone breakpoint** defined as "short viewport" (`max-height: 500px`) combined with the existing mobile path. We can express this with arbitrary Tailwind variants like `max-[900px]:landscape:` or, more reliably, `[@media(orientation:landscape)_and_(max-height:500px)]:` utilities.
+Trade-off note: reading rects every frame for ~10 cards is cheap. If we want to avoid the rAF loop, we can compute proximity from the card's known angle vs the touch's angle around the ring centre — happy to use that variant if preferred (simpler, no DOM reads).
 
-### 1. CTA buttons — switch to horizontal row in landscape phone
-Currently:
-```
-<div className="md:hidden flex flex-col items-stretch gap-2 w-full"> … 3 buttons … </div>
-<div className="hidden md:flex justify-center items-center gap-3"> … 3 buttons … </div>
-```
-Change the mobile stack to flip horizontal in landscape phone:
-- Outer mobile wrapper: add `[@media(orientation:landscape)_and_(max-height:500px)]:flex-row [@media(orientation:landscape)_and_(max-height:500px)]:justify-center [@media(orientation:landscape)_and_(max-height:500px)]:gap-2 [@media(orientation:landscape)_and_(max-height:500px)]:w-auto [@media(orientation:landscape)_and_(max-height:500px)]:px-0`.
-- Each button: add `[@media(orientation:landscape)_and_(max-height:500px)]:w-[110px] [@media(orientation:landscape)_and_(max-height:500px)]:h-[32px]` so they sit on one line.
-- Outer wrapper position: bump bottom slightly tighter, e.g. `[@media(orientation:landscape)_and_(max-height:500px)]:bottom-[12px]`.
+### 3. Render the glow only when active (mobile)
+In `GalleryCard`:
+- Accept new props: `glowIntensity: number` (0–1) and `mobileMode: boolean`.
+- When `mobileMode` is true:
+  - Remove the static `box-shadow` glow.
+  - Render a sibling halo `<div>` behind the image (absolute, `inset: -20px`, radial-gradient using the card's dominant colour, `filter: blur(16px)`, `pointer-events: none`).
+  - Set its `opacity` to `glowIntensity` and transition opacity over ~120ms so it feels responsive but not jittery.
+  - Restructure the card so the halo can sit outside the image's `overflow-hidden` clip (move image + overlays into an inner `overflow-hidden` wrapper; outer wrapper is transparent and *not* clipped).
+- When `mobileMode` is false: keep today's static `box-shadow` glow exactly as is.
 
-This collapses ~120px of vertical button space to a single ~32px row.
+### 4. Drag-around-the-ring case
+The user also wants the glow active while dragging around the circle. Two sub-cases:
+- **Vertical scroll-drag** (the existing rotation driver): treat any active touch as "interacting", regardless of whether it's directly on a card. While `isTouching` is true, every card gets a baseline glow (e.g. `0.25`), and the card closest to the touch point gets boosted toward `1.0`.
+- **Tap on a single card**: same code path — proximity to the touched card pushes its glow to `1.0`, others fade based on distance.
 
-### 2. Gallery — lift clear of the row
-Update the gallery wrapper (line ~950):
-- Add `[@media(orientation:landscape)_and_(max-height:500px)]:bottom-[64px]` so the bottom of the gallery sits cleanly above the now-horizontal buttons.
-- Add `[@media(orientation:landscape)_and_(max-height:500px)]:top-[14%]` to give it a sensible top in a short viewport.
+This means the rule is simply: glow opacity per card = `max(baseline-while-touching, proximity-to-touch)`.
 
-### 3. Hero title block — keep it on-screen
-Title block (line ~740) currently `top-[230px]` on mobile. Add `[@media(orientation:landscape)_and_(max-height:500px)]:top-[24px]` and shrink the wordmark in that breakpoint: `[@media(orientation:landscape)_and_(max-height:500px)]:h-[2.4rem]` on the `<img>` (line ~748). Hide the in-circle mobile down-arrow (lines 757–775) in this breakpoint using `[@media(orientation:landscape)_and_(max-height:500px)]:hidden` since vertical space is too tight.
+### 5. Accessibility & perf
+- `pointer-events: none` on the halo so it never intercepts taps.
+- `will-change: opacity` only while `isTouching`, removed on touchend, to avoid permanent compositor layers.
+- No changes for users with `prefers-reduced-motion` beyond the existing behaviour (the halo just fades; no large motion).
 
-### 4. Optional polish
-- Reduce the bottom CTA wrapper's mobile padding (`px-[1.5rem]`) to `px-2` in landscape so the row doesn't get crammed.
-- Leave the chat bubble / other floating elements alone — they don't overlap.
-
-## Trade-offs / non-goals
-- **Not** adding a "rotate your device" overlay. The fix is small and a forced overlay is heavy-handed.
-- No changes to desktop, portrait mobile, or tablet layouts.
-- No changes to the gallery's internal radius logic — already responsive enough once the wrapper height changes.
+## Out of scope
+- No changes to rotation/scroll logic.
+- No changes to desktop appearance.
+- No changes to colours, sizing, or other components.
 
 ## Verification
-- DevTools / preview at **812×375** and **844×390** (landscape iPhone sizes): three CTA buttons appear in one row at the bottom, the circular gallery sits clearly above them with no overlap, and the wordmark is visible at the top.
-- Portrait mobile (390×844) and desktop (≥768px): visually identical to current.
-- Rotate the preview between portrait and landscape and confirm the layout swaps cleanly without flicker.
+- Mobile viewport (≤767px): cards show **no glow** at rest. Touching and holding near a card lights that card brightest with a soft falloff on neighbours; releasing fades the glow out within ~150ms. Dragging around the ring keeps a baseline glow active and the closest card boosted.
+- Desktop viewport (≥768px): visually identical to current behaviour.
+- Quick scroll/drag test: no jank, no leftover glow after lifting the finger.
