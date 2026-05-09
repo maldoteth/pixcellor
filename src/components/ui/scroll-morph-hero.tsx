@@ -217,6 +217,14 @@ function ProximityWords({ text, className }: { text: string; className?: string 
             if (raf) return;
             raf = requestAnimationFrame(() => {
                 raf = 0;
+                const box = el.getBoundingClientRect();
+                // If pointer is far outside the paragraph bounds, fade everything out
+                const dx = e.clientX < box.left ? box.left - e.clientX : e.clientX > box.right ? e.clientX - box.right : 0;
+                const dy = e.clientY < box.top ? box.top - e.clientY : e.clientY > box.bottom ? e.clientY - box.bottom : 0;
+                if (Math.hypot(dx, dy) > OUTSIDE_MARGIN) {
+                    setIntensities((prev) => prev.every((v) => v === 0) ? prev : Array(letterCount).fill(0));
+                    return;
+                }
                 const next: number[] = [];
                 for (let i = 0; i < letterCount; i++) {
                     const letter = letterRefs.current[i];
@@ -226,7 +234,6 @@ function ProximityWords({ text, className }: { text: string; className?: string 
                     const cy = r.top + r.height / 2;
                     const d = Math.hypot(e.clientX - cx, e.clientY - cy);
                     const t = Math.max(0, 1 - d / RADIUS);
-                    // smoothstep for nicer blend
                     next.push(t * t * (3 - 2 * t));
                 }
                 setIntensities((prev) => {
@@ -236,11 +243,11 @@ function ProximityWords({ text, className }: { text: string; className?: string 
             });
         };
         const handleLeave = () => setIntensities(Array(letterCount).fill(0));
-        el.addEventListener("pointermove", handleMove);
-        el.addEventListener("pointerleave", handleLeave);
+        window.addEventListener("pointermove", handleMove, { passive: true });
+        window.addEventListener("pointerleave", handleLeave);
         return () => {
-            el.removeEventListener("pointermove", handleMove);
-            el.removeEventListener("pointerleave", handleLeave);
+            window.removeEventListener("pointermove", handleMove);
+            window.removeEventListener("pointerleave", handleLeave);
             if (raf) cancelAnimationFrame(raf);
         };
     }, [letterCount]);
