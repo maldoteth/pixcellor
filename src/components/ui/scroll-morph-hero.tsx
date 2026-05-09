@@ -1020,7 +1020,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                                 x: Math.cos(arcRad) * arcRadius + parallaxValue,
                                 y: Math.sin(arcRad) * arcRadius + arcCenterY,
                                 rotation: currentArcAngle + 90,
-                                scale: isMobile ? 1.4 : 1.8,
+                                scale: isMobile ? 1.33 : 1.8,
                             };
 
                             target = {
