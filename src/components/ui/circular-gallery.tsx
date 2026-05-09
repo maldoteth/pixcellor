@@ -278,8 +278,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         frontIndex = i;
       }
     });
-    const frontItem = items[frontIndex];
-    const frontStrength = Math.max(0, Math.min(1, 1 - frontDelta / 60));
 
     // --- Mobile touch-driven glow ---------------------------------------
     // While the user is touching the gallery, light up cards near the touch
