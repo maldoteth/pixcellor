@@ -962,7 +962,7 @@ function ServiceBackCard({
     : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
   return (
     <div data-lava-card
-      className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
+      className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none flex flex-col`}
       style={{ transform: `rotate(${rotate}deg)${isCenter ? " translateY(-20px) scale(1.1)" : ""}`, boxShadow: shadow }}
     >
       {isCenter && (
@@ -974,9 +974,14 @@ function ServiceBackCard({
           Most Popular
         </motion.div>
       )}
-      <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
-      <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
-      <div className={`lava-blob ${isCenter ? "lava-blob-featured-3" : "lava-blob-3"}`} />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
+        <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
+        <div className={`lava-blob ${isCenter ? "lava-blob-featured-3" : "lava-blob-3"}`} />
+      </div>
+      {isCenter && (
+        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-[22px] translate-y-[40px] z-30 rotate-[12deg]" />
+      )}
       <div className="relative z-10 flex flex-col flex-1">
         <div className="flex items-center gap-3 mb-4">
           <div
