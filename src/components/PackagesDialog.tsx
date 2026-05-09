@@ -205,26 +205,26 @@ function PaymentMethodIcons() {
     <div className="flex items-center justify-center gap-3.5 mt-2">
       {/* Visa */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
-        <rect width="48" height="32" rx="0" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.5"/>
         <text x="24" y="20" textAnchor="middle" fontSize="12" fontWeight="bold" fontStyle="italic" fill="currentColor" className="text-background">VISA</text>
       </svg>
       {/* Mastercard */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
-        <rect width="48" height="32" rx="0" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.5"/>
         <circle cx="20" cy="16" r="8" fill="currentColor" className="text-background" opacity="0.95"/>
         <circle cx="28" cy="16" r="8" fill="currentColor" className="text-background" opacity="0.7"/>
       </svg>
       {/* Amex */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
-        <rect width="48" height="32" rx="0" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <rect width="48" height="32" rx="4" fill="currentColor" className="text-foreground" opacity="0.5"/>
         <text x="24" y="18" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="currentColor" className="text-background">AMEX</text>
       </svg>
       {/* Apple Pay */}
-      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.5)" }}>
+      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 rounded flex items-center justify-center" style={{ background: "rgba(255,255,255,0.5)" }}>
         <img src={applePayLogo} alt="Apple Pay" className="h-5 md:h-4 w-auto" style={{ filter: "brightness(0)", opacity: 1 }} />
       </div>
       {/* Google Pay */}
-      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.5)" }}>
+      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 rounded flex items-center justify-center" style={{ background: "rgba(255,255,255,0.5)" }}>
         <img src={gpayLogo} alt="Google Pay" className="h-5 md:h-4 w-auto" style={{ filter: "brightness(0)", opacity: 1 }} />
       </div>
     </div>
@@ -962,26 +962,12 @@ function ServiceBackCard({
     : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
   return (
     <div data-lava-card
-      className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none flex flex-col`}
+      className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
       style={{ transform: `rotate(${rotate}deg)${isCenter ? " translateY(-20px) scale(1.1)" : ""}`, boxShadow: shadow }}
     >
-      {isCenter && (
-        <motion.div
-          animate={{ y: [0, -4, 0] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="absolute top-1.5 right-2 rounded-sm border border-foreground/30 bg-foreground px-3 text-[10px] font-extrabold text-background shadow z-20 uppercase tracking-wider py-[2px] mx-[2px] my-[6px]"
-        >
-          Most Popular
-        </motion.div>
-      )}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
-        <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
-        <div className={`lava-blob ${isCenter ? "lava-blob-featured-3" : "lava-blob-3"}`} />
-      </div>
-      {isCenter && (
-        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-[22px] translate-y-[40px] z-30 rotate-[12deg]" />
-      )}
+      <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
+      <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
+      <div className={`lava-blob ${isCenter ? "lava-blob-featured-3" : "lava-blob-3"}`} />
       <div className="relative z-10 flex flex-col flex-1">
         <div className="flex items-center gap-3 mb-4">
           <div
@@ -1087,18 +1073,12 @@ function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
     <div className="grid grid-cols-1 gap-4">
       {groups.map((g) => {
         const Icon = g.icon;
-        const isFeatured = g === SERVICE_BACKS.elite;
         return (
-          <div data-lava-card key={g.title} className={`rounded-none p-5 flex flex-col bg-background relative overflow-hidden ${isFeatured ? "border border-foreground/30 ring-1 ring-foreground/10" : "border border-border"}`}>
+          <div data-lava-card key={g.title} className="rounded-none p-5 flex flex-col border border-border bg-background relative overflow-hidden">
             <div className="lava-blob lava-blob-1" />
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
             <div className="relative z-10 flex flex-col flex-1">
-              {isFeatured && (
-                <span className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-2">
-                  Most Popular
-                </span>
-              )}
               <div className="flex items-center gap-3 mb-3">
                 <div
                   className="flex h-10 w-10 items-center justify-center rounded-lg"
