@@ -94,14 +94,12 @@ function FlipCard({
         }
     }, []);
 
-    // Track pointer proximity (desktop only)
+    // Track pointer/touch proximity (desktop pointer + mobile touch)
     React.useEffect(() => {
         if (typeof window === "undefined") return;
-        const isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-        if (!isFinePointer) return;
 
         let raf = 0;
-        const handleMove = (e: PointerEvent) => {
+        const updateFromPoint = (clientX: number, clientY: number) => {
             if (raf) return;
             raf = requestAnimationFrame(() => {
                 raf = 0;
@@ -110,16 +108,35 @@ function FlipCard({
                 const rect = el.getBoundingClientRect();
                 const cx = rect.left + rect.width / 2;
                 const cy = rect.top + rect.height / 2;
-                const dx = e.clientX - cx;
-                const dy = e.clientY - cy;
+                const dx = clientX - cx;
+                const dy = clientY - cy;
                 const dist = Math.hypot(dx, dy);
                 const next = Math.max(0, 1 - dist / PROXIMITY_RADIUS);
                 setProximity((prev) => (Math.abs(prev - next) > 0.01 ? next : prev));
             });
         };
-        window.addEventListener("pointermove", handleMove, { passive: true });
+
+        const handlePointerMove = (e: PointerEvent) => updateFromPoint(e.clientX, e.clientY);
+        const handleTouch = (e: TouchEvent) => {
+            const t = e.touches[0] ?? e.changedTouches[0];
+            if (!t) return;
+            updateFromPoint(t.clientX, t.clientY);
+        };
+        const handleTouchEnd = () => {
+            setProximity((prev) => (prev > 0.01 ? 0 : prev));
+        };
+
+        window.addEventListener("pointermove", handlePointerMove, { passive: true });
+        window.addEventListener("touchstart", handleTouch, { passive: true });
+        window.addEventListener("touchmove", handleTouch, { passive: true });
+        window.addEventListener("touchend", handleTouchEnd, { passive: true });
+        window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
         return () => {
-            window.removeEventListener("pointermove", handleMove);
+            window.removeEventListener("pointermove", handlePointerMove);
+            window.removeEventListener("touchstart", handleTouch);
+            window.removeEventListener("touchmove", handleTouch);
+            window.removeEventListener("touchend", handleTouchEnd);
+            window.removeEventListener("touchcancel", handleTouchEnd);
             if (raf) cancelAnimationFrame(raf);
         };
     }, []);
