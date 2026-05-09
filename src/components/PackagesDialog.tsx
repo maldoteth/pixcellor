@@ -965,6 +965,15 @@ function ServiceBackCard({
       className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
       style={{ transform: `rotate(${rotate}deg)${isCenter ? " translateY(-20px) scale(1.1)" : ""}`, boxShadow: shadow }}
     >
+      {isCenter && (
+        <motion.div
+          animate={{ y: [0, -4, 0] }}
+          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          className="absolute top-1.5 right-2 rounded-sm border border-foreground/30 bg-foreground px-3 text-[10px] font-extrabold text-background shadow z-20 uppercase tracking-wider py-[2px] mx-[2px] my-[6px]"
+        >
+          Most Popular
+        </motion.div>
+      )}
       <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
       <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
       <div className={`lava-blob ${isCenter ? "lava-blob-featured-3" : "lava-blob-3"}`} />
@@ -1073,12 +1082,18 @@ function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
     <div className="grid grid-cols-1 gap-4">
       {groups.map((g) => {
         const Icon = g.icon;
+        const isFeatured = g === SERVICE_BACKS.elite;
         return (
-          <div data-lava-card key={g.title} className="rounded-none p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+          <div data-lava-card key={g.title} className={`rounded-none p-5 flex flex-col bg-background relative overflow-hidden ${isFeatured ? "border border-foreground/30 ring-1 ring-foreground/10" : "border border-border"}`}>
             <div className="lava-blob lava-blob-1" />
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
             <div className="relative z-10 flex flex-col flex-1">
+              {isFeatured && (
+                <span className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-2">
+                  Most Popular
+                </span>
+              )}
               <div className="flex items-center gap-3 mb-3">
                 <div
                   className="flex h-10 w-10 items-center justify-center rounded-lg"
