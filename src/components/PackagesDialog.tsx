@@ -367,6 +367,99 @@ function IntroductoryOfferText({ discount }: { discount: string }) {
   return <p className="mb-4 text-xs font-semibold text-foreground">Introductary offer — {discount} off</p>;
 }
 
+function SnakeFlipButton({
+  label,
+  onClick,
+  active,
+  onComplete,
+  sizeClass = "h-7 px-2 text-[10px]",
+  durationMs = 5000,
+}: {
+  label: string;
+  onClick: () => void;
+  active: boolean;
+  onComplete: () => void;
+  sizeClass?: string;
+  durationMs?: number;
+}) {
+  const [seconds, setSeconds] = useState(Math.ceil(durationMs / 1000));
+  const startRef = useRef<number>(0);
+  const cycleKey = useRef(0);
+
+  useEffect(() => {
+    if (!active) {
+      setSeconds(Math.ceil(durationMs / 1000));
+      return;
+    }
+    cycleKey.current += 1;
+    startRef.current = performance.now();
+    setSeconds(Math.ceil(durationMs / 1000));
+    const id = window.setInterval(() => {
+      const elapsed = performance.now() - startRef.current;
+      const remaining = Math.max(0, Math.ceil((durationMs - elapsed) / 1000));
+      setSeconds(remaining);
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [active, durationMs]);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative inline-flex items-center justify-center gap-1 overflow-visible rounded-md border border-border bg-background font-medium text-foreground transition-colors hover:bg-accent ${sizeClass}`}
+    >
+      <span className="relative z-10 whitespace-nowrap">
+        {label}
+        {active ? ` · ${seconds}s` : ""}
+      </span>
+      {active && (
+        <svg
+          key={cycleKey.current}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+          preserveAspectRatio="none"
+        >
+          {/* faint track */}
+          <rect
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            rx="6"
+            ry="6"
+            fill="none"
+            stroke="hsl(var(--foreground) / 0.15)"
+            strokeWidth="1.5"
+          />
+          {/* snake */}
+          <motion.rect
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            rx="6"
+            ry="6"
+            fill="none"
+            stroke="hsl(var(--foreground))"
+            strokeWidth="2"
+            strokeLinecap="round"
+            pathLength={100}
+            strokeDasharray="28 72"
+            initial={{ strokeDashoffset: 0 }}
+            animate={{ strokeDashoffset: -100 }}
+            transition={{ duration: durationMs / 1000, ease: "linear" }}
+            onAnimationComplete={() => {
+              if (active) onComplete();
+            }}
+            style={{ filter: "drop-shadow(0 0 3px hsl(var(--foreground) / 0.6))" }}
+          />
+        </svg>
+      )}
+    </button>
+  );
+}
+
+
 interface PackagesDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -648,16 +741,17 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
-  useEffect(() => {
-    if (enterpriseOpen || retainerAutoFlipStopped || servicesFlipped) return;
-    const interval = window.setInterval(() => setRetainerFlipped((flipped) => !flipped), 5000);
-    return () => window.clearInterval(interval);
-  }, [enterpriseOpen, retainerAutoFlipStopped, servicesFlipped]);
+  const desktopAutoActive = !enterpriseOpen && !retainerAutoFlipStopped && !servicesFlipped;
+
+  const flipRetainerAuto = useCallback(() => {
+    setRetainerFlipped((flipped) => !flipped);
+  }, []);
 
   const flipRetainerManually = () => {
     setRetainerAutoFlipStopped(true);
     setRetainerFlipped((flipped) => !flipped);
   };
+
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -853,7 +947,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             <div className="relative z-10">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="text-lg font-bold text-foreground">Retainer</div>
-                <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={flipRetainerManually}>Enterprise</Button>
+                <SnakeFlipButton label="Enterprise" sizeClass="h-7 px-2 text-[10px]" active={desktopAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="flex items-center gap-2 mb-3">
                 <button
@@ -935,7 +1029,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             <div className="relative z-10">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="text-lg font-bold text-foreground">Enterprise</div>
-                <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={flipRetainerManually}>Retainer</Button>
+                <SnakeFlipButton label="Retainer" sizeClass="h-7 px-2 text-[10px]" active={desktopAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="mb-1 text-3xl font-extrabold text-foreground">Solutions</div>
               <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
@@ -1174,16 +1268,17 @@ function MobileCards() {
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
-  useEffect(() => {
-    if (enterpriseOpen || retainerAutoFlipStopped) return;
-    const interval = window.setInterval(() => setRetainerFlipped((flipped) => !flipped), 5000);
-    return () => window.clearInterval(interval);
-  }, [enterpriseOpen, retainerAutoFlipStopped]);
+  const mobileAutoActive = !enterpriseOpen && !retainerAutoFlipStopped;
+
+  const flipRetainerAuto = useCallback(() => {
+    setRetainerFlipped((flipped) => !flipped);
+  }, []);
 
   const flipRetainerManually = () => {
     setRetainerAutoFlipStopped(true);
     setRetainerFlipped((flipped) => !flipped);
   };
+
 
   const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
     setPending({ priceId, mode, key, packageName, billing });
@@ -1290,7 +1385,7 @@ function MobileCards() {
             <div className="relative z-10 flex flex-col flex-1">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-foreground">Retainer</h3>
-                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={flipRetainerManually}>Enterprise</Button>
+                <SnakeFlipButton label="Enterprise" sizeClass="h-8 px-2 text-xs" active={mobileAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="flex items-center gap-2 mt-2 mb-3">
                 <button
@@ -1361,7 +1456,7 @@ function MobileCards() {
             <div className="relative z-10 flex flex-col flex-1">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
-                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={flipRetainerManually}>Retainer</Button>
+                <SnakeFlipButton label="Retainer" sizeClass="h-8 px-2 text-xs" active={mobileAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="mt-3 mb-1">
                 <span className="text-3xl font-extrabold text-foreground">Solutions</span>
