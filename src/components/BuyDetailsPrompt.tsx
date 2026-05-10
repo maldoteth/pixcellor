@@ -137,20 +137,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
           className="flex flex-col gap-3"
         >
           {isDomain ? (
-            <>
-              <DomainPicker onChoose={handleDomainChoice} submitting={submitting} />
-              <div className="flex">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBack}
-                  disabled={submitting}
-                  className="h-10 px-4 text-sm"
-                >
-                  Back
-                </Button>
-              </div>
-            </>
+            <DomainPicker onChoose={handleDomainChoice} onBack={handleBack} submitting={submitting} />
           ) : (
             <>
               <label className="text-foreground/70 text-xs uppercase tracking-wider">
