@@ -94,6 +94,34 @@ async function checkOneDomain(domain: string, apikey: string, secret: string) {
   };
 }
 
+async function getCheckedDomain(domain: string, apikey: string, secret: string) {
+  const cached = checkCache.get(domain);
+  if (cached && Date.now() - cached.at < 60_000) return cached.payload;
+
+  const check = await checkOneDomain(domain, apikey, secret);
+  let payload: any;
+  if (!check.ok) {
+    payload = {
+      domain,
+      available: null,
+      rateLimited: check.rateLimited,
+      error: check.message || check.code,
+    };
+  } else {
+    const priceUsd = Number.isFinite(check.priceUsd) ? check.priceUsd : check.regularPriceUsd;
+    const badges = Number.isFinite(priceUsd) ? priceToBadges(priceUsd) : { priceGbp: null, topUpGbp: 0, freeWithPackage: false };
+    payload = {
+      domain,
+      available: check.available,
+      isPremium: check.isPremium,
+      ...badges,
+      firstYearPromo: check.firstYearPromo,
+    };
+  }
+  checkCache.set(domain, { at: Date.now(), payload });
+  return payload;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
