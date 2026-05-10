@@ -74,4 +74,4 @@ const brand = { color: '#ffffff', fontSize: '13px', fontWeight: '800' as const, 
 const eyebrow = { color: '#a3a3a3', fontSize: '12px', fontWeight: '700' as const, lineHeight: '18px', margin: '0 0 10px' }
 const h1 = { color: '#fafafa', fontSize: '26px', fontWeight: '800' as const, lineHeight: '32px', margin: '0 0 18px' }
 const text = { color: '#cfcfcf', fontSize: '16px', lineHeight: '26px', margin: '0 0 22px' }
-const button = { backgroundColor: '#ffffff', borderRadius: '8px', color: '#050505', display: 'inline-block', fontSize: '14px', fontWeight: '800' as const, lineHeight: '18px', padding: '13px 22px', textDecoration: 'none' }
+const button = { backgroundColor: '#ffffff', color: '#050505', display: 'inline-block', fontSize: '14px', fontWeight: '800' as const, lineHeight: '18px', padding: '13px 22px', textDecoration: 'none' }
