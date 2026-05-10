@@ -24,7 +24,7 @@ interface VisionGeneratorProps {
   chatOpen?: boolean;
 }
 
-type StepKey = "industry" | "vibe" | "colour" | "headline" | "sections";
+type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
 type Stage = StepKey | "generating" | "result";
 
 interface StepDef {
@@ -37,6 +37,13 @@ interface StepDef {
 }
 
 const STEPS: StepDef[] = [
+  {
+    key: "company",
+    label: "What's your company or brand name?",
+    helper: "We'll brand the whole site around this — logo, hero, header.",
+    placeholder: "e.g. Acme Florist",
+    prefix: "Company / brand name",
+  },
   {
     key: "industry",
     label: "What's your industry or what do you sell?",
