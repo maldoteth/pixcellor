@@ -25,7 +25,18 @@ type VisionBrief = {
   at?: number;
 };
 
-const PACKAGE_OPTIONS = [
+type PackageOption = {
+  key: string;
+  name: string;
+  price: string;
+  rrp: string;
+  pages: string;
+  priceId: string;
+  bullets: string[];
+  featured?: boolean;
+};
+
+const PACKAGE_OPTIONS: PackageOption[] = [
   {
     key: "fullWorks",
     name: "Full Works",
@@ -45,7 +56,7 @@ const PACKAGE_OPTIONS = [
     bullets: ["Sites or web apps", "Unlimited revisions", "SEO & AEO optimisation", "4-7 day turnaround"],
     featured: true,
   },
-] as const;
+];
 
 type Stage = "choose" | "buyer";
 
