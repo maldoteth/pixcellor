@@ -250,26 +250,26 @@ function PaymentMethodIcons() {
     <div className="flex items-center justify-center gap-3.5 mt-2">
       {/* Visa */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
-        <rect width="48" height="32" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <rect width="48" height="32" fill="currentColor" className="text-foreground"/>
         <text x="24" y="20" textAnchor="middle" fontSize="12" fontWeight="bold" fontStyle="italic" fill="currentColor" className="text-background">VISA</text>
       </svg>
       {/* Mastercard */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
-        <rect width="48" height="32" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <rect width="48" height="32" fill="currentColor" className="text-foreground"/>
         <circle cx="20" cy="16" r="8" fill="currentColor" className="text-background" opacity="0.95"/>
         <circle cx="28" cy="16" r="8" fill="currentColor" className="text-background" opacity="0.7"/>
       </svg>
       {/* Amex */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
-        <rect width="48" height="32" fill="currentColor" className="text-foreground" opacity="0.5"/>
+        <rect width="48" height="32" fill="currentColor" className="text-foreground"/>
         <text x="24" y="18" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="currentColor" className="text-background">AMEX</text>
       </svg>
       {/* Apple Pay */}
-      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.5)" }}>
+      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 flex items-center justify-center" style={{ background: "rgba(255,255,255,1)" }}>
         <img src={applePayLogo} alt="Apple Pay" className="h-5 md:h-4 w-auto" style={{ filter: "brightness(0)", opacity: 1 }} />
       </div>
       {/* Google Pay */}
-      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.5)" }}>
+      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 flex items-center justify-center" style={{ background: "rgba(255,255,255,1)" }}>
         <img src={gpayLogo} alt="Google Pay" className="h-5 md:h-4 w-auto" style={{ filter: "brightness(0)", opacity: 1 }} />
       </div>
     </div>
@@ -279,7 +279,7 @@ function PaymentMethodIcons() {
 function StripeBadge() {
   return (
     <div className="flex flex-col items-center">
-      <div className="flex items-center justify-center gap-1.5 mt-3 opacity-40">
+      <div className="flex items-center justify-center gap-1.5 mt-3 opacity-90">
         <Lock className="w-3 h-3 text-foreground" />
         <span className="text-[10px] text-foreground tracking-wide">Powered by</span>
         <span className="text-[10px] font-bold tracking-wide text-foreground">Stripe</span>
