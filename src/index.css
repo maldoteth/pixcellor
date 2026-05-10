@@ -34,7 +34,7 @@ All colors MUST be HSL.
 
     --border: 0 0% 18%;
     --input: 0 0% 18%;
-    --ring: 210 100% 60%;
+    --ring: 0 0% 100%;
 
     --radius: 0rem;
 
@@ -75,7 +75,7 @@ All colors MUST be HSL.
 
     --border: 0 0% 18%;
     --input: 0 0% 18%;
-    --ring: 210 100% 60%;
+    --ring: 0 0% 100%;
 
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 93%;
