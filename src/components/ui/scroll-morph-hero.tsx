@@ -668,6 +668,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
+    const contentBlur = useTransform(smoothMorph, [0.8, 1], ["blur(10px)", "blur(0px)"]);
     // Hero intro elements: opacity tracks the morph spring directly so scroll-up
     // reveals them instantly (matching the circle/cards behavior) instead of
     // running a separate 1s tween via animate={}.
