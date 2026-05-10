@@ -342,7 +342,12 @@ const LetsTalkPrompt = () => {
   const isTextStep = step === "name" || step === "email" || step === "phone";
   const isLongStep = step === "dream" || step === "colours";
 
-  const title = mode === "request" ? "Request Free Sample" : "Let's Talk";
+  const title =
+    mode === "request"
+      ? "Request Free Sample"
+      : mode === "consultation"
+        ? "Request Free Consultation"
+        : "Let's Talk";
 
   const promptLabel = (() => {
     if (step === "name") return "What's your name?";
