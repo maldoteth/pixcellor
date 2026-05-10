@@ -179,13 +179,21 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const orderThisStyle = () => {
     try {
       sessionStorage.setItem(
-        "pixcellor:vision-brief",
-        JSON.stringify({ prompt: generatedFor, imageUrl, at: Date.now() }),
+        "pixcellor:consultation-context",
+        JSON.stringify({
+          imageUrl,
+          brief: generatedFor,
+          company: answers.company,
+          orderRequest: true,
+          at: Date.now(),
+        }),
       );
     } catch { /* ignore */ }
     setOpen(false);
     setTimeout(() => {
-      window.dispatchEvent(new Event("pixcellor:open-vision-purchase"));
+      window.dispatchEvent(
+        new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }),
+      );
     }, 200);
   };
 
