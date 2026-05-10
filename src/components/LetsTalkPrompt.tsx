@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 
 type Mode = "talk" | "request";
-type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "done";
+type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "done";
 
 const nameSchema = z.string().trim().min(1, "Please enter your name").max(80);
 const emailSchema = z.string().trim().email("Enter a valid email").max(200);
@@ -36,6 +36,7 @@ const LetsTalkPrompt = () => {
   const [emailSkipped, setEmailSkipped] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [visionUrl, setVisionUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -49,6 +50,7 @@ const LetsTalkPrompt = () => {
       setMedia([]);
       setEmailSkipped(false);
       setError(null);
+      setVisionUrl(null);
       setStep("name");
       setOpen(true);
     };
@@ -62,13 +64,19 @@ const LetsTalkPrompt = () => {
     finalDream?: string,
     finalColours?: string,
     finalMedia?: string[],
+    finalVisionUrl?: string | null,
+    opts?: { keepOpen?: boolean },
   ) => {
     setSubmitting(true);
     try {
       const source = mode === "request" ? "free_sample_request" : "lets_talk_button";
       const requestDetails =
         mode === "request"
-          ? { dream: finalDream?.trim() || null, colours: finalColours?.trim() || null }
+          ? {
+              dream: finalDream?.trim() || null,
+              colours: finalColours?.trim() || null,
+              vision_image_url: finalVisionUrl ?? null,
+            }
           : null;
       const attachments = mode === "request" ? finalMedia ?? [] : null;
 
@@ -95,14 +103,69 @@ const LetsTalkPrompt = () => {
         })
         .catch((err) => console.error("process-lets-talk-lead failed:", err));
 
-      setStep("done");
-      setTimeout(() => setOpen(false), 1800);
+      if (!opts?.keepOpen) {
+        setStep("done");
+        setTimeout(() => setOpen(false), 1800);
+      }
     } catch (e) {
       console.error(e);
       setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const generateVisionAndSubmit = async () => {
+    setStep("generating");
+    setError(null);
+    let url: string | null = null;
+    try {
+      const brief = `${dream.trim()}\n\nColours / styles: ${colours.trim()}`;
+      const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", {
+        body: { prompt: brief },
+      });
+      if (fnErr) throw fnErr;
+      if (data?.error) throw new Error(data.error);
+      url = data?.imageUrl ?? null;
+    } catch (e) {
+      console.error("vision generation failed", e);
+    }
+    setVisionUrl(url);
+    // Save lead either way (with or without vision)
+    await submit(email.trim(), phone.trim(), dream, colours, media, url, { keepOpen: true });
+    setStep(url ? "vision" : "done");
+    if (!url) setTimeout(() => setOpen(false), 1800);
+  };
+
+  const orderThisStyle = () => {
+    try {
+      sessionStorage.setItem(
+        "pixcellor:vision-brief",
+        JSON.stringify({
+          prompt: `${dream}\n\nColours: ${colours}`,
+          imageUrl: visionUrl,
+          name,
+          email,
+          phone,
+          at: Date.now(),
+        }),
+      );
+    } catch { /* ignore */ }
+    setOpen(false);
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: true } }));
+      window.dispatchEvent(new Event("pixcellor:open-packages"));
+    }, 200);
+  };
+
+  const downloadVision = () => {
+    if (!visionUrl) return;
+    const a = document.createElement("a");
+    a.href = visionUrl;
+    a.download = "pixcellor-vision.png";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleNext = async () => {
@@ -142,7 +205,11 @@ const LetsTalkPrompt = () => {
       return;
     }
     if (step === "media") {
-      await submit(email.trim(), phone.trim(), dream, colours, media);
+      if (mode === "request") {
+        await generateVisionAndSubmit();
+      } else {
+        await submit(email.trim(), phone.trim(), dream, colours, media);
+      }
     }
   };
 
@@ -167,7 +234,11 @@ const LetsTalkPrompt = () => {
       return;
     }
     if (step === "media") {
-      await submit(email.trim(), phone.trim(), dream, colours, media);
+      if (mode === "request") {
+        await generateVisionAndSubmit();
+      } else {
+        await submit(email.trim(), phone.trim(), dream, colours, media);
+      }
     }
   };
 
@@ -195,7 +266,52 @@ const LetsTalkPrompt = () => {
   const content = (
     <div className="flex flex-col gap-4 px-1 pb-2">
       <AnimatePresence mode="wait">
-        {step === "done" ? (
+        {step === "generating" ? (
+          <motion.div
+            key="generating"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center gap-3 py-10"
+          >
+            <Loader2 className="w-8 h-8 animate-spin text-foreground" />
+            <p className="text-foreground text-base font-medium">Building your sample…</p>
+            <p className="text-foreground/70 text-sm text-center max-w-xs">
+              Our AI is rendering a desktop preview of your dream site. This takes about 30 seconds.
+            </p>
+          </motion.div>
+        ) : step === "vision" && visionUrl ? (
+          <motion.div
+            key="vision"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col gap-3"
+          >
+            <p className="text-foreground text-base font-semibold">Here's your free sample, {name.split(" ")[0]} ✨</p>
+            <p className="text-foreground/70 text-xs">
+              A desktop concept based on your brief. Love it? Order this style and we'll build it for real — your sample is attached so we know exactly what to make.
+            </p>
+            <div className="border border-foreground/15 bg-black/40 max-h-[50vh] overflow-auto rounded-md">
+              <img src={visionUrl} alt="Your AI-generated landing page sample" className="w-full block" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
+              <Button type="button" variant="pricing" onClick={orderThisStyle} className="sm:col-span-2 h-12 font-semibold">
+                Order this style →
+              </Button>
+              <Button type="button" variant="pricing" onClick={downloadVision} className="h-12 font-semibold">
+                Save image
+              </Button>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setOpen(false); }}
+              className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1"
+            >
+              Not for me — close
+            </button>
+          </motion.div>
+        ) : step === "done" ? (
           <motion.div
             key="done"
             initial={{ opacity: 0, y: 6 }}
