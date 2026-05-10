@@ -302,7 +302,7 @@ const LetsTalkPrompt = () => {
             <Loader2 className="w-8 h-8 animate-spin text-foreground" />
             <p className="text-foreground text-base font-medium">Building your sample…</p>
             <p className="text-foreground/70 text-sm text-center max-w-xs">
-              Our AI is rendering a desktop preview of your dream site. This takes about 30 seconds.
+              Our AI is rendering a desktop preview of your dream site which our engineers will then build fully if you buy. This takes about 30 seconds.
             </p>
           </motion.div>
         ) : step === "vision" && visionUrl ? (
