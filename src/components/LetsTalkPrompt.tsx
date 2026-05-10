@@ -160,14 +160,37 @@ const LetsTalkPrompt = () => {
     }, 200);
   };
 
-  const downloadVision = () => {
+  const refineVision = async () => {
+    const ins = refineInstruction.trim();
+    if (ins.length < 3) {
+      setError("Tell us what to change.");
+      return;
+    }
     if (!visionUrl) return;
-    const a = document.createElement("a");
-    a.href = visionUrl;
-    a.download = "pixcellor-vision.png";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    setError(null);
+    const previousUrl = visionUrl;
+    setStep("generating");
+    let url: string | null = null;
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", {
+        body: { imageUrl: previousUrl, instruction: ins },
+      });
+      if (fnErr) throw fnErr;
+      if (data?.error) throw new Error(data.error);
+      url = data?.imageUrl ?? null;
+    } catch (e) {
+      console.error("vision refine failed", e);
+    }
+    if (url) {
+      setVisionUrl(url);
+      setRefineInstruction("");
+      // Update lead row with refined image (best effort, fire-and-forget)
+      void submit(email.trim(), phone.trim(), dream, `${colours}\n\nRefinement: ${ins}`, media, url, { keepOpen: true });
+      setStep("vision");
+    } else {
+      setError("Couldn't refine — please try again.");
+      setStep("vision");
+    }
   };
 
   const handleNext = async () => {
