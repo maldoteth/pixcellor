@@ -85,6 +85,7 @@ const Index = () => {
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
         <TryBeforeBuyDrawer />
         <LetsTalkPrompt />
+        <VisionPurchaseFlow />
         <FalloffConsentBanner />
       </div>
       <RotateDevicePrompt />
