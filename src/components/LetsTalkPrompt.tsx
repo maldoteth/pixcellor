@@ -155,8 +155,7 @@ const LetsTalkPrompt = () => {
     } catch { /* ignore */ }
     setOpen(false);
     setTimeout(() => {
-      window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: true } }));
-      window.dispatchEvent(new Event("pixcellor:open-packages"));
+      window.dispatchEvent(new Event("pixcellor:open-vision-purchase"));
     }, 200);
   };
 
