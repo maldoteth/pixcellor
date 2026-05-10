@@ -9,6 +9,7 @@ import SeoHead from "@/components/SeoHead";
 
 import TryBeforeBuyDrawer from "@/components/TryBeforeBuyDrawer";
 import LetsTalkPrompt from "@/components/LetsTalkPrompt";
+import VisionGenerator from "@/components/VisionGenerator";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -78,6 +79,7 @@ const Index = () => {
       <div className="relative overflow-hidden" style={{ height: "var(--pixcellor-viewport-height, 100dvh)" }}>
         <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
         <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+        <VisionGenerator hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
         <TryBeforeBuyDrawer />
