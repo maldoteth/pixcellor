@@ -1007,9 +1007,13 @@ function ServiceBackCard({
     ? `0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.08), inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 1px rgba(0,0,0,0.1)`
     : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
   return (
-    <div data-lava-card
+    <motion.div data-lava-card
       className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
-      style={{ transform: `rotate(${rotate}deg)${isCenter ? " translateY(-20px) scale(1.1)" : ""}`, boxShadow: shadow }}
+      initial={{ rotate, y: isCenter ? -20 : 0, scale: isCenter ? 1.1 : 1 }}
+      animate={{ rotate, y: isCenter ? -20 : 0, scale: isCenter ? 1.1 : 1 }}
+      whileHover={{ scale: isCenter ? 1.12 : 1.05 }}
+      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+      style={{ boxShadow: shadow, willChange: "transform" }}
     >
       <div className={`lava-blob ${isCenter ? "lava-blob-featured-1" : "lava-blob-1"}`} />
       <div className={`lava-blob ${isCenter ? "lava-blob-featured-2" : "lava-blob-2"}`} />
