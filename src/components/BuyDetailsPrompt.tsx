@@ -4,9 +4,22 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import DomainPicker, { DomainChoice } from "@/components/DomainPicker";
+
+function useIsMobileOrTablet() {
+  const [match, setMatch] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 1023px)").matches : false
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const handler = (e: MediaQueryListEvent) => setMatch(e.matches);
+    mq.addEventListener("change", handler);
+    setMatch(mq.matches);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return match;
+}
 
 export type BuyerDetails = {
   company: string;
