@@ -85,8 +85,9 @@ const STEPS: StepDef[] = [
 export default function VisionGenerator({ hidden = false, chatOpen = false }: VisionGeneratorProps) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const [stage, setStage] = useState<Stage>("industry");
+  const [stage, setStage] = useState<Stage>("company");
   const [answers, setAnswers] = useState<Record<StepKey, string>>({
+    company: "",
     industry: "",
     vibe: "",
     colour: "",
@@ -100,8 +101,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const reset = () => {
     setImageUrl(null);
     setGeneratedFor("");
-    setAnswers({ industry: "", vibe: "", colour: "", headline: "", sections: "" });
-    setStage("industry");
+    setAnswers({ company: "", industry: "", vibe: "", colour: "", headline: "", sections: "" });
+    setStage("company");
   };
 
   const buildBrief = (data: Record<StepKey, string>) => {
