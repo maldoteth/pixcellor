@@ -316,7 +316,7 @@ const LetsTalkPrompt = () => {
             <p className="text-foreground/70 text-xs">
               A desktop concept based on your brief. Love it? Order this style and we'll build it for real — your sample is attached so we know exactly what to make.
             </p>
-            <div className="border border-foreground/15 bg-black/40 max-h-[50vh] overflow-auto rounded-md">
+            <div tabIndex={-1} className="border border-foreground/15 bg-black/40 max-h-[50vh] overflow-auto rounded-md outline-none focus:outline-none focus-visible:outline-none">
               <img src={visionUrl} alt="Your AI-generated landing page sample" className="w-full block" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
