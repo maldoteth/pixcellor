@@ -43,7 +43,13 @@ const LetsTalkPrompt = () => {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ mode?: Mode }>).detail;
-      setMode(detail?.mode === "request" ? "request" : "talk");
+      const nextMode: Mode =
+        detail?.mode === "request"
+          ? "request"
+          : detail?.mode === "consultation"
+            ? "consultation"
+            : "talk";
+      setMode(nextMode);
       setName("");
       setEmail("");
       setPhone("");
@@ -54,6 +60,22 @@ const LetsTalkPrompt = () => {
       setError(null);
       setVisionUrl(null);
       setRefineInstruction("");
+      // Pre-load vision context if we're opening from a generated sample
+      if (nextMode === "consultation") {
+        try {
+          const raw = sessionStorage.getItem("pixcellor:consultation-context");
+          if (raw) {
+            const ctx = JSON.parse(raw) as {
+              imageUrl?: string | null;
+              brief?: string | null;
+              company?: string | null;
+            };
+            if (ctx?.imageUrl) setVisionUrl(ctx.imageUrl);
+            if (ctx?.brief) setDream(ctx.brief);
+            if (ctx?.company) setName(ctx.company);
+          }
+        } catch { /* ignore */ }
+      }
       setStep("name");
       setOpen(true);
     };
