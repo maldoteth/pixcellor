@@ -213,9 +213,7 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
           {submitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : selected ? (
-            selected.freeWithPackage
-              ? `Add ${selected.domain} (free) & pay`
-              : `Add ${selected.domain} (+£${selected.topUpGbp.toFixed(2)}) & pay`
+            `Add ${selected.domain} (+£${selected.topUpGbp.toFixed(2)}) & pay`
           ) : (
             "Pick a domain to add"
           )}
