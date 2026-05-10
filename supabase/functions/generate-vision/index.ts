@@ -1,4 +1,7 @@
-import { corsHeaders } from "@supabase/supabase-js/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 const SYSTEM_PROMPT = `You are Pixcellor's senior landing-page art director. Generate ONE photorealistic, pixel-perfect screenshot of a complete DESKTOP landing page (1440x900 viewport, browser chrome NOT included) based on the user's description.
 
