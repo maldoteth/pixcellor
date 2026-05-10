@@ -952,33 +952,39 @@ export type Database = {
       vision_previews: {
         Row: {
           brief: string | null
+          client_email: string | null
           created_at: string
           created_by_email: string | null
           created_by_user_id: string | null
           id: string
           image_path: string
+          sent_at: string | null
           slug: string
           title: string | null
           updated_at: string
         }
         Insert: {
           brief?: string | null
+          client_email?: string | null
           created_at?: string
           created_by_email?: string | null
           created_by_user_id?: string | null
           id?: string
           image_path: string
+          sent_at?: string | null
           slug: string
           title?: string | null
           updated_at?: string
         }
         Update: {
           brief?: string | null
+          client_email?: string | null
           created_at?: string
           created_by_email?: string | null
           created_by_user_id?: string | null
           id?: string
           image_path?: string
+          sent_at?: string | null
           slug?: string
           title?: string | null
           updated_at?: string
