@@ -65,7 +65,7 @@ export default function VisionPurchaseFlow() {
   const [open, setOpen] = useState(false);
   const [brief, setBrief] = useState<VisionBrief | null>(null);
   const [stage, setStage] = useState<Stage>("choose");
-  const [selected, setSelected] = useState<(typeof PACKAGE_OPTIONS)[number] | null>(null);
+  const [selected, setSelected] = useState<PackageOption | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function VisionPurchaseFlow() {
     return () => window.removeEventListener("pixcellor:open-vision-purchase", handler);
   }, []);
 
-  const choose = (pkg: (typeof PACKAGE_OPTIONS)[number]) => {
+  const choose = (pkg: PackageOption) => {
     setSelected(pkg);
     setStage("buyer");
   };
