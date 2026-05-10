@@ -16,6 +16,7 @@ type Suggestion = {
   topUpGbp: number;
   freeWithPackage: boolean;
   renewalGbp?: number | null;
+  estimated?: boolean;
 };
 
 type Primary = {
