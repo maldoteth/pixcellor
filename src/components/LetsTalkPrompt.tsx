@@ -23,6 +23,34 @@ const phoneSchema = z
   .regex(/^[0-9+()\-\s]+$/, "Numbers only");
 const longTextSchema = z.string().trim().min(3, "Tell us a little more").max(2000);
 
+const ensureHostedVisionUrl = async (url: string | null | undefined): Promise<string | null> => {
+  if (!url) return null;
+  if (/^https?:\/\//i.test(url)) return url;
+  if (!url.startsWith("data:")) return null;
+  try {
+    const [meta, b64] = url.split(",");
+    const mime = /data:(.*?);base64/.exec(meta)?.[1] ?? "image/png";
+    const ext = mime.split("/")[1]?.split("+")[0] || "png";
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mime });
+    const path = `vision-samples/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+    const { error } = await supabase.storage.from("submission-attachments").upload(path, blob, {
+      contentType: mime,
+      upsert: false,
+    });
+    if (error) {
+      console.error("vision upload failed", error);
+      return null;
+    }
+    return supabase.storage.from("submission-attachments").getPublicUrl(path).data.publicUrl;
+  } catch (e) {
+    console.error("vision upload exception", e);
+    return null;
+  }
+};
+
 const LetsTalkPrompt = () => {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
@@ -97,15 +125,19 @@ const LetsTalkPrompt = () => {
     setSubmitting(true);
     try {
       const source = mode === "request" ? "free_sample_request" : "lets_talk_button";
+      const hostedVision = mode === "request" ? await ensureHostedVisionUrl(finalVisionUrl) : null;
       const requestDetails =
         mode === "request"
           ? {
               dream: finalDream?.trim() || null,
               colours: finalColours?.trim() || null,
-              vision_image_url: finalVisionUrl ?? null,
+              vision_image_url: hostedVision ?? finalVisionUrl ?? null,
             }
           : null;
-      const attachments = mode === "request" ? finalMedia ?? [] : null;
+      const baseAttachments = mode === "request" ? finalMedia ?? [] : null;
+      const attachments = mode === "request"
+        ? Array.from(new Set([...(baseAttachments ?? []), ...(hostedVision ? [hostedVision] : [])]))
+        : null;
 
       const { error } = await supabase.from("lets_talk_leads").insert({
         name: name.trim(),
@@ -168,11 +200,13 @@ const LetsTalkPrompt = () => {
     setSubmitting(true);
     setError(null);
     try {
+      const hostedVision = await ensureHostedVisionUrl(visionUrl);
+      const allAttachments = Array.from(new Set([...(media ?? []), ...(hostedVision ? [hostedVision] : [])]));
       const requestDetails = {
         consultation: true,
         dream: dream.trim() || null,
         colours: colours.trim() || null,
-        vision_image_url: visionUrl ?? null,
+        vision_image_url: hostedVision ?? visionUrl ?? null,
         note: "Visitor requested a free consultation / call back after seeing their AI sample.",
       };
       const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
@@ -181,7 +215,7 @@ const LetsTalkPrompt = () => {
         phone: phone.trim() || null,
         source: "consultation_request",
         request_details: requestDetails,
-        attachment_urls: media,
+        attachment_urls: allAttachments,
       });
       if (insertErr) throw insertErr;
 
@@ -193,7 +227,7 @@ const LetsTalkPrompt = () => {
             phone: phone.trim() || null,
             source: "consultation_request",
             request_details: requestDetails,
-            attachment_urls: media,
+            attachment_urls: allAttachments,
           },
         })
         .catch((err) => console.error("process-lets-talk-lead failed:", err));
@@ -211,11 +245,13 @@ const LetsTalkPrompt = () => {
     setSubmitting(true);
     setError(null);
     try {
+      const hostedVision = await ensureHostedVisionUrl(visionUrl);
+      const allAttachments = Array.from(new Set([...(media ?? []), ...(hostedVision ? [hostedVision] : [])]));
       const requestDetails = {
         order_request: true,
         dream: dream.trim() || null,
         colours: colours.trim() || null,
-        vision_image_url: visionUrl ?? null,
+        vision_image_url: hostedVision ?? visionUrl ?? null,
         note: "Visitor wants to order this AI-generated style. Get back to them to arrange the build.",
       };
       const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
@@ -224,7 +260,7 @@ const LetsTalkPrompt = () => {
         phone: phone.trim() || null,
         source: "vision_order_request",
         request_details: requestDetails,
-        attachment_urls: media,
+        attachment_urls: allAttachments,
       });
       if (insertErr) throw insertErr;
 
@@ -236,7 +272,7 @@ const LetsTalkPrompt = () => {
             phone: phone.trim() || null,
             source: "vision_order_request",
             request_details: requestDetails,
-            attachment_urls: media,
+            attachment_urls: allAttachments,
           },
         })
         .catch((err) => console.error("process-lets-talk-lead failed:", err));
