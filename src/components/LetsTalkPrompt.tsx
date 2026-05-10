@@ -72,7 +72,7 @@ const LetsTalkPrompt = () => {
             };
             if (ctx?.imageUrl) setVisionUrl(ctx.imageUrl);
             if (ctx?.brief) setDream(ctx.brief);
-            if (ctx?.company) setName(ctx.company);
+            // company name is captured separately in the brief; don't prefill the user's name
           }
         } catch { /* ignore */ }
       }
