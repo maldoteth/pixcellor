@@ -289,7 +289,7 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
                     </div>
                     <div className="flex flex-col gap-1.5 max-h-[180px] overflow-y-auto pr-1">
                       {suggestions.slice(0, 6).map((s) =>
-                        renderRow(s.domain, true, false, s.priceGbp, s.topUpGbp, s.freeWithPackage),
+                        renderRow(s.domain, null, false, s.priceGbp, s.topUpGbp, s.freeWithPackage, s.estimated ?? true),
                       )}
                     </div>
                   </>
