@@ -26,7 +26,7 @@ interface VisionGeneratorProps {
 }
 
 type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
-type Stage = StepKey | "generating" | "result";
+type Stage = StepKey | "generating" | "result" | "refine";
 
 interface StepDef {
   key: StepKey;
