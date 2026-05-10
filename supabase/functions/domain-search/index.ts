@@ -104,11 +104,21 @@ async function getCheckedDomain(domain: string, apikey: string, secret: string) 
     payload = {
       domain,
       available: null,
+      priceGbp: null,
+      topUpGbp: 0,
+      freeWithPackage: false,
       rateLimited: check.rateLimited,
       error: check.message || check.code,
     };
   } else {
-    const priceUsd = Number.isFinite(check.priceUsd) ? check.priceUsd : check.regularPriceUsd;
+    const exactPriceUsd = Number.isFinite(check.priceUsd) ? check.priceUsd : NaN;
+    const regularPriceUsd = Number.isFinite(check.regularPriceUsd) ? check.regularPriceUsd : NaN;
+    // Premium domains can expose a lower `price` plus a much higher
+    // `regularPrice`; use the higher number so names like brand.xyz never
+    // underquote against Porkbun's displayed premium cost.
+    const priceUsd = check.isPremium
+      ? Math.max(Number.isFinite(exactPriceUsd) ? exactPriceUsd : 0, Number.isFinite(regularPriceUsd) ? regularPriceUsd : 0)
+      : exactPriceUsd;
     const badges = Number.isFinite(priceUsd) ? priceToBadges(priceUsd) : { priceGbp: null, topUpGbp: 0, freeWithPackage: false };
     payload = {
       domain,
@@ -169,7 +179,8 @@ serve(async (req) => {
         ...(await getCheckedDomain(`${label}.${t}`, apikey, secret)),
       })),
     ))
-      .filter((s: any) => s.available !== false && s.priceGbp !== null)
+      .filter((s: any) => s.available !== false)
+      .map((s: any) => ({ ...s, estimated: !Number.isFinite(s.priceGbp) }))
       .sort((a: any, b: any) => (a.priceGbp ?? 999999) - (b.priceGbp ?? 999999));
 
     return new Response(JSON.stringify({ primary, suggestions }), {
