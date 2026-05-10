@@ -49,7 +49,7 @@ export default function VisionStudio() {
       .from("vision_previews")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(500);
     if (error) {
       toast.error(error.message);
       return;
@@ -236,6 +236,9 @@ export default function VisionStudio() {
                       <p className="text-[11px] text-muted-foreground">
                         {new Date(row.created_at).toLocaleString()}
                       </p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        By {row.created_by_email ?? "unknown"}
+                      </p>
                     </div>
                     <Button
                       size="icon"
@@ -248,7 +251,7 @@ export default function VisionStudio() {
                     </Button>
                   </div>
                   {row.brief && (
-                    <p className="text-xs text-muted-foreground line-clamp-2">{row.brief}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-3">{row.brief}</p>
                   )}
                   <div className="flex items-center gap-2 mt-auto pt-1">
                     <Button
