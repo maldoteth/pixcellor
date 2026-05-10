@@ -55,6 +55,7 @@ export default function VisionPreview() {
       <SeoHead
         title={preview?.title ? `${preview.title} — Pixcellor preview` : "Your Pixcellor preview"}
         description="A custom AI-rendered website concept made for you by Pixcellor."
+        path={`/preview/${slug ?? ""}`}
       />
       <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
