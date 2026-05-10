@@ -124,7 +124,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const generate = async (finalAnswers: Record<StepKey, string>) => {
     const brief = buildBrief(finalAnswers);
     if (brief.length < 5) {
-      toast.error("Tell us at least one detail about your dream landing page.");
+      toast.error("Tell us at least one detail about your dream website.");
       setStage("industry");
       return;
     }
