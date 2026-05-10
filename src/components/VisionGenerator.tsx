@@ -26,7 +26,7 @@ interface VisionGeneratorProps {
 }
 
 type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
-type Stage = StepKey | "generating" | "result";
+type Stage = StepKey | "generating" | "result" | "refine";
 
 interface StepDef {
   key: StepKey;
@@ -98,10 +98,12 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [busy, setBusy] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [generatedFor, setGeneratedFor] = useState<string>("");
+  const [refineInstruction, setRefineInstruction] = useState("");
 
   const reset = () => {
     setImageUrl(null);
     setGeneratedFor("");
+    setRefineInstruction("");
     setAnswers({ company: "", industry: "", vibe: "", colour: "", headline: "", sections: "" });
     setStage("company");
   };
@@ -195,6 +197,36 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const refineVision = async () => {
+    const ins = refineInstruction.trim();
+    if (ins.length < 3 || !imageUrl) {
+      toast.error("Tell us what to change.");
+      return;
+    }
+    const previousUrl = imageUrl;
+    const previousPrompt = generatedFor;
+    setBusy(true);
+    setStage("generating");
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-vision", {
+        body: { imageUrl: previousUrl, instruction: ins },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const url = data?.imageUrl ?? previousUrl;
+      setImageUrl(url);
+      setGeneratedFor(`${previousPrompt}\n\nRefinement: ${ins}`);
+      setRefineInstruction("");
+      setStage("result");
+      toast.success("Updated ✨");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't refine — please try again.");
+      setStage("result");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const trigger = (
@@ -343,23 +375,62 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               <Button onClick={orderThisStyle} className="w-full rounded-none sm:col-span-2">
                 Confirm style reference →
               </Button>
-              <Button onClick={downloadImage} variant="outline" className="w-full rounded-none gap-2">
-                <Download className="h-4 w-4" /> Save
+              <Button onClick={() => setStage("refine")} variant="outline" className="w-full rounded-none gap-2">
+                <Wand2 className="h-4 w-4" /> Edit / improve
               </Button>
             </div>
-            <button
-              type="button"
-              onClick={reset}
-              className="w-full text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
-            >
-              Try another description
-            </button>
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={downloadImage}
+                className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline inline-flex items-center gap-1"
+              >
+                <Download className="h-3 w-3" /> Save image
+              </button>
+              <button
+                type="button"
+                onClick={reset}
+                className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+              >
+                Try another description
+              </button>
+            </div>
+          </motion.div>
+        ) : stage === "refine" && imageUrl ? (
+          <motion.div
+            key="refine"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="space-y-3"
+          >
+            <p className="text-foreground text-base font-semibold">What would you like to tweak?</p>
+            <p className="text-foreground/70 text-xs">Describe any changes — colours, layout, copy, sections, imagery.</p>
+            <div className="border border-border/40 bg-black/40 max-h-[22vh] overflow-hidden">
+              <img src={imageUrl} alt="Current sample" className="w-full block" />
+            </div>
+            <textarea
+              autoFocus
+              value={refineInstruction}
+              onChange={(e) => setRefineInstruction(e.target.value)}
+              placeholder="e.g. make the hero darker, add a pricing section, swap to sage green"
+              rows={3}
+              className="w-full bg-transparent border border-border/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-foreground/60 resize-none"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => { setRefineInstruction(""); setStage("result"); }} className="w-full rounded-none">
+                Back
+              </Button>
+              <Button onClick={refineVision} disabled={refineInstruction.trim().length < 3} className="w-full rounded-none">
+                Regenerate
+              </Button>
+            </div>
           </motion.div>
         ) : (
           stepBody
         )}
       </AnimatePresence>
-      {stage !== "generating" && stage !== "result" && !busy && (
+      {stage !== "generating" && stage !== "result" && stage !== "refine" && !busy && (
         <p className="text-[11px] text-muted-foreground/70 text-center flex items-center justify-center gap-1">
           <Wand2 className="h-3 w-3" /> Skip anything you're not sure about — we'll fill the gaps.
         </p>
