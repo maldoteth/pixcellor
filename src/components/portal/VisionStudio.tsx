@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles, Wand2, Copy, ExternalLink, Trash2 } from "lucide-react";
+import { Loader2, Sparkles, Wand2, Copy, ExternalLink, Trash2, Mail, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ interface Preview {
   image_path: string;
   created_at: string;
   created_by_email: string | null;
+  client_email: string | null;
+  sent_at: string | null;
 }
 
 const BUCKET = "vision-previews";
