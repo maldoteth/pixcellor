@@ -275,6 +275,10 @@ const LetsTalkPrompt = () => {
     if (step === "phone") {
       const r = phoneSchema.safeParse(phone);
       if (!r.success) return setError(r.error.issues[0].message);
+      if (mode === "consultation") {
+        await requestConsultation();
+        return;
+      }
       if (mode === "request") {
         setStep("dream");
         return;
