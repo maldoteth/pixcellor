@@ -310,9 +310,18 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
                     <div className="flex items-center gap-2 text-foreground/50 text-[11px] uppercase tracking-wider mt-2">
                       <Sparkles className="h-3 w-3" /> Suggestions
                     </div>
-                    <div className="flex flex-col gap-1.5 max-h-[180px] overflow-y-auto pr-1">
-                      {suggestions.slice(0, 6).map((s) =>
+                    <div className="flex flex-col gap-1.5 max-h-[260px] overflow-y-auto pr-1">
+                      {suggestions.slice(0, visibleCount).map((s) =>
                         renderRow(s.domain, s.available ?? null, s.isPremium, s.priceGbp, s.topUpGbp, s.freeWithPackage, s.estimated ?? false),
+                      )}
+                      {visibleCount < suggestions.length && (
+                        <button
+                          type="button"
+                          onClick={() => setVisibleCount((n) => n + SUGGESTIONS_PAGE)}
+                          className="text-xs text-foreground/60 hover:text-foreground py-2 rounded-md border border-dashed border-foreground/15 hover:border-foreground/30 transition"
+                        >
+                          Show more ({suggestions.length - visibleCount} left)
+                        </button>
                       )}
                     </div>
                   </>
