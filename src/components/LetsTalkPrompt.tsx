@@ -23,6 +23,34 @@ const phoneSchema = z
   .regex(/^[0-9+()\-\s]+$/, "Numbers only");
 const longTextSchema = z.string().trim().min(3, "Tell us a little more").max(2000);
 
+const ensureHostedVisionUrl = async (url: string | null | undefined): Promise<string | null> => {
+  if (!url) return null;
+  if (/^https?:\/\//i.test(url)) return url;
+  if (!url.startsWith("data:")) return null;
+  try {
+    const [meta, b64] = url.split(",");
+    const mime = /data:(.*?);base64/.exec(meta)?.[1] ?? "image/png";
+    const ext = mime.split("/")[1]?.split("+")[0] || "png";
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mime });
+    const path = `vision-samples/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+    const { error } = await supabase.storage.from("submission-attachments").upload(path, blob, {
+      contentType: mime,
+      upsert: false,
+    });
+    if (error) {
+      console.error("vision upload failed", error);
+      return null;
+    }
+    return supabase.storage.from("submission-attachments").getPublicUrl(path).data.publicUrl;
+  } catch (e) {
+    console.error("vision upload exception", e);
+    return null;
+  }
+};
+
 const LetsTalkPrompt = () => {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
