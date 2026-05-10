@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
+import SeoHead from "@/components/SeoHead";
 
 const editRequestSchema = z.object({
   requestDetails: z.string().trim().min(1, "Tell us what needs changing").max(6000, "Keep this under 6000 characters"),
@@ -101,6 +102,12 @@ export default function EditRequest() {
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground md:py-12">
+      <SeoHead
+        title="Request website edits · Pixcellor™"
+        description="Send Pixcellor edit requests for your live website. Tracked and handled by your project team."
+        path="/edit-request"
+        noindex
+      />
       <section className="mx-auto w-full max-w-3xl space-y-6">
         <Button asChild variant="ghost" className="gap-2">
           <Link to="/"><ArrowLeft className="h-4 w-4" />Pixcellor</Link>

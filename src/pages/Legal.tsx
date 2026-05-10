@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+import SeoHead from "@/components/SeoHead";
 
 type Section = { id: string; heading: string; body: React.ReactNode };
 
@@ -469,12 +470,14 @@ const ALL_DOCS = [DOCS.terms, DOCS.privacy, DOCS.refund, DOCS["acceptable-use"]]
 const Legal = () => {
   const { doc } = useParams();
 
-  useEffect(() => {
-    document.title = "Legal · Terms, Privacy, Refunds & Acceptable Use · Pixcellor";
-    const meta = document.querySelector('meta[name="description"]') ?? Object.assign(document.createElement("meta"), { name: "description" });
-    meta.setAttribute("content", "Pixcellor's Terms of Service, Privacy Policy, Refund Policy and Acceptable Use Policy in one place.");
-    if (!meta.parentNode) document.head.appendChild(meta);
-  }, []);
+  const activeDoc = doc ? ALL_DOCS.find((d) => d.slug === doc) : undefined;
+  const seoTitle = activeDoc
+    ? `${activeDoc.title} · Pixcellor™`
+    : "Legal · Terms, Privacy, Refunds & Acceptable Use · Pixcellor™";
+  const seoDesc = activeDoc
+    ? `${activeDoc.title} for Pixcellor — ${activeDoc.intro}`
+    : "Pixcellor's Terms of Service, Privacy Policy, Refund Policy and Acceptable Use Policy in one place.";
+  const seoPath = activeDoc ? `/legal/${activeDoc.slug}` : "/legal";
 
   // Backwards-compat: if a /legal/:doc URL is hit, scroll to that doc section.
   useEffect(() => {
@@ -489,6 +492,7 @@ const Legal = () => {
 
   return (
     <main className="min-h-dvh bg-background text-foreground">
+      <SeoHead title={seoTitle} description={seoDesc} path={seoPath} />
       <div className="mx-auto max-w-3xl px-5 py-14">
         <Link to="/" className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
           ← Pixcellor

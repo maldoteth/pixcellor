@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import SeoHead from "@/components/SeoHead";
 
 export default function PortalAuth() {
   const navigate = useNavigate();
@@ -56,6 +57,12 @@ export default function PortalAuth() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+      <SeoHead
+        title="Portal login · Pixcellor™"
+        description="Sign in to the Pixcellor dev portal."
+        path="/portal-login"
+        noindex
+      />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Dev Portal</CardTitle>

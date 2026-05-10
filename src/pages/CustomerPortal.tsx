@@ -43,6 +43,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import customerPortalPLogo from "@/assets/customer-portal-p-logo.png";
 import ChatBot from "@/components/ChatBot";
+import SeoHead from "@/components/SeoHead";
 
 const BUY_AGAIN_PACKAGES = [
   {
@@ -267,6 +268,12 @@ export default function CustomerPortal() {
 
   return (
     <SidebarProvider>
+      <SeoHead
+        title="Customer portal · Pixcellor™"
+        description="Track your Pixcellor project, requirements, edits and orders."
+        path="/customer-portal"
+        noindex
+      />
       <div className="min-h-screen w-full bg-background text-foreground md:flex">
         <Sidebar collapsible="icon" className="border-sidebar-border bg-sidebar/95 backdrop-blur-xl">
           <SidebarHeader className="border-b border-sidebar-border px-3 py-4">

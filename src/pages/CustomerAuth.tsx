@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import SeoHead from "@/components/SeoHead";
 
 export default function CustomerAuth() {
   const navigate = useNavigate();
@@ -53,6 +54,12 @@ export default function CustomerAuth() {
 
   return (
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-10">
+      <SeoHead
+        title="Customer login · Pixcellor™"
+        description="Sign in to your Pixcellor customer portal to track your project, requirements and orders."
+        path="/customer-login"
+        noindex
+      />
       <section className="w-full max-w-md space-y-5">
         <Button asChild variant="ghost" className="gap-2">
           <Link to="/"><ArrowLeft className="h-4 w-4" />Pixcellor</Link>
