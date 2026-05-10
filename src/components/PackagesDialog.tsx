@@ -700,7 +700,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       className="relative"
     >
     <div
-      className="relative flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.71] min-[880px]:max-lg:scale-[0.8] min-[960px]:max-lg:scale-[0.91] md:max-lg:origin-center lg:scale-100"
+      className="relative flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.745] min-[880px]:max-lg:scale-[0.84] min-[960px]:max-lg:scale-[0.955] md:max-lg:origin-center lg:scale-100"
       style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
     >
       
