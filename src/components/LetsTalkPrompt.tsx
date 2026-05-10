@@ -266,7 +266,52 @@ const LetsTalkPrompt = () => {
   const content = (
     <div className="flex flex-col gap-4 px-1 pb-2">
       <AnimatePresence mode="wait">
-        {step === "done" ? (
+        {step === "generating" ? (
+          <motion.div
+            key="generating"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center gap-3 py-10"
+          >
+            <Loader2 className="w-8 h-8 animate-spin text-foreground" />
+            <p className="text-foreground text-base font-medium">Building your sample…</p>
+            <p className="text-foreground/70 text-sm text-center max-w-xs">
+              Our AI is rendering a desktop preview of your dream site. This takes about 30 seconds.
+            </p>
+          </motion.div>
+        ) : step === "vision" && visionUrl ? (
+          <motion.div
+            key="vision"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col gap-3"
+          >
+            <p className="text-foreground text-base font-semibold">Here's your free sample, {name.split(" ")[0]} ✨</p>
+            <p className="text-foreground/70 text-xs">
+              A desktop concept based on your brief. Love it? Order this style and we'll build it for real — your sample is attached so we know exactly what to make.
+            </p>
+            <div className="border border-foreground/15 bg-black/40 max-h-[50vh] overflow-auto rounded-md">
+              <img src={visionUrl} alt="Your AI-generated landing page sample" className="w-full block" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
+              <Button type="button" variant="pricing" onClick={orderThisStyle} className="sm:col-span-2 h-12 font-semibold">
+                Order this style →
+              </Button>
+              <Button type="button" variant="pricing" onClick={downloadVision} className="h-12 font-semibold">
+                Save image
+              </Button>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setOpen(false); }}
+              className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1"
+            >
+              Not for me — close
+            </button>
+          </motion.div>
+        ) : step === "done" ? (
           <motion.div
             key="done"
             initial={{ opacity: 0, y: 6 }}
