@@ -1,76 +1,78 @@
-## Why your emails are landing in spam
+## Goal
 
-I checked your setup. The good news: emails are sending successfully via `notify.pixcellor.com` (verified) and most show `status: sent`. The spam problem is about **deliverability signals**, not failed sends.
+Polish the existing Pixcellor-branded auth email templates (signup, magic link, password reset, plus invite, email-change, reauthentication) and add a full compliance footer to improve deliverability and inbox trust. Then redeploy `auth-email-hook` so the changes go live.
 
-Here's what I found:
+## What stays
 
-### 1. Missing SPF record on `pixcellor.com` (root)
-Your `From:` header uses the root domain (e.g. `hello@pixcellor.com`), but the root domain has **no SPF TXT record**. Gmail/Outlook see "this server claims to send for pixcellor.com but pixcellor.com hasn't authorised any sender" → spam signal.
+- Dark `#0a0a0a` container on white outer background (good for both light/dark inboxes and deliverability).
+- Pixcellor™ logo + wordmark header.
+- White CTA button on dark surface.
+- Arial/Helvetica web-safe stack (renders consistently across mail clients).
+- Per-template Preview text and Heading.
 
-DKIM still aligns via the subdomain (relaxed mode), and your DMARC is `p=none`, so mail isn't rejected — but missing SPF is a strong negative signal that pushes borderline mail to Junk.
+## What changes
 
-### 2. DMARC is `p=none` with no enforcement / aggregate-only reporting
-`p=none; rua=mailto:dmarcreports@lovable.dev` means "monitor only". Once SPF is in place, we should consider tightening to `p=quarantine` so legit aligned mail is favoured.
+### 1. Visual polish (all 6 templates)
 
-### 3. Sales welcome email (`sales-welcome-info`) reads like a marketing pitch
-Subject: *"How Pixcellor builds your website — packages, process and portfolio"* sent to leads who filled the contact form. This is borderline marketing, and bulk-style content from a fresh sender domain trips Gmail's promotions/spam filters fast. We should make it shorter, more 1:1, and clearly transactional ("Thanks for reaching out — here's what happens next").
+- Tighten header: align logo (40px) baseline with wordmark, reduce wordmark to 13px / letter-spacing 0.3px for a cleaner mark.
+- Slightly larger body text (16px / line-height 26px) — better readability and less spammy than tight 15px copy.
+- Soften body color from `#d0d0d0` to `#cfcfcf` and heading from `#f7f7f7` to `#fafafa`.
+- Reduce H1 from 28px to 26px so the email feels less shouty (helps spam scoring).
+- Add 8px rounded corners on the CTA button (`borderRadius: 8px`) — subtle modern feel without breaking Outlook (graceful fallback).
+- Add a thin 1px `#1f1f1f` divider above the footer (already there) and keep footer text at 12px `#8a8a8a`.
+- Consistent 32px inner padding on all sides (was 30/28).
 
-### 4. Order confirmation templates are 260+ lines
-Long HTML, lots of inline styling, multiple links/buttons → looks promotional to filters. They're legit transactional content but we can tighten them.
+### 2. Full compliance footer (all 6 templates)
 
-### 5. Domain is new / low reputation
-`pixcellor.com` is a young sending domain. Reputation builds over weeks. Until then, every spam signal hurts more.
+A shared footer block with:
 
----
+- Brand line: `Pixcellor™` + tagline `Premium product photo editing`.
+- Business identifier: `Pixcellor · United Kingdom` (placeholder — confirm exact business address line in implementation; default to country-only if no registered address yet).
+- Reason-for-receiving sentence specific to template, e.g.:
+  - signup: "You're receiving this because someone created a Pixcellor account with this email."
+  - recovery: "You're receiving this because a password reset was requested for this email."
+  - magic-link: "You're receiving this because a login link was requested for this email."
+  - invite: "You're receiving this because you were invited to Pixcellor."
+  - email-change: "You're receiving this because an email change was requested on your Pixcellor account."
+  - reauthentication: "You're receiving this because a verification code was requested on your Pixcellor account."
+- Links row (plain text links, white underline): `Privacy` → `https://pixcellor.com/legal` · `Contact` → `mailto:hello@pixcellor.com` · `pixcellor.com` → `https://pixcellor.com`.
+- Copyright line: `© 2026 Pixcellor. All rights reserved.`
 
-## Plan
+Implemented as a shared `AuthEmailFooter` component in a new file `supabase/functions/_shared/email-templates/_footer.tsx` to keep the six templates DRY. Each template imports it and passes the per-template `reason` string.
 
-### Step 1 — Fix DNS at the root domain (you'll do this at your registrar; I'll give exact records)
+### 3. Copy refinements
 
-Add at `pixcellor.com`:
+- signup: change CTA from `Confirm Email` to `Confirm my email` (more human).
+- recovery: keep `Reset Password` → change to `Reset my password`.
+- magic-link: keep `Log In` → change to `Open Pixcellor`.
+- invite: keep `Accept Invitation`.
+- Tighten supporting sentences to one short line where possible.
 
-```text
-Type: TXT
-Name: @  (or pixcellor.com)
-Value: v=spf1 include:notify.pixcellor.com -all
-```
+### 4. Deploy
 
-This tells receivers: "Only the senders authorised on notify.pixcellor.com may send as pixcellor.com." Aligns SPF with your From.
+After edits, redeploy `auth-email-hook` so the templates render in production. Templates are bundled into the hook at deploy time — without this step nothing changes for users.
 
-(DMARC and DKIM are already handled — no change needed there yet.)
+## Files to change
 
-### Step 2 — Rewrite `sales-welcome-info` to be clearly transactional
-Shorter subject ("Thanks for reaching out to Pixcellor"), 1:1 tone, single CTA, no "packages and portfolio" pitch in the subject. Move sales content to a follow-up the user clicks into, not the auto-reply.
+- `supabase/functions/_shared/email-templates/_footer.tsx` (new) — shared footer component + styles.
+- `supabase/functions/_shared/email-templates/signup.tsx` — apply polish, swap footer block, copy tweak.
+- `supabase/functions/_shared/email-templates/recovery.tsx` — same.
+- `supabase/functions/_shared/email-templates/magic-link.tsx` — same.
+- `supabase/functions/_shared/email-templates/invite.tsx` — same.
+- `supabase/functions/_shared/email-templates/email-change.tsx` — same.
+- `supabase/functions/_shared/email-templates/reauthentication.tsx` — same.
 
-### Step 3 — Slim down order confirmation templates
-- Reduce HTML weight
-- One primary CTA per email
-- Plain-text fallback (helps a lot — currently HTML-only)
-- Avoid spammy phrases / excessive emoji / ALL CAPS in headings
+No changes to `auth-email-hook/index.ts`, `config.toml`, or the registry.
 
-### Step 4 — Add plain-text version to all templates
-Currently the send function only sends HTML. Adding a `text` body alongside `html` is one of the highest-impact deliverability wins.
+## Out of scope
 
-### Step 5 — Optional: switch From to subdomain
-Sending `from: hello@notify.pixcellor.com` (matching the verified sending domain exactly) gives perfect SPF + DKIM alignment with no DNS changes needed at the root. Trade-off: the recipient sees `notify.pixcellor.com` in the From address, which looks slightly less clean but is neutral for trust once they recognise the brand.
+- Changing the sender domain or DNS (already done — `notify.pixcellor.com`).
+- Rewriting transactional templates (orders, sales, broadcasts).
+- Adding plain-text variants (React Email auto-generates a text part from the HTML; sufficient for now).
+- Migrating to a light theme — staying on-brand dark.
 
----
+## Verification
 
-## What I need from you before I start
-
-A couple of choices — I'll ask once the plan is approved:
-
-1. Do you want **From: pixcellor.com (cleaner)** + you add the SPF record at your registrar, or **From: notify.pixcellor.com (zero DNS work)**?
-2. OK to rewrite `sales-welcome-info` to a short transactional auto-reply (and move the "packages & process" content into a separate follow-up the user opts into via a CTA)?
-3. OK to add plain-text bodies to all transactional emails (purely additive — won't change how they look)?
-
----
-
-## Technical details (for reference)
-
-- `SENDER_DOMAIN = notify.pixcellor.com` (verified, DKIM signs here)
-- `FROM_DOMAIN  = pixcellor.com` (no SPF → alignment gap)
-- DMARC: `v=DMARC1; p=none; pct=100; rua=mailto:dmarcreports@lovable.dev`
-- Send function: `supabase/functions/send-transactional-email/index.ts`
-- Templates: `supabase/functions/_shared/transactional-email-templates/*.tsx`
-- No code change can fix #1 — that's a DNS record at your domain registrar. Everything else (steps 2–5) I can implement directly.
+- Read each template after edit to confirm structure.
+- Use the email preview action so you can visually QA signup, recovery, and magic-link before considering it done.
+- Confirm `auth-email-hook` deploy succeeds in logs.
