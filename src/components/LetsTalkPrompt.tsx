@@ -50,6 +50,7 @@ const LetsTalkPrompt = () => {
       setMedia([]);
       setEmailSkipped(false);
       setError(null);
+      setVisionUrl(null);
       setStep("name");
       setOpen(true);
     };
