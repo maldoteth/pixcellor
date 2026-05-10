@@ -143,6 +143,7 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
       const t = e.target as Node;
       if (btnRef.current?.contains(t) || tipRef.current?.contains(t)) return;
       setOpen(false);
+      setPinned(false);
     };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("touchstart", onDown);
@@ -155,9 +156,9 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
   const desktopHandlers = isDesktop
     ? {
         onMouseEnter: () => setOpen(true),
-        onMouseLeave: () => setOpen(false),
+        onMouseLeave: () => { if (!pinned) setOpen(false); },
         onFocus: () => setOpen(true),
-        onBlur: () => setOpen(false),
+        onBlur: () => { if (!pinned) setOpen(false); },
       }
     : {};
 
@@ -171,7 +172,18 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
             ref={btnRef}
             type="button"
             aria-label={`More info about ${item.name}`}
-            onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isDesktop) {
+                setPinned((p) => {
+                  const next = !p;
+                  setOpen(next);
+                  return next;
+                });
+              } else {
+                setOpen((v) => !v);
+              }
+            }}
             {...desktopHandlers}
             className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40"
           >
