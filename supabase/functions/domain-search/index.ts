@@ -65,6 +65,29 @@ function parseMoney(v: unknown): number {
   return Number.isFinite(n) ? n : NaN;
 }
 
+async function findMarketplaceExact(domain: string, label: string, tld: string, apikey: string, secret: string) {
+  const res = await fetch(`${PORKBUN_BASE}/marketplace/getAll`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      apikey,
+      secretapikey: secret,
+      query: `+${label}`,
+      tlds: [tld],
+      sldLengthMin: label.length,
+      sldLengthMax: label.length,
+      sortName: "price",
+      sortDirection: "asc",
+    }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json?.status === "ERROR") return NaN;
+  const listing = Array.isArray(json?.domains)
+    ? json.domains.find((d: any) => String(d?.domain ?? "").toLowerCase() === domain)
+    : null;
+  return parseMoney(listing?.price);
+}
+
 async function checkOneDomain(domain: string, apikey: string, secret: string) {
   const res = await fetch(`${PORKBUN_BASE}/domain/checkDomain/${domain}`, {
     method: "POST",
