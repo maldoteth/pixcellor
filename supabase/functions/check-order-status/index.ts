@@ -31,7 +31,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
     const { data, error } = await supabase
       .from("stripe_checkout_sessions")
-      .select("session_id, mode, payment_status, status, amount_total, customer_email, metadata, order_code, requirements_token")
+      .select("session_id, mode, payment_status, status, amount_total, customer_email, metadata, order_code, requirements_token, domain, domain_status, domain_top_up_gbp")
       .eq("session_id", sessionId)
       .maybeSingle();
 
@@ -56,6 +56,9 @@ serve(async (req) => {
       requirementsSubmitted: Boolean(requirements?.id),
       orderCode: data.order_code,
       requirementsToken: data.requirements_token,
+      domain: (data as any).domain ?? null,
+      domainStatus: (data as any).domain_status ?? null,
+      domainTopUpGbp: (data as any).domain_top_up_gbp ?? null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not check order status";

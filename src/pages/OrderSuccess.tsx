@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
-import { CheckCircle2, ClipboardList, Loader2, Sparkles } from "lucide-react";
+import { CheckCircle2, ClipboardList, Globe, Loader2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +18,9 @@ type OrderStatus = {
   requirementsSubmitted?: boolean;
   orderCode?: string | null;
   requirementsToken?: string | null;
+  domain?: string | null;
+  domainStatus?: string | null;
+  domainTopUpGbp?: number | null;
 };
 
 function fireFireworks() {
@@ -188,6 +191,30 @@ export default function OrderSuccess() {
                     </>
                   )}
                 </div>
+
+                {order.domain && (
+                  <div className="rounded-md border border-border bg-muted/30 p-5 text-left space-y-2">
+                    <div className="flex items-center gap-2 font-medium">
+                      <Globe className="h-5 w-5 text-primary" />
+                      Domain
+                      <Badge className="ml-auto border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">
+                        {order.domainStatus === "active"
+                          ? "Registered"
+                          : order.domainStatus === "failed"
+                          ? "Issue"
+                          : "Registering…"}
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-medium">{order.domain}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {order.domainStatus === "active"
+                        ? "Your domain is registered. We'll point it at your site as soon as we hand it over."
+                        : order.domainStatus === "failed"
+                        ? "Something went wrong registering your domain. We'll be in touch shortly to sort it out."
+                        : "We're securing your domain now. You'll get a confirmation email within a few minutes."}
+                    </p>
+                  </div>
+                )}
               </>
             ) : (
               <>

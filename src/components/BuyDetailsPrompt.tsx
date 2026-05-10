@@ -6,6 +6,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
+import DomainPicker, { DomainChoice } from "@/components/DomainPicker";
 
 export type BuyerDetails = {
   company: string;
@@ -14,11 +15,13 @@ export type BuyerDetails = {
   phone: string;
 };
 
-type Step = "company" | "name" | "email" | "phone";
+export type BuyerDomainChoice = DomainChoice;
 
-const STEPS: Step[] = ["company", "name", "email", "phone"];
+type Step = "company" | "name" | "email" | "phone" | "domain";
 
-const schemas: Record<Step, z.ZodString> = {
+const FIELD_STEPS: Exclude<Step, "domain">[] = ["company", "name", "email", "phone"];
+
+const schemas: Record<Exclude<Step, "domain">, z.ZodString> = {
   company: z.string().trim().min(1, "Please enter your company or website").max(120),
   name: z.string().trim().min(1, "Please enter your full name").max(100),
   email: z.string().trim().email("Enter a valid email").max(200),
@@ -30,7 +33,7 @@ const schemas: Record<Step, z.ZodString> = {
 };
 
 
-const labels: Record<Step, { prompt: (name: string) => string; placeholder: string; type: string; inputMode: "text" | "email" | "tel" }> = {
+const labels: Record<Exclude<Step, "domain">, { prompt: (name: string) => string; placeholder: string; type: string; inputMode: "text" | "email" | "tel" }> = {
   company: { prompt: () => "Company or website name?", placeholder: "Acme Ltd / acme.com", type: "text", inputMode: "text" },
   name: { prompt: () => "Your full name?", placeholder: "Jane Doe", type: "text", inputMode: "text" },
   email: { prompt: (n) => `Hi ${n.split(" ")[0] || "there"}, what's your email?`, placeholder: "you@example.com", type: "email", inputMode: "email" },
@@ -40,13 +43,16 @@ const labels: Record<Step, { prompt: (name: string) => string; placeholder: stri
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (details: BuyerDetails) => Promise<void> | void;
+  onConfirm: (details: BuyerDetails, domain?: BuyerDomainChoice) => Promise<void> | void;
   title?: string;
   submitting?: boolean;
+  /** When false (subscriptions), skip the domain step entirely. Defaults to true. */
+  showDomainStep?: boolean;
 }
 
-const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false }: Props) => {
+const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = true }: Props) => {
   const isMobile = useIsMobile();
+  const STEPS: Step[] = showDomainStep ? [...FIELD_STEPS, "domain"] : [...FIELD_STEPS];
   const [step, setStep] = useState<Step>("company");
   const [values, setValues] = useState<BuyerDetails>({ company: "", name: "", email: "", phone: "" });
   const [error, setError] = useState<string | null>(null);
@@ -60,23 +66,38 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
 
   const idx = STEPS.indexOf(step);
   const isLast = idx === STEPS.length - 1;
-  const meta = labels[step];
+  const isDomain = step === "domain";
+  const meta = isDomain ? null : labels[step];
 
   const handleNext = async () => {
     setError(null);
-    const value = values[step];
-    const r = schemas[step].safeParse(value);
+    if (isDomain) return; // domain step uses its own buttons
+    const value = values[step as Exclude<Step, "domain">];
+    const r = schemas[step as Exclude<Step, "domain">].safeParse(value);
     if (!r.success) return setError(r.error.issues[0].message);
     if (!isLast) {
       setStep(STEPS[idx + 1]);
       return;
     }
+    // Last step is fields-only (no domain step) — confirm with no domain.
     await onConfirm({
       company: values.company.trim(),
       name: values.name.trim(),
       email: values.email.trim(),
       phone: values.phone.trim(),
     });
+  };
+
+  const handleDomainChoice = async (choice: BuyerDomainChoice) => {
+    await onConfirm(
+      {
+        company: values.company.trim(),
+        name: values.name.trim(),
+        email: values.email.trim(),
+        phone: values.phone.trim(),
+      },
+      choice,
+    );
   };
 
   const handleBack = () => {
@@ -102,57 +123,76 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
           transition={{ duration: 0.18 }}
           className="flex flex-col gap-3"
         >
-          <label className="text-foreground/70 text-xs uppercase tracking-wider">
-            {meta.prompt(values.name)}
-          </label>
-          <input
-            autoFocus
-            type={meta.type}
-            inputMode={meta.inputMode}
-            value={values[step]}
-            onChange={(e) => {
-              const v = e.target.value;
-              setValues((prev) => ({ ...prev, [step]: v }));
-              if (error) setError(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleNext();
-              }
-            }}
-            placeholder={meta.placeholder}
-            className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
-            maxLength={step === "phone" ? 30 : 200}
-            disabled={submitting}
-          />
-          {error && <p className="text-red-400 text-xs">{error}</p>}
-          <div className="flex gap-2 mt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleBack}
-              disabled={submitting}
-              className="flex-1 h-12 font-semibold"
-            >
-              {idx === 0 ? "Cancel" : "Back"}
-            </Button>
-            <Button
-              type="button"
-              variant="pricing"
-              onClick={handleNext}
-              disabled={submitting}
-              className="flex-1 h-12 font-semibold"
-            >
-              {submitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : isLast ? (
-                "Confirm & Pay"
-              ) : (
-                "Next"
-              )}
-            </Button>
-          </div>
+          {isDomain ? (
+            <>
+              <DomainPicker onChoose={handleDomainChoice} submitting={submitting} />
+              <div className="flex">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={submitting}
+                  className="h-10 px-4 text-sm"
+                >
+                  Back
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <label className="text-foreground/70 text-xs uppercase tracking-wider">
+                {meta!.prompt(values.name)}
+              </label>
+              <input
+                autoFocus
+                type={meta!.type}
+                inputMode={meta!.inputMode}
+                value={values[step as Exclude<Step, "domain">]}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setValues((prev) => ({ ...prev, [step]: v }));
+                  if (error) setError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleNext();
+                  }
+                }}
+                placeholder={meta!.placeholder}
+                className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+                maxLength={step === "phone" ? 30 : 200}
+                disabled={submitting}
+              />
+              {error && <p className="text-red-400 text-xs">{error}</p>}
+              <div className="flex gap-2 mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={submitting}
+                  className="flex-1 h-12 font-semibold"
+                >
+                  {idx === 0 ? "Cancel" : "Back"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="pricing"
+                  onClick={handleNext}
+                  disabled={submitting}
+                  className="flex-1 h-12 font-semibold"
+                >
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : isLast ? (
+                    "Confirm & Pay"
+                  ) : (
+                    "Next"
+                  )}
+                </Button>
+              </div>
+            </>
+          )}
         </motion.div>
       </AnimatePresence>
     </div>
@@ -173,7 +213,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[420px] carousel-label-glass border-foreground/10 text-foreground">
+      <DialogContent className="sm:max-w-[460px] carousel-label-glass border-foreground/10 text-foreground">
         <DialogHeader>
           <DialogTitle className="text-foreground">{title}</DialogTitle>
         </DialogHeader>

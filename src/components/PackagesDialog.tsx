@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import applePayLogo from "@/assets/apple-pay.png";
 import gpayLogo from "@/assets/gpay-logo.png";
-import BuyDetailsPrompt, { BuyerDetails } from "@/components/BuyDetailsPrompt";
+import BuyDetailsPrompt, { BuyerDetails, BuyerDomainChoice } from "@/components/BuyDetailsPrompt";
 
 const PACKAGES = {
   fullWorks: {
@@ -189,11 +189,15 @@ const ENTERPRISE_FIELDS = [
 
 type EnterpriseForm = Record<(typeof ENTERPRISE_FIELDS)[number]["key"], string>;
 
-async function handleCheckout(priceId: string, mode: string, packageName: string, billing: string, buyer?: BuyerDetails) {
+async function handleCheckout(priceId: string, mode: string, packageName: string, billing: string, buyer?: BuyerDetails, domainChoice?: BuyerDomainChoice) {
   await recordFalloff({ event: "checkout_started", priceId, mode, packageName, billing });
   markCheckoutPending({ packageName, billing });
+  const domainPayload =
+    domainChoice && domainChoice.kind === "buy"
+      ? { domain: domainChoice.domain, domainTopUpGbp: domainChoice.topUpGbp }
+      : {};
   const { data, error } = await supabase.functions.invoke("create-checkout", {
-    body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined, buyer },
+    body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined, buyer, ...domainPayload },
   });
   if (error) throw error;
   if (data?.sessionId) updateCheckoutPendingSessionId(data.sessionId);
@@ -631,12 +635,12 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     setPending({ priceId, mode, key, packageName, billing });
   };
 
-  const confirmBuy = async (buyer: BuyerDetails) => {
+  const confirmBuy = async (buyer: BuyerDetails, domainChoice?: BuyerDomainChoice) => {
     if (!pending) return;
     setSubmittingBuyer(true);
     setLoading(pending.key);
     try {
-      await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer);
+      await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer, domainChoice);
     } catch (e) {
       console.error(e);
     } finally {
@@ -939,6 +943,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       onConfirm={confirmBuy}
       title={pending ? `Confirm – ${pending.packageName}` : "Confirm details"}
       submitting={submittingBuyer}
+      showDomainStep={pending?.mode === "payment"}
     />
     </>
   );
@@ -1137,12 +1142,12 @@ function MobileCards() {
     setPending({ priceId, mode, key, packageName, billing });
   };
 
-  const confirmBuy = async (buyer: BuyerDetails) => {
+  const confirmBuy = async (buyer: BuyerDetails, domainChoice?: BuyerDomainChoice) => {
     if (!pending) return;
     setSubmittingBuyer(true);
     setLoading(pending.key);
     try {
-      await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer);
+      await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer, domainChoice);
     } catch (e) {
       console.error(e);
     } finally {
@@ -1336,6 +1341,7 @@ function MobileCards() {
       onConfirm={confirmBuy}
       title={pending ? `Confirm – ${pending.packageName}` : "Confirm details"}
       submitting={submittingBuyer}
+      showDomainStep={pending?.mode === "payment"}
     />
     </>
   );
