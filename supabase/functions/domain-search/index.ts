@@ -8,9 +8,12 @@ const corsHeaders = {
 const PORKBUN_BASE = "https://api.porkbun.com/api/json/v3";
 // TLDs we surface as suggestions. .com is always the primary check.
 const SUGGEST_TLDS = ["com", "co", "io", "xyz", "site", "online", "shop", "studio", "app", "co.uk"];
-const ALLOWANCE_GBP = 10;
 // Conservative USD->GBP. Slightly inflated to avoid loss when rates drift.
 const USD_TO_GBP = 0.82;
+// Markup applied to the registrar cost so currency drift / Porkbun price changes
+// don't eat into margin. 15% with an £8 floor, rounded up to nearest £0.50.
+const MARKUP_MULTIPLIER = 1.15;
+const PRICE_FLOOR_GBP = 8;
 
 let pricingCache: { at: number; data: Record<string, { registration: number; renewal: number }> } | null = null;
 const checkCache = new Map<string, { at: number; payload: unknown }>();
@@ -60,9 +63,14 @@ async function loadPricing(): Promise<Record<string, { registration: number; ren
 }
 
 function priceToBadges(priceUsd: number) {
-  const priceGbp = Math.round(priceUsd * USD_TO_GBP * 100) / 100;
-  const topUpGbp = Math.max(0, Math.ceil(priceGbp - ALLOWANCE_GBP));
-  return { priceGbp, topUpGbp, freeWithPackage: topUpGbp === 0 };
+  const costGbp = priceUsd * USD_TO_GBP;
+  const withMarkup = costGbp * MARKUP_MULTIPLIER;
+  // Round UP to next £0.50 then apply floor.
+  const rounded = Math.ceil(withMarkup * 2) / 2;
+  const customerPriceGbp = Math.max(PRICE_FLOOR_GBP, rounded);
+  // `priceGbp` and `topUpGbp` both expose the customer-facing price now;
+  // legacy field names are kept so DB/webhook/order pages don't need refactoring.
+  return { priceGbp: customerPriceGbp, topUpGbp: customerPriceGbp, freeWithPackage: false };
 }
 
 async function checkOneDomain(domain: string, apikey: string, secret: string) {
@@ -153,7 +161,7 @@ serve(async (req) => {
         const p = pricing[t];
         if (!p) return null;
         const badges = priceToBadges(p.registration);
-        const renewalGbp = Math.round(p.renewal * USD_TO_GBP * 100) / 100;
+        const renewalGbp = Math.round(p.renewal * USD_TO_GBP * MARKUP_MULTIPLIER * 100) / 100;
         return {
           domain: `${label}.${t}`,
           tld: t,
@@ -162,12 +170,9 @@ serve(async (req) => {
         };
       })
       .filter(Boolean)
-      .sort((a: any, b: any) => {
-        if (a.freeWithPackage !== b.freeWithPackage) return a.freeWithPackage ? -1 : 1;
-        return (a.priceGbp ?? 9999) - (b.priceGbp ?? 9999);
-      });
+      .sort((a: any, b: any) => (a.priceGbp ?? 9999) - (b.priceGbp ?? 9999));
 
-    return new Response(JSON.stringify({ primary, suggestions, allowanceGbp: ALLOWANCE_GBP }), {
+    return new Response(JSON.stringify({ primary, suggestions }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
