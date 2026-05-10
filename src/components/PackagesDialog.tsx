@@ -96,9 +96,19 @@ type ServiceItem = { name: string; info?: string };
 
 function ServiceItemRow({ item }: { item: ServiceItem }) {
   const [open, setOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : true
+  );
   const btnRef = useRef<HTMLButtonElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number; placeAbove: boolean } | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const updatePos = useCallback(() => {
     const btn = btnRef.current;
@@ -115,7 +125,7 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
   }, []);
 
   useLayoutEffect(() => {
-    if (!open) return;
+    if (!open || !isDesktop) return;
     updatePos();
     const onScroll = () => updatePos();
     window.addEventListener("scroll", onScroll, true);
@@ -124,10 +134,10 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
       window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onScroll);
     };
-  }, [open, updatePos]);
+  }, [open, isDesktop, updatePos]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !isDesktop) return;
     const onDown = (e: MouseEvent | TouchEvent) => {
       const t = e.target as Node;
       if (btnRef.current?.contains(t) || tipRef.current?.contains(t)) return;
@@ -139,7 +149,16 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("touchstart", onDown);
     };
-  }, [open]);
+  }, [open, isDesktop]);
+
+  const desktopHandlers = isDesktop
+    ? {
+        onMouseEnter: () => setOpen(true),
+        onMouseLeave: () => setOpen(false),
+        onFocus: () => setOpen(true),
+        onBlur: () => setOpen(false),
+      }
+    : {};
 
   return (
     <>
@@ -152,15 +171,12 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
             type="button"
             aria-label={`More info about ${item.name}`}
             onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-            onMouseEnter={() => setOpen(true)}
-            onMouseLeave={() => setOpen(false)}
-            onFocus={() => setOpen(true)}
-            onBlur={() => setOpen(false)}
+            {...desktopHandlers}
             className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40"
           >
             <Info className="h-3.5 w-3.5" />
           </button>
-          {open && pos && createPortal(
+          {isDesktop && open && pos && createPortal(
             <div
               ref={tipRef}
               role="tooltip"
@@ -172,6 +188,18 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
               {item.info}
             </div>,
             document.body
+          )}
+          {!isDesktop && (
+            <Drawer open={open} onOpenChange={setOpen}>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>{item.name}</DrawerTitle>
+                  <DrawerDescription className="pt-2 text-sm leading-relaxed text-foreground/80">
+                    {item.info}
+                  </DrawerDescription>
+                </DrawerHeader>
+              </DrawerContent>
+            </Drawer>
           )}
         </div>
       )}
