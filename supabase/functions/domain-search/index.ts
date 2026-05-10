@@ -16,7 +16,6 @@ const USD_TO_GBP = 0.82;
 const MARKUP_MULTIPLIER = 1.15;
 const PRICE_FLOOR_GBP = 2;
 
-let pricingCache: { at: number; data: Record<string, { registration: number; renewal: number }> } | null = null;
 const checkCache = new Map<string, { at: number; payload: unknown }>();
 const ipHits = new Map<string, number[]>();
 
@@ -48,21 +47,6 @@ function sanitizeLabel(raw: string): { label: string; tld: string | null } {
   return { label: s.slice(0, 63), tld: null };
 }
 
-async function loadPricing(): Promise<Record<string, { registration: number; renewal: number }>> {
-  if (pricingCache && Date.now() - pricingCache.at < 24 * 60 * 60 * 1000) return pricingCache.data;
-  const res = await fetch(`${PORKBUN_BASE}/pricing/get`);
-  const json = await res.json().catch(() => ({}));
-  const pricing = (json?.pricing ?? {}) as Record<string, { registration: string; renewal: string }>;
-  const out: Record<string, { registration: number; renewal: number }> = {};
-  for (const [tld, p] of Object.entries(pricing)) {
-    const reg = Number(p.registration);
-    const ren = Number(p.renewal);
-    if (Number.isFinite(reg)) out[tld] = { registration: reg, renewal: Number.isFinite(ren) ? ren : reg };
-  }
-  pricingCache = { at: Date.now(), data: out };
-  return out;
-}
-
 function priceToBadges(priceUsd: number) {
   const costGbp = priceUsd * USD_TO_GBP;
   const withMarkup = costGbp * MARKUP_MULTIPLIER;
@@ -79,6 +63,29 @@ function parseMoney(v: unknown): number {
   const s = String(v).replace(/[, ]/g, "");
   const n = Number(s);
   return Number.isFinite(n) ? n : NaN;
+}
+
+async function findMarketplaceExact(domain: string, label: string, tld: string, apikey: string, secret: string) {
+  const res = await fetch(`${PORKBUN_BASE}/marketplace/getAll`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      apikey,
+      secretapikey: secret,
+      query: `+${label}`,
+      tlds: [tld],
+      sldLengthMin: label.length,
+      sldLengthMax: label.length,
+      sortName: "price",
+      sortDirection: "asc",
+    }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json?.status === "ERROR") return NaN;
+  const listing = Array.isArray(json?.domains)
+    ? json.domains.find((d: any) => String(d?.domain ?? "").toLowerCase() === domain)
+    : null;
+  return parseMoney(listing?.price);
 }
 
 async function checkOneDomain(domain: string, apikey: string, secret: string) {
@@ -110,6 +117,46 @@ async function checkOneDomain(domain: string, apikey: string, secret: string) {
   };
 }
 
+async function getCheckedDomain(domain: string, label: string, tld: string, apikey: string, secret: string) {
+  const cached = checkCache.get(domain);
+  if (cached && Date.now() - cached.at < 60_000) return cached.payload;
+
+  const check = await checkOneDomain(domain, apikey, secret);
+  let payload: any;
+  if (!check.ok) {
+    payload = {
+      domain,
+      available: null,
+      priceGbp: null,
+      topUpGbp: 0,
+      freeWithPackage: false,
+      rateLimited: check.rateLimited,
+      error: check.message || check.code,
+    };
+    return payload;
+  } else {
+    const marketplacePriceUsd = await findMarketplaceExact(domain, label, tld, apikey, secret);
+    const exactPriceUsd = Number.isFinite(marketplacePriceUsd) ? marketplacePriceUsd : (Number.isFinite(check.priceUsd) ? check.priceUsd : NaN);
+    const regularPriceUsd = Number.isFinite(check.regularPriceUsd) ? check.regularPriceUsd : NaN;
+    // Premium domains can expose a lower `price` plus a much higher
+    // `regularPrice`; use the higher number so names like brand.xyz never
+    // underquote against Porkbun's displayed premium cost.
+    const priceUsd = check.isPremium
+      ? Math.max(Number.isFinite(exactPriceUsd) ? exactPriceUsd : 0, Number.isFinite(regularPriceUsd) ? regularPriceUsd : 0)
+      : exactPriceUsd;
+    const badges = Number.isFinite(priceUsd) ? priceToBadges(priceUsd) : { priceGbp: null, topUpGbp: 0, freeWithPackage: false };
+    payload = {
+      domain,
+      available: check.available,
+      isPremium: check.isPremium,
+      ...badges,
+      firstYearPromo: check.firstYearPromo,
+    };
+  }
+  checkCache.set(domain, { at: Date.now(), payload });
+  return payload;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -139,34 +186,7 @@ serve(async (req) => {
     const targetTld = tld ?? "com";
     const targetDomain = `${label}.${targetTld}`;
 
-    // Cached availability for 60s.
-    const cacheKey = targetDomain;
-    const cached = checkCache.get(cacheKey);
-    let primary: any;
-    if (cached && Date.now() - cached.at < 60_000) {
-      primary = cached.payload;
-    } else {
-      const check = await checkOneDomain(targetDomain, apikey, secret);
-      if (!check.ok) {
-        primary = {
-          domain: targetDomain,
-          available: null,
-          rateLimited: check.rateLimited,
-          error: check.message || check.code,
-        };
-      } else {
-        const priceUsd = Number.isFinite(check.priceUsd) ? check.priceUsd : check.regularPriceUsd;
-        const badges = Number.isFinite(priceUsd) ? priceToBadges(priceUsd) : { priceGbp: null, topUpGbp: 0, freeWithPackage: false };
-        primary = {
-          domain: targetDomain,
-          available: check.available,
-          isPremium: check.isPremium,
-          ...badges,
-          firstYearPromo: check.firstYearPromo,
-        };
-      }
-      checkCache.set(cacheKey, { at: Date.now(), payload: primary });
-    }
+    const primary = await getCheckedDomain(targetDomain, label, targetTld, apikey, secret);
 
     // Verify mode: just return the exact-checked primary, no suggestions.
     if (mode === "verify") {
@@ -176,27 +196,19 @@ serve(async (req) => {
       });
     }
 
-    // Build suggestions from cached pricing — these are ESTIMATES until the user
-    // selects one. The buyer can click to verify it specifically. We mark them
-    // as estimated so the UI shows "from £X" instead of an exact price.
-    const pricing = await loadPricing();
-    const suggestions = SUGGEST_TLDS
-      .filter((t) => t !== targetTld)
-      .map((t) => {
-        const p = pricing[t];
-        if (!p) return null;
-        const badges = priceToBadges(p.registration);
-        const renewalGbp = Math.round(p.renewal * USD_TO_GBP * MARKUP_MULTIPLIER * 100) / 100;
-        return {
-          domain: `${label}.${t}`,
-          tld: t,
-          ...badges,
-          renewalGbp,
-          estimated: true,
-        };
-      })
-      .filter(Boolean)
-      .sort((a: any, b: any) => (a.priceGbp ?? 9999) - (b.priceGbp ?? 9999));
+    // Suggestions are intentionally unpriced. Generic TLD pricing is unsafe
+    // because premium names like brand.xyz can be thousands. Exact pricing is
+    // fetched only when the buyer selects a suggestion.
+    const suggestions = SUGGEST_TLDS.filter((t) => t !== targetTld).map((t) => ({
+      domain: `${label}.${t}`,
+      tld: t,
+      available: null,
+      isPremium: false,
+      priceGbp: null,
+      topUpGbp: 0,
+      freeWithPackage: false,
+      estimated: true,
+    }));
 
     return new Response(JSON.stringify({ primary, suggestions }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
