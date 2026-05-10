@@ -147,8 +147,16 @@ const DomainPicker = ({ onChoose, submitting }: Props) => {
 
       <div className="min-h-[40px]">
         {loading && (
-          <div className="flex items-center gap-2 text-foreground/60 text-xs">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking…
+          <div className="flex flex-col gap-1.5">
+            <span className="text-foreground/60 text-xs">Checking availability…</span>
+            <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/10">
+              <motion.div
+                className="h-full w-1/3 rounded-full bg-foreground"
+                initial={{ x: "-100%" }}
+                animate={{ x: "300%" }}
+                transition={{ repeat: Infinity, duration: 1.1, ease: "easeInOut" }}
+              />
+            </div>
           </div>
         )}
         {error && <p className="text-red-400 text-xs">{error}</p>}
