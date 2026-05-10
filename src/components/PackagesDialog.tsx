@@ -806,7 +806,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         animate={{ opacity: 1, y: 0, rotate: -6, scale: 1 }}
         whileHover={{ scale: 1.05 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
-        className="relative z-10 w-[302px] rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
+        className="relative z-10 w-[332px] rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
         style={{
           willChange: "transform",
           boxShadow: `
@@ -852,7 +852,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         animate={{ opacity: 1, y: 0, rotate: 0, scale: 1.1 }}
         whileHover={{ scale: 1.12 }}
         transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
-        className="relative z-20 w-[336px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-3 pb-5 shadow-xl"
+        className="relative z-20 w-[370px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-3 pb-5 shadow-xl"
         style={{
           willChange: "transform",
           transformOrigin: "center bottom",
@@ -921,7 +921,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         animate={{ opacity: 1, y: 0, rotate: 6, scale: 1 }}
         whileHover={{ scale: 1.05 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
-        className="relative z-10 w-[302px] min-h-[420px]"
+        className="relative z-10 w-[332px] min-h-[420px]"
         style={{ willChange: "transform", perspective: "1200px" }}
       >
         <motion.div
@@ -1104,7 +1104,7 @@ function ServiceBackCard({
     : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
   return (
     <motion.div data-lava-card
-      className={`relative ${isCenter ? "z-20 w-[336px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[302px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
+      className={`relative ${isCenter ? "z-20 w-[370px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[332px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
       initial={{ rotate, y: isCenter ? -20 : 0, scale: isCenter ? 1.1 : 1 }}
       animate={{ rotate, y: isCenter ? -20 : 0, scale: isCenter ? 1.1 : 1 }}
       whileHover={{ scale: isCenter ? 1.12 : 1.05 }}
