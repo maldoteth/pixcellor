@@ -11,9 +11,10 @@ const SUGGEST_TLDS = ["com", "co", "io", "xyz", "site", "online", "shop", "studi
 // Conservative USD->GBP. Slightly inflated to avoid loss when rates drift.
 const USD_TO_GBP = 0.82;
 // Markup applied to the registrar cost so currency drift / Porkbun price changes
-// don't eat into margin. 15% with an £8 floor, rounded up to nearest £0.50.
+// don't eat into margin. 15% with a small £2 floor (covers card fees on cheap TLDs),
+// rounded up to nearest £0.50.
 const MARKUP_MULTIPLIER = 1.15;
-const PRICE_FLOOR_GBP = 8;
+const PRICE_FLOOR_GBP = 2;
 
 let pricingCache: { at: number; data: Record<string, { registration: number; renewal: number }> } | null = null;
 const checkCache = new Map<string, { at: number; payload: unknown }>();
