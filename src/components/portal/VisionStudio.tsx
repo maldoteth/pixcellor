@@ -233,9 +233,26 @@ export default function VisionStudio() {
             className="rounded-none resize-none"
           />
         </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Input
+            placeholder="Client name (optional, e.g. Jane)"
+            value={clientName}
+            maxLength={120}
+            onChange={(e) => setClientName(e.target.value)}
+            className="rounded-none"
+          />
+          <Input
+            type="email"
+            placeholder="Client email (optional — auto-emails preview if set)"
+            value={clientEmail}
+            maxLength={200}
+            onChange={(e) => setClientEmail(e.target.value)}
+            className="rounded-none"
+          />
+        </div>
         <div className="flex items-center justify-between gap-3">
           <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-            <Wand2 className="h-3 w-3" /> Uses the same generator as the landing page sample tool.
+            <Wand2 className="h-3 w-3" /> {clientEmail ? "Will email the client automatically once generated." : "Add a client email to auto-send the preview."}
           </p>
           <Button onClick={generate} disabled={busy} className="rounded-none gap-2">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
