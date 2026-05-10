@@ -105,6 +105,7 @@ export default function VisionStudio() {
           image_path: path,
           created_by_user_id: userId,
           created_by_email: email,
+          client_email: clientEmail.trim() || null,
         })
         .select()
         .single();
@@ -113,14 +114,70 @@ export default function VisionStudio() {
       const row = insert.data as Preview;
       setLatest(row);
       setPreviews((p) => [row, ...p]);
+
+      // Auto-send email if client email provided
+      if (clientEmail.trim()) {
+        await sendEmail(row, clientName.trim() || undefined, clientEmail.trim());
+      }
+
       setTitle("");
       setBrief("");
+      setClientEmail("");
+      setClientName("");
       toast.success("Preview created — link is ready to share.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not generate vision");
     } finally {
       setBusy(false);
     }
+  };
+
+  const sendEmail = async (row: Preview, name?: string, overrideEmail?: string) => {
+    const recipient = overrideEmail || row.client_email;
+    if (!recipient) {
+      toast.error("No client email on this preview");
+      return;
+    }
+    setSendingId(row.id);
+    try {
+      const previewUrl = `${window.location.origin}/preview/${row.slug}`;
+      const imageUrl = publicUrl(row.image_path);
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "vision-preview-ready",
+          recipientEmail: recipient,
+          idempotencyKey: `vision-preview-${row.id}`,
+          templateData: {
+            clientName: name,
+            title: row.title ?? undefined,
+            brief: row.brief ?? undefined,
+            previewUrl,
+            imageUrl,
+          },
+        },
+      });
+      if (error) throw error;
+      const sentAt = new Date().toISOString();
+      await (supabase as any)
+        .from("vision_previews")
+        .update({ sent_at: sentAt, client_email: recipient })
+        .eq("id", row.id);
+      setPreviews((p) => p.map((r) => (r.id === row.id ? { ...r, sent_at: sentAt, client_email: recipient } : r)));
+      if (latest?.id === row.id) setLatest({ ...latest, sent_at: sentAt, client_email: recipient });
+      toast.success(`Sent to ${recipient}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not send email");
+    } finally {
+      setSendingId(null);
+    }
+  };
+
+  const promptAndSend = async (row: Preview) => {
+    const def = row.client_email ?? "";
+    const email = window.prompt("Send preview to (email):", def);
+    if (!email) return;
+    const name = window.prompt("Client name (optional):", "") ?? undefined;
+    await sendEmail(row, name || undefined, email.trim());
   };
 
   const shareUrl = (slug: string) => `${window.location.origin}/preview/${slug}`;
