@@ -189,6 +189,13 @@ function FlipCard({
                     className="absolute inset-0 bg-black/10 transition-colors"
                     style={{ opacity: 1 - proximity }}
                 />
+                {/* Darker fade on bottom third for text legibility / depth */}
+                <div
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3"
+                    style={{
+                        background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0) 100%)",
+                    }}
+                />
             </motion.div>
         </motion.div>
     );
