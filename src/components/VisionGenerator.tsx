@@ -111,6 +111,10 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       const v = data[s.key].trim();
       if (v) parts.push(`${s.prefix}: ${v}`);
     }
+    const company = data.company.trim();
+    if (company) {
+      parts.push(`The site must be branded as "${company}" — feature this name prominently in the hero, header/logo, and any branded elements.`);
+    }
     return parts.join("\n");
   };
 
