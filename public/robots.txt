@@ -1,5 +1,15 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /portal
+Disallow: /portal-login
+Disallow: /customer-login
+Disallow: /customer-portal
+Disallow: /reset-password
+Disallow: /unsubscribe
+Disallow: /order-success
+Disallow: /project-requirements
+Disallow: /edit-request
 
 User-agent: facebookexternalhit
 Allow: /
@@ -11,6 +21,18 @@ User-agent: Facebot
 Allow: /
 
 User-agent: Twitterbot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
 Allow: /
 
 Sitemap: https://pixcellor.com/sitemap.xml
