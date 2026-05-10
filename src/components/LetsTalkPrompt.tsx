@@ -125,15 +125,19 @@ const LetsTalkPrompt = () => {
     setSubmitting(true);
     try {
       const source = mode === "request" ? "free_sample_request" : "lets_talk_button";
+      const hostedVision = mode === "request" ? await ensureHostedVisionUrl(finalVisionUrl) : null;
       const requestDetails =
         mode === "request"
           ? {
               dream: finalDream?.trim() || null,
               colours: finalColours?.trim() || null,
-              vision_image_url: finalVisionUrl ?? null,
+              vision_image_url: hostedVision ?? finalVisionUrl ?? null,
             }
           : null;
-      const attachments = mode === "request" ? finalMedia ?? [] : null;
+      const baseAttachments = mode === "request" ? finalMedia ?? [] : null;
+      const attachments = mode === "request"
+        ? Array.from(new Set([...(baseAttachments ?? []), ...(hostedVision ? [hostedVision] : [])]))
+        : null;
 
       const { error } = await supabase.from("lets_talk_leads").insert({
         name: name.trim(),
