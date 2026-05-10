@@ -170,11 +170,6 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         // @ts-expect-error fetchPriority is valid HTML
         fetchpriority="high"
       />
-      {/* Subtle full-card dark tint so bright/white screenshots don't blow out */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'rgba(0,0,0,0.28)' }}
-      />
       <div
         className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
         style={{
