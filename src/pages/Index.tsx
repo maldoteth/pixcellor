@@ -9,6 +9,7 @@ import SeoHead from "@/components/SeoHead";
 
 import TryBeforeBuyDrawer from "@/components/TryBeforeBuyDrawer";
 import LetsTalkPrompt from "@/components/LetsTalkPrompt";
+import VisionGenerator from "@/components/VisionGenerator";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
