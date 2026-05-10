@@ -741,7 +741,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
-  const desktopAutoActive = !enterpriseOpen && !retainerAutoFlipStopped && !servicesFlipped;
+  // Note: intentionally NOT gating on servicesFlipped so the snake timer keeps running
+  // smoothly while the Services face is shown, and resumes mid-lap when flipped back.
+  const desktopAutoActive = !enterpriseOpen && !retainerAutoFlipStopped;
 
   const flipRetainerAuto = useCallback(() => {
     setRetainerFlipped((flipped) => !flipped);
