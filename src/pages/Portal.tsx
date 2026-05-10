@@ -2024,7 +2024,10 @@ export default function Portal() {
             <div className="space-y-2">
               <h3 className="font-medium">CALL BACKS</h3>
               {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No items waiting{salesQ ? " match your search" : ""}.</p>}
-              {salesCallbacks.map(e => {
+              {salesCallbacks.length > 0 && (
+                <p className="text-xs text-muted-foreground">Showing latest {Math.min(callbacksVisibleCount, salesCallbacks.length)} of {salesCallbacks.length}.</p>
+              )}
+              {salesCallbacks.slice(0, callbacksVisibleCount).map(e => {
                 const contact = getContact(e.contact_id);
                 const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
                 const statusColor = contact ? getContactStatusColor(contact.status) : "hsl(var(--muted))";
@@ -2067,6 +2070,22 @@ export default function Portal() {
                   </Card>
                 );
               })}
+              {callbacksVisibleCount < salesCallbacks.length && (
+                <div
+                  ref={(el) => {
+                    if (!el) return;
+                    const obs = new IntersectionObserver((entries) => {
+                      if (entries.some((e) => e.isIntersecting)) {
+                        setCallbacksVisibleCount((n) => n + 10);
+                      }
+                    }, { rootMargin: "200px" });
+                    obs.observe(el);
+                  }}
+                  className="flex justify-center pt-2"
+                >
+                  <Button variant="outline" onClick={() => setCallbacksVisibleCount((n) => n + 10)}>Load more</Button>
+                </div>
+              )}
             </div>
           </TabsContent>
 
