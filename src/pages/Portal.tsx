@@ -13,6 +13,7 @@ import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
 import { useDomainPrompt } from "@/components/DomainPromptDialog";
 import NewOrderDialog from "@/components/portal/NewOrderDialog";
+import VisionStudio from "@/components/portal/VisionStudio";
 import SeoHead from "@/components/SeoHead";
 
 type StripeSession = {
