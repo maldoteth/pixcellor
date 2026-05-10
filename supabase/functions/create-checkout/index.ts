@@ -27,7 +27,8 @@ serve(async (req) => {
       : "";
     const validDomain = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/.test(cleanDomain) ? cleanDomain : "";
     const topUpGbpNum = Number(domainTopUpGbp);
-    const safeTopUpGbp = Number.isFinite(topUpGbpNum) && topUpGbpNum >= 0 && topUpGbpNum <= 200 ? Math.round(topUpGbpNum * 100) / 100 : 0;
+    // Cap at £5000 so premium domain top-ups (which can be hundreds or thousands) flow through correctly.
+    const safeTopUpGbp = Number.isFinite(topUpGbpNum) && topUpGbpNum >= 0 && topUpGbpNum <= 5000 ? Math.round(topUpGbpNum * 100) / 100 : 0;
     const buyerEmail = buyer && typeof buyer.email === "string" ? buyer.email.trim().slice(0, 200) : "";
     const buyerName = buyer && typeof buyer.name === "string" ? buyer.name.trim().slice(0, 120) : "";
     const buyerCompany = buyer && typeof buyer.company === "string" ? buyer.company.trim().slice(0, 200) : "";
