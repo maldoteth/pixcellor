@@ -14,7 +14,7 @@ import {
   recordFalloff,
   updateCheckoutPendingSessionId,
 } from "@/lib/checkoutTracking";
-import BuyDetailsPrompt, { type BuyerDetails, type BuyerDomainChoice } from "@/components/BuyDetailsPrompt";
+import BuyDetailsPrompt, { type BuyerDetails, type BuyerDomainChoice, type VisionBrief as DetailsVisionBrief } from "@/components/BuyDetailsPrompt";
 
 type VisionBrief = {
   prompt?: string;
