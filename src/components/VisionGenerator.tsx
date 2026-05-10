@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loader2, Sparkles, X, Wand2, Download } from "lucide-react";
+import { Loader2, Sparkles, X, Wand2 } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -199,6 +199,26 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     document.body.removeChild(a);
   };
 
+  const requestConsultation = () => {
+    try {
+      sessionStorage.setItem(
+        "pixcellor:consultation-context",
+        JSON.stringify({
+          imageUrl,
+          brief: generatedFor,
+          company: answers.company,
+          at: Date.now(),
+        }),
+      );
+    } catch { /* ignore */ }
+    setOpen(false);
+    setTimeout(() => {
+      window.dispatchEvent(
+        new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }),
+      );
+    }, 200);
+  };
+
   const refineVision = async () => {
     const ins = refineInstruction.trim();
     if (ins.length < 3 || !imageUrl) {
@@ -382,10 +402,10 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
-                onClick={downloadImage}
+                onClick={requestConsultation}
                 className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline inline-flex items-center gap-1"
               >
-                <Download className="h-3 w-3" /> Save image
+                <Sparkles className="h-3 w-3" /> Request consultation
               </button>
               <button
                 type="button"

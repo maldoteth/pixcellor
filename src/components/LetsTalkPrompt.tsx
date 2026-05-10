@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 
-type Mode = "talk" | "request";
+type Mode = "talk" | "request" | "consultation";
 type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "consultation" | "done";
 
 const nameSchema = z.string().trim().min(1, "Please enter your name").max(80);
@@ -43,7 +43,13 @@ const LetsTalkPrompt = () => {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ mode?: Mode }>).detail;
-      setMode(detail?.mode === "request" ? "request" : "talk");
+      const nextMode: Mode =
+        detail?.mode === "request"
+          ? "request"
+          : detail?.mode === "consultation"
+            ? "consultation"
+            : "talk";
+      setMode(nextMode);
       setName("");
       setEmail("");
       setPhone("");
@@ -54,6 +60,22 @@ const LetsTalkPrompt = () => {
       setError(null);
       setVisionUrl(null);
       setRefineInstruction("");
+      // Pre-load vision context if we're opening from a generated sample
+      if (nextMode === "consultation") {
+        try {
+          const raw = sessionStorage.getItem("pixcellor:consultation-context");
+          if (raw) {
+            const ctx = JSON.parse(raw) as {
+              imageUrl?: string | null;
+              brief?: string | null;
+              company?: string | null;
+            };
+            if (ctx?.imageUrl) setVisionUrl(ctx.imageUrl);
+            if (ctx?.brief) setDream(ctx.brief);
+            // company name is captured separately in the brief; don't prefill the user's name
+          }
+        } catch { /* ignore */ }
+      }
       setStep("name");
       setOpen(true);
     };
@@ -253,6 +275,10 @@ const LetsTalkPrompt = () => {
     if (step === "phone") {
       const r = phoneSchema.safeParse(phone);
       if (!r.success) return setError(r.error.issues[0].message);
+      if (mode === "consultation") {
+        await requestConsultation();
+        return;
+      }
       if (mode === "request") {
         setStep("dream");
         return;
@@ -316,7 +342,12 @@ const LetsTalkPrompt = () => {
   const isTextStep = step === "name" || step === "email" || step === "phone";
   const isLongStep = step === "dream" || step === "colours";
 
-  const title = mode === "request" ? "Request Free Sample" : "Let's Talk";
+  const title =
+    mode === "request"
+      ? "Request Free Sample"
+      : mode === "consultation"
+        ? "Request Free Consultation"
+        : "Let's Talk";
 
   const promptLabel = (() => {
     if (step === "name") return "What's your name?";
@@ -546,6 +577,8 @@ const LetsTalkPrompt = () => {
               >
                 {submitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
+                ) : step === "phone" && mode === "consultation" ? (
+                  "Request consultation"
                 ) : step === "media" || (step === "phone" && mode === "talk") ? (
                   "Submit"
                 ) : (
