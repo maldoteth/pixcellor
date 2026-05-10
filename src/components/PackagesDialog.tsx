@@ -96,6 +96,7 @@ type ServiceItem = { name: string; info?: string };
 
 function ServiceItemRow({ item }: { item: ServiceItem }) {
   const [open, setOpen] = useState(false);
+  const [pinned, setPinned] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : true
   );
