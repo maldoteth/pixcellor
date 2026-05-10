@@ -113,9 +113,10 @@ serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
+    const mode = body?.mode === "verify" ? "verify" : "search";
     const { label, tld } = sanitizeLabel(typeof body?.query === "string" ? body.query : "");
     if (!label || label.length < 2) {
-      return new Response(JSON.stringify({ primary: null, suggestions: [], allowanceGbp: ALLOWANCE_GBP }), {
+      return new Response(JSON.stringify({ primary: null, suggestions: [] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -153,8 +154,17 @@ serve(async (req) => {
       checkCache.set(cacheKey, { at: Date.now(), payload: primary });
     }
 
-    // Build suggestions from cached pricing — NO availability check (rate limit).
-    // The buyer can click one to verify it specifically.
+    // Verify mode: just return the exact-checked primary, no suggestions.
+    if (mode === "verify") {
+      return new Response(JSON.stringify({ primary, suggestions: [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // Build suggestions from cached pricing — these are ESTIMATES until the user
+    // selects one. The buyer can click to verify it specifically. We mark them
+    // as estimated so the UI shows "from £X" instead of an exact price.
     const pricing = await loadPricing();
     const suggestions = SUGGEST_TLDS
       .filter((t) => t !== targetTld)
@@ -168,6 +178,7 @@ serve(async (req) => {
           tld: t,
           ...badges,
           renewalGbp,
+          estimated: true,
         };
       })
       .filter(Boolean)
