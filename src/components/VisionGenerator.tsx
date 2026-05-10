@@ -479,7 +479,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               <Sparkles className="h-4 w-4" /> See your dream landing page
             </DialogTitle>
             <DialogDescription>
-              A few quick questions, then we'll generate a desktop concept of your site.
+              Generate a desktop concept of your site that our devs can then improve to build your dream site.
             </DialogDescription>
           </DialogHeader>
           {body}
