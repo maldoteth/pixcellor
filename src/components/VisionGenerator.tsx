@@ -430,7 +430,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           stepBody
         )}
       </AnimatePresence>
-      {stage !== "generating" && stage !== "result" && !busy && (
+      {stage !== "generating" && stage !== "result" && stage !== "refine" && !busy && (
         <p className="text-[11px] text-muted-foreground/70 text-center flex items-center justify-center gap-1">
           <Wand2 className="h-3 w-3" /> Skip anything you're not sure about — we'll fill the gaps.
         </p>
