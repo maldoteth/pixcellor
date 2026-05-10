@@ -35,9 +35,19 @@ interface Props {
   submitting?: boolean;
 }
 
+const LOADING_MESSAGES = [
+  "Searching now…",
+  "Finding best options…",
+  "Checking multiple registrars…",
+  "Comparing best prices…",
+  "Aggregating data…",
+  "Nearly there…",
+];
+
 const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
   const [primary, setPrimary] = useState<Primary | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [error, setError] = useState<string | null>(null);
