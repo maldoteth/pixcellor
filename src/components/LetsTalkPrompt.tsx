@@ -139,6 +139,49 @@ const LetsTalkPrompt = () => {
     if (!url) setTimeout(() => setOpen(false), 1800);
   };
 
+  const requestConsultation = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const requestDetails = {
+        consultation: true,
+        dream: dream.trim() || null,
+        colours: colours.trim() || null,
+        vision_image_url: visionUrl ?? null,
+        note: "Visitor requested a free consultation / call back after seeing their AI sample.",
+      };
+      const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
+        name: name.trim(),
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        source: "consultation_request",
+        request_details: requestDetails,
+        attachment_urls: media,
+      });
+      if (insertErr) throw insertErr;
+
+      supabase.functions
+        .invoke("process-lets-talk-lead", {
+          body: {
+            name: name.trim(),
+            email: email.trim() || null,
+            phone: phone.trim() || null,
+            source: "consultation_request",
+            request_details: requestDetails,
+            attachment_urls: media,
+          },
+        })
+        .catch((err) => console.error("process-lets-talk-lead failed:", err));
+
+      setStep("consultation");
+    } catch (e) {
+      console.error(e);
+      setError("Couldn't send your request — please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const orderThisStyle = () => {
     try {
       sessionStorage.setItem(
