@@ -577,6 +577,8 @@ const LetsTalkPrompt = () => {
               >
                 {submitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
+                ) : step === "phone" && mode === "consultation" ? (
+                  "Request consultation"
                 ) : step === "media" || (step === "phone" && mode === "talk") ? (
                   "Submit"
                 ) : (
