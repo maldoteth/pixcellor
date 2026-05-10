@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
-import { CheckCircle2, ClipboardList, Loader2, Sparkles } from "lucide-react";
+import { CheckCircle2, ClipboardList, Globe, Loader2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +18,9 @@ type OrderStatus = {
   requirementsSubmitted?: boolean;
   orderCode?: string | null;
   requirementsToken?: string | null;
+  domain?: string | null;
+  domainStatus?: string | null;
+  domainTopUpGbp?: number | null;
 };
 
 function fireFireworks() {
