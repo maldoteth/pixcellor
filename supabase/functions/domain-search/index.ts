@@ -133,6 +133,7 @@ async function getCheckedDomain(domain: string, label: string, tld: string, apik
       rateLimited: check.rateLimited,
       error: check.message || check.code,
     };
+    return payload;
   } else {
     const marketplacePriceUsd = await findMarketplaceExact(domain, label, tld, apikey, secret);
     const exactPriceUsd = Number.isFinite(marketplacePriceUsd) ? marketplacePriceUsd : (Number.isFinite(check.priceUsd) ? check.priceUsd : NaN);
@@ -195,17 +196,19 @@ serve(async (req) => {
       });
     }
 
-    // Every visible suggestion must be an exact Porkbun check. Generic TLD
-    // prices are not safe because premium names like brand.xyz can be $10,500.
-    const suggestions = (await Promise.all(
-      SUGGEST_TLDS.filter((t) => t !== targetTld).map(async (t) => ({
-        tld: t,
-        ...(await getCheckedDomain(`${label}.${t}`, label, t, apikey, secret)),
-      })),
-    ))
-      .filter((s: any) => s.available !== false)
-      .map((s: any) => ({ ...s, estimated: !Number.isFinite(s.priceGbp) }))
-      .sort((a: any, b: any) => (a.priceGbp ?? 999999) - (b.priceGbp ?? 999999));
+    // Suggestions are intentionally unpriced. Generic TLD pricing is unsafe
+    // because premium names like brand.xyz can be thousands. Exact pricing is
+    // fetched only when the buyer selects a suggestion.
+    const suggestions = SUGGEST_TLDS.filter((t) => t !== targetTld).map((t) => ({
+      domain: `${label}.${t}`,
+      tld: t,
+      available: null,
+      isPremium: false,
+      priceGbp: null,
+      topUpGbp: 0,
+      freeWithPackage: false,
+      estimated: true,
+    }));
 
     return new Response(JSON.stringify({ primary, suggestions }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
