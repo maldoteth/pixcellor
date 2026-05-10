@@ -415,6 +415,25 @@ const LetsTalkPrompt = () => {
               </Button>
             </div>
           </motion.div>
+        ) : step === "consultation" ? (
+          <motion.div
+            key="consultation"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center gap-3 py-6 text-center"
+          >
+            <div className="w-12 h-12 rounded-full bg-foreground/10 flex items-center justify-center">
+              <Check className="w-6 h-6 text-foreground" />
+            </div>
+            <p className="text-foreground text-base font-medium">Consultation requested 🎉</p>
+            <p className="text-foreground/70 text-sm max-w-sm">
+              Thanks {name.split(" ")[0]} — a member of our team will be in touch within 24 hours to arrange a quick call and walk you through your sample. We've saved your details and won't ask again.
+            </p>
+            <Button type="button" variant="pricing" onClick={() => setOpen(false)} className="h-10 px-6 mt-2 font-semibold">
+              Close
+            </Button>
+          </motion.div>
         ) : step === "done" ? (
           <motion.div
             key="done"
