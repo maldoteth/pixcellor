@@ -375,17 +375,56 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               <Button onClick={orderThisStyle} className="w-full rounded-none sm:col-span-2">
                 Confirm style reference →
               </Button>
-              <Button onClick={downloadImage} variant="outline" className="w-full rounded-none gap-2">
-                <Download className="h-4 w-4" /> Save
+              <Button onClick={() => setStage("refine")} variant="outline" className="w-full rounded-none gap-2">
+                <Wand2 className="h-4 w-4" /> Edit / improve
               </Button>
             </div>
-            <button
-              type="button"
-              onClick={reset}
-              className="w-full text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
-            >
-              Try another description
-            </button>
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={downloadImage}
+                className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline inline-flex items-center gap-1"
+              >
+                <Download className="h-3 w-3" /> Save image
+              </button>
+              <button
+                type="button"
+                onClick={reset}
+                className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+              >
+                Try another description
+              </button>
+            </div>
+          </motion.div>
+        ) : stage === "refine" && imageUrl ? (
+          <motion.div
+            key="refine"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="space-y-3"
+          >
+            <p className="text-foreground text-base font-semibold">What would you like to tweak?</p>
+            <p className="text-foreground/70 text-xs">Describe any changes — colours, layout, copy, sections, imagery.</p>
+            <div className="border border-border/40 bg-black/40 max-h-[22vh] overflow-hidden">
+              <img src={imageUrl} alt="Current sample" className="w-full block" />
+            </div>
+            <textarea
+              autoFocus
+              value={refineInstruction}
+              onChange={(e) => setRefineInstruction(e.target.value)}
+              placeholder="e.g. make the hero darker, add a pricing section, swap to sage green"
+              rows={3}
+              className="w-full bg-transparent border border-border/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-foreground/60 resize-none"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => { setRefineInstruction(""); setStage("result"); }} className="w-full rounded-none">
+                Back
+              </Button>
+              <Button onClick={refineVision} disabled={refineInstruction.trim().length < 3} className="w-full rounded-none">
+                Regenerate
+              </Button>
+            </div>
           </motion.div>
         ) : (
           stepBody
