@@ -84,6 +84,16 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
     };
   }, [query]);
 
+  // Cycle loading messages while a search is in flight.
+  useEffect(() => {
+    if (!loading) return;
+    setLoadingMsgIdx(0);
+    const id = window.setInterval(() => {
+      setLoadingMsgIdx((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 900);
+    return () => window.clearInterval(id);
+  }, [loading]);
+
   const badgeFor = (_freeWithPackage: boolean, topUpGbp: number, priceGbp: number | null) => {
     if (topUpGbp > 0) return <span className="text-xs font-semibold text-foreground/80">£{topUpGbp.toFixed(2)} first yr</span>;
     if (priceGbp !== null) return <span className="text-xs text-foreground/60">£{priceGbp.toFixed(2)}/yr</span>;
