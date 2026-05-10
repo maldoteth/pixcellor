@@ -7,7 +7,11 @@ const corsHeaders = {
 
 const PORKBUN_BASE = "https://api.porkbun.com/api/json/v3";
 // TLDs we surface as suggestions. .com is always the primary check.
-const SUGGEST_TLDS = ["com", "co", "io", "xyz", "site", "online", "shop", "studio", "app", "co.uk"];
+const SUGGEST_TLDS = [
+  "com", "co", "io", "xyz", "site", "online", "shop", "studio", "app", "co.uk",
+  "net", "org", "dev", "ai", "me", "tech", "store", "design", "agency", "digital",
+  "uk", "biz", "info", "world", "pro",
+];
 // Conservative USD->GBP. Slightly inflated to avoid loss when rates drift.
 const USD_TO_GBP = 0.82;
 // Markup applied to the registrar cost so currency drift / Porkbun price changes
