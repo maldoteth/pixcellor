@@ -117,7 +117,7 @@ async function checkOneDomain(domain: string, apikey: string, secret: string) {
   };
 }
 
-async function getCheckedDomain(domain: string, apikey: string, secret: string) {
+async function getCheckedDomain(domain: string, label: string, tld: string, apikey: string, secret: string) {
   const cached = checkCache.get(domain);
   if (cached && Date.now() - cached.at < 60_000) return cached.payload;
 
@@ -134,7 +134,8 @@ async function getCheckedDomain(domain: string, apikey: string, secret: string) 
       error: check.message || check.code,
     };
   } else {
-    const exactPriceUsd = Number.isFinite(check.priceUsd) ? check.priceUsd : NaN;
+    const marketplacePriceUsd = await findMarketplaceExact(domain, label, tld, apikey, secret);
+    const exactPriceUsd = Number.isFinite(marketplacePriceUsd) ? marketplacePriceUsd : (Number.isFinite(check.priceUsd) ? check.priceUsd : NaN);
     const regularPriceUsd = Number.isFinite(check.regularPriceUsd) ? check.regularPriceUsd : NaN;
     // Premium domains can expose a lower `price` plus a much higher
     // `regularPrice`; use the higher number so names like brand.xyz never
@@ -184,7 +185,7 @@ serve(async (req) => {
     const targetTld = tld ?? "com";
     const targetDomain = `${label}.${targetTld}`;
 
-    const primary = await getCheckedDomain(targetDomain, apikey, secret);
+    const primary = await getCheckedDomain(targetDomain, label, targetTld, apikey, secret);
 
     // Verify mode: just return the exact-checked primary, no suggestions.
     if (mode === "verify") {
@@ -199,7 +200,7 @@ serve(async (req) => {
     const suggestions = (await Promise.all(
       SUGGEST_TLDS.filter((t) => t !== targetTld).map(async (t) => ({
         tld: t,
-        ...(await getCheckedDomain(`${label}.${t}`, apikey, secret)),
+        ...(await getCheckedDomain(`${label}.${t}`, label, t, apikey, secret)),
       })),
     ))
       .filter((s: any) => s.available !== false)
