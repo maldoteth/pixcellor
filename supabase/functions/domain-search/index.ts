@@ -74,6 +74,13 @@ function priceToBadges(priceUsd: number) {
   return { priceGbp: customerPriceGbp, topUpGbp: customerPriceGbp, freeWithPackage: false };
 }
 
+function parseMoney(v: unknown): number {
+  if (v == null) return NaN;
+  const s = String(v).replace(/[, ]/g, "");
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
+}
+
 async function checkOneDomain(domain: string, apikey: string, secret: string) {
   const res = await fetch(`${PORKBUN_BASE}/domain/checkDomain/${domain}`, {
     method: "POST",
@@ -86,12 +93,19 @@ async function checkOneDomain(domain: string, apikey: string, secret: string) {
     return { ok: false, rateLimited: code === "RATE_LIMIT_EXCEEDED", code, message: json?.message ?? "" };
   }
   const r = json?.response ?? {};
+  const isPremium = String(r.premium ?? "").toLowerCase() === "yes";
+  const availRaw = String(r.avail ?? "").toLowerCase() === "yes";
+  // Premium domains are reported as avail=no by Porkbun but ARE purchasable
+  // at the premium price. Treat them as available when a real price is returned.
+  const priceUsd = parseMoney(r.price);
+  const regularPriceUsd = parseMoney(r.regularPrice);
+  const available = availRaw || (isPremium && Number.isFinite(priceUsd));
   return {
     ok: true,
-    available: String(r.avail ?? "").toLowerCase() === "yes",
-    isPremium: String(r.premium ?? "").toLowerCase() === "yes",
-    priceUsd: Number(r.price ?? NaN),
-    regularPriceUsd: Number(r.regularPrice ?? NaN),
+    available,
+    isPremium,
+    priceUsd,
+    regularPriceUsd,
     firstYearPromo: String(r.firstYearPromo ?? "").toLowerCase() === "yes",
   };
 }
