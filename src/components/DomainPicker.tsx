@@ -168,7 +168,20 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
       <div className="min-h-[40px]">
         {loading && (
           <div className="flex flex-col gap-1.5">
-            <span className="text-foreground/60 text-xs">Checking availability…</span>
+            <div className="h-4 overflow-hidden text-xs text-foreground/60">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={loadingMsgIdx}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.25 }}
+                  className="block"
+                >
+                  {LOADING_MESSAGES[loadingMsgIdx]}
+                </motion.span>
+              </AnimatePresence>
+            </div>
             <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/10">
               <motion.div
                 className="h-full w-1/3 rounded-full bg-foreground"
