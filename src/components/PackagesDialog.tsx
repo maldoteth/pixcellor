@@ -421,10 +421,10 @@ function SnakeFlipButton({
         >
           {/* faint track */}
           <rect
-            x="1"
-            y="1"
-            width="calc(100% - 2px)"
-            height="calc(100% - 2px)"
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
             rx="6"
             ry="6"
             fill="none"
@@ -433,10 +433,10 @@ function SnakeFlipButton({
           />
           {/* snake */}
           <motion.rect
-            x="1"
-            y="1"
-            width="calc(100% - 2px)"
-            height="calc(100% - 2px)"
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
             rx="6"
             ry="6"
             fill="none"
