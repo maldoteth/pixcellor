@@ -151,34 +151,7 @@ serve(async (req) => {
     const targetTld = tld ?? "com";
     const targetDomain = `${label}.${targetTld}`;
 
-    // Cached availability for 60s.
-    const cacheKey = targetDomain;
-    const cached = checkCache.get(cacheKey);
-    let primary: any;
-    if (cached && Date.now() - cached.at < 60_000) {
-      primary = cached.payload;
-    } else {
-      const check = await checkOneDomain(targetDomain, apikey, secret);
-      if (!check.ok) {
-        primary = {
-          domain: targetDomain,
-          available: null,
-          rateLimited: check.rateLimited,
-          error: check.message || check.code,
-        };
-      } else {
-        const priceUsd = Number.isFinite(check.priceUsd) ? check.priceUsd : check.regularPriceUsd;
-        const badges = Number.isFinite(priceUsd) ? priceToBadges(priceUsd) : { priceGbp: null, topUpGbp: 0, freeWithPackage: false };
-        primary = {
-          domain: targetDomain,
-          available: check.available,
-          isPremium: check.isPremium,
-          ...badges,
-          firstYearPromo: check.firstYearPromo,
-        };
-      }
-      checkCache.set(cacheKey, { at: Date.now(), payload: primary });
-    }
+    const primary = await getCheckedDomain(targetDomain, apikey, secret);
 
     // Verify mode: just return the exact-checked primary, no suggestions.
     if (mode === "verify") {
@@ -188,27 +161,16 @@ serve(async (req) => {
       });
     }
 
-    // Build suggestions from cached pricing — these are ESTIMATES until the user
-    // selects one. The buyer can click to verify it specifically. We mark them
-    // as estimated so the UI shows "from £X" instead of an exact price.
-    const pricing = await loadPricing();
-    const suggestions = SUGGEST_TLDS
-      .filter((t) => t !== targetTld)
-      .map((t) => {
-        const p = pricing[t];
-        if (!p) return null;
-        const badges = priceToBadges(p.registration);
-        const renewalGbp = Math.round(p.renewal * USD_TO_GBP * MARKUP_MULTIPLIER * 100) / 100;
-        return {
-          domain: `${label}.${t}`,
-          tld: t,
-          ...badges,
-          renewalGbp,
-          estimated: true,
-        };
-      })
-      .filter(Boolean)
-      .sort((a: any, b: any) => (a.priceGbp ?? 9999) - (b.priceGbp ?? 9999));
+    // Every visible suggestion must be an exact Porkbun check. Generic TLD
+    // prices are not safe because premium names like brand.xyz can be $10,500.
+    const suggestions = (await Promise.all(
+      SUGGEST_TLDS.filter((t) => t !== targetTld).map(async (t) => ({
+        tld: t,
+        ...(await getCheckedDomain(`${label}.${t}`, apikey, secret)),
+      })),
+    ))
+      .filter((s: any) => s.available !== false && s.priceGbp !== null)
+      .sort((a: any, b: any) => (a.priceGbp ?? 999999) - (b.priceGbp ?? 999999));
 
     return new Response(JSON.stringify({ primary, suggestions }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
