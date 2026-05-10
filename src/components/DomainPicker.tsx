@@ -250,26 +250,28 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
         <div>
           {loading && (
             <div className="flex flex-col gap-1.5">
-              <div className="h-4 overflow-hidden text-xs text-foreground/60">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={loadingMsgIdx}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.25 }}
-                    className="block"
-                  >
-                    {LOADING_MESSAGES[loadingMsgIdx]}
-                  </motion.span>
-                </AnimatePresence>
+              <div className="flex items-center justify-between gap-2 h-4 text-xs text-foreground/60">
+                <div className="overflow-hidden flex-1 min-w-0">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={loadingMsgIdx}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.4 }}
+                      className="block truncate"
+                    >
+                      {LOADING_MESSAGES[loadingMsgIdx]}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
+                <span className="tabular-nums text-foreground/50">{Math.round(loadingProgress)}%</span>
               </div>
               <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/10">
                 <motion.div
-                  className="h-full w-1/3 rounded-full bg-foreground"
-                  initial={{ x: "-100%" }}
-                  animate={{ x: "300%" }}
-                  transition={{ repeat: Infinity, duration: 1.1, ease: "easeInOut" }}
+                  className="h-full rounded-full bg-foreground"
+                  animate={{ width: `${loadingProgress}%` }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
                 />
               </div>
             </div>
