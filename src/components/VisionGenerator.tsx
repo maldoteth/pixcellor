@@ -160,7 +160,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             {busy ? "Generating your vision (≈30s)…" : "Generate my landing page"}
           </Button>
           <p className="text-[11px] text-muted-foreground/70 text-center">
-            One desktop concept image · Powered by AI · For inspiration & alignment
+            ​
           </p>
         </>
       )}
