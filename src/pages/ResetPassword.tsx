@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import SeoHead from "@/components/SeoHead";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -52,6 +53,12 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+      <SeoHead
+        title="Reset password · Pixcellor™"
+        description="Reset your Pixcellor portal password."
+        path="/reset-password"
+        noindex
+      />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Reset portal password</CardTitle>

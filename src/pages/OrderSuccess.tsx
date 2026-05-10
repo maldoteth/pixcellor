@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { clearCheckoutPending } from "@/lib/checkoutTracking";
+import SeoHead from "@/components/SeoHead";
 
 type OrderStatus = {
   confirmed: boolean;
@@ -120,6 +121,12 @@ export default function OrderSuccess() {
 
   return (
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-12">
+      <SeoHead
+        title="Order confirmed · Pixcellor™"
+        description="Your Pixcellor order is confirmed. Next steps will appear in your customer portal."
+        path="/order-success"
+        noindex
+      />
       <section className="w-full max-w-3xl text-center space-y-6">
         <div className="mx-auto w-fit rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur-md">
           Pixcellor™ checkout

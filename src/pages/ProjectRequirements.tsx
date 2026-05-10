@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
+import SeoHead from "@/components/SeoHead";
 
 const requirementsSchema = z.object({
   siteName: z.string().trim().min(1, "Add the site or business name").max(160, "Keep this under 160 characters"),

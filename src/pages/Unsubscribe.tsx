@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import SeoHead from "@/components/SeoHead";
 
 export default function Unsubscribe() {
   const token = useMemo(() => new URLSearchParams(window.location.search).get("token"), []);
@@ -56,6 +57,12 @@ export default function Unsubscribe() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+      <SeoHead
+        title="Unsubscribe · Pixcellor™"
+        description="Manage your Pixcellor email subscription."
+        path="/unsubscribe"
+        noindex
+      />
       <Card className="w-full max-w-md border-border/60 bg-card/80">
         <CardHeader>
           <p className="text-xs font-semibold text-muted-foreground">Pixcellor™</p>

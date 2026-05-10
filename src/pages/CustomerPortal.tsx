@@ -43,6 +43,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import customerPortalPLogo from "@/assets/customer-portal-p-logo.png";
 import ChatBot from "@/components/ChatBot";
+import SeoHead from "@/components/SeoHead";
 
 const BUY_AGAIN_PACKAGES = [
   {
