@@ -332,20 +332,38 @@ export default function VisionStudio() {
                   {row.brief && (
                     <p className="text-xs text-muted-foreground line-clamp-3">{row.brief}</p>
                   )}
+                  {(row.client_email || row.sent_at) && (
+                    <p className="text-[11px] text-muted-foreground truncate inline-flex items-center gap-1">
+                      {row.sent_at ? <Check className="h-3 w-3 text-emerald-400" /> : <Mail className="h-3 w-3" />}
+                      {row.sent_at ? `Sent to ${row.client_email}` : `For ${row.client_email}`}
+                    </p>
+                  )}
                   <div className="flex items-center gap-2 mt-auto pt-1">
                     <Button
                       size="sm"
                       variant="outline"
                       className="rounded-none gap-1 flex-1"
-                      onClick={() => copyLink(row.slug)}
+                      onClick={() => promptAndSend(row)}
+                      disabled={sendingId === row.id}
                     >
-                      <Copy className="h-3.5 w-3.5" /> Copy link
+                      {sendingId === row.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                      {row.sent_at ? "Resend" : "Send"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-none gap-1"
+                      onClick={() => copyLink(row.slug)}
+                      aria-label="Copy link"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       className="rounded-none gap-1"
                       onClick={() => window.open(shareUrl(row.slug), "_blank")}
+                      aria-label="Open"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                     </Button>
