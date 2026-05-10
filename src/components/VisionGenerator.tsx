@@ -402,10 +402,10 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
-                onClick={downloadImage}
+                onClick={requestConsultation}
                 className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline inline-flex items-center gap-1"
               >
-                <Download className="h-3 w-3" /> Save image
+                <Sparkles className="h-3 w-3" /> Request consultation
               </button>
               <button
                 type="button"
