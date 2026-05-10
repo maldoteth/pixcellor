@@ -191,7 +191,7 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
           )}
           {!isDesktop && (
             <Drawer open={open} onOpenChange={setOpen}>
-              <DrawerContent>
+              <DrawerContent className="z-[100]" overlayClassName="z-[100]">
                 <DrawerHeader>
                   <DrawerTitle>{item.name}</DrawerTitle>
                   <DrawerDescription className="pt-2 text-sm leading-relaxed text-foreground/80">
