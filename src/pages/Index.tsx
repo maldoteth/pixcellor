@@ -5,6 +5,7 @@ import FalloffConsentBanner from "@/components/FalloffConsentBanner";
 import RotateDevicePrompt from "@/components/RotateDevicePrompt";
 import CustomerAccess from "@/components/CustomerAccess";
 import PackagesDialog from "@/components/PackagesDialog";
+import SeoHead from "@/components/SeoHead";
 
 import TryBeforeBuyDrawer from "@/components/TryBeforeBuyDrawer";
 import LetsTalkPrompt from "@/components/LetsTalkPrompt";
