@@ -75,6 +75,7 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
       setLoading(true);
       setError(null);
       setVerifiedSuggestions({});
+      setVisibleCount(SUGGESTIONS_PAGE);
       try {
         const { data, error: fnErr } = await supabase.functions.invoke("domain-search", {
           body: { query: query.trim() },
