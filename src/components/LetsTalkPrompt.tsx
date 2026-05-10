@@ -196,11 +196,13 @@ const LetsTalkPrompt = () => {
     setSubmitting(true);
     setError(null);
     try {
+      const hostedVision = await ensureHostedVisionUrl(visionUrl);
+      const allAttachments = Array.from(new Set([...(media ?? []), ...(hostedVision ? [hostedVision] : [])]));
       const requestDetails = {
         consultation: true,
         dream: dream.trim() || null,
         colours: colours.trim() || null,
-        vision_image_url: visionUrl ?? null,
+        vision_image_url: hostedVision ?? visionUrl ?? null,
         note: "Visitor requested a free consultation / call back after seeing their AI sample.",
       };
       const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
@@ -209,7 +211,7 @@ const LetsTalkPrompt = () => {
         phone: phone.trim() || null,
         source: "consultation_request",
         request_details: requestDetails,
-        attachment_urls: media,
+        attachment_urls: allAttachments,
       });
       if (insertErr) throw insertErr;
 
@@ -221,7 +223,7 @@ const LetsTalkPrompt = () => {
             phone: phone.trim() || null,
             source: "consultation_request",
             request_details: requestDetails,
-            attachment_urls: media,
+            attachment_urls: allAttachments,
           },
         })
         .catch((err) => console.error("process-lets-talk-lead failed:", err));
@@ -239,11 +241,13 @@ const LetsTalkPrompt = () => {
     setSubmitting(true);
     setError(null);
     try {
+      const hostedVision = await ensureHostedVisionUrl(visionUrl);
+      const allAttachments = Array.from(new Set([...(media ?? []), ...(hostedVision ? [hostedVision] : [])]));
       const requestDetails = {
         order_request: true,
         dream: dream.trim() || null,
         colours: colours.trim() || null,
-        vision_image_url: visionUrl ?? null,
+        vision_image_url: hostedVision ?? visionUrl ?? null,
         note: "Visitor wants to order this AI-generated style. Get back to them to arrange the build.",
       };
       const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
@@ -252,7 +256,7 @@ const LetsTalkPrompt = () => {
         phone: phone.trim() || null,
         source: "vision_order_request",
         request_details: requestDetails,
-        attachment_urls: media,
+        attachment_urls: allAttachments,
       });
       if (insertErr) throw insertErr;
 
@@ -264,7 +268,7 @@ const LetsTalkPrompt = () => {
             phone: phone.trim() || null,
             source: "vision_order_request",
             request_details: requestDetails,
-            attachment_urls: media,
+            attachment_urls: allAttachments,
           },
         })
         .catch((err) => console.error("process-lets-talk-lead failed:", err));
