@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles, Wand2, Copy, ExternalLink, Trash2 } from "lucide-react";
+import { Loader2, Sparkles, Wand2, Copy, ExternalLink, Trash2, Mail, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ interface Preview {
   image_path: string;
   created_at: string;
   created_by_email: string | null;
+  client_email: string | null;
+  sent_at: string | null;
 }
 
 const BUCKET = "vision-previews";
@@ -40,7 +42,10 @@ const publicUrl = (path: string) =>
 export default function VisionStudio() {
   const [title, setTitle] = useState("");
   const [brief, setBrief] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientName, setClientName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [sendingId, setSendingId] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Preview[]>([]);
   const [latest, setLatest] = useState<Preview | null>(null);
 
@@ -100,6 +105,7 @@ export default function VisionStudio() {
           image_path: path,
           created_by_user_id: userId,
           created_by_email: email,
+          client_email: clientEmail.trim() || null,
         })
         .select()
         .single();
@@ -108,14 +114,70 @@ export default function VisionStudio() {
       const row = insert.data as Preview;
       setLatest(row);
       setPreviews((p) => [row, ...p]);
+
+      // Auto-send email if client email provided
+      if (clientEmail.trim()) {
+        await sendEmail(row, clientName.trim() || undefined, clientEmail.trim());
+      }
+
       setTitle("");
       setBrief("");
+      setClientEmail("");
+      setClientName("");
       toast.success("Preview created — link is ready to share.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not generate vision");
     } finally {
       setBusy(false);
     }
+  };
+
+  const sendEmail = async (row: Preview, name?: string, overrideEmail?: string) => {
+    const recipient = overrideEmail || row.client_email;
+    if (!recipient) {
+      toast.error("No client email on this preview");
+      return;
+    }
+    setSendingId(row.id);
+    try {
+      const previewUrl = `${window.location.origin}/preview/${row.slug}`;
+      const imageUrl = publicUrl(row.image_path);
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "vision-preview-ready",
+          recipientEmail: recipient,
+          idempotencyKey: `vision-preview-${row.id}`,
+          templateData: {
+            clientName: name,
+            title: row.title ?? undefined,
+            brief: row.brief ?? undefined,
+            previewUrl,
+            imageUrl,
+          },
+        },
+      });
+      if (error) throw error;
+      const sentAt = new Date().toISOString();
+      await (supabase as any)
+        .from("vision_previews")
+        .update({ sent_at: sentAt, client_email: recipient })
+        .eq("id", row.id);
+      setPreviews((p) => p.map((r) => (r.id === row.id ? { ...r, sent_at: sentAt, client_email: recipient } : r)));
+      if (latest?.id === row.id) setLatest({ ...latest, sent_at: sentAt, client_email: recipient });
+      toast.success(`Sent to ${recipient}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not send email");
+    } finally {
+      setSendingId(null);
+    }
+  };
+
+  const promptAndSend = async (row: Preview) => {
+    const def = row.client_email ?? "";
+    const email = window.prompt("Send preview to (email):", def);
+    if (!email) return;
+    const name = window.prompt("Client name (optional):", "") ?? undefined;
+    await sendEmail(row, name || undefined, email.trim());
   };
 
   const shareUrl = (slug: string) => `${window.location.origin}/preview/${slug}`;
@@ -171,9 +233,26 @@ export default function VisionStudio() {
             className="rounded-none resize-none"
           />
         </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Input
+            placeholder="Client name (optional, e.g. Jane)"
+            value={clientName}
+            maxLength={120}
+            onChange={(e) => setClientName(e.target.value)}
+            className="rounded-none"
+          />
+          <Input
+            type="email"
+            placeholder="Client email (optional — auto-emails preview if set)"
+            value={clientEmail}
+            maxLength={200}
+            onChange={(e) => setClientEmail(e.target.value)}
+            className="rounded-none"
+          />
+        </div>
         <div className="flex items-center justify-between gap-3">
           <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-            <Wand2 className="h-3 w-3" /> Uses the same generator as the landing page sample tool.
+            <Wand2 className="h-3 w-3" /> {clientEmail ? "Will email the client automatically once generated." : "Add a client email to auto-send the preview."}
           </p>
           <Button onClick={generate} disabled={busy} className="rounded-none gap-2">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -253,20 +332,38 @@ export default function VisionStudio() {
                   {row.brief && (
                     <p className="text-xs text-muted-foreground line-clamp-3">{row.brief}</p>
                   )}
+                  {(row.client_email || row.sent_at) && (
+                    <p className="text-[11px] text-muted-foreground truncate inline-flex items-center gap-1">
+                      {row.sent_at ? <Check className="h-3 w-3 text-emerald-400" /> : <Mail className="h-3 w-3" />}
+                      {row.sent_at ? `Sent to ${row.client_email}` : `For ${row.client_email}`}
+                    </p>
+                  )}
                   <div className="flex items-center gap-2 mt-auto pt-1">
                     <Button
                       size="sm"
                       variant="outline"
                       className="rounded-none gap-1 flex-1"
-                      onClick={() => copyLink(row.slug)}
+                      onClick={() => promptAndSend(row)}
+                      disabled={sendingId === row.id}
                     >
-                      <Copy className="h-3.5 w-3.5" /> Copy link
+                      {sendingId === row.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                      {row.sent_at ? "Resend" : "Send"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-none gap-1"
+                      onClick={() => copyLink(row.slug)}
+                      aria-label="Copy link"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       className="rounded-none gap-1"
                       onClick={() => window.open(shareUrl(row.slug), "_blank")}
+                      aria-label="Open"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                     </Button>

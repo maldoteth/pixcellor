@@ -16,6 +16,7 @@ import { template as internalNewOrderNotification } from './internal-new-order-n
 import { template as projectRequirementsReminder } from './project-requirements-reminder.tsx'
 import { template as orderComplete } from './order-complete.tsx'
 import { template as salesWelcomeInfo } from './sales-welcome-info.tsx'
+import { template as visionPreviewReady } from './vision-preview-ready.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'full-works-order-confirmation': fullWorksOrderConfirmation,
@@ -25,4 +26,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'project-requirements-reminder': projectRequirementsReminder,
   'order-complete': orderComplete,
   'sales-welcome-info': salesWelcomeInfo,
+  'vision-preview-ready': visionPreviewReady,
 }
