@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 
-type Mode = "talk" | "request";
+type Mode = "talk" | "request" | "consultation";
 type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "consultation" | "done";
 
 const nameSchema = z.string().trim().min(1, "Please enter your name").max(80);
