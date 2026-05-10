@@ -52,6 +52,7 @@ const LetsTalkPrompt = () => {
       setEmailSkipped(false);
       setError(null);
       setVisionUrl(null);
+      setRefineInstruction("");
       setStep("name");
       setOpen(true);
     };
