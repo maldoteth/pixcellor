@@ -205,7 +205,11 @@ const LetsTalkPrompt = () => {
       return;
     }
     if (step === "media") {
-      await submit(email.trim(), phone.trim(), dream, colours, media);
+      if (mode === "request") {
+        await generateVisionAndSubmit();
+      } else {
+        await submit(email.trim(), phone.trim(), dream, colours, media);
+      }
     }
   };
 
