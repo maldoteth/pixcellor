@@ -63,6 +63,18 @@ const Index = () => {
 
   return (
     <div className="w-full">
+      <SeoHead
+        title="Bespoke Websites for Small Businesses · Pixcellor™"
+        description="Pixcellor builds bespoke, fast-loading websites for small businesses from £100. Lifetime guarantee, SEO/AEO, unlimited edits and a 2-week MVP sprint option."
+        path="/"
+      />
+      {/* Crawlable semantic heading — visually hidden, surfaces the page topic for SEO/AEO */}
+      <h1 className="sr-only">Pixcellor — Bespoke Websites for Small Businesses</h1>
+      <p className="sr-only">
+        Pixcellor designs and builds bespoke websites and web apps for small businesses across the UK.
+        Packages start at £100 with a lifetime guarantee, SEO and AEO included on Elite and Retainer plans,
+        and a 2-week MVP sprint option for fast launches.
+      </p>
       <div className="relative overflow-hidden" style={{ height: "var(--pixcellor-viewport-height, 100dvh)" }}>
         <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
         <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
