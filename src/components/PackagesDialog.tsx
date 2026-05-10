@@ -943,6 +943,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       onConfirm={confirmBuy}
       title={pending ? `Confirm – ${pending.packageName}` : "Confirm details"}
       submitting={submittingBuyer}
+      showDomainStep={pending?.mode === "payment"}
     />
     </>
   );
