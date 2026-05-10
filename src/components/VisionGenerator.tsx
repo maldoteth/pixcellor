@@ -341,7 +341,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <Button onClick={orderThisStyle} className="w-full rounded-none sm:col-span-2">
-                Order this style →
+                Confirm style reference →
               </Button>
               <Button onClick={downloadImage} variant="outline" className="w-full rounded-none gap-2">
                 <Download className="h-4 w-4" /> Save
