@@ -226,10 +226,10 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
             type="button"
             variant="outline"
             disabled={submitting}
-            onClick={() => onChoose({ kind: "own" })}
+            onClick={() => onBack?.()}
             className="flex-1 h-11 text-sm"
           >
-            I'll use my own
+            Back
           </Button>
           <Button
             type="button"
@@ -238,7 +238,7 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
             onClick={() => onChoose({ kind: "skip" })}
             className="flex-1 h-11 text-sm"
           >
-            Skip — pay now
+            Skip
           </Button>
         </div>
       </div>
