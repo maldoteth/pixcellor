@@ -321,7 +321,7 @@ const LetsTalkPrompt = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
               <Button type="button" variant="pricing" onClick={orderThisStyle} className="h-12 font-semibold">
-                Order this style →
+                Confirm style reference →
               </Button>
               <Button type="button" variant="pricing" onClick={() => { setError(null); setStep("refine"); }} className="h-12 font-semibold">
                 Edit / re-prompt
