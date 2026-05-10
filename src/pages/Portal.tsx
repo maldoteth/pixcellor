@@ -422,6 +422,7 @@ export default function Portal() {
   const [falloffsSearch, setFalloffsSearch] = useState("");
   const [chatsSearch, setChatsSearch] = useState("");
   const [profilesSearch, setProfilesSearch] = useState("");
+  const [clientsVisibleCount, setClientsVisibleCount] = useState(10);
   
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples">("all");
   const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
