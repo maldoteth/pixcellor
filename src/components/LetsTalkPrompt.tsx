@@ -372,11 +372,14 @@ const LetsTalkPrompt = () => {
             </div>
             <button
               type="button"
-              onClick={() => { setOpen(false); }}
-              className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1"
+              onClick={requestConsultation}
+              disabled={submitting}
+              className="text-xs text-foreground/70 hover:text-foreground underline-offset-4 hover:underline mt-1 inline-flex items-center justify-center gap-1 disabled:opacity-50"
             >
-              Not for me — close
+              {submitting ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+              Request free consultation instead
             </button>
+            {error && <p className="text-red-400 text-xs">{error}</p>}
           </motion.div>
         ) : step === "refine" && visionUrl ? (
           <motion.div
