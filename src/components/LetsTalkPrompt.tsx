@@ -417,8 +417,9 @@ const LetsTalkPrompt = () => {
               <img src={visionUrl} alt="Your AI-generated landing page sample" className="w-full block" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
-              <Button type="button" variant="pricing" onClick={orderThisStyle} className="h-12 font-semibold">
-                Confirm style reference →
+              <Button type="button" variant="pricing" onClick={orderThisStyle} disabled={submitting} className="h-12 font-semibold inline-flex items-center justify-center gap-2">
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Order this style →
               </Button>
               <Button type="button" variant="pricing" onClick={requestConsultation} disabled={submitting} className="h-12 font-semibold inline-flex items-center justify-center gap-2">
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
