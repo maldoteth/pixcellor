@@ -1141,12 +1141,12 @@ function MobileCards() {
     setPending({ priceId, mode, key, packageName, billing });
   };
 
-  const confirmBuy = async (buyer: BuyerDetails) => {
+  const confirmBuy = async (buyer: BuyerDetails, domainChoice?: BuyerDomainChoice) => {
     if (!pending) return;
     setSubmittingBuyer(true);
     setLoading(pending.key);
     try {
-      await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer);
+      await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer, domainChoice);
     } catch (e) {
       console.error(e);
     } finally {
