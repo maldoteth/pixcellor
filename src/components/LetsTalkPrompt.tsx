@@ -39,6 +39,7 @@ const LetsTalkPrompt = () => {
   const [submitting, setSubmitting] = useState(false);
   const [visionUrl, setVisionUrl] = useState<string | null>(null);
   const [refineInstruction, setRefineInstruction] = useState("");
+  const [orderRequested, setOrderRequested] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -60,6 +61,7 @@ const LetsTalkPrompt = () => {
       setError(null);
       setVisionUrl(null);
       setRefineInstruction("");
+      setOrderRequested(false);
       // Pre-load vision context if we're opening from a generated sample
       if (nextMode === "consultation") {
         try {
@@ -205,24 +207,48 @@ const LetsTalkPrompt = () => {
     }
   };
 
-  const orderThisStyle = () => {
+  const orderThisStyle = async () => {
+    setSubmitting(true);
+    setError(null);
     try {
-      sessionStorage.setItem(
-        "pixcellor:vision-brief",
-        JSON.stringify({
-          prompt: `${dream}\n\nColours: ${colours}`,
-          imageUrl: visionUrl,
-          name,
-          email,
-          phone,
-          at: Date.now(),
-        }),
-      );
-    } catch { /* ignore */ }
-    setOpen(false);
-    setTimeout(() => {
-      window.dispatchEvent(new Event("pixcellor:open-vision-purchase"));
-    }, 200);
+      const requestDetails = {
+        order_request: true,
+        dream: dream.trim() || null,
+        colours: colours.trim() || null,
+        vision_image_url: visionUrl ?? null,
+        note: "Visitor wants to order this AI-generated style. Get back to them to arrange the build.",
+      };
+      const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
+        name: name.trim(),
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        source: "vision_order_request",
+        request_details: requestDetails,
+        attachment_urls: media,
+      });
+      if (insertErr) throw insertErr;
+
+      supabase.functions
+        .invoke("process-lets-talk-lead", {
+          body: {
+            name: name.trim(),
+            email: email.trim() || null,
+            phone: phone.trim() || null,
+            source: "vision_order_request",
+            request_details: requestDetails,
+            attachment_urls: media,
+          },
+        })
+        .catch((err) => console.error("process-lets-talk-lead failed:", err));
+
+      setOrderRequested(true);
+      setStep("consultation");
+    } catch (e) {
+      console.error(e);
+      setError("Couldn't send your request — please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const refineVision = async () => {
@@ -391,8 +417,9 @@ const LetsTalkPrompt = () => {
               <img src={visionUrl} alt="Your AI-generated landing page sample" className="w-full block" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
-              <Button type="button" variant="pricing" onClick={orderThisStyle} className="h-12 font-semibold">
-                Confirm style reference →
+              <Button type="button" variant="pricing" onClick={orderThisStyle} disabled={submitting} className="h-12 font-semibold inline-flex items-center justify-center gap-2">
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Order this style →
               </Button>
               <Button type="button" variant="pricing" onClick={requestConsultation} disabled={submitting} className="h-12 font-semibold inline-flex items-center justify-center gap-2">
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
@@ -446,9 +473,13 @@ const LetsTalkPrompt = () => {
             <div className="w-12 h-12 rounded-full bg-foreground/10 flex items-center justify-center">
               <Check className="w-6 h-6 text-foreground" />
             </div>
-            <p className="text-foreground text-base font-medium">Consultation requested 🎉</p>
+            <p className="text-foreground text-base font-medium">
+              {orderRequested ? "Order request sent 🎉" : "Consultation requested 🎉"}
+            </p>
             <p className="text-foreground/70 text-sm max-w-sm">
-              Thanks {name.split(" ")[0]} — a member of our team will be in touch within 24 hours to arrange a quick call and walk you through your sample. We've saved your details and won't ask again.
+              {orderRequested
+                ? `Thanks ${name.split(" ")[0]} — a member of our team will be in touch within 24 hours to confirm your order and get the build started. We've saved your details and your sample.`
+                : `Thanks ${name.split(" ")[0]} — a member of our team will be in touch within 24 hours to arrange a quick call and walk you through your sample. We've saved your details and won't ask again.`}
             </p>
             <Button type="button" variant="pricing" onClick={() => setOpen(false)} className="h-10 px-6 mt-2 font-semibold">
               Close
