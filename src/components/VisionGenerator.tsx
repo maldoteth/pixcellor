@@ -16,7 +16,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -25,18 +24,68 @@ interface VisionGeneratorProps {
   chatOpen?: boolean;
 }
 
-const PROMPT_HELPERS = [
-  "Industry / what you sell",
-  "Vibe (minimal, bold, playful, luxury, techy)",
-  "Primary brand colour",
-  "Hero headline idea",
-  "Sections you want (pricing, gallery, testimonials…)",
+type StepKey = "industry" | "vibe" | "colour" | "headline" | "sections";
+type Stage = StepKey | "generating" | "result";
+
+interface StepDef {
+  key: StepKey;
+  label: string;
+  helper: string;
+  placeholder: string;
+  multiline?: boolean;
+  prefix: string; // how it appears in the brief
+}
+
+const STEPS: StepDef[] = [
+  {
+    key: "industry",
+    label: "What's your industry or what do you sell?",
+    helper: "e.g. boutique London florist, SaaS for dentists, freelance photographer",
+    placeholder: "Industry / what you sell",
+    prefix: "Business",
+  },
+  {
+    key: "vibe",
+    label: "Pick a vibe",
+    helper: "Minimal, bold, playful, luxury, techy, editorial — anything goes",
+    placeholder: "e.g. minimal & luxury",
+    prefix: "Vibe",
+  },
+  {
+    key: "colour",
+    label: "Primary brand colour(s)",
+    helper: "Any colours, palettes or moods you'd love",
+    placeholder: "e.g. sage green & cream",
+    prefix: "Colours",
+  },
+  {
+    key: "headline",
+    label: "Hero headline idea",
+    helper: "The main line at the top of the page (we'll polish it)",
+    placeholder: "e.g. Bouquets that say it better",
+    prefix: "Headline",
+  },
+  {
+    key: "sections",
+    label: "Sections you want",
+    helper: "Pricing, gallery, testimonials, contact, FAQ…",
+    placeholder: "e.g. hero, gallery, subscriptions, reviews, contact",
+    multiline: true,
+    prefix: "Sections",
+  },
 ];
 
 export default function VisionGenerator({ hidden = false, chatOpen = false }: VisionGeneratorProps) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const [prompt, setPrompt] = useState("");
+  const [stage, setStage] = useState<Stage>("industry");
+  const [answers, setAnswers] = useState<Record<StepKey, string>>({
+    industry: "",
+    vibe: "",
+    colour: "",
+    headline: "",
+    sections: "",
+  });
   const [busy, setBusy] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [generatedFor, setGeneratedFor] = useState<string>("");
@@ -44,30 +93,72 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const reset = () => {
     setImageUrl(null);
     setGeneratedFor("");
+    setAnswers({ industry: "", vibe: "", colour: "", headline: "", sections: "" });
+    setStage("industry");
   };
 
-  const generate = async () => {
-    const text = prompt.trim();
-    if (text.length < 5) {
-      toast.error("Tell us a bit more about your dream landing page.");
+  const buildBrief = (data: Record<StepKey, string>) => {
+    const parts: string[] = [];
+    for (const s of STEPS) {
+      const v = data[s.key].trim();
+      if (v) parts.push(`${s.prefix}: ${v}`);
+    }
+    return parts.join("\n");
+  };
+
+  const generate = async (finalAnswers: Record<StepKey, string>) => {
+    const brief = buildBrief(finalAnswers);
+    if (brief.length < 5) {
+      toast.error("Tell us at least one detail about your dream landing page.");
+      setStage("industry");
       return;
     }
     setBusy(true);
+    setStage("generating");
     try {
       const { data, error } = await supabase.functions.invoke("generate-vision", {
-        body: { prompt: text },
+        body: { prompt: brief },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (!data?.imageUrl) throw new Error("No image returned");
       setImageUrl(data.imageUrl);
-      setGeneratedFor(text);
+      setGeneratedFor(brief);
+      setStage("result");
       toast.success("Your vision is ready ✨");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not generate vision");
+      setStage(STEPS[STEPS.length - 1].key);
     } finally {
       setBusy(false);
     }
+  };
+
+  const currentIndex = STEPS.findIndex((s) => s.key === stage);
+  const currentStep = currentIndex >= 0 ? STEPS[currentIndex] : null;
+
+  const goNext = () => {
+    if (!currentStep) return;
+    if (currentIndex === STEPS.length - 1) {
+      void generate(answers);
+    } else {
+      setStage(STEPS[currentIndex + 1].key);
+    }
+  };
+
+  const goSkip = () => {
+    if (!currentStep) return;
+    const cleared = { ...answers, [currentStep.key]: "" };
+    setAnswers(cleared);
+    if (currentIndex === STEPS.length - 1) {
+      void generate(cleared);
+    } else {
+      setStage(STEPS[currentIndex + 1].key);
+    }
+  };
+
+  const goBack = () => {
+    if (currentIndex > 0) setStage(STEPS[currentIndex - 1].key);
   };
 
   const orderThisStyle = () => {
@@ -128,61 +219,141 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     </motion.button>
   );
 
-  const body = (
-    <div className="space-y-4">
-      {!imageUrl && (
-        <>
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Describe your dream landing page. The more detail, the closer the result.
-            </p>
-            <ul className="text-xs text-muted-foreground/80 list-disc pl-5 space-y-0.5">
-              {PROMPT_HELPERS.map((h) => (
-                <li key={h}>{h}</li>
-              ))}
-            </ul>
-          </div>
-          <Textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g. Boutique London florist. Soft minimal vibe, sage green + cream, hero with weekly bouquet photo, sections for subscriptions, gallery, reviews, contact."
-            rows={6}
-            className="rounded-none resize-none"
-            disabled={busy}
-          />
-          <Button
-            onClick={generate}
-            disabled={busy || prompt.trim().length < 5}
-            className="w-full gap-2 rounded-none"
-          >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-            {busy ? "Generating your vision (≈30s)…" : "Generate my landing page"}
-          </Button>
-        </>
+  const stepBody = currentStep && (
+    <motion.div
+      key={currentStep.key}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.18 }}
+      className="flex flex-col gap-3"
+    >
+      <div className="flex items-center justify-between">
+        <label className="text-foreground/70 text-xs uppercase tracking-wider">
+          Step {currentIndex + 1} of {STEPS.length}
+        </label>
+        <div className="flex gap-1">
+          {STEPS.map((s, i) => (
+            <span
+              key={s.key}
+              className={`h-1 w-6 rounded-full ${i <= currentIndex ? "bg-foreground/70" : "bg-foreground/15"}`}
+            />
+          ))}
+        </div>
+      </div>
+      <p className="text-foreground text-base font-semibold">{currentStep.label}</p>
+      <p className="text-foreground/60 text-xs">{currentStep.helper}</p>
+
+      {currentStep.multiline ? (
+        <textarea
+          autoFocus
+          value={answers[currentStep.key]}
+          onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
+          placeholder={currentStep.placeholder}
+          rows={4}
+          maxLength={1000}
+          className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition resize-none"
+        />
+      ) : (
+        <input
+          autoFocus
+          type="text"
+          value={answers[currentStep.key]}
+          onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              goNext();
+            }
+          }}
+          placeholder={currentStep.placeholder}
+          maxLength={300}
+          className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+        />
       )}
 
-      {imageUrl && (
-        <div className="space-y-3">
-          <div className="border border-border/40 bg-black/40 max-h-[55vh] overflow-auto">
-            <img src={imageUrl} alt="Your AI-generated landing page vision" className="w-full block" />
-          </div>
-          <p className="text-xs text-muted-foreground italic line-clamp-2">"{generatedFor}"</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <Button onClick={orderThisStyle} className="w-full rounded-none sm:col-span-2">
-              Order this style →
-            </Button>
-            <Button onClick={downloadImage} variant="outline" className="w-full rounded-none gap-2">
-              <Download className="h-4 w-4" /> Save
-            </Button>
-          </div>
-          <button
-            type="button"
-            onClick={reset}
-            className="w-full text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+      <div className="grid grid-cols-2 gap-2 mt-1">
+        <Button
+          type="button"
+          variant="pricing"
+          onClick={currentIndex === 0 ? goSkip : goBack}
+          className="h-11 font-semibold"
+        >
+          {currentIndex === 0 ? "Skip" : "Back"}
+        </Button>
+        <Button
+          type="button"
+          variant="pricing"
+          onClick={goNext}
+          className="h-11 font-semibold"
+        >
+          {currentIndex === STEPS.length - 1 ? "Generate ✨" : "Next →"}
+        </Button>
+      </div>
+      {currentIndex > 0 && (
+        <button
+          type="button"
+          onClick={goSkip}
+          className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1 self-center"
+        >
+          Skip this step
+        </button>
+      )}
+    </motion.div>
+  );
+
+  const body = (
+    <div className="space-y-4">
+      <AnimatePresence mode="wait">
+        {stage === "generating" ? (
+          <motion.div
+            key="generating"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center gap-3 py-10"
           >
-            Try another description
-          </button>
-        </div>
+            <Loader2 className="w-8 h-8 animate-spin text-foreground" />
+            <p className="text-foreground text-base font-medium">Building your sample…</p>
+            <p className="text-foreground/70 text-sm text-center max-w-xs">
+              Our AI is rendering a desktop preview of your dream site which our engineers will then build fully if you buy. This takes about 30 seconds.
+            </p>
+          </motion.div>
+        ) : stage === "result" && imageUrl ? (
+          <motion.div
+            key="result"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="space-y-3"
+          >
+            <div tabIndex={-1} className="border border-border/40 bg-black/40 max-h-[55vh] overflow-auto outline-none focus:outline-none focus-visible:outline-none">
+              <img src={imageUrl} alt="Your AI-generated landing page vision" className="w-full block" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <Button onClick={orderThisStyle} className="w-full rounded-none sm:col-span-2">
+                Order this style →
+              </Button>
+              <Button onClick={downloadImage} variant="outline" className="w-full rounded-none gap-2">
+                <Download className="h-4 w-4" /> Save
+              </Button>
+            </div>
+            <button
+              type="button"
+              onClick={reset}
+              className="w-full text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+            >
+              Try another description
+            </button>
+          </motion.div>
+        ) : (
+          stepBody
+        )}
+      </AnimatePresence>
+      {stage !== "generating" && stage !== "result" && !busy && (
+        <p className="text-[11px] text-muted-foreground/70 text-center flex items-center justify-center gap-1">
+          <Wand2 className="h-3 w-3" /> Skip anything you're not sure about — we'll fill the gaps.
+        </p>
       )}
     </div>
   );
@@ -215,7 +386,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               <Sparkles className="h-4 w-4" /> See your dream landing page
             </DialogTitle>
             <DialogDescription>
-              Describe what you want — we'll generate a desktop concept so you know exactly what you're getting before you order.
+              A few quick questions, then we'll generate a desktop concept of your site.
             </DialogDescription>
           </DialogHeader>
           {body}
