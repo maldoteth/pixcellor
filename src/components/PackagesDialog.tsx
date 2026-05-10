@@ -1456,7 +1456,7 @@ function MobileCards() {
             <div className="relative z-10 flex flex-col flex-1">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
-                <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={flipRetainerManually}>Retainer</Button>
+                <SnakeFlipButton label="Retainer" sizeClass="h-8 px-2 text-xs" active={mobileAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="mt-3 mb-1">
                 <span className="text-3xl font-extrabold text-foreground">Solutions</span>
