@@ -6,6 +6,8 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import DomainPicker, { DomainChoice } from "@/components/DomainPicker";
+import { supabase } from "@/integrations/supabase/client";
+import { getCheckoutContext } from "@/lib/checkoutTracking";
 
 function useIsMobileOrTablet() {
   const [match, setMatch] = useState<boolean>(() =>
@@ -61,21 +63,56 @@ interface Props {
   submitting?: boolean;
   /** When false (subscriptions), skip the domain step entirely. Defaults to true. */
   showDomainStep?: boolean;
+  /** Package name for tracking visitors who reach the domain step. */
+  packageName?: string;
+  billing?: string;
 }
 
-const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = true }: Props) => {
+const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = true, packageName, billing }: Props) => {
   const isMobile = useIsMobileOrTablet();
   const STEPS: Step[] = showDomainStep ? [...FIELD_STEPS, "domain"] : [...FIELD_STEPS];
   const [step, setStep] = useState<Step>("company");
   const [values, setValues] = useState<BuyerDetails>({ company: "", name: "", email: "", phone: "" });
   const [error, setError] = useState<string | null>(null);
+  const [trackedKey, setTrackedKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       setStep("company");
       setError(null);
+      setTrackedKey(null);
     }
   }, [open]);
+
+  // When the user reaches the domain step, save them as a contact + record falloff.
+  // Fire-and-forget; only once per (email, package) combo per open session.
+  useEffect(() => {
+    if (step !== "domain") return;
+    const email = values.email.trim().toLowerCase();
+    const phone = values.phone.trim();
+    if (!email && !phone) return;
+    const key = `${email}|${phone}|${packageName ?? ""}`;
+    if (trackedKey === key) return;
+    setTrackedKey(key);
+    try {
+      const ctx = getCheckoutContext();
+      void supabase.functions.invoke("track-domain-step", {
+        body: {
+          name: values.name.trim(),
+          email,
+          phone,
+          company: values.company.trim(),
+          packageName: packageName ?? "",
+          billing: billing ?? "",
+          visitorId: ctx.clientId,
+          sessionId: ctx.sessionId,
+          pageUrl: ctx.pageUrl,
+        },
+      });
+    } catch (err) {
+      console.warn("track-domain-step failed", err);
+    }
+  }, [step, values, packageName, billing, trackedKey]);
 
   const idx = STEPS.indexOf(step);
   const isLast = idx === STEPS.length - 1;
