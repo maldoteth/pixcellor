@@ -12,6 +12,8 @@ export type DomainChoice =
 type Suggestion = {
   domain: string;
   tld: string;
+  available?: boolean | null;
+  isPremium?: boolean;
   priceGbp: number | null;
   topUpGbp: number;
   freeWithPackage: boolean;
@@ -301,7 +303,7 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
                     </div>
                     <div className="flex flex-col gap-1.5 max-h-[180px] overflow-y-auto pr-1">
                       {suggestions.slice(0, 6).map((s) =>
-                        renderRow(s.domain, null, false, s.priceGbp, s.topUpGbp, s.freeWithPackage, s.estimated ?? true),
+                        renderRow(s.domain, s.available ?? null, s.isPremium, s.priceGbp, s.topUpGbp, s.freeWithPackage, s.estimated ?? false),
                       )}
                     </div>
                   </>
