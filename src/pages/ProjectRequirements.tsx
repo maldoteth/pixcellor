@@ -195,6 +195,12 @@ export default function ProjectRequirements() {
 
   return (
     <main className="min-h-screen bg-background text-foreground px-4 py-8 md:py-12">
+      <SeoHead
+        title="Add your website requirements · Pixcellor™"
+        description="Send your project brief to Pixcellor — site name, pages, style, references, content and socials."
+        path="/project-requirements"
+        noindex
+      />
       <section className="mx-auto w-full max-w-4xl space-y-6">
         <Button asChild variant="ghost" className="gap-2">
           <Link to="/"><ArrowLeft className="h-4 w-4" />Pixcellor</Link>

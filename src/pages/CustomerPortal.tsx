@@ -268,6 +268,12 @@ export default function CustomerPortal() {
 
   return (
     <SidebarProvider>
+      <SeoHead
+        title="Customer portal · Pixcellor™"
+        description="Track your Pixcellor project, requirements, edits and orders."
+        path="/customer-portal"
+        noindex
+      />
       <div className="min-h-screen w-full bg-background text-foreground md:flex">
         <Sidebar collapsible="icon" className="border-sidebar-border bg-sidebar/95 backdrop-blur-xl">
           <SidebarHeader className="border-b border-sidebar-border px-3 py-4">

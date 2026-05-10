@@ -1960,6 +1960,12 @@ export default function Portal() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground p-4 pb-28 md:p-6 md:pb-28 lg:pb-6">
+      <SeoHead
+        title="Dev Portal · Pixcellor™"
+        description="Internal Pixcellor dev portal."
+        path="/portal"
+        noindex
+      />
       <div className="mx-auto max-w-7xl min-w-0 space-y-6">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl md:text-3xl font-semibold">Dev Portal</h1>
