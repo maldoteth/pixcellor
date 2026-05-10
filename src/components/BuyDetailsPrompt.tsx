@@ -64,7 +64,7 @@ interface Props {
 }
 
 const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = true }: Props) => {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileOrTablet();
   const STEPS: Step[] = showDomainStep ? [...FIELD_STEPS, "domain"] : [...FIELD_STEPS];
   const [step, setStep] = useState<Step>("company");
   const [values, setValues] = useState<BuyerDetails>({ company: "", name: "", email: "", phone: "" });
