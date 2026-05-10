@@ -1054,7 +1054,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 {/* Circular Portfolio Gallery — appears with What We Do title */}
                 {galleryItems.length > 0 && morphValue > 0.85 && (
                     <motion.div
-                        style={{ opacity: contentOpacity }}
+                        style={{ opacity: contentOpacity, filter: contentBlur }}
                         className="absolute inset-x-0 top-[calc(28%-20px)] md:top-[32%] bottom-[calc(18%+64px)] md:bottom-[18%] z-[50]"
                     >
                         <CircularGallery
