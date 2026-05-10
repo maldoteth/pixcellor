@@ -10,6 +10,7 @@ import SeoHead from "@/components/SeoHead";
 import TryBeforeBuyDrawer from "@/components/TryBeforeBuyDrawer";
 import LetsTalkPrompt from "@/components/LetsTalkPrompt";
 import VisionGenerator from "@/components/VisionGenerator";
+import VisionPurchaseFlow from "@/components/VisionPurchaseFlow";
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -84,6 +85,7 @@ const Index = () => {
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
         <TryBeforeBuyDrawer />
         <LetsTalkPrompt />
+        <VisionPurchaseFlow />
         <FalloffConsentBanner />
       </div>
       <RotateDevicePrompt />
