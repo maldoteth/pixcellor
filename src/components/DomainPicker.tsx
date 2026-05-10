@@ -227,7 +227,7 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
   return (
     <div className="flex flex-col gap-3">
       <label className="text-foreground/70 text-xs uppercase tracking-wider">
-        Want a domain too? We'll register it after payment.
+        NEED A DOMAIN TOO?
       </label>
 
       <div className="relative">
