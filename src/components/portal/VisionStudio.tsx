@@ -49,7 +49,7 @@ export default function VisionStudio() {
       .from("vision_previews")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(500);
     if (error) {
       toast.error(error.message);
       return;
