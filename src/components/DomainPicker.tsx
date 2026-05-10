@@ -165,67 +165,69 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
         )}
       </div>
 
-      <div className="min-h-[40px]">
-        {loading && (
-          <div className="flex flex-col gap-1.5">
-            <div className="h-4 overflow-hidden text-xs text-foreground/60">
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={loadingMsgIdx}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.25 }}
-                  className="block"
-                >
-                  {LOADING_MESSAGES[loadingMsgIdx]}
-                </motion.span>
-              </AnimatePresence>
+      {(loading || error || primary) && (
+        <div>
+          {loading && (
+            <div className="flex flex-col gap-1.5">
+              <div className="h-4 overflow-hidden text-xs text-foreground/60">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={loadingMsgIdx}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.25 }}
+                    className="block"
+                  >
+                    {LOADING_MESSAGES[loadingMsgIdx]}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+              <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/10">
+                <motion.div
+                  className="h-full w-1/3 rounded-full bg-foreground"
+                  initial={{ x: "-100%" }}
+                  animate={{ x: "300%" }}
+                  transition={{ repeat: Infinity, duration: 1.1, ease: "easeInOut" }}
+                />
+              </div>
             </div>
-            <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/10">
-              <motion.div
-                className="h-full w-1/3 rounded-full bg-foreground"
-                initial={{ x: "-100%" }}
-                animate={{ x: "300%" }}
-                transition={{ repeat: Infinity, duration: 1.1, ease: "easeInOut" }}
-              />
-            </div>
-          </div>
-        )}
-        {error && <p className="text-red-400 text-xs">{error}</p>}
-
-        <AnimatePresence>
-          {primary && !loading && (
-            <motion.div
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col gap-1.5"
-            >
-              {renderRow(
-                primary.domain,
-                primary.available,
-                primary.isPremium,
-                primary.priceGbp,
-                primary.topUpGbp,
-                primary.freeWithPackage,
-              )}
-              {suggestions.length > 0 && (
-                <>
-                  <div className="flex items-center gap-2 text-foreground/50 text-[11px] uppercase tracking-wider mt-2">
-                    <Sparkles className="h-3 w-3" /> Suggestions
-                  </div>
-                  <div className="flex flex-col gap-1.5 max-h-[180px] overflow-y-auto pr-1">
-                    {suggestions.slice(0, 6).map((s) =>
-                      renderRow(s.domain, true, false, s.priceGbp, s.topUpGbp, s.freeWithPackage),
-                    )}
-                  </div>
-                </>
-              )}
-            </motion.div>
           )}
-        </AnimatePresence>
-      </div>
+          {error && <p className="text-red-400 text-xs">{error}</p>}
+
+          <AnimatePresence>
+            {primary && !loading && (
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col gap-1.5"
+              >
+                {renderRow(
+                  primary.domain,
+                  primary.available,
+                  primary.isPremium,
+                  primary.priceGbp,
+                  primary.topUpGbp,
+                  primary.freeWithPackage,
+                )}
+                {suggestions.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2 text-foreground/50 text-[11px] uppercase tracking-wider mt-2">
+                      <Sparkles className="h-3 w-3" /> Suggestions
+                    </div>
+                    <div className="flex flex-col gap-1.5 max-h-[180px] overflow-y-auto pr-1">
+                      {suggestions.slice(0, 6).map((s) =>
+                        renderRow(s.domain, true, false, s.priceGbp, s.topUpGbp, s.freeWithPackage),
+                      )}
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2 mt-1">
         <Button
