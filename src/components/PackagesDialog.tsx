@@ -1049,7 +1049,7 @@ function ServiceBackCard({
           <div className="mt-2.5"><StripeBadge /></div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
