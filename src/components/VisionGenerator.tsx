@@ -159,9 +159,6 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
             {busy ? "Generating your vision (≈30s)…" : "Generate my landing page"}
           </Button>
-          <p className="text-[11px] text-muted-foreground/70 text-center">
-            ​
-          </p>
         </>
       )}
 
