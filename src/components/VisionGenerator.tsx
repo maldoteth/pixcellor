@@ -395,18 +395,11 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               <Button onClick={orderThisStyle} className="w-full rounded-none sm:col-span-2">
                 Confirm style reference →
               </Button>
-              <Button onClick={() => setStage("refine")} variant="outline" className="w-full rounded-none gap-2">
-                <Wand2 className="h-4 w-4" /> Edit / improve
+              <Button onClick={requestConsultation} variant="outline" className="w-full rounded-none gap-2">
+                <Sparkles className="h-4 w-4" /> Request custom sample
               </Button>
             </div>
-            <div className="flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={requestConsultation}
-                className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline inline-flex items-center gap-1"
-              >
-                <Sparkles className="h-3 w-3" /> Request consultation
-              </button>
+            <div className="flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={reset}
