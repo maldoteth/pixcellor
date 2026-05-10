@@ -5,6 +5,46 @@ const cn = (...classes: (string | undefined | null | false)[]) =>
 
 // Cache extracted dominant colors per image url across renders
 const colorCache = new Map<string, { r: number; g: number; b: number }>();
+const imageElementCache = new Map<string, HTMLImageElement>();
+const imageDecodeCache = new Map<string, Promise<void>>();
+
+function preloadGalleryImage(url: string) {
+  if (!url || typeof window === 'undefined') return Promise.resolve();
+  const existingPromise = imageDecodeCache.get(url);
+  if (existingPromise) return existingPromise;
+
+  const img = imageElementCache.get(url) ?? new Image();
+  if (!imageElementCache.has(url)) {
+    img.crossOrigin = 'anonymous';
+    img.decoding = 'async';
+    img.loading = 'eager';
+    img.fetchPriority = 'high';
+    imageElementCache.set(url, img);
+  }
+
+  const promise = new Promise<void>((resolve) => {
+    const settle = () => {
+      if (typeof img.decode === 'function') {
+        img.decode().catch(() => undefined).finally(resolve);
+      } else {
+        resolve();
+      }
+    };
+
+    if (img.complete && img.naturalWidth > 0) {
+      settle();
+      return;
+    }
+
+    img.onload = settle;
+    img.onerror = () => resolve();
+    if (!img.src) img.src = url;
+  });
+
+  imageDecodeCache.set(url, promise);
+  if (!img.src) img.src = url;
+  return promise;
+}
 
 function useDominantColor(url: string) {
   const [color, setColor] = useState<{ r: number; g: number; b: number } | null>(
@@ -19,9 +59,9 @@ function useDominantColor(url: string) {
       return;
     }
     let cancelled = false;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
+    preloadGalleryImage(url).then(() => {
+      const img = imageElementCache.get(url);
+      if (!img || cancelled) return;
       try {
         const w = 24;
         const h = 24;
@@ -53,8 +93,7 @@ function useDominantColor(url: string) {
       } catch {
         // CORS or other failures: leave color null
       }
-    };
-    img.src = url;
+    });
     return () => {
       cancelled = true;
     };
@@ -308,19 +347,12 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       cardRefs.current = cardRefs.current.slice(0, items.length);
     }, [items.length]);
 
-    // Hard-preload every carousel image once on mount so scrolling into view
-    // never triggers a fresh network/decode pass.
+    // Hard-preload every carousel image into module-level cache so scrolling away
+    // and back never triggers a fresh network/decode pass.
     useEffect(() => {
-      const preloaded: HTMLImageElement[] = [];
       items.forEach((it) => {
-        const img = new Image();
-        img.decoding = 'async';
-        img.src = it.photo.url;
-        preloaded.push(img);
+        void preloadGalleryImage(it.photo.url);
       });
-      return () => {
-        preloaded.length = 0;
-      };
     }, [items]);
 
     const stopGlowLoop = () => {
