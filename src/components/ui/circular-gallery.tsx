@@ -527,7 +527,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transition: 'opacity 0.3s ease-out',
-                  pointerEvents: isFrontFacing ? 'auto' : 'none',
+                  pointerEvents: 'none',
                 }}
               >
                 <GalleryCard
