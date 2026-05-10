@@ -2730,6 +2730,10 @@ export default function Portal() {
             </Tabs>
           </TabsContent>
 
+          <TabsContent value="studio" className="min-w-0">
+            <VisionStudio />
+          </TabsContent>
+
           <TabsContent value="alerts" className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
