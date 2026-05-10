@@ -161,7 +161,7 @@ serve(async (req) => {
         const p = pricing[t];
         if (!p) return null;
         const badges = priceToBadges(p.registration);
-        const renewalGbp = Math.round(p.renewal * USD_TO_GBP * 100) / 100;
+        const renewalGbp = Math.round(p.renewal * USD_TO_GBP * MARKUP_MULTIPLIER * 100) / 100;
         return {
           domain: `${label}.${t}`,
           tld: t,
@@ -170,12 +170,9 @@ serve(async (req) => {
         };
       })
       .filter(Boolean)
-      .sort((a: any, b: any) => {
-        if (a.freeWithPackage !== b.freeWithPackage) return a.freeWithPackage ? -1 : 1;
-        return (a.priceGbp ?? 9999) - (b.priceGbp ?? 9999);
-      });
+      .sort((a: any, b: any) => (a.priceGbp ?? 9999) - (b.priceGbp ?? 9999));
 
-    return new Response(JSON.stringify({ primary, suggestions, allowanceGbp: ALLOWANCE_GBP }), {
+    return new Response(JSON.stringify({ primary, suggestions }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
