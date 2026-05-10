@@ -346,10 +346,10 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     <>
       <div className="flex items-center gap-2">
         <Sparkles className="w-4 h-4 text-foreground" />
-        <p className="text-foreground text-base font-semibold">See your site before you buy?</p>
+        <p className="text-foreground text-base font-semibold">Generate a rough guide for our devs to improve on.</p>
       </div>
       <p className="text-foreground/70 text-sm">
-        Answer a few quick questions and our AI will render a desktop preview of your dream site. Approve it and your sample is attached to the order so we know exactly what to build. Skip anything you're unsure about.
+        Answer a few quick questions to generate a style guide we can work to.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
         <Button type="button" variant="outline" onClick={() => setStep("domain")} className="h-12 font-semibold">
