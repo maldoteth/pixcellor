@@ -66,22 +66,38 @@ interface Props {
   /** Package name for tracking visitors who reach the domain step. */
   packageName?: string;
   billing?: string;
+  /** Optional pre-filled buyer details — filled fields are skipped in the wizard. */
+  initialValues?: Partial<BuyerDetails>;
 }
 
-const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = true, packageName, billing }: Props) => {
+const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = true, packageName, billing, initialValues }: Props) => {
   const isMobile = useIsMobileOrTablet();
   const STEPS: Step[] = showDomainStep ? [...FIELD_STEPS, "domain"] : [...FIELD_STEPS];
-  const [step, setStep] = useState<Step>("company");
-  const [values, setValues] = useState<BuyerDetails>({ company: "", name: "", email: "", phone: "" });
+  const computeInitial = (): { values: BuyerDetails; step: Step } => {
+    const v: BuyerDetails = {
+      company: initialValues?.company?.trim() ?? "",
+      name: initialValues?.name?.trim() ?? "",
+      email: initialValues?.email?.trim() ?? "",
+      phone: initialValues?.phone?.trim() ?? "",
+    };
+    const firstEmpty = FIELD_STEPS.find((f) => !v[f]) as Step | undefined;
+    return { values: v, step: firstEmpty ?? (showDomainStep ? "domain" : "phone") };
+  };
+  const initial = computeInitial();
+  const [step, setStep] = useState<Step>(initial.step);
+  const [values, setValues] = useState<BuyerDetails>(initial.values);
   const [error, setError] = useState<string | null>(null);
   const [trackedKey, setTrackedKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
-      setStep("company");
+      const next = computeInitial();
+      setStep(next.step);
+      setValues(next.values);
       setError(null);
       setTrackedKey(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // When the user reaches the domain step, save them as a contact + record falloff.
