@@ -763,7 +763,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           <div className="lava-blob lava-blob-featured-2" />
           <div className="lava-blob lava-blob-featured-3" />
         </div>
-        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-[359px] translate-y-[297px] z-30 rotate-[12deg]" />
+        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-[359px] translate-y-[297px] z-30 -rotate-[18deg]" />
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
