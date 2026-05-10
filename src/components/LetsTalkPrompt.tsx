@@ -64,13 +64,19 @@ const LetsTalkPrompt = () => {
     finalDream?: string,
     finalColours?: string,
     finalMedia?: string[],
+    finalVisionUrl?: string | null,
+    opts?: { keepOpen?: boolean },
   ) => {
     setSubmitting(true);
     try {
       const source = mode === "request" ? "free_sample_request" : "lets_talk_button";
       const requestDetails =
         mode === "request"
-          ? { dream: finalDream?.trim() || null, colours: finalColours?.trim() || null }
+          ? {
+              dream: finalDream?.trim() || null,
+              colours: finalColours?.trim() || null,
+              vision_image_url: finalVisionUrl ?? null,
+            }
           : null;
       const attachments = mode === "request" ? finalMedia ?? [] : null;
 
@@ -97,14 +103,69 @@ const LetsTalkPrompt = () => {
         })
         .catch((err) => console.error("process-lets-talk-lead failed:", err));
 
-      setStep("done");
-      setTimeout(() => setOpen(false), 1800);
+      if (!opts?.keepOpen) {
+        setStep("done");
+        setTimeout(() => setOpen(false), 1800);
+      }
     } catch (e) {
       console.error(e);
       setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const generateVisionAndSubmit = async () => {
+    setStep("generating");
+    setError(null);
+    let url: string | null = null;
+    try {
+      const brief = `${dream.trim()}\n\nColours / styles: ${colours.trim()}`;
+      const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", {
+        body: { prompt: brief },
+      });
+      if (fnErr) throw fnErr;
+      if (data?.error) throw new Error(data.error);
+      url = data?.imageUrl ?? null;
+    } catch (e) {
+      console.error("vision generation failed", e);
+    }
+    setVisionUrl(url);
+    // Save lead either way (with or without vision)
+    await submit(email.trim(), phone.trim(), dream, colours, media, url, { keepOpen: true });
+    setStep(url ? "vision" : "done");
+    if (!url) setTimeout(() => setOpen(false), 1800);
+  };
+
+  const orderThisStyle = () => {
+    try {
+      sessionStorage.setItem(
+        "pixcellor:vision-brief",
+        JSON.stringify({
+          prompt: `${dream}\n\nColours: ${colours}`,
+          imageUrl: visionUrl,
+          name,
+          email,
+          phone,
+          at: Date.now(),
+        }),
+      );
+    } catch { /* ignore */ }
+    setOpen(false);
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: true } }));
+      window.dispatchEvent(new Event("pixcellor:open-packages"));
+    }, 200);
+  };
+
+  const downloadVision = () => {
+    if (!visionUrl) return;
+    const a = document.createElement("a");
+    a.href = visionUrl;
+    a.download = "pixcellor-vision.png";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleNext = async () => {
