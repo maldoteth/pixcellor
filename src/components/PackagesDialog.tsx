@@ -96,6 +96,7 @@ type ServiceItem = { name: string; info?: string };
 
 function ServiceItemRow({ item }: { item: ServiceItem }) {
   const [open, setOpen] = useState(false);
+  const [pinned, setPinned] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : true
   );
@@ -142,6 +143,7 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
       const t = e.target as Node;
       if (btnRef.current?.contains(t) || tipRef.current?.contains(t)) return;
       setOpen(false);
+      setPinned(false);
     };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("touchstart", onDown);
@@ -154,9 +156,9 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
   const desktopHandlers = isDesktop
     ? {
         onMouseEnter: () => setOpen(true),
-        onMouseLeave: () => setOpen(false),
+        onMouseLeave: () => { if (!pinned) setOpen(false); },
         onFocus: () => setOpen(true),
-        onBlur: () => setOpen(false),
+        onBlur: () => { if (!pinned) setOpen(false); },
       }
     : {};
 
@@ -170,7 +172,18 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
             ref={btnRef}
             type="button"
             aria-label={`More info about ${item.name}`}
-            onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isDesktop) {
+                setPinned((p) => {
+                  const next = !p;
+                  setOpen(next);
+                  return next;
+                });
+              } else {
+                setOpen((v) => !v);
+              }
+            }}
             {...desktopHandlers}
             className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40"
           >
@@ -181,7 +194,7 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
               ref={tipRef}
               role="tooltip"
               onMouseEnter={() => setOpen(true)}
-              onMouseLeave={() => setOpen(false)}
+              onMouseLeave={() => { if (!pinned) setOpen(false); }}
               style={{ position: "fixed", top: pos.top, left: pos.left, width: 240, zIndex: 2147483647 }}
               className="rounded-md border border-border bg-popover p-3 text-xs leading-relaxed text-popover-foreground shadow-lg pointer-events-auto"
             >
