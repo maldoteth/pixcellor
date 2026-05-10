@@ -6,6 +6,8 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import DomainPicker, { DomainChoice } from "@/components/DomainPicker";
+import { supabase } from "@/integrations/supabase/client";
+import { getCheckoutContext } from "@/lib/checkoutTracking";
 
 function useIsMobileOrTablet() {
   const [match, setMatch] = useState<boolean>(() =>
