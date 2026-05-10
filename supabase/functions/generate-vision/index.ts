@@ -21,8 +21,10 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { prompt } = await req.json();
-    if (!prompt || typeof prompt !== "string" || prompt.trim().length < 5) {
+    const { prompt, imageUrl: inputImageUrl, instruction } = await req.json();
+    const isEdit = !!inputImageUrl && typeof instruction === "string" && instruction.trim().length > 2;
+
+    if (!isEdit && (!prompt || typeof prompt !== "string" || prompt.trim().length < 5)) {
       return new Response(JSON.stringify({ error: "Please describe your dream landing page (at least a few words)." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -37,7 +39,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    const userPrompt = `Design brief from the prospect:\n"""${prompt.trim()}"""\n\nRender ONE full desktop landing page mockup matching the brief. Tall vertical screenshot, ~1440px wide.`;
+    const messages = isEdit
+      ? [
+          { role: "system", content: SYSTEM_PROMPT },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: `Refine this landing page mockup with the following changes, keeping the overall structure cohesive and high quality:\n"""${instruction.trim()}"""\n\nReturn ONE updated full desktop landing page mockup (~1440px wide).` },
+              { type: "image_url", image_url: { url: inputImageUrl } },
+            ],
+          },
+        ]
+      : [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: `Design brief from the prospect:\n"""${prompt.trim()}"""\n\nRender ONE full desktop landing page mockup matching the brief. Tall vertical screenshot, ~1440px wide.` },
+        ];
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -47,10 +63,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-3-pro-image-preview",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPrompt },
-        ],
+        messages,
         modalities: ["image", "text"],
       }),
     });

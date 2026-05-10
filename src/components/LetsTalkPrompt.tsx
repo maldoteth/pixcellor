@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 
 type Mode = "talk" | "request";
-type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "done";
+type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "done";
 
 const nameSchema = z.string().trim().min(1, "Please enter your name").max(80);
 const emailSchema = z.string().trim().email("Enter a valid email").max(200);
@@ -37,6 +37,7 @@ const LetsTalkPrompt = () => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [visionUrl, setVisionUrl] = useState<string | null>(null);
+  const [refineInstruction, setRefineInstruction] = useState("");
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -51,6 +52,7 @@ const LetsTalkPrompt = () => {
       setEmailSkipped(false);
       setError(null);
       setVisionUrl(null);
+      setRefineInstruction("");
       setStep("name");
       setOpen(true);
     };
@@ -158,14 +160,37 @@ const LetsTalkPrompt = () => {
     }, 200);
   };
 
-  const downloadVision = () => {
+  const refineVision = async () => {
+    const ins = refineInstruction.trim();
+    if (ins.length < 3) {
+      setError("Tell us what to change.");
+      return;
+    }
     if (!visionUrl) return;
-    const a = document.createElement("a");
-    a.href = visionUrl;
-    a.download = "pixcellor-vision.png";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    setError(null);
+    const previousUrl = visionUrl;
+    setStep("generating");
+    let url: string | null = null;
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", {
+        body: { imageUrl: previousUrl, instruction: ins },
+      });
+      if (fnErr) throw fnErr;
+      if (data?.error) throw new Error(data.error);
+      url = data?.imageUrl ?? null;
+    } catch (e) {
+      console.error("vision refine failed", e);
+    }
+    if (url) {
+      setVisionUrl(url);
+      setRefineInstruction("");
+      // Update lead row with refined image (best effort, fire-and-forget)
+      void submit(email.trim(), phone.trim(), dream, `${colours}\n\nRefinement: ${ins}`, media, url, { keepOpen: true });
+      setStep("vision");
+    } else {
+      setError("Couldn't refine — please try again.");
+      setStep("vision");
+    }
   };
 
   const handleNext = async () => {
@@ -295,12 +320,12 @@ const LetsTalkPrompt = () => {
             <div className="border border-foreground/15 bg-black/40 max-h-[50vh] overflow-auto rounded-md">
               <img src={visionUrl} alt="Your AI-generated landing page sample" className="w-full block" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
-              <Button type="button" variant="pricing" onClick={orderThisStyle} className="sm:col-span-2 h-12 font-semibold">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+              <Button type="button" variant="pricing" onClick={orderThisStyle} className="h-12 font-semibold">
                 Order this style →
               </Button>
-              <Button type="button" variant="pricing" onClick={downloadVision} className="h-12 font-semibold">
-                Save image
+              <Button type="button" variant="pricing" onClick={() => { setError(null); setStep("refine"); }} className="h-12 font-semibold">
+                Edit / re-prompt
               </Button>
             </div>
             <button
@@ -310,6 +335,40 @@ const LetsTalkPrompt = () => {
             >
               Not for me — close
             </button>
+          </motion.div>
+        ) : step === "refine" && visionUrl ? (
+          <motion.div
+            key="refine"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col gap-3"
+          >
+            <p className="text-foreground text-base font-semibold">What would you like to tweak?</p>
+            <p className="text-foreground/70 text-xs">
+              Describe any changes — colours, layout, copy, sections, imagery. We'll refine the same design.
+            </p>
+            <div className="border border-foreground/15 bg-black/40 max-h-[28vh] overflow-hidden rounded-md">
+              <img src={visionUrl} alt="Current sample" className="w-full block" />
+            </div>
+            <textarea
+              autoFocus
+              value={refineInstruction}
+              onChange={(e) => { setRefineInstruction(e.target.value); if (error) setError(null); }}
+              placeholder="e.g. swap the hero image for a product shot, make the palette warmer, add a pricing section…"
+              rows={4}
+              maxLength={1000}
+              className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition resize-none"
+            />
+            {error && <p className="text-red-400 text-xs">{error}</p>}
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant="pricing" onClick={() => { setRefineInstruction(""); setError(null); setStep("vision"); }} className="h-12 font-semibold">
+                Back
+              </Button>
+              <Button type="button" variant="pricing" onClick={refineVision} disabled={refineInstruction.trim().length < 3} className="h-12 font-semibold">
+                Regenerate
+              </Button>
+            </div>
           </motion.div>
         ) : step === "done" ? (
           <motion.div
