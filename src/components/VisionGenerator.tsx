@@ -98,10 +98,12 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [busy, setBusy] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [generatedFor, setGeneratedFor] = useState<string>("");
+  const [refineInstruction, setRefineInstruction] = useState("");
 
   const reset = () => {
     setImageUrl(null);
     setGeneratedFor("");
+    setRefineInstruction("");
     setAnswers({ company: "", industry: "", vibe: "", colour: "", headline: "", sections: "" });
     setStage("company");
   };
