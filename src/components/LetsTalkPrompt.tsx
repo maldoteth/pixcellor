@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 
 type Mode = "talk" | "request";
-type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "done";
+type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "consultation" | "done";
 
 const nameSchema = z.string().trim().min(1, "Please enter your name").max(80);
 const emailSchema = z.string().trim().email("Enter a valid email").max(200);
@@ -137,6 +137,49 @@ const LetsTalkPrompt = () => {
     await submit(email.trim(), phone.trim(), dream, colours, media, url, { keepOpen: true });
     setStep(url ? "vision" : "done");
     if (!url) setTimeout(() => setOpen(false), 1800);
+  };
+
+  const requestConsultation = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const requestDetails = {
+        consultation: true,
+        dream: dream.trim() || null,
+        colours: colours.trim() || null,
+        vision_image_url: visionUrl ?? null,
+        note: "Visitor requested a free consultation / call back after seeing their AI sample.",
+      };
+      const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
+        name: name.trim(),
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        source: "consultation_request",
+        request_details: requestDetails,
+        attachment_urls: media,
+      });
+      if (insertErr) throw insertErr;
+
+      supabase.functions
+        .invoke("process-lets-talk-lead", {
+          body: {
+            name: name.trim(),
+            email: email.trim() || null,
+            phone: phone.trim() || null,
+            source: "consultation_request",
+            request_details: requestDetails,
+            attachment_urls: media,
+          },
+        })
+        .catch((err) => console.error("process-lets-talk-lead failed:", err));
+
+      setStep("consultation");
+    } catch (e) {
+      console.error(e);
+      setError("Couldn't send your request — please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const orderThisStyle = () => {
@@ -329,11 +372,14 @@ const LetsTalkPrompt = () => {
             </div>
             <button
               type="button"
-              onClick={() => { setOpen(false); }}
-              className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1"
+              onClick={requestConsultation}
+              disabled={submitting}
+              className="text-xs text-foreground/70 hover:text-foreground underline-offset-4 hover:underline mt-1 inline-flex items-center justify-center gap-1 disabled:opacity-50"
             >
-              Not for me — close
+              {submitting ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+              Request free consultation instead
             </button>
+            {error && <p className="text-red-400 text-xs">{error}</p>}
           </motion.div>
         ) : step === "refine" && visionUrl ? (
           <motion.div
@@ -368,6 +414,25 @@ const LetsTalkPrompt = () => {
                 Regenerate
               </Button>
             </div>
+          </motion.div>
+        ) : step === "consultation" ? (
+          <motion.div
+            key="consultation"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center gap-3 py-6 text-center"
+          >
+            <div className="w-12 h-12 rounded-full bg-foreground/10 flex items-center justify-center">
+              <Check className="w-6 h-6 text-foreground" />
+            </div>
+            <p className="text-foreground text-base font-medium">Consultation requested 🎉</p>
+            <p className="text-foreground/70 text-sm max-w-sm">
+              Thanks {name.split(" ")[0]} — a member of our team will be in touch within 24 hours to arrange a quick call and walk you through your sample. We've saved your details and won't ask again.
+            </p>
+            <Button type="button" variant="pricing" onClick={() => setOpen(false)} className="h-10 px-6 mt-2 font-semibold">
+              Close
+            </Button>
           </motion.div>
         ) : step === "done" ? (
           <motion.div
