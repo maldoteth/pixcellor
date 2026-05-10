@@ -201,6 +201,7 @@ export default function VisionPurchaseFlow() {
           packageName={selected?.name}
           billing="one_time"
           initialValues={{ name: brief?.name, email: brief?.email, phone: brief?.phone }}
+          initialVision={brief?.imageUrl ? { prompt: brief.prompt ?? "", imageUrl: brief.imageUrl } : null}
           title={title}
         />
         {submitting && (
@@ -231,6 +232,7 @@ export default function VisionPurchaseFlow() {
         packageName={selected?.name}
         billing="one_time"
         initialValues={{ name: brief?.name, email: brief?.email, phone: brief?.phone }}
+        initialVision={brief?.imageUrl ? { prompt: brief.prompt ?? "", imageUrl: brief.imageUrl } : null}
         title={title}
       />
       {submitting && (
