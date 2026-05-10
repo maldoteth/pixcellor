@@ -1268,16 +1268,17 @@ function MobileCards() {
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
-  useEffect(() => {
-    if (enterpriseOpen || retainerAutoFlipStopped) return;
-    const interval = window.setInterval(() => setRetainerFlipped((flipped) => !flipped), 5000);
-    return () => window.clearInterval(interval);
-  }, [enterpriseOpen, retainerAutoFlipStopped]);
+  const mobileAutoActive = !enterpriseOpen && !retainerAutoFlipStopped;
+
+  const flipRetainerAuto = useCallback(() => {
+    setRetainerFlipped((flipped) => !flipped);
+  }, []);
 
   const flipRetainerManually = () => {
     setRetainerAutoFlipStopped(true);
     setRetainerFlipped((flipped) => !flipped);
   };
+
 
   const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
     setPending({ priceId, mode, key, packageName, billing });
