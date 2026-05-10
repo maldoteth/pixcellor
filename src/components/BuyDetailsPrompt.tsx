@@ -4,9 +4,22 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import DomainPicker, { DomainChoice } from "@/components/DomainPicker";
+
+function useIsMobileOrTablet() {
+  const [match, setMatch] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 1023px)").matches : false
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const handler = (e: MediaQueryListEvent) => setMatch(e.matches);
+    mq.addEventListener("change", handler);
+    setMatch(mq.matches);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return match;
+}
 
 export type BuyerDetails = {
   company: string;
@@ -51,7 +64,7 @@ interface Props {
 }
 
 const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = true }: Props) => {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileOrTablet();
   const STEPS: Step[] = showDomainStep ? [...FIELD_STEPS, "domain"] : [...FIELD_STEPS];
   const [step, setStep] = useState<Step>("company");
   const [values, setValues] = useState<BuyerDetails>({ company: "", name: "", email: "", phone: "" });
@@ -201,11 +214,11 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="carousel-label-glass border-foreground/10 text-foreground">
+        <DrawerContent className="carousel-label-glass border-foreground/10 text-foreground max-h-[92vh]">
           <DrawerHeader>
             <DrawerTitle className="text-foreground text-center">{title}</DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pb-6">{content}</div>
+          <div className="px-4 pb-6 overflow-y-auto">{content}</div>
         </DrawerContent>
       </Drawer>
     );
@@ -213,7 +226,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[460px] carousel-label-glass border-foreground/10 text-foreground">
+      <DialogContent className="sm:max-w-[460px] max-h-[90vh] overflow-y-auto carousel-label-glass border-foreground/10 text-foreground">
         <DialogHeader>
           <DialogTitle className="text-foreground">{title}</DialogTitle>
         </DialogHeader>
