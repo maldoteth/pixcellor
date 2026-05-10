@@ -16,7 +16,6 @@ const USD_TO_GBP = 0.82;
 const MARKUP_MULTIPLIER = 1.15;
 const PRICE_FLOOR_GBP = 2;
 
-let pricingCache: { at: number; data: Record<string, { registration: number; renewal: number }> } | null = null;
 const checkCache = new Map<string, { at: number; payload: unknown }>();
 const ipHits = new Map<string, number[]>();
 
@@ -46,21 +45,6 @@ function sanitizeLabel(raw: string): { label: string; tld: string | null } {
     return { label: s.slice(0, dot).slice(0, 63), tld: s.slice(dot + 1) };
   }
   return { label: s.slice(0, 63), tld: null };
-}
-
-async function loadPricing(): Promise<Record<string, { registration: number; renewal: number }>> {
-  if (pricingCache && Date.now() - pricingCache.at < 24 * 60 * 60 * 1000) return pricingCache.data;
-  const res = await fetch(`${PORKBUN_BASE}/pricing/get`);
-  const json = await res.json().catch(() => ({}));
-  const pricing = (json?.pricing ?? {}) as Record<string, { registration: string; renewal: string }>;
-  const out: Record<string, { registration: number; renewal: number }> = {};
-  for (const [tld, p] of Object.entries(pricing)) {
-    const reg = Number(p.registration);
-    const ren = Number(p.renewal);
-    if (Number.isFinite(reg)) out[tld] = { registration: reg, renewal: Number.isFinite(ren) ? ren : reg };
-  }
-  pricingCache = { at: Date.now(), data: out };
-  return out;
 }
 
 function priceToBadges(priceUsd: number) {
