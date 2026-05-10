@@ -207,24 +207,48 @@ const LetsTalkPrompt = () => {
     }
   };
 
-  const orderThisStyle = () => {
+  const orderThisStyle = async () => {
+    setSubmitting(true);
+    setError(null);
     try {
-      sessionStorage.setItem(
-        "pixcellor:vision-brief",
-        JSON.stringify({
-          prompt: `${dream}\n\nColours: ${colours}`,
-          imageUrl: visionUrl,
-          name,
-          email,
-          phone,
-          at: Date.now(),
-        }),
-      );
-    } catch { /* ignore */ }
-    setOpen(false);
-    setTimeout(() => {
-      window.dispatchEvent(new Event("pixcellor:open-vision-purchase"));
-    }, 200);
+      const requestDetails = {
+        order_request: true,
+        dream: dream.trim() || null,
+        colours: colours.trim() || null,
+        vision_image_url: visionUrl ?? null,
+        note: "Visitor wants to order this AI-generated style. Get back to them to arrange the build.",
+      };
+      const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
+        name: name.trim(),
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        source: "vision_order_request",
+        request_details: requestDetails,
+        attachment_urls: media,
+      });
+      if (insertErr) throw insertErr;
+
+      supabase.functions
+        .invoke("process-lets-talk-lead", {
+          body: {
+            name: name.trim(),
+            email: email.trim() || null,
+            phone: phone.trim() || null,
+            source: "vision_order_request",
+            request_details: requestDetails,
+            attachment_urls: media,
+          },
+        })
+        .catch((err) => console.error("process-lets-talk-lead failed:", err));
+
+      setOrderRequested(true);
+      setStep("consultation");
+    } catch (e) {
+      console.error(e);
+      setError("Couldn't send your request — please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const refineVision = async () => {
