@@ -16,7 +16,7 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp } = await req.json();
+    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp, visionBrief } = await req.json();
     
     if (!priceId) throw new Error("Missing priceId");
 
@@ -89,6 +89,8 @@ serve(async (req) => {
         buyer_email: buyerEmail,
         domain_to_register: validDomain,
         domain_top_up_gbp: validDomain ? String(safeTopUpGbp) : "",
+        vision_prompt: visionBrief && typeof visionBrief.prompt === "string" ? visionBrief.prompt.slice(0, 500) : "",
+        vision_image_url: visionBrief && typeof visionBrief.imageUrl === "string" ? visionBrief.imageUrl.slice(0, 500) : "",
       },
     };
 
