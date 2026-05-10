@@ -67,7 +67,7 @@ const DomainPicker = ({ onChoose, submitting }: Props) => {
       } finally {
         setLoading(false);
       }
-    }, 350);
+    }, 180);
     return () => {
       if (debounceRef.current) window.clearTimeout(debounceRef.current);
     };
