@@ -12,7 +12,7 @@ interface GenerationProgressProps {
  */
 const GenerationProgress = ({
   label = "Building your sample…",
-  helper = "Our AI is rendering a desktop preview of your dream site which our engineers will then build fully if you buy. This takes about 30 seconds.",
+  helper = "Our AI is rendering a desktop preview of your dream site which our engineers will then improve",
   estimatedSeconds = 30,
 }: GenerationProgressProps) => {
   const [progress, setProgress] = useState(2);

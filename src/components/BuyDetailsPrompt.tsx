@@ -417,7 +417,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
   };
 
   const renderGenerating = () => (
-    <GenerationProgress helper="Our AI is rendering a desktop preview of your dream site which our engineers will then build fully. This takes about 30 seconds." />
+    <GenerationProgress helper="Our AI is rendering a desktop preview of your dream site which our engineers will then improve" />
   );
 
   const renderResult = () => (

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Wand2 } from "lucide-react";
+import GenerationProgress from "./GenerationProgress";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -339,13 +340,9 @@ const LetsTalkPrompt = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center gap-3 py-10"
+            className="w-full"
           >
-            <Loader2 className="w-8 h-8 animate-spin text-foreground" />
-            <p className="text-foreground text-base font-medium">Building your sample…</p>
-            <p className="text-foreground/70 text-sm text-center max-w-xs">
-              Our AI is rendering a desktop preview of your dream site which our engineers will then build fully if you buy. This takes about 30 seconds.
-            </p>
+            <GenerationProgress helper="Our AI is rendering a desktop preview of your dream site which our engineers will then improve" />
           </motion.div>
         ) : step === "vision" && visionUrl ? (
           <motion.div
