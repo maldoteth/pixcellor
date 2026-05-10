@@ -7,7 +7,11 @@ const corsHeaders = {
 
 const PORKBUN_BASE = "https://api.porkbun.com/api/json/v3";
 // TLDs we surface as suggestions. .com is always the primary check.
-const SUGGEST_TLDS = ["com", "co", "io", "xyz", "site", "online", "shop", "studio", "app", "co.uk"];
+const SUGGEST_TLDS = [
+  "com", "co", "io", "xyz", "site", "online", "shop", "studio", "app", "co.uk",
+  "net", "org", "dev", "ai", "me", "tech", "store", "design", "agency", "digital",
+  "uk", "biz", "info", "world", "pro",
+];
 // Conservative USD->GBP. Slightly inflated to avoid loss when rates drift.
 const USD_TO_GBP = 0.82;
 // Markup applied to the registrar cost so currency drift / Porkbun price changes
@@ -196,19 +200,34 @@ serve(async (req) => {
       });
     }
 
-    // Suggestions are intentionally unpriced. Generic TLD pricing is unsafe
-    // because premium names like brand.xyz can be thousands. Exact pricing is
-    // fetched only when the buyer selects a suggestion.
-    const suggestions = SUGGEST_TLDS.filter((t) => t !== targetTld).map((t) => ({
-      domain: `${label}.${t}`,
-      tld: t,
-      available: null,
-      isPremium: false,
-      priceGbp: null,
-      topUpGbp: 0,
-      freeWithPackage: false,
-      estimated: true,
-    }));
+    // Check all suggestion TLDs in parallel against Porkbun and only surface
+    // ones that are actually available with a real price. Premium domains are
+    // included with their real (often expensive) price.
+    const candidateTlds = SUGGEST_TLDS.filter((t) => t !== targetTld);
+    const checked = await Promise.all(
+      candidateTlds.map(async (t) => {
+        try {
+          const d = `${label}.${t}`;
+          const c: any = await getCheckedDomain(d, label, t, apikey, secret);
+          return { ...c, tld: t };
+        } catch {
+          return null;
+        }
+      }),
+    );
+    const suggestions = checked
+      .filter((c: any) => c && c.available === true && c.priceGbp != null)
+      .sort((a: any, b: any) => (a.priceGbp ?? 0) - (b.priceGbp ?? 0))
+      .map((c: any) => ({
+        domain: c.domain,
+        tld: c.tld,
+        available: true,
+        isPremium: !!c.isPremium,
+        priceGbp: c.priceGbp,
+        topUpGbp: c.topUpGbp,
+        freeWithPackage: !!c.freeWithPackage,
+        estimated: false,
+      }));
 
     return new Response(JSON.stringify({ primary, suggestions }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

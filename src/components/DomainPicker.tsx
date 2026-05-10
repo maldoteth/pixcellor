@@ -47,7 +47,10 @@ const LOADING_MESSAGES = [
   "Nearly there…",
 ];
 
+const SUGGESTIONS_PAGE = 6;
+
 const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
+  const [visibleCount, setVisibleCount] = useState(SUGGESTIONS_PAGE);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
@@ -72,6 +75,7 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
       setLoading(true);
       setError(null);
       setVerifiedSuggestions({});
+      setVisibleCount(SUGGESTIONS_PAGE);
       try {
         const { data, error: fnErr } = await supabase.functions.invoke("domain-search", {
           body: { query: query.trim() },
@@ -102,8 +106,13 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
       setLoadingMsgIdx((i) => Math.min(i + 1, LOADING_MESSAGES.length - 1));
     }, 1600);
     const progId = window.setInterval(() => {
-      // Ease toward 95% so it never completes until the request finishes.
-      setLoadingProgress((p) => p + Math.max(0.4, (95 - p) * 0.04));
+      // Ease toward 99% but crawl after 95 so it never overshoots.
+      setLoadingProgress((p) => {
+        if (p >= 99) return 99;
+        const remaining = 99 - p;
+        const step = p < 95 ? Math.max(0.4, remaining * 0.05) : Math.max(0.05, remaining * 0.02);
+        return Math.min(99, p + step);
+      });
     }, 180);
     return () => {
       window.clearInterval(msgId);
@@ -301,9 +310,18 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
                     <div className="flex items-center gap-2 text-foreground/50 text-[11px] uppercase tracking-wider mt-2">
                       <Sparkles className="h-3 w-3" /> Suggestions
                     </div>
-                    <div className="flex flex-col gap-1.5 max-h-[180px] overflow-y-auto pr-1">
-                      {suggestions.slice(0, 6).map((s) =>
+                    <div className="flex flex-col gap-1.5 max-h-[260px] overflow-y-auto pr-1">
+                      {suggestions.slice(0, visibleCount).map((s) =>
                         renderRow(s.domain, s.available ?? null, s.isPremium, s.priceGbp, s.topUpGbp, s.freeWithPackage, s.estimated ?? false),
+                      )}
+                      {visibleCount < suggestions.length && (
+                        <button
+                          type="button"
+                          onClick={() => setVisibleCount((n) => n + SUGGESTIONS_PAGE)}
+                          className="text-xs text-foreground/60 hover:text-foreground py-2 rounded-md border border-dashed border-foreground/15 hover:border-foreground/30 transition"
+                        >
+                          Show more ({suggestions.length - visibleCount} left)
+                        </button>
                       )}
                     </div>
                   </>
