@@ -118,35 +118,40 @@ serve(async (req) => {
     // Cached availability for 60s.
     const cacheKey = targetDomain;
     const cached = checkCache.get(cacheKey);
-    let primary: any;
-    if (cached && Date.now() - cached.at < 60_000) {
-      primary = cached.payload;
-    } else {
-      const check = await checkOneDomain(targetDomain, apikey, secret);
-      if (!check.ok) {
-        primary = {
-          domain: targetDomain,
-          available: null,
-          rateLimited: check.rateLimited,
-          error: check.message || check.code,
-        };
-      } else {
-        const priceUsd = Number.isFinite(check.priceUsd) ? check.priceUsd : check.regularPriceUsd;
-        const badges = Number.isFinite(priceUsd) ? priceToBadges(priceUsd) : { priceGbp: null, topUpGbp: 0, freeWithPackage: false };
-        primary = {
-          domain: targetDomain,
-          available: check.available,
-          isPremium: check.isPremium,
-          ...badges,
-          firstYearPromo: check.firstYearPromo,
-        };
-      }
-      checkCache.set(cacheKey, { at: Date.now(), payload: primary });
-    }
+    const cachedFresh = cached && Date.now() - cached.at < 60_000;
 
-    // Build suggestions from cached pricing — NO availability check (rate limit).
-    // The buyer can click one to verify it specifically.
-    const pricing = await loadPricing();
+    // Run availability check + pricing fetch in parallel for snappier first response.
+    const [primaryResolved, pricing] = await Promise.all([
+      cachedFresh
+        ? Promise.resolve(cached!.payload as any)
+        : (async () => {
+            const check = await checkOneDomain(targetDomain, apikey, secret);
+            let p: any;
+            if (!check.ok) {
+              p = {
+                domain: targetDomain,
+                available: null,
+                rateLimited: check.rateLimited,
+                error: check.message || check.code,
+              };
+            } else {
+              const priceUsd = Number.isFinite(check.priceUsd) ? check.priceUsd : check.regularPriceUsd;
+              const badges = Number.isFinite(priceUsd) ? priceToBadges(priceUsd) : { priceGbp: null, topUpGbp: 0, freeWithPackage: false };
+              p = {
+                domain: targetDomain,
+                available: check.available,
+                isPremium: check.isPremium,
+                ...badges,
+                firstYearPromo: check.firstYearPromo,
+              };
+            }
+            checkCache.set(cacheKey, { at: Date.now(), payload: p });
+            return p;
+          })(),
+      loadPricing(),
+    ]);
+    const primary = primaryResolved;
+
     const suggestions = SUGGEST_TLDS
       .filter((t) => t !== targetTld)
       .map((t) => {
