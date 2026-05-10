@@ -18,7 +18,6 @@ function preloadGalleryImage(url: string) {
     img.crossOrigin = 'anonymous';
     img.decoding = 'async';
     img.loading = 'eager';
-    // @ts-expect-error fetchPriority is valid on HTMLImageElement in modern browsers
     img.fetchPriority = 'high';
     imageElementCache.set(url, img);
   }
