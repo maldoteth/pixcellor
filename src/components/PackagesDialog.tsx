@@ -367,6 +367,99 @@ function IntroductoryOfferText({ discount }: { discount: string }) {
   return <p className="mb-4 text-xs font-semibold text-foreground">Introductary offer — {discount} off</p>;
 }
 
+function SnakeFlipButton({
+  label,
+  onClick,
+  active,
+  onComplete,
+  sizeClass = "h-7 px-2 text-[10px]",
+  durationMs = 5000,
+}: {
+  label: string;
+  onClick: () => void;
+  active: boolean;
+  onComplete: () => void;
+  sizeClass?: string;
+  durationMs?: number;
+}) {
+  const [seconds, setSeconds] = useState(Math.ceil(durationMs / 1000));
+  const startRef = useRef<number>(0);
+  const cycleKey = useRef(0);
+
+  useEffect(() => {
+    if (!active) {
+      setSeconds(Math.ceil(durationMs / 1000));
+      return;
+    }
+    cycleKey.current += 1;
+    startRef.current = performance.now();
+    setSeconds(Math.ceil(durationMs / 1000));
+    const id = window.setInterval(() => {
+      const elapsed = performance.now() - startRef.current;
+      const remaining = Math.max(0, Math.ceil((durationMs - elapsed) / 1000));
+      setSeconds(remaining);
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [active, durationMs]);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative inline-flex items-center justify-center gap-1 overflow-visible rounded-md border border-border bg-background font-medium text-foreground transition-colors hover:bg-accent ${sizeClass}`}
+    >
+      <span className="relative z-10 whitespace-nowrap">
+        {label}
+        {active ? ` · ${seconds}s` : ""}
+      </span>
+      {active && (
+        <svg
+          key={cycleKey.current}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+          preserveAspectRatio="none"
+        >
+          {/* faint track */}
+          <rect
+            x="1"
+            y="1"
+            width="calc(100% - 2px)"
+            height="calc(100% - 2px)"
+            rx="6"
+            ry="6"
+            fill="none"
+            stroke="hsl(var(--foreground) / 0.15)"
+            strokeWidth="1.5"
+          />
+          {/* snake */}
+          <motion.rect
+            x="1"
+            y="1"
+            width="calc(100% - 2px)"
+            height="calc(100% - 2px)"
+            rx="6"
+            ry="6"
+            fill="none"
+            stroke="hsl(var(--foreground))"
+            strokeWidth="2"
+            strokeLinecap="round"
+            pathLength={100}
+            strokeDasharray="28 72"
+            initial={{ strokeDashoffset: 0 }}
+            animate={{ strokeDashoffset: -100 }}
+            transition={{ duration: durationMs / 1000, ease: "linear" }}
+            onAnimationComplete={() => {
+              if (active) onComplete();
+            }}
+            style={{ filter: "drop-shadow(0 0 3px hsl(var(--foreground) / 0.6))" }}
+          />
+        </svg>
+      )}
+    </button>
+  );
+}
+
+
 interface PackagesDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
