@@ -31,10 +31,11 @@ type Primary = {
 
 interface Props {
   onChoose: (choice: DomainChoice) => void;
+  onBack?: () => void;
   submitting?: boolean;
 }
 
-const DomainPicker = ({ onChoose, submitting }: Props) => {
+const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [primary, setPrimary] = useState<Primary | null>(null);
