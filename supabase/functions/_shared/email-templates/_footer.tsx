@@ -11,7 +11,7 @@ export const AuthEmailFooter = ({ reason }: AuthEmailFooterProps) => (
   <Section style={footerWrap}>
     <Hr style={divider} />
     <Text style={brandLine}>Pixcellor™</Text>
-    <Text style={tagline}>Premium product photo editing</Text>
+    <Text style={tagline}>Digital Services</Text>
     <Text style={reasonText}>{reason}</Text>
     <Text style={linksRow}>
       <Link href="https://pixcellor.com/legal" style={footerLink}>Privacy</Link>
