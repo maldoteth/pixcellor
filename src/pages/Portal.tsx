@@ -2619,11 +2619,11 @@ export default function Portal() {
               <TabsContent value="clients" className="space-y-2 pt-3">
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input value={profilesSearch} onChange={(e) => setProfilesSearch(e.target.value)} placeholder="Search the contact book by name, email, company, phone, notes…" className="pl-9" />
+                  <Input value={profilesSearch} onChange={(e) => { setProfilesSearch(e.target.value); setClientsVisibleCount(10); }} placeholder="Search the contact book by name, email, company, phone, notes…" className="pl-9" />
                 </div>
-                <p className="text-xs text-muted-foreground">Gold-status contacts (clients) are shown first, followed by the rest of the contact book.</p>
+                <p className="text-xs text-muted-foreground">Showing latest {Math.min(clientsVisibleCount, clientBookContacts.length)} of {clientBookContacts.length}. Gold-status clients first.</p>
                 {clientBookContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {profilesQ ? "match your search" : "yet"}.</p>}
-                {clientBookContacts.map(c => {
+                {clientBookContacts.slice(0, clientsVisibleCount).map(c => {
                   const stats = contactOrderStatsByEmail.get(normalizeEmail(c.email) ?? "");
                   const statusColor = getContactStatusColor(c.status);
                   const statusLabel = contactStatuses.find(s => s.value === c.status)?.label ?? c.status;
@@ -2655,6 +2655,22 @@ export default function Portal() {
                     </Card>
                   );
                 })}
+                {clientsVisibleCount < clientBookContacts.length && (
+                  <div
+                    ref={(el) => {
+                      if (!el) return;
+                      const obs = new IntersectionObserver((entries) => {
+                        if (entries.some((e) => e.isIntersecting)) {
+                          setClientsVisibleCount((n) => n + 10);
+                        }
+                      }, { rootMargin: "200px" });
+                      obs.observe(el);
+                    }}
+                    className="flex justify-center pt-2"
+                  >
+                    <Button variant="outline" onClick={() => setClientsVisibleCount((n) => n + 10)}>Load more</Button>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="retainers" className="space-y-2 pt-3">
