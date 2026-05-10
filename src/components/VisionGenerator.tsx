@@ -199,6 +199,26 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     document.body.removeChild(a);
   };
 
+  const requestConsultation = () => {
+    try {
+      sessionStorage.setItem(
+        "pixcellor:consultation-context",
+        JSON.stringify({
+          imageUrl,
+          brief: generatedFor,
+          company: answers.company,
+          at: Date.now(),
+        }),
+      );
+    } catch { /* ignore */ }
+    setOpen(false);
+    setTimeout(() => {
+      window.dispatchEvent(
+        new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }),
+      );
+    }, 200);
+  };
+
   const refineVision = async () => {
     const ins = refineInstruction.trim();
     if (ins.length < 3 || !imageUrl) {
