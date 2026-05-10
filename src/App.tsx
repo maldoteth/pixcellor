@@ -18,6 +18,7 @@ import EditRequest from "./pages/EditRequest";
 import CustomerAuth from "./pages/CustomerAuth";
 import CustomerPortal from "./pages/CustomerPortal";
 import Legal from "./pages/Legal";
+import VisionPreview from "./pages/VisionPreview";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
           <Route path="/customer-portal" element={<CustomerPortal />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/legal/:doc" element={<Legal />} />
+          <Route path="/preview/:slug" element={<VisionPreview />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
