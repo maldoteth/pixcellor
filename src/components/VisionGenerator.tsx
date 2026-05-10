@@ -199,6 +199,36 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     document.body.removeChild(a);
   };
 
+  const refineVision = async () => {
+    const ins = refineInstruction.trim();
+    if (ins.length < 3 || !imageUrl) {
+      toast.error("Tell us what to change.");
+      return;
+    }
+    const previousUrl = imageUrl;
+    const previousPrompt = generatedFor;
+    setBusy(true);
+    setStage("generating");
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-vision", {
+        body: { imageUrl: previousUrl, instruction: ins },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const url = data?.imageUrl ?? previousUrl;
+      setImageUrl(url);
+      setGeneratedFor(`${previousPrompt}\n\nRefinement: ${ins}`);
+      setRefineInstruction("");
+      setStage("result");
+      toast.success("Updated ✨");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't refine — please try again.");
+      setStage("result");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const trigger = (
     <motion.button
       type="button"
