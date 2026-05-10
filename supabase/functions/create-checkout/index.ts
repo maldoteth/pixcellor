@@ -53,8 +53,8 @@ serve(async (req) => {
     const checkoutMode = mode || "payment";
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{ price: priceId, quantity: 1 }];
 
-    // Domain add-on becomes a second line item only when there's a top-up to collect.
-    // A "free with package" domain still gets registered post-payment but adds no line item.
+    // Domain add-on becomes a second line item whenever a domain is being registered.
+    // The customer pays the full first-year price (cost + markup) — no allowance.
     if (validDomain && safeTopUpGbp > 0 && checkoutMode === "payment") {
       lineItems.push({
         quantity: 1,
