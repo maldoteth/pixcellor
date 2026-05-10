@@ -18,6 +18,7 @@ import EditRequest from "./pages/EditRequest";
 import CustomerAuth from "./pages/CustomerAuth";
 import CustomerPortal from "./pages/CustomerPortal";
 import Legal from "./pages/Legal";
+import VisionPreview from "./pages/VisionPreview";
 
 const queryClient = new QueryClient();
 
