@@ -373,7 +373,7 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
             onClick={() => onChoose({ kind: "skip" })}
             className="flex-1 h-11 text-sm"
           >
-            Skip
+            Sort later
           </Button>
         </div>
       </div>
