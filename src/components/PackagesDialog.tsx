@@ -1029,7 +1029,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             <div className="relative z-10">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="text-lg font-bold text-foreground">Enterprise</div>
-                <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={flipRetainerManually}>Retainer</Button>
+                <SnakeFlipButton label="Retainer" sizeClass="h-7 px-2 text-[10px]" active={desktopAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="mb-1 text-3xl font-extrabold text-foreground">Solutions</div>
               <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
