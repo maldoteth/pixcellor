@@ -383,23 +383,27 @@ function SnakeFlipButton({
   durationMs?: number;
 }) {
   const [seconds, setSeconds] = useState(Math.ceil(durationMs / 1000));
-  const startRef = useRef<number>(0);
-  const cycleKey = useRef(0);
 
   useEffect(() => {
     if (!active) {
       setSeconds(Math.ceil(durationMs / 1000));
       return;
     }
-    cycleKey.current += 1;
-    startRef.current = performance.now();
+    const start = performance.now();
     setSeconds(Math.ceil(durationMs / 1000));
-    const id = window.setInterval(() => {
-      const elapsed = performance.now() - startRef.current;
+    const tickId = window.setInterval(() => {
+      const elapsed = performance.now() - start;
       const remaining = Math.max(0, Math.ceil((durationMs - elapsed) / 1000));
       setSeconds(remaining);
     }, 200);
-    return () => window.clearInterval(id);
+    const flipId = window.setTimeout(() => {
+      onComplete();
+    }, durationMs);
+    return () => {
+      window.clearInterval(tickId);
+      window.clearTimeout(flipId);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, durationMs]);
 
   return (
@@ -414,7 +418,6 @@ function SnakeFlipButton({
       </span>
       {active && (
         <svg
-          key={cycleKey.current}
           aria-hidden
           className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
           preserveAspectRatio="none"
@@ -431,7 +434,7 @@ function SnakeFlipButton({
             stroke="hsl(var(--foreground) / 0.15)"
             strokeWidth="1.5"
           />
-          {/* snake */}
+          {/* snake — repeats forever so it never re-mounts mid-cycle */}
           <motion.rect
             x="0"
             y="0"
@@ -447,10 +450,7 @@ function SnakeFlipButton({
             strokeDasharray="28 72"
             initial={{ strokeDashoffset: 0 }}
             animate={{ strokeDashoffset: -100 }}
-            transition={{ duration: durationMs / 1000, ease: "linear" }}
-            onAnimationComplete={() => {
-              if (active) onComplete();
-            }}
+            transition={{ duration: durationMs / 1000, ease: "linear", repeat: Infinity }}
             style={{ filter: "drop-shadow(0 0 3px hsl(var(--foreground) / 0.6))" }}
           />
         </svg>
