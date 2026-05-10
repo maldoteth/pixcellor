@@ -36,6 +36,7 @@ const LetsTalkPrompt = () => {
   const [emailSkipped, setEmailSkipped] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [visionUrl, setVisionUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const handler = (e: Event) => {
