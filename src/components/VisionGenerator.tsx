@@ -24,7 +24,7 @@ interface VisionGeneratorProps {
   chatOpen?: boolean;
 }
 
-type StepKey = "industry" | "vibe" | "colour" | "headline" | "sections";
+type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
 type Stage = StepKey | "generating" | "result";
 
 interface StepDef {
@@ -37,6 +37,13 @@ interface StepDef {
 }
 
 const STEPS: StepDef[] = [
+  {
+    key: "company",
+    label: "What's your company or brand name?",
+    helper: "We'll brand the whole site around this — logo, hero, header.",
+    placeholder: "e.g. Acme Florist",
+    prefix: "Company / brand name",
+  },
   {
     key: "industry",
     label: "What's your industry or what do you sell?",
@@ -78,8 +85,9 @@ const STEPS: StepDef[] = [
 export default function VisionGenerator({ hidden = false, chatOpen = false }: VisionGeneratorProps) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const [stage, setStage] = useState<Stage>("industry");
+  const [stage, setStage] = useState<Stage>("company");
   const [answers, setAnswers] = useState<Record<StepKey, string>>({
+    company: "",
     industry: "",
     vibe: "",
     colour: "",
@@ -93,8 +101,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const reset = () => {
     setImageUrl(null);
     setGeneratedFor("");
-    setAnswers({ industry: "", vibe: "", colour: "", headline: "", sections: "" });
-    setStage("industry");
+    setAnswers({ company: "", industry: "", vibe: "", colour: "", headline: "", sections: "" });
+    setStage("company");
   };
 
   const buildBrief = (data: Record<StepKey, string>) => {
@@ -102,6 +110,10 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     for (const s of STEPS) {
       const v = data[s.key].trim();
       if (v) parts.push(`${s.prefix}: ${v}`);
+    }
+    const company = data.company.trim();
+    if (company) {
+      parts.push(`The site must be branded as "${company}" — feature this name prominently in the hero, header/logo, and any branded elements.`);
     }
     return parts.join("\n");
   };
