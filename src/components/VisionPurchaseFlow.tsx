@@ -14,7 +14,7 @@ import {
   recordFalloff,
   updateCheckoutPendingSessionId,
 } from "@/lib/checkoutTracking";
-import BuyDetailsPrompt, { type BuyerDetails, type BuyerDomainChoice } from "@/components/BuyDetailsPrompt";
+import BuyDetailsPrompt, { type BuyerDetails, type BuyerDomainChoice, type VisionBrief as DetailsVisionBrief } from "@/components/BuyDetailsPrompt";
 
 type VisionBrief = {
   prompt?: string;
@@ -89,7 +89,7 @@ export default function VisionPurchaseFlow() {
     setStage("buyer");
   };
 
-  const handleConfirm = async (buyer: BuyerDetails, domain?: BuyerDomainChoice) => {
+  const handleConfirm = async (buyer: BuyerDetails, domain?: BuyerDomainChoice, vision?: DetailsVisionBrief) => {
     if (!selected) return;
     setSubmitting(true);
     try {
@@ -105,6 +105,7 @@ export default function VisionPurchaseFlow() {
         domain && domain.kind === "buy"
           ? { domain: domain.domain, domainTopUpGbp: domain.topUpGbp }
           : {};
+      const finalVision: DetailsVisionBrief | null = vision ?? (brief ? { prompt: brief.prompt ?? "", imageUrl: brief.imageUrl ?? null } : null);
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
           priceId: selected.priceId,
@@ -113,8 +114,8 @@ export default function VisionPurchaseFlow() {
           billing: "one_time",
           clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined,
           buyer,
-          visionBrief: brief
-            ? { prompt: brief.prompt, imageUrl: brief.imageUrl ?? null }
+          visionBrief: finalVision && (finalVision.imageUrl || finalVision.prompt)
+            ? { prompt: finalVision.prompt, imageUrl: finalVision.imageUrl ?? null }
             : undefined,
           ...domainPayload,
         },
@@ -200,6 +201,7 @@ export default function VisionPurchaseFlow() {
           packageName={selected?.name}
           billing="one_time"
           initialValues={{ name: brief?.name, email: brief?.email, phone: brief?.phone }}
+          initialVision={brief?.imageUrl ? { prompt: brief.prompt ?? "", imageUrl: brief.imageUrl } : null}
           title={title}
         />
         {submitting && (
@@ -230,6 +232,7 @@ export default function VisionPurchaseFlow() {
         packageName={selected?.name}
         billing="one_time"
         initialValues={{ name: brief?.name, email: brief?.email, phone: brief?.phone }}
+        initialVision={brief?.imageUrl ? { prompt: brief.prompt ?? "", imageUrl: brief.imageUrl } : null}
         title={title}
       />
       {submitting && (
