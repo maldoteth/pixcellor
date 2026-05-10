@@ -39,6 +39,7 @@ const LetsTalkPrompt = () => {
   const [submitting, setSubmitting] = useState(false);
   const [visionUrl, setVisionUrl] = useState<string | null>(null);
   const [refineInstruction, setRefineInstruction] = useState("");
+  const [orderRequested, setOrderRequested] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => {
