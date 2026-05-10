@@ -1,38 +1,76 @@
-## Goal
-Replace the silent 5-second auto-flip on the Retainer/Enterprise pricing card with a visible "snake" countdown that travels around the edge of the small toggle button (top-right of the card). When the snake completes one lap, the card flips. The same animation runs on the back face for the return flip 5 seconds later.
+## Why your emails are landing in spam
 
-## What changes
+I checked your setup. The good news: emails are sending successfully via `notify.pixcellor.com` (verified) and most show `status: sent`. The spam problem is about **deliverability signals**, not failed sends.
 
-**File: `src/components/PackagesDialog.tsx`** (desktop shell ~lines 645-940 and mobile shell ~lines 1170-1370)
+Here's what I found:
 
-1. **Remove the blind `setInterval` flip** (lines 651-655 and 1177-1181). The flip will now be triggered by the animation finishing, not by a timer firing in the background.
+### 1. Missing SPF record on `pixcellor.com` (root)
+Your `From:` header uses the root domain (e.g. `hello@pixcellor.com`), but the root domain has **no SPF TXT record**. Gmail/Outlook see "this server claims to send for pixcellor.com but pixcellor.com hasn't authorised any sender" → spam signal.
 
-2. **Build a new `SnakeFlipButton` component** used in place of the four existing toggle Buttons (lines 856, 938, 1293, 1364). It renders:
-   - The label ("Enterprise" on the front, "Retainer" on the back).
-   - A border-following light that wraps around the button edge over 5 seconds (top → right → bottom → left → back to start), styled like the classic Snake game tail.
-   - When the lap completes, it calls the flip handler. Then the new visible face's button starts its own 5-second lap, and so on.
-   - Pauses (and visually freezes) when `enterpriseOpen`, `servicesFlipped`, or after the user clicks it manually (existing `retainerAutoFlipStopped` flag).
-   - Click still flips immediately and stops the auto-cycle, matching today's behaviour.
+DKIM still aligns via the subdomain (relaxed mode), and your DMARC is `p=none`, so mail isn't rejected — but missing SPF is a strong negative signal that pushes borderline mail to Junk.
 
-3. **Visual technique for the snake border**
-   - Use a single thin line (~2px) that travels the perimeter using a CSS conic-gradient mask or an SVG `<rect>` with `stroke-dasharray` + animated `stroke-dashoffset`. SVG is cleaner for "snake wrapping the edge" and matches the curved/sharp button corners precisely.
-   - Color: white/primary accent (matches the fully-black minimal theme, white accents).
-   - Length of the snake segment: roughly 25-30% of the perimeter so it visibly travels rather than fills.
-   - Duration: 5000ms linear, then triggers the flip and restarts on the opposite face.
-   - Underneath, a faint perimeter track (very low opacity) so users see the path the snake follows.
+### 2. DMARC is `p=none` with no enforcement / aggregate-only reporting
+`p=none; rua=mailto:dmarcreports@lovable.dev` means "monitor only". Once SPF is in place, we should consider tightening to `p=quarantine` so legit aligned mail is favoured.
 
-4. **Timer text**
-   - Inside the button, next to the label, show a tiny live countdown (e.g. `Enterprise · 4s`) that ticks 5 → 1 each cycle so the user also gets a numeric read of when it will spin. Updates once per second via a small interval tied to the same lifecycle.
+### 3. Sales welcome email (`sales-welcome-info`) reads like a marketing pitch
+Subject: *"How Pixcellor builds your website — packages, process and portfolio"* sent to leads who filled the contact form. This is borderline marketing, and bulk-style content from a fresh sender domain trips Gmail's promotions/spam filters fast. We should make it shorter, more 1:1, and clearly transactional ("Thanks for reaching out — here's what happens next").
 
-## Behaviour summary
-- Card visible: front (Retainer). Top-right button reads `Enterprise · 5s` with an empty border. Snake light starts at the top-left corner and crawls clockwise around the button edge.
-- After 5s the snake completes its loop → card flips to Enterprise.
-- The Enterprise face's top-right button now reads `Retainer · 5s` and its own snake starts crawling.
-- After 5s it flips back to Retainer. Loop continues until the user opens the enterprise form, flips services, or clicks the toggle manually — any of which stops the cycle (existing behaviour preserved).
+### 4. Order confirmation templates are 260+ lines
+Long HTML, lots of inline styling, multiple links/buttons → looks promotional to filters. They're legit transactional content but we can tighten them.
 
-## Notes
-- Respect existing memory rule: use Framer Motion (or plain SVG with CSS) for the animation; do not add `hover:scale-*` classes.
-- Keep the button sizing (`h-7` desktop, `h-8` mobile) so layout doesn't shift.
-- Mobile and desktop shells get identical behaviour via the shared `SnakeFlipButton` component.
+### 5. Domain is new / low reputation
+`pixcellor.com` is a young sending domain. Reputation builds over weeks. Until then, every spam signal hurts more.
 
-No other files are touched.
+---
+
+## Plan
+
+### Step 1 — Fix DNS at the root domain (you'll do this at your registrar; I'll give exact records)
+
+Add at `pixcellor.com`:
+
+```text
+Type: TXT
+Name: @  (or pixcellor.com)
+Value: v=spf1 include:notify.pixcellor.com -all
+```
+
+This tells receivers: "Only the senders authorised on notify.pixcellor.com may send as pixcellor.com." Aligns SPF with your From.
+
+(DMARC and DKIM are already handled — no change needed there yet.)
+
+### Step 2 — Rewrite `sales-welcome-info` to be clearly transactional
+Shorter subject ("Thanks for reaching out to Pixcellor"), 1:1 tone, single CTA, no "packages and portfolio" pitch in the subject. Move sales content to a follow-up the user clicks into, not the auto-reply.
+
+### Step 3 — Slim down order confirmation templates
+- Reduce HTML weight
+- One primary CTA per email
+- Plain-text fallback (helps a lot — currently HTML-only)
+- Avoid spammy phrases / excessive emoji / ALL CAPS in headings
+
+### Step 4 — Add plain-text version to all templates
+Currently the send function only sends HTML. Adding a `text` body alongside `html` is one of the highest-impact deliverability wins.
+
+### Step 5 — Optional: switch From to subdomain
+Sending `from: hello@notify.pixcellor.com` (matching the verified sending domain exactly) gives perfect SPF + DKIM alignment with no DNS changes needed at the root. Trade-off: the recipient sees `notify.pixcellor.com` in the From address, which looks slightly less clean but is neutral for trust once they recognise the brand.
+
+---
+
+## What I need from you before I start
+
+A couple of choices — I'll ask once the plan is approved:
+
+1. Do you want **From: pixcellor.com (cleaner)** + you add the SPF record at your registrar, or **From: notify.pixcellor.com (zero DNS work)**?
+2. OK to rewrite `sales-welcome-info` to a short transactional auto-reply (and move the "packages & process" content into a separate follow-up the user opts into via a CTA)?
+3. OK to add plain-text bodies to all transactional emails (purely additive — won't change how they look)?
+
+---
+
+## Technical details (for reference)
+
+- `SENDER_DOMAIN = notify.pixcellor.com` (verified, DKIM signs here)
+- `FROM_DOMAIN  = pixcellor.com` (no SPF → alignment gap)
+- DMARC: `v=DMARC1; p=none; pct=100; rua=mailto:dmarcreports@lovable.dev`
+- Send function: `supabase/functions/send-transactional-email/index.ts`
+- Templates: `supabase/functions/_shared/transactional-email-templates/*.tsx`
+- No code change can fix #1 — that's a DNS record at your domain registrar. Everything else (steps 2–5) I can implement directly.
