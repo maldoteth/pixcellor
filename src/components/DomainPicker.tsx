@@ -74,9 +74,8 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
     };
   }, [query]);
 
-  const badgeFor = (freeWithPackage: boolean, topUpGbp: number, priceGbp: number | null) => {
-    if (freeWithPackage) return <span className="text-xs font-semibold text-emerald-400">Free with your package</span>;
-    if (topUpGbp > 0) return <span className="text-xs font-semibold text-foreground/80">+£{topUpGbp.toFixed(2)} one-off</span>;
+  const badgeFor = (_freeWithPackage: boolean, topUpGbp: number, priceGbp: number | null) => {
+    if (topUpGbp > 0) return <span className="text-xs font-semibold text-foreground/80">£{topUpGbp.toFixed(2)} first yr</span>;
     if (priceGbp !== null) return <span className="text-xs text-foreground/60">£{priceGbp.toFixed(2)}/yr</span>;
     return null;
   };
