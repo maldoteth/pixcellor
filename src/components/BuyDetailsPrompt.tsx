@@ -170,6 +170,11 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
 
   const buildBrief = (a: Record<VisionAnswerKey, string>) => {
     const parts: string[] = [];
+    const company = values.company.trim();
+    if (company) {
+      parts.push(`Company / brand name: ${company}`);
+      parts.push(`The site must be branded as "${company}" — feature this name prominently in the hero, header/logo, and any branded elements.`);
+    }
     for (const q of VISION_QUESTIONS) {
       const v = a[q.key].trim();
       if (v) parts.push(`${q.prefix}: ${v}`);
