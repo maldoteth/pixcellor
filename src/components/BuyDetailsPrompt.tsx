@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import GenerationProgress from "./GenerationProgress";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -416,13 +417,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
   };
 
   const renderGenerating = () => (
-    <div className="flex flex-col items-center justify-center gap-3 py-10">
-      <Loader2 className="w-8 h-8 animate-spin text-foreground" />
-      <p className="text-foreground text-base font-medium">Building your sample…</p>
-      <p className="text-foreground/70 text-sm text-center max-w-xs">
-        Our AI is rendering a desktop preview of your dream site which our engineers will then build fully. This takes about 30 seconds.
-      </p>
-    </div>
+    <GenerationProgress helper="Our AI is rendering a desktop preview of your dream site which our engineers will then build fully. This takes about 30 seconds." />
   );
 
   const renderResult = () => (
