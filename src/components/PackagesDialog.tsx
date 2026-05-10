@@ -741,16 +741,17 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
-  useEffect(() => {
-    if (enterpriseOpen || retainerAutoFlipStopped || servicesFlipped) return;
-    const interval = window.setInterval(() => setRetainerFlipped((flipped) => !flipped), 5000);
-    return () => window.clearInterval(interval);
-  }, [enterpriseOpen, retainerAutoFlipStopped, servicesFlipped]);
+  const desktopAutoActive = !enterpriseOpen && !retainerAutoFlipStopped && !servicesFlipped;
+
+  const flipRetainerAuto = useCallback(() => {
+    setRetainerFlipped((flipped) => !flipped);
+  }, []);
 
   const flipRetainerManually = () => {
     setRetainerAutoFlipStopped(true);
     setRetainerFlipped((flipped) => !flipped);
   };
+
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
