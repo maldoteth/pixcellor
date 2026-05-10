@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 
 type Mode = "talk" | "request";
-type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "done";
+type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "done";
 
 const nameSchema = z.string().trim().min(1, "Please enter your name").max(80);
 const emailSchema = z.string().trim().email("Enter a valid email").max(200);
