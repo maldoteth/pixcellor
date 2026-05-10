@@ -47,7 +47,10 @@ const LOADING_MESSAGES = [
   "Nearly there…",
 ];
 
+const SUGGESTIONS_PAGE = 6;
+
 const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
+  const [visibleCount, setVisibleCount] = useState(SUGGESTIONS_PAGE);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
