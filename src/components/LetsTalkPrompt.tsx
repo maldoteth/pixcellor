@@ -472,9 +472,13 @@ const LetsTalkPrompt = () => {
             <div className="w-12 h-12 rounded-full bg-foreground/10 flex items-center justify-center">
               <Check className="w-6 h-6 text-foreground" />
             </div>
-            <p className="text-foreground text-base font-medium">Consultation requested 🎉</p>
+            <p className="text-foreground text-base font-medium">
+              {orderRequested ? "Order request sent 🎉" : "Consultation requested 🎉"}
+            </p>
             <p className="text-foreground/70 text-sm max-w-sm">
-              Thanks {name.split(" ")[0]} — a member of our team will be in touch within 24 hours to arrange a quick call and walk you through your sample. We've saved your details and won't ask again.
+              {orderRequested
+                ? `Thanks ${name.split(" ")[0]} — a member of our team will be in touch within 24 hours to confirm your order and get the build started. We've saved your details and your sample.`
+                : `Thanks ${name.split(" ")[0]} — a member of our team will be in touch within 24 hours to arrange a quick call and walk you through your sample. We've saved your details and won't ask again.`}
             </p>
             <Button type="button" variant="pricing" onClick={() => setOpen(false)} className="h-10 px-6 mt-2 font-semibold">
               Close
