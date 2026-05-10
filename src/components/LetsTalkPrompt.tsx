@@ -61,6 +61,7 @@ const LetsTalkPrompt = () => {
       setError(null);
       setVisionUrl(null);
       setRefineInstruction("");
+      setOrderRequested(false);
       // Pre-load vision context if we're opening from a generated sample
       if (nextMode === "consultation") {
         try {
