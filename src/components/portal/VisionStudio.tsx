@@ -18,6 +18,21 @@ interface Preview {
   sent_at: string | null;
 }
 
+interface VisitorGen {
+  id: string;
+  brief: string | null;
+  image_url: string | null;
+  source: string | null;
+  company: string | null;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  visitor_id: string | null;
+  is_refinement: boolean;
+  parent_id: string | null;
+  created_at: string;
+}
+
 const BUCKET = "vision-previews";
 
 const dataUrlToBlob = (dataUrl: string) => {
