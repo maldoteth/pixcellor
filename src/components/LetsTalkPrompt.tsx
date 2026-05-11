@@ -594,7 +594,7 @@ const LetsTalkPrompt = () => {
             </p>
             <MagicLinkSignup
               email={email}
-              benefit="Save your sample and request to your dashboard. We'll email you a one-tap login link — no password needed."
+              benefit="Sign up to save to dashboard"
             />
             <a
               href="tel:+441483912430"
