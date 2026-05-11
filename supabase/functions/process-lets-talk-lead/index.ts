@@ -85,15 +85,12 @@ Deno.serve(async (req) => {
         ].filter(Boolean).join("\n")
       : "";
 
-    const noteLines = [
-      isSampleRequest
-        ? `Free Sample Request via ${source}.`
-        : `Let's Talk submission via ${source}.`,
-      company ? `Company / brand: ${company}` : "",
-      phone ? "Requested a callback." : "",
-      email ? "Requested info by email." : "",
-      briefLines,
-    ].filter(Boolean).join("\n");
+    // Concise note — no boilerplate. Source/email/phone are already columns.
+    const today = new Date().toISOString().slice(0, 10);
+    const headline = isSampleRequest
+      ? `Free sample request (${source}) — ${today}`
+      : `Let's Talk (${source}) — ${today}`;
+    const noteLines = [headline, briefLines].filter(Boolean).join("\n");
 
     // Merge new attachments into contact media (dedupe, cap at 50)
     const existingUrls = existingMedia
