@@ -89,7 +89,7 @@ const BUY_AGAIN_PACKAGES = [
   },
 ] as const;
 
-type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "payments";
+type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "activity" | "payments";
 
 type CustomerOrder = {
   id: string;
@@ -125,10 +125,34 @@ type CustomerRequirement = {
   updated_at: string;
 };
 
+type CustomerSampleRequest = {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  source: string | null;
+  package_name: string | null;
+  request_details: Record<string, unknown> | null;
+  delivered_at: string | null;
+  delivered_domain: string | null;
+  created_at: string;
+};
+
+type CustomerVisionPreview = {
+  id: string;
+  slug: string;
+  title: string | null;
+  brief: string | null;
+  image_path: string;
+  created_at: string;
+};
+
 type CustomerPortalData = {
   email: string;
   orders: CustomerOrder[];
   projectRequirements: CustomerRequirement[];
+  sampleRequests?: CustomerSampleRequest[];
+  visionPreviews?: CustomerVisionPreview[];
 };
 
 const formatMoney = (amount: number | null, currency: string | null) => {
