@@ -63,6 +63,7 @@ export default function VisionStudio() {
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Preview[]>([]);
   const [latest, setLatest] = useState<Preview | null>(null);
+  const [visitorGens, setVisitorGens] = useState<VisitorGen[]>([]);
 
   const load = async () => {
     const { data, error } = await (supabase as any)
@@ -77,8 +78,22 @@ export default function VisionStudio() {
     setPreviews((data ?? []) as Preview[]);
   };
 
+  const loadVisitorGens = async () => {
+    const { data, error } = await (supabase as any)
+      .from("ai_sample_generations")
+      .select("id,brief,image_url,source,company,contact_name,email,phone,visitor_id,is_refinement,parent_id,created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) {
+      console.error("Failed to load visitor AI samples:", error);
+      return;
+    }
+    setVisitorGens((data ?? []) as VisitorGen[]);
+  };
+
   useEffect(() => {
     void load();
+    void loadVisitorGens();
   }, []);
 
   const generate = async () => {
