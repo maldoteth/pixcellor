@@ -79,30 +79,6 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
 
   if (!validEmail) return null;
 
-  const sendLink = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const { error: err } = await supabase.auth.signInWithOtp({
-        email: cleanEmail,
-        options: {
-          emailRedirectTo: `${window.location.origin}/customer-portal`,
-          shouldCreateUser: true,
-        },
-      });
-      if (err) throw err;
-      setSent(true);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Could not send link";
-      if (msg.toLowerCase().includes("rate limit")) {
-        setSent(true);
-      } else {
-        setError(msg);
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
 
   return (
     <motion.div
