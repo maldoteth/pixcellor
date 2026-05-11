@@ -781,7 +781,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="border-border bg-background/95 backdrop-blur-xl max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center justify-center gap-2">
               <Sparkles className="h-4 w-4" /> See your dream landing page
             </DialogTitle>
             <DialogDescription>
