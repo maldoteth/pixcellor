@@ -1,4 +1,14 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+
+const BodySchema = z.object({
+  company: z.string().max(2000).optional().nullable(),
+  name: z.string().max(2000).optional().nullable(),
+  email: z.string().max(2000).optional().nullable(),
+  phone: z.string().max(2000).optional().nullable(),
+  visitor_id: z.string().max(2000).optional().nullable(),
+  stage: z.string().max(200).optional().nullable(),
+}).passthrough();
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
