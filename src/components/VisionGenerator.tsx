@@ -163,9 +163,35 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     }
     const company = data.company.trim();
     if (company) {
-      parts.push(`The site must be branded as "${company}" — feature this name prominently in the hero, header/logo, and any branded elements.`);
+      parts.push(`The site must be branded as "${company}" — feature this name prominently at the top of the page, in the header/logo, and any branded elements.`);
     }
     return parts.join("\n");
+  };
+
+  const applySuggestion = (key: StepKey, value: string) => {
+    setAnswers((a) => {
+      const current = a[key].trim();
+      if (key === "sections") {
+        const items = current ? current.split(",").map((s) => s.trim()).filter(Boolean) : [];
+        const exists = items.findIndex((s) => s.toLowerCase() === value.toLowerCase());
+        if (exists >= 0) items.splice(exists, 1);
+        else items.push(value);
+        return { ...a, sections: items.join(", ") };
+      }
+      return { ...a, [key]: value };
+    });
+  };
+
+  const isSuggestionActive = (key: StepKey, value: string) => {
+    const current = answers[key].trim();
+    if (!current) return false;
+    if (key === "sections") {
+      return current
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .includes(value.toLowerCase());
+    }
+    return current.toLowerCase() === value.toLowerCase();
   };
 
   const generate = async (finalAnswers: Record<StepKey, string>) => {
