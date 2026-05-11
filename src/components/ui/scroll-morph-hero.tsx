@@ -1046,7 +1046,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                     </h2>
                     <ProximityWords
                         text="Business solutions by a team who have collectively launched over $500,000,000 in market cap and mutli 7 figure GTM/Q1 revenue projects."
-                        className="text-sm md:text-base text-muted-foreground max-w-lg md:max-w-3xl leading-relaxed mb-8"
+                        className="text-sm md:text-base text-muted-foreground max-w-lg md:max-w-xl leading-relaxed mb-8"
                     />
                     <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} hidden />
                 </motion.div>
