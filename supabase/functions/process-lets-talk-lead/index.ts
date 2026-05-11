@@ -53,6 +53,7 @@ Deno.serve(async (req) => {
       ? body.attachment_urls.filter((u): u is string => typeof u === "string" && /^https?:\/\//i.test(u)).slice(0, 50)
       : [];
     const isSampleRequest = source === "free_sample_request";
+    const isPartial = body.partial === true;
 
     if (!name) return new Response(JSON.stringify({ ok: false, error: "missing_name" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (!email && !phone) return new Response(JSON.stringify({ ok: false, error: "email_or_phone_required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
