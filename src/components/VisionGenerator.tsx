@@ -680,8 +680,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             <div tabIndex={-1} className="border border-border/40 bg-black/40 max-h-[55vh] overflow-auto outline-none focus:outline-none focus-visible:outline-none">
               <img src={imageUrl} alt="Your AI-generated landing page vision" className="w-full block" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <Button onClick={orderThisStyle} className="w-full rounded-none sm:col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Button onClick={orderThisStyle} className="w-full rounded-none">
                 Use this as style guide
               </Button>
               <Button onClick={requestConsultation} variant="outline" className="w-full rounded-none">
