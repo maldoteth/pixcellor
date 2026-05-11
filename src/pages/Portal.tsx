@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { AlertTriangle, Archive, BarChart3, Check, Clipboard, ExternalLink, Home, ImagePlus, Inbox, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Sparkles, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Check, Clipboard, ExternalLink, Home, ImagePlus, Inbox, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
@@ -2082,7 +2082,7 @@ export default function Portal() {
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats</TabsTrigger>
             <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients</TabsTrigger>
             <TabsTrigger value="stats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><BarChart3 className="h-3.5 w-3.5 shrink-0" />Stats</TabsTrigger>
-            <TabsTrigger value="studio" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Sparkles className="h-3.5 w-3.5 shrink-0" />Studio</TabsTrigger>
+            <TabsTrigger value="studio" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Wand2 className="h-3.5 w-3.5 shrink-0" />Studio</TabsTrigger>
             <TabsTrigger value="alerts" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><AlertTriangle className="h-3.5 w-3.5 shrink-0" />Alerts</TabsTrigger>
           </TabsList>
 

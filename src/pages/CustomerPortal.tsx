@@ -19,7 +19,7 @@ import {
   PanelLeft,
   ReceiptText,
   ShieldCheck,
-  Sparkles,
+  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -267,7 +267,7 @@ export default function CustomerPortal() {
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
     { title: "Site previews", value: "delivered", icon: Globe2 },
-    { title: "Samples & AI", value: "activity", icon: Sparkles },
+    { title: "Samples & AI", value: "activity", icon: Wand2 },
     { title: "Plan & payments", value: "payments", icon: CreditCard },
   ];
 
@@ -489,7 +489,7 @@ export default function CustomerPortal() {
                   <div className="space-y-4">
                     <SectionHeader title="Free sample requests" description="Sample briefs you've sent us — we'll deliver each one to your inbox." count={sampleRequests.length} />
                     {sampleRequests.length === 0 ? (
-                      <EmptyState icon={Sparkles} title="No sample requests yet" text="Request a free sample from the homepage and it will appear here." />
+                      <EmptyState icon={Wand2} title="No sample requests yet" text="Request a free sample from the homepage and it will appear here." />
                     ) : (
                       <div className="grid gap-3">
                         {sampleRequests.map((sample) => <SampleRequestCard key={sample.id} sample={sample} />)}
@@ -763,7 +763,7 @@ function SampleRequestCard({ sample }: { sample: CustomerSampleRequest }) {
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Wand2 className="h-4 w-4 text-primary" />
               <h3 className="text-base font-semibold">Free sample request</h3>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">Submitted {new Date(sample.created_at).toLocaleString()}</p>

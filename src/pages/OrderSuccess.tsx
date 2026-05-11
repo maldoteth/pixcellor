@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import confetti from "canvas-confetti";
-import { CheckCircle2, ClipboardList, Globe, Loader2, Sparkles } from "lucide-react";
+import { CheckCircle2, ClipboardList, Globe, Loader2, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -226,7 +226,7 @@ export default function OrderSuccess() {
             ) : (
               <>
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-border bg-muted/50">
-                  <Sparkles className="h-8 w-8 text-muted-foreground" />
+                  <Wand2 className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <div className="space-y-3">
                   <h1 className="text-3xl md:text-5xl font-semibold tracking-normal">Order is still syncing</h1>

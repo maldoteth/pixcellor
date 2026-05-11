@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, Wand2, Wand2 } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -345,7 +345,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
   const renderVisionIntro = () => (
     <>
       <div className="flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-foreground" />
+        <Wand2 className="w-4 h-4 text-foreground" />
         <p className="text-foreground text-base font-semibold">Generate a rough guide for our devs to improve on.</p>
       </div>
       <p className="text-foreground/70 text-sm">
@@ -356,7 +356,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
           Skip — go to checkout
         </Button>
         <Button type="button" variant="pricing" onClick={() => setStep(VISION_QUESTIONS[0].step)} className="h-12 font-semibold gap-2">
-          <Sparkles className="w-4 h-4" /> Yes, show me
+          <Wand2 className="w-4 h-4" /> Yes, show me
         </Button>
       </div>
     </>
