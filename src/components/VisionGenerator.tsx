@@ -679,11 +679,11 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
                 Request custom sample
               </Button>
             </div>
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={reset}
-                className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline text-center"
               >
                 Try another description
               </button>
