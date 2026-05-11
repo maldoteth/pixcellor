@@ -502,7 +502,7 @@ const LetsTalkPrompt = () => {
             exit={{ opacity: 0 }}
             className="w-full"
           >
-            <GenerationProgress helper="Our AI is rendering a desktop preview of your dream site which our engineers will then improve" />
+            <GenerationProgress helper="Our AI is rendering a preview of your dream site which our engineers will then improve" />
           </motion.div>
         ) : step === "vision" && visionUrl ? (
           <motion.div
