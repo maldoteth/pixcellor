@@ -2789,22 +2789,16 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="profiles" className="space-y-3">
-            <Tabs defaultValue="clients" className="min-w-0">
+            <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent p-0 sm:w-auto sm:inline-grid">
-                  <TabsTrigger value="clients" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({goldClientCount}/{clientBookContacts.length})</TabsTrigger>
-                  <TabsTrigger value="retainers" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
-                </TabsList>
-                <Button onClick={openMobileContactForm} className="h-9">
-                  <UserPlus className="w-4 h-4 mr-2" /> Add Client
-                </Button>
-              </div>
-
-              <TabsContent value="clients" className="space-y-2 pt-3">
-                <div className="relative">
+                <div className="relative flex-1 min-w-[220px]">
                   <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input value={profilesSearch} onChange={(e) => { setProfilesSearch(e.target.value); setClientsVisibleCount(10); }} placeholder="Search the contact book by name, email, company, phone, notes…" className="pl-9" />
                 </div>
+                <Button onClick={openMobileContactForm} className="h-9 shrink-0">
+                  <UserPlus className="w-4 h-4 mr-2" /> Add Client
+                </Button>
+              </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="text-xs text-muted-foreground">Sort:</span>
                   {([
