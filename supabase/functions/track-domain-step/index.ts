@@ -1,21 +1,27 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface Body {
-  name?: string;
-  email?: string;
-  phone?: string;
-  company?: string;
-  packageName?: string;
-  billing?: string;
-  visitorId?: string;
-  sessionId?: string;
-  pageUrl?: string;
-}
+// Defence-in-depth schema. Field caps match the existing `clean()` slicing
+// below so behaviour is unchanged for any payload that previously worked —
+// we just reject obviously malformed/oversized inputs early.
+const BodySchema = z.object({
+  name: z.string().max(2000).optional(),
+  email: z.string().max(2000).optional(),
+  phone: z.string().max(2000).optional(),
+  company: z.string().max(2000).optional(),
+  packageName: z.string().max(2000).optional(),
+  billing: z.string().max(2000).optional(),
+  visitorId: z.string().max(2000).optional(),
+  sessionId: z.string().max(2000).optional(),
+  pageUrl: z.string().max(4000).optional(),
+}).passthrough();
+
+type Body = z.infer<typeof BodySchema>;
 
 const clean = (v: unknown, max = 200) =>
   typeof v === "string" ? v.trim().slice(0, max) : "";
@@ -24,7 +30,23 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const body = (await req.json()) as Body;
+    let raw: unknown;
+    try {
+      raw = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ ok: false, error: "invalid_json" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const parsed = BodySchema.safeParse(raw);
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "invalid_input", fields: parsed.error.flatten().fieldErrors }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const body: Body = parsed.data;
     const name = clean(body.name, 100);
     const email = clean(body.email, 200).toLowerCase();
     const phone = clean(body.phone, 40);
