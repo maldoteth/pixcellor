@@ -128,10 +128,14 @@ const LetsTalkPrompt = () => {
               imageUrl?: string | null;
               brief?: string | null;
               company?: string | null;
+              email?: string | null;
+              phone?: string | null;
             };
             if (ctx?.imageUrl) setVisionUrl(ctx.imageUrl);
             if (ctx?.brief) setDream(ctx.brief);
             if (ctx?.company) setCompany(ctx.company);
+            if (ctx?.email) setEmail(ctx.email);
+            if (ctx?.phone) setPhone(ctx.phone);
           }
         } catch { /* ignore */ }
       }
