@@ -1045,7 +1045,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                         Portfolio
                     </h2>
                     <ProximityWords
-                        text="Our team stems from some of largest companies in the world, offering an array of business solutions turbo-powered by AI."
+                        text="Business solutions by a team who have collectively launched over $500,000,000 in market cap and mutli 7 figure GTM/Q1 revenue projects."
                         className="text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed mb-8"
                     />
                     <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} hidden />
