@@ -83,50 +83,161 @@ const STEPS: StepDef[] = [
   },
 ];
 
-const SUGGESTIONS: Partial<Record<StepKey, { label: string; value: string; hint?: string }[]>> = {
+const SUGGESTIONS: Partial<Record<StepKey, { label: string; value: string }[]>> = {
   industry: [
     { label: "Florist", value: "boutique florist" },
-    { label: "Restaurant", value: "restaurant / café" },
+    { label: "Restaurant / café", value: "restaurant / café" },
+    { label: "Bar / pub", value: "bar / pub" },
+    { label: "Bakery", value: "artisan bakery" },
+    { label: "Coffee shop", value: "speciality coffee shop" },
     { label: "Photographer", value: "freelance photographer" },
-    { label: "Tradesperson", value: "plumber / electrician / builder" },
-    { label: "Salon / spa", value: "hair salon & spa" },
-    { label: "Coach", value: "personal coach / consultant" },
+    { label: "Videographer", value: "videographer / film studio" },
+    { label: "Wedding planner", value: "wedding planner" },
+    { label: "Event planner", value: "events & private hire" },
+    { label: "Plumber", value: "plumber" },
+    { label: "Electrician", value: "electrician" },
+    { label: "Builder", value: "builder / construction" },
+    { label: "Landscaper", value: "landscaper / gardener" },
+    { label: "Cleaner", value: "cleaning service" },
+    { label: "Removals", value: "removals & man-with-a-van" },
+    { label: "Hair salon", value: "hair salon" },
+    { label: "Barber", value: "barber shop" },
+    { label: "Beauty / spa", value: "beauty salon & spa" },
+    { label: "Nail studio", value: "nail studio" },
+    { label: "Tattoo studio", value: "tattoo studio" },
+    { label: "Personal trainer", value: "personal trainer" },
+    { label: "Gym / studio", value: "gym / fitness studio" },
+    { label: "Yoga / pilates", value: "yoga & pilates studio" },
+    { label: "Coach / consultant", value: "personal coach / consultant" },
+    { label: "Therapist", value: "therapist / counsellor" },
+    { label: "Dentist", value: "dental practice" },
+    { label: "Doctor / clinic", value: "private clinic" },
+    { label: "Vet", value: "veterinary practice" },
+    { label: "Solicitor / lawyer", value: "law firm" },
+    { label: "Accountant", value: "accountancy practice" },
+    { label: "Estate agent", value: "estate agent" },
+    { label: "Architect", value: "architecture studio" },
+    { label: "Interior designer", value: "interior design studio" },
     { label: "Online shop", value: "ecommerce / online shop" },
+    { label: "Fashion brand", value: "fashion / clothing brand" },
+    { label: "Jewellery brand", value: "jewellery brand" },
+    { label: "Skincare brand", value: "skincare brand" },
+    { label: "Food brand", value: "food & drink brand" },
     { label: "SaaS", value: "software / SaaS product" },
+    { label: "Mobile app", value: "mobile app" },
+    { label: "Agency", value: "creative / marketing agency" },
+    { label: "Charity", value: "charity / non-profit" },
+    { label: "School / tutor", value: "school / private tutor" },
+    { label: "Hotel / B&B", value: "hotel / B&B" },
+    { label: "Holiday let", value: "holiday let / Airbnb host" },
+    { label: "Driving instructor", value: "driving instructor" },
+    { label: "Car dealer", value: "car dealership" },
+    { label: "Car detailer", value: "car detailing & valeting" },
+    { label: "DJ / musician", value: "DJ / musician / band" },
   ],
   vibe: [
-    { label: "Minimal", value: "minimal & clean" },
-    { label: "Luxury", value: "luxury & elegant" },
-    { label: "Bold", value: "bold & punchy" },
-    { label: "Playful", value: "playful & fun" },
-    { label: "Editorial", value: "editorial / magazine" },
-    { label: "Techy", value: "modern & techy" },
-    { label: "Warm", value: "warm & friendly" },
-    { label: "Dark mode", value: "dark mode, premium" },
+    { label: "Minimal & clean", value: "minimal & clean" },
+    { label: "Luxury & elegant", value: "luxury & elegant" },
+    { label: "Bold & punchy", value: "bold & punchy" },
+    { label: "Playful & fun", value: "playful & fun" },
+    { label: "Editorial / magazine", value: "editorial / magazine" },
+    { label: "Modern & techy", value: "modern & techy" },
+    { label: "Warm & friendly", value: "warm & friendly" },
+    { label: "Dark mode premium", value: "dark mode, premium" },
+    { label: "Glassmorphism", value: "glassmorphism, frosted glass" },
+    { label: "Neumorphism", value: "soft neumorphism" },
+    { label: "Brutalist", value: "brutalist, raw" },
+    { label: "Y2K retro", value: "Y2K retro" },
+    { label: "90s nostalgia", value: "90s nostalgia" },
+    { label: "Retro 70s", value: "70s retro, groovy" },
+    { label: "Art deco", value: "art deco, gold accents" },
+    { label: "Hand-drawn", value: "hand-drawn, illustrative" },
+    { label: "Watercolour", value: "watercolour, soft" },
+    { label: "Cinematic", value: "cinematic, dramatic" },
+    { label: "Futuristic", value: "futuristic, sci-fi" },
+    { label: "Liquid glass", value: "liquid glass, abstract bubbles" },
+    { label: "Organic / nature", value: "organic, natural, earthy" },
+    { label: "Scandi", value: "scandi minimal, airy" },
+    { label: "Japandi", value: "Japandi, calm & considered" },
+    { label: "Industrial", value: "industrial, concrete & steel" },
+    { label: "Vintage / antique", value: "vintage, antique" },
+    { label: "Pastel & dreamy", value: "pastel, dreamy" },
+    { label: "Neon / cyberpunk", value: "neon, cyberpunk" },
+    { label: "Monochrome", value: "strict monochrome" },
+    { label: "Maximalist", value: "maximalist, layered" },
+    { label: "Corporate trust", value: "corporate, trustworthy" },
   ],
   colour: [
     { label: "Black & white", value: "black & white" },
+    { label: "All-black", value: "all-black with white text" },
+    { label: "All-white", value: "all-white with black text" },
     { label: "Sage & cream", value: "sage green & cream" },
     { label: "Navy & gold", value: "navy & gold" },
+    { label: "Burgundy & cream", value: "burgundy & cream" },
     { label: "Pastel pinks", value: "soft pastel pinks" },
+    { label: "Pastel blues", value: "soft pastel blues" },
     { label: "Earthy tones", value: "warm earthy tones" },
+    { label: "Terracotta", value: "terracotta & sand" },
     { label: "Vibrant blue", value: "vibrant blue accents" },
+    { label: "Electric purple", value: "electric purple" },
     { label: "Forest green", value: "deep forest green" },
+    { label: "Olive & cream", value: "olive green & cream" },
     { label: "Monochrome dark", value: "monochrome dark" },
+    { label: "Monochrome light", value: "monochrome light" },
+    { label: "Sunset orange", value: "sunset orange & pink" },
+    { label: "Mustard yellow", value: "mustard yellow & black" },
+    { label: "Mint & coral", value: "mint green & coral" },
+    { label: "Rose gold", value: "rose gold & ivory" },
+    { label: "Champagne", value: "champagne & charcoal" },
+    { label: "Teal & coral", value: "teal & coral" },
+    { label: "Crimson & black", value: "crimson red & black" },
+    { label: "Cobalt & white", value: "cobalt blue & white" },
+    { label: "Emerald & gold", value: "emerald green & gold" },
+    { label: "Lavender & lilac", value: "lavender & lilac" },
+    { label: "Greyscale", value: "greyscale, no colour" },
+    { label: "Neon brights", value: "neon brights on black" },
   ],
   sections: [
     { label: "About us", value: "About us" },
+    { label: "Our story", value: "Our story" },
     { label: "Services", value: "Services" },
+    { label: "What we do", value: "What we do" },
+    { label: "How it works", value: "How it works" },
     { label: "Pricing", value: "Pricing" },
+    { label: "Packages", value: "Packages" },
     { label: "Gallery / portfolio", value: "Gallery / portfolio" },
+    { label: "Before & after", value: "Before & after" },
+    { label: "Case studies", value: "Case studies" },
     { label: "Testimonials / reviews", value: "Testimonials / reviews" },
+    { label: "Trust badges", value: "Trust badges & logos" },
+    { label: "Awards", value: "Awards & press" },
     { label: "FAQ", value: "FAQ" },
     { label: "Contact form", value: "Contact form" },
-    { label: "Booking", value: "Booking" },
+    { label: "Map / location", value: "Map & location" },
+    { label: "Opening hours", value: "Opening hours" },
+    { label: "Booking / calendar", value: "Booking calendar" },
+    { label: "Quote calculator", value: "Instant quote calculator" },
     { label: "Online shop", value: "Online shop" },
+    { label: "Product list", value: "Product list" },
+    { label: "Menu (food)", value: "Food / drinks menu" },
     { label: "Blog / news", value: "Blog / news" },
     { label: "Team", value: "Team" },
+    { label: "Careers", value: "Careers / jobs" },
     { label: "Newsletter signup", value: "Newsletter signup" },
+    { label: "Lead magnet", value: "Free download / lead magnet" },
+    { label: "Video showreel", value: "Video showreel" },
+    { label: "Press / media", value: "Press & media" },
+    { label: "Partners", value: "Partners & sponsors" },
+    { label: "Sustainability", value: "Sustainability statement" },
+    { label: "Live chat", value: "Live chat / WhatsApp" },
+    { label: "Members area", value: "Members / login area" },
+    { label: "Events", value: "Events & calendar" },
+    { label: "Donations", value: "Donations / support us" },
+    { label: "Instagram feed", value: "Instagram feed" },
+    { label: "Process / timeline", value: "Process / timeline" },
+    { label: "Comparison table", value: "Comparison table" },
+    { label: "Stats / numbers", value: "Stats / impact numbers" },
+    { label: "Sticky CTA bar", value: "Sticky call-to-action bar" },
   ],
 };
 
@@ -146,6 +257,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const reset = () => {
     setImageUrl(null);
@@ -224,6 +336,23 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
 
   const currentIndex = STEPS.findIndex((s) => s.key === stage);
   const currentStep = currentIndex >= 0 ? STEPS[currentIndex] : null;
+
+  const filteredSuggestions = (() => {
+    if (!currentStep) return [];
+    const list = SUGGESTIONS[currentStep.key];
+    if (!list) return [];
+    const raw = answers[currentStep.key] ?? "";
+    let needle = raw.trim().toLowerCase();
+    if (currentStep.key === "sections") {
+      const parts = raw.split(",");
+      needle = (parts[parts.length - 1] ?? "").trim().toLowerCase();
+    }
+    if (!needle) return list;
+    const matches = list.filter(
+      (s) => s.label.toLowerCase().includes(needle) || s.value.toLowerCase().includes(needle),
+    );
+    return matches.length ? matches : list;
+  })();
 
   const goNext = () => {
     if (!currentStep) return;
@@ -390,33 +519,61 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       <p className="text-foreground text-base font-semibold">{currentStep.label}</p>
       <p className="text-foreground/60 text-xs">{currentStep.helper}</p>
 
-      {currentStep.multiline ? (
-        <textarea
-          autoFocus
-          value={answers[currentStep.key]}
-          onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
-          placeholder={currentStep.placeholder}
-          rows={4}
-          maxLength={1000}
-          className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition resize-none"
-        />
-      ) : (
-        <input
-          autoFocus
-          type="text"
-          value={answers[currentStep.key]}
-          onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              goNext();
-            }
-          }}
-          placeholder={currentStep.placeholder}
-          maxLength={300}
-          className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
-        />
-      )}
+      <div className="relative">
+        {currentStep.multiline ? (
+          <textarea
+            autoFocus
+            value={answers[currentStep.key]}
+            onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
+            onFocus={() => setDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
+            placeholder={currentStep.placeholder}
+            rows={4}
+            maxLength={1000}
+            className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition resize-none"
+          />
+        ) : (
+          <input
+            autoFocus
+            type="text"
+            value={answers[currentStep.key]}
+            onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
+            onFocus={() => setDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                goNext();
+              }
+              if (e.key === "Escape") setDropdownOpen(false);
+            }}
+            placeholder={currentStep.placeholder}
+            maxLength={300}
+            className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+          />
+        )}
+        {dropdownOpen && SUGGESTIONS[currentStep.key] && filteredSuggestions.length > 0 && (
+          <div className="absolute z-20 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-background/95 backdrop-blur-xl border border-foreground/20 rounded-md shadow-xl">
+            {filteredSuggestions.map((s) => {
+              const active = isSuggestionActive(currentStep.key, s.value);
+              return (
+                <button
+                  key={s.value}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => applySuggestion(currentStep.key, s.value)}
+                  className={`w-full text-left px-3 py-2 text-sm border-b border-foreground/5 last:border-0 transition ${
+                    active ? "bg-foreground/15 text-foreground" : "text-foreground/85 hover:bg-foreground/10"
+                  }`}
+                >
+                  {active ? "✓ " : ""}{s.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
 
       {SUGGESTIONS[currentStep.key] && (
         <div className="flex flex-wrap gap-1.5">
