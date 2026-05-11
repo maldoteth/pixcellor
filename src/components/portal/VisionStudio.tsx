@@ -142,18 +142,15 @@ export default function VisionStudio() {
     try {
       const previewUrl = `${window.location.origin}/preview/${row.slug}`;
       const imageUrl = publicUrl(row.image_path);
-      const { error } = await supabase.functions.invoke("send-transactional-email", {
+      const { error } = await supabase.functions.invoke("send-vision-preview", {
         body: {
-          templateName: "vision-preview-ready",
+          previewId: row.id,
           recipientEmail: recipient,
-          idempotencyKey: `vision-preview-${row.id}`,
-          templateData: {
-            clientName: name,
-            title: row.title ?? undefined,
-            brief: row.brief ?? undefined,
-            previewUrl,
-            imageUrl,
-          },
+          clientName: name,
+          title: row.title ?? undefined,
+          brief: row.brief ?? undefined,
+          previewUrl,
+          imageUrl,
         },
       });
       if (error) throw error;
