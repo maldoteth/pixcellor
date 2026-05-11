@@ -471,7 +471,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
-      className={`fixed left-[calc(50%-44px)] -translate-x-1/2 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:left-[calc(50%-52px)] md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden && !open ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100 pointer-events-auto"} ${isMobile && chatOpen && !open ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
+      className={`fixed left-1/2 top-4 z-[10000] -ml-[44px] -translate-x-1/2 flex items-center justify-center rounded-sm transition-opacity duration-200 md:-ml-[52px] md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden && !open ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100 pointer-events-auto"} ${isMobile && chatOpen && !open ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 100%)",
         backdropFilter: "blur(20px)",
