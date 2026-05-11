@@ -877,8 +877,8 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
           transition={{ duration: 0.6, delay: 0.08, ease: "easeOut" }}
           style={{
             background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
+            backdropFilter: "blur(40px) saturate(180%)",
+            WebkitBackdropFilter: "blur(40px) saturate(180%)",
             border: "1px solid rgba(255,255,255,0.2)",
             boxShadow: `
               0 8px 32px rgba(0,0,0,0.3),
