@@ -17,7 +17,7 @@ async function uploadDataUrlToStorage(supabase: any, dataUrl: string): Promise<{
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     const path = `vision-samples/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
-    const { error } = await supabase.storage.from("submission-attachments").upload(path, bytes, {
+    const { error } = await supabase.storage.from("vision-previews").upload(path, bytes, {
       contentType: mime,
       upsert: false,
     });
@@ -25,7 +25,7 @@ async function uploadDataUrlToStorage(supabase: any, dataUrl: string): Promise<{
       console.error("vision upload failed", error);
       return { publicUrl: null, path: null };
     }
-    const publicUrl = supabase.storage.from("submission-attachments").getPublicUrl(path).data.publicUrl;
+    const publicUrl = supabase.storage.from("vision-previews").getPublicUrl(path).data.publicUrl;
     return { publicUrl, path };
   } catch (e) {
     console.error("uploadDataUrlToStorage error", e);
@@ -204,6 +204,27 @@ Deno.serve(async (req) => {
         : String(prompt ?? "").trim().slice(0, 8000);
       const cleanStr = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : null) || null;
 
+      // Create a shareable preview row so this sample gets a /preview/{slug} link
+      let previewSlug: string | null = null;
+      if (storagePath) {
+        try {
+          const slug = `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+          const previewTitle = cleanStr(meta?.company, 200) || cleanStr(meta?.name, 200) || "Visitor sample";
+          const { error: prevErr } = await supabase.from("vision_previews").insert({
+            slug,
+            image_path: storagePath,
+            title: previewTitle,
+            brief: briefText,
+            client_email: cleanStr(meta?.email?.toLowerCase?.() ?? meta?.email, 200),
+            created_by_email: cleanStr(meta?.email?.toLowerCase?.() ?? meta?.email, 200),
+          });
+          if (prevErr) console.error("vision_previews insert failed:", prevErr);
+          else previewSlug = slug;
+        } catch (e) {
+          console.error("vision_previews insert threw:", e);
+        }
+      }
+
       const { data: inserted, error: insErr } = await supabase
         .from("ai_sample_generations")
         .insert({
@@ -219,6 +240,7 @@ Deno.serve(async (req) => {
           parent_id: cleanStr(meta?.parent_id, 64),
           is_refinement: !!isEdit,
           metadata: meta ?? {},
+          preview_slug: previewSlug,
         })
         .select("id")
         .single();

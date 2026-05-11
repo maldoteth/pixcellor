@@ -61,6 +61,7 @@ export type Database = {
           metadata: Json
           parent_id: string | null
           phone: string | null
+          preview_slug: string | null
           source: string
           storage_path: string | null
           visitor_id: string | null
@@ -78,6 +79,7 @@ export type Database = {
           metadata?: Json
           parent_id?: string | null
           phone?: string | null
+          preview_slug?: string | null
           source?: string
           storage_path?: string | null
           visitor_id?: string | null
@@ -95,6 +97,7 @@ export type Database = {
           metadata?: Json
           parent_id?: string | null
           phone?: string | null
+          preview_slug?: string | null
           source?: string
           storage_path?: string | null
           visitor_id?: string | null
