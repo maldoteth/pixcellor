@@ -234,6 +234,34 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     }
   };
 
+  const trackApprovedSample = async () => {
+    try {
+      const name = values.name.trim();
+      const email = values.email.trim().toLowerCase();
+      const phone = values.phone.trim();
+      if (!name || (!email && !phone)) return;
+      const requestDetails = {
+        company: values.company.trim() || null,
+        brief: visionBrief?.prompt || null,
+        vision_image_url: visionBrief?.imageUrl || null,
+        kind: "approved_in_checkout",
+        package_name: packageName ?? null,
+        billing: billing ?? null,
+      };
+      const attachments = visionBrief?.imageUrl ? [visionBrief.imageUrl] : null;
+      await supabase.from("lets_talk_leads").insert([{
+        name,
+        email: email || null,
+        phone: phone || null,
+        source: "free_sample_request",
+        request_details: requestDetails as any,
+        attachment_urls: attachments,
+      }]);
+    } catch (err) {
+      console.warn("trackApprovedSample failed", err);
+    }
+  };
+
   // Field-step nav
   const handleFieldNext = async () => {
     setError(null);
