@@ -426,6 +426,8 @@ export default function Portal() {
   const [profilesSearch, setProfilesSearch] = useState("");
   const [clientsVisibleCount, setClientsVisibleCount] = useState(10);
   const [callbacksVisibleCount, setCallbacksVisibleCount] = useState(10);
+  const [sectionCounts, setSectionCounts] = useState<Record<string, number>>({});
+  const [loadingMore, setLoadingMore] = useState<Record<string, boolean>>({});
   
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples">("all");
   const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
