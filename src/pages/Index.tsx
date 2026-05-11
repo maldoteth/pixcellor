@@ -78,7 +78,10 @@ const Index = () => {
         and a 2-week MVP sprint option for fast launches.
       </p>
       <div className="relative overflow-hidden" style={{ height: "var(--pixcellor-viewport-height, 100dvh)" }}>
-        <IntroAnimation onVirtualScrollChange={(value) => setHeroScrolled(value > 80)} />
+        <IntroAnimation
+          onVirtualScrollChange={(value) => setHeroScrolled(value > 80)}
+          onPackagesOpenChange={setPackagesOpen}
+        />
         <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <VisionGenerator hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
