@@ -41,47 +41,94 @@ const STEPS: StepDef[] = [
   {
     key: "company",
     label: "What's your company or brand name?",
-    helper: "We'll brand the whole site around this — logo, hero, header.",
+    helper: "We'll brand the whole site around this — logo, header, top of page.",
     placeholder: "e.g. Acme Florist",
     prefix: "Company / brand name",
   },
   {
     key: "industry",
     label: "What's your industry or what do you sell?",
-    helper: "e.g. boutique London florist, SaaS for dentists, freelance photographer",
-    placeholder: "Industry / what you sell",
+    helper: "Tap a suggestion or type your own.",
+    placeholder: "e.g. boutique London florist",
     prefix: "Business",
   },
   {
     key: "vibe",
     label: "Pick a vibe",
-    helper: "Minimal, bold, playful, luxury, techy, editorial — anything goes",
+    helper: "Tap any that feel right — or type your own.",
     placeholder: "e.g. minimal & luxury",
     prefix: "Vibe",
   },
   {
     key: "colour",
     label: "Primary brand colour(s)",
-    helper: "Any colours, palettes or moods you'd love",
+    helper: "Tap a palette or describe your own.",
     placeholder: "e.g. sage green & cream",
     prefix: "Colours",
   },
   {
     key: "headline",
-    label: "Hero headline idea",
-    helper: "The main line at the top of the page (we'll polish it)",
+    label: "Main headline (the big line at the top of the page)",
+    helper: "A short tagline — we'll polish it.",
     placeholder: "e.g. Bouquets that say it better",
     prefix: "Headline",
   },
   {
     key: "sections",
-    label: "Sections you want",
-    helper: "Pricing, gallery, testimonials, contact, FAQ…",
-    placeholder: "e.g. hero, gallery, subscriptions, reviews, contact",
+    label: "Pages & sections you want",
+    helper: "Tap to add — these are the parts of your website.",
+    placeholder: "Tap suggestions below or type your own",
     multiline: true,
     prefix: "Sections",
   },
 ];
+
+const SUGGESTIONS: Partial<Record<StepKey, { label: string; value: string; hint?: string }[]>> = {
+  industry: [
+    { label: "Florist", value: "boutique florist" },
+    { label: "Restaurant", value: "restaurant / café" },
+    { label: "Photographer", value: "freelance photographer" },
+    { label: "Tradesperson", value: "plumber / electrician / builder" },
+    { label: "Salon / spa", value: "hair salon & spa" },
+    { label: "Coach", value: "personal coach / consultant" },
+    { label: "Online shop", value: "ecommerce / online shop" },
+    { label: "SaaS", value: "software / SaaS product" },
+  ],
+  vibe: [
+    { label: "Minimal", value: "minimal & clean" },
+    { label: "Luxury", value: "luxury & elegant" },
+    { label: "Bold", value: "bold & punchy" },
+    { label: "Playful", value: "playful & fun" },
+    { label: "Editorial", value: "editorial / magazine" },
+    { label: "Techy", value: "modern & techy" },
+    { label: "Warm", value: "warm & friendly" },
+    { label: "Dark mode", value: "dark mode, premium" },
+  ],
+  colour: [
+    { label: "Black & white", value: "black & white" },
+    { label: "Sage & cream", value: "sage green & cream" },
+    { label: "Navy & gold", value: "navy & gold" },
+    { label: "Pastel pinks", value: "soft pastel pinks" },
+    { label: "Earthy tones", value: "warm earthy tones" },
+    { label: "Vibrant blue", value: "vibrant blue accents" },
+    { label: "Forest green", value: "deep forest green" },
+    { label: "Monochrome dark", value: "monochrome dark" },
+  ],
+  sections: [
+    { label: "About us", value: "About us" },
+    { label: "Services", value: "Services" },
+    { label: "Pricing", value: "Pricing" },
+    { label: "Gallery / portfolio", value: "Gallery / portfolio" },
+    { label: "Testimonials / reviews", value: "Testimonials / reviews" },
+    { label: "FAQ", value: "FAQ" },
+    { label: "Contact form", value: "Contact form" },
+    { label: "Booking", value: "Booking" },
+    { label: "Online shop", value: "Online shop" },
+    { label: "Blog / news", value: "Blog / news" },
+    { label: "Team", value: "Team" },
+    { label: "Newsletter signup", value: "Newsletter signup" },
+  ],
+};
 
 export default function VisionGenerator({ hidden = false, chatOpen = false }: VisionGeneratorProps) {
   const isMobile = useIsMobile();
@@ -116,9 +163,35 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     }
     const company = data.company.trim();
     if (company) {
-      parts.push(`The site must be branded as "${company}" — feature this name prominently in the hero, header/logo, and any branded elements.`);
+      parts.push(`The site must be branded as "${company}" — feature this name prominently at the top of the page, in the header/logo, and any branded elements.`);
     }
     return parts.join("\n");
+  };
+
+  const applySuggestion = (key: StepKey, value: string) => {
+    setAnswers((a) => {
+      const current = a[key].trim();
+      if (key === "sections") {
+        const items = current ? current.split(",").map((s) => s.trim()).filter(Boolean) : [];
+        const exists = items.findIndex((s) => s.toLowerCase() === value.toLowerCase());
+        if (exists >= 0) items.splice(exists, 1);
+        else items.push(value);
+        return { ...a, sections: items.join(", ") };
+      }
+      return { ...a, [key]: value };
+    });
+  };
+
+  const isSuggestionActive = (key: StepKey, value: string) => {
+    const current = answers[key].trim();
+    if (!current) return false;
+    if (key === "sections") {
+      return current
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .includes(value.toLowerCase());
+    }
+    return current.toLowerCase() === value.toLowerCase();
   };
 
   const generate = async (finalAnswers: Record<StepKey, string>) => {
@@ -343,6 +416,37 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           maxLength={300}
           className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
         />
+      )}
+
+      {SUGGESTIONS[currentStep.key] && (
+        <div className="flex flex-wrap gap-1.5">
+          {SUGGESTIONS[currentStep.key]!.map((s) => {
+            const active = isSuggestionActive(currentStep.key, s.value);
+            return (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => applySuggestion(currentStep.key, s.value)}
+                className={`px-2.5 py-1 rounded-full text-xs border transition ${
+                  active
+                    ? "bg-foreground text-background border-foreground"
+                    : "bg-foreground/5 text-foreground/80 border-foreground/15 hover:border-foreground/40 hover:bg-foreground/10"
+                }`}
+              >
+                {active && currentStep.key === "sections" ? "✓ " : ""}{s.label}
+              </button>
+            );
+          })}
+          {currentStep.key === "sections" && answers.sections.trim() && (
+            <button
+              type="button"
+              onClick={() => setAnswers((a) => ({ ...a, sections: "" }))}
+              className="px-2.5 py-1 rounded-full text-xs border border-foreground/15 text-foreground/60 hover:text-foreground hover:border-foreground/40 transition"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
       )}
 
       <div className="grid grid-cols-2 gap-2 mt-1">
