@@ -505,7 +505,9 @@ export default function Portal() {
       projectRequirements?: ProjectRequirement[];
       editRequests?: EditRequest[];
       sampleRequests?: Array<{ id: string; name: string; email: string | null; phone: string | null; created_at: string; request_details: any; attachment_urls: string[] | null }>;
+      aiSampleGenerations?: any[];
       emailLogs?: EmailLog[];
+      counts?: Record<string, number>;
     };
     setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
     setFalloffs(snapshot.falloffs ?? []);
@@ -520,6 +522,7 @@ export default function Portal() {
     setEditRequests(snapshot.editRequests ?? []);
     setSampleRequests(snapshot.sampleRequests ?? []);
     setEmailLogs(snapshot.emailLogs ?? []);
+    setSectionCounts(snapshot.counts ?? {});
     setAllMessages(allMsgs);
     const previews: Record<string, Message> = {};
     for (const m of allMsgs) {
@@ -532,6 +535,45 @@ export default function Portal() {
       return new Date(bTime).getTime() - new Date(aTime).getTime();
     });
     setConversations(sortedConvs);
+  }, []);
+
+  const loadMoreSection = useCallback(async (
+    section: "orders" | "falloffs" | "conversations" | "contacts" | "inquiries" | "editRequests" | "sampleRequests" | "aiSampleGenerations" | "profiles" | "projectRequirements",
+    currentLength: number,
+    pageSize: number = 20,
+  ) => {
+    setLoadingMore((m) => ({ ...m, [section]: true }));
+    try {
+      const { data, error } = await (supabase as any).rpc("portal_fetch_section", {
+        _section: section,
+        _limit: pageSize,
+        _offset: currentLength,
+      });
+      if (error) {
+        toast({ title: "Couldn't load more", description: error.message, variant: "destructive" });
+        return;
+      }
+      const rows: any[] = Array.isArray(data) ? data : [];
+      const dedupAppend = <T extends { id?: string; session_id?: string }>(prev: T[]): T[] => {
+        const keyOf = (r: T) => (r as any).id ?? (r as any).session_id ?? JSON.stringify(r);
+        const existing = new Set(prev.map(keyOf));
+        return [...prev, ...rows.filter((r: any) => !existing.has(keyOf(r)))] as T[];
+      };
+      switch (section) {
+        case "orders": setOrders((p) => dedupAppend(p as any) as any); break;
+        case "falloffs": setFalloffs((p) => dedupAppend(p as any) as any); break;
+        case "conversations": setConversations((p) => dedupAppend(p as any) as any); break;
+        case "contacts": setContacts((p) => dedupAppend(p as any) as any); break;
+        case "inquiries": setInquiries((p) => dedupAppend(p as any) as any); break;
+        case "editRequests": setEditRequests((p) => dedupAppend(p as any) as any); break;
+        case "sampleRequests": setSampleRequests((p) => dedupAppend(p as any) as any); break;
+        case "profiles": setProfiles((p) => dedupAppend(p as any) as any); break;
+        case "projectRequirements": setProjectRequirements((p) => dedupAppend(p as any) as any); break;
+        case "aiSampleGenerations": /* handled by VisionStudio if needed */ break;
+      }
+    } finally {
+      setLoadingMore((m) => ({ ...m, [section]: false }));
+    }
   }, []);
 
   // Signed-in admin gate
