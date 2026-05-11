@@ -29,13 +29,14 @@ interface VisionGeneratorProps {
 
 type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
 type Stage = StepKey | "contact" | "generating" | "result" | "refine" | "requested";
+export type { StepKey };
 
 const CONTACT_NAME_KEY = "pixcellor:contact-name";
 const CONTACT_EMAIL_KEY = "pixcellor:contact-email";
 const CONTACT_PHONE_KEY = "pixcellor:contact-phone";
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-interface StepDef {
+export interface StepDef {
   key: StepKey;
   label: string;
   helper: string;
@@ -44,7 +45,7 @@ interface StepDef {
   prefix: string; // how it appears in the brief
 }
 
-const STEPS: StepDef[] = [
+export const STEPS: StepDef[] = [
   {
     key: "company",
     label: "What's your company or brand name?",
