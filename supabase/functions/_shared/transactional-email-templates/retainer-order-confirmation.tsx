@@ -247,7 +247,7 @@ export const template = createOrderEmail({
   fallbackPackage: 'Retainer',
   title: 'Your Retainer is confirmed',
   preview: 'Your Pixcellor Retainer is confirmed',
-  nextBody: 'We’ll treat this as your ongoing tech department and align on priorities, response cadence, and the first sprint of work.',
+  nextBody: "If we don't already have your website details, you can add them on this form below. Keep an eye out on your emails for updates.",
   subjectFallback: 'Retainer',
   displayName: 'Retainer order confirmation',
   previewData: {
