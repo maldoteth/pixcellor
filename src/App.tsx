@@ -3,25 +3,39 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Admin from "./pages/Admin";
-import Portal from "./pages/Portal";
-import PortalAuth from "./pages/PortalAuth";
-import ResetPassword from "./pages/ResetPassword";
-import Unsubscribe from "./pages/Unsubscribe";
-import OrderSuccess from "./pages/OrderSuccess";
-import ProjectRequirements from "./pages/ProjectRequirements";
-import EditRequest from "./pages/EditRequest";
-import CustomerAuth from "./pages/CustomerAuth";
-import CustomerPortal from "./pages/CustomerPortal";
-import Legal from "./pages/Legal";
-import VisionPreview from "./pages/VisionPreview";
-import AuthHandoff from "./pages/AuthHandoff";
 
-const queryClient = new QueryClient();
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Portal = lazy(() => import("./pages/Portal"));
+const PortalAuth = lazy(() => import("./pages/PortalAuth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const OrderSuccess = lazy(() => import("./pages/OrderSuccess"));
+const ProjectRequirements = lazy(() => import("./pages/ProjectRequirements"));
+const EditRequest = lazy(() => import("./pages/EditRequest"));
+const CustomerAuth = lazy(() => import("./pages/CustomerAuth"));
+const CustomerPortal = lazy(() => import("./pages/CustomerPortal"));
+const Legal = lazy(() => import("./pages/Legal"));
+const VisionPreview = lazy(() => import("./pages/VisionPreview"));
+const AuthHandoff = lazy(() => import("./pages/AuthHandoff"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+});
 
 const AuthRedirectHandler = () => {
   const navigate = useNavigate();
@@ -38,35 +52,45 @@ const AuthRedirectHandler = () => {
   return null;
 };
 
+const RouteFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background text-foreground/60 text-sm">
+    Loading…
+  </div>
+);
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthRedirectHandler />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/portal" element={<Portal />} />
-          <Route path="/portal-login" element={<PortalAuth />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/unsubscribe" element={<Unsubscribe />} />
-          <Route path="/order-success" element={<OrderSuccess />} />
-          <Route path="/project-requirements" element={<ProjectRequirements />} />
-          <Route path="/edit-request" element={<EditRequest />} />
-          <Route path="/customer-login" element={<CustomerAuth />} />
-          <Route path="/customer-portal" element={<CustomerPortal />} />
-          <Route path="/legal" element={<Legal />} />
-          <Route path="/legal/:doc" element={<Legal />} />
-          <Route path="/preview/:slug" element={<VisionPreview />} />
-          <Route path="/auth/handoff" element={<AuthHandoff />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthRedirectHandler />
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/portal" element={<Portal />} />
+              <Route path="/portal-login" element={<PortalAuth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
+              <Route path="/order-success" element={<OrderSuccess />} />
+              <Route path="/project-requirements" element={<ProjectRequirements />} />
+              <Route path="/edit-request" element={<EditRequest />} />
+              <Route path="/customer-login" element={<CustomerAuth />} />
+              <Route path="/customer-portal" element={<CustomerPortal />} />
+              <Route path="/legal" element={<Legal />} />
+              <Route path="/legal/:doc" element={<Legal />} />
+              <Route path="/preview/:slug" element={<VisionPreview />} />
+              <Route path="/auth/handoff" element={<AuthHandoff />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
