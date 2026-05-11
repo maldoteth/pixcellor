@@ -101,6 +101,7 @@ Deno.serve(async (req) => {
     )
 
     const messageId = crypto.randomUUID()
+    const idempotencyKey = `customer-login-link-${messageId}`
 
     await admin.from('email_send_log').insert({
       message_id: messageId,
@@ -121,6 +122,7 @@ Deno.serve(async (req) => {
         html,
         text,
         purpose: 'transactional',
+        idempotency_key: idempotencyKey,
         label: 'magiclink',
         queued_at: new Date().toISOString(),
       },
