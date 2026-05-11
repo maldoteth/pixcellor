@@ -759,6 +759,10 @@ const LetsTalkPrompt = () => {
   );
 
   const lockClose = step === "done" || step === "consultation";
+  const forceClose = () => {
+    setStep("name");
+    setOpen(false);
+  };
 
   if (isMobile) {
     return (
@@ -777,7 +781,7 @@ const LetsTalkPrompt = () => {
           {lockClose && (
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={forceClose}
               aria-label="Close"
               className="absolute right-3 top-3 rounded-md p-2 text-foreground/70 hover:text-foreground hover:bg-foreground/10 transition"
             >
