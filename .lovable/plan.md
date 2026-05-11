@@ -1,41 +1,24 @@
-## Why noreply@ is going to spam
+## Problem
 
-Yes — this is a real and well-documented deliverability issue:
-1. **`noreply` is a known spam-filter heuristic.** Gmail, Outlook, and SpamAssassin all weight `noreply`/`no-reply` mailboxes as lower-trust transactional patterns.
-2. **Engagement matters.** `projects@` gets opened and replied to → its reputation builds. `noreply@` gets ignored → its reputation stays poor, even on the same verified domain.
-3. **Missing `Reply-To`** on the noreply functions makes it worse — filters look for a valid reply path.
+The most recent magic-link requests for `dehub.bsc@gmail.com` (and `blocjerk123@gmail.com`) are still failing.
 
-DNS / SPF / DKIM / DMARC are identical for both addresses (both go through `notify.pixcellor.com`), so the domain itself is fine. The fix is the From address + headers.
+Inspecting the live `auth_emails` queue shows messages enqueued at 19:19 and 19:20 with:
+- `purpose: "transactional"` (should be `"auth"`)
+- `run_id: null` (should be the value forwarded from the webhook)
 
-## Current state in the codebase
+The on-disk source for `supabase/functions/auth-email-hook/index.ts` already has the correct values (`purpose: 'auth'` and `run_id` from `verifyWebhookRequest`). This means the deployed edge function is still serving an older build — the previous redeploy did not pick up the fix.
 
-| Function | From | Reply-To |
-|---|---|---|
-| `send-transactional-email` | `projects@pixcellor.com` | `help@pixcellor.com` |
-| `send-broadcast` | `projects@pixcellor.com` | `help@pixcellor.com` |
-| `auth-email-hook` (password reset, magic link, verification) | `noreply@pixcellor.com` | none |
-| `request-customer-login-link` (custom magic link) | `noreply@pixcellor.com` | none |
+The Email API rejects every dispatch with `400 Missing run_id or idempotency_key`, the dispatcher retries 5×, and the message is moved to DLQ — so no email ever leaves.
 
-## Changes
+## Fix
 
-1. **`supabase/functions/auth-email-hook/index.ts`**
-   - Change `from` from `noreply@pixcellor.com` → `projects@pixcellor.com`
-   - Add `reply_to: help@pixcellor.com`
+1. Force a fresh redeploy of `auth-email-hook` so the live function matches the source on disk (`purpose: 'auth'`, real `run_id`).
+2. Drain the stuck messages currently in the `auth_emails` queue and any pending retries (they all carry the bad payload — leaving them there just produces more DLQ noise).
+3. Trigger one new magic link to `dehub.bsc@gmail.com` and verify in `email_send_log` that the row goes from `pending` → `sent` (not `failed` / `dlq`).
+4. If the new send still fails with `Missing run_id`, inspect the deployed function bundle directly (curl it) to confirm which build is actually running, and re-check the webhook payload shape to make sure `run_id` is present at `payload.run_id` (vs. nested somewhere else).
 
-2. **`supabase/functions/request-customer-login-link/index.ts`**
-   - Change `from` from `noreply@pixcellor.com` → `projects@pixcellor.com`
-   - Add `reply_to: help@pixcellor.com`
+## Technical notes
 
-3. **Redeploy** both edge functions so the new headers take effect.
-
-## What to expect after deploy
-
-- New auth + magic-link emails will send from `projects@pixcellor.com` with a real reply path.
-- Spam placement should improve immediately for new recipients; existing recipients whose inbox already learned "noreply@pixcellor.com = spam" may need a few engaged emails before Gmail/Outlook reclassify, but since you're changing the local-part the reputation effectively resets.
-- No DNS changes needed.
-
-## Optional follow-ups (not in this plan unless you want them)
-
-- Add a small text line in auth emails like "Replies to this email reach our support team" to encourage engagement.
-- Set up DMARC reporting (`rua=`) to monitor placement over time.
-- Warm-up: ask a couple of test recipients to mark a magic-link email "Not spam" / move to inbox once.
+- Verification query used: `SELECT msg_id, message->>'purpose', message->>'run_id' FROM pgmq.q_auth_emails ORDER BY msg_id DESC` — confirmed bad payloads still being enqueued post-deploy.
+- No code changes are needed in the source file itself — only redeploy + queue cleanup + a fresh test send.
+- Step 2 (queue drain) needs a migration since it's a delete; selects/inserts are not enough.
