@@ -27,7 +27,11 @@ interface VisionGeneratorProps {
 }
 
 type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
-type Stage = StepKey | "generating" | "result" | "refine";
+type Stage = StepKey | "contact" | "generating" | "result" | "refine";
+
+const CONTACT_EMAIL_KEY = "pixcellor:contact-email";
+const CONTACT_PHONE_KEY = "pixcellor:contact-phone";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface StepDef {
   key: StepKey;
@@ -264,6 +268,13 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [contactEmail, setContactEmail] = useState<string>(() => {
+    try { return localStorage.getItem(CONTACT_EMAIL_KEY) ?? ""; } catch { return ""; }
+  });
+  const [contactPhone, setContactPhone] = useState<string>(() => {
+    try { return localStorage.getItem(CONTACT_PHONE_KEY) ?? ""; } catch { return ""; }
+  });
+  const [contactError, setContactError] = useState<string | null>(null);
 
   useEffect(() => {
     setDropdownOpen(false);
@@ -344,6 +355,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             source: "vision_generator",
             visitor_id: getVisitorId(),
             company: finalAnswers.company?.trim() || null,
+            email: contactEmail.trim() || null,
+            phone: contactPhone.trim() || null,
           },
         },
       });
@@ -384,7 +397,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const goNext = () => {
     if (!currentStep) return;
     if (currentIndex === STEPS.length - 1) {
-      void generate(answers);
+      setStage("contact");
     } else {
       setStage(STEPS[currentIndex + 1].key);
     }
@@ -395,7 +408,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     const cleared = { ...answers, [currentStep.key]: "" };
     setAnswers(cleared);
     if (currentIndex === STEPS.length - 1) {
-      void generate(cleared);
+      setStage("contact");
     } else {
       setStage(STEPS[currentIndex + 1].key);
     }
@@ -403,6 +416,26 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
 
   const goBack = () => {
     if (currentIndex > 0) setStage(STEPS[currentIndex - 1].key);
+  };
+
+  const submitContact = () => {
+    const email = contactEmail.trim();
+    const phone = contactPhone.trim();
+    if (!EMAIL_RE.test(email)) {
+      setContactError("Please enter a valid email address.");
+      return;
+    }
+    if (phone && phone.replace(/\D/g, "").length < 7) {
+      setContactError("Please enter a valid phone number, or leave it blank.");
+      return;
+    }
+    setContactError(null);
+    try {
+      localStorage.setItem(CONTACT_EMAIL_KEY, email);
+      if (phone) localStorage.setItem(CONTACT_PHONE_KEY, phone);
+      else localStorage.removeItem(CONTACT_PHONE_KEY);
+    } catch { /* ignore */ }
+    void generate(answers);
   };
 
   const orderThisStyle = () => {
@@ -413,6 +446,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           imageUrl,
           brief: generatedFor,
           company: answers.company,
+          email: contactEmail.trim() || null,
+          phone: contactPhone.trim() || null,
           orderRequest: true,
           at: Date.now(),
         }),
@@ -444,6 +479,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           imageUrl,
           brief: generatedFor,
           company: answers.company,
+          email: contactEmail.trim() || null,
+          phone: contactPhone.trim() || null,
           at: Date.now(),
         }),
       );
@@ -475,6 +512,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             source: "vision_generator_refine",
             visitor_id: getVisitorId(),
             company: answers.company?.trim() || null,
+            email: contactEmail.trim() || null,
+            phone: contactPhone.trim() || null,
           },
         },
       });
@@ -667,7 +706,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           onClick={goNext}
           className="h-11 font-semibold"
         >
-          {currentIndex === STEPS.length - 1 ? "Generate ✨" : "Next →"}
+          {currentIndex === STEPS.length - 1 ? "Continue →" : "Next →"}
         </Button>
       </div>
       {currentIndex > 0 && (
@@ -742,6 +781,60 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               </Button>
               <Button onClick={refineVision} disabled={refineInstruction.trim().length < 3} className="w-full rounded-none">
                 Regenerate
+              </Button>
+            </div>
+          </motion.div>
+        ) : stage === "contact" ? (
+          <motion.div
+            key="contact"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18 }}
+            className="flex flex-col gap-3"
+          >
+            <p className="text-foreground text-base font-semibold">Where should we send your sample?</p>
+            <p className="text-foreground/60 text-xs">
+              We'll save your generation so you can request edits or order without re-entering details.
+            </p>
+            <div className="flex flex-col gap-2">
+              <label className="text-foreground/70 text-xs uppercase tracking-wider">Email</label>
+              <input
+                autoFocus
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={contactEmail}
+                onChange={(e) => { setContactEmail(e.target.value); setContactError(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitContact(); } }}
+                placeholder="you@company.com"
+                maxLength={200}
+                className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-foreground/70 text-xs uppercase tracking-wider">Phone <span className="text-foreground/40 normal-case">(optional)</span></label>
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={contactPhone}
+                onChange={(e) => { setContactPhone(e.target.value); setContactError(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitContact(); } }}
+                placeholder="+44 7…"
+                maxLength={40}
+                className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+              />
+            </div>
+            {contactError && (
+              <p className="text-xs text-destructive">{contactError}</p>
+            )}
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              <Button type="button" variant="pricing" onClick={() => setStage(STEPS[STEPS.length - 1].key)} className="h-11 font-semibold">
+                Back
+              </Button>
+              <Button type="button" variant="pricing" onClick={submitContact} className="h-11 font-semibold">
+                Generate ✨
               </Button>
             </div>
           </motion.div>
