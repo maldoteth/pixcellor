@@ -12,7 +12,7 @@ import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 import MagicLinkSignup from "@/components/MagicLinkSignup";
 
 type Mode = "talk" | "request" | "consultation";
-type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "consultation" | "done";
+type Step = "name" | "company" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "consultation" | "done";
 
 const nameSchema = z.string().trim().min(1, "Please enter your name").max(80);
 const emailSchema = z.string().trim().email("Enter a valid email").max(200);
