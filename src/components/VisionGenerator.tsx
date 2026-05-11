@@ -84,7 +84,7 @@ export const STEPS: StepDef[] = [
   {
     key: "sections",
     label: "Pages & special requests you want",
-    helper: "Tap to add — these are the parts of your website.",
+    helper: "Tap to add parts or any customizations to your site",
     placeholder: "Tap suggestions below or type your own",
     multiline: true,
     prefix: "Sections",
