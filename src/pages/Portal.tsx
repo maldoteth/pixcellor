@@ -426,6 +426,8 @@ export default function Portal() {
   const [profilesSearch, setProfilesSearch] = useState("");
   const [clientsVisibleCount, setClientsVisibleCount] = useState(10);
   const [callbacksVisibleCount, setCallbacksVisibleCount] = useState(10);
+  const [sectionCounts, setSectionCounts] = useState<Record<string, number>>({});
+  const [loadingMore, setLoadingMore] = useState<Record<string, boolean>>({});
   
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples">("all");
   const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
@@ -503,7 +505,9 @@ export default function Portal() {
       projectRequirements?: ProjectRequirement[];
       editRequests?: EditRequest[];
       sampleRequests?: Array<{ id: string; name: string; email: string | null; phone: string | null; created_at: string; request_details: any; attachment_urls: string[] | null }>;
+      aiSampleGenerations?: any[];
       emailLogs?: EmailLog[];
+      counts?: Record<string, number>;
     };
     setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
     setFalloffs(snapshot.falloffs ?? []);
@@ -518,6 +522,7 @@ export default function Portal() {
     setEditRequests(snapshot.editRequests ?? []);
     setSampleRequests(snapshot.sampleRequests ?? []);
     setEmailLogs(snapshot.emailLogs ?? []);
+    setSectionCounts(snapshot.counts ?? {});
     setAllMessages(allMsgs);
     const previews: Record<string, Message> = {};
     for (const m of allMsgs) {
@@ -530,6 +535,45 @@ export default function Portal() {
       return new Date(bTime).getTime() - new Date(aTime).getTime();
     });
     setConversations(sortedConvs);
+  }, []);
+
+  const loadMoreSection = useCallback(async (
+    section: "orders" | "falloffs" | "conversations" | "contacts" | "inquiries" | "editRequests" | "sampleRequests" | "aiSampleGenerations" | "profiles" | "projectRequirements",
+    currentLength: number,
+    pageSize: number = 20,
+  ) => {
+    setLoadingMore((m) => ({ ...m, [section]: true }));
+    try {
+      const { data, error } = await (supabase as any).rpc("portal_fetch_section", {
+        _section: section,
+        _limit: pageSize,
+        _offset: currentLength,
+      });
+      if (error) {
+        toast.error("Couldn't load more", { description: error.message });
+        return;
+      }
+      const rows: any[] = Array.isArray(data) ? data : [];
+      const dedupAppend = <T extends { id?: string; session_id?: string }>(prev: T[]): T[] => {
+        const keyOf = (r: T) => (r as any).id ?? (r as any).session_id ?? JSON.stringify(r);
+        const existing = new Set(prev.map(keyOf));
+        return [...prev, ...rows.filter((r: any) => !existing.has(keyOf(r)))] as T[];
+      };
+      switch (section) {
+        case "orders": setOrders((p) => dedupAppend(p as any) as any); break;
+        case "falloffs": setFalloffs((p) => dedupAppend(p as any) as any); break;
+        case "conversations": setConversations((p) => dedupAppend(p as any) as any); break;
+        case "contacts": setContacts((p) => dedupAppend(p as any) as any); break;
+        case "inquiries": setInquiries((p) => dedupAppend(p as any) as any); break;
+        case "editRequests": setEditRequests((p) => dedupAppend(p as any) as any); break;
+        case "sampleRequests": setSampleRequests((p) => dedupAppend(p as any) as any); break;
+        case "profiles": setProfiles((p) => dedupAppend(p as any) as any); break;
+        case "projectRequirements": setProjectRequirements((p) => dedupAppend(p as any) as any); break;
+        case "aiSampleGenerations": /* handled by VisionStudio if needed */ break;
+      }
+    } finally {
+      setLoadingMore((m) => ({ ...m, [section]: false }));
+    }
   }, []);
 
   // Signed-in admin gate
@@ -2385,6 +2429,13 @@ export default function Portal() {
                 </Card>
               );
             })}
+            {orderReqsFilter !== "samples" && (sectionCounts.orders ?? 0) > orders.length && (
+              <div className="flex justify-center pt-2">
+                <Button variant="outline" size="sm" disabled={!!loadingMore.orders} onClick={() => loadMoreSection("orders", orders.length, 20)}>
+                  {loadingMore.orders ? "Loading…" : `Load more (${orders.length} of ${sectionCounts.orders})`}
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
 
@@ -2484,6 +2535,13 @@ export default function Portal() {
                 </CardContent>
               </Card>
             ))}
+            {(sectionCounts.falloffs ?? 0) > falloffs.length && (
+              <div className="flex justify-center pt-2">
+                <Button variant="outline" size="sm" disabled={!!loadingMore.falloffs} onClick={() => loadMoreSection("falloffs", falloffs.length, 20)}>
+                  {loadingMore.falloffs ? "Loading…" : `Load more (${falloffs.length} of ${sectionCounts.falloffs})`}
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="mailbox" className="grid min-w-0 grid-cols-1 gap-4 items-start lg:grid-cols-[360px_minmax(0,1fr)]">
@@ -2597,6 +2655,13 @@ export default function Portal() {
                   </button>
                 );
               })}
+              {(sectionCounts.conversations ?? 0) > conversations.length && (
+                <div className="flex justify-center pt-2">
+                  <Button variant="outline" size="sm" disabled={!!loadingMore.conversations} onClick={() => loadMoreSection("conversations", conversations.length, 20)}>
+                    {loadingMore.conversations ? "Loading…" : `Load more (${conversations.length} of ${sectionCounts.conversations})`}
+                  </Button>
+                </div>
+              )}
             </div>
             <Card className="min-w-0 max-h-[70vh] overflow-hidden flex flex-col">
               <CardContent className="p-4 overflow-y-auto space-y-3 flex-1">
@@ -2688,20 +2753,26 @@ export default function Portal() {
                     </Card>
                   );
                 })}
-                {clientsVisibleCount < clientBookContacts.length && (
+                {(clientsVisibleCount < clientBookContacts.length || (sectionCounts.contacts ?? 0) > contacts.length) && (
                   <div
                     ref={(el) => {
                       if (!el) return;
                       const obs = new IntersectionObserver((entries) => {
                         if (entries.some((e) => e.isIntersecting)) {
                           setClientsVisibleCount((n) => n + 10);
+                          if ((sectionCounts.contacts ?? 0) > contacts.length && !loadingMore.contacts) {
+                            loadMoreSection("contacts", contacts.length, 20);
+                          }
                         }
                       }, { rootMargin: "200px" });
                       obs.observe(el);
                     }}
                     className="flex justify-center pt-2"
                   >
-                    <Button variant="outline" onClick={() => setClientsVisibleCount((n) => n + 10)}>Load more</Button>
+                    <Button variant="outline" disabled={!!loadingMore.contacts} onClick={() => {
+                      setClientsVisibleCount((n) => n + 10);
+                      if ((sectionCounts.contacts ?? 0) > contacts.length) loadMoreSection("contacts", contacts.length, 20);
+                    }}>{loadingMore.contacts ? "Loading…" : "Load more"}</Button>
                   </div>
                 )}
               </TabsContent>

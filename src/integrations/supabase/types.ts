@@ -1389,9 +1389,14 @@ export type Database = {
             Returns: Json
           }
         | { Args: { _conversation_id: string }; Returns: Json }
+      portal_fetch_section: {
+        Args: { _limit?: number; _offset?: number; _section: string }
+        Returns: Json
+      }
       portal_fetch_snapshot:
         | { Args: never; Returns: Json }
         | { Args: { _access_code: string }; Returns: Json }
+        | { Args: { _limit?: number }; Returns: Json }
       portal_mark_order_delivered:
         | {
             Args: {
