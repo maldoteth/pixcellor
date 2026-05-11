@@ -82,12 +82,20 @@ export default function VisionStudio() {
       const imageUrl: string | undefined = data?.imageUrl;
       if (!imageUrl) throw new Error("No image returned");
 
-      const blob = dataUrlToBlob(imageUrl);
+      // generate-vision now returns either an https URL (already uploaded) or a data URL.
+      let blob: Blob;
+      if (imageUrl.startsWith("data:")) {
+        blob = dataUrlToBlob(imageUrl);
+      } else {
+        const res = await fetch(imageUrl);
+        if (!res.ok) throw new Error("Failed to fetch generated image");
+        blob = await res.blob();
+      }
       const slug = makeSlug();
       const path = `${slug}.png`;
 
       const upload = await supabase.storage.from(BUCKET).upload(path, blob, {
-        contentType: "image/png",
+        contentType: blob.type || "image/png",
         upsert: false,
       });
       if (upload.error) throw upload.error;
