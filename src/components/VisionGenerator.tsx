@@ -265,6 +265,10 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [refineInstruction, setRefineInstruction] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  useEffect(() => {
+    setDropdownOpen(false);
+  }, [stage]);
+
   const reset = () => {
     setImageUrl(null);
     setGeneratedFor("");
