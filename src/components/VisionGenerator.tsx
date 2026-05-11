@@ -91,7 +91,7 @@ export const STEPS: StepDef[] = [
   },
 ];
 
-const SUGGESTIONS: Partial<Record<StepKey, { label: string; value: string }[]>> = {
+export const SUGGESTIONS: Partial<Record<StepKey, { label: string; value: string }[]>> = {
   industry: [
     { label: "Florist", value: "boutique florist" },
     { label: "Restaurant / café", value: "restaurant / café" },
