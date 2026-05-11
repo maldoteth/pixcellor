@@ -18,6 +18,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useHeroReady } from "@/hooks/use-hero-ready";
 import { supabase } from "@/integrations/supabase/client";
 
 interface VisionGeneratorProps {
@@ -247,6 +248,7 @@ const SUGGESTIONS: Partial<Record<StepKey, { label: string; value: string }[]>> 
 
 export default function VisionGenerator({ hidden = false, chatOpen = false }: VisionGeneratorProps) {
   const isMobile = useIsMobile();
+  const heroReady = useHeroReady();
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<Stage>("company");
   const [answers, setAnswers] = useState<Record<StepKey, string>>({
@@ -471,7 +473,10 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
-      className={`fixed left-1/2 top-4 z-[10000] -ml-[44px] -translate-x-1/2 flex items-center justify-center rounded-sm transition-opacity duration-200 md:-ml-[52px] md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden && !open ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100 pointer-events-auto"} ${isMobile && chatOpen && !open ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
+      initial={{ y: -8, filter: "blur(10px)" }}
+      animate={{ y: heroReady ? 0 : -8, filter: heroReady ? "blur(0px)" : "blur(10px)" }}
+      transition={{ duration: 0.6, delay: 0, ease: "easeOut" }}
+      className={`fixed left-1/2 top-4 z-[10000] -ml-[44px] -translate-x-1/2 flex items-center justify-center rounded-sm transition-opacity duration-200 md:-ml-[52px] md:top-6 lg:pointer-events-auto lg:opacity-100 ${(hidden || !heroReady) && !open ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100 pointer-events-auto"} ${isMobile && chatOpen && !open ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 100%)",
         backdropFilter: "blur(20px)",
