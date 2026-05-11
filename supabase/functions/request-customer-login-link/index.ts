@@ -114,7 +114,8 @@ Deno.serve(async (req) => {
       payload: {
         message_id: messageId,
         to: rawEmail,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+        from: `${SITE_NAME} <projects@${FROM_DOMAIN}>`,
+        reply_to: `help@${FROM_DOMAIN}`,
         sender_domain: SENDER_DOMAIN,
         subject: 'Your login link',
         html,
