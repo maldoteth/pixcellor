@@ -824,8 +824,15 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           >
             <p className="text-foreground text-base font-semibold">What would you like to tweak?</p>
             <p className="text-foreground/70 text-xs">Describe any changes — colours, layout, copy, sections, imagery.</p>
-            <div className="border border-border/40 bg-black/40 max-h-[22vh] overflow-hidden">
-              <img src={imageUrl} alt="Current sample" className="w-full block" />
+            <div className="border border-border/40 bg-black/40 max-h-[22vh] overflow-hidden select-none" onContextMenu={(e) => e.preventDefault()}>
+              <img
+                src={imageUrl}
+                alt="Current sample"
+                className="w-full block pointer-events-none select-none"
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
+                onDragStart={(e) => e.preventDefault()}
+              />
             </div>
             <textarea
               autoFocus
