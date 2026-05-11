@@ -664,7 +664,11 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
     // Desktop: listen for global open-packages event (e.g. from ServicesDialog "View Pricing")
     useEffect(() => {
-        const handler = () => setPackagesOpen(true);
+        const handler = () => {
+            setPackagesOpen(true);
+            window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: true } }));
+            void recordFalloff({ event: "pricing_opened" });
+        };
         window.addEventListener("pixcellor:open-packages", handler);
         return () => window.removeEventListener("pixcellor:open-packages", handler);
     }, []);
