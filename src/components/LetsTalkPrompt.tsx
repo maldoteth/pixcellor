@@ -478,7 +478,7 @@ const LetsTalkPrompt = () => {
 
   const promptLabel = (() => {
     if (step === "name") return "What's your name?";
-    if (step === "company") return `Nice to meet you ${name.split(" ")[0] || "there"} — what's your company or brand name?`;
+    if (step === "company") return " WHAT'S YOUR COMPANY OR BRAND NAME?";
     if (step === "email") return `What's the best email for ${company || "you"}?`;
     if (step === "phone")
       return emailSkipped
