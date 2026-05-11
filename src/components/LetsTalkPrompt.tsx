@@ -198,7 +198,6 @@ const LetsTalkPrompt = () => {
 
       if (!opts?.keepOpen) {
         setStep("done");
-        setTimeout(() => setOpen(false), 1800);
       }
     } catch (e) {
       console.error(e);
@@ -237,7 +236,7 @@ const LetsTalkPrompt = () => {
     // Save lead either way (with or without vision)
     await submit(email.trim(), phone.trim(), dream, colours, media, url, { keepOpen: true });
     setStep(url ? "vision" : "done");
-    if (!url) setTimeout(() => setOpen(false), 1800);
+    if (!url) setStep("done");
   };
 
   const requestConsultation = async () => {
@@ -754,7 +753,7 @@ const LetsTalkPrompt = () => {
     </div>
   );
 
-  const lockClose = step === "done";
+  const lockClose = step === "done" || step === "consultation";
 
   if (isMobile) {
     return (
