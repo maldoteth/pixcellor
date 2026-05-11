@@ -922,9 +922,9 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             />
             <Button
               type="button"
-              variant="outline"
+              variant="pricing"
               onClick={() => { setOpen(false); }}
-              className="w-full rounded-none mt-2"
+              className="w-full h-11 font-semibold mt-2"
             >
               Close
             </Button>
