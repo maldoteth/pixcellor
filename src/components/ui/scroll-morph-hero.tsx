@@ -650,6 +650,16 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         };
     }, [smoothMorph, smoothScrollRotate, smoothMouseX]);
 
+    // Dispatch a hero-visible event so the floating top buttons (AI, Chat, Login)
+    // can fade/blur out when the user scrolls past the hero, matching their entry.
+    const heroVisibleRef = useRef<boolean | null>(null);
+    useEffect(() => {
+        const visible = morphValue < 0.3;
+        if (heroVisibleRef.current === visible) return;
+        heroVisibleRef.current = visible;
+        window.dispatchEvent(new CustomEvent("pixcellor:hero-visible", { detail: { visible } }));
+    }, [morphValue]);
+
     // Auto-open behavior removed — packages dialog now only opens via user click.
 
     // Desktop: listen for global open-packages event (e.g. from ServicesDialog "View Pricing")
