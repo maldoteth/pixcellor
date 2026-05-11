@@ -875,11 +875,36 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               </Button>
             </div>
           </motion.div>
+        ) : stage === "requested" ? (
+          <motion.div
+            key="requested"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="space-y-3 text-center py-2"
+          >
+            <p className="text-foreground text-lg font-semibold">We'll be in touch! 🎉</p>
+            <p className="text-foreground/70 text-sm">
+              Thanks {contactName.trim().split(" ")[0] || "there"} — your request has been sent. Our team will reach out within 24 hours.
+            </p>
+            <MagicLinkSignup
+              email={contactEmail}
+              benefit="Sign up to access your dashboard — view this generation, your sample request, and order updates in one place."
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => { setOpen(false); }}
+              className="w-full rounded-none mt-2"
+            >
+              Close
+            </Button>
+          </motion.div>
         ) : (
           stepBody
         )}
       </AnimatePresence>
-      {stage !== "generating" && stage !== "result" && stage !== "refine" && !busy && (
+      {stage !== "generating" && stage !== "result" && stage !== "refine" && stage !== "requested" && !busy && (
         <p className="text-[11px] text-muted-foreground/70 text-center flex items-center justify-center gap-1">
           <Wand2 className="h-3 w-3" /> Skip anything you're not sure about — we'll fill the gaps.
         </p>
