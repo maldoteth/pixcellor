@@ -90,5 +90,5 @@ const image = { display: 'block', width: '100%', height: 'auto', margin: '0' }
 const panel = {}
 const panelInner = { padding: '28px 34px 24px' }
 const text = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '14px 0 0' }
-const button = { backgroundColor: '#ffffff', borderRadius: '10px', color: '#050505', display: 'inline-block', fontSize: '14px', fontWeight: '800' as const, margin: '0 0 14px', padding: '13px 18px', textDecoration: 'none' }
+const button = { backgroundColor: '#ffffff', borderRadius: '0', color: '#050505', display: 'inline-block', fontSize: '14px', fontWeight: '800' as const, margin: '0 0 14px', padding: '13px 18px', textDecoration: 'none' }
 const meta = { color: '#929292', fontSize: '12px', lineHeight: '1.6', margin: '8px 0 0' }

@@ -225,7 +225,7 @@ const text = {
 
 const button = {
   backgroundColor: '#ffffff',
-  borderRadius: '10px',
+  borderRadius: '0',
   color: '#050505',
   display: 'inline-block',
   fontSize: '14px',

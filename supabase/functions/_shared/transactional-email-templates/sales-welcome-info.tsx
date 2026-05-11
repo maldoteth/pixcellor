@@ -54,4 +54,4 @@ const section = { padding: '8px 4px' }
 const h1 = { color: '#111111', fontSize: '20px', fontWeight: '600' as const, lineHeight: '1.3', margin: '0 0 16px' }
 const text = { color: '#333333', fontSize: '15px', lineHeight: '1.6', margin: '0 0 16px' }
 const signoff = { color: '#333333', fontSize: '15px', lineHeight: '1.6', margin: '24px 0 0' }
-const button = { backgroundColor: '#111111', borderRadius: '6px', color: '#ffffff', display: 'inline-block', fontSize: '14px', fontWeight: '600' as const, margin: '4px 0 20px', padding: '11px 18px', textDecoration: 'none' }
+const button = { backgroundColor: '#111111', borderRadius: '0', color: '#ffffff', display: 'inline-block', fontSize: '14px', fontWeight: '600' as const, margin: '4px 0 20px', padding: '11px 18px', textDecoration: 'none' }
