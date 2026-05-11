@@ -198,7 +198,6 @@ const LetsTalkPrompt = () => {
 
       if (!opts?.keepOpen) {
         setStep("done");
-        setTimeout(() => setOpen(false), 1800);
       }
     } catch (e) {
       console.error(e);
