@@ -224,6 +224,68 @@ Deno.serve(async (req) => {
         .single();
       if (insErr) console.error("ai_sample_generations insert failed:", insErr);
       else generationId = inserted?.id ?? null;
+
+      // Mirror lead into contacts so it appears in the Clients tab as a hot lead
+      try {
+        const leadEmail = cleanStr(meta?.email?.toLowerCase?.() ?? meta?.email, 200);
+        const leadPhone = cleanStr(meta?.phone, 40);
+        const leadCompany = cleanStr(meta?.company, 200);
+        const leadName = cleanStr(meta?.name, 200);
+        if (leadEmail || leadPhone) {
+          let existing: { id: string; status: string | null; name: string | null; email: string | null; phone: string | null; company: string | null; contact_name: string | null; notes: string | null } | null = null;
+          if (leadEmail) {
+            const { data } = await supabase
+              .from("contacts")
+              .select("id,status,name,email,phone,company,contact_name,notes")
+              .ilike("email", leadEmail)
+              .limit(1)
+              .maybeSingle();
+            existing = data ?? null;
+          }
+          if (!existing && leadPhone) {
+            const { data } = await supabase
+              .from("contacts")
+              .select("id,status,name,email,phone,company,contact_name,notes")
+              .eq("phone", leadPhone)
+              .limit(1)
+              .maybeSingle();
+            existing = data ?? null;
+          }
+
+          const noteLine = `AI sample generated${leadCompany ? ` for ${leadCompany}` : ""} — ${new Date().toISOString().slice(0, 10)}`;
+
+          if (existing) {
+            const protectedStatus = existing.status === "gold" || existing.status === "archived";
+            const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+            if (!protectedStatus) patch.status = "hot";
+            if (!existing.email && leadEmail) patch.email = leadEmail;
+            if (!existing.phone && leadPhone) patch.phone = leadPhone;
+            if (!existing.company && leadCompany) patch.company = leadCompany;
+            if (!existing.contact_name && leadName) patch.contact_name = leadName;
+            if ((!existing.name || existing.name.trim() === "") && (leadName || leadCompany)) {
+              patch.name = leadName || leadCompany;
+            }
+            patch.notes = existing.notes ? `${existing.notes}\n${noteLine}` : noteLine;
+            const { error: updErr } = await supabase.from("contacts").update(patch).eq("id", existing.id);
+            if (updErr) console.error("contacts update failed:", updErr);
+          } else {
+            const { error: insContactErr } = await supabase.from("contacts").insert({
+              name: leadName || leadCompany || "AI sample lead",
+              email: leadEmail,
+              phone: leadPhone,
+              company: leadCompany,
+              contact_name: leadName,
+              status: "hot",
+              source: "ai_vision_generator",
+              industry: "general",
+              notes: noteLine,
+            });
+            if (insContactErr) console.error("contacts insert failed:", insContactErr);
+          }
+        }
+      } catch (contactErr) {
+        console.error("vision contact upsert failed:", contactErr);
+      }
     } catch (logErr) {
       console.error("vision logging failed:", logErr);
     }
