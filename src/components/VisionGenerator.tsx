@@ -576,7 +576,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
 
 
       {SUGGESTIONS[currentStep.key] && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto pr-1">
           {SUGGESTIONS[currentStep.key]!.map((s) => {
             const active = isSuggestionActive(currentStep.key, s.value);
             return (
