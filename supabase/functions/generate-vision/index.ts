@@ -174,8 +174,8 @@ Deno.serve(async (req) => {
     }
 
     const data = await aiRes.json();
-    const imageUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    if (!imageUrl) {
+    const rawImageUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    if (!rawImageUrl) {
       console.error("No image in AI response", JSON.stringify(data).slice(0, 500));
       return new Response(JSON.stringify({ error: "No image was returned. Please try a different description." }), {
         status: 500,
@@ -183,7 +183,52 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ imageUrl }), {
+    // Upload data URL to public storage so admins can view it later
+    let imageUrl = rawImageUrl;
+    let storagePath: string | null = null;
+    let generationId: string | null = null;
+
+    try {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+
+      const uploaded = await uploadDataUrlToStorage(supabase, rawImageUrl);
+      if (uploaded.publicUrl) imageUrl = uploaded.publicUrl;
+      if (uploaded.path) storagePath = uploaded.path;
+
+      // Log the generation regardless of contact info
+      const briefText = isEdit
+        ? `Refinement: ${String(instruction ?? "").trim().slice(0, 4000)}`
+        : String(prompt ?? "").trim().slice(0, 8000);
+      const cleanStr = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : null) || null;
+
+      const { data: inserted, error: insErr } = await supabase
+        .from("ai_sample_generations")
+        .insert({
+          visitor_id: cleanStr(meta?.visitor_id, 200),
+          source: cleanStr(meta?.source, 80) ?? "vision_generator",
+          brief: briefText,
+          image_url: imageUrl,
+          storage_path: storagePath,
+          company: cleanStr(meta?.company, 200),
+          contact_name: cleanStr(meta?.name, 200),
+          email: cleanStr(meta?.email?.toLowerCase?.() ?? meta?.email, 200),
+          phone: cleanStr(meta?.phone, 40),
+          parent_id: cleanStr(meta?.parent_id, 64),
+          is_refinement: !!isEdit,
+          metadata: meta ?? {},
+        })
+        .select("id")
+        .single();
+      if (insErr) console.error("ai_sample_generations insert failed:", insErr);
+      else generationId = inserted?.id ?? null;
+    } catch (logErr) {
+      console.error("vision logging failed:", logErr);
+    }
+
+    return new Response(JSON.stringify({ imageUrl, generationId, storagePath }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
