@@ -675,8 +675,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               <Button onClick={orderThisStyle} className="w-full rounded-none sm:col-span-2">
                 Use this as style guide
               </Button>
-              <Button onClick={requestConsultation} variant="outline" className="w-full rounded-none gap-2">
-                <Sparkles className="h-4 w-4" /> Request custom sample
+              <Button onClick={requestConsultation} variant="outline" className="w-full rounded-none">
+                Request custom sample
               </Button>
             </div>
             <div className="flex items-center justify-end gap-3">
