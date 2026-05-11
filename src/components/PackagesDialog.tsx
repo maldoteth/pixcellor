@@ -528,9 +528,8 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   }, [effectiveOpen]);
 
   useEffect(() => {
-    if (!mobileTop) return;
     window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: effectiveOpen } }));
-  }, [effectiveOpen, mobileTop]);
+  }, [effectiveOpen]);
 
   if (mobileTop && !isMobile) return null;
   if (isMobile && !mobileTop) return null;
