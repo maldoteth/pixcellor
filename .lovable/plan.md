@@ -1,24 +1,63 @@
-## Problem
+# Production-Readiness Audit Plan
 
-The most recent magic-link requests for `dehub.bsc@gmail.com` (and `blocjerk123@gmail.com`) are still failing.
+I'll run a comprehensive audit across 7 areas and deliver a single report with findings ranked by severity (Critical / High / Medium / Low) plus a prioritized fix list. No code changes during the audit — fixes follow once you approve the report.
 
-Inspecting the live `auth_emails` queue shows messages enqueued at 19:19 and 19:20 with:
-- `purpose: "transactional"` (should be `"auth"`)
-- `run_id: null` (should be the value forwarded from the webhook)
+## Scope
 
-The on-disk source for `supabase/functions/auth-email-hook/index.ts` already has the correct values (`purpose: 'auth'` and `run_id` from `verifyWebhookRequest`). This means the deployed edge function is still serving an older build — the previous redeploy did not pick up the fix.
+**1. Security & Backend (Lovable Cloud)**
+- Run Supabase linter + full security scan
+- Review every table's RLS policies for gaps, recursion, and overly permissive rules (`true`, missing INSERT/UPDATE/DELETE policies)
+- Check `user_roles` pattern, `has_role` security-definer usage, privilege-escalation paths
+- Audit edge functions: `verify_jwt` correctness, admin checks, secret usage, input validation, CORS
+- Confirm no secrets leak to client; verify `.env` only exposes public keys
+- Check auth config: leaked-password (HIBP) protection, anonymous sign-ins disabled, OTP expiry, redirect URLs
 
-The Email API rejects every dispatch with `400 Missing run_id or idempotency_key`, the dispatcher retries 5×, and the message is moved to DLQ — so no email ever leaves.
+**2. Frontend Code Quality**
+- TypeScript strictness, dead code, oversized components (LetsTalkPrompt, ChatBot, etc.)
+- React Query usage, error boundaries, loading/empty states
+- Console errors / runtime errors snapshot
+- ESLint clean run
 
-## Fix
+**3. Performance**
+- Bundle size + lazy-loading of routes (15 pages currently eager?)
+- Heavy deps (framer-motion, tiptap, embla, three) — code-split candidates
+- Image optimization, lazy loading, responsive sizes
+- Animation cost on mobile (already a known constraint)
 
-1. Force a fresh redeploy of `auth-email-hook` so the live function matches the source on disk (`purpose: 'auth'`, real `run_id`).
-2. Drain the stuck messages currently in the `auth_emails` queue and any pending retries (they all carry the bad payload — leaving them there just produces more DLQ noise).
-3. Trigger one new magic link to `dehub.bsc@gmail.com` and verify in `email_send_log` that the row goes from `pending` → `sent` (not `failed` / `dlq`).
-4. If the new send still fails with `Missing run_id`, inspect the deployed function bundle directly (curl it) to confirm which build is actually running, and re-check the webhook payload shape to make sure `run_id` is present at `payload.run_id` (vs. nested somewhere else).
+**4. SEO & AEO**
+- `SeoHead` coverage on every public route
+- Single H1 per page, meta description length, canonical, OG/Twitter tags
+- `sitemap.xml` + `robots.txt` accuracy
+- JSON-LD validity (Organization, Product, FAQ where relevant)
+
+**5. Accessibility**
+- Keyboard nav, focus rings (recent dialog focus issue noted)
+- Color contrast on the all-black theme with white accents
+- Alt text, aria-labels on icon-only buttons
+- Reduced-motion support for the scroll-morph hero
+
+**6. Reliability & UX**
+- Error states for all network calls (Stripe checkout, vision generation, lead capture)
+- Idempotency on order/email flows (already partially in place)
+- Mobile rotate prompt, drawer scroll behavior
+- 404 + auth-error fallbacks
+
+**7. Legal / Compliance**
+- Privacy consent persistence (per memory)
+- Cookie/storage banner behavior
+- Legal page completeness, unsubscribe + email suppression flows
+
+## Deliverable
+
+A single markdown report grouped by area, each finding with:
+- Severity, file/location, what's wrong, recommended fix, effort estimate
+
+Followed by a **Top 10 fix queue** so we can tackle the highest-impact items first.
 
 ## Technical notes
 
-- Verification query used: `SELECT msg_id, message->>'purpose', message->>'run_id' FROM pgmq.q_auth_emails ORDER BY msg_id DESC` — confirmed bad payloads still being enqueued post-deploy.
-- No code changes are needed in the source file itself — only redeploy + queue cleanup + a fresh test send.
-- Step 2 (queue drain) needs a migration since it's a delete; selects/inserts are not enough.
+- Read-only tools used: `supabase--linter`, `security--run_security_scan`, `supabase--read_query`, edge-function log sampling, `code--dependency_scan`, ESLint, build output inspection, `rg` searches.
+- No migrations, deploys, or file edits during audit.
+- Estimated audit runtime: ~5–10 minutes of tool calls before the report is ready.
+
+Approve and I'll run it.
