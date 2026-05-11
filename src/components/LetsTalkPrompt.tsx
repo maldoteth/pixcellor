@@ -331,7 +331,7 @@ const LetsTalkPrompt = () => {
     if (step === "name") {
       const r = nameSchema.safeParse(name);
       if (!r.success) return setError(r.error.issues[0].message);
-      setStep("company");
+      setStep(company.trim() ? "email" : "company");
       return;
     }
     if (step === "company") {
