@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
     }
 
     // Schedule same-day callback if phone provided
-    if (phone) {
+    if (phone && !isPartial) {
       const callbackAt = nextSameDayCallbackISO();
       const { error } = await supabase.from("contact_events").insert({
         contact_id: contactId,
@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
 
     // Send welcome email if email provided
     let welcomeSent = false;
-    if (email) {
+    if (email && !isPartial) {
       const { error } = await supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "sales-welcome-info",
