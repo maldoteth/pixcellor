@@ -208,6 +208,7 @@ const LetsTalkPrompt = () => {
       const allAttachments = Array.from(new Set([...(media ?? []), ...(hostedVision ? [hostedVision] : [])]));
       const requestDetails = {
         consultation: true,
+        company: company.trim() || null,
         dream: dream.trim() || null,
         colours: colours.trim() || null,
         vision_image_url: hostedVision ?? visionUrl ?? null,
