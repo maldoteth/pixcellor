@@ -15,6 +15,7 @@ export default function CustomerAuth() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
+  const handoff = useLoginHandoff("/customer-portal");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -28,10 +29,11 @@ export default function CustomerAuth() {
 
     try {
       const cleanEmail = email.trim().toLowerCase();
+      const emailRedirectTo = handoff.start();
       const { error } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/customer-portal`,
+          emailRedirectTo,
           shouldCreateUser: true,
         },
       });
@@ -39,7 +41,7 @@ export default function CustomerAuth() {
       if (error) throw error;
 
       setLinkSent(true);
-      toast.success("Magic link sent. Check your inbox to continue.");
+      toast.success("Magic link sent. Open it on any device — this tab will log in too.");
     } catch (error) {
       const message = error instanceof Error ? error.message.toLowerCase() : "";
       if (message.includes("rate limit")) {
