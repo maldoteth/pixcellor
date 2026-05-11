@@ -94,6 +94,15 @@ export default function CustomerAuth() {
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />}
                 {linkSent ? "Magic link sent" : "Send magic link"}
               </Button>
+              {linkSent && (
+                <p className="text-xs text-muted-foreground text-center inline-flex items-center justify-center gap-2 w-full">
+                  {handoff.status === "claiming" || handoff.status === "claimed" ? (
+                    <><Loader2 className="h-3 w-3 animate-spin" />Signing you in…</>
+                  ) : (
+                    <>Waiting for the link to be opened — this tab will log in automatically.</>
+                  )}
+                </p>
+              )}
             </form>
 
           </CardContent>
