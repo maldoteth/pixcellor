@@ -16,6 +16,14 @@ import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
 import SeoHead from "@/components/SeoHead";
 
+// Auto-load-on-scroll helper for paginated list containers.
+// Triggers `onNearBottom` when the user scrolls within 200px of the bottom.
+const makeNearBottomHandler = (onNearBottom: () => void) =>
+  (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) onNearBottom();
+  };
+
 type StripeSession = {
   session_id: string;
   amount_total: number | null;
