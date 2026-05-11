@@ -123,17 +123,72 @@ export default function VisionPreview() {
                 <pre className="mt-2 whitespace-pre-wrap text-xs">{preview.brief}</pre>
               </details>
             )}
-            <div className="border border-border p-4 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm">
-                Like what you see? We can build this as a real, fully-custom site.
-              </p>
-              <Link
-                to="/"
-                className="inline-flex items-center gap-1 rounded-none border border-foreground px-4 py-2 text-sm font-medium hover:bg-foreground hover:text-background transition"
-              >
-                Get started <Wand2 className="h-3.5 w-3.5" />
-              </Link>
-            </div>
+            {!requested ? (
+              <div className="border border-border p-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm">
+                  Like what you see? We can build this as a real, fully-custom site.
+                </p>
+                {authedEmail ? (
+                  <Button
+                    onClick={() => {
+                      setRequested(true);
+                      void supabase.from("lets_talk_leads").insert({
+                        name: authedEmail,
+                        email: authedEmail,
+                        source: "vision_preview_get_started",
+                        request_details: { previewSlug: preview.slug, title: preview.title } as any,
+                      });
+                    }}
+                    className="rounded-none gap-1"
+                  >
+                    Get started <Wand2 className="h-3.5 w-3.5" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => setRequested(true)}
+                    className="rounded-none gap-1"
+                  >
+                    Get started <Wand2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="border border-border p-5 space-y-3">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-base font-semibold">Our team will be in touch soon 🎉</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Thanks for letting us know you love this preview — we'll reach out within 24 hours to scope your build.
+                    </p>
+                  </div>
+                </div>
+                {authedEmail ? (
+                  <Button
+                    onClick={() => navigate("/customer-portal")}
+                    variant="pricing"
+                    className="w-full font-semibold"
+                  >
+                    Back to your dashboard
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <label className="text-xs text-foreground/70">Your email — we'll send you a magic link to track this in your dashboard.</label>
+                    <input
+                      type="email"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full rounded-none border border-border bg-background px-3 py-2 text-sm"
+                    />
+                    <MagicLinkSignup
+                      email={contactEmail}
+                      benefit="Save this preview to your dashboard so you can revisit it any time and follow your project."
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </>
         ) : null}
       </main>
