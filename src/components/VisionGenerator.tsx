@@ -418,6 +418,26 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     if (currentIndex > 0) setStage(STEPS[currentIndex - 1].key);
   };
 
+  const submitContact = () => {
+    const email = contactEmail.trim();
+    const phone = contactPhone.trim();
+    if (!EMAIL_RE.test(email)) {
+      setContactError("Please enter a valid email address.");
+      return;
+    }
+    if (phone && phone.replace(/\D/g, "").length < 7) {
+      setContactError("Please enter a valid phone number, or leave it blank.");
+      return;
+    }
+    setContactError(null);
+    try {
+      localStorage.setItem(CONTACT_EMAIL_KEY, email);
+      if (phone) localStorage.setItem(CONTACT_PHONE_KEY, phone);
+      else localStorage.removeItem(CONTACT_PHONE_KEY);
+    } catch { /* ignore */ }
+    void generate(answers);
+  };
+
   const orderThisStyle = () => {
     try {
       sessionStorage.setItem(
