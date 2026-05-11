@@ -33,10 +33,10 @@ export default function CustomerAuth() {
     if (result.ok) {
       setLinkSent(true);
       toast.success("Magic link sent. Open it on any device — this tab will log in too.");
-    } else if (result.rateLimited === true) {
-      toast.error(`Too many requests. Try again in ${result.retryAfter}s.`);
+    } else if (result.rateLimited) {
+      toast.error(`Too many requests. Try again in ${result.retryAfter ?? 30}s.`);
     } else {
-      toast.error(result.message);
+      toast.error(result.message ?? "Could not send link");
     }
   };
 
