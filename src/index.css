@@ -203,6 +203,27 @@ All colors MUST be HSL.
     z-index: 1;
   }
 
+  .request-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .request-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.55), transparent);
+    transition: transform 700ms ease-in-out;
+  }
+  .request-shimmer:hover::after {
+    transform: translateX(100%);
+  }
+  .request-shimmer > * {
+    position: relative;
+    z-index: 1;
+  }
+
   .carousel-label-glass {
     isolation: isolate;
     overflow: hidden;
