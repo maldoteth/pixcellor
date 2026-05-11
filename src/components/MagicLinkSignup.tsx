@@ -3,6 +3,7 @@ import { Loader2, Mail, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useLoginHandoff } from "@/hooks/use-login-handoff";
 
 interface MagicLinkSignupProps {
   email: string;
@@ -21,6 +22,7 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const handoff = useLoginHandoff("/customer-portal");
 
   const cleanEmail = email.trim().toLowerCase();
   const validEmail = /.+@.+\..+/.test(cleanEmail);
@@ -44,10 +46,11 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
     setBusy(true);
     setError(null);
     try {
+      const emailRedirectTo = handoff.start();
       const { error: err } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/customer-portal`,
+          emailRedirectTo,
           shouldCreateUser: true,
         },
       });
@@ -89,9 +92,15 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
     >
       {sent ? (
         <div className="flex items-start gap-2 text-xs text-foreground/85">
-          <Mail className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          {handoff.status === "claiming" || handoff.status === "claimed" ? (
+            <Loader2 className="h-3.5 w-3.5 mt-0.5 shrink-0 animate-spin" />
+          ) : (
+            <Mail className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          )}
           <p>
-            Magic link sent to <span className="font-medium">{cleanEmail}</span>. Open it to access your dashboard — your sample and AI generations will be saved there.
+            {handoff.status === "claiming" || handoff.status === "claimed"
+              ? "Signing you in…"
+              : <>Magic link sent to <span className="font-medium">{cleanEmail}</span>. Open it on any device — this tab will log in automatically.</>}
           </p>
         </div>
       ) : (

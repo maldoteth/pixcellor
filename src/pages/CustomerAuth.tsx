@@ -8,12 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import SeoHead from "@/components/SeoHead";
+import { useLoginHandoff } from "@/hooks/use-login-handoff";
 
 export default function CustomerAuth() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
+  const handoff = useLoginHandoff("/customer-portal");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -27,10 +29,11 @@ export default function CustomerAuth() {
 
     try {
       const cleanEmail = email.trim().toLowerCase();
+      const emailRedirectTo = handoff.start();
       const { error } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/customer-portal`,
+          emailRedirectTo,
           shouldCreateUser: true,
         },
       });
@@ -38,7 +41,7 @@ export default function CustomerAuth() {
       if (error) throw error;
 
       setLinkSent(true);
-      toast.success("Magic link sent. Check your inbox to continue.");
+      toast.success("Magic link sent. Open it on any device — this tab will log in too.");
     } catch (error) {
       const message = error instanceof Error ? error.message.toLowerCase() : "";
       if (message.includes("rate limit")) {
@@ -91,6 +94,15 @@ export default function CustomerAuth() {
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />}
                 {linkSent ? "Magic link sent" : "Send magic link"}
               </Button>
+              {linkSent && (
+                <p className="text-xs text-muted-foreground text-center inline-flex items-center justify-center gap-2 w-full">
+                  {handoff.status === "claiming" || handoff.status === "claimed" ? (
+                    <><Loader2 className="h-3 w-3 animate-spin" />Signing you in…</>
+                  ) : (
+                    <>Waiting for the link to be opened — this tab will log in automatically.</>
+                  )}
+                </p>
+              )}
             </form>
 
           </CardContent>

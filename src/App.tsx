@@ -19,6 +19,7 @@ import CustomerAuth from "./pages/CustomerAuth";
 import CustomerPortal from "./pages/CustomerPortal";
 import Legal from "./pages/Legal";
 import VisionPreview from "./pages/VisionPreview";
+import AuthHandoff from "./pages/AuthHandoff";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App = () => (
           <Route path="/legal" element={<Legal />} />
           <Route path="/legal/:doc" element={<Legal />} />
           <Route path="/preview/:slug" element={<VisionPreview />} />
+          <Route path="/auth/handoff" element={<AuthHandoff />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
