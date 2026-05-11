@@ -2891,34 +2891,7 @@ export default function Portal() {
                     </div>
                   )}
                 </div>
-              </TabsContent>
-
-              <TabsContent value="retainers" className="space-y-2 pt-3">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input value={retainersSearch} onChange={(e) => setRetainersSearch(e.target.value)} placeholder="Search monthly retainer clients by email, order ID, status…" className="pl-9" />
-                </div>
-                {filteredRetainers.length === 0 && <p className="text-muted-foreground text-sm">No monthly retainer clients {retainersQ ? "match your search" : "yet"}.</p>}
-                {filteredRetainers.map(o => (
-                  <Card key={o.session_id}>
-                    <CardContent className="p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="space-y-1">
-                          <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
-                          <div className="text-xs text-muted-foreground">Started {new Date(o.created_at).toLocaleString()} · Monthly retainer</div>
-                          {o.subscription_id && <div className="break-all text-xs text-muted-foreground">Subscription {o.subscription_id}</div>}
-                        </div>
-                        <div className="flex flex-wrap items-center justify-end gap-3">
-                          <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>{o.payment_status ?? "pending"}</Badge>
-                          <Badge variant="outline">{getOrderMetadataText(o, "billing") || "Monthly subscription"}</Badge>
-                          <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </TabsContent>
-            </Tabs>
+            </div>
           </TabsContent>
 
           <TabsContent value="studio" className="min-w-0">
