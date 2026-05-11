@@ -672,6 +672,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     useEffect(() => {
         const handler = () => {
             setPackagesOpen(true);
+            onPackagesOpenChangeRef.current?.(true);
             window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: true } }));
             void recordFalloff({ event: "pricing_opened" });
         };
@@ -681,6 +682,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
 
     const handlePackagesOpenChange = (open: boolean) => {
         setPackagesOpen(open);
+        onPackagesOpenChangeRef.current?.(open);
         // Notify Index so the top-of-screen buttons (AI chat, Login, Vision) hide while overlay is up
         window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open } }));
         if (open) void recordFalloff({ event: "pricing_opened" });
