@@ -12,6 +12,7 @@ interface Body {
   source?: string | null;
   request_details?: { company?: string | null; dream?: string | null; colours?: string | null } | null;
   attachment_urls?: string[] | null;
+  partial?: boolean | null;
 }
 
 function cleanText(v: unknown, max = 200): string {
