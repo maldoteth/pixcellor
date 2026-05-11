@@ -71,7 +71,7 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
       ? `Resend in ${cooldown}s`
       : sent
         ? "Resend link"
-        : "Send magic link";
+        : "Send link";
 
   return (
     <motion.div
