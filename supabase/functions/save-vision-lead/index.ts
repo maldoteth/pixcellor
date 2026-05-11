@@ -28,7 +28,12 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const body = await req.json().catch(() => ({}));
+    const rawBody = await req.json().catch(() => ({}));
+    const parsedBody = BodySchema.safeParse(rawBody);
+    if (!parsedBody.success) {
+      return new Response(JSON.stringify({ ok: false, reason: "invalid_input" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const body = parsedBody.data;
     const cleanStr = (v: unknown, max = 200) =>
       (typeof v === "string" ? v.trim().slice(0, max) : null) || null;
 
