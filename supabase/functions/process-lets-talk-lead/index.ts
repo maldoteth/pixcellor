@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
     const email = cleanText(body.email ?? "", 200).toLowerCase();
     const phone = cleanText(body.phone ?? "", 40);
     const source = cleanText(body.source ?? "lets_talk_button", 80);
+    const company = cleanText(body.request_details?.company ?? "", 120);
     const dream = cleanText(body.request_details?.dream ?? "", 2000);
     const colours = cleanText(body.request_details?.colours ?? "", 2000);
     const attachments = Array.isArray(body.attachment_urls)
