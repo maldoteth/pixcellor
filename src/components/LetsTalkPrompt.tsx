@@ -543,6 +543,12 @@ const LetsTalkPrompt = () => {
                 ? "We'll review your brief and send a free sample shortly."
                 : "We'll be in touch shortly."}
             </p>
+            <div className="w-full max-w-sm">
+              <MagicLinkSignup
+                email={email}
+                benefit="Save this request to your dashboard so you can track it any time. We'll email you a one-tap login link."
+              />
+            </div>
           </motion.div>
         ) : (
           <motion.div
