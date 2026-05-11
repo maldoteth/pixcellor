@@ -23,45 +23,37 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useHeroReady } from "@/hooks/use-hero-ready";
 import { supabase } from "@/integrations/supabase/client";
 import { useLoginHandoff } from "@/hooks/use-login-handoff";
+import { useRequestLoginLink } from "@/hooks/use-request-login-link";
 
 function CustomerAuthForm() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [busy, setBusy] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
   const handoff = useLoginHandoff("/customer-portal");
+  const { requestLink, busy, cooldown } = useRequestLoginLink();
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setBusy(true);
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRedirectTo = handoff.start();
 
-    try {
-      const cleanEmail = email.trim().toLowerCase();
-      const emailRedirectTo = handoff.start();
-      const { error } = await supabase.auth.signInWithOtp({
-        email: cleanEmail,
-        options: {
-          emailRedirectTo,
-          shouldCreateUser: true,
-        },
-      });
-
-      if (error) throw error;
-
+    const result = await requestLink(cleanEmail, emailRedirectTo);
+    if (result.ok) {
       setLinkSent(true);
       toast.success("Magic link sent. Open it on any device — this tab will log in too.");
-    } catch (error) {
-      const message = error instanceof Error ? error.message.toLowerCase() : "";
-      if (message.includes("rate limit")) {
-        setLinkSent(true);
-        toast.success("A login link was already sent recently. Check your inbox.");
-        return;
-      }
-      toast.error(error instanceof Error ? error.message : "Could not continue");
-    } finally {
-      setBusy(false);
+    } else if (result.rateLimited) {
+      toast.error(`Too many requests. Try again in ${result.retryAfter ?? 30}s.`);
+    } else {
+      toast.error(result.message ?? "Could not send link");
     }
   };
+
+  const buttonLabel = busy
+    ? "Sending…"
+    : cooldown > 0
+      ? `Resend in ${cooldown}s`
+      : linkSent
+        ? "Resend magic link"
+        : "Send magic link";
 
   return (
     <div className="space-y-5">
@@ -73,29 +65,25 @@ function CustomerAuthForm() {
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(event) => {
-              setEmail(event.target.value);
-              setLinkSent(false);
-            }}
+            onChange={(event) => setEmail(event.target.value)}
             placeholder="you@example.com"
             required
           />
         </div>
-        <Button type="submit" disabled={busy || linkSent} className="w-full gap-2">
+        <Button type="submit" disabled={busy || cooldown > 0} className="w-full gap-2">
           {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-          {linkSent ? "Magic link sent" : "Send magic link"}
+          {buttonLabel}
         </Button>
         {linkSent && (
           <p className="text-xs text-muted-foreground text-center inline-flex items-center justify-center gap-2 w-full">
             {handoff.status === "claiming" || handoff.status === "claimed" ? (
               <><Loader2 className="h-3 w-3 animate-spin" />Signing you in…</>
             ) : (
-              <>Waiting for the link to be opened — this tab will log in automatically.</>
+              <>Check your inbox — this tab will log in automatically once you click the link.</>
             )}
           </p>
         )}
       </form>
-
     </div>
   );
 }
