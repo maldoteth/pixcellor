@@ -822,6 +822,20 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               We'll save your generation so you can request edits or order without re-entering details.
             </p>
             <div className="flex flex-col gap-2">
+              <label className="text-foreground/70 text-xs uppercase tracking-wider">Name</label>
+              <input
+                autoFocus
+                type="text"
+                autoComplete="name"
+                value={contactName}
+                onChange={(e) => { setContactName(e.target.value); setContactError(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitContact(); } }}
+                placeholder="Your name"
+                maxLength={120}
+                className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
               <label className="text-foreground/70 text-xs uppercase tracking-wider">Email</label>
               <input
                 autoFocus
