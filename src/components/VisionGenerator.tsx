@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Sparkles, X, Wand2 } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
