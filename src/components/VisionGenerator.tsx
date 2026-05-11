@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loader2, Wand2, X, Wand2 } from "lucide-react";
+import { Loader2, Wand2, X } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
 import MagicLinkSignup from "./MagicLinkSignup";
 import { toast } from "sonner";
