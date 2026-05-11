@@ -275,17 +275,28 @@ All colors MUST be HSL.
   }
 }
 
-@keyframes free-samples-glow {
-  0%, 100% {
-    filter: drop-shadow(0 8px 20px rgba(0,0,0,0.45)) drop-shadow(0 0 6px rgba(212,175,55,0.55));
-  }
-  50% {
-    filter: drop-shadow(0 10px 26px rgba(0,0,0,0.5)) drop-shadow(0 0 18px rgba(212,175,55,0.95)) drop-shadow(0 0 32px rgba(245,230,168,0.55));
-  }
+.free-samples-cursor-glow {
+  position: absolute;
+  inset: -30%;
+  pointer-events: none;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 600ms ease-out;
+  background: radial-gradient(
+    circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(245, 230, 168, 0.28) 0%,
+    rgba(212, 175, 55, 0.14) 25%,
+    rgba(212, 175, 55, 0) 60%
+  );
+  filter: blur(12px);
+  mix-blend-mode: screen;
+  z-index: 0;
 }
 
-.free-samples-glow:hover {
-  animation: free-samples-glow 2s ease-in-out infinite;
+@media (hover: hover) and (pointer: fine) {
+  .free-samples-glow:hover .free-samples-cursor-glow {
+    opacity: 1;
+  }
 }
 
 .lava-blob {
