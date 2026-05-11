@@ -76,7 +76,7 @@ export default function VisionStudio() {
   const loadVisitorGens = async () => {
     const { data, error } = await (supabase as any)
       .from("ai_sample_generations")
-      .select("id,brief,image_url,source,company,contact_name,email,phone,visitor_id,is_refinement,parent_id,created_at")
+      .select("id,brief,image_url,source,company,contact_name,email,phone,visitor_id,is_refinement,parent_id,created_at,preview_slug")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) {
