@@ -66,7 +66,7 @@ const Index = () => {
   return (
     <div className="w-full">
       <SeoHead
-        title="Bespoke Websites for Small Businesses · Pixcellor™"
+        title="Premium digital services turbopowered by AI"
         description="Pixcellor builds bespoke, fast-loading websites for small businesses from £100. Lifetime guarantee, SEO/AEO, unlimited edits and a 2-week MVP sprint option."
         path="/"
       />
