@@ -17,6 +17,12 @@ const SITE_URL = 'https://pixcellor.com'
 const RATE_LIMIT_COUNT = 3
 const RATE_LIMIT_WINDOW_SECONDS = 120
 
+function generateToken(): string {
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -101,6 +107,32 @@ Deno.serve(async (req) => {
     )
 
     const messageId = crypto.randomUUID()
+    const idempotencyKey = `customer-login-link-${messageId}`
+    const normalizedEmail = rawEmail.toLowerCase()
+    let unsubscribeToken = generateToken()
+
+    const { data: existingToken, error: tokenLookupError } = await admin
+      .from('email_unsubscribe_tokens')
+      .select('token')
+      .eq('email', normalizedEmail)
+      .maybeSingle()
+
+    if (tokenLookupError) {
+      console.error('unsubscribe token lookup failed', tokenLookupError)
+      return json({ error: 'Could not prepare email' }, 500)
+    }
+
+    if (existingToken?.token) {
+      unsubscribeToken = existingToken.token
+    } else {
+      const { error: tokenError } = await admin
+        .from('email_unsubscribe_tokens')
+        .upsert({ token: unsubscribeToken, email: normalizedEmail }, { onConflict: 'email', ignoreDuplicates: true })
+      if (tokenError) {
+        console.error('unsubscribe token create failed', tokenError)
+        return json({ error: 'Could not prepare email' }, 500)
+      }
+    }
 
     await admin.from('email_send_log').insert({
       message_id: messageId,
@@ -121,6 +153,8 @@ Deno.serve(async (req) => {
         html,
         text,
         purpose: 'transactional',
+        idempotency_key: idempotencyKey,
+        unsubscribe_token: unsubscribeToken,
         label: 'magiclink',
         queued_at: new Date().toISOString(),
       },
