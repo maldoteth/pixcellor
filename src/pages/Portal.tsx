@@ -2503,14 +2503,6 @@ export default function Portal() {
                 </Card>
               );
             })}
-            {orderReqsFilter !== "samples" && (sectionCounts.orders ?? 0) > orders.length && (
-              <div className="flex justify-center pt-2">
-                <Button variant="outline" size="sm" disabled={!!loadingMore.orders} onClick={() => loadMoreSection("orders", orders.length, 20)}>
-                  {loadingMore.orders ? "Loading…" : `Load more (${orders.length} of ${sectionCounts.orders})`}
-                </Button>
-              </div>
-            )}
-            </div>
           </TabsContent>
 
 
