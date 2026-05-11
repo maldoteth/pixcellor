@@ -3,8 +3,8 @@ import { Loader2, Wand2, Copy, ExternalLink, Trash2, Mail, Check, Search } from 
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import AdminVisionWizard from "@/components/portal/AdminVisionWizard";
 
 interface Preview {
   id: string;
@@ -35,32 +35,13 @@ interface VisitorGen {
 
 const BUCKET = "vision-previews";
 
-const dataUrlToBlob = (dataUrl: string) => {
-  const [meta, b64] = dataUrl.split(",");
-  const mime = /data:(.*?);base64/.exec(meta)?.[1] ?? "image/png";
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return new Blob([bytes], { type: mime });
-};
-
-const makeSlug = () => {
-  const a = "abcdefghijkmnopqrstuvwxyz23456789";
-  let s = "";
-  for (let i = 0; i < 10; i++) s += a[Math.floor(Math.random() * a.length)];
-  return s;
-};
 
 const publicUrl = (path: string) =>
   supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 
 export default function VisionStudio() {
-  const [title, setTitle] = useState("");
-  const [brief, setBrief] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  const [clientName, setClientName] = useState("");
-  const [busy, setBusy] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [previews, setPreviews] = useState<Preview[]>([]);
   const [latest, setLatest] = useState<Preview | null>(null);
   const [visitorGens, setVisitorGens] = useState<VisitorGen[]>([]);
@@ -109,78 +90,9 @@ export default function VisionStudio() {
     void loadVisitorGens();
   }, []);
 
-  const generate = async () => {
-    const trimmed = brief.trim();
-    if (trimmed.length < 5) {
-      toast.error("Add a brief (at least a few words).");
-      return;
-    }
-    setBusy(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-vision", {
-        body: { prompt: trimmed },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      const imageUrl: string | undefined = data?.imageUrl;
-      if (!imageUrl) throw new Error("No image returned");
-
-      // generate-vision now returns either an https URL (already uploaded) or a data URL.
-      let blob: Blob;
-      if (imageUrl.startsWith("data:")) {
-        blob = dataUrlToBlob(imageUrl);
-      } else {
-        const res = await fetch(imageUrl);
-        if (!res.ok) throw new Error("Failed to fetch generated image");
-        blob = await res.blob();
-      }
-      const slug = makeSlug();
-      const path = `${slug}.png`;
-
-      const upload = await supabase.storage.from(BUCKET).upload(path, blob, {
-        contentType: blob.type || "image/png",
-        upsert: false,
-      });
-      if (upload.error) throw upload.error;
-
-      const userRes = await supabase.auth.getUser();
-      const email = userRes.data.user?.email ?? null;
-      const userId = userRes.data.user?.id ?? null;
-
-      const insert = await (supabase as any)
-        .from("vision_previews")
-        .insert({
-          slug,
-          brief: trimmed,
-          title: title.trim() || null,
-          image_path: path,
-          created_by_user_id: userId,
-          created_by_email: email,
-          client_email: clientEmail.trim() || null,
-        })
-        .select()
-        .single();
-      if (insert.error) throw insert.error;
-
-      const row = insert.data as Preview;
-      setLatest(row);
-      setPreviews((p) => [row, ...p]);
-
-      // Auto-send email if client email provided
-      if (clientEmail.trim()) {
-        await sendEmail(row, clientName.trim() || undefined, clientEmail.trim());
-      }
-
-      setTitle("");
-      setBrief("");
-      setClientEmail("");
-      setClientName("");
-      toast.success("Preview created — link is ready to share.");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not generate vision");
-    } finally {
-      setBusy(false);
-    }
+  const handleCreated = (row: Preview) => {
+    setLatest(row);
+    setPreviews((p) => [row, ...p]);
   };
 
   const sendEmail = async (row: Preview, name?: string, overrideEmail?: string) => {
@@ -263,51 +175,25 @@ export default function VisionStudio() {
         </p>
       </div>
 
-      <div className="rounded-none border border-border p-4 space-y-3 bg-card/40">
-        <div className="grid gap-3 sm:grid-cols-[1fr_2fr]">
-          <Input
-            placeholder="Internal title (optional, e.g. Acme Florist v1)"
-            value={title}
-            maxLength={120}
-            onChange={(e) => setTitle(e.target.value)}
-            className="rounded-none"
-          />
-          <Textarea
-            placeholder="Design brief: brand, industry, vibe, colours, headline, sections…"
-            value={brief}
-            rows={3}
-            maxLength={2000}
-            onChange={(e) => setBrief(e.target.value)}
-            className="rounded-none resize-none"
-          />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input
-            placeholder="Client name (optional, e.g. Jane)"
-            value={clientName}
-            maxLength={120}
-            onChange={(e) => setClientName(e.target.value)}
-            className="rounded-none"
-          />
-          <Input
-            type="email"
-            placeholder="Client email (optional — auto-emails preview if set)"
-            value={clientEmail}
-            maxLength={200}
-            onChange={(e) => setClientEmail(e.target.value)}
-            className="rounded-none"
-          />
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-            <Wand2 className="h-3 w-3" /> {clientEmail ? "Will email the client automatically once generated." : "Add a client email to auto-send the preview."}
+      <div className="rounded-none border border-border p-4 bg-card/40 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold inline-flex items-center gap-2">
+            <Wand2 className="h-4 w-4" /> Generate a new preview
           </p>
-          <Button onClick={generate} disabled={busy} className="rounded-none gap-2">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-            {busy ? "Generating…" : "Generate preview"}
-          </Button>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Same step-by-step wizard your visitors use — pick details, then optionally auto-send to a client.
+          </p>
         </div>
+        <Button onClick={() => setWizardOpen(true)} className="rounded-none gap-2">
+          <Wand2 className="h-4 w-4" /> Generate preview
+        </Button>
       </div>
+
+      <AdminVisionWizard
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
+        onCreated={handleCreated}
+      />
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
