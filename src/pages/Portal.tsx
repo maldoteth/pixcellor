@@ -988,7 +988,7 @@ export default function Portal() {
     const heatRank: Record<Contact["status"], number> = {
       hot: 0, gold: 1, aware: 2, cold: 3, archived: 4,
     } as any;
-    return [...statusFiltered].sort((a, b) => {
+    return [...retainerFiltered].sort((a, b) => {
       if (clientsSort === "newest") {
         const aClient = a.status === "gold" ? 0 : 1;
         const bClient = b.status === "gold" ? 0 : 1;
@@ -1010,7 +1010,7 @@ export default function Portal() {
       if (ar !== br) return br - ar;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [contacts, contactEvents, profilesQ, clientsSort, clientsStatusFilter]);
+  }, [contacts, contactEvents, profilesQ, clientsSort, clientsStatusFilter, clientsRetainerOnly, orders]);
 
   const goldClientCount = useMemo(() => contacts.filter(c => c.status === "gold").length, [contacts]);
 
