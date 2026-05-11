@@ -468,7 +468,15 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     setStage("generating");
     try {
       const { data, error } = await supabase.functions.invoke("generate-vision", {
-        body: { imageUrl: previousUrl, instruction: ins },
+        body: {
+          imageUrl: previousUrl,
+          instruction: ins,
+          meta: {
+            source: "vision_generator_refine",
+            visitor_id: getVisitorId(),
+            company: answers.company?.trim() || null,
+          },
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
