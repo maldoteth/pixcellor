@@ -17,7 +17,7 @@ async function uploadDataUrlToStorage(supabase: any, dataUrl: string): Promise<{
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     const path = `vision-samples/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
-    const { error } = await supabase.storage.from("submission-attachments").upload(path, bytes, {
+    const { error } = await supabase.storage.from("vision-previews").upload(path, bytes, {
       contentType: mime,
       upsert: false,
     });
@@ -25,7 +25,7 @@ async function uploadDataUrlToStorage(supabase: any, dataUrl: string): Promise<{
       console.error("vision upload failed", error);
       return { publicUrl: null, path: null };
     }
-    const publicUrl = supabase.storage.from("submission-attachments").getPublicUrl(path).data.publicUrl;
+    const publicUrl = supabase.storage.from("vision-previews").getPublicUrl(path).data.publicUrl;
     return { publicUrl, path };
   } catch (e) {
     console.error("uploadDataUrlToStorage error", e);
