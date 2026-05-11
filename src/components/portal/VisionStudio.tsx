@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles, Wand2, Copy, ExternalLink, Trash2, Mail, Check } from "lucide-react";
+import { Loader2, Wand2, Copy, ExternalLink, Trash2, Mail, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -243,7 +243,7 @@ export default function VisionStudio() {
     <div className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Sparkles className="h-4 w-4" /> Vision studio
+          <Wand2 className="h-4 w-4" /> Vision studio
         </h2>
         <p className="text-sm text-muted-foreground">
           Generate AI website samples and get a unique shareable preview URL for each one.
@@ -253,7 +253,7 @@ export default function VisionStudio() {
       <div className="rounded-none border border-border p-4 space-y-3 bg-card/40">
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-semibold inline-flex items-center gap-2">
-            <Sparkles className="h-4 w-4" /> Visitor AI generations ({visitorGens.length})
+            <Wand2 className="h-4 w-4" /> Visitor AI generations ({visitorGens.length})
           </p>
           <Button size="sm" variant="outline" className="rounded-none" onClick={() => void loadVisitorGens()}>
             Refresh
@@ -328,7 +328,7 @@ export default function VisionStudio() {
             <Wand2 className="h-3 w-3" /> {clientEmail ? "Will email the client automatically once generated." : "Add a client email to auto-send the preview."}
           </p>
           <Button onClick={generate} disabled={busy} className="rounded-none gap-2">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
             {busy ? "Generating…" : "Generate preview"}
           </Button>
         </div>

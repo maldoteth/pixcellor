@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, X } from "lucide-react";
+import { Wand2, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { consumeCheckoutPending, clearCheckoutPending } from "@/lib/checkoutTracking";
 import { supabase } from "@/integrations/supabase/client";

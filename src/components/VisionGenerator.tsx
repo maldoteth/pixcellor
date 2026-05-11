@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loader2, Sparkles, X, Wand2 } from "lucide-react";
+import { Loader2, Wand2, X } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
 import MagicLinkSignup from "./MagicLinkSignup";
 import { toast } from "sonner";
@@ -618,7 +618,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           </motion.div>
         ) : (
           <motion.div key="s" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
-            <Sparkles className="h-4 w-4 text-white drop-shadow-lg" />
+            <Wand2 className="h-4 w-4 text-white drop-shadow-lg" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -957,7 +957,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           >
             <DrawerHeader>
               <DrawerTitle className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" /> See your dream site
+                <Wand2 className="h-4 w-4" /> See your dream site
               </DrawerTitle>
             </DrawerHeader>
             {body}
@@ -982,7 +982,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
         >
           <DialogHeader>
             <DialogTitle className="flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4" />
+              <Wand2 className="h-4 w-4" />
             </DialogTitle>
             <DialogDescription>
               {"\n"}

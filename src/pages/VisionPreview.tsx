@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Loader2, ArrowLeft, Sparkles } from "lucide-react";
+import { Loader2, ArrowLeft, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import SeoHead from "@/components/SeoHead";
 
@@ -63,7 +63,7 @@ export default function VisionPreview() {
             <ArrowLeft className="h-4 w-4" /> Back to Pixcellor
           </Link>
           <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5" /> Custom AI preview
+            <Wand2 className="h-3.5 w-3.5" /> Custom AI preview
           </div>
         </div>
       </header>
@@ -110,7 +110,7 @@ export default function VisionPreview() {
                 to="/"
                 className="inline-flex items-center gap-1 rounded-none border border-foreground px-4 py-2 text-sm font-medium hover:bg-foreground hover:text-background transition"
               >
-                Get started <Sparkles className="h-3.5 w-3.5" />
+                Get started <Wand2 className="h-3.5 w-3.5" />
               </Link>
             </div>
           </>

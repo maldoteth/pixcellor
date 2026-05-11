@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Globe, Loader2, Search, Sparkles, X } from "lucide-react";
+import { Check, Globe, Loader2, Search, Wand2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -308,7 +308,7 @@ const DomainPicker = ({ onChoose, onBack, submitting }: Props) => {
                 {suggestions.length > 0 && (
                   <>
                     <div className="flex items-center gap-2 text-foreground/50 text-[11px] uppercase tracking-wider mt-2">
-                      <Sparkles className="h-3 w-3" /> Suggestions
+                      <Wand2 className="h-3 w-3" /> Suggestions
                     </div>
                     <div className="flex flex-col gap-1.5 max-h-[260px] overflow-y-auto pr-1">
                       {suggestions.slice(0, visibleCount).map((s) =>

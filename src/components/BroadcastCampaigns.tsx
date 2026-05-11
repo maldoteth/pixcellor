@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, Eye, Sparkles } from "lucide-react";
+import { Loader2, Send, Eye, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import RichEmailEditor from "./email/RichEmailEditor";
 import EmailPreview from "./email/EmailPreview";
@@ -190,7 +190,7 @@ export default function BroadcastCampaigns() {
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-4 h-4 text-muted-foreground" />
+            <Wand2 className="w-4 h-4 text-muted-foreground" />
             <div className="text-xs uppercase tracking-wider text-muted-foreground">Start from a template</div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">

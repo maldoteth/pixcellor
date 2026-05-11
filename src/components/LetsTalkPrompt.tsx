@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { Check, Loader2, Sparkles, Wand2 } from "lucide-react";
+import { Check, Loader2, Wand2 } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -525,7 +525,7 @@ const LetsTalkPrompt = () => {
                 Order this style →
               </Button>
               <Button type="button" variant="pricing" onClick={requestConsultation} disabled={submitting} className="h-12 font-semibold inline-flex items-center justify-center gap-2">
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
                 Request custom sample
               </Button>
             </div>
