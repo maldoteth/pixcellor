@@ -58,6 +58,7 @@ const LetsTalkPrompt = () => {
   const [mode, setMode] = useState<Mode>("talk");
   const [step, setStep] = useState<Step>("name");
   const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [dream, setDream] = useState("");
