@@ -550,7 +550,7 @@ export default function Portal() {
         _offset: currentLength,
       });
       if (error) {
-        toast({ title: "Couldn't load more", description: error.message, variant: "destructive" });
+        toast.error("Couldn't load more", { description: error.message });
         return;
       }
       const rows: any[] = Array.isArray(data) ? data : [];
