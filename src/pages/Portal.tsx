@@ -16,6 +16,14 @@ import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
 import SeoHead from "@/components/SeoHead";
 
+// Auto-load-on-scroll helper for paginated list containers.
+// Triggers `onNearBottom` when the user scrolls within 200px of the bottom.
+const makeNearBottomHandler = (onNearBottom: () => void) =>
+  (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) onNearBottom();
+  };
+
 type StripeSession = {
   session_id: string;
   amount_total: number | null;
@@ -540,7 +548,7 @@ export default function Portal() {
   }, []);
 
   const loadMoreSection = useCallback(async (
-    section: "orders" | "falloffs" | "conversations" | "contacts" | "inquiries" | "editRequests" | "sampleRequests" | "aiSampleGenerations" | "profiles" | "projectRequirements",
+    section: "orders" | "falloffs" | "conversations" | "contacts" | "contactEvents" | "inquiries" | "editRequests" | "sampleRequests" | "aiSampleGenerations" | "profiles" | "projectRequirements",
     currentLength: number,
     pageSize: number = 20,
   ) => {
@@ -566,6 +574,7 @@ export default function Portal() {
         case "falloffs": setFalloffs((p) => dedupAppend(p as any) as any); break;
         case "conversations": setConversations((p) => dedupAppend(p as any) as any); break;
         case "contacts": setContacts((p) => dedupAppend(p as any) as any); break;
+        case "contactEvents": setContactEvents((p) => dedupAppend(p as any) as any); break;
         case "inquiries": setInquiries((p) => dedupAppend(p as any) as any); break;
         case "editRequests": setEditRequests((p) => dedupAppend(p as any) as any); break;
         case "sampleRequests": setSampleRequests((p) => dedupAppend(p as any) as any); break;
@@ -2106,67 +2115,77 @@ export default function Portal() {
               <h3 className="font-medium">CALL BACKS</h3>
               {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No items waiting{salesQ ? " match your search" : ""}.</p>}
               {salesCallbacks.length > 0 && (
-                <p className="text-xs text-muted-foreground">Showing latest {Math.min(callbacksVisibleCount, salesCallbacks.length)} of {salesCallbacks.length}.</p>
+                <p className="text-xs text-muted-foreground">
+                  Showing {Math.min(callbacksVisibleCount, salesCallbacks.length)} of {salesCallbacks.length} loaded
+                  {(sectionCounts.contactEvents ?? 0) > contactEvents.length ? ` · ${sectionCounts.contactEvents} total on server` : ""}.
+                </p>
               )}
-              {salesCallbacks.slice(0, callbacksVisibleCount).map(e => {
-                const contact = getContact(e.contact_id);
-                const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
-                const statusColor = contact ? getContactStatusColor(contact.status) : "hsl(var(--muted))";
-                const phoneHref = formatPhoneHref(contact?.phone);
-                return (
-                  <Card
-                    key={e.id}
-                    role="button"
-                    tabIndex={0}
-                    className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                    onClick={() => contact && openContactDrawer(contact.id)}
-                    onKeyDown={(event) => {
-                      if (!contact || (event.key !== "Enter" && event.key !== " ")) return;
-                      event.preventDefault();
-                      openContactDrawer(contact.id);
-                    }}
-                    style={{
-                      background: `linear-gradient(135deg, ${statusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--card)) 34%, hsl(var(--card)) 100%)`,
-                    }}
-                  >
-                    <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="font-medium">{e.title}</div>
-                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · Follow-up: {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
-                        {contact?.phone && (phoneHref ? (
-                          <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
-                            {contact.phone}
-                          </a>
-                        ) : (
-                          <div className="text-xs text-muted-foreground">{contact.phone}</div>
-                        ))}
-                        {e.description && <LinkifiedText text={e.description} className="block text-sm whitespace-pre-wrap" stopPropagation />}
-                      </div>
-                      <div className="flex flex-row flex-wrap items-center justify-end gap-2">
-                        <Badge className="pricing-button h-8 rounded-none px-3 py-0 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
-                        <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void completeCallback(e.id); }}>Done</Button>
-                        <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void tryCallbackAgain(e.id); }}>Tried</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-              {callbacksVisibleCount < salesCallbacks.length && (
-                <div
-                  ref={(el) => {
-                    if (!el) return;
-                    const obs = new IntersectionObserver((entries) => {
-                      if (entries.some((e) => e.isIntersecting)) {
-                        setCallbacksVisibleCount((n) => n + 10);
-                      }
-                    }, { rootMargin: "200px" });
-                    obs.observe(el);
-                  }}
-                  className="flex justify-center pt-2"
-                >
-                  <Button variant="outline" onClick={() => setCallbacksVisibleCount((n) => n + 10)}>Load more</Button>
-                </div>
-              )}
+              <div
+                className="max-h-[70vh] overflow-y-auto pr-1 space-y-2 rounded-none border border-border/40 bg-card/20 p-2"
+                onScroll={makeNearBottomHandler(() => {
+                  if (callbacksVisibleCount < salesCallbacks.length) {
+                    setCallbacksVisibleCount((n) => n + 10);
+                  } else if ((sectionCounts.contactEvents ?? 0) > contactEvents.length && !loadingMore.contactEvents) {
+                    loadMoreSection("contactEvents", contactEvents.length, 20);
+                  }
+                })}
+              >
+                {salesCallbacks.slice(0, callbacksVisibleCount).map(e => {
+                  const contact = getContact(e.contact_id);
+                  const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
+                  const statusColor = contact ? getContactStatusColor(contact.status) : "hsl(var(--muted))";
+                  const phoneHref = formatPhoneHref(contact?.phone);
+                  return (
+                    <Card
+                      key={e.id}
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      onClick={() => contact && openContactDrawer(contact.id)}
+                      onKeyDown={(event) => {
+                        if (!contact || (event.key !== "Enter" && event.key !== " ")) return;
+                        event.preventDefault();
+                        openContactDrawer(contact.id);
+                      }}
+                      style={{
+                        background: `linear-gradient(135deg, ${statusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--card)) 34%, hsl(var(--card)) 100%)`,
+                      }}
+                    >
+                      <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="font-medium">{e.title}</div>
+                          <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · Follow-up: {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
+                          {contact?.phone && (phoneHref ? (
+                            <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
+                              {contact.phone}
+                            </a>
+                          ) : (
+                            <div className="text-xs text-muted-foreground">{contact.phone}</div>
+                          ))}
+                          {e.description && <LinkifiedText text={e.description} className="block text-sm whitespace-pre-wrap" stopPropagation />}
+                        </div>
+                        <div className="flex flex-row flex-wrap items-center justify-end gap-2">
+                          <Badge className="pricing-button h-8 rounded-none px-3 py-0 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
+                          <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void completeCallback(e.id); }}>Done</Button>
+                          <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void tryCallbackAgain(e.id); }}>Tried</Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+                {callbacksVisibleCount < salesCallbacks.length && (
+                  <div className="flex justify-center pt-2">
+                    <Button variant="outline" onClick={() => setCallbacksVisibleCount((n) => n + 10)}>Load more</Button>
+                  </div>
+                )}
+                {callbacksVisibleCount >= salesCallbacks.length && (sectionCounts.contactEvents ?? 0) > contactEvents.length && (
+                  <div className="flex justify-center pt-2">
+                    <Button variant="outline" disabled={!!loadingMore.contactEvents} onClick={() => loadMoreSection("contactEvents", contactEvents.length, 20)}>
+                      {loadingMore.contactEvents ? "Loading…" : `Load more from server (${contactEvents.length} of ${sectionCounts.contactEvents})`}
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </TabsContent>
 
@@ -2269,6 +2288,19 @@ export default function Portal() {
               <p className="text-muted-foreground text-sm">No free sample requests yet.</p>
             )}
             {orderReqsFilter !== "samples" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
+            {orderReqsFilter !== "samples" && (
+              <p className="text-xs text-muted-foreground">
+                Showing {filteredOrders.length} of {sectionCounts.orders ?? orders.length} total orders.
+              </p>
+            )}
+            <div
+              className={orderReqsFilter !== "samples" ? "max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2" : ""}
+              onScroll={orderReqsFilter !== "samples" ? makeNearBottomHandler(() => {
+                if ((sectionCounts.orders ?? 0) > orders.length && !loadingMore.orders) {
+                  loadMoreSection("orders", orders.length, 20);
+                }
+              }) : undefined}
+            >
             {orderReqsFilter !== "samples" && filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
@@ -2460,6 +2492,7 @@ export default function Portal() {
                 </Button>
               </div>
             )}
+            </div>
           </TabsContent>
 
 
@@ -2475,6 +2508,17 @@ export default function Portal() {
               <Input value={falloffsSearch} onChange={(e) => setFalloffsSearch(e.target.value)} placeholder="Search falloffs by company, email, IP, location, session…" className="pl-9" />
             </div>
             {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
+            <p className="text-xs text-muted-foreground">
+              Showing {filteredFalloffs.length} of {sectionCounts.falloffs ?? falloffs.length} total falloffs.
+            </p>
+            <div
+              className="max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2"
+              onScroll={makeNearBottomHandler(() => {
+                if ((sectionCounts.falloffs ?? 0) > falloffs.length && !loadingMore.falloffs) {
+                  loadMoreSection("falloffs", falloffs.length, 20);
+                }
+              })}
+            >
             {filteredFalloffs.map(f => (
                <Card key={f.id} className="min-w-0 overflow-hidden">
                 <CardContent className="p-4 space-y-3">
@@ -2566,6 +2610,7 @@ export default function Portal() {
                 </Button>
               </div>
             )}
+            </div>
           </TabsContent>
 
           <TabsContent value="mailbox" className="grid min-w-0 grid-cols-1 gap-4 items-start lg:grid-cols-[360px_minmax(0,1fr)]">
@@ -2652,7 +2697,14 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="chats" className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-            <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+            <div
+              className="space-y-2 max-h-[70vh] overflow-y-auto pr-1 rounded-none border border-border/40 bg-card/20 p-2"
+              onScroll={makeNearBottomHandler(() => {
+                if ((sectionCounts.conversations ?? 0) > conversations.length && !loadingMore.conversations) {
+                  loadMoreSection("conversations", conversations.length, 20);
+                }
+              })}
+            >
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input value={chatsSearch} onChange={(e) => setChatsSearch(e.target.value)} placeholder="Search chats by client, message, role…" className="pl-9" />
@@ -2780,62 +2832,61 @@ export default function Portal() {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground">Showing latest {Math.min(clientsVisibleCount, clientBookContacts.length)} of {clientBookContacts.length}.</p>
+                <p className="text-xs text-muted-foreground">
+                  Showing {Math.min(clientsVisibleCount, clientBookContacts.length)} of {sectionCounts.contacts ?? clientBookContacts.length} total clients.
+                </p>
                 {clientBookContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {profilesQ ? "match your search" : "yet"}.</p>}
-                {clientBookContacts.slice(0, clientsVisibleCount).map(c => {
-                  const stats = contactOrderStatsByEmail.get(normalizeEmail(c.email) ?? "");
-                  const statusColor = getContactStatusColor(c.status);
-                  const statusLabel = contactStatuses.find(s => s.value === c.status)?.label ?? c.status;
-                  return (
-                    <Card
-                      key={c.id}
-                      role="button"
-                      tabIndex={0}
-                      className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                      onClick={() => openContactDrawer(c.id)}
-                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openContactDrawer(c.id); } }}
-                    >
-                      <CardContent className="space-y-1 p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="font-medium">{c.name || c.email || "Unnamed contact"}</div>
-                          <div className="flex items-center gap-2">
-                            <Badge style={{ backgroundColor: statusColor, color: "hsl(var(--background))" }} className="rounded-none">{statusLabel}</Badge>
-                            {stats && <Badge variant="outline" className="rounded-none">LTV {formatGBP(stats.ltv)}</Badge>}
-                            {contactPersons.filter(p => p.contact_id === c.id).length > 0 && (
-                              <Badge variant="outline" className="rounded-none">{contactPersons.filter(p => p.contact_id === c.id).length} contact{contactPersons.filter(p => p.contact_id === c.id).length === 1 ? "" : "s"}</Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {[c.email, c.phone, c.location, c.industry].filter(Boolean).join(" · ") || "No details on file"}
-                        </div>
-                        {c.notes && <LinkifiedText text={c.notes} className="block text-sm text-muted-foreground" stopPropagation />}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-                {(clientsVisibleCount < clientBookContacts.length || (sectionCounts.contacts ?? 0) > contacts.length) && (
-                  <div
-                    ref={(el) => {
-                      if (!el) return;
-                      const obs = new IntersectionObserver((entries) => {
-                        if (entries.some((e) => e.isIntersecting)) {
-                          setClientsVisibleCount((n) => n + 10);
-                          if ((sectionCounts.contacts ?? 0) > contacts.length && !loadingMore.contacts) {
-                            loadMoreSection("contacts", contacts.length, 20);
-                          }
-                        }
-                      }, { rootMargin: "200px" });
-                      obs.observe(el);
-                    }}
-                    className="flex justify-center pt-2"
-                  >
-                    <Button variant="outline" disabled={!!loadingMore.contacts} onClick={() => {
+                <div
+                  className="max-h-[70vh] overflow-y-auto pr-1 space-y-2 rounded-none border border-border/40 bg-card/20 p-2"
+                  onScroll={makeNearBottomHandler(() => {
+                    if (clientsVisibleCount < clientBookContacts.length) {
                       setClientsVisibleCount((n) => n + 10);
-                      if ((sectionCounts.contacts ?? 0) > contacts.length) loadMoreSection("contacts", contacts.length, 20);
-                    }}>{loadingMore.contacts ? "Loading…" : "Load more"}</Button>
-                  </div>
-                )}
+                    } else if ((sectionCounts.contacts ?? 0) > contacts.length && !loadingMore.contacts) {
+                      loadMoreSection("contacts", contacts.length, 20);
+                    }
+                  })}
+                >
+                  {clientBookContacts.slice(0, clientsVisibleCount).map(c => {
+                    const stats = contactOrderStatsByEmail.get(normalizeEmail(c.email) ?? "");
+                    const statusColor = getContactStatusColor(c.status);
+                    const statusLabel = contactStatuses.find(s => s.value === c.status)?.label ?? c.status;
+                    return (
+                      <Card
+                        key={c.id}
+                        role="button"
+                        tabIndex={0}
+                        className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        onClick={() => openContactDrawer(c.id)}
+                        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openContactDrawer(c.id); } }}
+                      >
+                        <CardContent className="space-y-1 p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="font-medium">{c.name || c.email || "Unnamed contact"}</div>
+                            <div className="flex items-center gap-2">
+                              <Badge style={{ backgroundColor: statusColor, color: "hsl(var(--background))" }} className="rounded-none">{statusLabel}</Badge>
+                              {stats && <Badge variant="outline" className="rounded-none">LTV {formatGBP(stats.ltv)}</Badge>}
+                              {contactPersons.filter(p => p.contact_id === c.id).length > 0 && (
+                                <Badge variant="outline" className="rounded-none">{contactPersons.filter(p => p.contact_id === c.id).length} contact{contactPersons.filter(p => p.contact_id === c.id).length === 1 ? "" : "s"}</Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {[c.email, c.phone, c.location, c.industry].filter(Boolean).join(" · ") || "No details on file"}
+                          </div>
+                          {c.notes && <LinkifiedText text={c.notes} className="block text-sm text-muted-foreground" stopPropagation />}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                  {(clientsVisibleCount < clientBookContacts.length || (sectionCounts.contacts ?? 0) > contacts.length) && (
+                    <div className="flex justify-center pt-2">
+                      <Button variant="outline" disabled={!!loadingMore.contacts} onClick={() => {
+                        setClientsVisibleCount((n) => n + 10);
+                        if ((sectionCounts.contacts ?? 0) > contacts.length) loadMoreSection("contacts", contacts.length, 20);
+                      }}>{loadingMore.contacts ? "Loading…" : "Load more"}</Button>
+                    </div>
+                  )}
+                </div>
               </TabsContent>
 
               <TabsContent value="retainers" className="space-y-2 pt-3">
