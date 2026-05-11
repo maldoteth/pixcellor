@@ -268,6 +268,13 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [contactEmail, setContactEmail] = useState<string>(() => {
+    try { return localStorage.getItem(CONTACT_EMAIL_KEY) ?? ""; } catch { return ""; }
+  });
+  const [contactPhone, setContactPhone] = useState<string>(() => {
+    try { return localStorage.getItem(CONTACT_PHONE_KEY) ?? ""; } catch { return ""; }
+  });
+  const [contactError, setContactError] = useState<string | null>(null);
 
   useEffect(() => {
     setDropdownOpen(false);
