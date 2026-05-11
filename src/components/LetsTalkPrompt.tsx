@@ -413,7 +413,7 @@ const LetsTalkPrompt = () => {
   const canSkip =
     step === "email" || (step === "phone" && !emailSkipped) || step === "media";
 
-  const isTextStep = step === "name" || step === "email" || step === "phone";
+  const isTextStep = step === "name" || step === "company" || step === "email" || step === "phone";
   const isLongStep = step === "dream" || step === "colours";
 
   const title =
@@ -425,7 +425,8 @@ const LetsTalkPrompt = () => {
 
   const promptLabel = (() => {
     if (step === "name") return "What's your name?";
-    if (step === "email") return `Hi ${name.split(" ")[0] || "there"}, what's your email?`;
+    if (step === "company") return `Nice to meet you ${name.split(" ")[0] || "there"} — what's your company or brand name?`;
+    if (step === "email") return `What's the best email for ${company || "you"}?`;
     if (step === "phone")
       return emailSkipped
         ? "Please share your phone number so we can reach you."
