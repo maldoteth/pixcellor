@@ -627,7 +627,7 @@ const LetsTalkPrompt = () => {
             <div className="w-full max-w-sm flex flex-col gap-2">
               <MagicLinkSignup
                 email={email}
-                benefit="Save this request to your dashboard so you can track it any time. We'll email you a one-tap login link."
+                benefit="Sign up to save to dashboard"
               />
               <a
                 href="tel:+441483912430"
