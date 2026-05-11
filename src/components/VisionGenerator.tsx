@@ -492,6 +492,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             source: "vision_generator_refine",
             visitor_id: getVisitorId(),
             company: answers.company?.trim() || null,
+            email: contactEmail.trim() || null,
+            phone: contactPhone.trim() || null,
           },
         },
       });
