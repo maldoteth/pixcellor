@@ -225,7 +225,7 @@ const text = {
 
 const button = {
   backgroundColor: '#ffffff',
-  borderRadius: '10px',
+  borderRadius: '0',
   color: '#050505',
   display: 'inline-block',
   fontSize: '14px',
@@ -247,7 +247,7 @@ export const template = createOrderEmail({
   fallbackPackage: 'Elite',
   title: 'Your Elite order is confirmed',
   preview: 'Your Pixcellor Elite order is confirmed',
-  nextBody: 'We’ll start mapping your premium build, SEO/AEO direction, edit workflow, and the core pages that need to make the biggest impact.',
+  nextBody: "If we don't already have your website details, you can add them on this form below. Keep an eye out on your emails for updates.",
   subjectFallback: 'Elite',
   displayName: 'Elite order confirmation',
   previewData: {

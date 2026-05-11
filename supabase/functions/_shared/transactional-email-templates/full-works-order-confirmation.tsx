@@ -225,7 +225,7 @@ const text = {
 
 const button = {
   backgroundColor: '#ffffff',
-  borderRadius: '10px',
+  borderRadius: '0',
   color: '#050505',
   display: 'inline-block',
   fontSize: '14px',
@@ -247,7 +247,7 @@ export const template = createOrderEmail({
   fallbackPackage: 'Full Works',
   title: 'Your Full Works order is confirmed',
   preview: 'Your Pixcellor Full Works order is confirmed',
-  nextBody: 'We’ll review your brief, confirm the key pages, and shape the first version around the strongest possible launch for your brand.',
+  nextBody: "If we don't already have your website details, you can add them on this form below. Keep an eye out on your emails for updates.",
   subjectFallback: 'Full Works',
   displayName: 'Full Works order confirmation',
   previewData: {
