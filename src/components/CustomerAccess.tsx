@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useHeroReady } from "@/hooks/use-hero-ready";
 import { supabase } from "@/integrations/supabase/client";
 
 function CustomerAuthForm() {
@@ -95,6 +96,7 @@ interface CustomerAccessProps {
 export default function CustomerAccess({ hidden = false, chatOpen = false }: CustomerAccessProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const heroReady = useHeroReady();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -120,7 +122,10 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
       onClick={() => setOpen((current) => !current)}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
-      className={`fixed left-1/2 top-4 z-[10000] ml-[44px] -translate-x-1/2 flex items-center justify-center rounded-sm transition-opacity duration-200 md:ml-[52px] md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100"} ${isMobile && chatOpen ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
+      initial={{ y: -8, filter: "blur(10px)" }}
+      animate={{ y: heroReady ? 0 : -8, filter: heroReady ? "blur(0px)" : "blur(10px)" }}
+      transition={{ duration: 0.6, delay: 0.16, ease: "easeOut" }}
+      className={`fixed left-1/2 top-4 z-[10000] ml-[44px] -translate-x-1/2 flex items-center justify-center rounded-sm transition-opacity duration-200 md:ml-[52px] md:top-6 lg:pointer-events-auto lg:opacity-100 ${(hidden || !heroReady) ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100"} ${isMobile && chatOpen ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
         backdropFilter: "blur(20px)",

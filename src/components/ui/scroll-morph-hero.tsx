@@ -380,6 +380,7 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
             if (introPhaseRef.current === "circle") return;
             introPhaseRef.current = "circle";
             setIntroPhase("circle");
+            window.dispatchEvent(new CustomEvent("pixcellor:hero-circle"));
             introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
             introTimersRef.current = [];
         };
@@ -609,6 +610,9 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
         const setPhase = (phase: AnimationPhase) => {
             introPhaseRef.current = phase;
             setIntroPhase(phase);
+            if (phase === "circle") {
+                window.dispatchEvent(new CustomEvent("pixcellor:hero-circle"));
+            }
         };
         const timer1 = window.setTimeout(() => setPhase("line"), 500);
         const timer2 = window.setTimeout(() => setPhase("circle"), 2500);
