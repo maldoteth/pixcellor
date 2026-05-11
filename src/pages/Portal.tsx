@@ -1524,10 +1524,14 @@ export default function Portal() {
   };
 
   const completeCallback = async (eventId: string) => {
+    const previous = contactEvents;
+    const completedAt = new Date().toISOString();
+    setContactEvents(current => current.map(e => e.id === eventId ? { ...e, completed_at: completedAt } : e));
     const { error } = await (supabase as any).rpc("portal_complete_callback", { _event_id: eventId });
-    if (error) toast.error(error.message);
-    else {
-      await loadPortalSnapshot();
+    if (error) {
+      setContactEvents(previous);
+      toast.error(`${error.message} — restored.`);
+    } else {
       toast.success("Let's Talk marked done.");
     }
   };
