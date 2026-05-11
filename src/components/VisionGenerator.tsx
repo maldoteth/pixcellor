@@ -982,10 +982,10 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
         >
           <DialogHeader>
             <DialogTitle className="flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4" /> See your dream landing page
+              <Sparkles className="h-4 w-4" />
             </DialogTitle>
             <DialogDescription>
-              Generate a desktop concept of your site for use as a reference guide.
+              {"\n"}
             </DialogDescription>
           </DialogHeader>
           {body}
