@@ -2116,6 +2116,9 @@ export default function Portal() {
               <Button onClick={openMobileContactForm}>
                 <UserPlus className="w-4 h-4 mr-2" /> Create client
               </Button>
+              <Button variant="outline" onClick={() => setStatsDialogOpen(true)}>
+                <BarChart3 className="w-4 h-4 mr-2" /> Stats
+              </Button>
             </div>
 
             {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a client first, then you can create sales events.</p>}
