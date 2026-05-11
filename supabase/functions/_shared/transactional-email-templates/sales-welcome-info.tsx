@@ -32,8 +32,8 @@ const SalesWelcomeEmail = ({ name }: SalesWelcomeProps) => (
             comes straight to me.
           </Text>
           <Text style={signoff}>
-            — Malik<br />
-            Founder, {BRAND_NAME}
+            — Alex<br />
+            Customer Support Director, {BRAND_NAME}
           </Text>
         </Section>
       </Container>
