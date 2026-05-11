@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Wand2, Copy, ExternalLink, Trash2, Mail, Check } from "lucide-react";
+import { Loader2, Wand2, Copy, ExternalLink, Trash2, Mail, Check, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +64,19 @@ export default function VisionStudio() {
   const [previews, setPreviews] = useState<Preview[]>([]);
   const [latest, setLatest] = useState<Preview | null>(null);
   const [visitorGens, setVisitorGens] = useState<VisitorGen[]>([]);
+  const [search, setSearch] = useState("");
+
+  const q = search.trim().toLowerCase();
+  const matchesPreview = (r: Preview) =>
+    !q ||
+    [r.title, r.brief, r.slug, r.created_by_email, r.client_email]
+      .some((v) => v && v.toLowerCase().includes(q));
+  const matchesVisitor = (g: VisitorGen) =>
+    !q ||
+    [g.brief, g.company, g.contact_name, g.email, g.phone, g.visitor_id, g.source]
+      .some((v) => v && v.toLowerCase().includes(q));
+  const filteredPreviews = previews.filter(matchesPreview);
+  const filteredVisitorGens = visitorGens.filter(matchesVisitor);
 
   const load = async () => {
     const { data, error } = await (supabase as any)
