@@ -24,7 +24,12 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
 
   const cleanup = useCallback(() => {
     if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
+      const ch: any = channelRef.current;
+      if (typeof ch.unsubscribe === "function" && !ch.topic) {
+        ch.unsubscribe();
+      } else {
+        supabase.removeChannel(ch);
+      }
       channelRef.current = null;
     }
   }, []);
