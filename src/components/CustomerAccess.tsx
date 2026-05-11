@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loader2, LogIn, X } from "lucide-react";
+import { Loader2, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -149,7 +149,7 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
           </motion.div>
         ) : (
           <motion.div key="login" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
-            <LogIn className="h-4 w-4 text-white drop-shadow-lg" />
+            <User className="h-4 w-4 text-white drop-shadow-lg" />
           </motion.div>
         )}
       </AnimatePresence>
