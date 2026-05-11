@@ -753,7 +753,7 @@ const LetsTalkPrompt = () => {
     </div>
   );
 
-  const lockClose = step === "done";
+  const lockClose = step === "done" || step === "consultation";
 
   if (isMobile) {
     return (
