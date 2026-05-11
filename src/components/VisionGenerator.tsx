@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Sparkles, X, Wand2 } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
+import MagicLinkSignup from "./MagicLinkSignup";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,8 +28,9 @@ interface VisionGeneratorProps {
 }
 
 type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
-type Stage = StepKey | "contact" | "generating" | "result" | "refine";
+type Stage = StepKey | "contact" | "generating" | "result" | "refine" | "requested";
 
+const CONTACT_NAME_KEY = "pixcellor:contact-name";
 const CONTACT_EMAIL_KEY = "pixcellor:contact-email";
 const CONTACT_PHONE_KEY = "pixcellor:contact-phone";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -268,6 +270,9 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [contactName, setContactName] = useState<string>(() => {
+    try { return localStorage.getItem(CONTACT_NAME_KEY) ?? ""; } catch { return ""; }
+  });
   const [contactEmail, setContactEmail] = useState<string>(() => {
     try { return localStorage.getItem(CONTACT_EMAIL_KEY) ?? ""; } catch { return ""; }
   });
@@ -275,6 +280,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     try { return localStorage.getItem(CONTACT_PHONE_KEY) ?? ""; } catch { return ""; }
   });
   const [contactError, setContactError] = useState<string | null>(null);
+  const [requestBusy, setRequestBusy] = useState(false);
+  const [requestKind, setRequestKind] = useState<"sample" | "order">("sample");
 
   useEffect(() => {
     setDropdownOpen(false);
@@ -355,6 +362,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             source: "vision_generator",
             visitor_id: getVisitorId(),
             company: finalAnswers.company?.trim() || null,
+            name: contactName.trim() || null,
             email: contactEmail.trim() || null,
             phone: contactPhone.trim() || null,
           },
@@ -394,10 +402,18 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     );
   })();
 
+  const hasContactSaved = () => {
+    return !!contactName.trim() && EMAIL_RE.test(contactEmail.trim());
+  };
+
   const goNext = () => {
     if (!currentStep) return;
     if (currentIndex === STEPS.length - 1) {
-      setStage("contact");
+      if (hasContactSaved()) {
+        void generate(answers);
+      } else {
+        setStage("contact");
+      }
     } else {
       setStage(STEPS[currentIndex + 1].key);
     }
@@ -408,7 +424,11 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     const cleared = { ...answers, [currentStep.key]: "" };
     setAnswers(cleared);
     if (currentIndex === STEPS.length - 1) {
-      setStage("contact");
+      if (hasContactSaved()) {
+        void generate(cleared);
+      } else {
+        setStage("contact");
+      }
     } else {
       setStage(STEPS[currentIndex + 1].key);
     }
@@ -419,8 +439,13 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   };
 
   const submitContact = () => {
+    const name = contactName.trim();
     const email = contactEmail.trim();
     const phone = contactPhone.trim();
+    if (name.length < 1) {
+      setContactError("Please enter your name.");
+      return;
+    }
     if (!EMAIL_RE.test(email)) {
       setContactError("Please enter a valid email address.");
       return;
@@ -431,6 +456,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     }
     setContactError(null);
     try {
+      localStorage.setItem(CONTACT_NAME_KEY, name);
       localStorage.setItem(CONTACT_EMAIL_KEY, email);
       if (phone) localStorage.setItem(CONTACT_PHONE_KEY, phone);
       else localStorage.removeItem(CONTACT_PHONE_KEY);
@@ -438,28 +464,48 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     void generate(answers);
   };
 
-  const orderThisStyle = () => {
+  const submitRequest = async (kind: "sample" | "order") => {
+    const name = contactName.trim();
+    const email = contactEmail.trim();
+    const phone = contactPhone.trim();
+    if (!name || !EMAIL_RE.test(email)) {
+      // Shouldn't happen since we gate the contact step, but bail safely.
+      toast.error("We need your name and email first.");
+      setStage("contact");
+      return;
+    }
+    setRequestKind(kind);
+    setRequestBusy(true);
     try {
-      sessionStorage.setItem(
-        "pixcellor:consultation-context",
-        JSON.stringify({
-          imageUrl,
-          brief: generatedFor,
-          company: answers.company,
-          email: contactEmail.trim() || null,
-          phone: contactPhone.trim() || null,
-          orderRequest: true,
-          at: Date.now(),
-        }),
-      );
-    } catch { /* ignore */ }
-    setOpen(false);
-    setTimeout(() => {
-      window.dispatchEvent(
-        new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }),
-      );
-    }, 200);
+      const sourceTag = kind === "order" ? "vision_order_request" : "vision_sample_request";
+      const requestDetails: Record<string, unknown> = {
+        company: answers.company?.trim() || null,
+        brief: generatedFor || buildBrief(answers),
+        vision_image_url: imageUrl,
+        kind,
+      };
+      const { error } = await supabase.functions.invoke("process-lets-talk-lead", {
+        body: {
+          name,
+          email,
+          phone: phone || null,
+          source: sourceTag,
+          request_details: requestDetails,
+          attachment_urls: imageUrl ? [imageUrl] : null,
+          partial: false,
+        },
+      });
+      if (error) throw error;
+      setStage("requested");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't submit — please try again.");
+    } finally {
+      setRequestBusy(false);
+    }
   };
+
+  const orderThisStyle = () => { void submitRequest("order"); };
+  const requestConsultation = () => { void submitRequest("sample"); };
 
   const downloadImage = () => {
     if (!imageUrl) return;
@@ -469,28 +515,6 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  };
-
-  const requestConsultation = () => {
-    try {
-      sessionStorage.setItem(
-        "pixcellor:consultation-context",
-        JSON.stringify({
-          imageUrl,
-          brief: generatedFor,
-          company: answers.company,
-          email: contactEmail.trim() || null,
-          phone: contactPhone.trim() || null,
-          at: Date.now(),
-        }),
-      );
-    } catch { /* ignore */ }
-    setOpen(false);
-    setTimeout(() => {
-      window.dispatchEvent(
-        new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }),
-      );
-    }, 200);
   };
 
   const refineVision = async () => {
@@ -746,11 +770,11 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               <img src={imageUrl} alt="Your AI-generated landing page vision" className="w-full block" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <Button onClick={orderThisStyle} className="w-full rounded-none">
-                Use this as style guide
+              <Button onClick={orderThisStyle} disabled={requestBusy} className="w-full rounded-none">
+                {requestBusy && requestKind === "order" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Use this as style guide"}
               </Button>
-              <Button onClick={requestConsultation} variant="outline" className="w-full rounded-none">
-                Request custom sample
+              <Button onClick={requestConsultation} disabled={requestBusy} variant="outline" className="w-full rounded-none">
+                {requestBusy && requestKind === "sample" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Request custom sample"}
               </Button>
             </div>
           </motion.div>
@@ -798,9 +822,22 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               We'll save your generation so you can request edits or order without re-entering details.
             </p>
             <div className="flex flex-col gap-2">
-              <label className="text-foreground/70 text-xs uppercase tracking-wider">Email</label>
+              <label className="text-foreground/70 text-xs uppercase tracking-wider">Name</label>
               <input
                 autoFocus
+                type="text"
+                autoComplete="name"
+                value={contactName}
+                onChange={(e) => { setContactName(e.target.value); setContactError(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitContact(); } }}
+                placeholder="Your name"
+                maxLength={120}
+                className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-foreground/70 text-xs uppercase tracking-wider">Email</label>
+              <input
                 type="email"
                 inputMode="email"
                 autoComplete="email"
@@ -838,11 +875,36 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               </Button>
             </div>
           </motion.div>
+        ) : stage === "requested" ? (
+          <motion.div
+            key="requested"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="space-y-3 text-center py-2"
+          >
+            <p className="text-foreground text-lg font-semibold">We'll be in touch! 🎉</p>
+            <p className="text-foreground/70 text-sm">
+              Thanks {contactName.trim().split(" ")[0] || "there"} — your request has been sent. Our team will reach out within 24 hours.
+            </p>
+            <MagicLinkSignup
+              email={contactEmail}
+              benefit="Sign up to access your dashboard — view this generation, your sample request, and order updates in one place."
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => { setOpen(false); }}
+              className="w-full rounded-none mt-2"
+            >
+              Close
+            </Button>
+          </motion.div>
         ) : (
           stepBody
         )}
       </AnimatePresence>
-      {stage !== "generating" && stage !== "result" && stage !== "refine" && !busy && (
+      {stage !== "generating" && stage !== "result" && stage !== "refine" && stage !== "requested" && !busy && (
         <p className="text-[11px] text-muted-foreground/70 text-center flex items-center justify-center gap-1">
           <Wand2 className="h-3 w-3" /> Skip anything you're not sure about — we'll fill the gaps.
         </p>
