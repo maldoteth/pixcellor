@@ -401,10 +401,18 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     );
   })();
 
+  const hasContactSaved = () => {
+    return !!contactName.trim() && EMAIL_RE.test(contactEmail.trim());
+  };
+
   const goNext = () => {
     if (!currentStep) return;
     if (currentIndex === STEPS.length - 1) {
-      setStage("contact");
+      if (hasContactSaved()) {
+        void generate(answers);
+      } else {
+        setStage("contact");
+      }
     } else {
       setStage(STEPS[currentIndex + 1].key);
     }
@@ -415,7 +423,11 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     const cleared = { ...answers, [currentStep.key]: "" };
     setAnswers(cleared);
     if (currentIndex === STEPS.length - 1) {
-      setStage("contact");
+      if (hasContactSaved()) {
+        void generate(cleared);
+      } else {
+        setStage("contact");
+      }
     } else {
       setStage(STEPS[currentIndex + 1].key);
     }
