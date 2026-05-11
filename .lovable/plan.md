@@ -1,38 +1,42 @@
-## Goal
-Make the admin Portal load fast by fetching only the first 10 rows of every list on initial load, with "Load more" / scroll pagination for the rest.
+## Why the latest AI generation didn't show up as a hot lead
 
-## Backend changes
+The Clients tab reads from the `contacts` table. The `generate-vision` edge function only inserts into `ai_sample_generations` — it never creates or updates a row in `contacts`. So even though the latest run captured `d@d.com` / `9123933993` / company "jim", no hot lead was created.
 
-1. Update `portal_fetch_snapshot()` to take an optional `_limit int default 10`:
-   - Apply `LIMIT _limit` to every list (orders, falloffs, conversations, messages, profiles, inquiries, contacts, contactEvents, contactPersons, projectRequirements, editRequests, sampleRequests, aiSampleGenerations, emailLogs).
-   - Add a `counts` object with the total row count for each section so the UI can show "10 of N" and know when to stop paginating.
+Confirmed in the DB:
+- `ai_sample_generations` has the new row (email + phone present).
+- `contacts` has no matching new row — the only `d@d.com` contact is an older one from `stripe_checkout_started`.
+- No trigger exists on `ai_sample_generations` to mirror it into `contacts`.
 
-2. Add `portal_fetch_section(_section text, _limit int default 20, _offset int default 0)` returning a JSON array. Used by "Load more" buttons. Whitelisted section names map to the same queries/orderings as the snapshot.
+## Fix plan
 
-Both functions remain `SECURITY DEFINER` and call `portal_require_admin()`.
+Add a contact upsert step in `supabase/functions/generate-vision/index.ts`, right after the `ai_sample_generations` insert, only when the request carries an email or phone.
 
-## Frontend changes (`src/pages/Portal.tsx`)
+### Behaviour
 
-1. Initial `loadPortalSnapshot()` already calls the RPC with no args — keep that, server defaults to 10. Store `counts` in state.
+- Look up an existing contact by email (case-insensitive) first, then by phone if no email match.
+- If found:
+  - Fill in missing fields only (name/company/email/phone), never overwrite existing data.
+  - Bump `status` to `hot` unless it's already `gold` or `archived` (don't demote VIPs or revive archived leads).
+  - Update `updated_at`.
+- If not found:
+  - Insert a new contact with:
+    - `name`: company (or "AI sample lead" fallback — `name` is NOT NULL).
+    - `email`, `phone`, `contact_name` (= name from meta if any), `industry: 'general'` (default).
+    - `status: 'hot'`.
+    - `source: 'ai_vision_generator'`.
+    - `notes`: brief one-liner like "AI sample generated for {company} — {date}".
+- Wrap in try/catch and log errors; do not fail the generation response if the contact write fails.
 
-2. For each list section, add a `loadMore(section)` helper that calls `portal_fetch_section`, appends results to the matching state array, and tracks an offset.
+### Why "hot"
 
-3. Add a `Load more` button (or IntersectionObserver-driven auto-load) at the bottom of these lists that currently render everything:
-   - Orders / stripe sessions
-   - Visitor fall-offs
-   - Chat conversations (sidebar list)
-   - Contacts (CRM table)
-   - AI sample generations (Vision Studio)
-   - Edit requests
-   - Sample requests
-   - Email logs
-   - Inquiries
+Capturing email + phone before AI generation is a strong intent signal — matches the existing `hot` semantic in `STATUS_OPTIONS`.
 
-4. Keep existing client-side pagination for `clientsVisibleCount` and `callbacksVisibleCount`, but make them trigger a server `loadMore` once the visible count exceeds what's loaded.
+### Files to change
 
-5. Realtime subscriptions: when an event fires, instead of a full re-fetch, prepend the changed row to the matching list (already partly implemented). Fallback to a `loadPortalSnapshot()` for unknown changes — still cheap because of the 10-row cap.
+- `supabase/functions/generate-vision/index.ts` — add the upsert block after the `ai_sample_generations` insert.
 
-## Out of scope
+No DB migration is required (the `contacts` table already has all needed columns and a permissive service-role policy).
 
-- No UI redesign — same tables, same tabs.
-- Search/filter still operates on loaded rows; if the user types a query and matches are sparse, we'll add a "search server-side" fetch in a follow-up.
+### After deploy
+
+Trigger one fresh AI generation with email+phone and verify a new `contacts` row appears with `status = 'hot'` and `source = 'ai_vision_generator'`, then confirm it shows in the Clients tab under Hot.
