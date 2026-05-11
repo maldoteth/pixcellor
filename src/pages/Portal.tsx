@@ -2508,6 +2508,17 @@ export default function Portal() {
               <Input value={falloffsSearch} onChange={(e) => setFalloffsSearch(e.target.value)} placeholder="Search falloffs by company, email, IP, location, session…" className="pl-9" />
             </div>
             {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
+            <p className="text-xs text-muted-foreground">
+              Showing {filteredFalloffs.length} of {sectionCounts.falloffs ?? falloffs.length} total falloffs.
+            </p>
+            <div
+              className="max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2"
+              onScroll={makeNearBottomHandler(() => {
+                if ((sectionCounts.falloffs ?? 0) > falloffs.length && !loadingMore.falloffs) {
+                  loadMoreSection("falloffs", falloffs.length, 20);
+                }
+              })}
+            >
             {filteredFalloffs.map(f => (
                <Card key={f.id} className="min-w-0 overflow-hidden">
                 <CardContent className="p-4 space-y-3">
