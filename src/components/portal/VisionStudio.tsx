@@ -190,51 +190,25 @@ export default function VisionStudio() {
         </p>
       </div>
 
-      <div className="rounded-none border border-border p-4 space-y-3 bg-card/40">
-        <div className="grid gap-3 sm:grid-cols-[1fr_2fr]">
-          <Input
-            placeholder="Internal title (optional, e.g. Acme Florist v1)"
-            value={title}
-            maxLength={120}
-            onChange={(e) => setTitle(e.target.value)}
-            className="rounded-none"
-          />
-          <Textarea
-            placeholder="Design brief: brand, industry, vibe, colours, headline, sections…"
-            value={brief}
-            rows={3}
-            maxLength={2000}
-            onChange={(e) => setBrief(e.target.value)}
-            className="rounded-none resize-none"
-          />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input
-            placeholder="Client name (optional, e.g. Jane)"
-            value={clientName}
-            maxLength={120}
-            onChange={(e) => setClientName(e.target.value)}
-            className="rounded-none"
-          />
-          <Input
-            type="email"
-            placeholder="Client email (optional — auto-emails preview if set)"
-            value={clientEmail}
-            maxLength={200}
-            onChange={(e) => setClientEmail(e.target.value)}
-            className="rounded-none"
-          />
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-            <Wand2 className="h-3 w-3" /> {clientEmail ? "Will email the client automatically once generated." : "Add a client email to auto-send the preview."}
+      <div className="rounded-none border border-border p-4 bg-card/40 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold inline-flex items-center gap-2">
+            <Wand2 className="h-4 w-4" /> Generate a new preview
           </p>
-          <Button onClick={generate} disabled={busy} className="rounded-none gap-2">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-            {busy ? "Generating…" : "Generate preview"}
-          </Button>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Same step-by-step wizard your visitors use — pick details, then optionally auto-send to a client.
+          </p>
         </div>
+        <Button onClick={() => setWizardOpen(true)} className="rounded-none gap-2">
+          <Wand2 className="h-4 w-4" /> Generate preview
+        </Button>
       </div>
+
+      <AdminVisionWizard
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
+        onCreated={handleCreated}
+      />
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
