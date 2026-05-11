@@ -470,7 +470,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       onClick={() => setOpen((v) => !v)}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
-      className={`absolute right-28 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:right-[136px] md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100"} ${isMobile && chatOpen ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
+      className={`fixed right-28 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:right-[136px] md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden && !open ? "pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100" : "opacity-100 pointer-events-auto"} ${isMobile && chatOpen && !open ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 100%)",
         backdropFilter: "blur(20px)",
