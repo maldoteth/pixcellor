@@ -78,7 +78,7 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: 0.1 }}
-      className="mt-4 px-3 py-3"
+      className="mt-4 py-3"
     >
       {sent ? (
         <>
