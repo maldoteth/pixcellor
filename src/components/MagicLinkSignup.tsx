@@ -92,9 +92,15 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
     >
       {sent ? (
         <div className="flex items-start gap-2 text-xs text-foreground/85">
-          <Mail className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          {handoff.status === "claiming" || handoff.status === "claimed" ? (
+            <Loader2 className="h-3.5 w-3.5 mt-0.5 shrink-0 animate-spin" />
+          ) : (
+            <Mail className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          )}
           <p>
-            Magic link sent to <span className="font-medium">{cleanEmail}</span>. Open it to access your dashboard — your sample and AI generations will be saved there.
+            {handoff.status === "claiming" || handoff.status === "claimed"
+              ? "Signing you in…"
+              : <>Magic link sent to <span className="font-medium">{cleanEmail}</span>. Open it on any device — this tab will log in automatically.</>}
           </p>
         </div>
       ) : (
