@@ -411,15 +411,3 @@ All colors MUST be HSL.
   --blob-sensitivity: 30px;
 }
 
-/* Silently block landscape on small/touch devices */
-@media (orientation: landscape) and (max-height: 500px) {
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: #000;
-    z-index: 2147483647;
-    pointer-events: auto;
-  }
-  body { overflow: hidden !important; }
-}
