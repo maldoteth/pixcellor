@@ -40,8 +40,16 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp, visionBrief } = await req.json();
-    
+    let raw: unknown;
+    try { raw = await req.json(); } catch {
+      return new Response(JSON.stringify({ error: "invalid_json" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const parsedBody = BodySchema.safeParse(raw);
+    if (!parsedBody.success) {
+      return new Response(JSON.stringify({ error: "invalid_input", fields: parsedBody.error.flatten().fieldErrors }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp, visionBrief } = parsedBody.data;
+
     if (!priceId) throw new Error("Missing priceId");
 
     // Domain add-on (optional). The domain is reserved in the basket and only
