@@ -262,7 +262,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       subject: EMAIL_SUBJECTS[emailType] || 'Notification',
       html,
       text,
-      purpose: 'transactional',
+      purpose: 'auth',
       label: emailType,
       queued_at: new Date().toISOString(),
     },
