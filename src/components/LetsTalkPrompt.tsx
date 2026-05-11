@@ -802,7 +802,7 @@ const LetsTalkPrompt = () => {
       }}
     >
       <DialogContent
-        className="sm:max-w-[460px] carousel-label-glass border-foreground/10 text-foreground"
+        className="sm:max-w-[460px] carousel-label-glass lets-talk-dialog-glass text-foreground"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => {
           if (lockClose) e.preventDefault();
