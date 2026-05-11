@@ -112,7 +112,9 @@ Deno.serve(async (req) => {
           contact_name: name,
           email: email || null,
           phone: phone || null,
-          notes: [existingNotes, noteLines].filter(Boolean).join("\n"),
+          notes: existingNotes?.includes(noteLines)
+            ? existingNotes
+            : [existingNotes, noteLines].filter(Boolean).join("\n"),
           status: desiredStatus,
           media: mergedMedia,
           updated_at: new Date().toISOString(),
