@@ -55,12 +55,8 @@ const publicUrl = (path: string) =>
   supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 
 export default function VisionStudio() {
-  const [title, setTitle] = useState("");
-  const [brief, setBrief] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  const [clientName, setClientName] = useState("");
-  const [busy, setBusy] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [previews, setPreviews] = useState<Preview[]>([]);
   const [latest, setLatest] = useState<Preview | null>(null);
   const [visitorGens, setVisitorGens] = useState<VisitorGen[]>([]);
