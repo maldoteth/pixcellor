@@ -357,11 +357,10 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       const parts = raw.split(",");
       needle = (parts[parts.length - 1] ?? "").trim().toLowerCase();
     }
-    if (!needle) return list;
-    const matches = list.filter(
+    if (!needle) return [];
+    return list.filter(
       (s) => s.label.toLowerCase().includes(needle) || s.value.toLowerCase().includes(needle),
     );
-    return matches.length ? matches : list;
   })();
 
   const goNext = () => {
