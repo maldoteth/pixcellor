@@ -439,8 +439,13 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   };
 
   const submitContact = () => {
+    const name = contactName.trim();
     const email = contactEmail.trim();
     const phone = contactPhone.trim();
+    if (name.length < 1) {
+      setContactError("Please enter your name.");
+      return;
+    }
     if (!EMAIL_RE.test(email)) {
       setContactError("Please enter a valid email address.");
       return;
@@ -451,6 +456,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     }
     setContactError(null);
     try {
+      localStorage.setItem(CONTACT_NAME_KEY, name);
       localStorage.setItem(CONTACT_EMAIL_KEY, email);
       if (phone) localStorage.setItem(CONTACT_PHONE_KEY, phone);
       else localStorage.removeItem(CONTACT_PHONE_KEY);
@@ -458,28 +464,48 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     void generate(answers);
   };
 
-  const orderThisStyle = () => {
+  const submitRequest = async (kind: "sample" | "order") => {
+    const name = contactName.trim();
+    const email = contactEmail.trim();
+    const phone = contactPhone.trim();
+    if (!name || !EMAIL_RE.test(email)) {
+      // Shouldn't happen since we gate the contact step, but bail safely.
+      toast.error("We need your name and email first.");
+      setStage("contact");
+      return;
+    }
+    setRequestKind(kind);
+    setRequestBusy(true);
     try {
-      sessionStorage.setItem(
-        "pixcellor:consultation-context",
-        JSON.stringify({
-          imageUrl,
-          brief: generatedFor,
-          company: answers.company,
-          email: contactEmail.trim() || null,
-          phone: contactPhone.trim() || null,
-          orderRequest: true,
-          at: Date.now(),
-        }),
-      );
-    } catch { /* ignore */ }
-    setOpen(false);
-    setTimeout(() => {
-      window.dispatchEvent(
-        new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }),
-      );
-    }, 200);
+      const sourceTag = kind === "order" ? "vision_order_request" : "vision_sample_request";
+      const requestDetails: Record<string, unknown> = {
+        company: answers.company?.trim() || null,
+        brief: generatedFor || buildBrief(answers),
+        vision_image_url: imageUrl,
+        kind,
+      };
+      const { error } = await supabase.functions.invoke("process-lets-talk-lead", {
+        body: {
+          name,
+          email,
+          phone: phone || null,
+          source: sourceTag,
+          request_details: requestDetails,
+          attachment_urls: imageUrl ? [imageUrl] : null,
+          partial: false,
+        },
+      });
+      if (error) throw error;
+      setStage("requested");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't submit — please try again.");
+    } finally {
+      setRequestBusy(false);
+    }
   };
+
+  const orderThisStyle = () => { void submitRequest("order"); };
+  const requestConsultation = () => { void submitRequest("sample"); };
 
   const downloadImage = () => {
     if (!imageUrl) return;
@@ -489,28 +515,6 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  };
-
-  const requestConsultation = () => {
-    try {
-      sessionStorage.setItem(
-        "pixcellor:consultation-context",
-        JSON.stringify({
-          imageUrl,
-          brief: generatedFor,
-          company: answers.company,
-          email: contactEmail.trim() || null,
-          phone: contactPhone.trim() || null,
-          at: Date.now(),
-        }),
-      );
-    } catch { /* ignore */ }
-    setOpen(false);
-    setTimeout(() => {
-      window.dispatchEvent(
-        new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }),
-      );
-    }, 200);
   };
 
   const refineVision = async () => {
