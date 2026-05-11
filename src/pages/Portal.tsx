@@ -976,6 +976,15 @@ export default function Portal() {
     const statusFiltered = clientsStatusFilter === "all"
       ? filtered
       : filtered.filter(c => c.status === clientsStatusFilter);
+    const retainerEmails = new Set(
+      orders.filter(isMonthlyRetainerOrder).map(o => normalizeEmail(o.customer_email)).filter(Boolean) as string[]
+    );
+    const retainerFiltered = (clientsStatusFilter === "gold" && clientsRetainerOnly)
+      ? statusFiltered.filter(c => {
+          const e = normalizeEmail(c.email);
+          return e ? retainerEmails.has(e) : false;
+        })
+      : statusFiltered;
     const heatRank: Record<Contact["status"], number> = {
       hot: 0, gold: 1, aware: 2, cold: 3, archived: 4,
     } as any;
