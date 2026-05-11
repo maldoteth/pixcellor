@@ -32,8 +32,12 @@ Deno.serve(async (req) => {
     const email = (claimsData.claims.email as string | undefined)?.toLowerCase();
     if (!email) return json({ error: 'No email on session' }, 400);
 
-    const body = await req.json().catch(() => ({}));
-    const sid = typeof body?.sid === 'string' ? body.sid.trim() : '';
+    const rawBody = await req.json().catch(() => ({}));
+    const parsedBody = BodySchema.safeParse(rawBody);
+    if (!parsedBody.success) {
+      return json({ error: 'Invalid handoff id' }, 400);
+    }
+    const sid = parsedBody.data.sid.trim();
     if (!sid || sid.length < 16 || sid.length > 128) {
       return json({ error: 'Invalid handoff id' }, 400);
     }
