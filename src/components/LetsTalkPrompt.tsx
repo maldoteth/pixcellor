@@ -775,8 +775,8 @@ const LetsTalkPrompt = () => {
         dismissible={!lockClose}
       >
         <DrawerContent className="carousel-label-glass border-foreground/10 text-foreground">
-          <DrawerHeader>
-            <DrawerTitle className="text-foreground text-center">{title}</DrawerTitle>
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>{title}</DrawerTitle>
           </DrawerHeader>
           {lockClose && (
             <button
@@ -813,8 +813,8 @@ const LetsTalkPrompt = () => {
           if (lockClose) e.preventDefault();
         }}
       >
-        <DialogHeader>
-          <DialogTitle className="text-foreground">{title}</DialogTitle>
+        <DialogHeader className="sr-only">
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         {content}
       </DialogContent>
