@@ -10,7 +10,7 @@ interface Body {
   email?: string | null;
   phone?: string | null;
   source?: string | null;
-  request_details?: { dream?: string | null; colours?: string | null } | null;
+  request_details?: { company?: string | null; dream?: string | null; colours?: string | null } | null;
   attachment_urls?: string[] | null;
 }
 
