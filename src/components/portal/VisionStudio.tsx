@@ -35,21 +35,6 @@ interface VisitorGen {
 
 const BUCKET = "vision-previews";
 
-const dataUrlToBlob = (dataUrl: string) => {
-  const [meta, b64] = dataUrl.split(",");
-  const mime = /data:(.*?);base64/.exec(meta)?.[1] ?? "image/png";
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return new Blob([bytes], { type: mime });
-};
-
-const makeSlug = () => {
-  const a = "abcdefghijkmnopqrstuvwxyz23456789";
-  let s = "";
-  for (let i = 0; i < 10; i++) s += a[Math.floor(Math.random() * a.length)];
-  return s;
-};
 
 const publicUrl = (path: string) =>
   supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
