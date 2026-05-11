@@ -574,6 +574,7 @@ export default function Portal() {
         case "falloffs": setFalloffs((p) => dedupAppend(p as any) as any); break;
         case "conversations": setConversations((p) => dedupAppend(p as any) as any); break;
         case "contacts": setContacts((p) => dedupAppend(p as any) as any); break;
+        case "contactEvents": setContactEvents((p) => dedupAppend(p as any) as any); break;
         case "inquiries": setInquiries((p) => dedupAppend(p as any) as any); break;
         case "editRequests": setEditRequests((p) => dedupAppend(p as any) as any); break;
         case "sampleRequests": setSampleRequests((p) => dedupAppend(p as any) as any); break;
