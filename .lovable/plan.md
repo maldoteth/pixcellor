@@ -1,64 +1,34 @@
-# Cross-device magic link auto-login
+## Goal
+Make magic-link login send a fresh link whenever someone requests one, while preventing spam with the rule: **maximum 3 requests per email in 2 minutes**.
 
-When someone requests a magic link on desktop and clicks it on mobile, the original desktop tab should silently log itself in within a few seconds — no copy/paste, no QR code.
+## What I found
+- The login UI currently sets `linkSent = true` after a send and disables the button forever until the email field changes. That makes it look like the app refuses to send new links “ages later”.
+- The current code calls the built-in auth magic-link sender directly from the browser, which has its own stricter resend cooldown. That is why the user sees “already sent” even when the intended product rule is different.
+- Existing email delivery logs show magic-link emails being queued and sent correctly; this is mainly a request/resend flow issue.
 
-## How it works (high level)
+## Plan
+1. **Move magic-link request handling into a backend function**
+   - Add a `request-customer-login-link` backend function that receives an email + handoff id.
+   - Validate the email and generate the magic link server-side.
+   - Enforce the product rate limit: allow up to **3 login-link requests per email within 2 minutes**.
+   - Return a clear success or rate-limited response with a retry time.
 
-1. Before sending the email, the desktop tab generates a random `nonce` (handoff id) and stores it locally.
-2. The nonce is included in the magic link's redirect URL.
-3. When the mobile device clicks the link and finishes Supabase's email-OTP exchange, a tiny landing page mints a **second** one-time magic-link token (server-side, via service role) and saves it to a `login_handoffs` row keyed by the nonce.
-4. The desktop tab is subscribed to that row via Supabase Realtime. As soon as the token arrives, desktop calls `verifyOtp` with it and is signed in. The handoff row is then marked consumed.
-5. Mobile stays signed in too. Both devices end up logged in.
+2. **Track login-link request attempts**
+   - Add a small `login_link_requests` database table storing email, created time, and lightweight request metadata.
+   - Keep access locked to the backend only.
+   - Add an index for fast counting by email/time window.
 
-The desktop never needs to receive the user's actual access/refresh tokens — it redeems its own fresh one-time token, which is the only secure way to do this.
+3. **Update the login UI behavior**
+   - Replace direct browser `signInWithOtp` calls in customer login components with the new backend function.
+   - After a successful send, keep the page in “waiting for link” mode, but do **not** permanently block future sends.
+   - Add a resend option/countdown so users can request another link later.
+   - If they hit 3 in 2 minutes, show a clear message like: “Too many login links requested. Try again in X seconds.”
 
-## What gets built
+4. **Preserve cross-device login**
+   - Continue generating the `sid` handoff id and including it in the magic-link redirect URL.
+   - Keep the desktop tab listening for the mobile click and auto-login behavior.
 
-### 1. `login_handoffs` table (new)
-Columns: `id` (nonce, text, pk), `email` (text), `token_hash` (text, the second magic link token, nullable until mobile fills it), `claimed_at` (timestamptz, when desktop redeems), `created_at`, `expires_at` (5 min TTL).
-RLS: no public access. All access via security-definer RPCs and service-role edge function.
-
-### 2. `request-cross-device-login` edge function (new)
-Called by desktop when the user clicks "Send magic link". Inserts a `login_handoffs` row for the nonce + email and triggers `supabase.auth.signInWithOtp` with `emailRedirectTo` set to `/auth/handoff?sid=<nonce>`. Validates email format and rate-limits per email/IP.
-
-### 3. `/auth/handoff` page (new)
-Mobile lands here after clicking the email link. Supabase's auth listener fires, the user is signed in on mobile. The page then calls the next edge function with the `sid` from the URL.
-
-### 4. `complete-cross-device-login` edge function (new)
-Receives `{ sid, jwt }` from the handoff page. Verifies the JWT, looks up the handoff row, confirms the email matches, then uses the service role to call `auth.admin.generateLink({ type: 'magiclink', email })` and stores the resulting one-time token hash in the row. Mobile UI shows "Signed in — your other device is logging in now."
-
-### 5. Desktop subscription + auto-redeem
-`MagicLinkSignup` and `CustomerAuth` are updated:
-- Generate a nonce, persist it in component state + localStorage.
-- After "Send magic link" succeeds, subscribe via Supabase Realtime to the matching `login_handoffs` row.
-- When `token_hash` appears, call `supabase.auth.verifyOtp({ email, token, type: 'magiclink' })` and navigate to `/customer-portal`.
-- Show a subtle "Waiting for you to click the link…" status, replaced by "Signed in — taking you to your dashboard…" on success.
-
-### 6. Cleanup + safety
-- Handoff rows expire after 5 minutes; a small cron job (or on-insert trigger) deletes expired rows.
-- Once `claimed_at` is set, the token hash is wiped and the row becomes unusable.
-- Nonces are 256-bit, random, and only meaningful when paired with the matching email — so a leaked nonce alone cannot log anyone in.
-
-## Affected files
-
-- `supabase/migrations/<new>.sql` — `login_handoffs` table + RLS + RPCs
-- `supabase/functions/request-cross-device-login/index.ts` — new
-- `supabase/functions/complete-cross-device-login/index.ts` — new
-- `src/components/MagicLinkSignup.tsx` — add nonce + realtime auto-redeem
-- `src/pages/CustomerAuth.tsx` — same upgrade
-- `src/components/CustomerAccess.tsx` — same upgrade
-- `src/pages/AuthHandoff.tsx` — new landing page for the mobile click
-- `src/App.tsx` — register `/auth/handoff` route
-
-## Out of scope (not changing)
-
-- The portal admin login flow (`/portal-login`) — admins use a different mechanism.
-- The auth email template itself stays as-is; only the redirect URL changes.
-- No 6-digit code fallback — you chose auto-login only.
-
-## Edge cases handled
-
-- Desktop tab closed before mobile click → handoff row expires, no harm.
-- Mobile click on the same desktop tab → still works; desktop just logs in via the normal flow and the handoff row is ignored.
-- User clicks the link twice → second click is a no-op (token already consumed).
-- Multiple desktop tabs open → only the one with the matching nonce in localStorage logs in.
+5. **Validate**
+   - Check the request function response for normal sends and rate-limited sends.
+   - Confirm the UI no longer gets stuck on “Magic link sent”.
+   - Confirm the existing auth handoff page still completes cross-device login.
