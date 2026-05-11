@@ -84,12 +84,18 @@ Deno.serve(async (req) => {
     }
 
     const today = new Date().toISOString().slice(0, 10);
-    const noteLine = `Vision generator — ${stage} (${today})`;
+    // Only meaningful milestones get a note line — no spam per stage change
+    const milestoneNote =
+      stage === "result"
+        ? `AI sample generated for ${company || name} — ${today}`
+        : null;
 
     if (existing) {
       const protectedStatus = existing.status === "gold" || existing.status === "archived";
       const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-      if (!protectedStatus && existing.status !== "hot") patch.status = "warm";
+      if (!protectedStatus && existing.status !== "hot") {
+        patch.status = stage === "result" ? "hot" : "warm";
+      }
       if (!existing.email && email) patch.email = email;
       if (!existing.phone && phone) patch.phone = phone;
       if ((!existing.contact_name || existing.contact_name.trim() === "") && name) {
@@ -102,10 +108,9 @@ Deno.serve(async (req) => {
       ) {
         patch.name = company || name;
       }
-      // Append a single progress note per stage if not already present
-      const noteAlready = existing.notes?.includes(noteLine);
-      if (!noteAlready) {
-        patch.notes = existing.notes ? `${existing.notes}\n${noteLine}` : noteLine;
+      // Only append a milestone note (e.g. when sample is generated), and only once
+      if (milestoneNote && !existing.notes?.includes(milestoneNote)) {
+        patch.notes = existing.notes ? `${existing.notes}\n${milestoneNote}` : milestoneNote;
       }
       const { error } = await supabase.from("contacts").update(patch).eq("id", existing.id);
       if (error) {
@@ -120,6 +125,8 @@ Deno.serve(async (req) => {
       });
     }
 
+    const initialNote = `AI Vision Generator lead — started ${today}${visitorId ? ` · visitor ${visitorId}` : ""}${milestoneNote ? `\n${milestoneNote}` : ""}`;
+
     const { data: inserted, error: insErr } = await supabase
       .from("contacts")
       .insert({
@@ -127,10 +134,10 @@ Deno.serve(async (req) => {
         contact_name: name,
         email,
         phone,
-        status: "warm",
+        status: stage === "result" ? "hot" : "warm",
         source: "ai_vision_generator",
         industry: "general",
-        notes: `${noteLine}${visitorId ? ` · visitor ${visitorId}` : ""}`,
+        notes: initialNote,
       })
       .select("id")
       .single();
