@@ -87,6 +87,7 @@ Deno.serve(async (req) => {
       isSampleRequest
         ? `Free Sample Request via ${source}.`
         : `Let's Talk submission via ${source}.`,
+      company ? `Company / brand: ${company}` : "",
       phone ? "Requested a callback." : "",
       email ? "Requested info by email." : "",
       briefLines,
