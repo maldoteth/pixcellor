@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Sparkles, X, Wand2 } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
@@ -264,6 +264,10 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    setDropdownOpen(false);
+  }, [stage]);
 
   const reset = () => {
     setImageUrl(null);
