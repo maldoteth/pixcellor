@@ -2743,7 +2743,44 @@ export default function Portal() {
                   <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input value={profilesSearch} onChange={(e) => { setProfilesSearch(e.target.value); setClientsVisibleCount(10); }} placeholder="Search the contact book by name, email, company, phone, notes…" className="pl-9" />
                 </div>
-                <p className="text-xs text-muted-foreground">Showing latest {Math.min(clientsVisibleCount, clientBookContacts.length)} of {clientBookContacts.length}. Gold-status clients first.</p>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="text-xs text-muted-foreground">Sort:</span>
+                  {([
+                    { value: "newest", label: "Newest first" },
+                    { value: "oldest", label: "Oldest first" },
+                    { value: "hot", label: "Hot → Cold" },
+                    { value: "cold", label: "Cold → Hot" },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => { setClientsSort(opt.value); setClientsVisibleCount(10); }}
+                      className={`rounded-none border px-2 py-1 text-xs transition-colors ${clientsSort === opt.value ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                  <span className="ml-2 text-xs text-muted-foreground">Colour:</span>
+                  <button
+                    type="button"
+                    onClick={() => { setClientsStatusFilter("all"); setClientsVisibleCount(10); }}
+                    className={`rounded-none border px-2 py-1 text-xs transition-colors ${clientsStatusFilter === "all" ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
+                  >
+                    All
+                  </button>
+                  {contactStatuses.map(s => (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick={() => { setClientsStatusFilter(s.value as Contact["status"]); setClientsVisibleCount(10); }}
+                      className={`flex items-center gap-1.5 rounded-none border px-2 py-1 text-xs transition-colors ${clientsStatusFilter === s.value ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
+                    >
+                      <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">Showing latest {Math.min(clientsVisibleCount, clientBookContacts.length)} of {clientBookContacts.length}.</p>
                 {clientBookContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {profilesQ ? "match your search" : "yet"}.</p>}
                 {clientBookContacts.slice(0, clientsVisibleCount).map(c => {
                   const stats = contactOrderStatsByEmail.get(normalizeEmail(c.email) ?? "");
