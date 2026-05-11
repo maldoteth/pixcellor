@@ -647,8 +647,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           ))}
         </div>
       </div>
-      <p className="text-foreground text-base font-semibold">{currentStep.label}</p>
-      <p className="text-foreground/60 text-xs">{currentStep.helper}</p>
+      <p className="text-foreground text-base font-semibold uppercase tracking-wider">{currentStep.label}</p>
+      <p className="text-foreground/60 text-xs whitespace-pre-wrap">{currentStep.helper}</p>
 
       <div className="relative">
         {currentStep.multiline ? (
@@ -957,7 +957,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           >
             <DrawerHeader>
               <DrawerTitle className="flex items-center gap-2">
-                <Wand2 className="h-4 w-4" /> See your dream site
+                <Wand2 className="h-4 w-4" />
               </DrawerTitle>
             </DrawerHeader>
             {body}
