@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { AlertTriangle, Archive, Check, Clipboard, ExternalLink, Home, ImagePlus, Inbox, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Sparkles, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Check, Clipboard, ExternalLink, Home, ImagePlus, Inbox, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Sparkles, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
@@ -2072,7 +2072,7 @@ export default function Portal() {
           </div>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 xl:grid-cols-10">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 xl:grid-cols-11">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales ({callbacks.length})</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live ({filteredOrders.length + sampleRequests.length})</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed ({completedOrders.length})</TabsTrigger>
@@ -2081,6 +2081,7 @@ export default function Portal() {
             <TabsTrigger value="campaigns" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Megaphone className="h-3.5 w-3.5 shrink-0" />Campaigns</TabsTrigger>
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats ({filteredConversations.length})</TabsTrigger>
             <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({goldClientCount}/{clientBookContacts.length})</TabsTrigger>
+            <TabsTrigger value="stats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><BarChart3 className="h-3.5 w-3.5 shrink-0" />Stats</TabsTrigger>
             <TabsTrigger value="studio" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Sparkles className="h-3.5 w-3.5 shrink-0" />Studio</TabsTrigger>
             <TabsTrigger value="alerts" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><AlertTriangle className="h-3.5 w-3.5 shrink-0" />Alerts ({adminAlerts.filter(a => !a.resolved_at).length})</TabsTrigger>
           </TabsList>
@@ -2428,6 +2429,14 @@ export default function Portal() {
               </Card>
             );
             })}
+            {orderReqsFilter !== "samples" && (sectionCounts.orders ?? 0) > orders.length && (
+              <div className="flex justify-center pt-2">
+                <Button variant="outline" size="sm" disabled={!!loadingMore.orders} onClick={() => loadMoreSection("orders", orders.length, 20)}>
+                  {loadingMore.orders ? "Loading…" : `Load more (${orders.length} of ${sectionCounts.orders})`}
+                </Button>
+              </div>
+            )}
+            </div>
           </TabsContent>
 
           <TabsContent value="completed" className="space-y-2">
@@ -2495,14 +2504,6 @@ export default function Portal() {
                 </Card>
               );
             })}
-            {orderReqsFilter !== "samples" && (sectionCounts.orders ?? 0) > orders.length && (
-              <div className="flex justify-center pt-2">
-                <Button variant="outline" size="sm" disabled={!!loadingMore.orders} onClick={() => loadMoreSection("orders", orders.length, 20)}>
-                  {loadingMore.orders ? "Loading…" : `Load more (${orders.length} of ${sectionCounts.orders})`}
-                </Button>
-              </div>
-            )}
-            </div>
           </TabsContent>
 
 
@@ -2904,6 +2905,44 @@ export default function Portal() {
             </div>
           </TabsContent>
 
+          <TabsContent value="stats" className="space-y-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Total sales</CardTitle></CardHeader>
+                <CardContent><div className="text-3xl font-semibold">{formatGBP(counters.totalSales)}</div></CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Websites delivered (paid orders)</CardTitle></CardHeader>
+                <CardContent><div className="text-3xl font-semibold">{counters.totalWebsites}</div></CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Potential sales (chatted, no buy)</CardTitle></CardHeader>
+                <CardContent><div className="text-3xl font-semibold">{counters.potential}</div></CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Website visits</CardTitle></CardHeader>
+                <CardContent className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="text-2xl font-semibold">{counters.uniqueVisitors}</div>
+                    <div className="text-xs text-muted-foreground">Visitors</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-semibold">{counters.totalVisitEvents}</div>
+                    <div className="text-xs text-muted-foreground">Events</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-semibold">{counters.pricingViews}</div>
+                    <div className="text-xs text-muted-foreground">Pricing opens</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-semibold">{counters.buyClicks}</div>
+                    <div className="text-xs text-muted-foreground">Buy clicks</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="studio" className="min-w-0">
             <VisionStudio />
           </TabsContent>
@@ -2976,46 +3015,6 @@ export default function Portal() {
 
         </Tabs>
 
-        {/* Counters */}
-        <div className="grid grid-cols-1 gap-4 pt-10 md:grid-cols-2 xl:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Total sales</CardTitle></CardHeader>
-            <CardContent><div className="text-3xl font-semibold">{formatGBP(counters.totalSales)}</div></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Websites delivered (paid orders)</CardTitle></CardHeader>
-            <CardContent><div className="text-3xl font-semibold">{counters.totalWebsites}</div></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Potential sales (chatted, no buy)</CardTitle></CardHeader>
-            <CardContent><div className="text-3xl font-semibold">{counters.potential}</div></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Website visits</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="text-2xl font-semibold">{counters.uniqueVisitors}</div>
-                <div className="text-xs text-muted-foreground">Visitors</div>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold">{counters.totalVisitEvents}</div>
-                <div className="text-xs text-muted-foreground">Events</div>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold">{counters.pricingViews}</div>
-                <div className="text-xs text-muted-foreground">Pricing opens</div>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold">{counters.buyClicks}</div>
-                <div className="text-xs text-muted-foreground">Buy clicks</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <p className="text-xs text-muted-foreground text-center pt-4">
-          {"\n"}
-        </p>
       </div>
 
       <Drawer open={Boolean(contactDetailDrawerContact)} onOpenChange={(open) => !open && setContactDetailDrawerId(null)}>
