@@ -42,7 +42,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const body = await req.json().catch(() => ({}))
+    const rawBody = await req.json().catch(() => ({}))
+    const parsedBody = BodySchema.safeParse(rawBody)
+    if (!parsedBody.success) {
+      return json({ error: 'Invalid input' }, 400)
+    }
+    const body = parsedBody.data
     const rawEmail = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
     const redirectTo = typeof body?.redirectTo === 'string' ? body.redirectTo : `${SITE_URL}/customer-portal`
 
