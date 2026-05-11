@@ -60,6 +60,7 @@ const App = () => (
           <Route path="/legal" element={<Legal />} />
           <Route path="/legal/:doc" element={<Legal />} />
           <Route path="/preview/:slug" element={<VisionPreview />} />
+          <Route path="/auth/handoff" element={<AuthHandoff />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
