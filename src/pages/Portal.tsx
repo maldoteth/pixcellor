@@ -438,6 +438,7 @@ export default function Portal() {
   const [loadingMore, setLoadingMore] = useState<Record<string, boolean>>({});
   const [clientsSort, setClientsSort] = useState<"newest" | "oldest" | "hot" | "cold">("newest");
   const [clientsStatusFilter, setClientsStatusFilter] = useState<"all" | Contact["status"]>("all");
+  const [clientsRetainerOnly, setClientsRetainerOnly] = useState(false);
   
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples">("all");
   const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
