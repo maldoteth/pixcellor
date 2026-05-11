@@ -2655,6 +2655,13 @@ export default function Portal() {
                   </button>
                 );
               })}
+              {(sectionCounts.conversations ?? 0) > conversations.length && (
+                <div className="flex justify-center pt-2">
+                  <Button variant="outline" size="sm" disabled={!!loadingMore.conversations} onClick={() => loadMoreSection("conversations", conversations.length, 20)}>
+                    {loadingMore.conversations ? "Loading…" : `Load more (${conversations.length} of ${sectionCounts.conversations})`}
+                  </Button>
+                </div>
+              )}
             </div>
             <Card className="min-w-0 max-h-[70vh] overflow-hidden flex flex-col">
               <CardContent className="p-4 overflow-y-auto space-y-3 flex-1">
