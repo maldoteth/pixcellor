@@ -9,6 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
+import MagicLinkSignup from "@/components/MagicLinkSignup";
 
 type Mode = "talk" | "request" | "consultation";
 type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "consultation" | "done";
@@ -463,6 +464,10 @@ const LetsTalkPrompt = () => {
               </Button>
             </div>
             {error && <p className="text-red-400 text-xs">{error}</p>}
+            <MagicLinkSignup
+              email={email}
+              benefit="Save this AI generation to your dashboard. We'll email you a one-tap login link — no password needed."
+            />
           </motion.div>
         ) : step === "refine" && visionUrl ? (
           <motion.div
@@ -517,6 +522,10 @@ const LetsTalkPrompt = () => {
                 ? `Thanks ${name.split(" ")[0]} — a member of our team will be in touch within 24 hours to confirm your order and get the build started. We've saved your details and your sample.`
                 : `Thanks ${name.split(" ")[0]} — a member of our team will be in touch within 24 hours to arrange a quick call and walk you through your sample. We've saved your details and won't ask again.`}
             </p>
+            <MagicLinkSignup
+              email={email}
+              benefit="Save your sample and request to your dashboard. We'll email you a one-tap login link — no password needed."
+            />
             <Button type="button" variant="pricing" onClick={() => setOpen(false)} className="h-10 px-6 mt-2 font-semibold">
               Close
             </Button>
@@ -538,6 +547,12 @@ const LetsTalkPrompt = () => {
                 ? "We'll review your brief and send a free sample shortly."
                 : "We'll be in touch shortly."}
             </p>
+            <div className="w-full max-w-sm">
+              <MagicLinkSignup
+                email={email}
+                benefit="Save this request to your dashboard so you can track it any time. We'll email you a one-tap login link."
+              />
+            </div>
           </motion.div>
         ) : (
           <motion.div

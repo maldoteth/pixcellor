@@ -11,6 +11,7 @@ import {
   FileText,
   Globe2,
   Home,
+  Image as ImageIcon,
   Loader2,
   LogOut,
   MessageCircle,
@@ -18,6 +19,7 @@ import {
   PanelLeft,
   ReceiptText,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -87,7 +89,7 @@ const BUY_AGAIN_PACKAGES = [
   },
 ] as const;
 
-type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "payments";
+type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "activity" | "payments";
 
 type CustomerOrder = {
   id: string;
@@ -123,10 +125,34 @@ type CustomerRequirement = {
   updated_at: string;
 };
 
+type CustomerSampleRequest = {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  source: string | null;
+  package_name: string | null;
+  request_details: Record<string, unknown> | null;
+  delivered_at: string | null;
+  delivered_domain: string | null;
+  created_at: string;
+};
+
+type CustomerVisionPreview = {
+  id: string;
+  slug: string;
+  title: string | null;
+  brief: string | null;
+  image_path: string;
+  created_at: string;
+};
+
 type CustomerPortalData = {
   email: string;
   orders: CustomerOrder[];
   projectRequirements: CustomerRequirement[];
+  sampleRequests?: CustomerSampleRequest[];
+  visionPreviews?: CustomerVisionPreview[];
 };
 
 const formatMoney = (amount: number | null, currency: string | null) => {
@@ -229,6 +255,9 @@ export default function CustomerPortal() {
   const briefs = useMemo(() => data?.projectRequirements ?? [], [data?.projectRequirements]);
   const deliveredOrders = useMemo(() => orders.filter((order) => order.order_status === "delivered"), [orders]);
   const retainerOrders = useMemo(() => orders.filter(isRetainerOrder), [orders]);
+  const sampleRequests = useMemo(() => data?.sampleRequests ?? [], [data?.sampleRequests]);
+  const visionPreviews = useMemo(() => data?.visionPreviews ?? [], [data?.visionPreviews]);
+  const activityCount = sampleRequests.length + visionPreviews.length;
   const latestRetainer = retainerOrders[0] ?? null;
   const nextRetainerPayment = latestRetainer ? addBillingPeriod(latestRetainer.created_at, billingLabel(latestRetainer)) : null;
   const nextOrder = orders.find((order) => order.order_status !== "delivered") ?? orders[0] ?? null;
@@ -238,6 +267,7 @@ export default function CustomerPortal() {
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
     { title: "Site previews", value: "delivered", icon: Globe2 },
+    { title: "Samples & AI", value: "activity", icon: Sparkles },
     { title: "Plan & payments", value: "payments", icon: CreditCard },
   ];
 
@@ -400,7 +430,7 @@ export default function CustomerPortal() {
               </div>
 
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PortalTab)} className="space-y-5">
-                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-5">
+                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 lg:grid-cols-6">
                   {navItems.map((item) => (
                     <TabsTrigger
                       key={item.value}
@@ -453,6 +483,29 @@ export default function CustomerPortal() {
                 <TabsContent value="delivered" className="space-y-4">
                   <SectionHeader title="Delivered site previews" description="Live previews and links for completed deliveries." count={deliveredOrders.length} />
                   {deliveredOrders.length === 0 ? <EmptyState icon={Globe2} title="No sites yet" text="Delivered projects will appear here with a preview window." /> : <div className="grid gap-4 xl:grid-cols-2">{deliveredOrders.map((order) => <DeliveredPreview key={order.id} order={order} />)}</div>}
+                </TabsContent>
+
+                <TabsContent value="activity" className="space-y-6">
+                  <div className="space-y-4">
+                    <SectionHeader title="Free sample requests" description="Sample briefs you've sent us — we'll deliver each one to your inbox." count={sampleRequests.length} />
+                    {sampleRequests.length === 0 ? (
+                      <EmptyState icon={Sparkles} title="No sample requests yet" text="Request a free sample from the homepage and it will appear here." />
+                    ) : (
+                      <div className="grid gap-3">
+                        {sampleRequests.map((sample) => <SampleRequestCard key={sample.id} sample={sample} />)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-4">
+                    <SectionHeader title="AI generations" description="Every AI vision you've generated — open them any time." count={visionPreviews.length} />
+                    {visionPreviews.length === 0 ? (
+                      <EmptyState icon={ImageIcon} title="No AI generations yet" text="Generate a vision from the homepage and it will be saved here." />
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {visionPreviews.map((preview) => <VisionPreviewCard key={preview.id} preview={preview} />)}
+                      </div>
+                    )}
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="payments" className="space-y-4">
@@ -694,6 +747,85 @@ function DeliveredPreview({ order }: { order: CustomerOrder }) {
         ) : (
           <div className="rounded-md border border-border bg-background/50 p-6 text-sm text-muted-foreground">Preview domain is being prepared.</div>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SampleRequestCard({ sample }: { sample: CustomerSampleRequest }) {
+  const details = sample.request_details ?? {};
+  const dream = typeof (details as Record<string, unknown>).dream === "string" ? ((details as Record<string, unknown>).dream as string) : null;
+  const colours = typeof (details as Record<string, unknown>).colours === "string" ? ((details as Record<string, unknown>).colours as string) : null;
+  const previewLink = sample.delivered_domain ? previewUrl(sample.delivered_domain) : null;
+  return (
+    <Card className="border-border bg-card/70 backdrop-blur-xl">
+      <CardContent className="space-y-3 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <h3 className="text-base font-semibold">Free sample request</h3>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Submitted {new Date(sample.created_at).toLocaleString()}</p>
+          </div>
+          {sample.delivered_at ? (
+            <Badge className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">
+              <CheckCircle2 className="mr-1 h-3 w-3" /> Delivered
+            </Badge>
+          ) : (
+            <Badge variant="outline">In progress</Badge>
+          )}
+        </div>
+        {(dream || colours) && (
+          <div className="grid gap-2 text-sm md:grid-cols-2">
+            {dream && (
+              <div className="rounded-md border border-border bg-background/50 p-3">
+                <div className="text-xs text-muted-foreground">Brief</div>
+                <p className="mt-1 line-clamp-4 whitespace-pre-wrap leading-snug">{dream}</p>
+              </div>
+            )}
+            {colours && (
+              <div className="rounded-md border border-border bg-background/50 p-3">
+                <div className="text-xs text-muted-foreground">Colours & style</div>
+                <p className="mt-1 line-clamp-4 whitespace-pre-wrap leading-snug">{colours}</p>
+              </div>
+            )}
+          </div>
+        )}
+        {previewLink && (
+          <Button asChild variant="pricing" size="sm" className="gap-2">
+            <a href={previewLink} target="_blank" rel="noreferrer">Open delivered sample <ExternalLink className="h-4 w-4" /></a>
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+const VISION_BUCKET = "vision-previews";
+
+function VisionPreviewCard({ preview }: { preview: CustomerVisionPreview }) {
+  const imageUrl = supabase.storage.from(VISION_BUCKET).getPublicUrl(preview.image_path).data.publicUrl;
+  return (
+    <Card className="overflow-hidden border-border bg-card/70 backdrop-blur-xl">
+      <a href={`/vision/${preview.slug}`} target="_blank" rel="noreferrer" className="block">
+        <div className="aspect-[16/10] overflow-hidden border-b border-border bg-black/40">
+          {imageUrl ? (
+            <img src={imageUrl} alt={preview.title || "AI generated vision"} className="h-full w-full object-cover" loading="lazy" />
+          ) : (
+            <div className="flex h-full items-center justify-center text-muted-foreground"><ImageIcon className="h-8 w-8" /></div>
+          )}
+        </div>
+      </a>
+      <CardContent className="space-y-2 p-4">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="truncate text-sm font-semibold">{preview.title || "AI vision"}</h3>
+          <span className="shrink-0 text-xs text-muted-foreground">{new Date(preview.created_at).toLocaleDateString()}</span>
+        </div>
+        {preview.brief && <p className="line-clamp-2 text-xs text-muted-foreground">{preview.brief}</p>}
+        <Button asChild variant="pricing" size="sm" className="w-full gap-2">
+          <a href={`/vision/${preview.slug}`} target="_blank" rel="noreferrer">Open vision <ExternalLink className="h-3.5 w-3.5" /></a>
+        </Button>
       </CardContent>
     </Card>
   );
