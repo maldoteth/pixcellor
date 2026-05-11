@@ -67,9 +67,9 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
       const bytes = new Uint8Array(32);
       crypto.getRandomValues(bytes);
       const sid = btoa(String.fromCharCode(...bytes))
-        .replaceAll("+", "-")
-        .replaceAll("/", "_")
-        .replaceAll("=", "");
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/g, "");
       sidRef.current = sid;
       setStatus("waiting");
 
