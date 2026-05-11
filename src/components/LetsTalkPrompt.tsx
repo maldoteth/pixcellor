@@ -798,7 +798,6 @@ const LetsTalkPrompt = () => {
     <Dialog
       open={open}
       onOpenChange={(o) => {
-        if (!o && lockClose) return;
         setOpen(o);
       }}
     >
