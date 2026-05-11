@@ -648,7 +648,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
         </div>
       </div>
       <p className="text-foreground text-base font-semibold uppercase tracking-wider">{currentStep.label}</p>
-      <p className="text-foreground/60 text-xs whitespace-pre-wrap">{currentStep.helper}</p>
+      <p className="text-foreground/60 text-xs text-slate-200 whitespace-pre-wrap">{currentStep.helper}</p>
 
       <div className="relative">
         {currentStep.multiline ? (
