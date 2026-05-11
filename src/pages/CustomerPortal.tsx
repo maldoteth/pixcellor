@@ -255,6 +255,9 @@ export default function CustomerPortal() {
   const briefs = useMemo(() => data?.projectRequirements ?? [], [data?.projectRequirements]);
   const deliveredOrders = useMemo(() => orders.filter((order) => order.order_status === "delivered"), [orders]);
   const retainerOrders = useMemo(() => orders.filter(isRetainerOrder), [orders]);
+  const sampleRequests = useMemo(() => data?.sampleRequests ?? [], [data?.sampleRequests]);
+  const visionPreviews = useMemo(() => data?.visionPreviews ?? [], [data?.visionPreviews]);
+  const activityCount = sampleRequests.length + visionPreviews.length;
   const latestRetainer = retainerOrders[0] ?? null;
   const nextRetainerPayment = latestRetainer ? addBillingPeriod(latestRetainer.created_at, billingLabel(latestRetainer)) : null;
   const nextOrder = orders.find((order) => order.order_status !== "delivered") ?? orders[0] ?? null;
@@ -264,6 +267,7 @@ export default function CustomerPortal() {
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
     { title: "Site previews", value: "delivered", icon: Globe2 },
+    { title: "Samples & AI", value: "activity", icon: Sparkles },
     { title: "Plan & payments", value: "payments", icon: CreditCard },
   ];
 
