@@ -438,7 +438,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
         <Button type="button" variant="outline" onClick={() => { setError(null); setStep("vision-refine"); }} disabled={!visionBrief?.imageUrl} className="h-12 font-semibold gap-2">
           <Wand2 className="w-4 h-4" /> Tweak / re-prompt
         </Button>
-        <Button type="button" variant="pricing" onClick={() => setStep("domain")} className="h-12 font-semibold">
+        <Button type="button" variant="pricing" onClick={() => { void trackApprovedSample(); setStep("domain"); }} className="h-12 font-semibold">
           Looks great → Continue
         </Button>
       </div>
