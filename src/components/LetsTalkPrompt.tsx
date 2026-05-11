@@ -132,11 +132,12 @@ const LetsTalkPrompt = () => {
       const requestDetails =
         mode === "request"
           ? {
+              company: company.trim() || null,
               dream: finalDream?.trim() || null,
               colours: finalColours?.trim() || null,
               vision_image_url: hostedVision ?? finalVisionUrl ?? null,
             }
-          : null;
+          : { company: company.trim() || null };
       const baseAttachments = mode === "request" ? finalMedia ?? [] : null;
       const attachments = mode === "request"
         ? Array.from(new Set([...(baseAttachments ?? []), ...(hostedVision ? [hostedVision] : [])]))
