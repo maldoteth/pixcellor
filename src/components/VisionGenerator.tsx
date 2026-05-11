@@ -518,14 +518,14 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       const attachments = imageUrl ? [imageUrl] : null;
 
       // Track as a live sample/order in the samples feed so admins can action it.
-      const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
+      const { error: insertErr } = await supabase.from("lets_talk_leads").insert([{
         name,
         email,
         phone: phone || null,
         source: "free_sample_request",
         request_details: requestDetails,
         attachment_urls: attachments,
-      });
+      }]);
       if (insertErr) throw insertErr;
 
       const { error } = await supabase.functions.invoke("process-lets-talk-lead", {
