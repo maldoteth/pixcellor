@@ -418,6 +418,37 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
         />
       )}
 
+      {SUGGESTIONS[currentStep.key] && (
+        <div className="flex flex-wrap gap-1.5">
+          {SUGGESTIONS[currentStep.key]!.map((s) => {
+            const active = isSuggestionActive(currentStep.key, s.value);
+            return (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => applySuggestion(currentStep.key, s.value)}
+                className={`px-2.5 py-1 rounded-full text-xs border transition ${
+                  active
+                    ? "bg-foreground text-background border-foreground"
+                    : "bg-foreground/5 text-foreground/80 border-foreground/15 hover:border-foreground/40 hover:bg-foreground/10"
+                }`}
+              >
+                {active && currentStep.key === "sections" ? "✓ " : ""}{s.label}
+              </button>
+            );
+          })}
+          {currentStep.key === "sections" && answers.sections.trim() && (
+            <button
+              type="button"
+              onClick={() => setAnswers((a) => ({ ...a, sections: "" }))}
+              className="px-2.5 py-1 rounded-full text-xs border border-foreground/15 text-foreground/60 hover:text-foreground hover:border-foreground/40 transition"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-2 mt-1">
         <Button
           type="button"
