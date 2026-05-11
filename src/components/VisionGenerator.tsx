@@ -76,7 +76,7 @@ const STEPS: StepDef[] = [
   },
   {
     key: "sections",
-    label: "Pages & sections you want",
+    label: "Pages & special requests you want",
     helper: "Tap to add — these are the parts of your website.",
     placeholder: "Tap suggestions below or type your own",
     multiline: true,
