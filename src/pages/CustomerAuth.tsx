@@ -29,17 +29,11 @@ export default function CustomerAuth() {
     const cleanEmail = email.trim().toLowerCase();
     const emailRedirectTo = handoff.start();
 
+    const result = await requestLink(cleanEmail, emailRedirectTo);
     if (result.ok) {
       setLinkSent(true);
       toast.success("Magic link sent. Open it on any device — this tab will log in too.");
     } else if (result.rateLimited === true) {
-      toast.error(`Too many requests. Try again in ${result.retryAfter}s.`);
-    } else if (result.rateLimited === false) {
-      toast.error(result.message);
-    }
-      setLinkSent(true);
-      toast.success("Magic link sent. Open it on any device — this tab will log in too.");
-    } else if (result.rateLimited) {
       toast.error(`Too many requests. Try again in ${result.retryAfter}s.`);
     } else {
       toast.error(result.message);
