@@ -770,11 +770,11 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               <img src={imageUrl} alt="Your AI-generated landing page vision" className="w-full block" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <Button onClick={orderThisStyle} className="w-full rounded-none">
-                Use this as style guide
+              <Button onClick={orderThisStyle} disabled={requestBusy} className="w-full rounded-none">
+                {requestBusy && requestKind === "order" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Use this as style guide"}
               </Button>
-              <Button onClick={requestConsultation} variant="outline" className="w-full rounded-none">
-                Request custom sample
+              <Button onClick={requestConsultation} disabled={requestBusy} variant="outline" className="w-full rounded-none">
+                {requestBusy && requestKind === "sample" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Request custom sample"}
               </Button>
             </div>
           </motion.div>
