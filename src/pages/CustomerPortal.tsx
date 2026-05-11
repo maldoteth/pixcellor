@@ -485,6 +485,29 @@ export default function CustomerPortal() {
                   {deliveredOrders.length === 0 ? <EmptyState icon={Globe2} title="No sites yet" text="Delivered projects will appear here with a preview window." /> : <div className="grid gap-4 xl:grid-cols-2">{deliveredOrders.map((order) => <DeliveredPreview key={order.id} order={order} />)}</div>}
                 </TabsContent>
 
+                <TabsContent value="activity" className="space-y-6">
+                  <div className="space-y-4">
+                    <SectionHeader title="Free sample requests" description="Sample briefs you've sent us — we'll deliver each one to your inbox." count={sampleRequests.length} />
+                    {sampleRequests.length === 0 ? (
+                      <EmptyState icon={Sparkles} title="No sample requests yet" text="Request a free sample from the homepage and it will appear here." />
+                    ) : (
+                      <div className="grid gap-3">
+                        {sampleRequests.map((sample) => <SampleRequestCard key={sample.id} sample={sample} />)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-4">
+                    <SectionHeader title="AI generations" description="Every AI vision you've generated — open them any time." count={visionPreviews.length} />
+                    {visionPreviews.length === 0 ? (
+                      <EmptyState icon={ImageIcon} title="No AI generations yet" text="Generate a vision from the homepage and it will be saved here." />
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {visionPreviews.map((preview) => <VisionPreviewCard key={preview.id} preview={preview} />)}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
                 <TabsContent value="payments" className="space-y-4">
                   <SectionHeader title="Plan & payments" description="Retainer plan details, past payments, and the next scheduled billing date." count={retainerOrders.length} />
                   <div className="grid gap-4 lg:grid-cols-3">
