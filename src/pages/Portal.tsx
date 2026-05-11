@@ -2535,6 +2535,13 @@ export default function Portal() {
                 </CardContent>
               </Card>
             ))}
+            {(sectionCounts.falloffs ?? 0) > falloffs.length && (
+              <div className="flex justify-center pt-2">
+                <Button variant="outline" size="sm" disabled={!!loadingMore.falloffs} onClick={() => loadMoreSection("falloffs", falloffs.length, 20)}>
+                  {loadingMore.falloffs ? "Loading…" : `Load more (${falloffs.length} of ${sectionCounts.falloffs})`}
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="mailbox" className="grid min-w-0 grid-cols-1 gap-4 items-start lg:grid-cols-[360px_minmax(0,1fr)]">
