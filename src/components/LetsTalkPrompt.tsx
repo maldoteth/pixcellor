@@ -754,13 +754,32 @@ const LetsTalkPrompt = () => {
     </div>
   );
 
+  const lockClose = step === "done";
+
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={setOpen}>
+      <Drawer
+        open={open}
+        onOpenChange={(o) => {
+          if (!o && lockClose) return;
+          setOpen(o);
+        }}
+        dismissible={!lockClose}
+      >
         <DrawerContent className="carousel-label-glass border-foreground/10 text-foreground">
           <DrawerHeader>
             <DrawerTitle className="text-foreground text-center">{title}</DrawerTitle>
           </DrawerHeader>
+          {lockClose && (
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close"
+              className="absolute right-3 top-3 rounded-md p-2 text-foreground/70 hover:text-foreground hover:bg-foreground/10 transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
           <div className="px-4 pb-6">{content}</div>
         </DrawerContent>
       </Drawer>
@@ -768,8 +787,25 @@ const LetsTalkPrompt = () => {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[460px] carousel-label-glass border-foreground/10 text-foreground">
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o && lockClose) return;
+        setOpen(o);
+      }}
+    >
+      <DialogContent
+        className="sm:max-w-[460px] carousel-label-glass border-foreground/10 text-foreground"
+        onPointerDownOutside={(e) => {
+          if (lockClose) e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          if (lockClose) e.preventDefault();
+        }}
+        onInteractOutside={(e) => {
+          if (lockClose) e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-foreground">{title}</DialogTitle>
         </DialogHeader>
