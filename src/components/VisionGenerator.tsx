@@ -855,7 +855,15 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       <>
         {trigger}
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className="border-border bg-background/95 px-4 pb-6 backdrop-blur-xl">
+          <DrawerContent
+            className="border border-white/15 px-4 pb-6 text-foreground shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl backdrop-saturate-150"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.08) 100%)",
+              WebkitBackdropFilter: "blur(28px) saturate(160%)",
+              backdropFilter: "blur(28px) saturate(160%)",
+            }}
+          >
             <DrawerHeader>
               <DrawerTitle className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" /> See your dream site
@@ -872,7 +880,15 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     <>
       {trigger}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="border-border bg-background/95 backdrop-blur-xl max-w-2xl">
+        <DialogContent
+          className="max-w-2xl border border-white/15 text-foreground shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl backdrop-saturate-150"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.08) 100%)",
+            WebkitBackdropFilter: "blur(28px) saturate(160%)",
+            backdropFilter: "blur(28px) saturate(160%)",
+          }}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center justify-center gap-2">
               <Sparkles className="h-4 w-4" /> See your dream landing page
