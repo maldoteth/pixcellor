@@ -47,6 +47,68 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_sample_generations: {
+        Row: {
+          brief: string | null
+          company: string | null
+          contact_id: string | null
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          image_url: string | null
+          is_refinement: boolean
+          metadata: Json
+          parent_id: string | null
+          phone: string | null
+          source: string
+          storage_path: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          brief?: string | null
+          company?: string | null
+          contact_id?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          image_url?: string | null
+          is_refinement?: boolean
+          metadata?: Json
+          parent_id?: string | null
+          phone?: string | null
+          source?: string
+          storage_path?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          brief?: string | null
+          company?: string | null
+          contact_id?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          image_url?: string | null
+          is_refinement?: boolean
+          metadata?: Json
+          parent_id?: string | null
+          phone?: string | null
+          source?: string
+          storage_path?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_sample_generations_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_sample_generations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_conversations: {
         Row: {
           bot_paused: boolean

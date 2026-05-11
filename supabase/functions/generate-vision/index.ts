@@ -1,7 +1,37 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+async function uploadDataUrlToStorage(supabase: any, dataUrl: string): Promise<{ publicUrl: string | null; path: string | null }> {
+  try {
+    if (!dataUrl?.startsWith("data:")) {
+      return { publicUrl: dataUrl ?? null, path: null };
+    }
+    const [meta, b64] = dataUrl.split(",");
+    const mime = /data:(.*?);base64/.exec(meta)?.[1] ?? "image/png";
+    const ext = mime.split("/")[1]?.split("+")[0] || "png";
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const path = `vision-samples/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+    const { error } = await supabase.storage.from("submission-attachments").upload(path, bytes, {
+      contentType: mime,
+      upsert: false,
+    });
+    if (error) {
+      console.error("vision upload failed", error);
+      return { publicUrl: null, path: null };
+    }
+    const publicUrl = supabase.storage.from("submission-attachments").getPublicUrl(path).data.publicUrl;
+    return { publicUrl, path };
+  } catch (e) {
+    console.error("uploadDataUrlToStorage error", e);
+    return { publicUrl: null, path: null };
+  }
+}
 
 const SYSTEM_PROMPT = `You are Pixcellor's senior landing-page art director. Generate ONE photorealistic, pixel-perfect screenshot of a complete DESKTOP landing page (1440x900 viewport, browser chrome NOT included) based on the user's description.
 
@@ -71,7 +101,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { prompt, imageUrl: inputImageUrl, instruction } = await req.json();
+    const body = await req.json();
+    const { prompt, imageUrl: inputImageUrl, instruction, meta } = body ?? {};
     const isEdit = !!inputImageUrl && typeof instruction === "string" && instruction.trim().length > 2;
 
     if (!isEdit && (!prompt || typeof prompt !== "string" || prompt.trim().length < 5)) {
@@ -143,8 +174,8 @@ Deno.serve(async (req) => {
     }
 
     const data = await aiRes.json();
-    const imageUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    if (!imageUrl) {
+    const rawImageUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    if (!rawImageUrl) {
       console.error("No image in AI response", JSON.stringify(data).slice(0, 500));
       return new Response(JSON.stringify({ error: "No image was returned. Please try a different description." }), {
         status: 500,
@@ -152,7 +183,52 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ imageUrl }), {
+    // Upload data URL to public storage so admins can view it later
+    let imageUrl = rawImageUrl;
+    let storagePath: string | null = null;
+    let generationId: string | null = null;
+
+    try {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+
+      const uploaded = await uploadDataUrlToStorage(supabase, rawImageUrl);
+      if (uploaded.publicUrl) imageUrl = uploaded.publicUrl;
+      if (uploaded.path) storagePath = uploaded.path;
+
+      // Log the generation regardless of contact info
+      const briefText = isEdit
+        ? `Refinement: ${String(instruction ?? "").trim().slice(0, 4000)}`
+        : String(prompt ?? "").trim().slice(0, 8000);
+      const cleanStr = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : null) || null;
+
+      const { data: inserted, error: insErr } = await supabase
+        .from("ai_sample_generations")
+        .insert({
+          visitor_id: cleanStr(meta?.visitor_id, 200),
+          source: cleanStr(meta?.source, 80) ?? "vision_generator",
+          brief: briefText,
+          image_url: imageUrl,
+          storage_path: storagePath,
+          company: cleanStr(meta?.company, 200),
+          contact_name: cleanStr(meta?.name, 200),
+          email: cleanStr(meta?.email?.toLowerCase?.() ?? meta?.email, 200),
+          phone: cleanStr(meta?.phone, 40),
+          parent_id: cleanStr(meta?.parent_id, 64),
+          is_refinement: !!isEdit,
+          metadata: meta ?? {},
+        })
+        .select("id")
+        .single();
+      if (insErr) console.error("ai_sample_generations insert failed:", insErr);
+      else generationId = inserted?.id ?? null;
+    } catch (logErr) {
+      console.error("vision logging failed:", logErr);
+    }
+
+    return new Response(JSON.stringify({ imageUrl, generationId, storagePath }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

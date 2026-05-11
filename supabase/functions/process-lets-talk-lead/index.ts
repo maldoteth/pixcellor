@@ -12,6 +12,7 @@ interface Body {
   source?: string | null;
   request_details?: { company?: string | null; dream?: string | null; colours?: string | null } | null;
   attachment_urls?: string[] | null;
+  partial?: boolean | null;
 }
 
 function cleanText(v: unknown, max = 200): string {
@@ -52,6 +53,7 @@ Deno.serve(async (req) => {
       ? body.attachment_urls.filter((u): u is string => typeof u === "string" && /^https?:\/\//i.test(u)).slice(0, 50)
       : [];
     const isSampleRequest = source === "free_sample_request";
+    const isPartial = body.partial === true;
 
     if (!name) return new Response(JSON.stringify({ ok: false, error: "missing_name" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (!email && !phone) return new Response(JSON.stringify({ ok: false, error: "email_or_phone_required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -180,7 +182,7 @@ Deno.serve(async (req) => {
     }
 
     // Schedule same-day callback if phone provided
-    if (phone) {
+    if (phone && !isPartial) {
       const callbackAt = nextSameDayCallbackISO();
       const { error } = await supabase.from("contact_events").insert({
         contact_id: contactId,
@@ -194,7 +196,7 @@ Deno.serve(async (req) => {
 
     // Send welcome email if email provided
     let welcomeSent = false;
-    if (email) {
+    if (email && !isPartial) {
       const { error } = await supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "sales-welcome-info",

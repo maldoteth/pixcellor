@@ -68,8 +68,34 @@ const LetsTalkPrompt = () => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [visionUrl, setVisionUrl] = useState<string | null>(null);
+  const [generationId, setGenerationId] = useState<string | null>(null);
   const [refineInstruction, setRefineInstruction] = useState("");
   const [orderRequested, setOrderRequested] = useState(false);
+
+  // Progressive contact save — fires whenever we have name + (email or phone),
+  // creates/updates the contact in the CRM without sending emails or scheduling callbacks.
+  const savePartialLead = (overrides?: { email?: string; phone?: string }) => {
+    const cleanName = name.trim();
+    const cleanEmail = (overrides?.email ?? email).trim();
+    const cleanPhone = (overrides?.phone ?? phone).trim();
+    if (!cleanName) return;
+    if (!cleanEmail && !cleanPhone) return;
+    const sourceTag =
+      mode === "request" ? "free_sample_partial" : mode === "consultation" ? "consultation_partial" : "lets_talk_partial";
+    void supabase.functions
+      .invoke("process-lets-talk-lead", {
+        body: {
+          name: cleanName,
+          email: cleanEmail || null,
+          phone: cleanPhone || null,
+          source: sourceTag,
+          request_details: { company: company.trim() || null },
+          attachment_urls: null,
+          partial: true,
+        },
+      })
+      .catch((err) => console.error("partial lead save failed:", err));
+  };
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -185,11 +211,21 @@ const LetsTalkPrompt = () => {
     try {
       const brief = `${dream.trim()}\n\nColours / styles: ${colours.trim()}`;
       const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", {
-        body: { prompt: brief },
+        body: {
+          prompt: brief,
+          meta: {
+            source: "lets_talk_request",
+            company: company.trim() || null,
+            name: name.trim() || null,
+            email: email.trim() || null,
+            phone: phone.trim() || null,
+          },
+        },
       });
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
       url = data?.imageUrl ?? null;
+      if (data?.generationId) setGenerationId(data.generationId);
     } catch (e) {
       console.error("vision generation failed", e);
     }
@@ -306,11 +342,23 @@ const LetsTalkPrompt = () => {
     let url: string | null = null;
     try {
       const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", {
-        body: { imageUrl: previousUrl, instruction: ins },
+        body: {
+          imageUrl: previousUrl,
+          instruction: ins,
+          meta: {
+            source: "lets_talk_refine",
+            company: company.trim() || null,
+            name: name.trim() || null,
+            email: email.trim() || null,
+            phone: phone.trim() || null,
+            parent_id: generationId,
+          },
+        },
       });
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
       url = data?.imageUrl ?? null;
+      if (data?.generationId) setGenerationId(data.generationId);
     } catch (e) {
       console.error("vision refine failed", e);
     }
@@ -343,12 +391,14 @@ const LetsTalkPrompt = () => {
     if (step === "email") {
       const r = emailSchema.safeParse(email);
       if (!r.success) return setError(r.error.issues[0].message);
+      savePartialLead({ email: email.trim() });
       setStep("phone");
       return;
     }
     if (step === "phone") {
       const r = phoneSchema.safeParse(phone);
       if (!r.success) return setError(r.error.issues[0].message);
+      savePartialLead({ phone: phone.trim() });
       if (mode === "consultation") {
         await requestConsultation();
         return;
