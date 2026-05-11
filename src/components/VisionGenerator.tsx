@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Sparkles, X, Wand2 } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
+import MagicLinkSignup from "./MagicLinkSignup";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
