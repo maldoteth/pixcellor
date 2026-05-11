@@ -671,6 +671,8 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
 
     const handlePackagesOpenChange = (open: boolean) => {
         setPackagesOpen(open);
+        // Notify Index so the top-of-screen buttons (AI chat, Login, Vision) hide while overlay is up
+        window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open } }));
         if (open) void recordFalloff({ event: "pricing_opened" });
         if (!open) {
             // Mark dismissed and cancel any pending auto-open so it stays closed
