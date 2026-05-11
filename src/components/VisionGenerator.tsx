@@ -337,6 +337,23 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const currentIndex = STEPS.findIndex((s) => s.key === stage);
   const currentStep = currentIndex >= 0 ? STEPS[currentIndex] : null;
 
+  const filteredSuggestions = (() => {
+    if (!currentStep) return [];
+    const list = SUGGESTIONS[currentStep.key];
+    if (!list) return [];
+    const raw = answers[currentStep.key] ?? "";
+    let needle = raw.trim().toLowerCase();
+    if (currentStep.key === "sections") {
+      const parts = raw.split(",");
+      needle = (parts[parts.length - 1] ?? "").trim().toLowerCase();
+    }
+    if (!needle) return list;
+    const matches = list.filter(
+      (s) => s.label.toLowerCase().includes(needle) || s.value.toLowerCase().includes(needle),
+    );
+    return matches.length ? matches : list;
+  })();
+
   const goNext = () => {
     if (!currentStep) return;
     if (currentIndex === STEPS.length - 1) {
