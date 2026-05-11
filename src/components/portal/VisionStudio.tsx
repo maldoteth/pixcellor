@@ -32,6 +32,7 @@ interface VisitorGen {
   parent_id: string | null;
   created_at: string;
   preview_slug: string | null;
+}
 
 const BUCKET = "vision-previews";
 
