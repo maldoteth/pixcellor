@@ -310,12 +310,13 @@ const IMAGES = [
 
 interface IntroAnimationProps {
     onVirtualScrollChange?: (value: number) => void;
+    onPackagesOpenChange?: (open: boolean) => void;
 }
 
 // Helper for linear interpolation
 const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;
 
-export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimationProps) {
+export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenChange }: IntroAnimationProps) {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
     const introPhaseRef = useRef<AnimationPhase>("scatter");
     const introTimersRef = useRef<number[]>([]);
@@ -324,10 +325,15 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
     const dismissedAtEndRef = useRef(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const onVirtualScrollChangeRef = useRef(onVirtualScrollChange);
+    const onPackagesOpenChangeRef = useRef(onPackagesOpenChange);
 
     useEffect(() => {
         onVirtualScrollChangeRef.current = onVirtualScrollChange;
     }, [onVirtualScrollChange]);
+
+    useEffect(() => {
+        onPackagesOpenChangeRef.current = onPackagesOpenChange;
+    }, [onPackagesOpenChange]);
 
     // --- Container Size ---
     useEffect(() => {
