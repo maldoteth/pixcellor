@@ -795,8 +795,15 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             exit={{ opacity: 0 }}
             className="space-y-3"
           >
-            <div tabIndex={-1} className="border border-border/40 bg-black/40 max-h-[55vh] overflow-auto outline-none focus:outline-none focus-visible:outline-none">
-              <img src={imageUrl} alt="Your AI-generated landing page vision" className="w-full block" />
+            <div tabIndex={-1} className="border border-border/40 bg-black/40 max-h-[55vh] overflow-auto outline-none focus:outline-none focus-visible:outline-none select-none" onContextMenu={(e) => e.preventDefault()}>
+              <img
+                src={imageUrl}
+                alt="Your AI-generated landing page vision"
+                className="w-full block pointer-events-none select-none"
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
+                onDragStart={(e) => e.preventDefault()}
+              />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <Button onClick={orderThisStyle} disabled={requestBusy} className="w-full rounded-none">
