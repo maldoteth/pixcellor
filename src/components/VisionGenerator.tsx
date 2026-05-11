@@ -426,6 +426,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           imageUrl,
           brief: generatedFor,
           company: answers.company,
+          email: contactEmail.trim() || null,
+          phone: contactPhone.trim() || null,
           orderRequest: true,
           at: Date.now(),
         }),
@@ -457,6 +459,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           imageUrl,
           brief: generatedFor,
           company: answers.company,
+          email: contactEmail.trim() || null,
+          phone: contactPhone.trim() || null,
           at: Date.now(),
         }),
       );
