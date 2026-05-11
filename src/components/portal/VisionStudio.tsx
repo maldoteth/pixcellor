@@ -389,12 +389,12 @@ export default function VisionStudio() {
       )}
 
       <div className="space-y-2">
-        <p className="text-sm font-semibold">All previews ({previews.length})</p>
-        {previews.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No previews yet — generate one above.</p>
+        <p className="text-sm font-semibold">All previews ({filteredPreviews.length}{q ? ` of ${previews.length}` : ""})</p>
+        {filteredPreviews.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{q ? "No previews match your search." : "No previews yet — generate one above."}</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {previews.map((row) => (
+            {filteredPreviews.map((row) => (
               <div key={row.id} className="rounded-none border border-border bg-card/40 overflow-hidden flex flex-col">
                 <a
                   href={shareUrl(row.slug)}
