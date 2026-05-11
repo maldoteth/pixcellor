@@ -40,6 +40,7 @@ const SITE_NAME = "Pixcellor™"
 const SENDER_DOMAIN = "notify.pixcellor.com"
 const ROOT_DOMAIN = "pixcellor.com"
 const FROM_DOMAIN = "pixcellor.com" // Domain shown in From address (may be root or sender subdomain)
+const DEPLOY_MARKER = "auth-run-id-queue-fix-2026-05-11"
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
@@ -206,7 +207,7 @@ async function handleWebhook(req: Request): Promise<Response> {
   // The email action type is in payload.data.action_type (e.g., "signup", "recovery")
   // payload.type is the hook event type ("auth")
   const emailType = payload.data.action_type
-  console.log('Received auth event', { emailType, email: payload.data.email, run_id })
+  console.log('Received auth event', { emailType, email: payload.data.email, run_id, deployMarker: DEPLOY_MARKER })
 
   const EmailTemplate = EMAIL_TEMPLATES[emailType]
   if (!EmailTemplate) {
@@ -283,7 +284,7 @@ async function handleWebhook(req: Request): Promise<Response> {
     })
   }
 
-  console.log('Auth email enqueued', { emailType, email: payload.data.email, run_id })
+  console.log('Auth email enqueued', { emailType, email: payload.data.email, run_id, deployMarker: DEPLOY_MARKER })
 
   return new Response(
     JSON.stringify({ success: true, queued: true }),
