@@ -452,6 +452,8 @@ export default function Portal() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
+  const [statsTotals, setStatsTotals] = useState<{ totalSales: number; totalWebsites: number; potential: number; uniqueVisitors: number; totalVisitEvents: number; pricingViews: number; buyClicks: number } | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const [mobileContactDrawerOpen, setMobileContactDrawerOpen] = useState(false);
   const [mobileSalesDrawerOpen, setMobileSalesDrawerOpen] = useState(false);
   const [mobileOrdersDrawerOpen, setMobileOrdersDrawerOpen] = useState(false);
@@ -752,6 +754,72 @@ export default function Portal() {
     await loadPortalSnapshot();
     toast.success("Case closed. Bot re-enabled.");
   };
+
+  const fetchAllTimeStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      // Paid site orders — paginate through all
+      const allOrders: Array<{ amount_total: number | null; customer_email: string | null; metadata: any; payment_status: string | null; status: string | null }> = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await (supabase as any)
+          .from("stripe_checkout_sessions")
+          .select("amount_total, customer_email, metadata, payment_status, status")
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const rows = (data ?? []) as any[];
+        allOrders.push(...rows);
+        if (rows.length < pageSize) break;
+      }
+      const paidSite = allOrders.filter(
+        (o) => o.metadata?.source === "pixcellor_site" && (o.payment_status === "paid" || o.status === "complete" || o.status === "completed")
+      );
+      const totalSales = paidSite.reduce((sum, o) => sum + (o.amount_total ?? 0), 0);
+      const totalWebsites = paidSite.length;
+      const buyerEmails = new Set(paidSite.map((o) => o.customer_email?.toLowerCase()).filter(Boolean) as string[]);
+
+      // Visitor falloffs — paginate
+      const allFalloffs: Array<{ visitor_id: string | null; event_count: number | null; pricing_opened_at: string | null; buy_clicked_at: string | null }> = [];
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await (supabase as any)
+          .from("visitor_falloffs")
+          .select("visitor_id, event_count, pricing_opened_at, buy_clicked_at")
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const rows = (data ?? []) as any[];
+        allFalloffs.push(...rows);
+        if (rows.length < pageSize) break;
+      }
+      const uniqueVisitors = new Set(allFalloffs.map((f) => f.visitor_id).filter(Boolean)).size;
+      const totalVisitEvents = allFalloffs.reduce((sum, f) => sum + (f.event_count ?? 0), 0);
+      const pricingViews = allFalloffs.filter((f) => f.pricing_opened_at).length;
+      const buyClicks = allFalloffs.filter((f) => f.buy_clicked_at).length;
+
+      // Potential = leads (profiles + inquiries) not in buyers, plus anonymous chatters
+      const [{ data: profEmails }, { data: inqEmails }, { count: convCount }] = await Promise.all([
+        (supabase as any).from("client_profiles").select("email").limit(10000),
+        (supabase as any).from("contact_inquiries").select("email").limit(10000),
+        (supabase as any).from("chat_conversations").select("id", { count: "exact", head: true }),
+      ]);
+      const leadEmails = new Set<string>();
+      for (const r of (profEmails ?? []) as any[]) if (r.email) leadEmails.add(r.email.toLowerCase());
+      for (const r of (inqEmails ?? []) as any[]) if (r.email) leadEmails.add(r.email.toLowerCase());
+      let potential = 0;
+      for (const e of leadEmails) if (!buyerEmails.has(e)) potential += 1;
+      const conversationsWithoutEmail = (convCount ?? 0) - leadEmails.size;
+      if (conversationsWithoutEmail > 0) potential += conversationsWithoutEmail;
+
+      setStatsTotals({ totalSales, totalWebsites, potential, uniqueVisitors, totalVisitEvents, pricingViews, buyClicks });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to load stats");
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (statsDialogOpen) void fetchAllTimeStats();
+  }, [statsDialogOpen, fetchAllTimeStats]);
 
   const counters = useMemo(() => {
     const totalSales = orders.reduce((sum, o) => sum + (o.amount_total ?? 0), 0);
@@ -2912,43 +2980,50 @@ export default function Portal() {
           <Dialog open={statsDialogOpen} onOpenChange={setStatsDialogOpen}>
             <DialogContent className="max-w-4xl">
               <DialogHeader>
-                <DialogTitle>Stats</DialogTitle>
+                <DialogTitle className="flex items-center gap-2">
+                  Stats {statsLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                </DialogTitle>
               </DialogHeader>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Total sales</CardTitle></CardHeader>
-                  <CardContent><div className="text-3xl font-semibold">{formatGBP(counters.totalSales)}</div></CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Websites delivered (paid orders)</CardTitle></CardHeader>
-                  <CardContent><div className="text-3xl font-semibold">{counters.totalWebsites}</div></CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Potential sales (chatted, no buy)</CardTitle></CardHeader>
-                  <CardContent><div className="text-3xl font-semibold">{counters.potential}</div></CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Website visits</CardTitle></CardHeader>
-                  <CardContent className="grid grid-cols-2 gap-3">
-                    <div>
-                      <div className="text-2xl font-semibold">{counters.uniqueVisitors}</div>
-                      <div className="text-xs text-muted-foreground">Visitors</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-semibold">{counters.totalVisitEvents}</div>
-                      <div className="text-xs text-muted-foreground">Events</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-semibold">{counters.pricingViews}</div>
-                      <div className="text-xs text-muted-foreground">Pricing opens</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-semibold">{counters.buyClicks}</div>
-                      <div className="text-xs text-muted-foreground">Buy clicks</div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              {(() => {
+                const s = statsTotals;
+                return (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <Card>
+                      <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Total sales</CardTitle></CardHeader>
+                      <CardContent><div className="text-3xl font-semibold">{s ? formatGBP(s.totalSales) : "—"}</div></CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Websites delivered (paid orders)</CardTitle></CardHeader>
+                      <CardContent><div className="text-3xl font-semibold">{s ? s.totalWebsites : "—"}</div></CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Potential sales (chatted, no buy)</CardTitle></CardHeader>
+                      <CardContent><div className="text-3xl font-semibold">{s ? s.potential : "—"}</div></CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-2"><CardTitle className="text-sm font-normal text-muted-foreground">Website visits</CardTitle></CardHeader>
+                      <CardContent className="grid grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-2xl font-semibold">{s ? s.uniqueVisitors : "—"}</div>
+                          <div className="text-xs text-muted-foreground">Visitors</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-semibold">{s ? s.totalVisitEvents : "—"}</div>
+                          <div className="text-xs text-muted-foreground">Events</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-semibold">{s ? s.pricingViews : "—"}</div>
+                          <div className="text-xs text-muted-foreground">Pricing opens</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-semibold">{s ? s.buyClicks : "—"}</div>
+                          <div className="text-xs text-muted-foreground">Buy clicks</div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+              })()}
             </DialogContent>
           </Dialog>
 
