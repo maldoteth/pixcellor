@@ -2753,20 +2753,26 @@ export default function Portal() {
                     </Card>
                   );
                 })}
-                {clientsVisibleCount < clientBookContacts.length && (
+                {(clientsVisibleCount < clientBookContacts.length || (sectionCounts.contacts ?? 0) > contacts.length) && (
                   <div
                     ref={(el) => {
                       if (!el) return;
                       const obs = new IntersectionObserver((entries) => {
                         if (entries.some((e) => e.isIntersecting)) {
                           setClientsVisibleCount((n) => n + 10);
+                          if ((sectionCounts.contacts ?? 0) > contacts.length && !loadingMore.contacts) {
+                            loadMoreSection("contacts", contacts.length, 20);
+                          }
                         }
                       }, { rootMargin: "200px" });
                       obs.observe(el);
                     }}
                     className="flex justify-center pt-2"
                   >
-                    <Button variant="outline" onClick={() => setClientsVisibleCount((n) => n + 10)}>Load more</Button>
+                    <Button variant="outline" disabled={!!loadingMore.contacts} onClick={() => {
+                      setClientsVisibleCount((n) => n + 10);
+                      if ((sectionCounts.contacts ?? 0) > contacts.length) loadMoreSection("contacts", contacts.length, 20);
+                    }}>{loadingMore.contacts ? "Loading…" : "Load more"}</Button>
                   </div>
                 )}
               </TabsContent>
