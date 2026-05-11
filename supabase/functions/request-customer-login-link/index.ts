@@ -1,7 +1,13 @@
 import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { z } from 'https://deno.land/x/zod@v3.23.8/mod.ts'
 import { MagicLinkEmail } from '../_shared/email-templates/magic-link.tsx'
+
+const BodySchema = z.object({
+  email: z.string().max(254),
+  redirectTo: z.string().max(1024).optional(),
+}).passthrough()
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,7 +42,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const body = await req.json().catch(() => ({}))
+    const rawBody = await req.json().catch(() => ({}))
+    const parsedBody = BodySchema.safeParse(rawBody)
+    if (!parsedBody.success) {
+      return json({ error: 'Invalid input' }, 400)
+    }
+    const body = parsedBody.data
     const rawEmail = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
     const redirectTo = typeof body?.redirectTo === 'string' ? body.redirectTo : `${SITE_URL}/customer-portal`
 

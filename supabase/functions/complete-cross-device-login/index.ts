@@ -1,5 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.95.0';
 import { corsHeaders } from 'https://esm.sh/@supabase/supabase-js@2.95.0/cors';
+import { z } from 'https://deno.land/x/zod@v3.23.8/mod.ts';
+
+const BodySchema = z.object({
+  sid: z.string().min(16).max(128),
+}).passthrough();
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -27,8 +32,12 @@ Deno.serve(async (req) => {
     const email = (claimsData.claims.email as string | undefined)?.toLowerCase();
     if (!email) return json({ error: 'No email on session' }, 400);
 
-    const body = await req.json().catch(() => ({}));
-    const sid = typeof body?.sid === 'string' ? body.sid.trim() : '';
+    const rawBody = await req.json().catch(() => ({}));
+    const parsedBody = BodySchema.safeParse(rawBody);
+    if (!parsedBody.success) {
+      return json({ error: 'Invalid handoff id' }, 400);
+    }
+    const sid = parsedBody.data.sid.trim();
     if (!sid || sid.length < 16 || sid.length > 128) {
       return json({ error: 'Invalid handoff id' }, 400);
     }

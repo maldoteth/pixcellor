@@ -1,10 +1,21 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+// Defence-in-depth schema. Caps are deliberately generous so any payload that
+// previously worked still works — we just reject obvious abuse (megabyte
+// strings, wrong types).
+const BodySchema = z.object({
+  visitorId: z.string().min(8).max(200),
+  sessionId: z.string().min(8).max(200),
+  context: z.record(z.unknown()).optional(),
+  metadata: z.record(z.unknown()).optional(),
+}).passthrough();
 
 const clean = (value: unknown) => typeof value === "string" && value.trim() ? value.trim().slice(0, 500) : null;
 const cleanLong = (value: unknown) => typeof value === "string" && value.trim() ? value.trim().slice(0, 2000) : null;
@@ -22,7 +33,17 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { visitorId, sessionId, context, metadata } = await req.json();
+    let raw: unknown;
+    try { raw = await req.json(); } catch {
+      return new Response(JSON.stringify({ error: "invalid_json" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const parsed = BodySchema.safeParse(raw);
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ error: "invalid_input", fields: parsed.error.flatten().fieldErrors }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const { visitorId, sessionId, context, metadata } = parsed.data;
+    void visitorId; void sessionId; // already validated above
+
     if (typeof visitorId !== "string" || visitorId.length < 8 || visitorId.length > 200) throw new Error("Invalid visitorId");
     if (typeof sessionId !== "string" || sessionId.length < 8 || sessionId.length > 200) throw new Error("Invalid sessionId");
     const safeContext = context && typeof context === "object" ? context as Record<string, unknown> : {};

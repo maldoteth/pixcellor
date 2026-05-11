@@ -1,6 +1,30 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+
+// Defence-in-depth schema. Generous caps so any payload that previously
+// worked still works — the existing slice/clean logic below truncates
+// further per-field as before.
+const BodySchema = z.object({
+  priceId: z.string().min(1).max(200),
+  mode: z.string().max(40).optional(),
+  packageName: z.string().max(200).optional(),
+  billing: z.string().max(40).optional(),
+  clientContext: z.record(z.unknown()).optional(),
+  buyer: z.object({
+    email: z.string().max(2000).optional(),
+    name: z.string().max(2000).optional(),
+    company: z.string().max(2000).optional(),
+    phone: z.string().max(2000).optional(),
+  }).passthrough().optional(),
+  domain: z.string().max(500).optional(),
+  domainTopUpGbp: z.union([z.number(), z.string()]).optional(),
+  visionBrief: z.object({
+    prompt: z.string().max(20000).optional(),
+    imageUrl: z.string().max(4000).optional(),
+  }).passthrough().optional(),
+}).passthrough();
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,8 +40,16 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp, visionBrief } = await req.json();
-    
+    let raw: unknown;
+    try { raw = await req.json(); } catch {
+      return new Response(JSON.stringify({ error: "invalid_json" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const parsedBody = BodySchema.safeParse(raw);
+    if (!parsedBody.success) {
+      return new Response(JSON.stringify({ error: "invalid_input", fields: parsedBody.error.flatten().fieldErrors }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp, visionBrief } = parsedBody.data;
+
     if (!priceId) throw new Error("Missing priceId");
 
     // Domain add-on (optional). The domain is reserved in the basket and only

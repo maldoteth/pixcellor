@@ -1,4 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+
+const BodySchema = z.object({
+  mode: z.string().max(20).optional(),
+  query: z.string().max(300).optional(),
+}).passthrough();
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -177,7 +183,12 @@ serve(async (req) => {
       });
     }
 
-    const body = await req.json().catch(() => ({}));
+    const rawBody = await req.json().catch(() => ({}));
+    const parsed = BodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ error: "invalid_input" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const body = parsed.data;
     const mode = body?.mode === "verify" ? "verify" : "search";
     const { label, tld } = sanitizeLabel(typeof body?.query === "string" ? body.query : "");
     if (!label || label.length < 2) {

@@ -1,19 +1,28 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface Body {
-  name: string;
-  email?: string | null;
-  phone?: string | null;
-  source?: string | null;
-  request_details?: { company?: string | null; dream?: string | null; colours?: string | null } | null;
-  attachment_urls?: string[] | null;
-  partial?: boolean | null;
-}
+// Defence-in-depth schema. Caps generous so any payload that previously worked
+// still works — `cleanText()` below truncates further per-field as before.
+const BodySchema = z.object({
+  name: z.string().max(2000).optional().nullable(),
+  email: z.string().max(2000).optional().nullable(),
+  phone: z.string().max(2000).optional().nullable(),
+  source: z.string().max(200).optional().nullable(),
+  request_details: z.object({
+    company: z.string().max(2000).optional().nullable(),
+    dream: z.string().max(20000).optional().nullable(),
+    colours: z.string().max(20000).optional().nullable(),
+  }).passthrough().optional().nullable(),
+  attachment_urls: z.array(z.string().max(2000)).max(100).optional().nullable(),
+  partial: z.boolean().optional().nullable(),
+}).passthrough();
+
+type Body = z.infer<typeof BodySchema>;
 
 function cleanText(v: unknown, max = 200): string {
   if (typeof v !== "string") return "";
@@ -41,7 +50,15 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const body = (await req.json()) as Body;
+    let raw: unknown;
+    try { raw = await req.json(); } catch {
+      return new Response(JSON.stringify({ ok: false, error: "invalid_json" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const parsed = BodySchema.safeParse(raw);
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ ok: false, error: "invalid_input", fields: parsed.error.flatten().fieldErrors }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const body: Body = parsed.data;
     const name = cleanText(body.name, 100);
     const email = cleanText(body.email ?? "", 200).toLowerCase();
     const phone = cleanText(body.phone ?? "", 40);
