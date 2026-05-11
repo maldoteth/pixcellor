@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type RequestLinkResult =
-  | { ok: true }
-  | { ok: false; rateLimited: true; retryAfter: number }
-  | { ok: false; rateLimited: false; message: string };
+export type RequestLinkResult = {
+  ok: boolean;
+  rateLimited?: boolean;
+  retryAfter?: number;
+  message?: string;
+};
 
 /**
  * Request a customer magic-link via the backend `request-customer-login-link`
