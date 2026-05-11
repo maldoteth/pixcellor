@@ -46,10 +46,11 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
     setBusy(true);
     setError(null);
     try {
+      const emailRedirectTo = handoff.start();
       const { error: err } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/customer-portal`,
+          emailRedirectTo,
           shouldCreateUser: true,
         },
       });
