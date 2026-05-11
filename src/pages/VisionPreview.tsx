@@ -62,9 +62,6 @@ export default function VisionPreview() {
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Back to Pixcellor
           </Link>
-          <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Wand2 className="h-3.5 w-3.5" /> Custom AI preview
-          </div>
         </div>
       </header>
 
@@ -85,9 +82,6 @@ export default function VisionPreview() {
           <>
             <div className="space-y-1">
               <h1 className="text-xl font-semibold">{preview.title ?? "Your Pixcellor preview"}</h1>
-              <p className="text-xs text-muted-foreground">
-                Generated {new Date(preview.created_at).toLocaleString()}
-              </p>
             </div>
             <div
               tabIndex={-1}
