@@ -331,6 +331,12 @@ const LetsTalkPrompt = () => {
     if (step === "name") {
       const r = nameSchema.safeParse(name);
       if (!r.success) return setError(r.error.issues[0].message);
+      setStep("company");
+      return;
+    }
+    if (step === "company") {
+      const r = z.string().trim().min(1, "Please enter your company or brand name").max(120).safeParse(company);
+      if (!r.success) return setError(r.error.issues[0].message);
       setStep("email");
       return;
     }
