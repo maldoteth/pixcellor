@@ -613,7 +613,7 @@ const LetsTalkPrompt = () => {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center gap-3 py-6"
+            className="flex flex-col items-center justify-center gap-3 py-0"
           >
             <motion.div
               initial={{ scale: 0, rotate: -90, opacity: 0 }}
@@ -621,7 +621,7 @@ const LetsTalkPrompt = () => {
               transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
               className="flex items-center justify-center"
             >
-              <Check className="w-12 h-12 text-foreground" strokeWidth={2.5} />
+              <Check className="w-12 h-12 text-foreground my-0" strokeWidth={2.5} />
             </motion.div>
             <p className="text-foreground text-base font-medium">Thanks, {name.split(" ")[0]}!</p>
             <p className="text-foreground/70 text-sm text-center">
