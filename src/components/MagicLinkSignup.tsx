@@ -108,7 +108,7 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
         <>
           <p className="text-xs text-foreground/80 leading-snug text-center">
             {(benefit || "").split("\n\n").map((line, i) => (
-              <span key={i} className="block my-[10px]">{line}</span>
+              <span key={i} className="block my-[2px]">{line}</span>
             )) || "Save this to your dashboard so you can revisit your sample and generations any time."}
           </p>
           <Button
