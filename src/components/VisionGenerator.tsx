@@ -847,7 +847,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             className="flex flex-col gap-3"
           >
             <p className="text-foreground text-base font-semibold">Where should we send your sample?</p>
-            <p className="text-foreground/60 text-xs">
+            <p className="text-foreground/60 text-xs text-slate-200">
               We'll save your generation so you can request edits or order without re-entering details.
             </p>
             <div className="flex flex-col gap-2">
