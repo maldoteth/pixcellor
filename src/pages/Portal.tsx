@@ -438,6 +438,7 @@ export default function Portal() {
   const [loadingMore, setLoadingMore] = useState<Record<string, boolean>>({});
   const [clientsSort, setClientsSort] = useState<"newest" | "oldest" | "hot" | "cold">("newest");
   const [clientsStatusFilter, setClientsStatusFilter] = useState<"all" | Contact["status"]>("all");
+  const [clientsRetainerOnly, setClientsRetainerOnly] = useState(false);
   
   const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples">("all");
   const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
@@ -975,10 +976,19 @@ export default function Portal() {
     const statusFiltered = clientsStatusFilter === "all"
       ? filtered
       : filtered.filter(c => c.status === clientsStatusFilter);
+    const retainerEmails = new Set(
+      orders.filter(isMonthlyRetainerOrder).map(o => normalizeEmail(o.customer_email)).filter(Boolean) as string[]
+    );
+    const retainerFiltered = (clientsStatusFilter === "gold" && clientsRetainerOnly)
+      ? statusFiltered.filter(c => {
+          const e = normalizeEmail(c.email);
+          return e ? retainerEmails.has(e) : false;
+        })
+      : statusFiltered;
     const heatRank: Record<Contact["status"], number> = {
       hot: 0, gold: 1, aware: 2, cold: 3, archived: 4,
     } as any;
-    return [...statusFiltered].sort((a, b) => {
+    return [...retainerFiltered].sort((a, b) => {
       if (clientsSort === "newest") {
         const aClient = a.status === "gold" ? 0 : 1;
         const bClient = b.status === "gold" ? 0 : 1;
@@ -1000,7 +1010,7 @@ export default function Portal() {
       if (ar !== br) return br - ar;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [contacts, contactEvents, profilesQ, clientsSort, clientsStatusFilter]);
+  }, [contacts, contactEvents, profilesQ, clientsSort, clientsStatusFilter, clientsRetainerOnly, orders]);
 
   const goldClientCount = useMemo(() => contacts.filter(c => c.status === "gold").length, [contacts]);
 
@@ -2779,22 +2789,16 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="profiles" className="space-y-3">
-            <Tabs defaultValue="clients" className="min-w-0">
+            <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent p-0 sm:w-auto sm:inline-grid">
-                  <TabsTrigger value="clients" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients ({goldClientCount}/{clientBookContacts.length})</TabsTrigger>
-                  <TabsTrigger value="retainers" className="pricing-button h-9 gap-1.5 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Repeat className="h-3.5 w-3.5 shrink-0" />Retainers ({filteredRetainers.length})</TabsTrigger>
-                </TabsList>
-                <Button onClick={openMobileContactForm} className="h-9">
-                  <UserPlus className="w-4 h-4 mr-2" /> Add Client
-                </Button>
-              </div>
-
-              <TabsContent value="clients" className="space-y-2 pt-3">
-                <div className="relative">
+                <div className="relative flex-1 min-w-[220px]">
                   <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input value={profilesSearch} onChange={(e) => { setProfilesSearch(e.target.value); setClientsVisibleCount(10); }} placeholder="Search the contact book by name, email, company, phone, notes…" className="pl-9" />
                 </div>
+                <Button onClick={openMobileContactForm} className="h-9 shrink-0">
+                  <UserPlus className="w-4 h-4 mr-2" /> Add Client
+                </Button>
+              </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="text-xs text-muted-foreground">Sort:</span>
                   {([
@@ -2831,6 +2835,16 @@ export default function Portal() {
                       {s.label}
                     </button>
                   ))}
+                  {clientsStatusFilter === "gold" && (
+                    <button
+                      type="button"
+                      onClick={() => { setClientsRetainerOnly(v => !v); setClientsVisibleCount(10); }}
+                      className={`flex items-center gap-1.5 rounded-none border px-2 py-1 text-xs transition-colors ${clientsRetainerOnly ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
+                    >
+                      <Repeat className="h-3 w-3" />
+                      On retainer ({filteredRetainers.length})
+                    </button>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Showing {Math.min(clientsVisibleCount, clientBookContacts.length)} of {sectionCounts.contacts ?? clientBookContacts.length} total clients.
@@ -2887,34 +2901,7 @@ export default function Portal() {
                     </div>
                   )}
                 </div>
-              </TabsContent>
-
-              <TabsContent value="retainers" className="space-y-2 pt-3">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input value={retainersSearch} onChange={(e) => setRetainersSearch(e.target.value)} placeholder="Search monthly retainer clients by email, order ID, status…" className="pl-9" />
-                </div>
-                {filteredRetainers.length === 0 && <p className="text-muted-foreground text-sm">No monthly retainer clients {retainersQ ? "match your search" : "yet"}.</p>}
-                {filteredRetainers.map(o => (
-                  <Card key={o.session_id}>
-                    <CardContent className="p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="space-y-1">
-                          <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
-                          <div className="text-xs text-muted-foreground">Started {new Date(o.created_at).toLocaleString()} · Monthly retainer</div>
-                          {o.subscription_id && <div className="break-all text-xs text-muted-foreground">Subscription {o.subscription_id}</div>}
-                        </div>
-                        <div className="flex flex-wrap items-center justify-end gap-3">
-                          <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>{o.payment_status ?? "pending"}</Badge>
-                          <Badge variant="outline">{getOrderMetadataText(o, "billing") || "Monthly subscription"}</Badge>
-                          <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </TabsContent>
-            </Tabs>
+            </div>
           </TabsContent>
 
           <TabsContent value="studio" className="min-w-0">
