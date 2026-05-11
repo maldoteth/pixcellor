@@ -531,7 +531,7 @@ const LetsTalkPrompt = () => {
             {error && <p className="text-red-400 text-xs">{error}</p>}
             <MagicLinkSignup
               email={email}
-              benefit="Save this AI generation to your dashboard. We'll email you a one-tap login link — no password needed."
+              benefit="Sign up to save to dashboard"
             />
           </motion.div>
         ) : step === "refine" && visionUrl ? (
