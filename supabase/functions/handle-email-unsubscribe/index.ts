@@ -67,6 +67,17 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'Token is required' }, 400)
   }
 
+  // Reject obviously malformed tokens early (defence-in-depth).
+  // Real tokens are URL-safe random strings between 16 and 256 chars.
+  if (
+    typeof token !== 'string' ||
+    token.length < 16 ||
+    token.length > 256 ||
+    !/^[A-Za-z0-9_-]+$/.test(token)
+  ) {
+    return jsonResponse({ error: 'Invalid token format' }, 400)
+  }
+
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   // Look up the token
