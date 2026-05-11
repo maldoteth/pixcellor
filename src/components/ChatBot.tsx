@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon, Phone, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useHeroReady } from "@/hooks/use-hero-ready";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending, updateCheckoutPendingSessionId } from "@/lib/checkoutTracking";
 import {
   Drawer,
@@ -202,6 +203,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
 }
 
 export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle = true, mode = "sales", onDevAction }: ChatBotProps) {
+  const heroReady = useHeroReady();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -866,10 +868,13 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       {showToggle && (
         <motion.button
           onClick={() => setIsOpen(!isOpen)}
-          className={`fixed left-1/2 -translate-x-1/2 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:top-6 lg:pointer-events-auto lg:opacity-100 ${hidden ? 'pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100' : 'opacity-100'} ${isMobile && isOpen ? 'lg:flex hidden' : 'flex'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
+          className={`fixed left-1/2 -translate-x-1/2 top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:top-6 lg:pointer-events-auto lg:opacity-100 ${(hidden || !heroReady) ? 'pointer-events-none opacity-0 lg:pointer-events-auto lg:opacity-100' : 'opacity-100'} ${isMobile && isOpen ? 'lg:flex hidden' : 'flex'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
           aria-label="Open chat with Alex from Pixcellor"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
+          initial={{ y: -8, filter: "blur(10px)" }}
+          animate={{ y: heroReady ? 0 : -8, filter: heroReady ? "blur(0px)" : "blur(10px)" }}
+          transition={{ duration: 0.6, delay: 0.08, ease: "easeOut" }}
           style={{
             background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
             backdropFilter: "blur(20px)",
