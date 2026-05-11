@@ -316,6 +316,17 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     return current.toLowerCase() === value.toLowerCase();
   };
 
+  const getVisitorId = (): string => {
+    try {
+      let v = localStorage.getItem("pixcellor:visitor_id");
+      if (!v) {
+        v = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+        localStorage.setItem("pixcellor:visitor_id", v);
+      }
+      return v;
+    } catch { return ""; }
+  };
+
   const generate = async (finalAnswers: Record<StepKey, string>) => {
     const brief = buildBrief(finalAnswers);
     if (brief.length < 5) {
@@ -327,7 +338,14 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     setStage("generating");
     try {
       const { data, error } = await supabase.functions.invoke("generate-vision", {
-        body: { prompt: brief },
+        body: {
+          prompt: brief,
+          meta: {
+            source: "vision_generator",
+            visitor_id: getVisitorId(),
+            company: finalAnswers.company?.trim() || null,
+          },
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
