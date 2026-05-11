@@ -2835,6 +2835,16 @@ export default function Portal() {
                       {s.label}
                     </button>
                   ))}
+                  {clientsStatusFilter === "gold" && (
+                    <button
+                      type="button"
+                      onClick={() => { setClientsRetainerOnly(v => !v); setClientsVisibleCount(10); }}
+                      className={`flex items-center gap-1.5 rounded-none border px-2 py-1 text-xs transition-colors ${clientsRetainerOnly ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
+                    >
+                      <Repeat className="h-3 w-3" />
+                      On retainer ({filteredRetainers.length})
+                    </button>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Showing {Math.min(clientsVisibleCount, clientBookContacts.length)} of {sectionCounts.contacts ?? clientBookContacts.length} total clients.
