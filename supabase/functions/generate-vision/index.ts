@@ -225,18 +225,20 @@ Deno.serve(async (req) => {
       if (insErr) console.error("ai_sample_generations insert failed:", insErr);
       else generationId = inserted?.id ?? null;
 
-      // Mirror lead into contacts so it appears in the Clients tab as a hot lead
+      // Mirror lead into contacts so it appears in the Clients tab as a hot lead.
+      // NOTE: contacts.name = company name, contacts.contact_name = person's name.
+      // The contacts table has no `company` column.
       try {
         const leadEmail = cleanStr(meta?.email?.toLowerCase?.() ?? meta?.email, 200);
         const leadPhone = cleanStr(meta?.phone, 40);
         const leadCompany = cleanStr(meta?.company, 200);
         const leadName = cleanStr(meta?.name, 200);
         if (leadEmail || leadPhone) {
-          let existing: { id: string; status: string | null; name: string | null; email: string | null; phone: string | null; company: string | null; contact_name: string | null; notes: string | null } | null = null;
+          let existing: { id: string; status: string | null; name: string | null; email: string | null; phone: string | null; contact_name: string | null; notes: string | null } | null = null;
           if (leadEmail) {
             const { data } = await supabase
               .from("contacts")
-              .select("id,status,name,email,phone,company,contact_name,notes")
+              .select("id,status,name,email,phone,contact_name,notes")
               .ilike("email", leadEmail)
               .limit(1)
               .maybeSingle();
@@ -245,7 +247,7 @@ Deno.serve(async (req) => {
           if (!existing && leadPhone) {
             const { data } = await supabase
               .from("contacts")
-              .select("id,status,name,email,phone,company,contact_name,notes")
+              .select("id,status,name,email,phone,contact_name,notes")
               .eq("phone", leadPhone)
               .limit(1)
               .maybeSingle();
@@ -260,20 +262,21 @@ Deno.serve(async (req) => {
             if (!protectedStatus) patch.status = "hot";
             if (!existing.email && leadEmail) patch.email = leadEmail;
             if (!existing.phone && leadPhone) patch.phone = leadPhone;
-            if (!existing.company && leadCompany) patch.company = leadCompany;
-            if (!existing.contact_name && leadName) patch.contact_name = leadName;
-            if ((!existing.name || existing.name.trim() === "") && (leadName || leadCompany)) {
-              patch.name = leadName || leadCompany;
+            if ((!existing.contact_name || existing.contact_name.trim() === "") && leadName) {
+              patch.contact_name = leadName;
+            }
+            // contacts.name holds the company / brand. Prefer company when present.
+            if ((!existing.name || existing.name.trim() === "" || existing.name === "AI sample lead") && (leadCompany || leadName)) {
+              patch.name = leadCompany || leadName;
             }
             patch.notes = existing.notes ? `${existing.notes}\n${noteLine}` : noteLine;
             const { error: updErr } = await supabase.from("contacts").update(patch).eq("id", existing.id);
             if (updErr) console.error("contacts update failed:", updErr);
           } else {
             const { error: insContactErr } = await supabase.from("contacts").insert({
-              name: leadName || leadCompany || "AI sample lead",
+              name: leadCompany || leadName || "AI sample lead",
               email: leadEmail,
               phone: leadPhone,
-              company: leadCompany,
               contact_name: leadName,
               status: "hot",
               source: "ai_vision_generator",
