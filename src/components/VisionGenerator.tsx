@@ -598,7 +598,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       initial={{ x: "-50%", y: -8, filter: "blur(10px)" }}
       animate={{ x: "-50%", y: heroReady ? 0 : -8, filter: heroReady ? "blur(0px)" : "blur(10px)" }}
       transition={{ duration: 0.6, delay: 0, ease: "easeOut" }}
-      className={`fixed left-[calc(50%-44px)] top-4 z-[10000] flex items-center justify-center rounded-sm transition-opacity duration-200 md:left-[calc(50%-52px)] md:top-6 ${(hidden || !heroReady) && !open ? "pointer-events-none opacity-0" : "opacity-100 pointer-events-auto"} ${isMobile && chatOpen && !open ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
+      className={`fixed left-[calc(50%-44px)] top-4 z-[10000] flex items-center justify-center rounded-sm outline-none ring-0 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-opacity duration-200 md:left-[calc(50%-52px)] md:top-6 ${(hidden || !heroReady) && !open ? "pointer-events-none opacity-0" : "opacity-100 pointer-events-auto"} ${isMobile && chatOpen && !open ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 100%)",
         backdropFilter: "blur(20px)",
