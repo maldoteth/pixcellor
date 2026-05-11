@@ -963,13 +963,35 @@ export default function Portal() {
       matchesQuery(profilesQ, c.status) || matchingEventContactIds.has(c.id) ||
       (c.status === "gold" && matchesQuery(profilesQ, "client"))
     );
-    return [...filtered].sort((a, b) => {
-      const aClient = a.status === "gold" ? 0 : 1;
-      const bClient = b.status === "gold" ? 0 : 1;
-      if (aClient !== bClient) return aClient - bClient;
+    const statusFiltered = clientsStatusFilter === "all"
+      ? filtered
+      : filtered.filter(c => c.status === clientsStatusFilter);
+    const heatRank: Record<Contact["status"], number> = {
+      hot: 0, gold: 1, aware: 2, cold: 3, archived: 4,
+    } as any;
+    return [...statusFiltered].sort((a, b) => {
+      if (clientsSort === "newest") {
+        const aClient = a.status === "gold" ? 0 : 1;
+        const bClient = b.status === "gold" ? 0 : 1;
+        if (aClient !== bClient) return aClient - bClient;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      if (clientsSort === "oldest") {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      }
+      if (clientsSort === "hot") {
+        const ar = heatRank[a.status] ?? 99;
+        const br = heatRank[b.status] ?? 99;
+        if (ar !== br) return ar - br;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      // cold
+      const ar = heatRank[a.status] ?? 99;
+      const br = heatRank[b.status] ?? 99;
+      if (ar !== br) return br - ar;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [contacts, contactEvents, profilesQ]);
+  }, [contacts, contactEvents, profilesQ, clientsSort, clientsStatusFilter]);
 
   const goldClientCount = useMemo(() => contacts.filter(c => c.status === "gold").length, [contacts]);
 
