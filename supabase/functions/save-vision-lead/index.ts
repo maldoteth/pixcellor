@@ -125,6 +125,8 @@ Deno.serve(async (req) => {
       });
     }
 
+    const initialNote = `AI Vision Generator lead — started ${today}${visitorId ? ` · visitor ${visitorId}` : ""}${milestoneNote ? `\n${milestoneNote}` : ""}`;
+
     const { data: inserted, error: insErr } = await supabase
       .from("contacts")
       .insert({
@@ -132,10 +134,10 @@ Deno.serve(async (req) => {
         contact_name: name,
         email,
         phone,
-        status: "warm",
+        status: stage === "result" ? "hot" : "warm",
         source: "ai_vision_generator",
         industry: "general",
-        notes: `${noteLine}${visitorId ? ` · visitor ${visitorId}` : ""}`,
+        notes: initialNote,
       })
       .select("id")
       .single();
