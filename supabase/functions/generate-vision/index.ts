@@ -101,7 +101,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { prompt, imageUrl: inputImageUrl, instruction } = await req.json();
+    const body = await req.json();
+    const { prompt, imageUrl: inputImageUrl, instruction, meta } = body ?? {};
     const isEdit = !!inputImageUrl && typeof instruction === "string" && instruction.trim().length > 2;
 
     if (!isEdit && (!prompt || typeof prompt !== "string" || prompt.trim().length < 5)) {
