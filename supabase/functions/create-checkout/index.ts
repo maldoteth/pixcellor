@@ -16,7 +16,7 @@ const BodySchema = z.object({
     email: z.string().max(2000).optional(),
     name: z.string().max(2000).optional(),
     company: z.string().max(2000).optional(),
-    phone: z.string().max2000?.toString ? z.string().max(2000) : z.string().max(2000),
+    phone: z.string().max(2000).optional(),
   }).passthrough().optional(),
   domain: z.string().max(500).optional(),
   domainTopUpGbp: z.union([z.number(), z.string()]).optional(),
