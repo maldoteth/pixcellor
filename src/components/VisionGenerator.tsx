@@ -287,6 +287,35 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     setDropdownOpen(false);
   }, [stage]);
 
+  // Progressive lead save: as soon as we have (company OR name) AND (email OR phone),
+  // upsert into contacts. Fires whenever stage advances or contact info changes.
+  // Debounced to avoid hammering on every keystroke.
+  useEffect(() => {
+    const company = answers.company.trim();
+    const name = contactName.trim();
+    const email = contactEmail.trim();
+    const phone = contactPhone.trim();
+    const hasDescriptor = !!(company || name);
+    const hasContact = !!(email || phone);
+    if (!hasDescriptor || !hasContact) return;
+    if (email && !EMAIL_RE.test(email)) return;
+
+    const t = setTimeout(() => {
+      void supabase.functions.invoke("save-vision-lead", {
+        body: {
+          company: company || null,
+          name: name || null,
+          email: email || null,
+          phone: phone || null,
+          visitor_id: getVisitorId(),
+          stage,
+        },
+      }).catch((err) => console.error("save-vision-lead failed", err));
+    }, 800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, answers.company, contactName, contactEmail, contactPhone]);
+
   const reset = () => {
     setImageUrl(null);
     setGeneratedFor("");
