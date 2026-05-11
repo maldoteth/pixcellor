@@ -183,7 +183,12 @@ serve(async (req) => {
       });
     }
 
-    const body = await req.json().catch(() => ({}));
+    const rawBody = await req.json().catch(() => ({}));
+    const parsed = BodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ error: "invalid_input" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const body = parsed.data;
     const mode = body?.mode === "verify" ? "verify" : "search";
     const { label, tld } = sanitizeLabel(typeof body?.query === "string" ? body.query : "");
     if (!label || label.length < 2) {
