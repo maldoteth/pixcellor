@@ -42,7 +42,7 @@ const PACKAGES = {
   },
   enterprise: {
     name: "Enterprise",
-    features: ["Larger scale operations", "Infrastructure and ecosystems", "Fictionalized Business Departments"],
+    features: ["Larger scale operations", "Infrastructure and ecosystems", "Dedicated team 24/7 - 365"],
   },
 };
 
