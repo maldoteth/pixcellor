@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { Check, Loader2, Wand2 } from "lucide-react";
+import { Check, Loader2, Phone, Wand2 } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -597,6 +597,13 @@ const LetsTalkPrompt = () => {
               email={email}
               benefit="Save your sample and request to your dashboard. We'll email you a one-tap login link — no password needed."
             />
+            <a
+              href="tel:+441483912430"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-foreground/20 bg-foreground/5 px-4 text-sm font-semibold text-foreground transition hover:bg-foreground/10"
+            >
+              <Phone className="h-4 w-4" />
+              Call us: +44 1483 912430
+            </a>
             <Button type="button" variant="pricing" onClick={() => setOpen(false)} className="h-10 px-6 mt-2 font-semibold">
               Close
             </Button>
@@ -618,11 +625,18 @@ const LetsTalkPrompt = () => {
                 ? "We'll review your brief and send a free sample shortly."
                 : "We'll be in touch shortly."}
             </p>
-            <div className="w-full max-w-sm">
+            <div className="w-full max-w-sm flex flex-col gap-2">
               <MagicLinkSignup
                 email={email}
                 benefit="Save this request to your dashboard so you can track it any time. We'll email you a one-tap login link."
               />
+              <a
+                href="tel:+441483912430"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-foreground/20 bg-foreground/5 px-4 text-sm font-semibold text-foreground transition hover:bg-foreground/10"
+              >
+                <Phone className="h-4 w-4" />
+                Call us: +44 1483 912430
+              </a>
             </div>
           </motion.div>
         ) : (
