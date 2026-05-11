@@ -105,7 +105,7 @@ const LetsTalkPrompt = () => {
             };
             if (ctx?.imageUrl) setVisionUrl(ctx.imageUrl);
             if (ctx?.brief) setDream(ctx.brief);
-            // company name is captured separately in the brief; don't prefill the user's name
+            if (ctx?.company) setCompany(ctx.company);
           }
         } catch { /* ignore */ }
       }
@@ -331,7 +331,7 @@ const LetsTalkPrompt = () => {
     if (step === "name") {
       const r = nameSchema.safeParse(name);
       if (!r.success) return setError(r.error.issues[0].message);
-      setStep("company");
+      setStep(company.trim() ? "email" : "company");
       return;
     }
     if (step === "company") {
