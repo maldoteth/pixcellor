@@ -11,6 +11,7 @@ import {
   FileText,
   Globe2,
   Home,
+  Image as ImageIcon,
   Loader2,
   LogOut,
   MessageCircle,
@@ -18,6 +19,7 @@ import {
   PanelLeft,
   ReceiptText,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
