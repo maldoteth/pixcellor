@@ -22,6 +22,7 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const handoff = useLoginHandoff("/customer-portal");
 
   const cleanEmail = email.trim().toLowerCase();
   const validEmail = /.+@.+\..+/.test(cleanEmail);
