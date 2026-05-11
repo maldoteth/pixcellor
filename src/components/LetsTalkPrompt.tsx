@@ -211,11 +211,21 @@ const LetsTalkPrompt = () => {
     try {
       const brief = `${dream.trim()}\n\nColours / styles: ${colours.trim()}`;
       const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", {
-        body: { prompt: brief },
+        body: {
+          prompt: brief,
+          meta: {
+            source: "lets_talk_request",
+            company: company.trim() || null,
+            name: name.trim() || null,
+            email: email.trim() || null,
+            phone: phone.trim() || null,
+          },
+        },
       });
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
       url = data?.imageUrl ?? null;
+      if (data?.generationId) setGenerationId(data.generationId);
     } catch (e) {
       console.error("vision generation failed", e);
     }
