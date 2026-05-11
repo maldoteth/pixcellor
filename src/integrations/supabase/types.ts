@@ -1394,7 +1394,6 @@ export type Database = {
         Returns: Json
       }
       portal_fetch_snapshot:
-        | { Args: never; Returns: Json }
         | { Args: { _access_code: string }; Returns: Json }
         | { Args: { _limit?: number }; Returns: Json }
       portal_mark_order_delivered:
