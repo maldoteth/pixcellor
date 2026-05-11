@@ -89,11 +89,18 @@ export default function VisionPreview() {
                 Generated {new Date(preview.created_at).toLocaleString()}
               </p>
             </div>
-            <div className="border border-border bg-black/40 overflow-hidden">
+            <div
+              tabIndex={-1}
+              className="border border-border bg-black/40 max-h-[75vh] overflow-auto outline-none focus:outline-none focus-visible:outline-none select-none"
+              onContextMenu={(e) => e.preventDefault()}
+            >
               <img
                 src={imageUrl}
                 alt={preview.title ?? "Generated website preview"}
-                className="w-full block"
+                className="w-full block pointer-events-none select-none"
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
+                onDragStart={(e) => e.preventDefault()}
               />
             </div>
             {preview.brief && (
