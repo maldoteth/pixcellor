@@ -105,78 +105,9 @@ export default function VisionStudio() {
     void loadVisitorGens();
   }, []);
 
-  const generate = async () => {
-    const trimmed = brief.trim();
-    if (trimmed.length < 5) {
-      toast.error("Add a brief (at least a few words).");
-      return;
-    }
-    setBusy(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-vision", {
-        body: { prompt: trimmed },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      const imageUrl: string | undefined = data?.imageUrl;
-      if (!imageUrl) throw new Error("No image returned");
-
-      // generate-vision now returns either an https URL (already uploaded) or a data URL.
-      let blob: Blob;
-      if (imageUrl.startsWith("data:")) {
-        blob = dataUrlToBlob(imageUrl);
-      } else {
-        const res = await fetch(imageUrl);
-        if (!res.ok) throw new Error("Failed to fetch generated image");
-        blob = await res.blob();
-      }
-      const slug = makeSlug();
-      const path = `${slug}.png`;
-
-      const upload = await supabase.storage.from(BUCKET).upload(path, blob, {
-        contentType: blob.type || "image/png",
-        upsert: false,
-      });
-      if (upload.error) throw upload.error;
-
-      const userRes = await supabase.auth.getUser();
-      const email = userRes.data.user?.email ?? null;
-      const userId = userRes.data.user?.id ?? null;
-
-      const insert = await (supabase as any)
-        .from("vision_previews")
-        .insert({
-          slug,
-          brief: trimmed,
-          title: title.trim() || null,
-          image_path: path,
-          created_by_user_id: userId,
-          created_by_email: email,
-          client_email: clientEmail.trim() || null,
-        })
-        .select()
-        .single();
-      if (insert.error) throw insert.error;
-
-      const row = insert.data as Preview;
-      setLatest(row);
-      setPreviews((p) => [row, ...p]);
-
-      // Auto-send email if client email provided
-      if (clientEmail.trim()) {
-        await sendEmail(row, clientName.trim() || undefined, clientEmail.trim());
-      }
-
-      setTitle("");
-      setBrief("");
-      setClientEmail("");
-      setClientName("");
-      toast.success("Preview created — link is ready to share.");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not generate vision");
-    } finally {
-      setBusy(false);
-    }
+  const handleCreated = (row: Preview) => {
+    setLatest(row);
+    setPreviews((p) => [row, ...p]);
   };
 
   const sendEmail = async (row: Preview, name?: string, overrideEmail?: string) => {
