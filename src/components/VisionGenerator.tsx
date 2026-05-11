@@ -501,33 +501,61 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       <p className="text-foreground text-base font-semibold">{currentStep.label}</p>
       <p className="text-foreground/60 text-xs">{currentStep.helper}</p>
 
-      {currentStep.multiline ? (
-        <textarea
-          autoFocus
-          value={answers[currentStep.key]}
-          onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
-          placeholder={currentStep.placeholder}
-          rows={4}
-          maxLength={1000}
-          className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition resize-none"
-        />
-      ) : (
-        <input
-          autoFocus
-          type="text"
-          value={answers[currentStep.key]}
-          onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              goNext();
-            }
-          }}
-          placeholder={currentStep.placeholder}
-          maxLength={300}
-          className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
-        />
-      )}
+      <div className="relative">
+        {currentStep.multiline ? (
+          <textarea
+            autoFocus
+            value={answers[currentStep.key]}
+            onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
+            onFocus={() => setDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
+            placeholder={currentStep.placeholder}
+            rows={4}
+            maxLength={1000}
+            className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition resize-none"
+          />
+        ) : (
+          <input
+            autoFocus
+            type="text"
+            value={answers[currentStep.key]}
+            onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
+            onFocus={() => setDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                goNext();
+              }
+              if (e.key === "Escape") setDropdownOpen(false);
+            }}
+            placeholder={currentStep.placeholder}
+            maxLength={300}
+            className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+          />
+        )}
+        {dropdownOpen && SUGGESTIONS[currentStep.key] && filteredSuggestions.length > 0 && (
+          <div className="absolute z-20 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-background/95 backdrop-blur-xl border border-foreground/20 rounded-md shadow-xl">
+            {filteredSuggestions.map((s) => {
+              const active = isSuggestionActive(currentStep.key, s.value);
+              return (
+                <button
+                  key={s.value}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => applySuggestion(currentStep.key, s.value)}
+                  className={`w-full text-left px-3 py-2 text-sm border-b border-foreground/5 last:border-0 transition ${
+                    active ? "bg-foreground/15 text-foreground" : "text-foreground/85 hover:bg-foreground/10"
+                  }`}
+                >
+                  {active ? "✓ " : ""}{s.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
 
       {SUGGESTIONS[currentStep.key] && (
         <div className="flex flex-wrap gap-1.5">
