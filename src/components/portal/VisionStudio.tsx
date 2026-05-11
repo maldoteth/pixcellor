@@ -237,6 +237,31 @@ export default function VisionStudio() {
                     {g.source}{g.is_refinement ? " · refinement" : ""}
                   </p>
                   {g.brief && <p className="text-[11px] text-muted-foreground line-clamp-3">{g.brief}</p>}
+                  {g.preview_slug && (
+                    <div className="flex items-center gap-1 pt-1">
+                      <code className="text-[10px] px-1.5 py-0.5 bg-muted text-foreground rounded-none truncate flex-1">
+                        {shareUrl(g.preview_slug)}
+                      </code>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6"
+                        onClick={() => copyLink(g.preview_slug!)}
+                        aria-label="Copy preview link"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6"
+                        onClick={() => window.open(shareUrl(g.preview_slug!), "_blank")}
+                        aria-label="Open preview"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
