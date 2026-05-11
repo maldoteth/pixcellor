@@ -355,6 +355,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             source: "vision_generator",
             visitor_id: getVisitorId(),
             company: finalAnswers.company?.trim() || null,
+            email: contactEmail.trim() || null,
+            phone: contactPhone.trim() || null,
           },
         },
       });
