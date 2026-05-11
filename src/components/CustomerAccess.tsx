@@ -127,9 +127,9 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
       transition={{ duration: 0.6, delay: 0.16, ease: "easeOut" }}
       className={`fixed left-[calc(50%+44px)] top-4 z-[10500] flex items-center justify-center rounded-sm transition-opacity duration-200 md:left-[calc(50%+52px)] md:top-6 ${(hidden || !heroReady) ? "pointer-events-none opacity-0" : "opacity-100"} ${isMobile && chatOpen ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
       style={{
-        background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
-        backdropFilter: "blur(40px) saturate(180%)",
-        WebkitBackdropFilter: "blur(40px) saturate(180%)",
+        background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.08) 100%)",
+        backdropFilter: "blur(28px) saturate(160%)",
+        WebkitBackdropFilter: "blur(28px) saturate(160%)",
         border: "1px solid rgba(255,255,255,0.2)",
         boxShadow: `
           0 8px 32px rgba(0,0,0,0.3),
