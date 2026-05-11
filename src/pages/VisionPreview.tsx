@@ -19,9 +19,27 @@ const BUCKET = "vision-previews";
 
 export default function VisionPreview() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [preview, setPreview] = useState<Preview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [authedEmail, setAuthedEmail] = useState<string | null>(null);
+  const [requested, setRequested] = useState(false);
+  const [contactEmail, setContactEmail] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) setAuthedEmail(data.session?.user?.email ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthedEmail(session?.user?.email ?? null);
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
