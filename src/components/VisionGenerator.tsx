@@ -523,7 +523,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
         email,
         phone: phone || null,
         source: "free_sample_request",
-        request_details: requestDetails,
+        request_details: requestDetails as any,
         attachment_urls: attachments,
       }]);
       if (insertErr) throw insertErr;
