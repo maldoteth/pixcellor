@@ -24,7 +24,12 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
 
   const cleanup = useCallback(() => {
     if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
+      const ch: any = channelRef.current;
+      if (typeof ch.unsubscribe === "function" && !ch.topic) {
+        ch.unsubscribe();
+      } else {
+        supabase.removeChannel(ch);
+      }
       channelRef.current = null;
     }
   }, []);
@@ -73,26 +78,27 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
       sidRef.current = sid;
       setStatus("waiting");
 
-      // Subscribe BEFORE the email is sent so we don't miss the INSERT.
-      const channel = supabase
-        .channel(`login_handoff:${sid}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "login_handoffs",
-            filter: `id=eq.${sid}`,
-          },
-          (payload) => {
-            const row = (payload.new ?? payload.old) as
-              | { token?: string | null }
-              | undefined;
-            if (row?.token) redeem(row.token);
-          },
-        )
-        .subscribe();
-      channelRef.current = channel;
+      // Poll the secure RPC — login_handoffs is no longer publicly readable.
+      const startedAt = Date.now();
+      const intervalMs = 2000;
+      const maxMs = 5 * 60 * 1000;
+      const handle = window.setInterval(async () => {
+        if (claimingRef.current || sidRef.current !== sid) return;
+        if (Date.now() - startedAt > maxMs) {
+          window.clearInterval(handle);
+          return;
+        }
+        const { data } = await (supabase as any).rpc("claim_login_handoff", { _sid: sid });
+        const token = (data as { token?: string } | null)?.token;
+        if (token) {
+          window.clearInterval(handle);
+          redeem(token);
+        }
+      }, intervalMs);
+      // Stash on channelRef-shaped slot so cleanup clears it.
+      channelRef.current = {
+        unsubscribe: () => window.clearInterval(handle),
+      } as any;
 
       const target = `${window.location.origin}${basePath}?sid=${encodeURIComponent(sid)}`;
       return target;

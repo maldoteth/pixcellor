@@ -1286,6 +1286,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_login_handoff: { Args: { _sid: string }; Returns: Json }
       customer_fetch_portal: { Args: never; Returns: Json }
       delete_email: {
         Args: { message_id: number; queue_name: string }
@@ -1305,6 +1306,16 @@ export type Database = {
       }
       fetch_chat_history: { Args: { _client_id: string }; Returns: Json }
       generate_order_code: { Args: never; Returns: string }
+      get_vision_preview_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          brief: string
+          created_at: string
+          image_path: string
+          slug: string
+          title: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1335,30 +1346,15 @@ export type Database = {
         }
         Returns: Json
       }
-      portal_close_chat_case:
-        | {
-            Args: { _access_code: string; _conversation_id: string }
-            Returns: undefined
-          }
-        | { Args: { _conversation_id: string }; Returns: undefined }
-      portal_complete_callback:
-        | {
-            Args: { _access_code: string; _event_id: string }
-            Returns: undefined
-          }
-        | { Args: { _event_id: string }; Returns: undefined }
+      portal_close_chat_case: {
+        Args: { _conversation_id: string }
+        Returns: undefined
+      }
+      portal_complete_callback: {
+        Args: { _event_id: string }
+        Returns: undefined
+      }
       portal_create_contact:
-        | {
-            Args: {
-              _access_code: string
-              _email?: string
-              _location?: string
-              _name: string
-              _notes?: string
-              _phone?: string
-            }
-            Returns: undefined
-          }
         | {
             Args: {
               _email?: string
@@ -1431,19 +1427,15 @@ export type Database = {
         Args: { _person_id: string }
         Returns: undefined
       }
-      portal_fetch_messages:
-        | {
-            Args: { _access_code: string; _conversation_id: string }
-            Returns: Json
-          }
-        | { Args: { _conversation_id: string }; Returns: Json }
+      portal_fetch_messages: {
+        Args: { _conversation_id: string }
+        Returns: Json
+      }
       portal_fetch_section: {
         Args: { _limit?: number; _offset?: number; _section: string }
         Returns: Json
       }
-      portal_fetch_snapshot:
-        | { Args: { _access_code: string }; Returns: Json }
-        | { Args: { _limit?: number }; Returns: Json }
+      portal_fetch_snapshot: { Args: { _limit?: number }; Returns: Json }
       portal_mark_order_delivered:
         | {
             Args: {
@@ -1471,38 +1463,13 @@ export type Database = {
         Args: { _sample_id: string }
         Returns: undefined
       }
-      portal_require_access: {
-        Args: { _access_code: string }
-        Returns: undefined
-      }
       portal_require_admin: { Args: never; Returns: undefined }
       portal_search_customers: { Args: { _q: string }; Returns: Json }
-      portal_send_chat_reply:
-        | {
-            Args: {
-              _access_code: string
-              _content: string
-              _conversation_id: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: { _content: string; _conversation_id: string }
-            Returns: undefined
-          }
+      portal_send_chat_reply: {
+        Args: { _content: string; _conversation_id: string }
+        Returns: undefined
+      }
       portal_update_contact:
-        | {
-            Args: {
-              _access_code: string
-              _contact_id: string
-              _email?: string
-              _location?: string
-              _name: string
-              _notes?: string
-              _phone?: string
-            }
-            Returns: undefined
-          }
         | {
             Args: {
               _contact_id: string
@@ -1545,12 +1512,10 @@ export type Database = {
         Args: { _contact_id: string; _media: Json }
         Returns: undefined
       }
-      portal_update_contact_status:
-        | {
-            Args: { _access_code: string; _contact_id: string; _status: string }
-            Returns: undefined
-          }
-        | { Args: { _contact_id: string; _status: string }; Returns: undefined }
+      portal_update_contact_status: {
+        Args: { _contact_id: string; _status: string }
+        Returns: undefined
+      }
       portal_update_edit_request_status: {
         Args: { _request_id: string; _status: string }
         Returns: undefined

@@ -47,9 +47,7 @@ export default function VisionPreview() {
       if (!slug) return;
       setLoading(true);
       const { data, error } = await (supabase as any)
-        .from("vision_previews")
-        .select("*")
-        .eq("slug", slug)
+        .rpc("get_vision_preview_by_slug", { _slug: slug })
         .maybeSingle();
       if (cancelled) return;
       if (error) {
