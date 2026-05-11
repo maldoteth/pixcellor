@@ -2832,62 +2832,61 @@ export default function Portal() {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground">Showing latest {Math.min(clientsVisibleCount, clientBookContacts.length)} of {clientBookContacts.length}.</p>
+                <p className="text-xs text-muted-foreground">
+                  Showing {Math.min(clientsVisibleCount, clientBookContacts.length)} of {sectionCounts.contacts ?? clientBookContacts.length} total clients.
+                </p>
                 {clientBookContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {profilesQ ? "match your search" : "yet"}.</p>}
-                {clientBookContacts.slice(0, clientsVisibleCount).map(c => {
-                  const stats = contactOrderStatsByEmail.get(normalizeEmail(c.email) ?? "");
-                  const statusColor = getContactStatusColor(c.status);
-                  const statusLabel = contactStatuses.find(s => s.value === c.status)?.label ?? c.status;
-                  return (
-                    <Card
-                      key={c.id}
-                      role="button"
-                      tabIndex={0}
-                      className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                      onClick={() => openContactDrawer(c.id)}
-                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openContactDrawer(c.id); } }}
-                    >
-                      <CardContent className="space-y-1 p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="font-medium">{c.name || c.email || "Unnamed contact"}</div>
-                          <div className="flex items-center gap-2">
-                            <Badge style={{ backgroundColor: statusColor, color: "hsl(var(--background))" }} className="rounded-none">{statusLabel}</Badge>
-                            {stats && <Badge variant="outline" className="rounded-none">LTV {formatGBP(stats.ltv)}</Badge>}
-                            {contactPersons.filter(p => p.contact_id === c.id).length > 0 && (
-                              <Badge variant="outline" className="rounded-none">{contactPersons.filter(p => p.contact_id === c.id).length} contact{contactPersons.filter(p => p.contact_id === c.id).length === 1 ? "" : "s"}</Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {[c.email, c.phone, c.location, c.industry].filter(Boolean).join(" · ") || "No details on file"}
-                        </div>
-                        {c.notes && <LinkifiedText text={c.notes} className="block text-sm text-muted-foreground" stopPropagation />}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-                {(clientsVisibleCount < clientBookContacts.length || (sectionCounts.contacts ?? 0) > contacts.length) && (
-                  <div
-                    ref={(el) => {
-                      if (!el) return;
-                      const obs = new IntersectionObserver((entries) => {
-                        if (entries.some((e) => e.isIntersecting)) {
-                          setClientsVisibleCount((n) => n + 10);
-                          if ((sectionCounts.contacts ?? 0) > contacts.length && !loadingMore.contacts) {
-                            loadMoreSection("contacts", contacts.length, 20);
-                          }
-                        }
-                      }, { rootMargin: "200px" });
-                      obs.observe(el);
-                    }}
-                    className="flex justify-center pt-2"
-                  >
-                    <Button variant="outline" disabled={!!loadingMore.contacts} onClick={() => {
+                <div
+                  className="max-h-[70vh] overflow-y-auto pr-1 space-y-2 rounded-none border border-border/40 bg-card/20 p-2"
+                  onScroll={makeNearBottomHandler(() => {
+                    if (clientsVisibleCount < clientBookContacts.length) {
                       setClientsVisibleCount((n) => n + 10);
-                      if ((sectionCounts.contacts ?? 0) > contacts.length) loadMoreSection("contacts", contacts.length, 20);
-                    }}>{loadingMore.contacts ? "Loading…" : "Load more"}</Button>
-                  </div>
-                )}
+                    } else if ((sectionCounts.contacts ?? 0) > contacts.length && !loadingMore.contacts) {
+                      loadMoreSection("contacts", contacts.length, 20);
+                    }
+                  })}
+                >
+                  {clientBookContacts.slice(0, clientsVisibleCount).map(c => {
+                    const stats = contactOrderStatsByEmail.get(normalizeEmail(c.email) ?? "");
+                    const statusColor = getContactStatusColor(c.status);
+                    const statusLabel = contactStatuses.find(s => s.value === c.status)?.label ?? c.status;
+                    return (
+                      <Card
+                        key={c.id}
+                        role="button"
+                        tabIndex={0}
+                        className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        onClick={() => openContactDrawer(c.id)}
+                        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openContactDrawer(c.id); } }}
+                      >
+                        <CardContent className="space-y-1 p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="font-medium">{c.name || c.email || "Unnamed contact"}</div>
+                            <div className="flex items-center gap-2">
+                              <Badge style={{ backgroundColor: statusColor, color: "hsl(var(--background))" }} className="rounded-none">{statusLabel}</Badge>
+                              {stats && <Badge variant="outline" className="rounded-none">LTV {formatGBP(stats.ltv)}</Badge>}
+                              {contactPersons.filter(p => p.contact_id === c.id).length > 0 && (
+                                <Badge variant="outline" className="rounded-none">{contactPersons.filter(p => p.contact_id === c.id).length} contact{contactPersons.filter(p => p.contact_id === c.id).length === 1 ? "" : "s"}</Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {[c.email, c.phone, c.location, c.industry].filter(Boolean).join(" · ") || "No details on file"}
+                          </div>
+                          {c.notes && <LinkifiedText text={c.notes} className="block text-sm text-muted-foreground" stopPropagation />}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                  {(clientsVisibleCount < clientBookContacts.length || (sectionCounts.contacts ?? 0) > contacts.length) && (
+                    <div className="flex justify-center pt-2">
+                      <Button variant="outline" disabled={!!loadingMore.contacts} onClick={() => {
+                        setClientsVisibleCount((n) => n + 10);
+                        if ((sectionCounts.contacts ?? 0) > contacts.length) loadMoreSection("contacts", contacts.length, 20);
+                      }}>{loadingMore.contacts ? "Loading…" : "Load more"}</Button>
+                    </div>
+                  )}
+                </div>
               </TabsContent>
 
               <TabsContent value="retainers" className="space-y-2 pt-3">
