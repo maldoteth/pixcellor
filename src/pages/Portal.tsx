@@ -755,6 +755,72 @@ export default function Portal() {
     toast.success("Case closed. Bot re-enabled.");
   };
 
+  const fetchAllTimeStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      // Paid site orders — paginate through all
+      const allOrders: Array<{ amount_total: number | null; customer_email: string | null; metadata: any; payment_status: string | null; status: string | null }> = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await (supabase as any)
+          .from("stripe_checkout_sessions")
+          .select("amount_total, customer_email, metadata, payment_status, status")
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const rows = (data ?? []) as any[];
+        allOrders.push(...rows);
+        if (rows.length < pageSize) break;
+      }
+      const paidSite = allOrders.filter(
+        (o) => o.metadata?.source === "pixcellor_site" && (o.payment_status === "paid" || o.status === "complete" || o.status === "completed")
+      );
+      const totalSales = paidSite.reduce((sum, o) => sum + (o.amount_total ?? 0), 0);
+      const totalWebsites = paidSite.length;
+      const buyerEmails = new Set(paidSite.map((o) => o.customer_email?.toLowerCase()).filter(Boolean) as string[]);
+
+      // Visitor falloffs — paginate
+      const allFalloffs: Array<{ visitor_id: string | null; event_count: number | null; pricing_opened_at: string | null; buy_clicked_at: string | null }> = [];
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await (supabase as any)
+          .from("visitor_falloffs")
+          .select("visitor_id, event_count, pricing_opened_at, buy_clicked_at")
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const rows = (data ?? []) as any[];
+        allFalloffs.push(...rows);
+        if (rows.length < pageSize) break;
+      }
+      const uniqueVisitors = new Set(allFalloffs.map((f) => f.visitor_id).filter(Boolean)).size;
+      const totalVisitEvents = allFalloffs.reduce((sum, f) => sum + (f.event_count ?? 0), 0);
+      const pricingViews = allFalloffs.filter((f) => f.pricing_opened_at).length;
+      const buyClicks = allFalloffs.filter((f) => f.buy_clicked_at).length;
+
+      // Potential = leads (profiles + inquiries) not in buyers, plus anonymous chatters
+      const [{ data: profEmails }, { data: inqEmails }, { count: convCount }] = await Promise.all([
+        (supabase as any).from("client_profiles").select("email").limit(10000),
+        (supabase as any).from("contact_inquiries").select("email").limit(10000),
+        (supabase as any).from("chat_conversations").select("id", { count: "exact", head: true }),
+      ]);
+      const leadEmails = new Set<string>();
+      for (const r of (profEmails ?? []) as any[]) if (r.email) leadEmails.add(r.email.toLowerCase());
+      for (const r of (inqEmails ?? []) as any[]) if (r.email) leadEmails.add(r.email.toLowerCase());
+      let potential = 0;
+      for (const e of leadEmails) if (!buyerEmails.has(e)) potential += 1;
+      const conversationsWithoutEmail = (convCount ?? 0) - leadEmails.size;
+      if (conversationsWithoutEmail > 0) potential += conversationsWithoutEmail;
+
+      setStatsTotals({ totalSales, totalWebsites, potential, uniqueVisitors, totalVisitEvents, pricingViews, buyClicks });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to load stats");
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (statsDialogOpen) void fetchAllTimeStats();
+  }, [statsDialogOpen, fetchAllTimeStats]);
+
   const counters = useMemo(() => {
     const totalSales = orders.reduce((sum, o) => sum + (o.amount_total ?? 0), 0);
     const totalWebsites = orders.length;
