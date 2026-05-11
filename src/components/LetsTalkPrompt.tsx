@@ -529,7 +529,7 @@ const LetsTalkPrompt = () => {
               transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
               className="flex items-center justify-center"
             >
-              <Check className="w-12 h-12 text-foreground" strokeWidth={2.5} />
+              <Check className="w-12 h-12 text-foreground py-[10px]" strokeWidth={2.5} />
             </motion.div>
             <p className="text-foreground text-base font-medium">
               {orderRequested ? "Order request sent 🎉" : "Consultation requested 🎉"}
