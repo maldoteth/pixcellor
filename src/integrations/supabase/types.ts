@@ -661,6 +661,33 @@ export type Database = {
         }
         Relationships: []
       }
+      login_handoffs: {
+        Row: {
+          claimed_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          token: string | null
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id: string
+          token?: string | null
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          token?: string | null
+        }
+        Relationships: []
+      }
       portfolio_projects: {
         Row: {
           category: string | null
