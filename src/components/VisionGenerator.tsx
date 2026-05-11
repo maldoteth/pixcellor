@@ -257,6 +257,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const reset = () => {
     setImageUrl(null);
