@@ -395,7 +395,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const goNext = () => {
     if (!currentStep) return;
     if (currentIndex === STEPS.length - 1) {
-      void generate(answers);
+      setStage("contact");
     } else {
       setStage(STEPS[currentIndex + 1].key);
     }
@@ -406,7 +406,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     const cleared = { ...answers, [currentStep.key]: "" };
     setAnswers(cleared);
     if (currentIndex === STEPS.length - 1) {
-      void generate(cleared);
+      setStage("contact");
     } else {
       setStage(STEPS[currentIndex + 1].key);
     }
