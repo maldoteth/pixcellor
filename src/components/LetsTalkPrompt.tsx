@@ -342,11 +342,23 @@ const LetsTalkPrompt = () => {
     let url: string | null = null;
     try {
       const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", {
-        body: { imageUrl: previousUrl, instruction: ins },
+        body: {
+          imageUrl: previousUrl,
+          instruction: ins,
+          meta: {
+            source: "lets_talk_refine",
+            company: company.trim() || null,
+            name: name.trim() || null,
+            email: email.trim() || null,
+            phone: phone.trim() || null,
+            parent_id: generationId,
+          },
+        },
       });
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
       url = data?.imageUrl ?? null;
+      if (data?.generationId) setGenerationId(data.generationId);
     } catch (e) {
       console.error("vision refine failed", e);
     }
