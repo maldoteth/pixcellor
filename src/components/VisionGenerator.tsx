@@ -838,7 +838,6 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             <div className="flex flex-col gap-2">
               <label className="text-foreground/70 text-xs uppercase tracking-wider">Email</label>
               <input
-                autoFocus
                 type="email"
                 inputMode="email"
                 autoComplete="email"
