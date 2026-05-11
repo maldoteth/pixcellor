@@ -706,7 +706,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           onClick={goNext}
           className="h-11 font-semibold"
         >
-          {currentIndex === STEPS.length - 1 ? "Generate ✨" : "Next →"}
+          {currentIndex === STEPS.length - 1 ? "Continue →" : "Next →"}
         </Button>
       </div>
       {currentIndex > 0 && (
