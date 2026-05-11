@@ -528,8 +528,12 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           <textarea
             autoFocus
             value={answers[currentStep.key]}
-            onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
-            onFocus={() => setDropdownOpen(true)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setAnswers((a) => ({ ...a, [currentStep.key]: v }));
+              const last = (v.split(",").pop() ?? "").trim();
+              setDropdownOpen(last.length >= 3);
+            }}
             onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
             placeholder={currentStep.placeholder}
             rows={4}
@@ -541,8 +545,11 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             autoFocus
             type="text"
             value={answers[currentStep.key]}
-            onChange={(e) => setAnswers((a) => ({ ...a, [currentStep.key]: e.target.value }))}
-            onFocus={() => setDropdownOpen(true)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setAnswers((a) => ({ ...a, [currentStep.key]: v }));
+              setDropdownOpen(v.trim().length >= 3);
+            }}
             onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
