@@ -518,6 +518,10 @@ const LetsTalkPrompt = () => {
                 ? `Thanks ${name.split(" ")[0]} — a member of our team will be in touch within 24 hours to confirm your order and get the build started. We've saved your details and your sample.`
                 : `Thanks ${name.split(" ")[0]} — a member of our team will be in touch within 24 hours to arrange a quick call and walk you through your sample. We've saved your details and won't ask again.`}
             </p>
+            <MagicLinkSignup
+              email={email}
+              benefit="Save your sample and request to your dashboard. We'll email you a one-tap login link — no password needed."
+            />
             <Button type="button" variant="pricing" onClick={() => setOpen(false)} className="h-10 px-6 mt-2 font-semibold">
               Close
             </Button>
