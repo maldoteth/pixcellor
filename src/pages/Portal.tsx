@@ -548,7 +548,7 @@ export default function Portal() {
   }, []);
 
   const loadMoreSection = useCallback(async (
-    section: "orders" | "falloffs" | "conversations" | "contacts" | "inquiries" | "editRequests" | "sampleRequests" | "aiSampleGenerations" | "profiles" | "projectRequirements",
+    section: "orders" | "falloffs" | "conversations" | "contacts" | "contactEvents" | "inquiries" | "editRequests" | "sampleRequests" | "aiSampleGenerations" | "profiles" | "projectRequirements",
     currentLength: number,
     pageSize: number = 20,
   ) => {
