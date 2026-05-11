@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Loader2, Mail, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useLoginHandoff } from "@/hooks/use-login-handoff";
+import { useRequestLoginLink } from "@/hooks/use-request-login-link";
 
 interface MagicLinkSignupProps {
   email: string;
@@ -11,18 +13,12 @@ interface MagicLinkSignupProps {
   benefit?: string;
 }
 
-/**
- * Inline "save to dashboard" CTA shown on thank-you screens. Uses the
- * email already collected to send a magic link; once the visitor signs
- * in, all sample requests and AI generations under that email auto-link
- * to their dashboard via customer_fetch_portal().
- */
 const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
-  const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const handoff = useLoginHandoff("/customer-portal");
+  const { requestLink, busy, cooldown } = useRequestLoginLink();
 
   const cleanEmail = email.trim().toLowerCase();
   const validEmail = /.+@.+\..+/.test(cleanEmail);
@@ -43,32 +39,19 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
 
   const sendLink = async () => {
     if (!validEmail) return;
-    setBusy(true);
     setError(null);
-    try {
-      const emailRedirectTo = handoff.start();
-      const { error: err } = await supabase.auth.signInWithOtp({
-        email: cleanEmail,
-        options: {
-          emailRedirectTo,
-          shouldCreateUser: true,
-        },
-      });
-      if (err) throw err;
+    const emailRedirectTo = handoff.start();
+    const result = await requestLink(cleanEmail, emailRedirectTo);
+    if (result.ok) {
       setSent(true);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Could not send link";
-      if (msg.toLowerCase().includes("rate limit")) {
-        setSent(true);
-      } else {
-        setError(msg);
-      }
-    } finally {
-      setBusy(false);
+    } else if (result.rateLimited) {
+      setSent(true);
+      toast.error(`Too many requests. Try again in ${result.retryAfter ?? 30}s.`);
+    } else {
+      setError(result.message ?? "Could not send link");
     }
   };
 
-  // Only treat as "saved" when the signed-in session actually matches the captured email.
   const matchedAuth = !!sessionEmail && !!cleanEmail && sessionEmail === cleanEmail;
 
   if (matchedAuth) {
@@ -82,6 +65,13 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
 
   if (!validEmail) return null;
 
+  const buttonLabel = busy
+    ? "Sending…"
+    : cooldown > 0
+      ? `Resend in ${cooldown}s`
+      : sent
+        ? "Resend link"
+        : "Save to my dashboard";
 
   return (
     <motion.div
@@ -91,18 +81,29 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
       className="mt-4 rounded-md border border-foreground/15 bg-foreground/[0.04] px-3 py-3"
     >
       {sent ? (
-        <div className="flex items-start gap-2 text-xs text-foreground/85">
-          {handoff.status === "claiming" || handoff.status === "claimed" ? (
-            <Loader2 className="h-3.5 w-3.5 mt-0.5 shrink-0 animate-spin" />
-          ) : (
-            <Mail className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-          )}
-          <p>
-            {handoff.status === "claiming" || handoff.status === "claimed"
-              ? "Signing you in…"
-              : <>Magic link sent to <span className="font-medium">{cleanEmail}</span>. Open it on any device — this tab will log in automatically.</>}
-          </p>
-        </div>
+        <>
+          <div className="flex items-start gap-2 text-xs text-foreground/85">
+            {handoff.status === "claiming" || handoff.status === "claimed" ? (
+              <Loader2 className="h-3.5 w-3.5 mt-0.5 shrink-0 animate-spin" />
+            ) : (
+              <Mail className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+            )}
+            <p>
+              {handoff.status === "claiming" || handoff.status === "claimed"
+                ? "Signing you in…"
+                : <>Magic link sent to <span className="font-medium">{cleanEmail}</span>. Open it on any device — this tab will log in automatically.</>}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={sendLink}
+            disabled={busy || cooldown > 0}
+            className="mt-2 h-8 w-full font-semibold text-xs"
+          >
+            {buttonLabel}
+          </Button>
+        </>
       ) : (
         <>
           <p className="text-xs text-foreground/80 leading-snug">
@@ -112,11 +113,11 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
             type="button"
             variant="pricing"
             onClick={sendLink}
-            disabled={busy}
+            disabled={busy || cooldown > 0}
             className="mt-2 h-9 w-full font-semibold text-xs inline-flex items-center justify-center gap-2"
           >
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
-            Save to my dashboard
+            {buttonLabel}
           </Button>
           {error && <p className="mt-1.5 text-[11px] text-red-400">{error}</p>}
         </>
