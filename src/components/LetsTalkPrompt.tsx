@@ -623,8 +623,8 @@ const LetsTalkPrompt = () => {
             >
               <Check className="w-12 h-12 text-foreground my-0" strokeWidth={2.5} />
             </motion.div>
-            <p className="text-foreground text-base font-medium">Thanks, {name.split(" ")[0]}!</p>
-            <p className="text-foreground/70 text-sm text-center">
+            <p className="text-foreground text-base font-medium text-center">Thanks, {name.split(" ")[0]}!</p>
+            <p className="text-foreground/70 text-center text-xl">
               {mode === "request"
                 ? "We'll review your brief and send a free sample shortly."
                 : "We'll be in touch shortly."}
@@ -639,7 +639,7 @@ const LetsTalkPrompt = () => {
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-foreground/20 bg-foreground/5 px-4 text-sm font-semibold text-foreground transition hover:bg-foreground/10"
               >
                 <Phone className="h-4 w-4" />
-                Call us: +44 1483 912430
+                 +44 1483 912430
               </a>
             </div>
           </motion.div>
