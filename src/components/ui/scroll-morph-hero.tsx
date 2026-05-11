@@ -916,20 +916,21 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                 </div>
 
                 {/* Hero CTA buttons anchored at bottom of hero viewport */}
-                <motion.div
-                    style={{ opacity: ctaOpacity }}
+                <div
                     className="absolute left-1/2 -translate-x-1/2 z-[10500] pointer-events-auto bottom-[34px] md:bottom-[23px] w-full md:w-auto px-[1.5rem] md:px-0"
                 >
                     {/* Mobile: stacked */}
                     <div className="md:hidden flex flex-col items-stretch gap-2 w-full">
-                        <button
+                        <motion.button
+                            style={{ opacity: ctaOpacity }}
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { services: true } })); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Services
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
+                            style={{ opacity: ctaOpacity }}
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -951,18 +952,20 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Portfolio
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
+                            style={{ opacity: ctaOpacity }}
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk")); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
                         >
                             Let's Talk
-                        </button>
+                        </motion.button>
                     </div>
                     {/* Desktop: row */}
                     <div className="hidden md:flex justify-center items-center gap-3">
-                        <button
+                        <motion.button
+                            style={{ opacity: ctaOpacity }}
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -984,23 +987,25 @@ export default function IntroAnimation({ onVirtualScrollChange }: IntroAnimation
                             className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Portfolio
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
+                            style={{ opacity: ctaOpacity }}
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { services: true } })); }}
                             className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Services
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
+                            style={{ opacity: ctaOpacity }}
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk")); }}
                             className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
                         >
                             Let's Talk
-                        </button>
+                        </motion.button>
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Mobile-only scroll arrow — bottom of screen, aligned with chat button */}
                 <button
