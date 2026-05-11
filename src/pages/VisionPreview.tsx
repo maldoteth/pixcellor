@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { Loader2, ArrowLeft, Wand2 } from "lucide-react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { Loader2, ArrowLeft, Wand2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import SeoHead from "@/components/SeoHead";
+import MagicLinkSignup from "@/components/MagicLinkSignup";
+import { Button } from "@/components/ui/button";
 
 interface Preview {
   id: string;
