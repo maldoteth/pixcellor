@@ -513,7 +513,21 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
         brief: generatedFor || buildBrief(answers),
         vision_image_url: imageUrl,
         kind,
+        origin: sourceTag,
       };
+      const attachments = imageUrl ? [imageUrl] : null;
+
+      // Track as a live sample/order in the samples feed so admins can action it.
+      const { error: insertErr } = await supabase.from("lets_talk_leads").insert([{
+        name,
+        email,
+        phone: phone || null,
+        source: "free_sample_request",
+        request_details: requestDetails as any,
+        attachment_urls: attachments,
+      }]);
+      if (insertErr) throw insertErr;
+
       const { error } = await supabase.functions.invoke("process-lets-talk-lead", {
         body: {
           name,
@@ -521,7 +535,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           phone: phone || null,
           source: sourceTag,
           request_details: requestDetails,
-          attachment_urls: imageUrl ? [imageUrl] : null,
+          attachment_urls: attachments,
           partial: false,
         },
       });
