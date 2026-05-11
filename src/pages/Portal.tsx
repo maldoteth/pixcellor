@@ -2697,7 +2697,14 @@ export default function Portal() {
           </TabsContent>
 
           <TabsContent value="chats" className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-            <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+            <div
+              className="space-y-2 max-h-[70vh] overflow-y-auto pr-1 rounded-none border border-border/40 bg-card/20 p-2"
+              onScroll={makeNearBottomHandler(() => {
+                if ((sectionCounts.conversations ?? 0) > conversations.length && !loadingMore.conversations) {
+                  loadMoreSection("conversations", conversations.length, 20);
+                }
+              })}
+            >
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input value={chatsSearch} onChange={(e) => setChatsSearch(e.target.value)} placeholder="Search chats by client, message, role…" className="pl-9" />
