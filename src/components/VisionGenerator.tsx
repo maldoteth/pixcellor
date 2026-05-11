@@ -784,6 +784,60 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               </Button>
             </div>
           </motion.div>
+        ) : stage === "contact" ? (
+          <motion.div
+            key="contact"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18 }}
+            className="flex flex-col gap-3"
+          >
+            <p className="text-foreground text-base font-semibold">Where should we send your sample?</p>
+            <p className="text-foreground/60 text-xs">
+              We'll save your generation so you can request edits or order without re-entering details.
+            </p>
+            <div className="flex flex-col gap-2">
+              <label className="text-foreground/70 text-xs uppercase tracking-wider">Email</label>
+              <input
+                autoFocus
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={contactEmail}
+                onChange={(e) => { setContactEmail(e.target.value); setContactError(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitContact(); } }}
+                placeholder="you@company.com"
+                maxLength={200}
+                className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-foreground/70 text-xs uppercase tracking-wider">Phone <span className="text-foreground/40 normal-case">(optional)</span></label>
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={contactPhone}
+                onChange={(e) => { setContactPhone(e.target.value); setContactError(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitContact(); } }}
+                placeholder="+44 7…"
+                maxLength={40}
+                className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+              />
+            </div>
+            {contactError && (
+              <p className="text-xs text-destructive">{contactError}</p>
+            )}
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              <Button type="button" variant="pricing" onClick={() => setStage(STEPS[STEPS.length - 1].key)} className="h-11 font-semibold">
+                Back
+              </Button>
+              <Button type="button" variant="pricing" onClick={submitContact} className="h-11 font-semibold">
+                Generate ✨
+              </Button>
+            </div>
+          </motion.div>
         ) : (
           stepBody
         )}
