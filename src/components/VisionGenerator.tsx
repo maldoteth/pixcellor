@@ -270,6 +270,9 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [contactName, setContactName] = useState<string>(() => {
+    try { return localStorage.getItem(CONTACT_NAME_KEY) ?? ""; } catch { return ""; }
+  });
   const [contactEmail, setContactEmail] = useState<string>(() => {
     try { return localStorage.getItem(CONTACT_EMAIL_KEY) ?? ""; } catch { return ""; }
   });
@@ -277,6 +280,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     try { return localStorage.getItem(CONTACT_PHONE_KEY) ?? ""; } catch { return ""; }
   });
   const [contactError, setContactError] = useState<string | null>(null);
+  const [requestBusy, setRequestBusy] = useState(false);
+  const [requestKind, setRequestKind] = useState<"sample" | "order">("sample");
 
   useEffect(() => {
     setDropdownOpen(false);
