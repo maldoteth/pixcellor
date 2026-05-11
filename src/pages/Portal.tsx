@@ -2288,6 +2288,19 @@ export default function Portal() {
               <p className="text-muted-foreground text-sm">No free sample requests yet.</p>
             )}
             {orderReqsFilter !== "samples" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
+            {orderReqsFilter !== "samples" && (
+              <p className="text-xs text-muted-foreground">
+                Showing {filteredOrders.length} of {sectionCounts.orders ?? orders.length} total orders.
+              </p>
+            )}
+            <div
+              className={orderReqsFilter !== "samples" ? "max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2" : ""}
+              onScroll={orderReqsFilter !== "samples" ? makeNearBottomHandler(() => {
+                if ((sectionCounts.orders ?? 0) > orders.length && !loadingMore.orders) {
+                  loadMoreSection("orders", orders.length, 20);
+                }
+              }) : undefined}
+            >
             {orderReqsFilter !== "samples" && filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
