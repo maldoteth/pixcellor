@@ -957,7 +957,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           >
             <DrawerHeader>
               <DrawerTitle className="flex items-center gap-2">
-                <Wand2 className="h-4 w-4" /> See your dream site
+                <Wand2 className="h-4 w-4" />
               </DrawerTitle>
             </DrawerHeader>
             {body}
