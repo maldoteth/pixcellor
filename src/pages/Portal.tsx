@@ -2114,67 +2114,77 @@ export default function Portal() {
               <h3 className="font-medium">CALL BACKS</h3>
               {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No items waiting{salesQ ? " match your search" : ""}.</p>}
               {salesCallbacks.length > 0 && (
-                <p className="text-xs text-muted-foreground">Showing latest {Math.min(callbacksVisibleCount, salesCallbacks.length)} of {salesCallbacks.length}.</p>
+                <p className="text-xs text-muted-foreground">
+                  Showing {Math.min(callbacksVisibleCount, salesCallbacks.length)} of {salesCallbacks.length} loaded
+                  {(sectionCounts.contactEvents ?? 0) > contactEvents.length ? ` · ${sectionCounts.contactEvents} total on server` : ""}.
+                </p>
               )}
-              {salesCallbacks.slice(0, callbacksVisibleCount).map(e => {
-                const contact = getContact(e.contact_id);
-                const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
-                const statusColor = contact ? getContactStatusColor(contact.status) : "hsl(var(--muted))";
-                const phoneHref = formatPhoneHref(contact?.phone);
-                return (
-                  <Card
-                    key={e.id}
-                    role="button"
-                    tabIndex={0}
-                    className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                    onClick={() => contact && openContactDrawer(contact.id)}
-                    onKeyDown={(event) => {
-                      if (!contact || (event.key !== "Enter" && event.key !== " ")) return;
-                      event.preventDefault();
-                      openContactDrawer(contact.id);
-                    }}
-                    style={{
-                      background: `linear-gradient(135deg, ${statusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--card)) 34%, hsl(var(--card)) 100%)`,
-                    }}
-                  >
-                    <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="font-medium">{e.title}</div>
-                        <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · Follow-up: {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
-                        {contact?.phone && (phoneHref ? (
-                          <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
-                            {contact.phone}
-                          </a>
-                        ) : (
-                          <div className="text-xs text-muted-foreground">{contact.phone}</div>
-                        ))}
-                        {e.description && <LinkifiedText text={e.description} className="block text-sm whitespace-pre-wrap" stopPropagation />}
-                      </div>
-                      <div className="flex flex-row flex-wrap items-center justify-end gap-2">
-                        <Badge className="pricing-button h-8 rounded-none px-3 py-0 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
-                        <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void completeCallback(e.id); }}>Done</Button>
-                        <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void tryCallbackAgain(e.id); }}>Tried</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-              {callbacksVisibleCount < salesCallbacks.length && (
-                <div
-                  ref={(el) => {
-                    if (!el) return;
-                    const obs = new IntersectionObserver((entries) => {
-                      if (entries.some((e) => e.isIntersecting)) {
-                        setCallbacksVisibleCount((n) => n + 10);
-                      }
-                    }, { rootMargin: "200px" });
-                    obs.observe(el);
-                  }}
-                  className="flex justify-center pt-2"
-                >
-                  <Button variant="outline" onClick={() => setCallbacksVisibleCount((n) => n + 10)}>Load more</Button>
-                </div>
-              )}
+              <div
+                className="max-h-[70vh] overflow-y-auto pr-1 space-y-2 rounded-none border border-border/40 bg-card/20 p-2"
+                onScroll={makeNearBottomHandler(() => {
+                  if (callbacksVisibleCount < salesCallbacks.length) {
+                    setCallbacksVisibleCount((n) => n + 10);
+                  } else if ((sectionCounts.contactEvents ?? 0) > contactEvents.length && !loadingMore.contactEvents) {
+                    loadMoreSection("contactEvents", contactEvents.length, 20);
+                  }
+                })}
+              >
+                {salesCallbacks.slice(0, callbacksVisibleCount).map(e => {
+                  const contact = getContact(e.contact_id);
+                  const isOverdue = new Date(e.callback_at!).getTime() <= nowMs;
+                  const statusColor = contact ? getContactStatusColor(contact.status) : "hsl(var(--muted))";
+                  const phoneHref = formatPhoneHref(contact?.phone);
+                  return (
+                    <Card
+                      key={e.id}
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer overflow-hidden transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      onClick={() => contact && openContactDrawer(contact.id)}
+                      onKeyDown={(event) => {
+                        if (!contact || (event.key !== "Enter" && event.key !== " ")) return;
+                        event.preventDefault();
+                        openContactDrawer(contact.id);
+                      }}
+                      style={{
+                        background: `linear-gradient(135deg, ${statusColor.replace("hsl(", "hsl(").replace(")", " / 0.18)")} 0%, hsl(var(--card)) 34%, hsl(var(--card)) 100%)`,
+                      }}
+                    >
+                      <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="font-medium">{e.title}</div>
+                          <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · Follow-up: {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
+                          {contact?.phone && (phoneHref ? (
+                            <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
+                              {contact.phone}
+                            </a>
+                          ) : (
+                            <div className="text-xs text-muted-foreground">{contact.phone}</div>
+                          ))}
+                          {e.description && <LinkifiedText text={e.description} className="block text-sm whitespace-pre-wrap" stopPropagation />}
+                        </div>
+                        <div className="flex flex-row flex-wrap items-center justify-end gap-2">
+                          <Badge className="pricing-button h-8 rounded-none px-3 py-0 text-xs font-medium text-foreground shadow-none" variant={isOverdue ? "destructive" : "secondary"}>{formatCountdown(e.callback_at!, nowMs)}</Badge>
+                          <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void completeCallback(e.id); }}>Done</Button>
+                          <Button variant="pricing" size="sm" className="h-8 rounded-none px-3 text-xs shadow-none" onClick={(event) => { event.stopPropagation(); void tryCallbackAgain(e.id); }}>Tried</Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+                {callbacksVisibleCount < salesCallbacks.length && (
+                  <div className="flex justify-center pt-2">
+                    <Button variant="outline" onClick={() => setCallbacksVisibleCount((n) => n + 10)}>Load more</Button>
+                  </div>
+                )}
+                {callbacksVisibleCount >= salesCallbacks.length && (sectionCounts.contactEvents ?? 0) > contactEvents.length && (
+                  <div className="flex justify-center pt-2">
+                    <Button variant="outline" disabled={!!loadingMore.contactEvents} onClick={() => loadMoreSection("contactEvents", contactEvents.length, 20)}>
+                      {loadingMore.contactEvents ? "Loading…" : `Load more from server (${contactEvents.length} of ${sectionCounts.contactEvents})`}
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </TabsContent>
 
