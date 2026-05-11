@@ -106,8 +106,8 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
         </>
       ) : (
         <>
-          <p className="text-xs text-foreground/80 leading-snug">
-            {benefit ?? "Save this to your dashboard so you can revisit your sample and generations any time."}
+          <p className="text-xs text-foreground/80 leading-snug text-center">
+            {benefit ? "Sign up today to save your details\n\nSave to my dashboard" : "Save this to your dashboard so you can revisit your sample and generations any time."}
           </p>
           <Button
             type="button"
