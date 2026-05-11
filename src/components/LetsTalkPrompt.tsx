@@ -597,6 +597,13 @@ const LetsTalkPrompt = () => {
               email={email}
               benefit="Save your sample and request to your dashboard. We'll email you a one-tap login link — no password needed."
             />
+            <a
+              href="tel:+441483912430"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-foreground/20 bg-foreground/5 px-4 text-sm font-semibold text-foreground transition hover:bg-foreground/10"
+            >
+              <Phone className="h-4 w-4" />
+              Call us: +44 1483 912430
+            </a>
             <Button type="button" variant="pricing" onClick={() => setOpen(false)} className="h-10 px-6 mt-2 font-semibold">
               Close
             </Button>
