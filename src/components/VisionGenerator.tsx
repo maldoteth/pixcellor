@@ -27,7 +27,11 @@ interface VisionGeneratorProps {
 }
 
 type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
-type Stage = StepKey | "generating" | "result" | "refine";
+type Stage = StepKey | "contact" | "generating" | "result" | "refine";
+
+const CONTACT_EMAIL_KEY = "pixcellor:contact-email";
+const CONTACT_PHONE_KEY = "pixcellor:contact-phone";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface StepDef {
   key: StepKey;
