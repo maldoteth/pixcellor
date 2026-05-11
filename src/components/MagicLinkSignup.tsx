@@ -3,6 +3,7 @@ import { Loader2, Mail, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useLoginHandoff } from "@/hooks/use-login-handoff";
 
 interface MagicLinkSignupProps {
   email: string;
