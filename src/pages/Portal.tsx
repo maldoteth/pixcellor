@@ -2610,6 +2610,7 @@ export default function Portal() {
                 </Button>
               </div>
             )}
+            </div>
           </TabsContent>
 
           <TabsContent value="mailbox" className="grid min-w-0 grid-cols-1 gap-4 items-start lg:grid-cols-[360px_minmax(0,1fr)]">
