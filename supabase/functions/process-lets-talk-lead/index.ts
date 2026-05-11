@@ -100,12 +100,16 @@ Deno.serve(async (req) => {
 
     const desiredStatus = "hot";
 
+    // contacts.name = company (per CRM convention); contacts.contact_name = person name
+    const contactCompany = company || name;
+
     let contactId: string;
     if (existingId) {
       const { data, error } = await supabase
         .from("contacts")
         .update({
-          name,
+          name: contactCompany,
+          contact_name: name,
           email: email || null,
           phone: phone || null,
           notes: [existingNotes, noteLines].filter(Boolean).join("\n"),
@@ -122,7 +126,8 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase
         .from("contacts")
         .insert({
-          name,
+          name: contactCompany,
+          contact_name: name,
           email: email || null,
           phone: phone || null,
           industry: "general",
@@ -135,6 +140,32 @@ Deno.serve(async (req) => {
         .single();
       if (error) throw error;
       contactId = data.id;
+    }
+
+    // Mirror into client_profiles for the customer dashboard / enquiries view
+    if (email) {
+      const { data: existingProfile } = await supabase
+        .from("client_profiles")
+        .select("id")
+        .ilike("email", email)
+        .limit(1)
+        .maybeSingle();
+      if (existingProfile?.id) {
+        await supabase
+          .from("client_profiles")
+          .update({
+            name,
+            company: company || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingProfile.id);
+      } else {
+        await supabase.from("client_profiles").insert({
+          email,
+          name,
+          company: company || null,
+        });
+      }
     }
 
     // Log a brief event for sample requests so admins see it on the contact timeline
