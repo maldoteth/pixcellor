@@ -19,6 +19,7 @@ import CustomerAuth from "./pages/CustomerAuth";
 import CustomerPortal from "./pages/CustomerPortal";
 import Legal from "./pages/Legal";
 import VisionPreview from "./pages/VisionPreview";
+import AuthHandoff from "./pages/AuthHandoff";
 
 const queryClient = new QueryClient();
 
