@@ -369,12 +369,14 @@ const LetsTalkPrompt = () => {
     if (step === "email") {
       const r = emailSchema.safeParse(email);
       if (!r.success) return setError(r.error.issues[0].message);
+      savePartialLead({ email: email.trim() });
       setStep("phone");
       return;
     }
     if (step === "phone") {
       const r = phoneSchema.safeParse(phone);
       if (!r.success) return setError(r.error.issues[0].message);
+      savePartialLead({ phone: phone.trim() });
       if (mode === "consultation") {
         await requestConsultation();
         return;
