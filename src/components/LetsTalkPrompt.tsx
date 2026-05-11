@@ -12,7 +12,7 @@ import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 import MagicLinkSignup from "@/components/MagicLinkSignup";
 
 type Mode = "talk" | "request" | "consultation";
-type Step = "name" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "consultation" | "done";
+type Step = "name" | "company" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "consultation" | "done";
 
 const nameSchema = z.string().trim().min(1, "Please enter your name").max(80);
 const emailSchema = z.string().trim().email("Enter a valid email").max(200);
@@ -58,6 +58,7 @@ const LetsTalkPrompt = () => {
   const [mode, setMode] = useState<Mode>("talk");
   const [step, setStep] = useState<Step>("name");
   const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [dream, setDream] = useState("");
@@ -81,6 +82,7 @@ const LetsTalkPrompt = () => {
             : "talk";
       setMode(nextMode);
       setName("");
+      setCompany("");
       setEmail("");
       setPhone("");
       setDream("");
@@ -130,11 +132,12 @@ const LetsTalkPrompt = () => {
       const requestDetails =
         mode === "request"
           ? {
+              company: company.trim() || null,
               dream: finalDream?.trim() || null,
               colours: finalColours?.trim() || null,
               vision_image_url: hostedVision ?? finalVisionUrl ?? null,
             }
-          : null;
+          : { company: company.trim() || null };
       const baseAttachments = mode === "request" ? finalMedia ?? [] : null;
       const attachments = mode === "request"
         ? Array.from(new Set([...(baseAttachments ?? []), ...(hostedVision ? [hostedVision] : [])]))
@@ -205,6 +208,7 @@ const LetsTalkPrompt = () => {
       const allAttachments = Array.from(new Set([...(media ?? []), ...(hostedVision ? [hostedVision] : [])]));
       const requestDetails = {
         consultation: true,
+        company: company.trim() || null,
         dream: dream.trim() || null,
         colours: colours.trim() || null,
         vision_image_url: hostedVision ?? visionUrl ?? null,
@@ -250,6 +254,7 @@ const LetsTalkPrompt = () => {
       const allAttachments = Array.from(new Set([...(media ?? []), ...(hostedVision ? [hostedVision] : [])]));
       const requestDetails = {
         order_request: true,
+        company: company.trim() || null,
         dream: dream.trim() || null,
         colours: colours.trim() || null,
         vision_image_url: hostedVision ?? visionUrl ?? null,
@@ -325,6 +330,12 @@ const LetsTalkPrompt = () => {
     setError(null);
     if (step === "name") {
       const r = nameSchema.safeParse(name);
+      if (!r.success) return setError(r.error.issues[0].message);
+      setStep("company");
+      return;
+    }
+    if (step === "company") {
+      const r = z.string().trim().min(1, "Please enter your company or brand name").max(120).safeParse(company);
       if (!r.success) return setError(r.error.issues[0].message);
       setStep("email");
       return;
@@ -402,7 +413,7 @@ const LetsTalkPrompt = () => {
   const canSkip =
     step === "email" || (step === "phone" && !emailSkipped) || step === "media";
 
-  const isTextStep = step === "name" || step === "email" || step === "phone";
+  const isTextStep = step === "name" || step === "company" || step === "email" || step === "phone";
   const isLongStep = step === "dream" || step === "colours";
 
   const title =
@@ -414,7 +425,8 @@ const LetsTalkPrompt = () => {
 
   const promptLabel = (() => {
     if (step === "name") return "What's your name?";
-    if (step === "email") return `Hi ${name.split(" ")[0] || "there"}, what's your email?`;
+    if (step === "company") return `Nice to meet you ${name.split(" ")[0] || "there"} — what's your company or brand name?`;
+    if (step === "email") return `What's the best email for ${company || "you"}?`;
     if (step === "phone")
       return emailSkipped
         ? "Please share your phone number so we can reach you."
@@ -572,10 +584,11 @@ const LetsTalkPrompt = () => {
                 autoFocus
                 type={step === "email" ? "email" : step === "phone" ? "tel" : "text"}
                 inputMode={step === "phone" ? "tel" : step === "email" ? "email" : "text"}
-                value={step === "name" ? name : step === "email" ? email : phone}
+                value={step === "name" ? name : step === "company" ? company : step === "email" ? email : phone}
                 onChange={(e) => {
                   const v = e.target.value;
                   if (step === "name") setName(v);
+                  else if (step === "company") setCompany(v);
                   else if (step === "email") setEmail(v);
                   else setPhone(v);
                   if (error) setError(null);
@@ -589,6 +602,8 @@ const LetsTalkPrompt = () => {
                 placeholder={
                   step === "name"
                     ? "Your name"
+                    : step === "company"
+                    ? "Company or brand name"
                     : step === "email"
                     ? "you@example.com"
                     : "+44 7000 000000"
