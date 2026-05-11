@@ -648,7 +648,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
         </div>
       </div>
       <p className="text-foreground text-base font-semibold uppercase tracking-wider">{currentStep.label}</p>
-      <p className="text-foreground/60 text-xs whitespace-pre-wrap">{currentStep.helper}</p>
+      <p className="text-foreground/60 text-xs text-slate-200 whitespace-pre-wrap">{currentStep.helper}</p>
 
       <div className="relative">
         {currentStep.multiline ? (
@@ -847,7 +847,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             className="flex flex-col gap-3"
           >
             <p className="text-foreground text-base font-semibold">Where should we send your sample?</p>
-            <p className="text-foreground/60 text-xs">
+            <p className="text-foreground/60 text-xs text-slate-200">
               We'll save your generation so you can request edits or order without re-entering details.
             </p>
             <div className="flex flex-col gap-2">
