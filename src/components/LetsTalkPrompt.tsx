@@ -584,10 +584,11 @@ const LetsTalkPrompt = () => {
                 autoFocus
                 type={step === "email" ? "email" : step === "phone" ? "tel" : "text"}
                 inputMode={step === "phone" ? "tel" : step === "email" ? "email" : "text"}
-                value={step === "name" ? name : step === "email" ? email : phone}
+                value={step === "name" ? name : step === "company" ? company : step === "email" ? email : phone}
                 onChange={(e) => {
                   const v = e.target.value;
                   if (step === "name") setName(v);
+                  else if (step === "company") setCompany(v);
                   else if (step === "email") setEmail(v);
                   else setPhone(v);
                   if (error) setError(null);
@@ -601,6 +602,8 @@ const LetsTalkPrompt = () => {
                 placeholder={
                   step === "name"
                     ? "Your name"
+                    : step === "company"
+                    ? "Company or brand name"
                     : step === "email"
                     ? "you@example.com"
                     : "+44 7000 000000"
