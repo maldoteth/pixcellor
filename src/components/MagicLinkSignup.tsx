@@ -20,15 +20,18 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [authed, setAuthed] = useState(false);
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+
+  const cleanEmail = email.trim().toLowerCase();
+  const validEmail = /.+@.+\..+/.test(cleanEmail);
 
   useEffect(() => {
     let active = true;
     supabase.auth.getSession().then(({ data }) => {
-      if (active) setAuthed(!!data.session);
+      if (active) setSessionEmail(data.session?.user?.email?.toLowerCase() ?? null);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setAuthed(!!session);
+      setSessionEmail(session?.user?.email?.toLowerCase() ?? null);
     });
     return () => {
       active = false;
@@ -36,7 +39,36 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
     };
   }, []);
 
-  if (authed) {
+  const sendLink = async () => {
+    if (!validEmail) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const { error: err } = await supabase.auth.signInWithOtp({
+        email: cleanEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/customer-portal`,
+          shouldCreateUser: true,
+        },
+      });
+      if (err) throw err;
+      setSent(true);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Could not send link";
+      if (msg.toLowerCase().includes("rate limit")) {
+        setSent(true);
+      } else {
+        setError(msg);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Only treat as "saved" when the signed-in session actually matches the captured email.
+  const matchedAuth = !!sessionEmail && !!cleanEmail && sessionEmail === cleanEmail;
+
+  if (matchedAuth) {
     return (
       <div className="mt-4 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-2.5 text-xs text-foreground/80 flex items-center gap-2">
         <ShieldCheck className="h-3.5 w-3.5" />
@@ -45,8 +77,6 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
     );
   }
 
-  const cleanEmail = email.trim().toLowerCase();
-  const validEmail = /.+@.+\..+/.test(cleanEmail);
   if (!validEmail) return null;
 
   const sendLink = async () => {
