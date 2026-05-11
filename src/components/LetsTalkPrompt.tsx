@@ -82,6 +82,7 @@ const LetsTalkPrompt = () => {
             : "talk";
       setMode(nextMode);
       setName("");
+      setCompany("");
       setEmail("");
       setPhone("");
       setDream("");
