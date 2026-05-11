@@ -1,7 +1,37 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+async function uploadDataUrlToStorage(supabase: any, dataUrl: string): Promise<{ publicUrl: string | null; path: string | null }> {
+  try {
+    if (!dataUrl?.startsWith("data:")) {
+      return { publicUrl: dataUrl ?? null, path: null };
+    }
+    const [meta, b64] = dataUrl.split(",");
+    const mime = /data:(.*?);base64/.exec(meta)?.[1] ?? "image/png";
+    const ext = mime.split("/")[1]?.split("+")[0] || "png";
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const path = `vision-samples/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+    const { error } = await supabase.storage.from("submission-attachments").upload(path, bytes, {
+      contentType: mime,
+      upsert: false,
+    });
+    if (error) {
+      console.error("vision upload failed", error);
+      return { publicUrl: null, path: null };
+    }
+    const publicUrl = supabase.storage.from("submission-attachments").getPublicUrl(path).data.publicUrl;
+    return { publicUrl, path };
+  } catch (e) {
+    console.error("uploadDataUrlToStorage error", e);
+    return { publicUrl: null, path: null };
+  }
+}
 
 const SYSTEM_PROMPT = `You are Pixcellor's senior landing-page art director. Generate ONE photorealistic, pixel-perfect screenshot of a complete DESKTOP landing page (1440x900 viewport, browser chrome NOT included) based on the user's description.
 
