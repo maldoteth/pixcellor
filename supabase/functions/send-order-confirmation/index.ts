@@ -118,9 +118,9 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        templateName: templateForPackage(packageName),
+        templateName,
         recipientEmail: order.customer_email,
-        idempotencyKey: `manual-order-confirmation-${order.session_id}-${Date.now()}`,
+        idempotencyKey,
         templateData,
       }),
     });
