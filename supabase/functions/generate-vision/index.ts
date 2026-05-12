@@ -69,6 +69,93 @@ ${GOOGLE_FONTS_SHORTLIST}
 - Never invent fonts that don't exist on Google Fonts.
 - Always return all fields even if you have to estimate.`;
 
+async function extractAndSaveBrandKit(opts: {
+  supabase: any;
+  apiKey: string;
+  imageRefUrl: string;
+  briefForKit: string;
+  previewSlug: string | null;
+  generationId: string | null;
+}) {
+  const { supabase, apiKey, imageRefUrl, briefForKit, previewSlug, generationId } = opts;
+  if (!previewSlug && !generationId) return;
+  try {
+    const kitRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: BRAND_KIT_SYSTEM },
+          { role: "user", content: [
+            { type: "text", text: `Brief:\n${briefForKit}\n\nReturn the brand kit visible in the attached mockup.` },
+            { type: "image_url", image_url: { url: imageRefUrl } },
+          ] },
+        ],
+        tools: [{
+          type: "function",
+          function: {
+            name: "return_brand_kit",
+            description: "Return the brand kit for the generated mockup.",
+            parameters: {
+              type: "object",
+              properties: {
+                palette: {
+                  type: "array", minItems: 3, maxItems: 5,
+                  items: {
+                    type: "object",
+                    properties: { name: { type: "string" }, hex: { type: "string" } },
+                    required: ["name", "hex"], additionalProperties: false,
+                  },
+                },
+                fonts: {
+                  type: "object",
+                  properties: {
+                    heading: {
+                      type: "object",
+                      properties: { family: { type: "string" }, weights: { type: "array", items: { type: "number" } } },
+                      required: ["family"], additionalProperties: false,
+                    },
+                    body: {
+                      type: "object",
+                      properties: { family: { type: "string" }, weights: { type: "array", items: { type: "number" } } },
+                      required: ["family"], additionalProperties: false,
+                    },
+                  },
+                  required: ["heading", "body"], additionalProperties: false,
+                },
+              },
+              required: ["palette", "fonts"], additionalProperties: false,
+            },
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "return_brand_kit" } },
+      }),
+    });
+    if (!kitRes.ok) {
+      console.error("brand kit gateway error", kitRes.status, await kitRes.text());
+      return;
+    }
+    const kitData = await kitRes.json();
+    const argsStr = kitData?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+    if (!argsStr) return;
+    const parsed = JSON.parse(argsStr);
+    const palette = parsed?.palette ?? null;
+    const fonts = parsed?.fonts ?? null;
+    if (!palette && !fonts) return;
+    const updates: Promise<unknown>[] = [];
+    if (previewSlug) {
+      updates.push(supabase.from("vision_previews").update({ palette, fonts }).eq("slug", previewSlug));
+    }
+    if (generationId) {
+      updates.push(supabase.from("ai_sample_generations").update({ palette, fonts }).eq("id", generationId));
+    }
+    await Promise.all(updates);
+  } catch (e) {
+    console.error("extractAndSaveBrandKit failed", e);
+  }
+}
+
 // Parse the structured brief produced by VisionGenerator (lines like "Company / brand name: X").
 function parseBrief(raw: string): Record<string, string> {
   const out: Record<string, string> = {};
@@ -208,90 +295,17 @@ Deno.serve(async (req) => {
     let imageUrl = rawImageUrl;
     let storagePath: string | null = null;
     let generationId: string | null = null;
-    let palette: any = null;
-    let fonts: any = null;
+    let previewSlug: string | null = null;
+    // palette + fonts are filled in by a background brand-kit job after this response returns
+    const palette: any = null;
+    const fonts: any = null;
 
-    // Extract brand kit (colours + Google Fonts) — small cheap call.
-    try {
-      const briefForKit = isEdit ? `Refinement instruction: ${instruction}` : enrichedBrief;
-      const kitRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: BRAND_KIT_SYSTEM },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: `Brief:\n${briefForKit}\n\nReturn the brand kit visible in the attached mockup.` },
-                { type: "image_url", image_url: { url: rawImageUrl } },
-              ],
-            },
-          ],
-          tools: [{
-            type: "function",
-            function: {
-              name: "return_brand_kit",
-              description: "Return the brand kit for the generated mockup.",
-              parameters: {
-                type: "object",
-                properties: {
-                  palette: {
-                    type: "array", minItems: 3, maxItems: 5,
-                    items: {
-                      type: "object",
-                      properties: { name: { type: "string" }, hex: { type: "string" } },
-                      required: ["name", "hex"], additionalProperties: false,
-                    },
-                  },
-                  fonts: {
-                    type: "object",
-                    properties: {
-                      heading: {
-                        type: "object",
-                        properties: { family: { type: "string" }, weights: { type: "array", items: { type: "number" } } },
-                        required: ["family"], additionalProperties: false,
-                      },
-                      body: {
-                        type: "object",
-                        properties: { family: { type: "string" }, weights: { type: "array", items: { type: "number" } } },
-                        required: ["family"], additionalProperties: false,
-                      },
-                    },
-                    required: ["heading", "body"], additionalProperties: false,
-                  },
-                },
-                required: ["palette", "fonts"], additionalProperties: false,
-              },
-            },
-          }],
-          tool_choice: { type: "function", function: { name: "return_brand_kit" } },
-        }),
-      });
-      if (kitRes.ok) {
-        const kitData = await kitRes.json();
-        const argsStr = kitData?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-        if (argsStr) {
-          try {
-            const parsed = JSON.parse(argsStr);
-            palette = parsed?.palette ?? null;
-            fonts = parsed?.fonts ?? null;
-          } catch (e) { console.error("brand kit parse failed", e); }
-        }
-      } else {
-        console.error("brand kit gateway error", kitRes.status, await kitRes.text());
-      }
-    } catch (kitErr) {
-      console.error("brand kit extraction threw", kitErr);
-    }
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
 
     try {
-      const supabase = createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      );
-
       const uploaded = await uploadDataUrlToStorage(supabase, rawImageUrl);
       if (uploaded.publicUrl) imageUrl = uploaded.publicUrl;
       if (uploaded.path) storagePath = uploaded.path;
@@ -303,7 +317,7 @@ Deno.serve(async (req) => {
       const cleanStr = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : null) || null;
 
       // Create a shareable preview row so this sample gets a /preview/{slug} link
-      let previewSlug: string | null = null;
+      // (previewSlug declared in outer scope so background brand-kit task can read it)
       if (storagePath) {
         try {
           const slug = `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -417,7 +431,31 @@ Deno.serve(async (req) => {
       console.error("vision logging failed:", logErr);
     }
 
-    return new Response(JSON.stringify({ imageUrl, generationId, storagePath, palette, fonts }), {
+    // Kick off the brand-kit extraction in the background — response goes out immediately.
+    if (previewSlug || generationId) {
+      const briefForKit = isEdit ? `Refinement instruction: ${instruction}` : enrichedBrief;
+      const bgTask = extractAndSaveBrandKit({
+        supabase,
+        apiKey: LOVABLE_API_KEY,
+        imageRefUrl: imageUrl,
+        briefForKit,
+        previewSlug,
+        generationId,
+      });
+      try {
+        // @ts-ignore EdgeRuntime is provided by Supabase Edge runtime
+        if (typeof EdgeRuntime !== "undefined" && EdgeRuntime?.waitUntil) {
+          // @ts-ignore
+          EdgeRuntime.waitUntil(bgTask);
+        } else {
+          void bgTask;
+        }
+      } catch {
+        void bgTask;
+      }
+    }
+
+    return new Response(JSON.stringify({ imageUrl, generationId, storagePath, previewSlug, palette, fonts }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
