@@ -3031,10 +3031,6 @@ export default function Portal() {
             <VisionStudio />
           </TabsContent>
 
-          <TabsContent value="payment_links" className="min-w-0">
-            <CustomLinksTab />
-          </TabsContent>
-
           <TabsContent value="alerts" className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
