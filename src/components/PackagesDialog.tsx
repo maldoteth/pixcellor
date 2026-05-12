@@ -711,6 +711,7 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
           <DrawerTitle>{submitted ? "Enterprise request received" : "Talk to sales"}</DrawerTitle>
           <DrawerDescription>{submitted ? "We'll be in touch shortly." : `Step ${step + 1} of ${ENTERPRISE_FIELDS.length}`}</DrawerDescription>
         </DrawerHeader>
+        <HoneypotField value={honeypotValue} onChange={setHoneypotValue} />
         {submitted ? (
           <Button variant="pricing" onClick={() => onOpenChange(false)} className="h-12 w-full font-semibold">Done</Button>
         ) : (
