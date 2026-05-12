@@ -620,7 +620,7 @@ const LetsTalkPrompt = () => {
               Call us: +44 1483 912430
             </a>
             <Button type="button" variant="pricing" onClick={() => setOpen(false)} className="h-10 px-6 mt-2 font-semibold">
-              Close
+              I don't want to access these again
             </Button>
           </motion.div>
         ) : step === "done" ? (
