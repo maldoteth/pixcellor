@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import RichEmailEditor from "./email/RichEmailEditor";
 import EmailPreview from "./email/EmailPreview";
 import { STARTER_TEMPLATES } from "./email/emailTemplates";
+import { useConfirmDialog } from "@/components/ui/themed-dialogs";
 
 type Source = "contacts" | "customers" | "both";
 
