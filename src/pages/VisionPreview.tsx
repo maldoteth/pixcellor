@@ -136,7 +136,8 @@ export default function VisionPreview() {
             </div>
             <div
               tabIndex={-1}
-              className="border border-border bg-black/40 max-h-[67.5vh] overflow-auto outline-none focus:outline-none focus-visible:outline-none select-none"
+              className="border border-border bg-black/40 overflow-auto outline-none focus:outline-none focus-visible:outline-none select-none"
+              style={{ maxHeight: "min(75vh, calc(100dvh - 220px))", minHeight: "320px" }}
               onContextMenu={(e) => e.preventDefault()}
             >
               <img
