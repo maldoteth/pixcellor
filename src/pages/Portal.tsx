@@ -2210,8 +2210,7 @@ export default function Portal() {
               {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No items waiting{salesQ ? " match your search" : ""}.</p>}
               {salesCallbacks.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Showing {Math.min(callbacksVisibleCount, salesCallbacks.length)} of {salesCallbacks.length} loaded
-                  {(sectionCounts.contactEvents ?? 0) > contactEvents.length ? ` · ${sectionCounts.contactEvents} total on server` : ""}.
+                  {callbacksVisibleCount < salesCallbacks.length || (sectionCounts.contactEvents ?? 0) > contactEvents.length ? "" : "Loaded all."}
                 </p>
               )}
               <div
