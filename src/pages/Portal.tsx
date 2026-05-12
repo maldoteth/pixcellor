@@ -2185,7 +2185,7 @@ export default function Portal() {
                 />
               </div>
               {!contactsQ && filteredContacts.length > 10 && (
-                <p className="mt-1 text-xs text-muted-foreground">Showing 10 most recent clients. Search to find older clients.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Showing most recent clients. Search to find older clients.</p>
               )}
             </div>
 
@@ -2210,8 +2210,7 @@ export default function Portal() {
               {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No items waiting{salesQ ? " match your search" : ""}.</p>}
               {salesCallbacks.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Showing {Math.min(callbacksVisibleCount, salesCallbacks.length)} of {salesCallbacks.length} loaded
-                  {(sectionCounts.contactEvents ?? 0) > contactEvents.length ? ` · ${sectionCounts.contactEvents} total on server` : ""}.
+                  {callbacksVisibleCount < salesCallbacks.length || (sectionCounts.contactEvents ?? 0) > contactEvents.length ? "" : "Loaded all."}
                 </p>
               )}
               <div
@@ -2275,7 +2274,7 @@ export default function Portal() {
                 {callbacksVisibleCount >= salesCallbacks.length && (sectionCounts.contactEvents ?? 0) > contactEvents.length && (
                   <div className="flex justify-center pt-2">
                     <Button variant="outline" disabled={!!loadingMore.contactEvents} onClick={() => loadMoreSection("contactEvents", contactEvents.length, 20)}>
-                      {loadingMore.contactEvents ? "Loading…" : `Load more from server (${contactEvents.length} of ${sectionCounts.contactEvents})`}
+                      {loadingMore.contactEvents ? "Loading…" : "Load more"}
                     </Button>
                   </div>
                 )}
@@ -2385,7 +2384,7 @@ export default function Portal() {
             {orderReqsFilter !== "samples" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
             {orderReqsFilter !== "samples" && (
               <p className="text-xs text-muted-foreground">
-                Showing {filteredOrders.length} of {sectionCounts.orders ?? orders.length} total orders.
+                {(sectionCounts.orders ?? 0) > orders.length ? "" : "Loaded all."}
               </p>
             )}
             <div
@@ -2551,7 +2550,7 @@ export default function Portal() {
             {orderReqsFilter !== "samples" && (sectionCounts.orders ?? 0) > orders.length && (
               <div className="flex justify-center pt-2">
                 <Button variant="outline" size="sm" disabled={!!loadingMore.orders} onClick={() => loadMoreSection("orders", orders.length, 20)}>
-                  {loadingMore.orders ? "Loading…" : `Load more (${orders.length} of ${sectionCounts.orders})`}
+                  {loadingMore.orders ? "Loading…" : "Load more"}
                 </Button>
               </div>
             )}
@@ -2639,7 +2638,7 @@ export default function Portal() {
             </div>
             {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
             <p className="text-xs text-muted-foreground">
-              Showing {filteredFalloffs.length} of {sectionCounts.falloffs ?? falloffs.length} total falloffs.
+              {(sectionCounts.falloffs ?? 0) > falloffs.length ? "" : "Loaded all."}
             </p>
             <div
               className="max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2"
@@ -2736,7 +2735,7 @@ export default function Portal() {
             {(sectionCounts.falloffs ?? 0) > falloffs.length && (
               <div className="flex justify-center pt-2">
                 <Button variant="outline" size="sm" disabled={!!loadingMore.falloffs} onClick={() => loadMoreSection("falloffs", falloffs.length, 20)}>
-                  {loadingMore.falloffs ? "Loading…" : `Load more (${falloffs.length} of ${sectionCounts.falloffs})`}
+                  {loadingMore.falloffs ? "Loading…" : "Load more"}
                 </Button>
               </div>
             )}
@@ -2864,7 +2863,7 @@ export default function Portal() {
               {(sectionCounts.conversations ?? 0) > conversations.length && (
                 <div className="flex justify-center pt-2">
                   <Button variant="outline" size="sm" disabled={!!loadingMore.conversations} onClick={() => loadMoreSection("conversations", conversations.length, 20)}>
-                    {loadingMore.conversations ? "Loading…" : `Load more (${conversations.length} of ${sectionCounts.conversations})`}
+                    {loadingMore.conversations ? "Loading…" : "Load more"}
                   </Button>
                 </div>
               )}
@@ -2967,7 +2966,7 @@ export default function Portal() {
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Showing {Math.min(clientsVisibleCount, clientBookContacts.length)} of {sectionCounts.contacts ?? clientBookContacts.length} total clients.
+                  {(sectionCounts.contacts ?? 0) > contacts.length || clientsVisibleCount < clientBookContacts.length ? "" : "Loaded all."}
                 </p>
                 {clientBookContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {profilesQ ? "match your search" : "yet"}.</p>}
                 <div
