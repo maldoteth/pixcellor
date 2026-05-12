@@ -184,7 +184,7 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
       {trigger}
       <Dialog open={open} onOpenChange={setOpen} modal={false}>
         <DialogContent
-          className="border-border bg-background/95 backdrop-blur-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95"
+          className="border-border bg-background/95 backdrop-blur-xl"
           onInteractOutside={(e) => {
             if (triggerRef.current?.contains(e.target as Node)) e.preventDefault();
           }}
