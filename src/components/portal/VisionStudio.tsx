@@ -42,6 +42,8 @@ const publicUrl = (path: string) =>
   supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 
 export default function VisionStudio() {
+  const promptDialog = usePromptDialog();
+  const confirmDialog = useConfirmDialog();
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [previews, setPreviews] = useState<Preview[]>([]);
