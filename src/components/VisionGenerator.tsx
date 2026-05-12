@@ -519,6 +519,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
         vision_image_url: imageUrl,
         kind,
         origin: sourceTag,
+        requested_edits: kind === "sample" ? (sampleEdits.trim() || null) : null,
       };
       const attachments = imageUrl ? [imageUrl] : null;
 
