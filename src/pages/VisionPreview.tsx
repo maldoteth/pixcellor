@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SeoHead from "@/components/SeoHead";
 import MagicLinkSignup from "@/components/MagicLinkSignup";
 import { Button } from "@/components/ui/button";
+import BrandKit from "@/components/BrandKit";
 
 interface Preview {
   id: string;
@@ -13,6 +14,8 @@ interface Preview {
   title: string | null;
   image_path: string;
   created_at: string;
+  palette?: any;
+  fonts?: any;
 }
 
 const BUCKET = "vision-previews";
@@ -115,6 +118,11 @@ export default function VisionPreview() {
                 onDragStart={(e) => e.preventDefault()}
               />
             </div>
+            {(preview.palette || preview.fonts) && (
+              <div className="border border-border p-4">
+                <BrandKit palette={preview.palette} fonts={preview.fonts} />
+              </div>
+            )}
             {preview.brief && (
               <details className="border border-border p-3 text-sm text-muted-foreground">
                 <summary className="cursor-pointer text-foreground/80">Design brief</summary>
