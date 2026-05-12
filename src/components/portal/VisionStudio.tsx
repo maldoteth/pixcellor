@@ -3,6 +3,7 @@ import { Loader2, Wand2, Copy, ExternalLink, Trash2, Mail, Check, Search } from 
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import AdminVisionWizard from "@/components/portal/AdminVisionWizard";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
