@@ -555,7 +555,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   };
 
   const orderThisStyle = () => { void submitRequest("order"); };
-  const requestConsultation = () => { void submitRequest("sample"); };
+  const requestConsultation = () => { setStage("sample_edits"); };
+  const submitSampleEdits = () => { void submitRequest("sample"); };
 
   const downloadImage = () => {
     if (!imageUrl) return;
