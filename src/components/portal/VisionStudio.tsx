@@ -272,6 +272,11 @@ export default function VisionStudio() {
                         {g.source}{g.is_refinement ? " · refinement" : ""}
                       </p>
                       {g.brief && <p className="text-[11px] text-muted-foreground line-clamp-3">{g.brief}</p>}
+                      {(g.palette || g.fonts) && (
+                        <div className="pt-2 border-t border-border/30">
+                          <BrandKit palette={g.palette} fonts={g.fonts} compact />
+                        </div>
+                      )}
                       {g.preview_slug && (
                         <div className="flex items-center gap-1 pt-1">
                           <code className="text-[10px] px-1.5 py-0.5 bg-muted text-foreground rounded-none truncate flex-1">
@@ -335,6 +340,9 @@ export default function VisionStudio() {
                   className="w-full block"
                 />
               </div>
+              {(latest.palette || latest.fonts) && (
+                <BrandKit palette={latest.palette} fonts={latest.fonts} />
+              )}
             </div>
           )}
 
