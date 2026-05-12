@@ -2274,7 +2274,7 @@ export default function Portal() {
                 {callbacksVisibleCount >= salesCallbacks.length && (sectionCounts.contactEvents ?? 0) > contactEvents.length && (
                   <div className="flex justify-center pt-2">
                     <Button variant="outline" disabled={!!loadingMore.contactEvents} onClick={() => loadMoreSection("contactEvents", contactEvents.length, 20)}>
-                      {loadingMore.contactEvents ? "Loading…" : `Load more from server (${contactEvents.length} of ${sectionCounts.contactEvents})`}
+                      {loadingMore.contactEvents ? "Loading…" : "Load more"}
                     </Button>
                   </div>
                 )}
