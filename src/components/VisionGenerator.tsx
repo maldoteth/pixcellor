@@ -940,6 +940,33 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               </Button>
             </div>
           </motion.div>
+        ) : stage === "sample_edits" ? (
+          <motion.div
+            key="sample_edits"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="space-y-3"
+          >
+            <p className="text-foreground text-base font-semibold">What edits would you like?</p>
+            <p className="text-foreground/70 text-xs">Tell us what to change — colours, layout, copy, sections, imagery, vibe. We'll use this to craft your custom sample.</p>
+            <textarea
+              autoFocus
+              value={sampleEdits}
+              onChange={(e) => setSampleEdits(e.target.value)}
+              placeholder="e.g. darker hero, add a pricing section, swap to sage green, more premium feel"
+              rows={4}
+              className="w-full bg-transparent border border-border/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-foreground/60 resize-none"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => setStage("result")} className="w-full rounded-none" disabled={requestBusy}>
+                Back
+              </Button>
+              <Button onClick={submitSampleEdits} disabled={requestBusy || sampleEdits.trim().length < 3} className="w-full rounded-none">
+                {requestBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send request"}
+              </Button>
+            </div>
+          </motion.div>
         ) : stage === "requested" ? (
           <motion.div
             key="requested"
@@ -956,14 +983,13 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               email={contactEmail}
               benefit="Sign up to access your dashboard — view this generation, your sample request, and order updates in one place."
             />
-            <Button
+            <button
               type="button"
-              variant="pricing"
               onClick={() => { setOpen(false); }}
-              className="w-full h-11 font-semibold mt-2"
+              className="w-full h-11 font-semibold mt-2 bg-black text-white hover:bg-black/90 transition rounded-none"
             >
               Close
-            </Button>
+            </button>
           </motion.div>
         ) : (
           stepBody
