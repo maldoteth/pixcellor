@@ -63,28 +63,42 @@ export default function RichEmailEditor({ value, onChange }: Props) {
     }
   }, [value, editor]);
 
-  const setLink = useCallback(() => {
+  const setLink = useCallback(async () => {
     if (!editor) return;
     const prev = editor.getAttributes("link").href as string | undefined;
-    const url = window.prompt("Link URL", prev || "https://");
-    if (url === null) return;
+    const result = await promptDialog({
+      title: "Insert link",
+      description: "Leave URL empty to remove the link.",
+      fields: [{ name: "url", label: "URL", type: "url", defaultValue: prev || "https://", placeholder: "https://" }],
+      confirmLabel: "Apply",
+    });
+    if (!result) return;
+    const url = result.url.trim();
     if (url === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
       return;
     }
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  }, [editor]);
+  }, [editor, promptDialog]);
 
-  const insertButton = useCallback(() => {
+  const insertButton = useCallback(async () => {
     if (!editor) return;
-    const label = window.prompt("Button label", "Get in touch");
-    if (!label) return;
-    const url = window.prompt("Button URL", "https://pixcellor.com");
-    if (!url) return;
+    const result = await promptDialog({
+      title: "Insert button",
+      fields: [
+        { name: "label", label: "Button label", required: true, defaultValue: "Get in touch" },
+        { name: "url", label: "Button URL", type: "url", required: true, defaultValue: "https://pixcellor.com" },
+      ],
+      confirmLabel: "Insert",
+    });
+    if (!result) return;
+    const label = result.label.trim();
+    const url = result.url.trim();
+    if (!label || !url) return;
     const safe = label.replace(/</g, "&lt;");
     const html = `<p class="px-btn"><a href="${url}">${safe}</a></p><p></p>`;
     editor.chain().focus().insertContent(html).run();
-  }, [editor]);
+  }, [editor, promptDialog]);
 
   const insertImage = useCallback(async (file: File) => {
     if (!file.type.startsWith("image/")) {
