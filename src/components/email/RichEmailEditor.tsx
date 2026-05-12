@@ -12,6 +12,7 @@ import {
   List, ListOrdered, Link as LinkIcon, Image as ImageIcon,
   Minus, Undo2, Redo2, MousePointerClick,
 } from "lucide-react";
+import { usePromptDialog } from "@/components/ui/themed-dialogs";
 
 type Props = {
   value: string;
