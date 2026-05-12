@@ -499,12 +499,41 @@ export default function CustomerPortal() {
                     )}
                   </div>
                   <div className="space-y-4">
-                    <SectionHeader title="AI generations" description="Every AI vision you've generated — open them any time." count={visionPreviews.length} />
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <SectionHeader title="Designs" description="Every AI design you've generated — open them any time, or hide ones you don't like." count={visionPreviews.length} />
+                      <Button
+                        onClick={() => navigate("/?generate=1#vision")}
+                        variant="pricing"
+                        size="sm"
+                        className="gap-2 rounded-none"
+                      >
+                        <Plus className="h-4 w-4" /> Generate design
+                      </Button>
+                    </div>
                     {visionPreviews.length === 0 ? (
-                      <EmptyState icon={ImageIcon} title="No AI generations yet" text="Generate a vision from the homepage and it will be saved here." />
+                      <EmptyState icon={ImageIcon} title="No designs yet" text="Generate a design from the homepage and it will be saved here." />
                     ) : (
                       <div className="grid gap-4 sm:grid-cols-2">
-                        {visionPreviews.map((preview) => <VisionPreviewCard key={preview.id} preview={preview} />)}
+                        {visionPreviews.map((preview) => (
+                          <VisionPreviewCard
+                            key={preview.id}
+                            preview={preview}
+                            onHide={async () => {
+                              const { error } = await supabase
+                                .from("customer_hidden_visions")
+                                .insert({
+                                  user_id: (await supabase.auth.getUser()).data.user?.id,
+                                  slug: preview.slug,
+                                });
+                              if (error) {
+                                toast.error("Could not hide that design.");
+                              } else {
+                                toast.success("Design hidden");
+                                setData((prev) => prev ? { ...prev, visionPreviews: (prev.visionPreviews ?? []).filter((p) => p.slug !== preview.slug) } : prev);
+                              }
+                            }}
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
