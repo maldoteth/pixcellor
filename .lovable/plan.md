@@ -1,56 +1,41 @@
 ## Problem
 
-Several admin/portal flows still use the browser's native `window.prompt`, `window.confirm`, and `alert` popups (the unstyled Chrome-default boxes). These break the black/glass-morphism theme — most visibly the "Send preview" flow on the Vision Studio (your generations preview email send button), but also others.
+The Vision Studio currently stacks two sections vertically:
+1. **Visitor AI generations** — visitors' AI samples
+2. **All previews** — admin-generated previews
 
-## Native popups found
-
-1. **Vision Studio (`src/components/portal/VisionStudio.tsx`)** — the one you mentioned
-   - Send preview: two `window.prompt`s (email, then client name)
-   - Delete preview: `confirm("Delete this preview?")`
-
-2. **Portal (`src/pages/Portal.tsx`)**
-   - Move sample back to undelivered: `window.confirm`
-   - Re-open delivered order: `window.confirm`
-   - Send test "order complete" email: `window.prompt` for address
-
-3. **Broadcast Campaigns (`src/components/BroadcastCampaigns.tsx`)**
-   - Replace draft with template: `confirm`
-   - Final send confirmation: `confirm("Send to N recipients?…")`
-
-4. **Rich Email Editor (`src/components/email/RichEmailEditor.tsx`)**
-   - Insert link: `window.prompt` for URL
-   - Insert button: `window.prompt` for label, then URL
+The user wants them side-by-side under tabs instead of on top/below.
 
 ## Plan
 
-Build two small reusable primitives in `src/components/ui/` using the existing shadcn `Dialog`, styled to match the portal's black + glass tokens:
+1. **Replace stacked layout with `Tabs`** inside `src/components/portal/VisionStudio.tsx`.
+   - Tab list at the top of the studio section: "Visitor generations" | "Our previews"
+   - Both tabs sit in the same horizontal space, side-by-side.
 
-- `PromptDialog` — title, optional description, one or more labelled inputs, Cancel / Confirm buttons. Returns the entered values via a promise-style hook (`usePromptDialog`) or controlled props.
-- `ConfirmDialog` — title, description, Cancel / Confirm buttons (with optional destructive variant for deletes). Same hook pattern (`useConfirmDialog`).
+2. **Tab 1 — Visitor AI generations**
+   - Move the existing visitor generations grid into `<TabsContent value="visitors">`.
+   - Keep the refresh button, the count, and the grid styling exactly as-is.
 
-Both render through a single mounted dialog instance per consumer, so call sites stay terse:
+3. **Tab 2 — Our previews**
+   - Move the existing "Latest preview" card + "All previews" grid into `<TabsContent value="ours">`.
+   - Keep the send/resend buttons, copy link, open, and delete actions.
 
-```ts
-const ask = usePromptDialog();
-const email = await ask({ title: "Send preview", fields: [{ name: "email", label: "Recipient email", type: "email", required: true }, { name: "name", label: "Client name (optional)" }] });
-```
+4. **Shared elements stay outside tabs**
+   - Search bar: filters both sections simultaneously, stays above tabs.
+   - Generate preview CTA card: stays at the very top (above search).
+   - Wizard dialog: remains unchanged.
 
-Then replace each call site above:
+5. **Styling**
+   - Use existing `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` from `@/components/ui/tabs`.
+   - Keep rounded-none, border-border, bg-card/40 style tokens.
+   - No new colors.
 
-1. **VisionStudio.promptAndSend** → single `PromptDialog` with two fields (email + optional name) instead of two sequential native prompts. Better UX too — one step instead of two.
-2. **VisionStudio.remove** → `ConfirmDialog` (destructive).
-3. **Portal** sample/order confirms → `ConfirmDialog`. Test-email prompt → `PromptDialog`.
-4. **BroadcastCampaigns** → `ConfirmDialog` for both (final send uses destructive styling for emphasis).
-5. **RichEmailEditor** link/button inserts → `PromptDialog` (URL + optional label field).
+## Technical details
 
-## Styling
-
-- Use existing `Dialog`, `DialogContent`, `DialogHeader`, `DialogFooter` from `src/components/ui/dialog.tsx` so they already get the project's bg/border/blur tokens.
-- Primary button = default variant; destructive confirms use `variant="destructive"`.
-- Inputs use the existing `Input` and `Label` components.
-- No new colors — semantic tokens only.
+- Import `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` from `@/components/ui/tabs` (already used elsewhere in the app).
+- Add a small local state `activeTab` defaulted to `"visitors"` or `"ours"`.
+- Wrap the two existing content blocks in tabs; no logic changes.
 
 ## Out of scope
-
-- No backend/data changes; this is purely a presentation swap.
-- No changes to `BuyDetailsPrompt` (that's a custom themed component already, just shares the word "prompt").
+- No changes to the wizard, search, or card internals.
+- No backend changes.
