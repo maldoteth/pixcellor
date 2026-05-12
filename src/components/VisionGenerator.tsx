@@ -286,6 +286,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [contactError, setContactError] = useState<string | null>(null);
   const [requestBusy, setRequestBusy] = useState(false);
   const [requestKind, setRequestKind] = useState<"sample" | "order">("sample");
+  const [sampleEdits, setSampleEdits] = useState("");
 
   useEffect(() => {
     setDropdownOpen(false);
