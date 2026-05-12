@@ -50,8 +50,8 @@ export interface StepDef {
 export const STEPS: StepDef[] = [
   {
     key: "company",
-    label: "What's your company or brand name?",
-    helper: "We'll use this draft generation to create your dream site or app",
+    label: "WHAT'S YOUR COMPANY OR BRAND NAME?",
+    helper: "We'll use this draft to create your dream site or app",
     placeholder: "e.g. Acme Florist",
     prefix: "Company / brand name",
   },
