@@ -37,10 +37,20 @@ interface VisitorGen {
 }
 
 const BUCKET = "vision-previews";
+const FALLBACK_BUCKET = "submission-attachments";
 
 
 const publicUrl = (path: string) =>
   supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+
+const fallbackUrl = (path: string) =>
+  supabase.storage.from(FALLBACK_BUCKET).getPublicUrl(path).data.publicUrl;
+
+const handleImgFallback = (e: React.SyntheticEvent<HTMLImageElement>, path: string) => {
+  const img = e.currentTarget;
+  const fb = fallbackUrl(path);
+  if (img.src !== fb) img.src = fb;
+};
 
 export default function VisionStudio() {
   const promptDialog = usePromptDialog();
@@ -313,6 +323,7 @@ export default function VisionStudio() {
               <div className="border border-border bg-black/40 max-h-[55vh] overflow-auto">
                 <img
                   src={publicUrl(latest.image_path)}
+                  onError={(e) => handleImgFallback(e, latest.image_path)}
                   alt={latest.title ?? "Generated preview"}
                   className="w-full block"
                 />
@@ -334,7 +345,7 @@ export default function VisionStudio() {
                       rel="noreferrer"
                       className="block max-h-48 overflow-hidden bg-black/40"
                     >
-                      <img src={publicUrl(row.image_path)} alt={row.title ?? "Preview"} className="w-full block" />
+                      <img src={publicUrl(row.image_path)} onError={(e) => handleImgFallback(e, row.image_path)} alt={row.title ?? "Preview"} className="w-full block" />
                     </a>
                     <div className="p-3 space-y-2 flex-1 flex flex-col">
                       <div className="flex items-start justify-between gap-2">
