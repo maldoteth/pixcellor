@@ -2436,6 +2436,20 @@ export default function Portal() {
                       >
                         {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
                       </Button>
+                      {(() => {
+                        const meta = (o.metadata as Record<string, unknown> | null) ?? {};
+                        const url = typeof meta.payment_link_url === "string" ? meta.payment_link_url : null;
+                        if (!url) return null;
+                        return (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => { navigator.clipboard.writeText(url); toast.success("Stripe payment link copied"); }}
+                          >
+                            <Copy className="h-3.5 w-3.5 mr-1" /> Copy Stripe link
+                          </Button>
+                        );
+                      })()}
                       {canSendReminder && (
                         <Button
                           variant="outline"
