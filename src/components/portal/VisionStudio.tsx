@@ -323,6 +323,7 @@ export default function VisionStudio() {
               <div className="border border-border bg-black/40 max-h-[55vh] overflow-auto">
                 <img
                   src={publicUrl(latest.image_path)}
+                  onError={(e) => handleImgFallback(e, latest.image_path)}
                   alt={latest.title ?? "Generated preview"}
                   className="w-full block"
                 />
