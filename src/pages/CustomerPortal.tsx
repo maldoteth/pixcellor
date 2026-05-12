@@ -440,7 +440,7 @@ export default function CustomerPortal() {
                       className="pricing-button h-10 gap-2 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"
                     >
                       <item.icon className="h-3.5 w-3.5 shrink-0" />
-                      <span>{item.value === "delivered" ? "Previews" : item.value === "payments" ? "Payments" : item.title}</span>
+                      <span>{item.value === "delivered" ? "Domains" : item.value === "payments" ? "Payments" : item.title}</span>
                     </TabsTrigger>
                   ))}
                 </TabsList>
