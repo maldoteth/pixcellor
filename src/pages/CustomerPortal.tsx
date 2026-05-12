@@ -549,7 +549,6 @@ export default function CustomerPortal() {
                       return (
                         <Card key={plan.key} className={`relative overflow-hidden border-border bg-card/70 backdrop-blur-xl ${plan.featured ? "border-primary/40" : ""}`}>
                           <CardContent className="flex h-full flex-col p-5">
-                            {plan.featured && <Badge className="mb-4 w-fit border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">Most popular</Badge>}
                             <div className="space-y-2">
                               <h3 className="text-xl font-semibold">{plan.name}</h3>
                               <div className="flex items-baseline gap-2">
