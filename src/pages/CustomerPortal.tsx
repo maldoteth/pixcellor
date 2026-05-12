@@ -22,6 +22,7 @@ import {
   Wand2,
   EyeOff,
   Plus,
+  Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ import { toast } from "sonner";
 import customerPortalPLogo from "@/assets/customer-portal-p-logo.png";
 import ChatBot from "@/components/ChatBot";
 import SeoHead from "@/components/SeoHead";
+import CustomLinksTab from "@/components/portal/CustomLinksTab";
 
 const BUY_AGAIN_PACKAGES = [
   {
@@ -91,7 +93,7 @@ const BUY_AGAIN_PACKAGES = [
   },
 ] as const;
 
-type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "activity" | "payments";
+type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "custom_links";
 
 type CustomerOrder = {
   id: string;
@@ -271,6 +273,7 @@ export default function CustomerPortal() {
     { title: "Domains", value: "delivered", icon: Globe2 },
     { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Payments", value: "payments", icon: CreditCard },
+    ...(isAdmin ? [{ title: "Custom links", value: "custom_links" as PortalTab, icon: Link2 }] : []),
   ];
 
   const handleSignOut = async () => {
@@ -613,6 +616,12 @@ export default function CustomerPortal() {
                     </div>
                   )}
                 </TabsContent>
+
+                {isAdmin && (
+                  <TabsContent value="custom_links" className="space-y-4">
+                    <CustomLinksTab />
+                  </TabsContent>
+                )}
               </Tabs>
             </section>
           </main>

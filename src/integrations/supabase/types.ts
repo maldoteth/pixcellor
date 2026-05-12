@@ -412,6 +412,72 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_payment_links: {
+        Row: {
+          amount_gbp: number
+          client_email: string | null
+          created_at: string
+          created_by_email: string | null
+          created_by_user_id: string | null
+          currency: string
+          description: string
+          id: string
+          internal_note: string | null
+          mode: string
+          paid_at: string | null
+          paid_session_id: string | null
+          quantity: number
+          status: string
+          stripe_payment_link_id: string | null
+          stripe_price_id: string | null
+          stripe_product_id: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          amount_gbp: number
+          client_email?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          currency?: string
+          description: string
+          id?: string
+          internal_note?: string | null
+          mode?: string
+          paid_at?: string | null
+          paid_session_id?: string | null
+          quantity?: number
+          status?: string
+          stripe_payment_link_id?: string | null
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          amount_gbp?: number
+          client_email?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          currency?: string
+          description?: string
+          id?: string
+          internal_note?: string | null
+          mode?: string
+          paid_at?: string | null
+          paid_session_id?: string | null
+          quantity?: number
+          status?: string
+          stripe_payment_link_id?: string | null
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       customer_hidden_visions: {
         Row: {
           created_at: string
