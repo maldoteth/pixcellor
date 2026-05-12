@@ -158,57 +158,66 @@ const LetsTalkPrompt = () => {
     finalVisionUrl?: string | null,
     opts?: { keepOpen?: boolean },
   ) => {
-    setSubmitting(true);
-    if (!isHuman()) { setSubmitting(false); if (!opts?.keepOpen) setStep("done"); return; }
-    try {
-      const source = mode === "request" ? "free_sample_request" : "lets_talk_button";
-      const hostedVision = mode === "request" ? await ensureHostedVisionUrl(finalVisionUrl) : null;
-      const requestDetails =
-        mode === "request"
-          ? {
-              company: company.trim() || null,
-              dream: finalDream?.trim() || null,
-              colours: finalColours?.trim() || null,
-              vision_image_url: hostedVision ?? finalVisionUrl ?? null,
-            }
-          : { company: company.trim() || null };
-      const baseAttachments = mode === "request" ? finalMedia ?? [] : null;
-      const attachments = mode === "request"
-        ? Array.from(new Set([...(baseAttachments ?? []), ...(hostedVision ? [hostedVision] : [])]))
-        : null;
+    if (!isHuman()) { if (!opts?.keepOpen) setStep("done"); return; }
 
-      const { error } = await supabase.from("lets_talk_leads").insert({
-        name: name.trim(),
-        email: finalEmail || null,
-        phone: finalPhone || null,
-        source,
-        request_details: requestDetails,
-        attachment_urls: attachments,
-      });
-      if (error) throw error;
+    const source = mode === "request" ? "free_sample_request" : "lets_talk_button";
 
-      supabase.functions
-        .invoke("process-lets-talk-lead", {
-          body: {
-            name: name.trim(),
-            email: finalEmail || null,
-            phone: finalPhone || null,
-            source,
-            request_details: requestDetails,
-            attachment_urls: attachments,
-          },
-        })
-        .catch((err) => console.error("process-lets-talk-lead failed:", err));
+    // Optimistic: confirm immediately.
+    if (!opts?.keepOpen) setStep("done");
 
-      if (!opts?.keepOpen) {
-        setStep("done");
+    void (async () => {
+      try {
+        const hostedVision = mode === "request" ? await ensureHostedVisionUrl(finalVisionUrl) : null;
+        const requestDetails =
+          mode === "request"
+            ? {
+                company: company.trim() || null,
+                dream: finalDream?.trim() || null,
+                colours: finalColours?.trim() || null,
+                vision_image_url: hostedVision ?? finalVisionUrl ?? null,
+              }
+            : { company: company.trim() || null };
+        const baseAttachments = mode === "request" ? finalMedia ?? [] : null;
+        const attachments = mode === "request"
+          ? Array.from(new Set([...(baseAttachments ?? []), ...(hostedVision ? [hostedVision] : [])]))
+          : null;
+
+        const maxAttempts = 3;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          try {
+            const { error } = await supabase.from("lets_talk_leads").insert({
+              name: name.trim(),
+              email: finalEmail || null,
+              phone: finalPhone || null,
+              source,
+              request_details: requestDetails,
+              attachment_urls: attachments,
+            });
+            if (error) throw error;
+            break;
+          } catch (e) {
+            if (attempt === maxAttempts) throw e;
+            await new Promise((r) => setTimeout(r, 800 * attempt));
+          }
+        }
+
+        supabase.functions
+          .invoke("process-lets-talk-lead", {
+            body: {
+              name: name.trim(),
+              email: finalEmail || null,
+              phone: finalPhone || null,
+              source,
+              request_details: requestDetails,
+              attachment_urls: attachments,
+            },
+          })
+          .catch((err) => console.error("process-lets-talk-lead failed:", err));
+      } catch (e) {
+        console.error("lets-talk submit sync failed:", e);
+        toast.error("We couldn't fully sync your details — please refresh and try again if you don't hear back soon.");
       }
-    } catch (e) {
-      console.error(e);
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+    })();
   };
 
   const generateVisionAndSubmit = async () => {
