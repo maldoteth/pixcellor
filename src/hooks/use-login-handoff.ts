@@ -80,7 +80,7 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
 
       // Poll the secure RPC — login_handoffs is no longer publicly readable.
       const startedAt = Date.now();
-      const intervalMs = 2000;
+      const intervalMs = 5000;
       const maxMs = 5 * 60 * 1000;
       const handle = window.setInterval(async () => {
         if (claimingRef.current || sidRef.current !== sid) return;
