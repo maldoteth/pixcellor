@@ -136,7 +136,7 @@ export default function VisionPreview() {
             </div>
             <div
               tabIndex={-1}
-              className="border border-border bg-black/40 max-h-[75vh] overflow-auto outline-none focus:outline-none focus-visible:outline-none select-none"
+              className="border border-border bg-black/40 max-h-[67.5vh] overflow-auto outline-none focus:outline-none focus-visible:outline-none select-none"
               onContextMenu={(e) => e.preventDefault()}
             >
               <img
