@@ -341,6 +341,8 @@ Deno.serve(async (req) => {
           is_refinement: !!isEdit,
           metadata: meta ?? {},
           preview_slug: previewSlug,
+          palette,
+          fonts,
         })
         .select("id")
         .single();
