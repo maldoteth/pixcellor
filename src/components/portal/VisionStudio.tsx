@@ -137,11 +137,17 @@ export default function VisionStudio() {
   };
 
   const promptAndSend = async (row: Preview) => {
-    const def = row.client_email ?? "";
-    const email = window.prompt("Send preview to (email):", def);
-    if (!email) return;
-    const name = window.prompt("Client name (optional):", "") ?? undefined;
-    await sendEmail(row, name || undefined, email.trim());
+    const result = await promptDialog({
+      title: "Send preview",
+      description: "We'll email this preview to the recipient.",
+      fields: [
+        { name: "email", label: "Recipient email", type: "email", required: true, defaultValue: row.client_email ?? "", placeholder: "name@example.com" },
+        { name: "name", label: "Client name (optional)", placeholder: "Jane Doe" },
+      ],
+      confirmLabel: "Send",
+    });
+    if (!result) return;
+    await sendEmail(row, result.name?.trim() || undefined, result.email.trim());
   };
 
   const shareUrl = (slug: string) => `${window.location.origin}/preview/${slug}`;
