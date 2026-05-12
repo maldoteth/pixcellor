@@ -268,7 +268,7 @@ export default function CustomerPortal() {
     { title: "Overview", value: "overview", icon: Home },
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
-    { title: "Site previews", value: "delivered", icon: Globe2 },
+    { title: "Domains", value: "delivered", icon: Globe2 },
     { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Plan & payments", value: "payments", icon: CreditCard },
   ];
