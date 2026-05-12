@@ -524,7 +524,7 @@ export default function Portal() {
       emailLogs?: EmailLog[];
       counts?: Record<string, number>;
     };
-    setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
+    setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && (isPaidOrder(order) || ((order.metadata as { source?: string } | null)?.source === "admin_manual"))));
     setFalloffs(snapshot.falloffs ?? []);
     const convs = snapshot.conversations ?? [];
     const allMsgs = snapshot.messages ?? [];
