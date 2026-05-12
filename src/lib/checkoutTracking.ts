@@ -41,6 +41,10 @@ export const clearCheckoutPending = () => {
 };
 
 let lastScrollRecordAt = 0;
+let lastFalloffCallAt = 0;
+const lastEventCallAt = new Map<string, number>();
+const SCROLL_MILESTONES = [25, 50, 75, 100];
+const recordedScrollMilestones = new Set<number>();
 
 const getCheckoutClientId = () => {
   const existing = localStorage.getItem(CLIENT_ID_KEY);
