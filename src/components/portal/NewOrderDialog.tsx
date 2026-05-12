@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Copy, Loader2 } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<{ email: string; name: string; source: string }[]>([]);
+  const [paymentLinkUrl, setPaymentLinkUrl] = useState<string | null>(null);
   const suggestionsBoxRef = useRef<HTMLDivElement | null>(null);
 
   // Reset on every open
@@ -50,6 +51,7 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
       setEmail(""); setName(""); setPkg("fullWorks");
       setCustomLabel(""); setCustomAmount(""); setOrderType("paid");
       setNotes(""); setSendEmail(true); setError(null); setSuggestions([]);
+      setPaymentLinkUrl(null);
     }
   }, [open]);
 
@@ -114,10 +116,32 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
       if (mailErr) toast.warning("Order created, but the confirmation email failed: " + mailErr.message);
     }
 
+    let linkUrl: string | null = null;
+    if (orderType === "draft" && sessionId) {
+      const isRecurring = billing === "monthly" || billing === "yearly";
+      const { data: linkData, error: linkErr } = await supabase.functions.invoke("create-custom-payment-link", {
+        body: {
+          description: packageName,
+          amount_gbp: amountPence / 100,
+          quantity: 1,
+          mode: isRecurring ? "subscription" : "payment",
+          client_email: email.trim(),
+          internal_note: notes.trim() || null,
+          attach_session_id: sessionId,
+        },
+      });
+      if (linkErr) {
+        toast.warning("Draft saved, but couldn't create Stripe link: " + linkErr.message);
+      } else {
+        linkUrl = (linkData as { url?: string } | null)?.url ?? null;
+        if (linkUrl) setPaymentLinkUrl(linkUrl);
+      }
+    }
+
     setSubmitting(false);
     setStep("done");
     await onCreated?.();
-    setTimeout(() => onOpenChange(false), 1600);
+    setTimeout(() => onOpenChange(false), linkUrl ? 4500 : 1600);
   };
 
   const handleNext = async () => {
@@ -204,6 +228,22 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
             <p className="text-foreground/70 text-sm text-center">
               {finalPackageLabel} · {fmtGBP(finalAmountPence)} · {email}
             </p>
+            {paymentLinkUrl && (
+              <div className="w-full mt-2 flex flex-col gap-2 rounded-md border border-foreground/15 bg-foreground/5 p-3">
+                <span className="text-foreground/60 text-xs uppercase tracking-wider">Stripe payment link</span>
+                <a href={paymentLinkUrl} target="_blank" rel="noopener noreferrer" className="break-all text-xs font-mono text-foreground hover:underline">
+                  {paymentLinkUrl}
+                </a>
+                <Button
+                  type="button"
+                  variant="pricing"
+                  className="h-9"
+                  onClick={() => { navigator.clipboard.writeText(paymentLinkUrl); toast.success("Payment link copied"); }}
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copy link
+                </Button>
+              </div>
+            )}
           </motion.div>
         ) : (
           <motion.div

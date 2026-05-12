@@ -51,6 +51,7 @@ serve(async (req) => {
     const mode = body.mode === "subscription" ? "subscription" : "payment";
     const clientEmail = (typeof body.client_email === "string" ? body.client_email.trim().toLowerCase() : "") || null;
     const internalNote = (typeof body.internal_note === "string" ? body.internal_note.trim() : "") || null;
+    const attachSessionId = (typeof body.attach_session_id === "string" ? body.attach_session_id.trim() : "") || null;
 
     if (!description || description.length > 200) return json({ error: "Description required (max 200 chars)" }, 400);
     if (!Number.isFinite(amount) || amount < 1 || amount > 1_000_000)
@@ -58,6 +59,8 @@ serve(async (req) => {
     if (clientEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clientEmail))
       return json({ error: "Invalid client email" }, 400);
     if (internalNote && internalNote.length > 1000) return json({ error: "Note too long" }, 400);
+    if (attachSessionId && (attachSessionId.length > 200 || !/^[a-zA-Z0-9_-]+$/.test(attachSessionId)))
+      return json({ error: "Invalid attach_session_id" }, 400);
 
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
 
@@ -103,16 +106,42 @@ serve(async (req) => {
         custom_link_id: linkId,
         client_email: clientEmail ?? "",
         package_name: description.slice(0, 80),
+        ...(attachSessionId ? { attached_session_id: attachSessionId } : {}),
       },
       ...(mode === "payment"
-        ? { payment_intent_data: { metadata: { kind: "custom", custom_link_id: linkId } } }
-        : { subscription_data: { metadata: { kind: "custom", custom_link_id: linkId } } }),
+        ? { payment_intent_data: { metadata: { kind: "custom", custom_link_id: linkId, ...(attachSessionId ? { attached_session_id: attachSessionId } : {}) } } }
+        : { subscription_data: { metadata: { kind: "custom", custom_link_id: linkId, ...(attachSessionId ? { attached_session_id: attachSessionId } : {}) } } }),
     });
 
     await admin
       .from("custom_payment_links")
       .update({ stripe_payment_link_id: paymentLink.id, url: paymentLink.url })
       .eq("id", linkId);
+
+    // If attached to a manual order, write the link onto the session metadata
+    if (attachSessionId) {
+      try {
+        const { data: sessRow } = await admin
+          .from("stripe_checkout_sessions")
+          .select("metadata")
+          .eq("session_id", attachSessionId)
+          .maybeSingle();
+        const existingMeta = (sessRow?.metadata as Record<string, unknown> | null) ?? {};
+        await admin
+          .from("stripe_checkout_sessions")
+          .update({
+            metadata: {
+              ...existingMeta,
+              payment_link_url: paymentLink.url,
+              payment_link_id: paymentLink.id,
+              custom_link_id: linkId,
+            },
+          })
+          .eq("session_id", attachSessionId);
+      } catch (e) {
+        console.error("Failed to attach link to manual session", e);
+      }
+    }
 
     return json({ id: linkId, url: paymentLink.url });
   } catch (err) {

@@ -308,7 +308,8 @@ serve(async (req) => {
 
       // Mark custom admin payment links as paid
       if (event.type === "checkout.session.completed" && paymentStatus === "paid") {
-        const customLinkId = (session.metadata as Record<string, string> | null)?.custom_link_id;
+        const meta = (session.metadata as Record<string, string> | null) ?? {};
+        const customLinkId = meta.custom_link_id;
         if (customLinkId) {
           try {
             await supabase
@@ -321,6 +322,32 @@ serve(async (req) => {
               .eq("id", customLinkId);
           } catch (err) {
             console.error("Failed to mark custom payment link paid", err);
+          }
+        }
+        const attachedSessionId = meta.attached_session_id;
+        if (attachedSessionId) {
+          try {
+            const { data: existing } = await supabase
+              .from("stripe_checkout_sessions")
+              .select("metadata")
+              .eq("session_id", attachedSessionId)
+              .maybeSingle();
+            const existingMeta = (existing?.metadata as Record<string, unknown> | null) ?? {};
+            await supabase
+              .from("stripe_checkout_sessions")
+              .update({
+                payment_status: "paid",
+                status: "complete",
+                capture_status: "link",
+                captured_at: new Date().toISOString(),
+                metadata: {
+                  ...existingMeta,
+                  paid_via_link_session_id: session.id,
+                },
+              })
+              .eq("session_id", attachedSessionId);
+          } catch (err) {
+            console.error("Failed to mark attached manual session paid", err);
           }
         }
       }

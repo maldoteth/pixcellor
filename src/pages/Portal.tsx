@@ -8,8 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Archive, BarChart3, Check, Clipboard, ExternalLink, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
-import CustomLinksTab from "@/components/portal/CustomLinksTab";
+import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, ExternalLink, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
@@ -442,7 +441,7 @@ export default function Portal() {
   const [clientsStatusFilter, setClientsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [clientsRetainerOnly, setClientsRetainerOnly] = useState(false);
   
-  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples">("all");
+  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples" | "custom">("all");
   const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
   const [completedReqsFilter, setCompletedReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
@@ -939,8 +938,12 @@ export default function Portal() {
     return searched.filter((order) => {
       const hasRequirements = requirementsBySession.has(order.session_id);
       const hasEditRequests = editRequestsBySession.has(order.session_id);
+      const isCustom = ((order.metadata as Record<string, unknown> | null) ?? {}).source === "admin_manual";
       const reqsMatches = orderReqsFilter === "all" ||
-        (orderReqsFilter === "submitted" ? hasRequirements : orderReqsFilter === "edits" ? hasEditRequests : !hasRequirements);
+        (orderReqsFilter === "submitted" ? hasRequirements
+          : orderReqsFilter === "edits" ? hasEditRequests
+          : orderReqsFilter === "custom" ? isCustom
+          : !hasRequirements);
       return order.order_status !== "delivered" && order.order_status !== "merged_to_manual" && reqsMatches;
     });
   }, [orders, ordersQ, orderReqsFilter, requirementsBySession, editRequestsBySession]);
@@ -2143,7 +2146,7 @@ export default function Portal() {
           </div>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 xl:grid-cols-10">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 xl:grid-cols-9">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed</TabsTrigger>
@@ -2152,7 +2155,6 @@ export default function Portal() {
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats</TabsTrigger>
             <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients</TabsTrigger>
             <TabsTrigger value="studio" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Wand2 className="h-3.5 w-3.5 shrink-0" />Studio</TabsTrigger>
-            <TabsTrigger value="payment_links" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Link2 className="h-3.5 w-3.5 shrink-0" />Payment links</TabsTrigger>
             <TabsTrigger value="alerts" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><AlertTriangle className="h-3.5 w-3.5 shrink-0" />Alerts</TabsTrigger>
           </TabsList>
 
@@ -2292,6 +2294,7 @@ export default function Portal() {
                 <Button variant={orderReqsFilter === "edits" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("edits")}>Edits</Button>
                 <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
                 <Button variant={orderReqsFilter === "samples" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("samples")}>Samples ({sampleRequests.length})</Button>
+                <Button variant={orderReqsFilter === "custom" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("custom")}><Link2 className="h-3.5 w-3.5" />Custom orders</Button>
               </div>
             </div>
 
@@ -2460,6 +2463,27 @@ export default function Portal() {
                       )}
                     </div>
                   </div>
+
+                  {(() => {
+                    const meta = (o.metadata as Record<string, unknown> | null) ?? {};
+                    const url = typeof meta.payment_link_url === "string" ? meta.payment_link_url : null;
+                    if (!url) return null;
+                    const isPaid = o.payment_status === "paid";
+                    return (
+                      <div className="flex flex-wrap items-center gap-2 rounded-none border border-border bg-background/60 p-2 text-xs">
+                        <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-muted-foreground">Stripe link:</span>
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="truncate font-mono text-foreground hover:underline max-w-[320px]">{url}</a>
+                        <Badge variant={isPaid ? "default" : "secondary"}>{isPaid ? "Paid" : "Awaiting payment"}</Badge>
+                        <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => { navigator.clipboard.writeText(url); toast.success("Payment link copied"); }}>
+                          <Copy className="h-3 w-3" /> Copy
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => window.open(url, "_blank", "noopener")}>
+                          <ExternalLink className="h-3 w-3" /> Open
+                        </Button>
+                      </div>
+                    );
+                  })()}
 
                   {editRequestsBySession.has(o.session_id) && (
                     <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
@@ -3030,10 +3054,6 @@ export default function Portal() {
 
           <TabsContent value="studio" className="min-w-0">
             <VisionStudio />
-          </TabsContent>
-
-          <TabsContent value="payment_links" className="min-w-0">
-            <CustomLinksTab />
           </TabsContent>
 
           <TabsContent value="alerts" className="space-y-3">
