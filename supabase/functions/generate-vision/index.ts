@@ -33,6 +33,15 @@ async function uploadDataUrlToStorage(supabase: any, dataUrl: string): Promise<{
   }
 }
 
+const GOOGLE_FONTS_SHORTLIST = `Use ONLY Google Fonts. Pick ONE heading font + ONE body font from this curated list, choosing the pairing that best fits the industry and vibe. Do NOT use generic system fonts (Arial, Helvetica, Times, default Roboto) unless the brief explicitly demands it.
+
+- Modern / SaaS / tech: Inter, Manrope, Plus Jakarta Sans, Space Grotesk, DM Sans, Geist
+- Editorial / luxury / fashion: Playfair Display, Cormorant Garamond, Fraunces, Libre Caslon Text, DM Serif Display
+- Bold / display / agency: Bricolage Grotesque, Archivo, Unbounded, Syne, Anton
+- Friendly / playful / lifestyle: Outfit, Poppins, Quicksand, Nunito, Rubik
+- Premium serif body: Lora, Source Serif 4, Merriweather, Crimson Pro
+- Mono accents (only as accent, never body): JetBrains Mono, IBM Plex Mono, Space Mono`;
+
 const SYSTEM_PROMPT = `You are Pixcellor's senior landing-page art director. Generate ONE photorealistic, pixel-perfect screenshot of a complete DESKTOP landing page (1440x900 viewport, browser chrome NOT included) based on the user's description.
 
 Hard rules — never break:
@@ -46,7 +55,19 @@ Hard rules — never break:
 - No watermarks, no Pixcellor branding, no fictional logos that look like real companies.
 - The page must look like a finished, ready-to-ship product, not a wireframe or sketch.
 
+TYPOGRAPHY — strict:
+${GOOGLE_FONTS_SHORTLIST}
+
 If the user description is vague, fill the gaps with tasteful, on-trend choices that fit their industry.`;
+
+const BRAND_KIT_SYSTEM = `You are a senior brand designer. Inspect the supplied landing-page mockup AND the original brief, then return the precise brand kit actually visible in the design.
+
+Rules:
+- palette: 3 to 5 entries covering primary, secondary, accent, and neutrals. Each is { name, hex } where hex is a real hex code like "#0F172A". Names should describe the colour role ("Primary", "Accent", "Surface", "Ink").
+- fonts: pick the heading + body font that visibly match the mockup. They MUST be valid Google Fonts taken from this curated shortlist:
+${GOOGLE_FONTS_SHORTLIST}
+- Never invent fonts that don't exist on Google Fonts.
+- Always return all fields even if you have to estimate.`;
 
 // Parse the structured brief produced by VisionGenerator (lines like "Company / brand name: X").
 function parseBrief(raw: string): Record<string, string> {
