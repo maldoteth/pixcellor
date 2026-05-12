@@ -616,11 +616,6 @@ export default function CustomerPortal() {
                   )}
                 </TabsContent>
 
-                {isAdmin && (
-                  <TabsContent value="custom_links" className="space-y-4">
-                    <CustomLinksTab />
-                  </TabsContent>
-                )}
               </Tabs>
             </section>
           </main>
