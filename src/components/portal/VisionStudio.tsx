@@ -345,7 +345,7 @@ export default function VisionStudio() {
                       rel="noreferrer"
                       className="block max-h-48 overflow-hidden bg-black/40"
                     >
-                      <img src={publicUrl(row.image_path)} alt={row.title ?? "Preview"} className="w-full block" />
+                      <img src={publicUrl(row.image_path)} onError={(e) => handleImgFallback(e, row.image_path)} alt={row.title ?? "Preview"} className="w-full block" />
                     </a>
                     <div className="p-3 space-y-2 flex-1 flex flex-col">
                       <div className="flex items-start justify-between gap-2">
