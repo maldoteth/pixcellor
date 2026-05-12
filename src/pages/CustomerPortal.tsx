@@ -268,7 +268,7 @@ export default function CustomerPortal() {
     { title: "Overview", value: "overview", icon: Home },
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
-    { title: "Site previews", value: "delivered", icon: Globe2 },
+    { title: "Domains", value: "delivered", icon: Globe2 },
     { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Plan & payments", value: "payments", icon: CreditCard },
   ];
@@ -440,7 +440,7 @@ export default function CustomerPortal() {
                       className="pricing-button h-10 gap-2 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"
                     >
                       <item.icon className="h-3.5 w-3.5 shrink-0" />
-                      <span>{item.value === "delivered" ? "Previews" : item.value === "payments" ? "Payments" : item.title}</span>
+                      <span>{item.value === "delivered" ? "Domains" : item.value === "payments" ? "Payments" : item.title}</span>
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -483,7 +483,7 @@ export default function CustomerPortal() {
                 </TabsContent>
 
                 <TabsContent value="delivered" className="space-y-4">
-                  <SectionHeader title="Delivered site previews" description="Live previews and links for completed deliveries." count={deliveredOrders.length} />
+                  <SectionHeader title="Domains" description="Live previews and links for completed deliveries." count={deliveredOrders.length} />
                   {deliveredOrders.length === 0 ? <EmptyState icon={Globe2} title="No sites yet" text="Delivered projects will appear here with a preview window." /> : <div className="grid gap-4 xl:grid-cols-2">{deliveredOrders.map((order) => <DeliveredPreview key={order.id} order={order} />)}</div>}
                 </TabsContent>
 
