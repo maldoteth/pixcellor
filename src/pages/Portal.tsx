@@ -2182,7 +2182,7 @@ export default function Portal() {
             </div>
 
             <div className="flex flex-wrap justify-start gap-2">
-              <Button onClick={() => setShowSalesEventForm(v => !v)} disabled={contacts.length === 0}>
+              <Button onClick={openMobileSalesEvent} disabled={contacts.length === 0}>
                 <Plus className="w-4 h-4 mr-2" /> Create note
               </Button>
               <Button onClick={openMobileContactForm}>
