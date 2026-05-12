@@ -994,6 +994,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               </DrawerTitle>
             </DrawerHeader>
             {body}
+            <HoneypotField value={honeypotValue} onChange={setHoneypotValue} />
           </DrawerContent>
         </Drawer>
       </>
@@ -1022,6 +1023,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             </DialogDescription>
           </DialogHeader>
           {body}
+          <HoneypotField value={honeypotValue} onChange={setHoneypotValue} />
         </DialogContent>
       </Dialog>
     </>
