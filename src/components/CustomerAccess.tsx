@@ -98,6 +98,7 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
   const navigate = useNavigate();
   const heroReady = useHeroReady();
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
