@@ -1820,7 +1820,8 @@ export default function Portal() {
   };
 
   const markSampleUndelivered = async (sampleId: string) => {
-    if (!window.confirm("Move this sample back to undelivered?")) return;
+    const ok = await confirmDialog({ title: "Move sample back?", description: "This returns the sample to undelivered.", confirmLabel: "Move back" });
+    if (!ok) return;
     const { error } = await (supabase as any).rpc("portal_mark_sample_undelivered", { _sample_id: sampleId });
     if (error) {
       toast.error(error.message || "Could not update sample");
