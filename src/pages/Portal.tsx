@@ -2464,6 +2464,27 @@ export default function Portal() {
                     </div>
                   </div>
 
+                  {(() => {
+                    const meta = (o.metadata as Record<string, unknown> | null) ?? {};
+                    const url = typeof meta.payment_link_url === "string" ? meta.payment_link_url : null;
+                    if (!url) return null;
+                    const isPaid = o.payment_status === "paid";
+                    return (
+                      <div className="flex flex-wrap items-center gap-2 rounded-none border border-border bg-background/60 p-2 text-xs">
+                        <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-muted-foreground">Stripe link:</span>
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="truncate font-mono text-foreground hover:underline max-w-[320px]">{url}</a>
+                        <Badge variant={isPaid ? "default" : "secondary"}>{isPaid ? "Paid" : "Awaiting payment"}</Badge>
+                        <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => { navigator.clipboard.writeText(url); toast.success("Payment link copied"); }}>
+                          <Copy className="h-3 w-3" /> Copy
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => window.open(url, "_blank", "noopener")}>
+                          <ExternalLink className="h-3 w-3" /> Open
+                        </Button>
+                      </div>
+                    );
+                  })()}
+
                   {editRequestsBySession.has(o.session_id) && (
                     <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
                       <div className="mb-3 font-medium">Edit requests</div>
