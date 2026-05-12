@@ -529,7 +529,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     const reply = {
       role: "assistant" as const,
       content: action === "call"
-        ? "Absolutely — leave your name and phone number and I'll get a call booked for tomorrow."
+        ? "Absolutely — leave your name and number for a call back or call us on the number below."
         : action === "email"
           ? "Sure — leave your name and email and I'll send over our full package guide, process breakdown, portfolio and buy links."
           : action === "trial"
