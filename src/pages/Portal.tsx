@@ -2185,7 +2185,7 @@ export default function Portal() {
                 />
               </div>
               {!contactsQ && filteredContacts.length > 10 && (
-                <p className="mt-1 text-xs text-muted-foreground">Showing 10 most recent clients. Search to find older clients.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Showing most recent clients. Search to find older clients.</p>
               )}
             </div>
 
