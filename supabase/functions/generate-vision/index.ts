@@ -317,7 +317,7 @@ Deno.serve(async (req) => {
       const cleanStr = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : null) || null;
 
       // Create a shareable preview row so this sample gets a /preview/{slug} link
-      let previewSlug: string | null = null;
+      // (previewSlug declared in outer scope so background brand-kit task can read it)
       if (storagePath) {
         try {
           const slug = `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
