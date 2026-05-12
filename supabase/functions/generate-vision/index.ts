@@ -431,6 +431,30 @@ Deno.serve(async (req) => {
       console.error("vision logging failed:", logErr);
     }
 
+    // Kick off the brand-kit extraction in the background — response goes out immediately.
+    if (previewSlug || generationId) {
+      const briefForKit = isEdit ? `Refinement instruction: ${instruction}` : enrichedBrief;
+      const bgTask = extractAndSaveBrandKit({
+        supabase,
+        apiKey: LOVABLE_API_KEY,
+        imageRefUrl: imageUrl,
+        briefForKit,
+        previewSlug,
+        generationId,
+      });
+      try {
+        // @ts-ignore EdgeRuntime is provided by Supabase Edge runtime
+        if (typeof EdgeRuntime !== "undefined" && EdgeRuntime?.waitUntil) {
+          // @ts-ignore
+          EdgeRuntime.waitUntil(bgTask);
+        } else {
+          void bgTask;
+        }
+      } catch {
+        void bgTask;
+      }
+    }
+
     return new Response(JSON.stringify({ imageUrl, generationId, storagePath, palette, fonts }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
