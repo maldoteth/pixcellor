@@ -929,10 +929,10 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         <AnimatePresence>
           {isOpen && (
             <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              initial={{ opacity: 0, y: 20, scale: 0.95, filter: "blur(12px)" }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: 20, scale: 0.95, filter: "blur(12px)" }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               onPointerDown={handleWidgetDragStart}
               className="fixed z-50 rounded-3xl flex flex-col overflow-hidden"
               style={{
