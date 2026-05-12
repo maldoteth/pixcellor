@@ -59,20 +59,29 @@ export default function EditRequest() {
       return;
     }
 
-    setSubmitting(true);
-    const { data, error: submitError } = await supabase.functions.invoke("submit-edit-request", {
-      body: { orderCode, requirementsToken, ...parsed.data, attachments },
-    });
-    setSubmitting(false);
-
-    if (submitError || data?.error) {
-      toast.error(data?.error || submitError?.message || "Could not save edit request");
-      return;
-    }
-
-    setRemainingRequests(data?.remainingRequests);
+    // Optimistic confirm; sync in background with retries.
     setSubmitted(true);
     toast.success("Edit request saved.");
+
+    void (async () => {
+      const maxAttempts = 3;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const { data, error: submitError } = await supabase.functions.invoke("submit-edit-request", {
+          body: { orderCode, requirementsToken, ...parsed.data, attachments },
+        });
+        if (!submitError && !data?.error) {
+          if (typeof data?.remainingRequests === "number") setRemainingRequests(data.remainingRequests);
+          return;
+        }
+        if (attempt === maxAttempts) {
+          console.error("edit request sync failed", submitError, data?.error);
+          toast.error(data?.error || submitError?.message || "Couldn't sync your edit request — please reload and try again.");
+          setSubmitted(false);
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 800 * attempt));
+      }
+    })();
   };
 
   if (submitted) {
