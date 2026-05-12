@@ -51,6 +51,7 @@ serve(async (req) => {
     const mode = body.mode === "subscription" ? "subscription" : "payment";
     const clientEmail = (typeof body.client_email === "string" ? body.client_email.trim().toLowerCase() : "") || null;
     const internalNote = (typeof body.internal_note === "string" ? body.internal_note.trim() : "") || null;
+    const attachSessionId = (typeof body.attach_session_id === "string" ? body.attach_session_id.trim() : "") || null;
 
     if (!description || description.length > 200) return json({ error: "Description required (max 200 chars)" }, 400);
     if (!Number.isFinite(amount) || amount < 1 || amount > 1_000_000)
@@ -58,6 +59,8 @@ serve(async (req) => {
     if (clientEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clientEmail))
       return json({ error: "Invalid client email" }, 400);
     if (internalNote && internalNote.length > 1000) return json({ error: "Note too long" }, 400);
+    if (attachSessionId && (attachSessionId.length > 200 || !/^[a-zA-Z0-9_-]+$/.test(attachSessionId)))
+      return json({ error: "Invalid attach_session_id" }, 400);
 
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
 
