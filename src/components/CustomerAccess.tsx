@@ -118,6 +118,7 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
 
   const trigger = (
     <motion.button
+      ref={triggerRef}
       type="button"
       aria-label="Customer log in"
       onClick={() => setOpen((current) => !current)}
