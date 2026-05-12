@@ -63,6 +63,7 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <ThemedDialogsProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
