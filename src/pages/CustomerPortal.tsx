@@ -20,6 +20,8 @@ import {
   ReceiptText,
   ShieldCheck,
   Wand2,
+  EyeOff,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
