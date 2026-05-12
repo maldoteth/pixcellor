@@ -16,6 +16,7 @@ type Source = "contacts" | "customers" | "both";
 const STATUS_OPTIONS = ["cold", "aware", "warm", "hot", "gold"] as const;
 
 export default function BroadcastCampaigns() {
+  const confirmDialog = useConfirmDialog();
   const [source, setSource] = useState<Source>("contacts");
   const [statuses, setStatuses] = useState<string[]>(["warm", "hot", "gold"]);
   const [industries, setIndustries] = useState<string[]>([]);
