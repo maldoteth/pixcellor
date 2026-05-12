@@ -90,6 +90,7 @@ const App = () => (
             </Routes>
           </Suspense>
         </BrowserRouter>
+        </ThemedDialogsProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
