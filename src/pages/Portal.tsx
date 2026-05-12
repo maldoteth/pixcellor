@@ -2863,7 +2863,7 @@ export default function Portal() {
               {(sectionCounts.conversations ?? 0) > conversations.length && (
                 <div className="flex justify-center pt-2">
                   <Button variant="outline" size="sm" disabled={!!loadingMore.conversations} onClick={() => loadMoreSection("conversations", conversations.length, 20)}>
-                    {loadingMore.conversations ? "Loading…" : `Load more (${conversations.length} of ${sectionCounts.conversations})`}
+                    {loadingMore.conversations ? "Loading…" : "Load more"}
                   </Button>
                 </div>
               )}
