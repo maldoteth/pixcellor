@@ -2183,7 +2183,7 @@ export default function Portal() {
 
             <div className="flex flex-wrap justify-start gap-2">
               <Button onClick={() => setShowSalesEventForm(v => !v)} disabled={contacts.length === 0}>
-                <Plus className="w-4 h-4 mr-2" /> Create event
+                <Plus className="w-4 h-4 mr-2" /> Create note
               </Button>
               <Button onClick={openMobileContactForm}>
                 <UserPlus className="w-4 h-4 mr-2" /> Create client
@@ -3158,7 +3158,7 @@ export default function Portal() {
                 <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
                   Edit
                 </Button>
-                <Button variant="pricing" size="sm" className="h-9 w-9 shrink-0 rounded-none px-0 shadow-none" aria-label="Create event" title="Create event" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
+                <Button variant="pricing" size="sm" className="h-9 w-9 shrink-0 rounded-none px-0 shadow-none" aria-label="Create note" title="Create note" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -3205,9 +3205,9 @@ export default function Portal() {
                   <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
                     Edit
                   </Button>
-                  <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 w-9 shrink-0 rounded-none px-0 shadow-none md:w-auto md:px-3" aria-label="Create event" title="Create event" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
+                  <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 w-9 shrink-0 rounded-none px-0 shadow-none md:w-auto md:px-3" aria-label="Create note" title="Create note" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
                     <Plus className="h-4 w-4 md:mr-2" />
-                    <span className="hidden md:inline">Create event</span>
+                    <span className="hidden md:inline">Create note</span>
                   </Button>
                   <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => openPersonDrawerForContact(contactDetailDrawerContact.id)}>
                     <UserPlus className="h-4 w-4 md:mr-2" />
