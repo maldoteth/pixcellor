@@ -630,8 +630,10 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       if (data?.error) throw new Error(data.error);
       const url = data?.imageUrl ?? previousUrl;
       setImageUrl(url);
-      if (data?.palette) setPalette(data.palette);
-      if (data?.fonts) setFonts(data.fonts);
+      // Reset brand kit so polling picks up the new one for the refined image.
+      setPalette(data?.palette ?? null);
+      setFonts(data?.fonts ?? null);
+      if (data?.generationId) setGenerationId(data.generationId);
       setGeneratedFor(`${previousPrompt}\n\nRefinement: ${ins}`);
       setRefineInstruction("");
       setStage("result");
