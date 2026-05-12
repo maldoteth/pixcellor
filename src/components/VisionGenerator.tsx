@@ -296,6 +296,33 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     setDropdownOpen(false);
   }, [stage]);
 
+  // Poll for the brand kit (palette + fonts) which is generated in the background after the image returns.
+  useEffect(() => {
+    if (!generationId) return;
+    if (palette && fonts) return;
+    let cancelled = false;
+    let attempts = 0;
+    const tick = async () => {
+      if (cancelled) return;
+      attempts += 1;
+      try {
+        const { data } = await (supabase as any)
+          .from("ai_sample_generations")
+          .select("palette,fonts")
+          .eq("id", generationId)
+          .maybeSingle();
+        if (!cancelled && data) {
+          if (data.palette) setPalette(data.palette);
+          if (data.fonts) setFonts(data.fonts);
+          if (data.palette && data.fonts) return;
+        }
+      } catch { /* ignore */ }
+      if (!cancelled && attempts < 20) setTimeout(tick, 2000);
+    };
+    const initial = setTimeout(tick, 2500);
+    return () => { cancelled = true; clearTimeout(initial); };
+  }, [generationId, palette, fonts]);
+
   // Progressive lead save: as soon as we have (company OR name) AND (email OR phone),
   // upsert into contacts. Fires whenever stage advances or contact info changes.
   // Debounced to avoid hammering on every keystroke.
