@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import AdminVisionWizard from "@/components/portal/AdminVisionWizard";
+import BrandKit from "@/components/BrandKit";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 
 interface Preview {
@@ -19,6 +20,8 @@ interface Preview {
   created_by_user_id: string | null;
   client_email: string | null;
   sent_at: string | null;
+  palette: any;
+  fonts: any;
 }
 
 interface VisitorGen {
@@ -35,6 +38,8 @@ interface VisitorGen {
   parent_id: string | null;
   created_at: string;
   preview_slug: string | null;
+  palette: any;
+  fonts: any;
 }
 
 const BUCKET = "vision-previews";
@@ -92,7 +97,7 @@ export default function VisionStudio() {
   const loadVisitorGens = async () => {
     const { data, error } = await (supabase as any)
       .from("ai_sample_generations")
-      .select("id,brief,image_url,source,company,contact_name,email,phone,visitor_id,is_refinement,parent_id,created_at,preview_slug")
+      .select("id,brief,image_url,source,company,contact_name,email,phone,visitor_id,is_refinement,parent_id,created_at,preview_slug,palette,fonts")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) {
@@ -267,6 +272,11 @@ export default function VisionStudio() {
                         {g.source}{g.is_refinement ? " · refinement" : ""}
                       </p>
                       {g.brief && <p className="text-[11px] text-muted-foreground line-clamp-3">{g.brief}</p>}
+                      {(g.palette || g.fonts) && (
+                        <div className="pt-2 border-t border-border/30">
+                          <BrandKit palette={g.palette} fonts={g.fonts} compact />
+                        </div>
+                      )}
                       {g.preview_slug && (
                         <div className="flex items-center gap-1 pt-1">
                           <code className="text-[10px] px-1.5 py-0.5 bg-muted text-foreground rounded-none truncate flex-1">
@@ -330,6 +340,9 @@ export default function VisionStudio() {
                   className="w-full block"
                 />
               </div>
+              {(latest.palette || latest.fonts) && (
+                <BrandKit palette={latest.palette} fonts={latest.fonts} />
+              )}
             </div>
           )}
 
@@ -378,6 +391,11 @@ export default function VisionStudio() {
                           {row.sent_at ? <Check className="h-3 w-3 text-emerald-400" /> : <Mail className="h-3 w-3" />}
                           {row.sent_at ? `Sent to ${row.client_email}` : `For ${row.client_email}`}
                         </p>
+                      )}
+                      {(row.palette || row.fonts) && (
+                        <div className="pt-2 border-t border-border/30">
+                          <BrandKit palette={row.palette} fonts={row.fonts} compact />
+                        </div>
                       )}
                       <div className="flex items-center gap-2 mt-auto pt-1">
                         <Button

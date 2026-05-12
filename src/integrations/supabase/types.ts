@@ -55,10 +55,12 @@ export type Database = {
           contact_name: string | null
           created_at: string
           email: string | null
+          fonts: Json | null
           id: string
           image_url: string | null
           is_refinement: boolean
           metadata: Json
+          palette: Json | null
           parent_id: string | null
           phone: string | null
           preview_slug: string | null
@@ -73,10 +75,12 @@ export type Database = {
           contact_name?: string | null
           created_at?: string
           email?: string | null
+          fonts?: Json | null
           id?: string
           image_url?: string | null
           is_refinement?: boolean
           metadata?: Json
+          palette?: Json | null
           parent_id?: string | null
           phone?: string | null
           preview_slug?: string | null
@@ -91,10 +95,12 @@ export type Database = {
           contact_name?: string | null
           created_at?: string
           email?: string | null
+          fonts?: Json | null
           id?: string
           image_url?: string | null
           is_refinement?: boolean
           metadata?: Json
+          palette?: Json | null
           parent_id?: string | null
           phone?: string | null
           preview_slug?: string | null
@@ -1150,8 +1156,10 @@ export type Database = {
           created_at: string
           created_by_email: string | null
           created_by_user_id: string | null
+          fonts: Json | null
           id: string
           image_path: string
+          palette: Json | null
           sent_at: string | null
           slug: string
           title: string | null
@@ -1163,8 +1171,10 @@ export type Database = {
           created_at?: string
           created_by_email?: string | null
           created_by_user_id?: string | null
+          fonts?: Json | null
           id?: string
           image_path: string
+          palette?: Json | null
           sent_at?: string | null
           slug: string
           title?: string | null
@@ -1176,8 +1186,10 @@ export type Database = {
           created_at?: string
           created_by_email?: string | null
           created_by_user_id?: string | null
+          fonts?: Json | null
           id?: string
           image_path?: string
+          palette?: Json | null
           sent_at?: string | null
           slug?: string
           title?: string | null
@@ -1395,7 +1407,9 @@ export type Database = {
         Returns: {
           brief: string
           created_at: string
+          fonts: Json
           image_path: string
+          palette: Json
           slug: string
           title: string
         }[]

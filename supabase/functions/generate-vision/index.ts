@@ -33,6 +33,15 @@ async function uploadDataUrlToStorage(supabase: any, dataUrl: string): Promise<{
   }
 }
 
+const GOOGLE_FONTS_SHORTLIST = `Use ONLY Google Fonts. Pick ONE heading font + ONE body font from this curated list, choosing the pairing that best fits the industry and vibe. Do NOT use generic system fonts (Arial, Helvetica, Times, default Roboto) unless the brief explicitly demands it.
+
+- Modern / SaaS / tech: Inter, Manrope, Plus Jakarta Sans, Space Grotesk, DM Sans, Geist
+- Editorial / luxury / fashion: Playfair Display, Cormorant Garamond, Fraunces, Libre Caslon Text, DM Serif Display
+- Bold / display / agency: Bricolage Grotesque, Archivo, Unbounded, Syne, Anton
+- Friendly / playful / lifestyle: Outfit, Poppins, Quicksand, Nunito, Rubik
+- Premium serif body: Lora, Source Serif 4, Merriweather, Crimson Pro
+- Mono accents (only as accent, never body): JetBrains Mono, IBM Plex Mono, Space Mono`;
+
 const SYSTEM_PROMPT = `You are Pixcellor's senior landing-page art director. Generate ONE photorealistic, pixel-perfect screenshot of a complete DESKTOP landing page (1440x900 viewport, browser chrome NOT included) based on the user's description.
 
 Hard rules — never break:
@@ -46,7 +55,19 @@ Hard rules — never break:
 - No watermarks, no Pixcellor branding, no fictional logos that look like real companies.
 - The page must look like a finished, ready-to-ship product, not a wireframe or sketch.
 
+TYPOGRAPHY — strict:
+${GOOGLE_FONTS_SHORTLIST}
+
 If the user description is vague, fill the gaps with tasteful, on-trend choices that fit their industry.`;
+
+const BRAND_KIT_SYSTEM = `You are a senior brand designer. Inspect the supplied landing-page mockup AND the original brief, then return the precise brand kit actually visible in the design.
+
+Rules:
+- palette: 3 to 5 entries covering primary, secondary, accent, and neutrals. Each is { name, hex } where hex is a real hex code like "#0F172A". Names should describe the colour role ("Primary", "Accent", "Surface", "Ink").
+- fonts: pick the heading + body font that visibly match the mockup. They MUST be valid Google Fonts taken from this curated shortlist:
+${GOOGLE_FONTS_SHORTLIST}
+- Never invent fonts that don't exist on Google Fonts.
+- Always return all fields even if you have to estimate.`;
 
 // Parse the structured brief produced by VisionGenerator (lines like "Company / brand name: X").
 function parseBrief(raw: string): Record<string, string> {
@@ -187,6 +208,83 @@ Deno.serve(async (req) => {
     let imageUrl = rawImageUrl;
     let storagePath: string | null = null;
     let generationId: string | null = null;
+    let palette: any = null;
+    let fonts: any = null;
+
+    // Extract brand kit (colours + Google Fonts) — small cheap call.
+    try {
+      const briefForKit = isEdit ? `Refinement instruction: ${instruction}` : enrichedBrief;
+      const kitRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: BRAND_KIT_SYSTEM },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: `Brief:\n${briefForKit}\n\nReturn the brand kit visible in the attached mockup.` },
+                { type: "image_url", image_url: { url: rawImageUrl } },
+              ],
+            },
+          ],
+          tools: [{
+            type: "function",
+            function: {
+              name: "return_brand_kit",
+              description: "Return the brand kit for the generated mockup.",
+              parameters: {
+                type: "object",
+                properties: {
+                  palette: {
+                    type: "array", minItems: 3, maxItems: 5,
+                    items: {
+                      type: "object",
+                      properties: { name: { type: "string" }, hex: { type: "string" } },
+                      required: ["name", "hex"], additionalProperties: false,
+                    },
+                  },
+                  fonts: {
+                    type: "object",
+                    properties: {
+                      heading: {
+                        type: "object",
+                        properties: { family: { type: "string" }, weights: { type: "array", items: { type: "number" } } },
+                        required: ["family"], additionalProperties: false,
+                      },
+                      body: {
+                        type: "object",
+                        properties: { family: { type: "string" }, weights: { type: "array", items: { type: "number" } } },
+                        required: ["family"], additionalProperties: false,
+                      },
+                    },
+                    required: ["heading", "body"], additionalProperties: false,
+                  },
+                },
+                required: ["palette", "fonts"], additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "return_brand_kit" } },
+        }),
+      });
+      if (kitRes.ok) {
+        const kitData = await kitRes.json();
+        const argsStr = kitData?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+        if (argsStr) {
+          try {
+            const parsed = JSON.parse(argsStr);
+            palette = parsed?.palette ?? null;
+            fonts = parsed?.fonts ?? null;
+          } catch (e) { console.error("brand kit parse failed", e); }
+        }
+      } else {
+        console.error("brand kit gateway error", kitRes.status, await kitRes.text());
+      }
+    } catch (kitErr) {
+      console.error("brand kit extraction threw", kitErr);
+    }
 
     try {
       const supabase = createClient(
@@ -217,6 +315,8 @@ Deno.serve(async (req) => {
             brief: briefText,
             client_email: cleanStr(meta?.email?.toLowerCase?.() ?? meta?.email, 200),
             created_by_email: cleanStr(meta?.email?.toLowerCase?.() ?? meta?.email, 200),
+            palette,
+            fonts,
           });
           if (prevErr) console.error("vision_previews insert failed:", prevErr);
           else previewSlug = slug;
@@ -241,6 +341,8 @@ Deno.serve(async (req) => {
           is_refinement: !!isEdit,
           metadata: meta ?? {},
           preview_slug: previewSlug,
+          palette,
+          fonts,
         })
         .select("id")
         .single();
@@ -315,7 +417,7 @@ Deno.serve(async (req) => {
       console.error("vision logging failed:", logErr);
     }
 
-    return new Response(JSON.stringify({ imageUrl, generationId, storagePath }), {
+    return new Response(JSON.stringify({ imageUrl, generationId, storagePath, palette, fonts }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

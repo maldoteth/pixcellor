@@ -23,6 +23,7 @@ import { useHeroReady } from "@/hooks/use-hero-ready";
 import { supabase } from "@/integrations/supabase/client";
 import HoneypotField from "@/components/HoneypotField";
 import { useAntiSpam } from "@/lib/anti-spam";
+import BrandKit from "@/components/BrandKit";
 
 interface VisionGeneratorProps {
   hidden?: boolean;
@@ -271,6 +272,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [busy, setBusy] = useState(false);
   const { honeypotValue, setHoneypotValue, isHuman } = useAntiSpam();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [palette, setPalette] = useState<any>(null);
+  const [fonts, setFonts] = useState<any>(null);
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -406,6 +409,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       if (data?.error) throw new Error(data.error);
       if (!data?.imageUrl) throw new Error("No image returned");
       setImageUrl(data.imageUrl);
+      setPalette(data.palette ?? null);
+      setFonts(data.fonts ?? null);
       setGeneratedFor(brief);
       setStage("result");
       toast.success("Your vision is ready ✨");
@@ -596,6 +601,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       if (data?.error) throw new Error(data.error);
       const url = data?.imageUrl ?? previousUrl;
       setImageUrl(url);
+      if (data?.palette) setPalette(data.palette);
+      if (data?.fonts) setFonts(data.fonts);
       setGeneratedFor(`${previousPrompt}\n\nRefinement: ${ins}`);
       setRefineInstruction("");
       setStage("result");
@@ -827,6 +834,11 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
                 onDragStart={(e) => e.preventDefault()}
               />
             </div>
+            {(palette || fonts) && (
+              <div className="border border-border/40 p-3 bg-card/40">
+                <BrandKit palette={palette} fonts={fonts} compact />
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <Button onClick={orderThisStyle} disabled={requestBusy} className="w-full rounded-none">
                 {requestBusy && requestKind === "order" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Use this as style guide"}
