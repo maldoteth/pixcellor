@@ -1,71 +1,21 @@
-## Goals
+## What actually happened
 
-1. Show the **brand colour palette** and **typography** on every generated preview — both in the admin Generations tab and on the public/customer-facing share page.
-2. Improve the prompt so the AI picks **Google Fonts** from a curated, industry-aware shortlist instead of generic defaults.
-3. Cost impact answer.
+You weren't logged in, so when you clicked **Get started** on `/preview/:slug`, the code in `src/pages/VisionPreview.tsx` (lines 152–159) just flips a local `requested` flag and shows the success message. It does **not** insert anything into `lets_talk_leads`, does not send an email, and does not store anything against a cache or visitor ID.
 
----
+In short: nobody was notified, no record was created, and we don't have your details. The confirmation message was a UI lie for anonymous visitors. The "logged-in" branch (lines 138–151) does insert a lead — but that path didn't run for you.
 
-## 1. Capture colours + fonts per generation
+## Fix plan
 
-Currently `generate-vision` only stores the image. We'll add a small structured-output step in the same edge function so every generation gets a brand kit.
+Rework the anonymous flow on `VisionPreview.tsx` so the success message only appears after we actually capture something:
 
-**Backend (`supabase/functions/generate-vision/index.ts`)**
-- After the image is generated, make one extra call using `google/gemini-3-flash-preview` with tool-calling (cheap text model) that takes the brief + the generated image and returns:
-  - `palette`: 3–5 entries of `{ name, hex }` (primary, secondary, accent, neutral light, neutral dark)
-  - `fonts`: `{ heading: { family, weights }, body: { family, weights } }` — both must be valid Google Fonts
-- Persist these on the `vision_previews` row.
+1. **Anonymous click on "Get started"** → instead of jumping straight to the success card, show the email + magic-link block first (the same `MagicLinkSignup` UI that's currently hidden inside the success card).
+2. **On email submit** → insert into `lets_talk_leads` with `source: "vision_preview_get_started"`, `email`, `request_details: { previewSlug, title, anonymous: true }`, then trigger the existing magic-link sign-in. Only then flip to the "Our team will be in touch" success state.
+3. **Logged-in click** → unchanged (already inserts a lead with the authed email).
+4. **Guard** so a misclick that closes the email form without submitting doesn't leave a false success state.
 
-**DB migration**
-- Add nullable `palette jsonb` and `fonts jsonb` columns to `vision_previews`.
+Optional small polish: also stamp the visitor's `visitor_id` (already tracked in falloff logic) into `request_details` so we can correlate the click with their session even before they give us an email — but the source of truth for "in touch" stays the email submission.
 
----
+### Files touched
+- `src/pages/VisionPreview.tsx` — restructure the `!requested` / `requested` blocks so anonymous users see the email capture before the confirmation, and the lead insert happens on submit.
 
-## 2. Smarter font selection in the prompt
-
-Update `SYSTEM_PROMPT` + `embellishBrief` in `generate-vision` to include a **curated Google Fonts shortlist** grouped by use-case, e.g.:
-
-- Modern / SaaS: Inter, Manrope, Plus Jakarta Sans, Space Grotesk, DM Sans
-- Editorial / Luxury: Playfair Display, Cormorant Garamond, Fraunces, Libre Caslon Text
-- Bold / Display: Bricolage Grotesque, Archivo, Unbounded, Syne
-- Friendly / Playful: Outfit, Poppins, Quicksand, Nunito
-- Serif body: Lora, Source Serif, Merriweather
-- Mono accents: JetBrains Mono, IBM Plex Mono
-
-Instruction to model: pick **one heading + one body font** from the shortlist that best fit the industry/vibe. Avoid generic system fonts (Arial, Helvetica, default Roboto) unless the brief explicitly asks. Same fonts must be returned in the structured metadata so the UI can load and display them.
-
----
-
-## 3. Display brand kit everywhere (admins + customers)
-
-A shared `<BrandKit palette fonts />` component renders:
-- Colour swatches: small rounded chips with hex code underneath
-- Fonts: heading family name rendered in the actual heading font + body family name in body font (Google Fonts loaded on demand via injected `<link rel="stylesheet">`)
-
-Used in:
-- `src/components/portal/VisionStudio.tsx` — admin Generations cards (latest preview + list)
-- Public `/preview/:slug` page — under the image, visible to the customer
-- The "thanks" / sample-delivered confirmation view inside `VisionGenerator.tsx` so the user sees their kit immediately after generation
-- Email template `send-vision-preview` — include a simple HTML version (swatches as coloured table cells, font names as text) so the kit shows in the client's inbox too
-
----
-
-## 4. Cost impact
-
-- Image generation cost: **unchanged**.
-- Extra metadata call: one small request to `gemini-3-flash-preview` (~few hundred output tokens). Effectively a fraction of a cent per generation — negligible compared to the image call which dominates cost.
-- Longer system prompt with the font shortlist adds a few hundred input tokens; cost impact rounds to zero.
-
-**Net: barely measurable increase.**
-
----
-
-## Files touched
-
-- `supabase/functions/generate-vision/index.ts` — expanded prompt, font shortlist, structured metadata extraction, return + persist palette/fonts
-- New migration — add `palette jsonb`, `fonts jsonb` to `vision_previews`
-- `src/components/portal/VisionStudio.tsx` — render `<BrandKit />` on cards
-- Public preview page (`src/pages/Preview.tsx` or equivalent) — render `<BrandKit />`
-- `src/components/VisionGenerator.tsx` — show kit on the post-generation thanks screen
-- `supabase/functions/send-vision-preview/index.ts` — include kit in the email
-- New `src/components/BrandKit.tsx` + small Google Fonts loader helper
+No DB schema, edge function, or RLS changes needed (`lets_talk_leads` already allows anon inserts).
