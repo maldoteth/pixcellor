@@ -103,7 +103,7 @@ type VisitorFalloff = {
 // All legacy/external Stripe activity is excluded.
 const isSiteOrder = (o: StripeSession) => {
   const source = (o.metadata as { source?: string } | null)?.source;
-  return source === "pixcellor_site";
+  return source === "pixcellor_site" || source === "admin_manual";
 };
 
 const isPaidOrder = (o: StripeSession) => o.payment_status === "paid" || o.status === "complete" || o.status === "completed";
@@ -524,7 +524,7 @@ export default function Portal() {
       emailLogs?: EmailLog[];
       counts?: Record<string, number>;
     };
-    setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && isPaidOrder(order)));
+    setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && (isPaidOrder(order) || ((order.metadata as { source?: string } | null)?.source === "admin_manual"))));
     setFalloffs(snapshot.falloffs ?? []);
     const convs = snapshot.conversations ?? [];
     const allMsgs = snapshot.messages ?? [];
