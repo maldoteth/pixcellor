@@ -2638,7 +2638,7 @@ export default function Portal() {
             </div>
             {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
             <p className="text-xs text-muted-foreground">
-              Showing {filteredFalloffs.length} of {sectionCounts.falloffs ?? falloffs.length} total falloffs.
+              {(sectionCounts.falloffs ?? 0) > falloffs.length ? "" : "Loaded all."}
             </p>
             <div
               className="max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2"
