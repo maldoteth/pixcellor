@@ -400,6 +400,8 @@ const salesEventWizardFields = [
 
 export default function Portal() {
   const navigate = useNavigate();
+  const promptDialog = usePromptDialog();
+  const confirmDialog = useConfirmDialog();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authError, setAuthError] = useState("");
