@@ -295,17 +295,17 @@ Deno.serve(async (req) => {
     let imageUrl = rawImageUrl;
     let storagePath: string | null = null;
     let generationId: string | null = null;
+    let previewSlug: string | null = null;
     // palette + fonts are filled in by a background brand-kit job after this response returns
     const palette: any = null;
     const fonts: any = null;
 
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
 
     try {
-      const supabase = createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      );
-
       const uploaded = await uploadDataUrlToStorage(supabase, rawImageUrl);
       if (uploaded.publicUrl) imageUrl = uploaded.publicUrl;
       if (uploaded.path) storagePath = uploaded.path;
