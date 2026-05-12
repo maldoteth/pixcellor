@@ -30,7 +30,7 @@ interface VisionGeneratorProps {
 }
 
 type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
-type Stage = StepKey | "contact" | "generating" | "result" | "refine" | "requested";
+type Stage = StepKey | "contact" | "generating" | "result" | "refine" | "sample_edits" | "requested";
 export type { StepKey };
 
 const CONTACT_NAME_KEY = "pixcellor:contact-name";
