@@ -37,10 +37,20 @@ interface VisitorGen {
 }
 
 const BUCKET = "vision-previews";
+const FALLBACK_BUCKET = "submission-attachments";
 
 
 const publicUrl = (path: string) =>
   supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+
+const fallbackUrl = (path: string) =>
+  supabase.storage.from(FALLBACK_BUCKET).getPublicUrl(path).data.publicUrl;
+
+const handleImgFallback = (e: React.SyntheticEvent<HTMLImageElement>, path: string) => {
+  const img = e.currentTarget;
+  const fb = fallbackUrl(path);
+  if (img.src !== fb) img.src = fb;
+};
 
 export default function VisionStudio() {
   const promptDialog = usePromptDialog();
