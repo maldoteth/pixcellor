@@ -78,7 +78,7 @@ const CustomInvoiceEmail = ({ description, amountFormatted, paymentUrl, orderId,
                 </Text>
                 <Button style={button} href={payHref}>Pay now</Button>
                 <Text style={smallLink}>
-                  Or copy this link: <span style={linkText}>{payHref}</span>
+                  Or copy this link: <Link href={payHref} style={inlineLink}>{payHref}</Link>
                 </Text>
               </Column>
             </Row>
