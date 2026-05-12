@@ -15,6 +15,7 @@ import BroadcastCampaigns from "@/components/BroadcastCampaigns";
 import { useDomainPrompt } from "@/components/DomainPromptDialog";
 import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
+import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 import SeoHead from "@/components/SeoHead";
 
 // Auto-load-on-scroll helper for paginated list containers.
@@ -399,6 +400,8 @@ const salesEventWizardFields = [
 
 export default function Portal() {
   const navigate = useNavigate();
+  const promptDialog = usePromptDialog();
+  const confirmDialog = useConfirmDialog();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authError, setAuthError] = useState("");
@@ -1817,7 +1820,8 @@ export default function Portal() {
   };
 
   const markSampleUndelivered = async (sampleId: string) => {
-    if (!window.confirm("Move this sample back to undelivered?")) return;
+    const ok = await confirmDialog({ title: "Move sample back?", description: "This returns the sample to undelivered.", confirmLabel: "Move back" });
+    if (!ok) return;
     const { error } = await (supabase as any).rpc("portal_mark_sample_undelivered", { _sample_id: sampleId });
     if (error) {
       toast.error(error.message || "Could not update sample");
@@ -1828,7 +1832,7 @@ export default function Portal() {
   };
 
   const markOrderUndelivered = async (sessionId: string) => {
-    const confirmed = window.confirm("Move this order back to open so delivery can be redone?");
+    const confirmed = await confirmDialog({ title: "Re-open order?", description: "Move this order back to open so delivery can be redone.", confirmLabel: "Re-open" });
     if (!confirmed) return;
 
     const { error } = await (supabase as any).rpc("portal_mark_order_undelivered", {
@@ -1843,9 +1847,13 @@ export default function Portal() {
   };
 
   const sendTestOrderCompleteEmail = async () => {
-    const email = window.prompt("Send a real 'order complete' test email to which address?");
-    if (!email) return;
-    const cleanEmail = email.trim().toLowerCase();
+    const result = await promptDialog({
+      title: "Send test order-complete email",
+      fields: [{ name: "email", label: "Recipient email", type: "email", required: true, placeholder: "name@example.com" }],
+      confirmLabel: "Send test",
+    });
+    if (!result) return;
+    const cleanEmail = result.email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       toast.error("Enter a valid email address.");
       return;

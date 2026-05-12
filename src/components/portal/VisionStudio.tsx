@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import AdminVisionWizard from "@/components/portal/AdminVisionWizard";
+import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 
 interface Preview {
   id: string;
@@ -41,6 +42,8 @@ const publicUrl = (path: string) =>
   supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 
 export default function VisionStudio() {
+  const promptDialog = usePromptDialog();
+  const confirmDialog = useConfirmDialog();
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [previews, setPreviews] = useState<Preview[]>([]);
@@ -134,11 +137,17 @@ export default function VisionStudio() {
   };
 
   const promptAndSend = async (row: Preview) => {
-    const def = row.client_email ?? "";
-    const email = window.prompt("Send preview to (email):", def);
-    if (!email) return;
-    const name = window.prompt("Client name (optional):", "") ?? undefined;
-    await sendEmail(row, name || undefined, email.trim());
+    const result = await promptDialog({
+      title: "Send preview",
+      description: "We'll email this preview to the recipient.",
+      fields: [
+        { name: "email", label: "Recipient email", type: "email", required: true, defaultValue: row.client_email ?? "", placeholder: "name@example.com" },
+        { name: "name", label: "Client name (optional)", placeholder: "Jane Doe" },
+      ],
+      confirmLabel: "Send",
+    });
+    if (!result) return;
+    await sendEmail(row, result.name?.trim() || undefined, result.email.trim());
   };
 
   const shareUrl = (slug: string) => `${window.location.origin}/preview/${slug}`;
@@ -153,7 +162,8 @@ export default function VisionStudio() {
   };
 
   const remove = async (row: Preview) => {
-    if (!confirm("Delete this preview?")) return;
+    const ok = await confirmDialog({ title: "Delete preview?", description: "This permanently removes the preview and its image.", confirmLabel: "Delete", destructive: true });
+    if (!ok) return;
     await supabase.storage.from(BUCKET).remove([row.image_path]);
     const { error } = await (supabase as any).from("vision_previews").delete().eq("id", row.id);
     if (error) {

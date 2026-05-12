@@ -9,12 +9,14 @@ import { toast } from "sonner";
 import RichEmailEditor from "./email/RichEmailEditor";
 import EmailPreview from "./email/EmailPreview";
 import { STARTER_TEMPLATES } from "./email/emailTemplates";
+import { useConfirmDialog } from "@/components/ui/themed-dialogs";
 
 type Source = "contacts" | "customers" | "both";
 
 const STATUS_OPTIONS = ["cold", "aware", "warm", "hot", "gold"] as const;
 
 export default function BroadcastCampaigns() {
+  const confirmDialog = useConfirmDialog();
   const [source, setSource] = useState<Source>("contacts");
   const [statuses, setStatuses] = useState<string[]>(["warm", "hot", "gold"]);
   const [industries, setIndustries] = useState<string[]>([]);
@@ -41,11 +43,12 @@ export default function BroadcastCampaigns() {
   const toggle = (list: string[], value: string) =>
     list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 
-  const loadTemplate = (id: string) => {
+  const loadTemplate = async (id: string) => {
     const tpl = STARTER_TEMPLATES.find((t) => t.id === id);
     if (!tpl) return;
     if (bodyHtml && bodyHtml.replace(/<[^>]+>/g, "").trim().length > 0) {
-      if (!confirm("Replace your current draft with this template?")) return;
+      const ok = await confirmDialog({ title: "Replace draft?", description: "Your current draft will be overwritten with this template.", confirmLabel: "Replace", destructive: true });
+      if (!ok) return;
     }
     setSubject(tpl.subject);
     setPreheader(tpl.preheader);
@@ -82,7 +85,15 @@ export default function BroadcastCampaigns() {
       toast.error("Enter a test recipient email");
       return;
     }
-    if (!testOnly && !confirm(`Send to ${previewCount ?? "?"} recipients? This cannot be undone.`)) return;
+    if (!testOnly) {
+      const ok = await confirmDialog({
+        title: "Send broadcast?",
+        description: `This will send to ${previewCount ?? "?"} recipients. This cannot be undone.`,
+        confirmLabel: "Send broadcast",
+        destructive: true,
+      });
+      if (!ok) return;
+    }
 
     setSending(true);
     const { data, error } = await supabase.functions.invoke("send-broadcast", {

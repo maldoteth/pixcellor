@@ -1,47 +1,56 @@
-## Custom orders – two fixes
+## Problem
 
-### 1. Copy Stripe link button on the custom order row
+Several admin/portal flows still use the browser's native `window.prompt`, `window.confirm`, and `alert` popups (the unstyled Chrome-default boxes). These break the black/glass-morphism theme — most visibly the "Send preview" flow on the Vision Studio (your generations preview email send button), but also others.
 
-Currently the Stripe link only appears in a small strip below the order header (with tiny Copy/Open buttons), and only when the order is expanded/visible. For custom orders we want the copy action right at the top of the card alongside Send confirmation / Mark delivered.
+## Native popups found
 
-**Edit `src/pages/Portal.tsx` (around line 2412–2438, the action button cluster in the order header):**
-- When `metadata.payment_link_url` exists, render a `Copy Stripe link` button (icon + label) in the top action row.
-- Click → `navigator.clipboard.writeText(url)` + toast `"Stripe payment link copied"`.
-- Keep the existing detail strip below (open in new tab + paid/awaiting badge) — it carries useful state info.
+1. **Vision Studio (`src/components/portal/VisionStudio.tsx`)** — the one you mentioned
+   - Send preview: two `window.prompt`s (email, then client name)
+   - Delete preview: `confirm("Delete this preview?")`
 
-### 2. Fix `Send confirmation` for unpaid custom (draft) orders
+2. **Portal (`src/pages/Portal.tsx`)**
+   - Move sample back to undelivered: `window.confirm`
+   - Re-open delivered order: `window.confirm`
+   - Send test "order complete" email: `window.prompt` for address
 
-Today `supabase/functions/send-order-confirmation/index.ts` rejects anything that is not `paid`/`complete` with `"Only paid orders can receive confirmation emails"`. That is why it appears broken on custom drafts.
+3. **Broadcast Campaigns (`src/components/BroadcastCampaigns.tsx`)**
+   - Replace draft with template: `confirm`
+   - Final send confirmation: `confirm("Send to N recipients?…")`
 
-Desired behaviour:
-- **Paid order** → unchanged: send the existing package confirmation template (`full-works-order-confirmation` / `elite-order-confirmation` / `retainer-order-confirmation`) which already links to project requirements.
-- **Unpaid custom order** (`metadata.source === "admin_manual"` and `metadata.payment_link_url` present) → send a new "custom invoice" email containing the description, amount, and a CTA button to the Stripe payment link.
+4. **Rich Email Editor (`src/components/email/RichEmailEditor.tsx`)**
+   - Insert link: `window.prompt` for URL
+   - Insert button: `window.prompt` for label, then URL
 
-**Changes:**
+## Plan
 
-a. New transactional template `supabase/functions/_shared/transactional-email-templates/custom-invoice.tsx`
-   - Props: `description`, `amountFormatted`, `paymentUrl`, `orderId`.
-   - Subject: `"Your invoice from Pixcellor"`.
-   - Body: short intro, line item (description + amount), big "Pay now" button → `paymentUrl`, fallback link, footer.
-   - Match existing template styling (read `full-works-order-confirmation.tsx` for visual parity).
-   - Register in `_shared/transactional-email-templates/registry.ts` as `custom-invoice`.
+Build two small reusable primitives in `src/components/ui/` using the existing shadcn `Dialog`, styled to match the portal's black + glass tokens:
 
-b. Update `supabase/functions/send-order-confirmation/index.ts`
-   - After loading the order, branch:
-     - If `metadata.source === "admin_manual"` and not paid:
-       - Require `metadata.payment_link_url` (else 400 "No payment link on this order").
-       - Call `send-transactional-email` with `templateName: "custom-invoice"`, `templateData: { description: metadata.custom_label || package_name, amountFormatted: formatGBP(amount_total), paymentUrl, orderId: orderCode }`, idempotency `manual-custom-invoice-${session_id}-${Date.now()}`.
-       - Return success.
-     - Else keep current paid-order flow.
-   - Remove the blanket "Only paid orders can receive confirmation emails" 400 — replace with the branching above.
+- `PromptDialog` — title, optional description, one or more labelled inputs, Cancel / Confirm buttons. Returns the entered values via a promise-style hook (`usePromptDialog`) or controlled props.
+- `ConfirmDialog` — title, description, Cancel / Confirm buttons (with optional destructive variant for deletes). Same hook pattern (`useConfirmDialog`).
 
-c. Deploy edge functions (`send-order-confirmation`) — automatic on save, but template change also requires the registry to be picked up by `send-transactional-email` (already auto-deployed).
+Both render through a single mounted dialog instance per consumer, so call sites stay terse:
 
-### Out of scope
-- No DB / RLS / schema changes.
-- No changes to the existing list-strip Stripe link UI besides adding the new top-row button.
-- No changes to checkout, webhook, or paid-flow templates.
+```ts
+const ask = usePromptDialog();
+const email = await ask({ title: "Send preview", fields: [{ name: "email", label: "Recipient email", type: "email", required: true }, { name: "name", label: "Client name (optional)" }] });
+```
 
-### Expected result
-- Admin can copy the Stripe link with one click from the custom order header.
-- Clicking `Send confirmation` on an unpaid custom draft emails the client the invoice + Stripe pay link instead of erroring; on a paid order it continues to send the package confirmation as before.
+Then replace each call site above:
+
+1. **VisionStudio.promptAndSend** → single `PromptDialog` with two fields (email + optional name) instead of two sequential native prompts. Better UX too — one step instead of two.
+2. **VisionStudio.remove** → `ConfirmDialog` (destructive).
+3. **Portal** sample/order confirms → `ConfirmDialog`. Test-email prompt → `PromptDialog`.
+4. **BroadcastCampaigns** → `ConfirmDialog` for both (final send uses destructive styling for emphasis).
+5. **RichEmailEditor** link/button inserts → `PromptDialog` (URL + optional label field).
+
+## Styling
+
+- Use existing `Dialog`, `DialogContent`, `DialogHeader`, `DialogFooter` from `src/components/ui/dialog.tsx` so they already get the project's bg/border/blur tokens.
+- Primary button = default variant; destructive confirms use `variant="destructive"`.
+- Inputs use the existing `Input` and `Label` components.
+- No new colors — semantic tokens only.
+
+## Out of scope
+
+- No backend/data changes; this is purely a presentation swap.
+- No changes to `BuyDetailsPrompt` (that's a custom themed component already, just shares the word "prompt").
