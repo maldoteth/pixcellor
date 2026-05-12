@@ -228,6 +228,22 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
             <p className="text-foreground/70 text-sm text-center">
               {finalPackageLabel} · {fmtGBP(finalAmountPence)} · {email}
             </p>
+            {paymentLinkUrl && (
+              <div className="w-full mt-2 flex flex-col gap-2 rounded-md border border-foreground/15 bg-foreground/5 p-3">
+                <span className="text-foreground/60 text-xs uppercase tracking-wider">Stripe payment link</span>
+                <a href={paymentLinkUrl} target="_blank" rel="noopener noreferrer" className="break-all text-xs font-mono text-foreground hover:underline">
+                  {paymentLinkUrl}
+                </a>
+                <Button
+                  type="button"
+                  variant="pricing"
+                  className="h-9"
+                  onClick={() => { navigator.clipboard.writeText(paymentLinkUrl); toast.success("Payment link copied"); }}
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copy link
+                </Button>
+              </div>
+            )}
           </motion.div>
         ) : (
           <motion.div
