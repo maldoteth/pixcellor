@@ -116,10 +116,32 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
       if (mailErr) toast.warning("Order created, but the confirmation email failed: " + mailErr.message);
     }
 
+    let linkUrl: string | null = null;
+    if (orderType === "draft" && sessionId) {
+      const isRecurring = billing === "monthly" || billing === "yearly";
+      const { data: linkData, error: linkErr } = await supabase.functions.invoke("create-custom-payment-link", {
+        body: {
+          description: packageName,
+          amount_gbp: amountPence / 100,
+          quantity: 1,
+          mode: isRecurring ? "subscription" : "payment",
+          client_email: email.trim(),
+          internal_note: notes.trim() || null,
+          attach_session_id: sessionId,
+        },
+      });
+      if (linkErr) {
+        toast.warning("Draft saved, but couldn't create Stripe link: " + linkErr.message);
+      } else {
+        linkUrl = (linkData as { url?: string } | null)?.url ?? null;
+        if (linkUrl) setPaymentLinkUrl(linkUrl);
+      }
+    }
+
     setSubmitting(false);
     setStep("done");
     await onCreated?.();
-    setTimeout(() => onOpenChange(false), 1600);
+    setTimeout(() => onOpenChange(false), linkUrl ? 4500 : 1600);
   };
 
   const handleNext = async () => {
