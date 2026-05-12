@@ -72,7 +72,8 @@ export default function VisionStudio() {
     !q ||
     [g.brief, g.company, g.contact_name, g.email, g.phone, g.visitor_id, g.source]
       .some((v) => v && v.toLowerCase().includes(q));
-  const filteredPreviews = previews.filter(matchesPreview);
+  const adminPreviews = previews.filter((r) => !!r.created_by_user_id);
+  const filteredPreviews = adminPreviews.filter(matchesPreview);
   const filteredVisitorGens = visitorGens.filter(matchesVisitor);
 
   const load = async () => {
