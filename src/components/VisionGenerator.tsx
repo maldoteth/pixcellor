@@ -30,7 +30,7 @@ interface VisionGeneratorProps {
 }
 
 type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
-type Stage = StepKey | "contact" | "generating" | "result" | "refine" | "requested";
+type Stage = StepKey | "contact" | "generating" | "result" | "refine" | "sample_edits" | "requested";
 export type { StepKey };
 
 const CONTACT_NAME_KEY = "pixcellor:contact-name";
@@ -286,6 +286,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [contactError, setContactError] = useState<string | null>(null);
   const [requestBusy, setRequestBusy] = useState(false);
   const [requestKind, setRequestKind] = useState<"sample" | "order">("sample");
+  const [sampleEdits, setSampleEdits] = useState("");
 
   useEffect(() => {
     setDropdownOpen(false);
@@ -518,6 +519,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
         vision_image_url: imageUrl,
         kind,
         origin: sourceTag,
+        requested_edits: kind === "sample" ? (sampleEdits.trim() || null) : null,
       };
       const attachments = imageUrl ? [imageUrl] : null;
 
@@ -553,7 +555,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   };
 
   const orderThisStyle = () => { void submitRequest("order"); };
-  const requestConsultation = () => { void submitRequest("sample"); };
+  const requestConsultation = () => { setStage("sample_edits"); };
+  const submitSampleEdits = () => { void submitRequest("sample"); };
 
   const downloadImage = () => {
     if (!imageUrl) return;
@@ -937,6 +940,33 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               </Button>
             </div>
           </motion.div>
+        ) : stage === "sample_edits" ? (
+          <motion.div
+            key="sample_edits"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="space-y-3"
+          >
+            <p className="text-foreground text-base font-semibold">What edits would you like?</p>
+            <p className="text-foreground/70 text-xs">Tell us what to change — colours, layout, copy, sections, imagery, vibe. We'll use this to craft your custom sample.</p>
+            <textarea
+              autoFocus
+              value={sampleEdits}
+              onChange={(e) => setSampleEdits(e.target.value)}
+              placeholder="e.g. darker hero, add a pricing section, swap to sage green, more premium feel"
+              rows={4}
+              className="w-full bg-transparent border border-border/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-foreground/60 resize-none"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => setStage("result")} className="w-full rounded-none" disabled={requestBusy}>
+                Back
+              </Button>
+              <Button onClick={submitSampleEdits} disabled={requestBusy || sampleEdits.trim().length < 3} className="w-full rounded-none">
+                {requestBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send request"}
+              </Button>
+            </div>
+          </motion.div>
         ) : stage === "requested" ? (
           <motion.div
             key="requested"
@@ -953,20 +983,19 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               email={contactEmail}
               benefit="Sign up to access your dashboard — view this generation, your sample request, and order updates in one place."
             />
-            <Button
+            <button
               type="button"
-              variant="pricing"
               onClick={() => { setOpen(false); }}
-              className="w-full h-11 font-semibold mt-2"
+              className="w-full h-11 font-semibold mt-2 bg-black text-white hover:bg-black/90 transition rounded-none"
             >
               Close
-            </Button>
+            </button>
           </motion.div>
         ) : (
           stepBody
         )}
       </AnimatePresence>
-      {stage !== "generating" && stage !== "result" && stage !== "refine" && stage !== "requested" && !busy && (
+      {stage !== "generating" && stage !== "result" && stage !== "refine" && stage !== "sample_edits" && stage !== "requested" && !busy && (
         <p className="text-[11px] text-muted-foreground/70 text-center flex items-center justify-center gap-1 text-slate-50">
           <Wand2 className="h-3 w-3" /> Skip anything you're not sure about — we'll fill the gaps.
         </p>
