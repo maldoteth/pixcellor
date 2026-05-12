@@ -69,6 +69,93 @@ ${GOOGLE_FONTS_SHORTLIST}
 - Never invent fonts that don't exist on Google Fonts.
 - Always return all fields even if you have to estimate.`;
 
+async function extractAndSaveBrandKit(opts: {
+  supabase: any;
+  apiKey: string;
+  imageRefUrl: string;
+  briefForKit: string;
+  previewSlug: string | null;
+  generationId: string | null;
+}) {
+  const { supabase, apiKey, imageRefUrl, briefForKit, previewSlug, generationId } = opts;
+  if (!previewSlug && !generationId) return;
+  try {
+    const kitRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: BRAND_KIT_SYSTEM },
+          { role: "user", content: [
+            { type: "text", text: `Brief:\n${briefForKit}\n\nReturn the brand kit visible in the attached mockup.` },
+            { type: "image_url", image_url: { url: imageRefUrl } },
+          ] },
+        ],
+        tools: [{
+          type: "function",
+          function: {
+            name: "return_brand_kit",
+            description: "Return the brand kit for the generated mockup.",
+            parameters: {
+              type: "object",
+              properties: {
+                palette: {
+                  type: "array", minItems: 3, maxItems: 5,
+                  items: {
+                    type: "object",
+                    properties: { name: { type: "string" }, hex: { type: "string" } },
+                    required: ["name", "hex"], additionalProperties: false,
+                  },
+                },
+                fonts: {
+                  type: "object",
+                  properties: {
+                    heading: {
+                      type: "object",
+                      properties: { family: { type: "string" }, weights: { type: "array", items: { type: "number" } } },
+                      required: ["family"], additionalProperties: false,
+                    },
+                    body: {
+                      type: "object",
+                      properties: { family: { type: "string" }, weights: { type: "array", items: { type: "number" } } },
+                      required: ["family"], additionalProperties: false,
+                    },
+                  },
+                  required: ["heading", "body"], additionalProperties: false,
+                },
+              },
+              required: ["palette", "fonts"], additionalProperties: false,
+            },
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "return_brand_kit" } },
+      }),
+    });
+    if (!kitRes.ok) {
+      console.error("brand kit gateway error", kitRes.status, await kitRes.text());
+      return;
+    }
+    const kitData = await kitRes.json();
+    const argsStr = kitData?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+    if (!argsStr) return;
+    const parsed = JSON.parse(argsStr);
+    const palette = parsed?.palette ?? null;
+    const fonts = parsed?.fonts ?? null;
+    if (!palette && !fonts) return;
+    const updates: Promise<unknown>[] = [];
+    if (previewSlug) {
+      updates.push(supabase.from("vision_previews").update({ palette, fonts }).eq("slug", previewSlug));
+    }
+    if (generationId) {
+      updates.push(supabase.from("ai_sample_generations").update({ palette, fonts }).eq("id", generationId));
+    }
+    await Promise.all(updates);
+  } catch (e) {
+    console.error("extractAndSaveBrandKit failed", e);
+  }
+}
+
 // Parse the structured brief produced by VisionGenerator (lines like "Company / brand name: X").
 function parseBrief(raw: string): Record<string, string> {
   const out: Record<string, string> = {};
