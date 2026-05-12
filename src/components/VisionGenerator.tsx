@@ -50,42 +50,42 @@ export interface StepDef {
 export const STEPS: StepDef[] = [
   {
     key: "company",
-    label: "What's your company or brand name?",
-    helper: "We'll use this draft generation to create your dream site or app",
+    label: "WHAT'S YOUR COMPANY OR BRAND NAME?",
+    helper: "We'll use this draft to create your dream site or app",
     placeholder: "e.g. Acme Florist",
     prefix: "Company / brand name",
   },
   {
     key: "industry",
-    label: "What's your industry or what do you sell?",
+    label: "WHAT'S YOUR INDUSTRY OR WHAT DO YOU SELL?",
     helper: "Tap a suggestion or type your own.",
     placeholder: "e.g. boutique London florist",
     prefix: "Business",
   },
   {
     key: "vibe",
-    label: "Pick a vibe",
+    label: "PICK A VIBE",
     helper: "Tap any that feel right — or type your own.",
     placeholder: "e.g. minimal & luxury",
     prefix: "Vibe",
   },
   {
     key: "colour",
-    label: "Primary brand colour(s)",
+    label: "PRIMARY BRAND COLOUR(S)",
     helper: "Tap a palette or describe your own.",
     placeholder: "e.g. sage green & cream",
     prefix: "Colours",
   },
   {
     key: "headline",
-    label: "Main headline (the big line at the top of the page)",
-    helper: "A short tagline — we'll polish it.",
-    placeholder: "e.g. Bouquets that say it better",
+    label: "MAIN HEADLINE",
+    helper: "The first thing visitors see — keep it bold and clear.",
+    placeholder: "e.g. Hand-picked bouquets delivered daily",
     prefix: "Headline",
   },
   {
     key: "sections",
-    label: "Pages & special requests you want",
+    label: "PAGES & SPECIAL REQUESTS",
     helper: "Tap to add parts or any customizations to your site",
     placeholder: "Tap suggestions below or type your own",
     multiline: true,
@@ -654,8 +654,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       className="flex flex-col gap-3"
     >
       <div className="flex items-center justify-between">
-        <label className="text-foreground/70 text-xs uppercase tracking-wider">
-          Step {currentIndex + 1} of {STEPS.length}
+        <label className="text-foreground/70 text-xs uppercase tracking-[0.15em] font-bold">
+          STEP {currentIndex + 1} OF {STEPS.length}
         </label>
         <div className="flex gap-1">
           {STEPS.map((s, i) => (
@@ -667,7 +667,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
         </div>
       </div>
       <p className="text-foreground text-base font-semibold uppercase tracking-wider">{currentStep.label}</p>
-      <p className="text-foreground/60 text-xs text-slate-200 whitespace-pre-wrap">{currentStep.helper}</p>
+      <p className="text-foreground/70 text-xs text-slate-200 whitespace-pre-wrap leading-relaxed">{currentStep.helper}</p>
 
       <div className="relative">
         {currentStep.multiline ? (
