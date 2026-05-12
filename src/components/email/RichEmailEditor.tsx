@@ -37,6 +37,7 @@ const ToolbarBtn = ({
 
 export default function RichEmailEditor({ value, onChange }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const promptDialog = usePromptDialog();
 
   const editor = useEditor({
     extensions: [
