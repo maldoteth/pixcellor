@@ -271,6 +271,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [busy, setBusy] = useState(false);
   const { honeypotValue, setHoneypotValue, isHuman } = useAntiSpam();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [palette, setPalette] = useState<any>(null);
+  const [fonts, setFonts] = useState<any>(null);
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -406,6 +408,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       if (data?.error) throw new Error(data.error);
       if (!data?.imageUrl) throw new Error("No image returned");
       setImageUrl(data.imageUrl);
+      setPalette(data.palette ?? null);
+      setFonts(data.fonts ?? null);
       setGeneratedFor(brief);
       setStage("result");
       toast.success("Your vision is ready ✨");
@@ -596,6 +600,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       if (data?.error) throw new Error(data.error);
       const url = data?.imageUrl ?? previousUrl;
       setImageUrl(url);
+      if (data?.palette) setPalette(data.palette);
+      if (data?.fonts) setFonts(data.fonts);
       setGeneratedFor(`${previousPrompt}\n\nRefinement: ${ins}`);
       setRefineInstruction("");
       setStage("result");
