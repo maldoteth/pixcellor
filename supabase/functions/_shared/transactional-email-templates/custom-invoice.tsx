@@ -127,4 +127,5 @@ const sectionKicker = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as
 const text = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '0 0 16px' }
 const button = { backgroundColor: '#ffffff', borderRadius: '0', color: '#050505', display: 'inline-block', fontSize: '14px', fontWeight: '800' as const, margin: '2px 0 14px', padding: '13px 18px', textDecoration: 'none' }
 const smallLink = { color: '#929292', fontSize: '12px', lineHeight: '1.6', margin: '8px 0 0', overflowWrap: 'anywhere' as const, wordBreak: 'break-word' as const }
-const linkText = { color: '#d0d0d0' }
+const linkText = { color: '#ffffff', fontWeight: '700' as const, textDecoration: 'underline' }
+const inlineLink = { color: '#ffffff', fontWeight: '700' as const, textDecoration: 'underline' }
