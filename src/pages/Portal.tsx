@@ -938,8 +938,12 @@ export default function Portal() {
     return searched.filter((order) => {
       const hasRequirements = requirementsBySession.has(order.session_id);
       const hasEditRequests = editRequestsBySession.has(order.session_id);
+      const isCustom = ((order.metadata as Record<string, unknown> | null) ?? {}).source === "admin_manual";
       const reqsMatches = orderReqsFilter === "all" ||
-        (orderReqsFilter === "submitted" ? hasRequirements : orderReqsFilter === "edits" ? hasEditRequests : !hasRequirements);
+        (orderReqsFilter === "submitted" ? hasRequirements
+          : orderReqsFilter === "edits" ? hasEditRequests
+          : orderReqsFilter === "custom" ? isCustom
+          : !hasRequirements);
       return order.order_status !== "delivered" && order.order_status !== "merged_to_manual" && reqsMatches;
     });
   }, [orders, ordersQ, orderReqsFilter, requirementsBySession, editRequestsBySession]);
