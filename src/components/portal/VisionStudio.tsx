@@ -392,6 +392,11 @@ export default function VisionStudio() {
                           {row.sent_at ? `Sent to ${row.client_email}` : `For ${row.client_email}`}
                         </p>
                       )}
+                      {(row.palette || row.fonts) && (
+                        <div className="pt-2 border-t border-border/30">
+                          <BrandKit palette={row.palette} fonts={row.fonts} compact />
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 mt-auto pt-1">
                         <Button
                           size="sm"
