@@ -93,13 +93,30 @@ export const recordScrollDepth = (scrollPercent: number) => {
   if (safePercent <= currentMax) return;
 
   sessionStorage.setItem("pixcellor_max_scroll_percent", String(safePercent));
-  if (safePercent < 25 && Date.now() - lastScrollRecordAt < 5000) return;
+
+  // Only fire on milestone crossings (25/50/75/100) — not every scroll tick
+  const milestone = SCROLL_MILESTONES.find(m => safePercent >= m && currentMax < m);
+  if (milestone === undefined) return;
+  if (recordedScrollMilestones.has(milestone)) return;
+  recordedScrollMilestones.add(milestone);
+
+  if (Date.now() - lastScrollRecordAt < 5000) return;
   lastScrollRecordAt = Date.now();
   void recordFalloff({ event: "scroll_depth", maxScrollPercent: safePercent });
 };
 
 export const recordFalloff = async (metadata: Record<string, unknown> = {}) => {
   if (!hasFalloffConsent()) return;
+
+  const now = Date.now();
+  // Global min interval between any two enrich-visitor calls
+  if (now - lastFalloffCallAt < 2000) return;
+  // Per-event dedupe — same event name not more than once per 30s
+  const eventName = typeof metadata.event === "string" ? metadata.event : "_anon";
+  const lastSame = lastEventCallAt.get(eventName) ?? 0;
+  if (now - lastSame < 30000) return;
+  lastFalloffCallAt = now;
+  lastEventCallAt.set(eventName, now);
 
   const context = getCheckoutContext();
   void supabase.functions.invoke("enrich-visitor", {
