@@ -808,7 +808,7 @@ function VisionPreviewCard({ preview }: { preview: CustomerVisionPreview }) {
   const imageUrl = supabase.storage.from(VISION_BUCKET).getPublicUrl(preview.image_path).data.publicUrl;
   return (
     <Card className="overflow-hidden border-border bg-card/70 backdrop-blur-xl">
-      <a href={`/vision/${preview.slug}`} target="_blank" rel="noreferrer" className="block">
+      <a href={`/preview/${preview.slug}`} target="_blank" rel="noreferrer" className="block">
         <div className="aspect-[16/10] overflow-hidden border-b border-border bg-black/40">
           {imageUrl ? (
             <img src={imageUrl} alt={preview.title || "AI generated vision"} className="h-full w-full object-cover" loading="lazy" />
@@ -824,7 +824,7 @@ function VisionPreviewCard({ preview }: { preview: CustomerVisionPreview }) {
         </div>
         {preview.brief && <p className="line-clamp-2 text-xs text-muted-foreground">{preview.brief}</p>}
         <Button asChild variant="pricing" size="sm" className="w-full gap-2">
-          <a href={`/vision/${preview.slug}`} target="_blank" rel="noreferrer">Open vision <ExternalLink className="h-3.5 w-3.5" /></a>
+          <a href={`/preview/${preview.slug}`} target="_blank" rel="noreferrer">Open vision <ExternalLink className="h-3.5 w-3.5" /></a>
         </Button>
       </CardContent>
     </Card>
