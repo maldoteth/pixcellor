@@ -483,7 +483,7 @@ export default function CustomerPortal() {
                 </TabsContent>
 
                 <TabsContent value="delivered" className="space-y-4">
-                  <SectionHeader title="Delivered site previews" description="Live previews and links for completed deliveries." count={deliveredOrders.length} />
+                  <SectionHeader title="Domains" description="Live previews and links for completed deliveries." count={deliveredOrders.length} />
                   {deliveredOrders.length === 0 ? <EmptyState icon={Globe2} title="No sites yet" text="Delivered projects will appear here with a preview window." /> : <div className="grid gap-4 xl:grid-cols-2">{deliveredOrders.map((order) => <DeliveredPreview key={order.id} order={order} />)}</div>}
                 </TabsContent>
 
