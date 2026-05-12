@@ -41,6 +41,7 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<{ email: string; name: string; source: string }[]>([]);
+  const [paymentLinkUrl, setPaymentLinkUrl] = useState<string | null>(null);
   const suggestionsBoxRef = useRef<HTMLDivElement | null>(null);
 
   // Reset on every open
@@ -50,6 +51,7 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
       setEmail(""); setName(""); setPkg("fullWorks");
       setCustomLabel(""); setCustomAmount(""); setOrderType("paid");
       setNotes(""); setSendEmail(true); setError(null); setSuggestions([]);
+      setPaymentLinkUrl(null);
     }
   }, [open]);
 
