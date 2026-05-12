@@ -1015,8 +1015,9 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           }}
         >
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-center gap-2">
+            <DialogTitle className="flex flex-col items-center justify-center gap-2">
               <Wand2 className="h-4 w-4" />
+              <span className="text-base font-semibold">Create custom design</span>
             </DialogTitle>
             <DialogDescription>
               {"\n"}
