@@ -868,28 +868,4 @@ function VisionPreviewCard({ preview, onHide }: { preview: CustomerVisionPreview
     </Card>
   );
 }
-  const imageUrl = supabase.storage.from(VISION_BUCKET).getPublicUrl(preview.image_path).data.publicUrl;
-  return (
-    <Card className="overflow-hidden border-border bg-card/70 backdrop-blur-xl">
-      <a href={`/preview/${preview.slug}`} target="_blank" rel="noreferrer" className="block">
-        <div className="aspect-[16/10] overflow-hidden border-b border-border bg-black/40">
-          {imageUrl ? (
-            <img src={imageUrl} alt={preview.title || "AI generated vision"} className="h-full w-full object-cover" loading="lazy" />
-          ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground"><ImageIcon className="h-8 w-8" /></div>
-          )}
-        </div>
-      </a>
-      <CardContent className="space-y-2 p-4">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="truncate text-sm font-semibold">{preview.title || "AI vision"}</h3>
-          <span className="shrink-0 text-xs text-muted-foreground">{new Date(preview.created_at).toLocaleDateString()}</span>
-        </div>
-        {preview.brief && <p className="line-clamp-2 text-xs text-muted-foreground">{preview.brief}</p>}
-        <Button asChild variant="pricing" size="sm" className="w-full gap-2">
-          <a href={`/preview/${preview.slug}`} target="_blank" rel="noreferrer">Open vision <ExternalLink className="h-3.5 w-3.5" /></a>
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
+
