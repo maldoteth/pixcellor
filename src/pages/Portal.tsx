@@ -2148,7 +2148,7 @@ export default function Portal() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
             <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 xl:grid-cols-9">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales</TabsTrigger>
-            <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Live</TabsTrigger>
+            <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Orders</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs</TabsTrigger>
             <TabsTrigger value="campaigns" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Megaphone className="h-3.5 w-3.5 shrink-0" />Campaigns</TabsTrigger>
@@ -2317,7 +2317,7 @@ export default function Portal() {
                               <div className="font-medium flex flex-wrap items-center gap-2">
                                 {r.name}
                                 <Badge variant={r.paid_at ? "default" : "outline"}>{r.paid_at ? "Paid" : "Unpaid"}</Badge>
-                                <Badge variant={r.delivered_at ? "default" : "outline"}>{r.delivered_at ? "Delivered" : "Live"}</Badge>
+                                <Badge variant={r.delivered_at ? "default" : "outline"}>{r.delivered_at ? "Delivered" : "Orders"}</Badge>
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 {[r.email, r.phone].filter(Boolean).join(" · ") || "No contact"} · {new Date(r.created_at).toLocaleString()}
@@ -2417,7 +2417,7 @@ export default function Portal() {
                         <Badge className="bg-amber-500 text-black hover:bg-amber-500">Draft</Badge>
                       ) : (
                         <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
-                          {o.order_status === "delivered" ? "Delivered" : "Live"}
+                          {o.order_status === "delivered" ? "Delivered" : "Orders"}
                         </Badge>
                       )}
                       {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
@@ -3537,7 +3537,7 @@ export default function Portal() {
       <Drawer open={mobileOrdersDrawerOpen} onOpenChange={setMobileOrdersDrawerOpen}>
         <DrawerContent className="max-h-[85dvh] border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl lg:hidden">
           <DrawerHeader className="px-0 text-left">
-            <DrawerTitle>Live orders</DrawerTitle>
+            <DrawerTitle>Orders</DrawerTitle>
             <DrawerDescription>{filteredOrders.length} open order{filteredOrders.length === 1 ? "" : "s"}</DrawerDescription>
           </DrawerHeader>
           <div className="space-y-3 overflow-y-auto pb-2">
@@ -3555,7 +3555,7 @@ export default function Portal() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>{o.payment_status ?? "pending"}</Badge>
-                    <Badge variant="outline">Live</Badge>
+                    <Badge variant="outline">Orders</Badge>
                     <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
                     {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                   </div>
