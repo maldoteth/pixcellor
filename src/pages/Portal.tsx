@@ -2417,7 +2417,7 @@ export default function Portal() {
                         <Badge className="bg-amber-500 text-black hover:bg-amber-500">Draft</Badge>
                       ) : (
                         <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
-                          {o.order_status === "delivered" ? "Delivered" : "Live"}
+                          {o.order_status === "delivered" ? "Delivered" : "Orders"}
                         </Badge>
                       )}
                       {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
