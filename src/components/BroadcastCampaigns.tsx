@@ -85,7 +85,15 @@ export default function BroadcastCampaigns() {
       toast.error("Enter a test recipient email");
       return;
     }
-    if (!testOnly && !confirm(`Send to ${previewCount ?? "?"} recipients? This cannot be undone.`)) return;
+    if (!testOnly) {
+      const ok = await confirmDialog({
+        title: "Send broadcast?",
+        description: `This will send to ${previewCount ?? "?"} recipients. This cannot be undone.`,
+        confirmLabel: "Send broadcast",
+        destructive: true,
+      });
+      if (!ok) return;
+    }
 
     setSending(true);
     const { data, error } = await supabase.functions.invoke("send-broadcast", {
