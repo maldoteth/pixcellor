@@ -116,7 +116,7 @@ const MagicLinkSignup = ({ email, benefit }: MagicLinkSignupProps) => {
             variant="pricing"
             onClick={sendLink}
             disabled={busy || cooldown > 0}
-            className="mt-2 h-9 w-full font-semibold text-xs inline-flex items-center justify-center gap-2"
+            className="mt-2 h-9 w-full font-semibold inline-flex items-center justify-center gap-2 text-base"
           >
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
             {buttonLabel}
