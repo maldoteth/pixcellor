@@ -3537,7 +3537,7 @@ export default function Portal() {
       <Drawer open={mobileOrdersDrawerOpen} onOpenChange={setMobileOrdersDrawerOpen}>
         <DrawerContent className="max-h-[85dvh] border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl lg:hidden">
           <DrawerHeader className="px-0 text-left">
-            <DrawerTitle>Live orders</DrawerTitle>
+            <DrawerTitle>Orders</DrawerTitle>
             <DrawerDescription>{filteredOrders.length} open order{filteredOrders.length === 1 ? "" : "s"}</DrawerDescription>
           </DrawerHeader>
           <div className="space-y-3 overflow-y-auto pb-2">
