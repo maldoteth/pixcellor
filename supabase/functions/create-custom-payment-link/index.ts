@@ -106,16 +106,42 @@ serve(async (req) => {
         custom_link_id: linkId,
         client_email: clientEmail ?? "",
         package_name: description.slice(0, 80),
+        ...(attachSessionId ? { attached_session_id: attachSessionId } : {}),
       },
       ...(mode === "payment"
-        ? { payment_intent_data: { metadata: { kind: "custom", custom_link_id: linkId } } }
-        : { subscription_data: { metadata: { kind: "custom", custom_link_id: linkId } } }),
+        ? { payment_intent_data: { metadata: { kind: "custom", custom_link_id: linkId, ...(attachSessionId ? { attached_session_id: attachSessionId } : {}) } } }
+        : { subscription_data: { metadata: { kind: "custom", custom_link_id: linkId, ...(attachSessionId ? { attached_session_id: attachSessionId } : {}) } } }),
     });
 
     await admin
       .from("custom_payment_links")
       .update({ stripe_payment_link_id: paymentLink.id, url: paymentLink.url })
       .eq("id", linkId);
+
+    // If attached to a manual order, write the link onto the session metadata
+    if (attachSessionId) {
+      try {
+        const { data: sessRow } = await admin
+          .from("stripe_checkout_sessions")
+          .select("metadata")
+          .eq("session_id", attachSessionId)
+          .maybeSingle();
+        const existingMeta = (sessRow?.metadata as Record<string, unknown> | null) ?? {};
+        await admin
+          .from("stripe_checkout_sessions")
+          .update({
+            metadata: {
+              ...existingMeta,
+              payment_link_url: paymentLink.url,
+              payment_link_id: paymentLink.id,
+              custom_link_id: linkId,
+            },
+          })
+          .eq("session_id", attachSessionId);
+      } catch (e) {
+        console.error("Failed to attach link to manual session", e);
+      }
+    }
 
     return json({ id: linkId, url: paymentLink.url });
   } catch (err) {
