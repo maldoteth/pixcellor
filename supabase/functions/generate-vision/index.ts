@@ -315,6 +315,8 @@ Deno.serve(async (req) => {
             brief: briefText,
             client_email: cleanStr(meta?.email?.toLowerCase?.() ?? meta?.email, 200),
             created_by_email: cleanStr(meta?.email?.toLowerCase?.() ?? meta?.email, 200),
+            palette,
+            fonts,
           });
           if (prevErr) console.error("vision_previews insert failed:", prevErr);
           else previewSlug = slug;
