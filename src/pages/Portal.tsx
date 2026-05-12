@@ -393,7 +393,7 @@ const contactWizardFields = [
 const salesEventWizardFields = [
   { key: "contact", label: "Client", placeholder: "Search client", required: true, inputMode: "text" },
   { key: "title", label: "Event", placeholder: "Let's Talk, email, quote…", required: true, inputMode: "text" },
-  { key: "callback_at", label: "Let's Talk time", placeholder: "Let's Talk time", required: false, inputMode: "text" },
+  { key: "callback_at", label: "CAll b", placeholder: "CAll b", required: false, inputMode: "text" },
   { key: "description", label: "Notes", placeholder: "Add notes", required: false, inputMode: "text" },
 ] as const;
 
@@ -3488,19 +3488,22 @@ export default function Portal() {
                   </div>
                 </>
               ) : currentSalesField.key === "callback_at" ? (
-                <div className="space-y-3">
+                 <div className="space-y-4">
                   <div className="flex gap-2">
                     <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} className="h-12 text-base" />
                     <Button type="button" variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={pasteMobileSalesField} aria-label={`Paste ${currentSalesField.label}`}>
                       <Clipboard className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="grid grid-cols-5 gap-2">
-                    {callbackPresets.map(preset => (
-                      <Button key={preset.label} type="button" variant="outline" className="h-10 px-2 text-sm" onClick={() => applyCallbackPreset(preset.label)}>
-                        {preset.label}
-                      </Button>
-                    ))}
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Arrange call back</p>
+                    <div className="grid grid-cols-6 gap-2">
+                      {callbackPresets.map(preset => (
+                        <Button key={preset.label} type="button" variant="outline" className="h-10 px-0 text-sm" onClick={() => applyCallbackPreset(preset.label)}>
+                          {preset.label}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ) : (
