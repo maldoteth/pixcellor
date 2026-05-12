@@ -103,7 +103,7 @@ type VisitorFalloff = {
 // All legacy/external Stripe activity is excluded.
 const isSiteOrder = (o: StripeSession) => {
   const source = (o.metadata as { source?: string } | null)?.source;
-  return source === "pixcellor_site";
+  return source === "pixcellor_site" || source === "admin_manual";
 };
 
 const isPaidOrder = (o: StripeSession) => o.payment_status === "paid" || o.status === "complete" || o.status === "completed";
