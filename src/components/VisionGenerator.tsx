@@ -439,6 +439,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       setImageUrl(data.imageUrl);
       setPalette(data.palette ?? null);
       setFonts(data.fonts ?? null);
+      setGenerationId(data.generationId ?? null);
       setGeneratedFor(brief);
       setStage("result");
       toast.success("Your vision is ready ✨");
