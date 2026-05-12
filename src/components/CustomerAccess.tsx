@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, User, X } from "lucide-react";
@@ -98,6 +98,7 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
   const navigate = useNavigate();
   const heroReady = useHeroReady();
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -117,6 +118,7 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
 
   const trigger = (
     <motion.button
+      ref={triggerRef}
       type="button"
       aria-label="Customer log in"
       onClick={() => setOpen((current) => !current)}
@@ -161,7 +163,12 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
       <>
         {trigger}
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className="border-border bg-background/95 px-4 pb-6 backdrop-blur-xl">
+          <DrawerContent
+            className="border-border bg-background/95 px-4 pb-6 backdrop-blur-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0"
+            onInteractOutside={(e) => {
+              if (triggerRef.current?.contains(e.target as Node)) e.preventDefault();
+            }}
+          >
             <DrawerHeader>
               <DrawerTitle>Log in / Sign up</DrawerTitle>
             </DrawerHeader>
@@ -176,7 +183,12 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
     <>
       {trigger}
       <Dialog open={open} onOpenChange={setOpen} modal={false}>
-        <DialogContent className="border-border bg-background/95 backdrop-blur-xl">
+        <DialogContent
+          className="border-border bg-background/95 backdrop-blur-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95"
+          onInteractOutside={(e) => {
+            if (triggerRef.current?.contains(e.target as Node)) e.preventDefault();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Log in / Sign up</DialogTitle>
             <DialogDescription className="sr-only">
