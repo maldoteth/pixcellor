@@ -62,7 +62,7 @@ const CustomInvoiceEmail = ({ description, amountFormatted, paymentUrl, orderId,
                 {customerEmail && (
                   <Row style={detailRow}>
                     <Column style={labelColumn}><Text style={detailLabel}>Email</Text></Column>
-                    <Column style={valueColumn}><Text style={detailValue}>{customerEmail}</Text></Column>
+                    <Column style={valueColumn}><Text style={detailValue}><Link href={`mailto:${customerEmail}`} style={inlineLink}>{customerEmail}</Link></Text></Column>
                   </Row>
                 )}
               </Column>
