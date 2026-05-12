@@ -270,7 +270,7 @@ export default function CustomerPortal() {
     { title: "Briefs", value: "briefs", icon: FileText },
     { title: "Domains", value: "delivered", icon: Globe2 },
     { title: "Designs", value: "activity", icon: Wand2 },
-    { title: "Plan & payments", value: "payments", icon: CreditCard },
+    { title: "Plans", value: "payments", icon: CreditCard },
   ];
 
   const handleSignOut = async () => {
