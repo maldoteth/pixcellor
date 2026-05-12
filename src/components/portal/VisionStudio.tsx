@@ -162,7 +162,8 @@ export default function VisionStudio() {
   };
 
   const remove = async (row: Preview) => {
-    if (!confirm("Delete this preview?")) return;
+    const ok = await confirmDialog({ title: "Delete preview?", description: "This permanently removes the preview and its image.", confirmLabel: "Delete", destructive: true });
+    if (!ok) return;
     await supabase.storage.from(BUCKET).remove([row.image_path]);
     const { error } = await (supabase as any).from("vision_previews").delete().eq("id", row.id);
     if (error) {
