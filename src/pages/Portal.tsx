@@ -2384,7 +2384,7 @@ export default function Portal() {
             {orderReqsFilter !== "samples" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
             {orderReqsFilter !== "samples" && (
               <p className="text-xs text-muted-foreground">
-                Showing {filteredOrders.length} of {sectionCounts.orders ?? orders.length} total orders.
+                {(sectionCounts.orders ?? 0) > orders.length ? "" : "Loaded all."}
               </p>
             )}
             <div
