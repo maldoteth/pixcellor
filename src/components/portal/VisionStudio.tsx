@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import AdminVisionWizard from "@/components/portal/AdminVisionWizard";
+import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 
 interface Preview {
   id: string;
