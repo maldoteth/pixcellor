@@ -502,7 +502,7 @@ export default function CustomerPortal() {
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <SectionHeader title="Designs" description="Every AI design you've generated — open them any time, or hide ones you don't like." count={visionPreviews.length} />
                       <Button
-                        onClick={() => navigate("/?generate=1#vision")}
+                        onClick={() => navigate("/")}
                         variant="pricing"
                         size="sm"
                         className="gap-2 rounded-none"
