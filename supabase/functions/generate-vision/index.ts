@@ -417,7 +417,7 @@ Deno.serve(async (req) => {
       console.error("vision logging failed:", logErr);
     }
 
-    return new Response(JSON.stringify({ imageUrl, generationId, storagePath }), {
+    return new Response(JSON.stringify({ imageUrl, generationId, storagePath, palette, fonts }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
