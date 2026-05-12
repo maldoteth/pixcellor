@@ -455,7 +455,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ imageUrl, generationId, storagePath, palette, fonts }), {
+    return new Response(JSON.stringify({ imageUrl, generationId, storagePath, previewSlug, palette, fonts }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
