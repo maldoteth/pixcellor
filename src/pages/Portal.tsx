@@ -2317,7 +2317,7 @@ export default function Portal() {
                               <div className="font-medium flex flex-wrap items-center gap-2">
                                 {r.name}
                                 <Badge variant={r.paid_at ? "default" : "outline"}>{r.paid_at ? "Paid" : "Unpaid"}</Badge>
-                                <Badge variant={r.delivered_at ? "default" : "outline"}>{r.delivered_at ? "Delivered" : "Live"}</Badge>
+                                <Badge variant={r.delivered_at ? "default" : "outline"}>{r.delivered_at ? "Delivered" : "Orders"}</Badge>
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 {[r.email, r.phone].filter(Boolean).join(" · ") || "No contact"} · {new Date(r.created_at).toLocaleString()}
