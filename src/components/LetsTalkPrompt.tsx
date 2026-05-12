@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ImageAttachmentUploader } from "@/components/ImageAttachmentUploader";
 import MagicLinkSignup from "@/components/MagicLinkSignup";
+import HoneypotField from "@/components/HoneypotField";
+import { useAntiSpam } from "@/lib/anti-spam";
 
 type Mode = "talk" | "request" | "consultation";
 type Step = "name" | "company" | "email" | "phone" | "dream" | "colours" | "media" | "generating" | "vision" | "refine" | "consultation" | "done";
@@ -71,6 +73,7 @@ const LetsTalkPrompt = () => {
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [refineInstruction, setRefineInstruction] = useState("");
   const [orderRequested, setOrderRequested] = useState(false);
+  const { honeypotValue, setHoneypotValue, isHuman } = useAntiSpam();
 
   // Progressive contact save — fires whenever we have name + (email or phone),
   // creates/updates the contact in the CRM without sending emails or scheduling callbacks.
