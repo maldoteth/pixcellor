@@ -297,6 +297,13 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     setDropdownOpen(false);
   }, [stage]);
 
+  // Listen for external open trigger (e.g. from chat)
+  useEffect(() => {
+    const handleOpen = () => setOpen(true);
+    window.addEventListener("pixcellor:open-vision", handleOpen);
+    return () => window.removeEventListener("pixcellor:open-vision", handleOpen);
+  }, []);
+
   // Poll for the brand kit (palette + fonts) which is generated in the background after the image returns.
   useEffect(() => {
     if (!previewSlug) return;
