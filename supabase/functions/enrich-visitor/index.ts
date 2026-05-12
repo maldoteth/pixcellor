@@ -66,10 +66,42 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
     const { data: existingFalloff } = await supabase
       .from("visitor_falloffs")
-      .select("max_scroll_percent, portfolio_opened_at, portfolio_pages_viewed, portfolio_project_opened_at, portfolio_project_opened, pricing_opened_at, buy_clicked_at")
+      .select("max_scroll_percent, portfolio_opened_at, portfolio_pages_viewed, portfolio_project_opened_at, portfolio_project_opened, pricing_opened_at, buy_clicked_at, enrichment_status, enriched_at")
       .eq("visitor_id", visitorId)
       .eq("session_id", sessionId)
       .maybeSingle();
+
+    const alreadyEnriched = existingFalloff?.enrichment_status === "enriched" && !!existingFalloff?.enriched_at;
+
+    // Repeat event for an already-enriched visitor: tiny UPDATE only, skip IPinfo entirely.
+    if (alreadyEnriched) {
+      const { error } = await supabase
+        .from("visitor_falloffs")
+        .update({
+          last_seen_at: new Date().toISOString(),
+          last_page: cleanLong(safeContext.pageUrl),
+          max_scroll_percent: Math.max(existingFalloff?.max_scroll_percent ?? 0, maxScrollPercent ?? 0),
+          portfolio_opened_at: existingFalloff?.portfolio_opened_at ?? (event === "portfolio_opened" || event === "portfolio_page_viewed" || event === "portfolio_project_opened" ? new Date().toISOString() : null),
+          portfolio_pages_viewed: Math.max(existingFalloff?.portfolio_pages_viewed ?? 0, portfolioPage ?? 0),
+          portfolio_project_opened_at: existingFalloff?.portfolio_project_opened_at ?? (event === "portfolio_project_opened" ? new Date().toISOString() : null),
+          portfolio_project_opened: event === "portfolio_project_opened" ? portfolioProject : existingFalloff?.portfolio_project_opened ?? null,
+          pricing_opened_at: existingFalloff?.pricing_opened_at ?? (event === "pricing_opened" ? new Date().toISOString() : null),
+          buy_clicked_at: existingFalloff?.buy_clicked_at ?? (event === "checkout_started" || event === "chat_checkout_started" ? new Date().toISOString() : null),
+          metadata: safeMetadata,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("visitor_id", visitorId)
+        .eq("session_id", sessionId);
+
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ ok: true, cached: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // First call for this visitor/session — full IPinfo enrichment + upsert.
     const response = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}?token=${encodeURIComponent(token)}`);
     const data = await response.json();
     if (!response.ok) throw new Error(`IPinfo lookup failed [${response.status}]: ${JSON.stringify(data).slice(0, 300)}`);
