@@ -1020,7 +1020,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             <DrawerHeader>
               <DrawerTitle className="flex flex-col items-center justify-center gap-2">
                 <Wand2 className="h-4 w-4" />
-                <span className="text-base font-semibold">Create Custom Design Draft</span>
+                <span className="font-semibold text-2xl">Create Custom Design Draft</span>
               </DrawerTitle>
             </DrawerHeader>
             {body}
@@ -1047,7 +1047,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           <DialogHeader>
             <DialogTitle className="flex flex-col items-center justify-center gap-2">
               <Wand2 className="h-4 w-4" />
-              <span className="text-base font-semibold">Create Custom Design Draft</span>
+              <span className="font-semibold text-2xl">Create Custom Design Draft</span>
             </DialogTitle>
             <DialogDescription>
               {"\n"}
