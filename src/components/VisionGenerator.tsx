@@ -537,55 +537,64 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     const email = contactEmail.trim();
     const phone = contactPhone.trim();
     if (!name || !EMAIL_RE.test(email)) {
-      // Shouldn't happen since we gate the contact step, but bail safely.
       toast.error("We need your name and email first.");
       setStage("contact");
       return;
     }
     setRequestKind(kind);
-    setRequestBusy(true);
-    if (!isHuman()) { setRequestBusy(false); setStage("requested"); return; }
-    try {
-      const sourceTag = kind === "order" ? "vision_order_request" : "vision_sample_request";
-      const requestDetails: Record<string, unknown> = {
-        company: answers.company?.trim() || null,
-        brief: generatedFor || buildBrief(answers),
-        vision_image_url: imageUrl,
-        kind,
-        origin: sourceTag,
-        requested_edits: kind === "sample" ? (sampleEdits.trim() || null) : null,
-      };
-      const attachments = imageUrl ? [imageUrl] : null;
+    if (!isHuman()) { setStage("requested"); return; }
 
-      // Track as a live sample/order in the samples feed so admins can action it.
-      const { error: insertErr } = await supabase.from("lets_talk_leads").insert([{
-        name,
-        email,
-        phone: phone || null,
-        source: "free_sample_request",
-        request_details: requestDetails as any,
-        attachment_urls: attachments,
-      }]);
-      if (insertErr) throw insertErr;
+    const sourceTag = kind === "order" ? "vision_order_request" : "vision_sample_request";
+    const requestDetails: Record<string, unknown> = {
+      company: answers.company?.trim() || null,
+      brief: generatedFor || buildBrief(answers),
+      vision_image_url: imageUrl,
+      kind,
+      origin: sourceTag,
+      requested_edits: kind === "sample" ? (sampleEdits.trim() || null) : null,
+    };
+    const attachments = imageUrl ? [imageUrl] : null;
 
-      const { error } = await supabase.functions.invoke("process-lets-talk-lead", {
-        body: {
-          name,
-          email,
-          phone: phone || null,
-          source: sourceTag,
-          request_details: requestDetails,
-          attachment_urls: attachments,
-          partial: false,
-        },
-      });
-      if (error) throw error;
-      setStage("requested");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't submit — please try again.");
-    } finally {
-      setRequestBusy(false);
-    }
+    // Optimistic: confirm immediately, sync in background with retries.
+    setStage("requested");
+
+    void (async () => {
+      const maxAttempts = 3;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const { error: insertErr } = await supabase.from("lets_talk_leads").insert([{
+            name,
+            email,
+            phone: phone || null,
+            source: "free_sample_request",
+            request_details: requestDetails as any,
+            attachment_urls: attachments,
+          }]);
+          if (insertErr) throw insertErr;
+
+          const { error } = await supabase.functions.invoke("process-lets-talk-lead", {
+            body: {
+              name,
+              email,
+              phone: phone || null,
+              source: sourceTag,
+              request_details: requestDetails,
+              attachment_urls: attachments,
+              partial: false,
+            },
+          });
+          if (error) throw error;
+          return;
+        } catch (e) {
+          if (attempt === maxAttempts) {
+            console.error("submitRequest sync failed after retries:", e);
+            toast.error("We couldn't fully sync your request — please refresh and resend if you don't hear back soon.");
+            return;
+          }
+          await new Promise((r) => setTimeout(r, 800 * attempt));
+        }
+      }
+    })();
   };
 
   const orderThisStyle = () => { void submitRequest("order"); };
