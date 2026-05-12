@@ -1096,6 +1096,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       {trigger}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
           className="max-w-2xl border border-white/15 text-foreground shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl backdrop-saturate-150 [&>button]:focus:ring-0 [&>button]:focus:ring-offset-0 [&>button]:focus-visible:ring-0 [&>button]:focus:outline-none [&>button]:focus-visible:outline-none"
           style={{
             background:
