@@ -761,7 +761,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                       }}
                     >
                       <Phone className="h-3.5 w-3.5" />
-                      Request call
+                      Call
                     </motion.button>
                     <motion.button
                       type="button"
@@ -776,7 +776,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                       }}
                     >
                       <Mail className="h-3.5 w-3.5" />
-                      Email info
+                      Email
                     </motion.button>
                     <motion.button
                       type="button"
