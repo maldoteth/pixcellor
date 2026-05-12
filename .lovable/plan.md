@@ -1,42 +1,47 @@
-## Goal
-Reduce Lovable Cloud usage (Compute + Database server + Network) without changing any visible behaviour. All user flows — landing page tracking, chat, login magic links, checkout, portal — keep working exactly as before.
+## Custom orders – two fixes
 
-## Root causes (confirmed)
-- `visitor_falloffs`: 6,882 row updates for 390 rows ⇒ same row re-upserted on every scroll/event.
-- `enrich-visitor` edge function: ~1.5s per call, hits IPinfo + writes ~50 columns on every event (page visit, scroll, pricing open, checkout start, chat checkout). Most calls re-fetch IP data we already have.
-- `use-login-handoff`: polls `claim_login_handoff` every 2s for up to 5min per login attempt.
-- ChatBot Realtime: already gated on `conversationId` existing — fine, leave it.
+### 1. Copy Stripe link button on the custom order row
 
-## Changes
+Currently the Stripe link only appears in a small strip below the order header (with tiny Copy/Open buttons), and only when the order is expanded/visible. For custom orders we want the copy action right at the top of the card alongside Send confirmation / Mark delivered.
 
-### 1. Frontend: stop chatty scroll/event tracking
-File: `src/lib/checkoutTracking.ts`
-- `recordScrollDepth`: only call `recordFalloff` when crossing **milestone thresholds (25/50/75/100%)**, not on every increment. Removes ~80% of scroll events.
-- `recordFalloff`: add a per-session **dedupe + min-interval** guard — same `event` name ignored within 30s, and global min interval of 2s between any invokes. Stored in `sessionStorage`.
-- `recordVisitFalloffOnce` keeps current once-per-session behaviour (already correct).
+**Edit `src/pages/Portal.tsx` (around line 2412–2438, the action button cluster in the order header):**
+- When `metadata.payment_link_url` exists, render a `Copy Stripe link` button (icon + label) in the top action row.
+- Click → `navigator.clipboard.writeText(url)` + toast `"Stripe payment link copied"`.
+- Keep the existing detail strip below (open in new tab + paid/awaiting badge) — it carries useful state info.
 
-No removed events — just deduped.
+### 2. Fix `Send confirmation` for unpaid custom (draft) orders
 
-### 2. Edge function: skip IPinfo on repeat calls
-File: `supabase/functions/enrich-visitor/index.ts`
-- Read existing row first (already done).
-- If `enrichment_status = 'enriched'` AND `enriched_at` exists, **skip the IPinfo fetch and the big column write**. Instead do a tiny `update visitor_falloffs set last_seen_at, max_scroll_percent, metadata, portfolio_*, pricing_opened_at, buy_clicked_at` — only the ~10 fields that actually change between events.
-- New visitors / first event: full enrichment as today.
+Today `supabase/functions/send-order-confirmation/index.ts` rejects anything that is not `paid`/`complete` with `"Only paid orders can receive confirmation emails"`. That is why it appears broken on custom drafts.
 
-This removes the IPinfo network call (Network cost) and replaces a 50-column upsert with a small UPDATE on every repeat event — by far the biggest spend cut.
+Desired behaviour:
+- **Paid order** → unchanged: send the existing package confirmation template (`full-works-order-confirmation` / `elite-order-confirmation` / `retainer-order-confirmation`) which already links to project requirements.
+- **Unpaid custom order** (`metadata.source === "admin_manual"` and `metadata.payment_link_url` present) → send a new "custom invoice" email containing the description, amount, and a CTA button to the Stripe payment link.
 
-### 3. Slow down login handoff polling
-File: `src/hooks/use-login-handoff.ts`
-- Change `intervalMs` from `2000` → `5000` (or `4000` to be safe).
-- 2.5× fewer Cloud RPC calls per login attempt with no UX change (typical magic-link click takes 10–30s anyway).
+**Changes:**
 
-## Out of scope (not changing)
-- ChatBot Realtime: only opens after a conversation exists ⇒ already minimal.
-- `portal_fetch_snapshot`, indexes, portal queries: no behaviour change requested; will be a follow-up if Cloud usage tab still shows DB server cost dominating after the above.
-- Schema, RLS, auth flows, payment flows: untouched.
+a. New transactional template `supabase/functions/_shared/transactional-email-templates/custom-invoice.tsx`
+   - Props: `description`, `amountFormatted`, `paymentUrl`, `orderId`.
+   - Subject: `"Your invoice from Pixcellor"`.
+   - Body: short intro, line item (description + amount), big "Pay now" button → `paymentUrl`, fallback link, footer.
+   - Match existing template styling (read `full-works-order-confirmation.tsx` for visual parity).
+   - Register in `_shared/transactional-email-templates/registry.ts` as `custom-invoice`.
 
-## Expected impact
-- ~70–90% drop in `enrich-visitor` Compute time and IPinfo network calls.
-- ~80% drop in `visitor_falloffs` row writes.
-- ~60% drop in `claim_login_handoff` calls during login.
-- Zero user-visible change.
+b. Update `supabase/functions/send-order-confirmation/index.ts`
+   - After loading the order, branch:
+     - If `metadata.source === "admin_manual"` and not paid:
+       - Require `metadata.payment_link_url` (else 400 "No payment link on this order").
+       - Call `send-transactional-email` with `templateName: "custom-invoice"`, `templateData: { description: metadata.custom_label || package_name, amountFormatted: formatGBP(amount_total), paymentUrl, orderId: orderCode }`, idempotency `manual-custom-invoice-${session_id}-${Date.now()}`.
+       - Return success.
+     - Else keep current paid-order flow.
+   - Remove the blanket "Only paid orders can receive confirmation emails" 400 — replace with the branching above.
+
+c. Deploy edge functions (`send-order-confirmation`) — automatic on save, but template change also requires the registry to be picked up by `send-transactional-email` (already auto-deployed).
+
+### Out of scope
+- No DB / RLS / schema changes.
+- No changes to the existing list-strip Stripe link UI besides adding the new top-row button.
+- No changes to checkout, webhook, or paid-flow templates.
+
+### Expected result
+- Admin can copy the Stripe link with one click from the custom order header.
+- Clicking `Send confirmation` on an unpaid custom draft emails the client the invoice + Stripe pay link instead of erroring; on a paid order it continues to send the package confirmation as before.
