@@ -1832,7 +1832,7 @@ export default function Portal() {
   };
 
   const markOrderUndelivered = async (sessionId: string) => {
-    const confirmed = window.confirm("Move this order back to open so delivery can be redone?");
+    const confirmed = await confirmDialog({ title: "Re-open order?", description: "Move this order back to open so delivery can be redone.", confirmLabel: "Re-open" });
     if (!confirmed) return;
 
     const { error } = await (supabase as any).rpc("portal_mark_order_undelivered", {
