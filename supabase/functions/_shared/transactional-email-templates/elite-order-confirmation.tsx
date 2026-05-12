@@ -28,7 +28,7 @@ type OrderTemplateConfig = {
 const inlineLink = { color: '#ffffff', fontWeight: '700' as const, textDecoration: 'underline' }
 const renderDetailValue = (value: string) => {
   if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-    return <Link href={\`mailto:\${value}\`} style={inlineLink}>{value}</Link>
+    return <Link href={`mailto:${value}`} style={inlineLink}>{value}</Link>
   }
   if (/^https?:\/\//.test(value)) {
     return <Link href={value} style={inlineLink}>{value}</Link>
