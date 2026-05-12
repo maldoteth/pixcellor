@@ -65,25 +65,37 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "blur-in": {
+          from: { opacity: "0", filter: "blur(12px)", transform: "translate(-50%, -50%) scale(0.97)" },
+          to: { opacity: "1", filter: "blur(0px)", transform: "translate(-50%, -50%) scale(1)" },
+        },
+        "blur-out": {
+          from: { opacity: "1", filter: "blur(0px)", transform: "translate(-50%, -50%) scale(1)" },
+          to: { opacity: "0", filter: "blur(12px)", transform: "translate(-50%, -50%) scale(0.97)" },
+        },
+        "blur-overlay-in": {
+          from: { opacity: "0", backdropFilter: "blur(0px)" },
+          to: { opacity: "1", backdropFilter: "blur(12px)" },
+        },
+        "blur-overlay-out": {
+          from: { opacity: "1", backdropFilter: "blur(12px)" },
+          to: { opacity: "0", backdropFilter: "blur(0px)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "blur-in": "blur-in 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
+        "blur-out": "blur-out 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
+        "blur-overlay-in": "blur-overlay-in 0.45s ease-out",
+        "blur-overlay-out": "blur-overlay-out 0.35s ease-out",
       },
     },
   },
