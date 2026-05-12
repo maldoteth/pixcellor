@@ -275,6 +275,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const [palette, setPalette] = useState<any>(null);
   const [fonts, setFonts] = useState<any>(null);
   const [generationId, setGenerationId] = useState<string | null>(null);
+  const [previewSlug, setPreviewSlug] = useState<string | null>(null);
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -298,7 +299,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
 
   // Poll for the brand kit (palette + fonts) which is generated in the background after the image returns.
   useEffect(() => {
-    if (!generationId) return;
+    if (!previewSlug) return;
     if (palette && fonts) return;
     let cancelled = false;
     let attempts = 0;
@@ -307,9 +308,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       attempts += 1;
       try {
         const { data } = await (supabase as any)
-          .from("ai_sample_generations")
-          .select("palette,fonts")
-          .eq("id", generationId)
+          .rpc("get_vision_preview_by_slug", { _slug: previewSlug })
           .maybeSingle();
         if (!cancelled && data) {
           if (data.palette) setPalette(data.palette);
@@ -321,7 +320,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     };
     const initial = setTimeout(tick, 2500);
     return () => { cancelled = true; clearTimeout(initial); };
-  }, [generationId, palette, fonts]);
+  }, [previewSlug, palette, fonts]);
 
   // Progressive lead save: as soon as we have (company OR name) AND (email OR phone),
   // upsert into contacts. Fires whenever stage advances or contact info changes.
@@ -440,6 +439,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       setPalette(data.palette ?? null);
       setFonts(data.fonts ?? null);
       setGenerationId(data.generationId ?? null);
+      setPreviewSlug(data.previewSlug ?? null);
       setGeneratedFor(brief);
       setStage("result");
       toast.success("Your vision is ready ✨");
@@ -634,6 +634,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       setPalette(data?.palette ?? null);
       setFonts(data?.fonts ?? null);
       if (data?.generationId) setGenerationId(data.generationId);
+      if (data?.previewSlug) setPreviewSlug(data.previewSlug);
       setGeneratedFor(`${previousPrompt}\n\nRefinement: ${ins}`);
       setRefineInstruction("");
       setStage("result");
