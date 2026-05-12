@@ -16,6 +16,7 @@ interface Preview {
   image_path: string;
   created_at: string;
   created_by_email: string | null;
+  created_by_user_id: string | null;
   client_email: string | null;
   sent_at: string | null;
 }
