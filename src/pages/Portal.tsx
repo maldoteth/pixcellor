@@ -15,6 +15,7 @@ import BroadcastCampaigns from "@/components/BroadcastCampaigns";
 import { useDomainPrompt } from "@/components/DomainPromptDialog";
 import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
+import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 import SeoHead from "@/components/SeoHead";
 
 // Auto-load-on-scroll helper for paginated list containers.
