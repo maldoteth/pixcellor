@@ -3555,7 +3555,7 @@ export default function Portal() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>{o.payment_status ?? "pending"}</Badge>
-                    <Badge variant="outline">Live</Badge>
+                    <Badge variant="outline">Orders</Badge>
                     <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
                     {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                   </div>
