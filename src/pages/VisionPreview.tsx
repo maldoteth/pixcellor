@@ -28,7 +28,37 @@ export default function VisionPreview() {
   const [error, setError] = useState<string | null>(null);
   const [authedEmail, setAuthedEmail] = useState<string | null>(null);
   const [requested, setRequested] = useState(false);
+  const [capturing, setCapturing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [contactEmail, setContactEmail] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactError, setContactError] = useState<string | null>(null);
+
+  const submitAnonLead = async () => {
+    const email = contactEmail.trim().toLowerCase();
+    if (!/.+@.+\..+/.test(email)) {
+      setContactError("Please enter a valid email.");
+      return;
+    }
+    setContactError(null);
+    setSubmitting(true);
+    const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
+      name: contactName.trim() || email,
+      email,
+      source: "vision_preview_get_started",
+      request_details: {
+        previewSlug: preview?.slug,
+        title: preview?.title,
+        anonymous: true,
+      } as any,
+    });
+    setSubmitting(false);
+    if (insertErr) {
+      setContactError(insertErr.message);
+      return;
+    }
+    setRequested(true);
+  };
 
   useEffect(() => {
     let active = true;
