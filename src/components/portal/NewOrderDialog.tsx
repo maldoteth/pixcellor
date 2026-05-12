@@ -403,7 +403,7 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
                 </Button>
               )}
               <Button type="button" variant="pricing" onClick={handleNext} disabled={submitting} className="flex-1 h-12 font-semibold">
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : step === "confirm" ? (orderType === "paid" ? "Record paid order" : "Save draft") : "Next"}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : step === "confirm" ? (orderType === "paid" ? "Record paid order" : "Save order") : "Next"}
               </Button>
             </div>
           </motion.div>
