@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import AdminVisionWizard from "@/components/portal/AdminVisionWizard";
+import BrandKit from "@/components/BrandKit";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 
 interface Preview {
@@ -19,6 +20,8 @@ interface Preview {
   created_by_user_id: string | null;
   client_email: string | null;
   sent_at: string | null;
+  palette: any;
+  fonts: any;
 }
 
 interface VisitorGen {
@@ -35,6 +38,8 @@ interface VisitorGen {
   parent_id: string | null;
   created_at: string;
   preview_slug: string | null;
+  palette: any;
+  fonts: any;
 }
 
 const BUCKET = "vision-previews";
@@ -92,7 +97,7 @@ export default function VisionStudio() {
   const loadVisitorGens = async () => {
     const { data, error } = await (supabase as any)
       .from("ai_sample_generations")
-      .select("id,brief,image_url,source,company,contact_name,email,phone,visitor_id,is_refinement,parent_id,created_at,preview_slug")
+      .select("id,brief,image_url,source,company,contact_name,email,phone,visitor_id,is_refinement,parent_id,created_at,preview_slug,palette,fonts")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) {
