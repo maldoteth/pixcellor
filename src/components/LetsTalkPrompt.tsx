@@ -795,6 +795,7 @@ const LetsTalkPrompt = () => {
             </button>
           )}
           <div className="px-4 pb-6">{content}</div>
+          <HoneypotField value={honeypotValue} onChange={setHoneypotValue} />
         </DrawerContent>
       </Drawer>
     );
@@ -824,6 +825,7 @@ const LetsTalkPrompt = () => {
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         {content}
+        <HoneypotField value={honeypotValue} onChange={setHoneypotValue} />
       </DialogContent>
     </Dialog>
   );
