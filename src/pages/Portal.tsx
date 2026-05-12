@@ -2966,7 +2966,7 @@ export default function Portal() {
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Showing {Math.min(clientsVisibleCount, clientBookContacts.length)} of {sectionCounts.contacts ?? clientBookContacts.length} total clients.
+                  {(sectionCounts.contacts ?? 0) > contacts.length || clientsVisibleCount < clientBookContacts.length ? "" : "Loaded all."}
                 </p>
                 {clientBookContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {profilesQ ? "match your search" : "yet"}.</p>}
                 <div
