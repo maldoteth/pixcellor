@@ -208,6 +208,83 @@ Deno.serve(async (req) => {
     let imageUrl = rawImageUrl;
     let storagePath: string | null = null;
     let generationId: string | null = null;
+    let palette: any = null;
+    let fonts: any = null;
+
+    // Extract brand kit (colours + Google Fonts) — small cheap call.
+    try {
+      const briefForKit = isEdit ? `Refinement instruction: ${instruction}` : enrichedBrief;
+      const kitRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: BRAND_KIT_SYSTEM },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: `Brief:\n${briefForKit}\n\nReturn the brand kit visible in the attached mockup.` },
+                { type: "image_url", image_url: { url: rawImageUrl } },
+              ],
+            },
+          ],
+          tools: [{
+            type: "function",
+            function: {
+              name: "return_brand_kit",
+              description: "Return the brand kit for the generated mockup.",
+              parameters: {
+                type: "object",
+                properties: {
+                  palette: {
+                    type: "array", minItems: 3, maxItems: 5,
+                    items: {
+                      type: "object",
+                      properties: { name: { type: "string" }, hex: { type: "string" } },
+                      required: ["name", "hex"], additionalProperties: false,
+                    },
+                  },
+                  fonts: {
+                    type: "object",
+                    properties: {
+                      heading: {
+                        type: "object",
+                        properties: { family: { type: "string" }, weights: { type: "array", items: { type: "number" } } },
+                        required: ["family"], additionalProperties: false,
+                      },
+                      body: {
+                        type: "object",
+                        properties: { family: { type: "string" }, weights: { type: "array", items: { type: "number" } } },
+                        required: ["family"], additionalProperties: false,
+                      },
+                    },
+                    required: ["heading", "body"], additionalProperties: false,
+                  },
+                },
+                required: ["palette", "fonts"], additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "return_brand_kit" } },
+        }),
+      });
+      if (kitRes.ok) {
+        const kitData = await kitRes.json();
+        const argsStr = kitData?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+        if (argsStr) {
+          try {
+            const parsed = JSON.parse(argsStr);
+            palette = parsed?.palette ?? null;
+            fonts = parsed?.fonts ?? null;
+          } catch (e) { console.error("brand kit parse failed", e); }
+        }
+      } else {
+        console.error("brand kit gateway error", kitRes.status, await kitRes.text());
+      }
+    } catch (kitErr) {
+      console.error("brand kit extraction threw", kitErr);
+    }
 
     try {
       const supabase = createClient(
