@@ -654,8 +654,8 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       className="flex flex-col gap-3"
     >
       <div className="flex items-center justify-between">
-        <label className="text-foreground/70 text-xs uppercase tracking-wider">
-          Step {currentIndex + 1} of {STEPS.length}
+        <label className="text-foreground/70 text-xs uppercase tracking-[0.15em] font-bold">
+          STEP {currentIndex + 1} OF {STEPS.length}
         </label>
         <div className="flex gap-1">
           {STEPS.map((s, i) => (
