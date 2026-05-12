@@ -21,6 +21,8 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useHeroReady } from "@/hooks/use-hero-ready";
 import { supabase } from "@/integrations/supabase/client";
+import HoneypotField from "@/components/HoneypotField";
+import { useAntiSpam } from "@/lib/anti-spam";
 
 interface VisionGeneratorProps {
   hidden?: boolean;
@@ -267,6 +269,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     sections: "",
   });
   const [busy, setBusy] = useState(false);
+  const { honeypotValue, setHoneypotValue, isHuman } = useAntiSpam();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [generatedFor, setGeneratedFor] = useState<string>("");
   const [refineInstruction, setRefineInstruction] = useState("");
@@ -506,6 +509,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     }
     setRequestKind(kind);
     setRequestBusy(true);
+    if (!isHuman()) { setRequestBusy(false); setStage("requested"); return; }
     try {
       const sourceTag = kind === "order" ? "vision_order_request" : "vision_sample_request";
       const requestDetails: Record<string, unknown> = {
@@ -990,6 +994,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
               </DrawerTitle>
             </DrawerHeader>
             {body}
+            <HoneypotField value={honeypotValue} onChange={setHoneypotValue} />
           </DrawerContent>
         </Drawer>
       </>
@@ -1018,6 +1023,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             </DialogDescription>
           </DialogHeader>
           {body}
+          <HoneypotField value={honeypotValue} onChange={setHoneypotValue} />
         </DialogContent>
       </Dialog>
     </>

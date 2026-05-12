@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import applePayLogo from "@/assets/apple-pay.png";
 import gpayLogo from "@/assets/gpay-logo.png";
 import BuyDetailsPrompt, { BuyerDetails, BuyerDomainChoice, VisionBrief } from "@/components/BuyDetailsPrompt";
+import HoneypotField from "@/components/HoneypotField";
+import { useAntiSpam } from "@/lib/anti-spam";
 
 const PACKAGES = {
   fullWorks: {
@@ -665,6 +667,7 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const { honeypotValue, setHoneypotValue, isHuman } = useAntiSpam();
   const field = ENTERPRISE_FIELDS[step];
 
   const continueForm = async () => {
@@ -678,6 +681,7 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
     if (step < ENTERPRISE_FIELDS.length - 1) setStep((current) => current + 1);
     else {
       setSubmitting(true);
+      if (!isHuman()) { setSubmitting(false); setSubmitted(true); return; }
       const cleanForm = {
         email: form.email.trim().slice(0, 255),
         name: form.name.trim().slice(0, 100),
@@ -707,6 +711,7 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
           <DrawerTitle>{submitted ? "Enterprise request received" : "Talk to sales"}</DrawerTitle>
           <DrawerDescription>{submitted ? "We'll be in touch shortly." : `Step ${step + 1} of ${ENTERPRISE_FIELDS.length}`}</DrawerDescription>
         </DrawerHeader>
+        <HoneypotField value={honeypotValue} onChange={setHoneypotValue} />
         {submitted ? (
           <Button variant="pricing" onClick={() => onOpenChange(false)} className="h-12 w-full font-semibold">Done</Button>
         ) : (
