@@ -43,11 +43,12 @@ export default function BroadcastCampaigns() {
   const toggle = (list: string[], value: string) =>
     list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 
-  const loadTemplate = (id: string) => {
+  const loadTemplate = async (id: string) => {
     const tpl = STARTER_TEMPLATES.find((t) => t.id === id);
     if (!tpl) return;
     if (bodyHtml && bodyHtml.replace(/<[^>]+>/g, "").trim().length > 0) {
-      if (!confirm("Replace your current draft with this template?")) return;
+      const ok = await confirmDialog({ title: "Replace draft?", description: "Your current draft will be overwritten with this template.", confirmLabel: "Replace", destructive: true });
+      if (!ok) return;
     }
     setSubject(tpl.subject);
     setPreheader(tpl.preheader);
