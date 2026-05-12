@@ -1847,9 +1847,13 @@ export default function Portal() {
   };
 
   const sendTestOrderCompleteEmail = async () => {
-    const email = window.prompt("Send a real 'order complete' test email to which address?");
-    if (!email) return;
-    const cleanEmail = email.trim().toLowerCase();
+    const result = await promptDialog({
+      title: "Send test order-complete email",
+      fields: [{ name: "email", label: "Recipient email", type: "email", required: true, placeholder: "name@example.com" }],
+      confirmLabel: "Send test",
+    });
+    if (!result) return;
+    const cleanEmail = result.email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       toast.error("Enter a valid email address.");
       return;
