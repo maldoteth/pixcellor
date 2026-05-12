@@ -273,7 +273,6 @@ export default function CustomerPortal() {
     { title: "Domains", value: "delivered", icon: Globe2 },
     { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Payments", value: "payments", icon: CreditCard },
-    ...(isAdmin ? [{ title: "Custom links", value: "custom_links" as PortalTab, icon: Link2 }] : []),
   ];
 
   const handleSignOut = async () => {
