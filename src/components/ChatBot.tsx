@@ -817,6 +817,25 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                 </div>
               </motion.div>
             )}
+            {quickAction === "call" && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-start"
+              >
+                <a
+                  href="tel:+441483912430"
+                  className="flex items-center gap-2 rounded-sm px-3 py-2 text-xs font-semibold text-white transition hover:brightness-125"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)",
+                    border: "1px solid rgba(255,255,255,0.25)",
+                  }}
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                  Call us +44 1483 912430
+                </a>
+              </motion.div>
+            )}
           </>
         )}
         <div ref={messagesEndRef} />
