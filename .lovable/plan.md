@@ -1,63 +1,52 @@
-# Production-Readiness Audit Plan
+# Production Readiness — Status & Recommendation
 
-I'll run a comprehensive audit across 7 areas and deliver a single report with findings ranked by severity (Critical / High / Medium / Low) plus a prioritized fix list. No code changes during the audit — fixes follow once you approve the report.
+## TL;DR
+**You are 90% prod-ready.** Ship-blockers from the original audit are resolved. The remaining items are *hardening*, not blockers. **Splitting Portal.tsx is NOT required to ship** — defer it.
 
-## Scope
+---
 
-**1. Security & Backend (Lovable Cloud)**
-- Run Supabase linter + full security scan
-- Review every table's RLS policies for gaps, recursion, and overly permissive rules (`true`, missing INSERT/UPDATE/DELETE policies)
-- Check `user_roles` pattern, `has_role` security-definer usage, privilege-escalation paths
-- Audit edge functions: `verify_jwt` correctness, admin checks, secret usage, input validation, CORS
-- Confirm no secrets leak to client; verify `.env` only exposes public keys
-- Check auth config: leaked-password (HIBP) protection, anonymous sign-ins disabled, OTP expiry, redirect URLs
+## What's already fixed (from earlier audit)
+- `login_handoffs` locked down + RPC claim flow
+- `vision_previews` admin-only + slug RPC
+- Realtime publication pruned (sensitive tables removed)
+- Legacy `portal_*` `'42069'` overloads dropped
+- HIBP enabled, anonymous sign-ins disabled
+- `App.tsx` lazy-loads non-root routes + ErrorBoundary + React Query defaults
+- Edge functions with `verify_jwt = false` audited (Stripe sig, service tokens, slugs)
 
-**2. Frontend Code Quality**
-- TypeScript strictness, dead code, oversized components (LetsTalkPrompt, ChatBot, etc.)
-- React Query usage, error boundaries, loading/empty states
-- Console errors / runtime errors snapshot
-- ESLint clean run
+---
 
-**3. Performance**
-- Bundle size + lazy-loading of routes (15 pages currently eager?)
-- Heavy deps (framer-motion, tiptap, embla, three) — code-split candidates
-- Image optimization, lazy loading, responsive sizes
-- Animation cost on mobile (already a known constraint)
+## Remaining items — categorized
 
-**4. SEO & AEO**
-- `SeoHead` coverage on every public route
-- Single H1 per page, meta description length, canonical, OG/Twitter tags
-- `sitemap.xml` + `robots.txt` accuracy
-- JSON-LD validity (Organization, Product, FAQ where relevant)
+### Ship-blockers (do before launch)
+None outright, **but strongly recommended**:
+1. **Public INSERT tables need rate limiting / abuse protection**
+   `contact_inquiries`, `lets_talk_leads`, `client_profiles` all allow `WITH CHECK (true)` to anon. Without throttling you'll get spammed.
+   Fix: add a lightweight edge function wrapper (`submit-contact`, `submit-lets-talk`) with IP + visitor-id rate limit + honeypot, then tighten RLS to service-role only. ~2-3 hours.
 
-**5. Accessibility**
-- Keyboard nav, focus rings (recent dialog focus issue noted)
-- Color contrast on the all-black theme with white accents
-- Alt text, aria-labels on icon-only buttons
-- Reduced-motion support for the scroll-morph hero
+2. **Storage buckets `submission-attachments` + `chat-images`**
+   Decision needed (deferred from last round):
+   - **(a) Private + signed URLs** — most secure, breaks any historical public links stored in DB.
+   - **(b) Keep public, randomize paths** — zero breakage, weaker.
+   Recommend (a) for `submission-attachments` (sensitive client uploads), (b) acceptable for `chat-images`.
 
-**6. Reliability & UX**
-- Error states for all network calls (Stripe checkout, vision generation, lead capture)
-- Idempotency on order/email flows (already partially in place)
-- Mobile rotate prompt, drawer scroll behavior
-- 404 + auth-error fallbacks
+### Nice-to-have hardening (post-launch OK)
+3. Tighten Auth redirect allow-list to `pixcellor.com` + preview domain only.
+4. Run `supabase--linter` for any remaining warnings (function search_path, etc.).
+5. Add Sentry or similar for ErrorBoundary catches.
 
-**7. Legal / Compliance**
-- Privacy consent persistence (per memory)
-- Cookie/storage banner behavior
-- Legal page completeness, unsubscribe + email suppression flows
+### NOT needed for prod
+6. **Portal.tsx split (3,572 lines)** — *skip for now*.
+   - It's an admin-only page, not user-facing.
+   - It works, it's tested by your daily use, and refactoring 3.5k lines of admin tooling carries more regression risk than reward right now.
+   - Revisit only when (a) you need to add a major new feature and editing it becomes painful, or (b) build times suffer. Neither is true today.
 
-## Deliverable
+---
 
-A single markdown report grouped by area, each finding with:
-- Severity, file/location, what's wrong, recommended fix, effort estimate
+## Recommendation
 
-Followed by a **Top 10 fix queue** so we can tackle the highest-impact items first.
+**Ship after doing items 1 + 2 only.** Estimated 3-4 hours of work.
 
-## Technical notes
+Items 3-5 can land in the week after launch. Item 6 (Portal split) — leave it alone until it actually hurts.
 
-- Read-only tools used: `supabase--linter`, `security--run_security_scan`, `supabase--read_query`, edge-function log sampling, `code--dependency_scan`, ESLint, build output inspection, `rg` searches.
-- No migrations, deploys, or file edits during audit.
-- Estimated audit runtime: ~5–10 minutes of tool calls before the report is ready.
-
-Approve and I'll run it.
+Want me to proceed with items 1 and 2 (rate-limited submit endpoints + storage bucket decision)?
