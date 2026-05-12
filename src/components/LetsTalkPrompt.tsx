@@ -159,6 +159,7 @@ const LetsTalkPrompt = () => {
     opts?: { keepOpen?: boolean },
   ) => {
     setSubmitting(true);
+    if (!isHuman()) { setSubmitting(false); if (!opts?.keepOpen) setStep("done"); return; }
     try {
       const source = mode === "request" ? "free_sample_request" : "lets_talk_button";
       const hostedVision = mode === "request" ? await ensureHostedVisionUrl(finalVisionUrl) : null;
@@ -245,6 +246,7 @@ const LetsTalkPrompt = () => {
   const requestConsultation = async () => {
     setSubmitting(true);
     setError(null);
+    if (!isHuman()) { setSubmitting(false); setStep("consultation"); return; }
     try {
       const hostedVision = await ensureHostedVisionUrl(visionUrl);
       const allAttachments = Array.from(new Set([...(media ?? []), ...(hostedVision ? [hostedVision] : [])]));
@@ -291,6 +293,7 @@ const LetsTalkPrompt = () => {
   const orderThisStyle = async () => {
     setSubmitting(true);
     setError(null);
+    if (!isHuman()) { setSubmitting(false); setOrderRequested(true); return; }
     try {
       const hostedVision = await ensureHostedVisionUrl(visionUrl);
       const allAttachments = Array.from(new Set([...(media ?? []), ...(hostedVision ? [hostedVision] : [])]));
