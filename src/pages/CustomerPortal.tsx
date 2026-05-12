@@ -20,6 +20,8 @@ import {
   ReceiptText,
   ShieldCheck,
   Wand2,
+  EyeOff,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -267,7 +269,7 @@ export default function CustomerPortal() {
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
     { title: "Site previews", value: "delivered", icon: Globe2 },
-    { title: "Samples & AI", value: "activity", icon: Wand2 },
+    { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Plan & payments", value: "payments", icon: CreditCard },
   ];
 
@@ -497,12 +499,41 @@ export default function CustomerPortal() {
                     )}
                   </div>
                   <div className="space-y-4">
-                    <SectionHeader title="AI generations" description="Every AI vision you've generated — open them any time." count={visionPreviews.length} />
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <SectionHeader title="Designs" description="Every AI design you've generated — open them any time, or hide ones you don't like." count={visionPreviews.length} />
+                      <Button
+                        onClick={() => navigate("/")}
+                        variant="pricing"
+                        size="sm"
+                        className="gap-2 rounded-none"
+                      >
+                        <Plus className="h-4 w-4" /> Generate design
+                      </Button>
+                    </div>
                     {visionPreviews.length === 0 ? (
-                      <EmptyState icon={ImageIcon} title="No AI generations yet" text="Generate a vision from the homepage and it will be saved here." />
+                      <EmptyState icon={ImageIcon} title="No designs yet" text="Generate a design from the homepage and it will be saved here." />
                     ) : (
                       <div className="grid gap-4 sm:grid-cols-2">
-                        {visionPreviews.map((preview) => <VisionPreviewCard key={preview.id} preview={preview} />)}
+                        {visionPreviews.map((preview) => (
+                          <VisionPreviewCard
+                            key={preview.id}
+                            preview={preview}
+                            onHide={async () => {
+                              const { error } = await supabase
+                                .from("customer_hidden_visions")
+                                .insert({
+                                  user_id: (await supabase.auth.getUser()).data.user?.id,
+                                  slug: preview.slug,
+                                });
+                              if (error) {
+                                toast.error("Could not hide that design.");
+                              } else {
+                                toast.success("Design hidden");
+                                setData((prev) => prev ? { ...prev, visionPreviews: (prev.visionPreviews ?? []).filter((p) => p.slug !== preview.slug) } : prev);
+                              }
+                            }}
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
@@ -804,7 +835,7 @@ function SampleRequestCard({ sample }: { sample: CustomerSampleRequest }) {
 
 const VISION_BUCKET = "vision-previews";
 
-function VisionPreviewCard({ preview }: { preview: CustomerVisionPreview }) {
+function VisionPreviewCard({ preview, onHide }: { preview: CustomerVisionPreview; onHide?: () => void }) {
   const imageUrl = supabase.storage.from(VISION_BUCKET).getPublicUrl(preview.image_path).data.publicUrl;
   return (
     <Card className="overflow-hidden border-border bg-card/70 backdrop-blur-xl">
@@ -823,10 +854,18 @@ function VisionPreviewCard({ preview }: { preview: CustomerVisionPreview }) {
           <span className="shrink-0 text-xs text-muted-foreground">{new Date(preview.created_at).toLocaleDateString()}</span>
         </div>
         {preview.brief && <p className="line-clamp-2 text-xs text-muted-foreground">{preview.brief}</p>}
-        <Button asChild variant="pricing" size="sm" className="w-full gap-2">
-          <a href={`/preview/${preview.slug}`} target="_blank" rel="noreferrer">Open vision <ExternalLink className="h-3.5 w-3.5" /></a>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="pricing" size="sm" className="flex-1 gap-2">
+            <a href={`/preview/${preview.slug}`} target="_blank" rel="noreferrer">Open vision <ExternalLink className="h-3.5 w-3.5" /></a>
+          </Button>
+          {onHide && (
+            <Button variant="outline" size="sm" className="gap-2 rounded-none" onClick={onHide} title="Hide this design">
+              <EyeOff className="h-3.5 w-3.5" /> Hide
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
 }
+

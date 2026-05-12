@@ -412,6 +412,24 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_hidden_visions: {
+        Row: {
+          created_at: string
+          slug: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          slug: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          slug?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       domain_registrations: {
         Row: {
           attempts: number
