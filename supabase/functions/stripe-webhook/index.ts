@@ -306,6 +306,25 @@ serve(async (req) => {
         }
       }
 
+      // Mark custom admin payment links as paid
+      if (event.type === "checkout.session.completed" && paymentStatus === "paid") {
+        const customLinkId = (session.metadata as Record<string, string> | null)?.custom_link_id;
+        if (customLinkId) {
+          try {
+            await supabase
+              .from("custom_payment_links")
+              .update({
+                status: "paid",
+                paid_session_id: session.id,
+                paid_at: new Date().toISOString(),
+              })
+              .eq("id", customLinkId);
+          } catch (err) {
+            console.error("Failed to mark custom payment link paid", err);
+          }
+        }
+      }
+
       // Add buyer as a gold-status contact (one per email/phone). Safe to run on every event.
       if (event.type === "checkout.session.completed") {
         try {
