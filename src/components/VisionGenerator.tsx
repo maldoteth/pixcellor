@@ -23,6 +23,7 @@ import { useHeroReady } from "@/hooks/use-hero-ready";
 import { supabase } from "@/integrations/supabase/client";
 import HoneypotField from "@/components/HoneypotField";
 import { useAntiSpam } from "@/lib/anti-spam";
+import BrandKit from "@/components/BrandKit";
 
 interface VisionGeneratorProps {
   hidden?: boolean;
@@ -833,6 +834,11 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
                 onDragStart={(e) => e.preventDefault()}
               />
             </div>
+            {(palette || fonts) && (
+              <div className="border border-border/40 p-3 bg-card/40">
+                <BrandKit palette={palette} fonts={fonts} compact />
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <Button onClick={orderThisStyle} disabled={requestBusy} className="w-full rounded-none">
                 {requestBusy && requestKind === "order" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Use this as style guide"}
