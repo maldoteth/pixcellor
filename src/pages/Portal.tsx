@@ -2735,7 +2735,7 @@ export default function Portal() {
             {(sectionCounts.falloffs ?? 0) > falloffs.length && (
               <div className="flex justify-center pt-2">
                 <Button variant="outline" size="sm" disabled={!!loadingMore.falloffs} onClick={() => loadMoreSection("falloffs", falloffs.length, 20)}>
-                  {loadingMore.falloffs ? "Loading…" : `Load more (${falloffs.length} of ${sectionCounts.falloffs})`}
+                  {loadingMore.falloffs ? "Loading…" : "Load more"}
                 </Button>
               </div>
             )}
