@@ -417,7 +417,7 @@ export default function Portal() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [projectRequirements, setProjectRequirements] = useState<ProjectRequirement[]>([]);
   const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
-  const [sampleRequests, setSampleRequests] = useState<Array<{ id: string; name: string; email: string | null; phone: string | null; created_at: string; request_details: { dream?: string | null; colours?: string | null } | null; attachment_urls: string[] | null; delivered_at?: string | null; delivered_domain?: string | null; paid_at?: string | null; paid_session_id?: string | null; package_name?: string | null }>>([]);
+  const [sampleRequests, setSampleRequests] = useState<Array<{ id: string; name: string; email: string | null; phone: string | null; created_at: string; request_details: { dream?: string | null; colours?: string | null; brief?: string | null; requested_edits?: string | null; company?: string | null; kind?: string | null; origin?: string | null; vision_image_url?: string | null } | null; attachment_urls: string[] | null; delivered_at?: string | null; delivered_domain?: string | null; paid_at?: string | null; paid_session_id?: string | null; package_name?: string | null }>>([]);
   const [deliveringSampleId, setDeliveringSampleId] = useState<string | null>(null);
   const { promptDomain, dialog: domainPromptDialog } = useDomainPrompt();
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
@@ -2333,15 +2333,24 @@ export default function Portal() {
                     {sampleRequests.map((r) => {
                       const dream = r.request_details?.dream ?? "";
                       const colours = r.request_details?.colours ?? "";
-                      const media = Array.isArray(r.attachment_urls) ? r.attachment_urls : [];
+                      const brief = r.request_details?.brief ?? "";
+                      const requestedEdits = r.request_details?.requested_edits ?? "";
+                      const company = r.request_details?.company ?? "";
+                      const kind = r.request_details?.kind ?? "";
+                      const origin = r.request_details?.origin ?? "";
+                      const visionImg = r.request_details?.vision_image_url ?? "";
+                      const media = Array.isArray(r.attachment_urls) ? r.attachment_urls.filter((u) => u !== visionImg) : [];
                       return (
                         <div key={r.id} className="rounded-none border border-border bg-background/50 p-3 text-sm space-y-2">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="space-y-0.5">
                               <div className="font-medium flex flex-wrap items-center gap-2">
                                 {r.name}
+                                {company && <span className="text-xs text-muted-foreground">· {company}</span>}
                                 <Badge variant={r.paid_at ? "default" : "outline"}>{r.paid_at ? "Paid" : "Unpaid"}</Badge>
                                 <Badge variant={r.delivered_at ? "default" : "outline"}>{r.delivered_at ? "Delivered" : "Orders"}</Badge>
+                                {kind && <Badge variant="secondary">{kind === "sample" ? "Custom sample" : kind === "order" ? "Style order" : kind}</Badge>}
+                                {origin && origin !== `vision_${kind}_request` && <Badge variant="outline" className="text-[10px]">{origin}</Badge>}
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 {[r.email, r.phone].filter(Boolean).join(" · ") || "No contact"} · {new Date(r.created_at).toLocaleString()}
@@ -2363,11 +2372,31 @@ export default function Portal() {
                               )}
                             </div>
                           </div>
+                          {brief && (
+                            <div className="rounded-none border border-border/40 bg-muted/30 p-2">
+                              <div className="text-muted-foreground text-xs uppercase tracking-wider mb-1">Full brief</div>
+                              <div className="whitespace-pre-wrap text-xs">{brief}</div>
+                            </div>
+                          )}
+                          {requestedEdits && (
+                            <div className="rounded-none border border-destructive/40 bg-destructive/5 p-2">
+                              <div className="text-destructive text-xs uppercase tracking-wider mb-1">Requested edits (custom request)</div>
+                              <div className="whitespace-pre-wrap text-xs">{requestedEdits}</div>
+                            </div>
+                          )}
                           {dream && (
                             <div><span className="text-muted-foreground">Dream site:</span> <span className="whitespace-pre-wrap">{dream}</span></div>
                           )}
                           {colours && (
                             <div><span className="text-muted-foreground">Colours/styles:</span> <span className="whitespace-pre-wrap">{colours}</span></div>
+                          )}
+                          {visionImg && (
+                            <div className="space-y-1">
+                              <div className="text-muted-foreground text-xs">Generated vision</div>
+                              <a href={visionImg} target="_blank" rel="noopener noreferrer" className="block max-w-xs overflow-hidden rounded-none border border-border bg-muted">
+                                <img src={visionImg} alt="generated vision" className="w-full block" loading="lazy" />
+                              </a>
+                            </div>
                           )}
                           {media.length > 0 && (
                             <div className="space-y-1">
