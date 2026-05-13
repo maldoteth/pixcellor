@@ -177,7 +177,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         }}
       />
       <div
-        className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black"
+        className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border-2 border-white/25 bg-black"
         style={{
           boxShadow: mobileMode
             ? '0 0 0 1px rgba(255,255,255,0.06)'
