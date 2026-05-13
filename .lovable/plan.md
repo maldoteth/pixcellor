@@ -1,21 +1,56 @@
-## What actually happened
+## Goal
 
-You weren't logged in, so when you clicked **Get started** on `/preview/:slug`, the code in `src/pages/VisionPreview.tsx` (lines 152–159) just flips a local `requested` flag and shows the success message. It does **not** insert anything into `lets_talk_leads`, does not send an email, and does not store anything against a cache or visitor ID.
+Replace the inline "Tell us where to reach you" form on the **Vision Preview page** (`/preview/:slug`) with the **exact Let's Talk consultation flow** — same drawer on mobile, same step-by-step prompts, same AI lead processing — but seeded with the preview's image + brief so it's attached to the resulting CRM contact/lead. Phone becomes **required** in this flow.
 
-In short: nobody was notified, no record was created, and we don't have your details. The confirmation message was a UI lie for anonymous visitors. The "logged-in" branch (lines 138–151) does insert a lead — but that path didn't run for you.
+## What to change
 
-## Fix plan
+### 1. `src/pages/VisionPreview.tsx` — wire "Get started" into Let's Talk
 
-Rework the anonymous flow on `VisionPreview.tsx` so the success message only appears after we actually capture something:
+- Delete the inline `capturing` state, `contactName/contactEmail` inputs, `submitAnonLead`, and the form block that renders them.
+- Both the signed-in and anonymous "Get started" buttons now do the same thing:
+  1. Stash the preview into `sessionStorage` under `pixcellor:consultation-context`:
+     ```
+     {
+       imageUrl: <public URL of preview image>,
+       brief: <preview.brief or title fallback>,
+       previewSlug: preview.slug,
+       previewTitle: preview.title,
+       email: authedEmail ?? null,
+     }
+     ```
+  2. Dispatch `window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }))`.
+- Drop the local `requested` "thanks" panel (the Let's Talk drawer/dialog already shows its own success state). Keep the MagicLinkSignup section, but only show it once Let's Talk has confirmed (listen for a new `pixcellor:letstalk-submitted` event dispatched from LetsTalkPrompt on success — see step 3).
+- Keep `MagicLinkSignup` as-is but render it on the success event for anonymous visitors so they can claim their dashboard.
 
-1. **Anonymous click on "Get started"** → instead of jumping straight to the success card, show the email + magic-link block first (the same `MagicLinkSignup` UI that's currently hidden inside the success card).
-2. **On email submit** → insert into `lets_talk_leads` with `source: "vision_preview_get_started"`, `email`, `request_details: { previewSlug, title, anonymous: true }`, then trigger the existing magic-link sign-in. Only then flip to the "Our team will be in touch" success state.
-3. **Logged-in click** → unchanged (already inserts a lead with the authed email).
-4. **Guard** so a misclick that closes the email form without submitting doesn't leave a false success state.
+### 2. `src/components/LetsTalkPrompt.tsx` — make phone required + carry preview metadata
 
-Optional small polish: also stamp the visitor's `visitor_id` (already tracked in falloff logic) into `request_details` so we can correlate the click with their session even before they give us an email — but the source of truth for "in touch" stays the email submission.
+- In the `consultation` context loader (already reads `pixcellor:consultation-context`), additionally read `previewSlug`, `previewTitle`, and store them in two new state fields (`previewSlug`, `previewTitle`).
+- In `requestConsultation()` (and `orderThisStyle()` for the "Order this style" path), include in `request_details`:
+  ```
+  preview_slug, preview_title, source_preview_image_url
+  ```
+  Append the preview image URL to `attachment_urls` so it's saved against the contact (the existing `ensureHostedVisionUrl` already handles hosting if needed — for an already-hosted public URL it returns it as-is).
+- Make phone **required** in consultation mode:
+  - In `handleSkip`, if `mode === "consultation"` and `step === "phone"`, block skip and show "Please enter your number so we can reach you." (today phone-skip is only blocked when email was skipped).
+  - In the same condition for `step === "email"`, still allow skipping email (so the flow can be phone-only) — the current behavior is fine, we only tighten phone.
+  - The existing `phoneSchema` validation in `handleNext` already enforces a valid number, no change needed there.
+- After `requestConsultation()` (and `orderThisStyle()`) succeed, dispatch `window.dispatchEvent(new CustomEvent("pixcellor:letstalk-submitted", { detail: { source: "consultation" } }))` so the VisionPreview page knows to swap to its success/MagicLinkSignup view.
 
-### Files touched
-- `src/pages/VisionPreview.tsx` — restructure the `!requested` / `requested` blocks so anonymous users see the email capture before the confirmation, and the lead insert happens on submit.
+### 3. Mobile + desktop parity
 
-No DB schema, edge function, or RLS changes needed (`lets_talk_leads` already allows anon inserts).
+- LetsTalkPrompt already renders a `Drawer` on mobile (`useIsMobile`) and a `Dialog` on desktop with the identical step UI. By routing the preview "Get started" into the same component, mobile/desktop behave identically by construction.
+
+### 4. AI / CRM follow-through
+
+- `requestConsultation` already inserts into `lets_talk_leads` AND invokes the `process-lets-talk-lead` edge function — the same path used by the homepage Let's Talk button. That function is what creates/enriches the contact and runs the AI follow-through. By reusing it untouched, the preview "Get started" inherits the full flow without duplicating logic.
+
+## Out of scope
+
+- No edge function changes. `process-lets-talk-lead` already accepts `request_details` and `attachment_urls`; the new `preview_*` keys ride along inside `request_details` and are surfaced to admins through the existing CRM views.
+- No schema changes. The preview image goes into existing `attachment_urls`; preview slug/title go into existing `request_details` JSON.
+- No changes to the homepage Let's Talk behavior (talk + request modes are unchanged — only the consultation path gets the phone-required tightening, which matches user expectation for that flow).
+
+## Files touched
+
+- `src/pages/VisionPreview.tsx` — strip inline form, dispatch open-letstalk on Get started, listen for success event.
+- `src/components/LetsTalkPrompt.tsx` — load preview metadata, attach preview image, attach preview info to `request_details`, enforce phone required in consultation mode, dispatch success event.

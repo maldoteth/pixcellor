@@ -6,6 +6,7 @@ import SeoHead from "@/components/SeoHead";
 import MagicLinkSignup from "@/components/MagicLinkSignup";
 import { Button } from "@/components/ui/button";
 import BrandKit from "@/components/BrandKit";
+import LetsTalkPrompt from "@/components/LetsTalkPrompt";
 
 interface Preview {
   id: string;
@@ -27,38 +28,8 @@ export default function VisionPreview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [authedEmail, setAuthedEmail] = useState<string | null>(null);
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [requested, setRequested] = useState(false);
-  const [capturing, setCapturing] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactName, setContactName] = useState("");
-  const [contactError, setContactError] = useState<string | null>(null);
-
-  const submitAnonLead = async () => {
-    const email = contactEmail.trim().toLowerCase();
-    if (!/.+@.+\..+/.test(email)) {
-      setContactError("Please enter a valid email.");
-      return;
-    }
-    setContactError(null);
-    setSubmitting(true);
-    const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
-      name: contactName.trim() || email,
-      email,
-      source: "vision_preview_get_started",
-      request_details: {
-        previewSlug: preview?.slug,
-        title: preview?.title,
-        anonymous: true,
-      } as any,
-    });
-    setSubmitting(false);
-    if (insertErr) {
-      setContactError(insertErr.message);
-      return;
-    }
-    setRequested(true);
-  };
 
   useEffect(() => {
     let active = true;
@@ -72,6 +43,16 @@ export default function VisionPreview() {
       active = false;
       sub.subscription.unsubscribe();
     };
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ email?: string | null }>).detail;
+      setRequested(true);
+      if (detail?.email) setSubmittedEmail(detail.email);
+    };
+    window.addEventListener("pixcellor:letstalk-submitted", handler);
+    return () => window.removeEventListener("pixcellor:letstalk-submitted", handler);
   }, []);
 
   useEffect(() => {
@@ -100,6 +81,25 @@ export default function VisionPreview() {
   const imageUrl = preview
     ? supabase.storage.from(BUCKET).getPublicUrl(preview.image_path).data.publicUrl
     : null;
+
+  const openLetsTalk = () => {
+    if (!preview) return;
+    try {
+      sessionStorage.setItem(
+        "pixcellor:consultation-context",
+        JSON.stringify({
+          imageUrl,
+          brief: preview.brief ?? preview.title ?? null,
+          previewSlug: preview.slug,
+          previewTitle: preview.title,
+          email: authedEmail ?? null,
+        }),
+      );
+    } catch { /* ignore */ }
+    window.dispatchEvent(
+      new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }),
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -160,80 +160,14 @@ export default function VisionPreview() {
                 <pre className="mt-2 whitespace-pre-wrap text-xs">{preview.brief}</pre>
               </details>
             )}
-            {!requested && !capturing ? (
+            {!requested ? (
               <div className="border border-border p-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm">
                   Like what you see? We can build this as a real, fully-custom site.
                 </p>
-                {authedEmail ? (
-                  <Button
-                    onClick={() => {
-                      setRequested(true);
-                      void supabase.from("lets_talk_leads").insert({
-                        name: authedEmail,
-                        email: authedEmail,
-                        source: "vision_preview_get_started",
-                        request_details: { previewSlug: preview.slug, title: preview.title } as any,
-                      });
-                    }}
-                    className="rounded-none gap-1"
-                  >
-                    Get started <Wand2 className="h-3.5 w-3.5" />
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => setCapturing(true)}
-                    className="rounded-none gap-1"
-                  >
-                    Get started <Wand2 className="h-3.5 w-3.5" />
-                  </Button>
-                )}
-              </div>
-            ) : !requested && capturing ? (
-              <div className="border border-border p-5 space-y-3">
-                <div>
-                  <p className="text-base font-semibold">Tell us where to reach you</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Drop your name and email and our team will be in touch within 24 hours to scope your build.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Your name (optional)"
-                    className="w-full rounded-none border border-border bg-background px-3 py-2 text-sm"
-                  />
-                  <input
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full rounded-none border border-border bg-background px-3 py-2 text-sm"
-                    required
-                  />
-                  {contactError && (
-                    <p className="text-xs text-destructive">{contactError}</p>
-                  )}
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={submitAnonLead}
-                      disabled={submitting}
-                      className="rounded-none gap-1 flex-1"
-                    >
-                      {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
-                      Send my details
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => { setCapturing(false); setContactError(null); }}
-                      className="rounded-none"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
+                <Button onClick={openLetsTalk} className="rounded-none gap-1">
+                  Get started <Wand2 className="h-3.5 w-3.5" />
+                </Button>
               </div>
             ) : (
               <div className="border border-border p-5 space-y-3">
@@ -256,9 +190,11 @@ export default function VisionPreview() {
                   </Button>
                 ) : (
                   <div className="space-y-2">
-                    <label className="text-xs text-foreground/70">Want to track this in your own dashboard? Get a magic link sent to {contactEmail || "your email"}.</label>
+                    <label className="text-xs text-foreground/70">
+                      Want to track this in your own dashboard? Get a magic link sent to {submittedEmail || "your email"}.
+                    </label>
                     <MagicLinkSignup
-                      email={contactEmail}
+                      email={submittedEmail ?? ""}
                       benefit="Save this preview to your dashboard so you can revisit it any time and follow your project."
                     />
                   </div>
@@ -268,6 +204,8 @@ export default function VisionPreview() {
           </>
         ) : null}
       </main>
+
+      <LetsTalkPrompt />
     </div>
   );
 }

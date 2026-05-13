@@ -74,6 +74,8 @@ const LetsTalkPrompt = () => {
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [refineInstruction, setRefineInstruction] = useState("");
   const [orderRequested, setOrderRequested] = useState(false);
+  const [previewSlug, setPreviewSlug] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState<string | null>(null);
   const { honeypotValue, setHoneypotValue, isHuman } = useAntiSpam();
 
   // Progressive contact save — fires whenever we have name + (email or phone),
@@ -124,6 +126,8 @@ const LetsTalkPrompt = () => {
       setRefineInstruction("");
       setOrderRequested(false);
       // Pre-load vision context if we're opening from a generated sample
+      setPreviewSlug(null);
+      setPreviewTitle(null);
       if (nextMode === "consultation") {
         try {
           const raw = sessionStorage.getItem("pixcellor:consultation-context");
@@ -134,12 +138,16 @@ const LetsTalkPrompt = () => {
               company?: string | null;
               email?: string | null;
               phone?: string | null;
+              previewSlug?: string | null;
+              previewTitle?: string | null;
             };
             if (ctx?.imageUrl) setVisionUrl(ctx.imageUrl);
             if (ctx?.brief) setDream(ctx.brief);
             if (ctx?.company) setCompany(ctx.company);
             if (ctx?.email) setEmail(ctx.email);
             if (ctx?.phone) setPhone(ctx.phone);
+            if (ctx?.previewSlug) setPreviewSlug(ctx.previewSlug);
+            if (ctx?.previewTitle) setPreviewTitle(ctx.previewTitle);
           }
         } catch { /* ignore */ }
       }
@@ -266,7 +274,12 @@ const LetsTalkPrompt = () => {
         dream: dream.trim() || null,
         colours: colours.trim() || null,
         vision_image_url: hostedVision ?? visionUrl ?? null,
-        note: "Visitor requested a free consultation / call back after seeing their AI sample.",
+        preview_slug: previewSlug,
+        preview_title: previewTitle,
+        source_preview_image_url: previewSlug ? (hostedVision ?? visionUrl ?? null) : null,
+        note: previewSlug
+          ? "Visitor requested a consultation from a vision preview link. Image and brief attached."
+          : "Visitor requested a free consultation / call back after seeing their AI sample.",
       };
       const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
         name: name.trim(),
@@ -291,6 +304,12 @@ const LetsTalkPrompt = () => {
         })
         .catch((err) => console.error("process-lets-talk-lead failed:", err));
 
+      window.dispatchEvent(
+        new CustomEvent("pixcellor:letstalk-submitted", {
+          detail: { source: "consultation", email: email.trim() || null },
+        }),
+      );
+
       setStep("consultation");
     } catch (e) {
       console.error(e);
@@ -313,6 +332,8 @@ const LetsTalkPrompt = () => {
         dream: dream.trim() || null,
         colours: colours.trim() || null,
         vision_image_url: hostedVision ?? visionUrl ?? null,
+        preview_slug: previewSlug,
+        preview_title: previewTitle,
         note: "Visitor wants to order this AI-generated style. Get back to them to arrange the build.",
       };
       const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
@@ -337,6 +358,12 @@ const LetsTalkPrompt = () => {
           },
         })
         .catch((err) => console.error("process-lets-talk-lead failed:", err));
+
+      window.dispatchEvent(
+        new CustomEvent("pixcellor:letstalk-submitted", {
+          detail: { source: "order", email: email.trim() || null },
+        }),
+      );
 
       setOrderRequested(true);
       setStep("consultation");
@@ -459,7 +486,7 @@ const LetsTalkPrompt = () => {
       return;
     }
     if (step === "phone") {
-      if (emailSkipped) {
+      if (emailSkipped || mode === "consultation") {
         setError("Please enter your number so we can reach you.");
         return;
       }
@@ -480,7 +507,7 @@ const LetsTalkPrompt = () => {
   };
 
   const canSkip =
-    step === "email" || (step === "phone" && !emailSkipped) || step === "media";
+    step === "email" || (step === "phone" && !emailSkipped && mode !== "consultation") || step === "media";
 
   const isTextStep = step === "name" || step === "company" || step === "email" || step === "phone";
   const isLongStep = step === "dream" || step === "colours";
