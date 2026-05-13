@@ -238,6 +238,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
       </div>
       </div>
     </div>
+    </div>
   );
 };
 
