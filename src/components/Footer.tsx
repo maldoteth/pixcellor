@@ -71,7 +71,7 @@ const Footer = () => {
             className={itemClass}
             onClick={() => window.dispatchEvent(new Event("pixcellor:open-login"))}
           >
-            <LogIn className={iconClass} />
+            <User className={iconClass} />
           </button>
         </div>
       </div>
