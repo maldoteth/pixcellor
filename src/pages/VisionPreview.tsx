@@ -132,7 +132,7 @@ export default function VisionPreview() {
         ) : preview && imageUrl ? (
           <>
             <div className="space-y-1">
-              <h1 className="text-xl font-semibold">{preview.title ?? "Your Pixcellor preview"}</h1>
+              <h1 className="text-xl font-semibold">{preview.title ?? "Your Preview"}</h1>
             </div>
             <div
               tabIndex={-1}
