@@ -2038,7 +2038,8 @@ export default function Portal() {
       )) : (
         <div className="px-3 py-3 text-sm text-muted-foreground">No matching {field === "trade" ? "trades" : "locations"}</div>
       )}
-    </div>
+        </div>
+        <Input className="md:col-span-2" placeholder="Add a note (optional)" value={contactForm.note} onChange={(e) => setContactForm(f => ({ ...f, note: e.target.value }))} />
   );
 
   const contactFormCard = showContactForm && (
