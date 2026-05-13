@@ -868,7 +868,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                         advanceHeroFromArrow();
                     }}
                     aria-label="Scroll down"
-                    className="absolute left-1/2 top-[calc(50%+6.8rem)] z-[120] hidden h-12 w-14 -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-manipulation border-0 bg-transparent pointer-events-auto md:block"
+                    className={`absolute left-1/2 top-[calc(50%+6.8rem)] z-[120] hidden h-12 w-14 -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-manipulation border-0 bg-transparent pointer-events-auto md:block ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                     style={{ opacity: arrowOpacity }}
                 />
 
