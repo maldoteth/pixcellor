@@ -2064,6 +2064,7 @@ export default function Portal() {
           />
           {contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
         </div>
+        <Input className="md:col-span-2" placeholder="Add a note (optional)" value={contactForm.note} onChange={(e) => setContactForm(f => ({ ...f, note: e.target.value }))} />
         <div className="md:col-span-2 flex gap-2">
           <Button onClick={createContact}>Save client</Button>
           <Button variant="outline" className="rounded-none shadow-none" onClick={() => setShowContactForm(false)}>Cancel</Button>
