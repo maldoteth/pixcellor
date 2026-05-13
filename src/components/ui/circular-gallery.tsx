@@ -156,7 +156,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
   mobileMode = false,
   glowIntensity = 1,
 }) => {
-  const color = useDominantColor(item.photo.url);
+  const color = useDominantColor(pickWarmupUrl(item.photo.url));
 
   const openLink = () => {
     const url = item.photo.by;
