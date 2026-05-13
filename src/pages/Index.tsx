@@ -61,6 +61,19 @@ const Index = () => {
     };
   }, []);
 
+  // Auto-open the vision generator when arriving with ?openVision=1 (e.g. from the customer portal).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("openVision") !== "1") return;
+    const t = window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("pixcellor:open-vision"));
+    }, 400);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("openVision");
+    window.history.replaceState({}, "", url.toString());
+    return () => window.clearTimeout(t);
+  }, []);
+
   const overlayOpen = packagesOpen;
 
   return (
