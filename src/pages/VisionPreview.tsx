@@ -104,7 +104,7 @@ export default function VisionPreview() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SeoHead
-        title={preview?.title ? `${preview.title} — Pixcellor preview` : "Your Pixcellor preview"}
+        title={preview?.title ? `${preview.title} — Pixcellor preview` : "Your Preview"}
         description="A custom AI-rendered website concept made for you by Pixcellor."
         path={`/preview/${slug ?? ""}`}
       />
