@@ -141,11 +141,14 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
   autoRotateSpeed?: number;
   /** External rotation driver in degrees (e.g. from a parent scroll value). When provided, window scroll is ignored. */
   externalRotation?: number;
+  /** When false, cards stay visible but cannot receive pointer/click events. */
+  interactive?: boolean;
 }
 
 interface GalleryCardProps {
   item: GalleryItem;
   isFrontFacing: boolean;
+  interactive: boolean;
   mobileMode?: boolean;
   glowIntensity?: number;
 }
@@ -153,6 +156,7 @@ interface GalleryCardProps {
 const GalleryCard: React.FC<GalleryCardProps> = ({
   item,
   isFrontFacing,
+  interactive,
   mobileMode = false,
   glowIntensity = 1,
 }) => {
@@ -181,8 +185,8 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
 
   return (
     <div
-      className="relative w-full h-full cursor-pointer"
-      style={{ pointerEvents: 'auto' }}
+      className={cn('relative w-full h-full', interactive && isFrontFacing && 'cursor-pointer')}
+      style={{ pointerEvents: interactive && isFrontFacing ? 'auto' : 'none' }}
       onClick={openLink}
     >
       {/* Touch-driven halo (mobile only). Sits behind the card; only the ring
@@ -276,7 +280,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
 };
 
 const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
-  ({ items, className, radius = 600, autoRotateSpeed = 0.02, externalRotation, ...props }, ref) => {
+  ({ items, className, radius = 600, autoRotateSpeed = 0.02, externalRotation, interactive = true, ...props }, ref) => {
     const [rotation, setRotation] = useState(0);
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -528,7 +532,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       <div
         ref={ref}
         className={cn('relative w-full h-full flex items-center justify-center', className)}
-        style={{ perspective: isMobile ? '800px' : '1200px' }}
+        style={{ perspective: isMobile ? '800px' : '1200px', pointerEvents: interactive ? 'auto' : 'none' }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
