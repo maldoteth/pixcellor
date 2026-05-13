@@ -1693,6 +1693,129 @@ function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientCont
   return lines.join("\n");
 }
 
+async function devCreateCustomOrder(supabase: DbClient, args: Record<string, unknown>, adminEmail: string | null) {
+  const email = cleanText(args.customer_email, 255).toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_customer_email" };
+  const name = cleanText(args.customer_name, 100);
+  const packageName = cleanText(args.package_name, 80);
+  if (!packageName) return { ok: false, error: "package_name_required" };
+  const amountGbp = Number(args.amount_gbp);
+  if (!Number.isFinite(amountGbp) || amountGbp < 0.01 || amountGbp > 1_000_000) return { ok: false, error: "invalid_amount" };
+  const amountPence = Math.round(amountGbp * 100);
+  const markPaid = args.mark_paid !== false;
+  const billingRaw = String(args.billing ?? "one-time").toLowerCase();
+  const billing = ["one-time", "monthly", "yearly"].includes(billingRaw) ? billingRaw : "one-time";
+  const customLabel = cleanText(args.custom_label, 80);
+  const notes = cleanText(args.notes, 1000);
+
+  const sessionId = `manual_${crypto.randomUUID().replace(/-/g, "")}`;
+  const meta = {
+    source: "admin_manual",
+    package_name: packageName,
+    billing,
+    created_by_email: adminEmail,
+    created_via: "alex_chat",
+    buyer_email: email,
+    buyer_name: name || null,
+    custom_label: customLabel || null,
+    admin_notes: notes || null,
+  };
+
+  const { error: evtErr } = await supabase
+    .from("stripe_events")
+    .insert({ stripe_event_id: sessionId, event_type: "manual.order.created", payload: meta, checkout_session_id: sessionId });
+  if (evtErr && !String(evtErr.message).toLowerCase().includes("duplicate")) return { ok: false, error: evtErr.message };
+
+  const { data, error } = await supabase
+    .from("stripe_checkout_sessions")
+    .insert({
+      session_id: sessionId,
+      stripe_event_id: sessionId,
+      mode: "payment",
+      payment_status: markPaid ? "paid" : "unpaid",
+      status: markPaid ? "complete" : "open",
+      amount_total: amountPence,
+      currency: "gbp",
+      customer_email: email,
+      capture_status: markPaid ? "manual" : null,
+      captured_at: markPaid ? new Date().toISOString() : null,
+      order_status: "open",
+      metadata: meta,
+    })
+    .select("session_id, payment_status, status, amount_total, customer_email, created_at")
+    .single();
+  if (error) return { ok: false, error: error.message };
+
+  try { await supabase.rpc("ensure_order_public_reference", { p_session_id: sessionId }); } catch (_) { /* noop */ }
+
+  return {
+    ok: true,
+    order: {
+      session_id: data.session_id,
+      package_name: packageName,
+      billing,
+      amount_gbp: amountGbp,
+      payment_status: data.payment_status,
+      status: data.status,
+      customer_email: data.customer_email,
+      created_at: data.created_at,
+    },
+  };
+}
+
+async function devCreatePaymentLink(req: Request, args: Record<string, unknown>) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const authHeader = req.headers.get("Authorization") || "";
+  if (!authHeader) return { ok: false, error: "missing_auth" };
+
+  const body = {
+    description: cleanText(args.description, 200),
+    amount_gbp: Number(args.amount_gbp),
+    quantity: Number(args.quantity ?? 1) || 1,
+    mode: args.mode === "subscription" ? "subscription" : "payment",
+    client_email: cleanText(args.client_email, 255).toLowerCase() || null,
+    internal_note: cleanText(args.internal_note, 1000) || null,
+    attach_session_id: cleanText(args.attach_session_id, 200) || null,
+  };
+  if (!body.description) return { ok: false, error: "description_required" };
+  if (!Number.isFinite(body.amount_gbp) || body.amount_gbp < 1 || body.amount_gbp > 1_000_000) return { ok: false, error: "invalid_amount" };
+
+  const resp = await fetch(`${supabaseUrl}/functions/v1/create-custom-payment-link`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": authHeader },
+    body: JSON.stringify(body),
+  });
+  const result = await resp.json().catch(() => ({}));
+  if (!resp.ok) return { ok: false, error: result?.error || `create_failed_${resp.status}` };
+  return {
+    ok: true,
+    link: {
+      id: result.id,
+      url: result.url,
+      amount_gbp: body.amount_gbp,
+      mode: body.mode,
+      description: body.description,
+      client_email: body.client_email,
+      attached_session_id: body.attach_session_id,
+    },
+  };
+}
+
+async function devListPaymentLinks(supabase: DbClient, args: Record<string, unknown>) {
+  const limit = Math.max(1, Math.min(50, Number(args.limit ?? 10) | 0));
+  const statusFilter = String(args.status ?? "all").toLowerCase();
+  let query = supabase
+    .from("custom_payment_links")
+    .select("id, url, description, amount_gbp, currency, mode, status, client_email, paid_at, created_at, internal_note")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (statusFilter === "open") query = query.eq("status", "open");
+  else if (statusFilter === "paid") query = query.eq("status", "paid");
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, links: data ?? [] };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
