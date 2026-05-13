@@ -1046,7 +1046,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             <button
               type="button"
               onClick={() => { setOpen(false); }}
-              className="w-full h-11 font-semibold mt-2 bg-black text-white hover:bg-black/90 transition rounded-none"
+              className="w-full h-11 font-semibold mt-2 bg-black text-white hover:bg-black/90 transition rounded-none text-sm"
             >
               Close
             </button>
