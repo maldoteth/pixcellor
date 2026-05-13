@@ -1082,11 +1082,11 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       </div>
       {/* Tablet (md to lg): compact static 3-card row */}
       <div className="lg:hidden flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.745] min-[880px]:max-lg:scale-[0.84] min-[960px]:max-lg:scale-[0.955] md:max-lg:origin-center">
-        <div className="md:max-lg:translate-x-[10px]">
+        <div className="md:max-lg:translate-x-[18px]">
           <ServiceBackCard variant="side" rotate={-6} data={SERVICE_BACKS.fullWorks} onAction={onServiceAction} />
         </div>
         <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.elite} onAction={onServiceAction} />
-        <div className="md:max-lg:-translate-x-[10px]">
+        <div className="md:max-lg:-translate-x-[18px]">
           <ServiceBackCard variant="side" rotate={6} data={SERVICE_BACKS.retainer} onAction={onServiceAction} />
         </div>
       </div>
