@@ -693,6 +693,61 @@ const devTools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_custom_order",
+      description: "Create a manual / custom order in the orders database (mirrors the New Order dialog in the portal). Use for paid offline orders (bank transfer, cash, invoice) and for drafts/quotes awaiting payment. Returns session_id, order_status, payment_status.",
+      parameters: {
+        type: "object",
+        properties: {
+          customer_email: { type: "string", description: "Buyer's email address (required)." },
+          customer_name: { type: "string", description: "Buyer's name, optional." },
+          package_name: { type: "string", description: "Package label, e.g. 'Full Works', 'Elite', 'Bespoke build'. Required." },
+          amount_gbp: { type: "number", description: "Amount in pounds (e.g. 750 for £750). Required, between 0.01 and 1,000,000." },
+          mark_paid: { type: "boolean", description: "True for an already-paid offline order, false for a draft/quote awaiting payment. Defaults to true." },
+          billing: { type: "string", enum: ["one-time", "monthly", "yearly"], description: "Defaults to one-time." },
+          custom_label: { type: "string", description: "Optional free-form label for custom packages." },
+          notes: { type: "string", description: "Internal admin notes (max 1000 chars)." },
+        },
+        required: ["customer_email", "package_name", "amount_gbp"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_payment_link",
+      description: "Create a Stripe payment link for a custom amount (one-time or monthly subscription). Returns the live url to share with the client. Optionally attach to an existing draft order session_id from create_custom_order.",
+      parameters: {
+        type: "object",
+        properties: {
+          description: { type: "string", description: "What the link is for (max 200 chars). Shown on Stripe checkout. Required." },
+          amount_gbp: { type: "number", description: "Amount in pounds. Required, between 1 and 1,000,000." },
+          quantity: { type: "number", description: "Quantity, defaults to 1." },
+          mode: { type: "string", enum: ["payment", "subscription"], description: "payment = one-time charge, subscription = monthly recurring. Defaults to payment." },
+          client_email: { type: "string", description: "Optional client email tied to the link for tracking." },
+          internal_note: { type: "string", description: "Internal note (max 1000 chars)." },
+          attach_session_id: { type: "string", description: "Optional — session_id of a draft order returned by create_custom_order. Ties the link to that order." },
+        },
+        required: ["description", "amount_gbp"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "list_payment_links",
+      description: "List the most recent custom Stripe payment links created from the portal. Returns url, amount, mode, status (open/paid), client_email, created_at.",
+      parameters: {
+        type: "object",
+        properties: {
+          limit: { type: "number", description: "Max links to return (default 10, max 50)." },
+          status: { type: "string", enum: ["open", "paid", "all"], description: "Filter by status. Defaults to all." },
+        },
+      },
+    },
+  },
 ];
 
 // Look up everything we know about a customer by email
