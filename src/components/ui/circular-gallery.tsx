@@ -3,6 +3,19 @@ import React, { useState, useEffect, useRef, HTMLAttributes } from 'react';
 const cn = (...classes: (string | undefined | null | false)[]) =>
   classes.filter(Boolean).join(' ');
 
+// Build responsive variant URLs for portfolio PNGs that have pre-generated
+// AVIF/WebP siblings (see scripts/convert-portfolio.mjs). Returns null for
+// any URL that doesn't follow the /portfolio/<name>.png pattern (e.g. thum.io).
+function portfolioVariants(url: string) {
+  const match = /^\/portfolio\/([^/]+)\.png$/i.exec(url);
+  if (!match) return null;
+  const base = `/portfolio/${match[1]}`;
+  return {
+    avif: `${base}-sm.avif 480w, ${base}-lg.avif 960w`,
+    webp: `${base}-sm.webp 480w, ${base}-lg.webp 960w`,
+  };
+}
+
 // Cache extracted dominant colors per image url across renders
 const colorCache = new Map<string, { r: number; g: number; b: number }>();
 const imageElementCache = new Map<string, HTMLImageElement>();
