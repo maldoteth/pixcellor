@@ -212,6 +212,14 @@ export default function CustomerPortal() {
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
   const [isAdmin, setIsAdmin] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [hiddenCount, setHiddenCount] = useState(0);
+
+  const refreshHiddenCount = useCallback(async () => {
+    const { count } = await supabase
+      .from("customer_hidden_visions")
+      .select("*", { count: "exact", head: true });
+    setHiddenCount(count ?? 0);
+  }, []);
 
   const loadPortal = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -236,7 +244,8 @@ export default function CustomerPortal() {
     setIsAdmin(Boolean(adminRole));
     setData(portalData as CustomerPortalData);
     setLoading(false);
-  }, [navigate]);
+    refreshHiddenCount();
+  }, [navigate, refreshHiddenCount]);
 
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
@@ -492,7 +501,34 @@ export default function CustomerPortal() {
                 <TabsContent value="activity" className="space-y-6">
                   <div className="space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <SectionHeader title="Designs" description="Find your generated design drafts here" count={visionPreviews.length} />
+                      <div className="flex items-center gap-2">
+                        <SectionHeader title="Designs" description="Find your generated design drafts here" count={visionPreviews.length} />
+                        {hiddenCount > 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 rounded-none"
+                            onClick={async () => {
+                              const { data: userData } = await supabase.auth.getUser();
+                              const uid = userData.user?.id;
+                              if (!uid) return;
+                              const { error } = await supabase
+                                .from("customer_hidden_visions")
+                                .delete()
+                                .eq("user_id", uid);
+                              if (error) {
+                                toast.error("Could not unhide designs.");
+                                return;
+                              }
+                              toast.success(`Unhid ${hiddenCount} design${hiddenCount === 1 ? "" : "s"}`);
+                              setHiddenCount(0);
+                              await loadPortal();
+                            }}
+                          >
+                            Unhide ({hiddenCount})
+                          </Button>
+                        )}
+                      </div>
                       <Button
                         onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-vision"))}
                         variant="pricing"
@@ -521,6 +557,7 @@ export default function CustomerPortal() {
                                 toast.error("Could not hide that design.");
                               } else {
                                 toast.success("Design hidden");
+                                setHiddenCount((c) => c + 1);
                                 setData((prev) => prev ? { ...prev, visionPreviews: (prev.visionPreviews ?? []).filter((p) => p.slug !== preview.slug) } : prev);
                               }
                             }}
