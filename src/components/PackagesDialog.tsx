@@ -1257,7 +1257,7 @@ function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
               </div>
               <ul className="space-y-2 flex-1 mb-4">
                 {g.items.map((item) => (
-                  <li key={item.name} className="flex items-start gap-2 text-base text-foreground">
+                  <li key={item.name} className="flex items-start gap-2 text-base text-foreground whitespace-pre-line">
                     <ServiceItemRow item={item} />
                   </li>
                 ))}
