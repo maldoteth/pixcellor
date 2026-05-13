@@ -639,7 +639,7 @@ function DesktopShell({ spinIn, initialServices = false }: { spinIn: boolean; in
           </span>
         </Button>
         <DialogClose asChild>
-          <Button variant="pricing" className="h-auto w-40 py-2 font-semibold">
+          <Button variant="pricing" className="h-auto w-[156px] py-2 font-semibold">
             Close
           </Button>
         </DialogClose>
