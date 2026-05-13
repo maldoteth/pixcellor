@@ -303,10 +303,20 @@ All colors MUST be HSL.
     border-radius: 50% 60% 30% 70% / 40% 50% 60% 50%;
     -webkit-transform: translateZ(0) rotate(240deg) scale(0.95);
     transform: translateZ(0) rotate(240deg) scale(0.95);
+}
+
+@keyframes gold-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 
-.free-samples-cursor-glow {
   position: absolute;
   inset: -15%;
   pointer-events: none;

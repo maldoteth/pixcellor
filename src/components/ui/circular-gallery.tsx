@@ -177,13 +177,18 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         }}
       />
       <div
-        className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl border-2 border-white/25 bg-black"
+        className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl"
         style={{
+          padding: '2px',
+          background: 'linear-gradient(90deg, #B8860B, #DAA520, #FFD700, #FFF8DC, #FFD700, #DAA520, #B8860B)',
+          backgroundSize: '200% 100%',
+          animation: 'gold-shimmer 3s ease-in-out infinite',
           boxShadow: mobileMode
             ? '0 0 0 1px rgba(255,255,255,0.06)'
             : `0 8px 24px -10px ${glow}, 0 0 0 1px rgba(255,255,255,0.06)`,
         }}
       >
+        <div className="relative w-full h-full overflow-hidden rounded-2xl bg-black">
       <img
         src={item.photo.url}
         alt={item.photo.text}
@@ -232,6 +237,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         </p>
       </div>
       </div>
+    </div>
     </div>
   );
 };
