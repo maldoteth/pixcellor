@@ -305,7 +305,7 @@ All colors MUST be HSL.
     transform: translateZ(0) rotate(240deg) scale(0.95);
 }
 
-@keyframes gold-shimmer {
+@keyframes silver-shimmer {
   0% {
     background-position: 0% 50%;
   }
