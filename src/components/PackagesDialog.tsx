@@ -252,7 +252,7 @@ async function handleCheckout(priceId: string, mode: string, packageName: string
 
 function PaymentMethodIcons() {
   return (
-    <div className="flex items-center justify-center gap-3.5 mt-2">
+    <div className="flex items-center justify-center mt-2 gap-[21px]">
       {/* Visa */}
       <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
         <rect width="48" height="32" fill="currentColor" className="text-foreground"/>
