@@ -304,6 +304,31 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     return () => window.removeEventListener("pixcellor:open-vision", handleOpen);
   }, []);
 
+  // Signed-in user always wins over any cached form contact details.
+  // This prevents a previous (anonymous) tester's email/name from being attached
+  // to a generation made by a logged-in user on the same device.
+  useEffect(() => {
+    let active = true;
+    const applySession = (session: any) => {
+      const email = session?.user?.email?.trim();
+      if (!email || !active) return;
+      setContactEmail(email);
+      try { localStorage.setItem(CONTACT_EMAIL_KEY, email); } catch { /* ignore */ }
+      const meta = session.user.user_metadata ?? {};
+      const fullName = (meta.full_name || meta.name || "").trim();
+      if (fullName) {
+        setContactName(fullName);
+        try { localStorage.setItem(CONTACT_NAME_KEY, fullName); } catch { /* ignore */ }
+      }
+    };
+    supabase.auth.getSession().then(({ data }) => applySession(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => applySession(session));
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
   // Poll for the brand kit (palette + fonts) which is generated in the background after the image returns.
   useEffect(() => {
     if (!previewSlug) return;
