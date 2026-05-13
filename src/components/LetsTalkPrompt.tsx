@@ -332,6 +332,8 @@ const LetsTalkPrompt = () => {
         dream: dream.trim() || null,
         colours: colours.trim() || null,
         vision_image_url: hostedVision ?? visionUrl ?? null,
+        preview_slug: previewSlug,
+        preview_title: previewTitle,
         note: "Visitor wants to order this AI-generated style. Get back to them to arrange the build.",
       };
       const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
@@ -356,6 +358,12 @@ const LetsTalkPrompt = () => {
           },
         })
         .catch((err) => console.error("process-lets-talk-lead failed:", err));
+
+      window.dispatchEvent(
+        new CustomEvent("pixcellor:letstalk-submitted", {
+          detail: { source: "order", email: email.trim() || null },
+        }),
+      );
 
       setOrderRequested(true);
       setStep("consultation");
