@@ -491,16 +491,6 @@ export default function CustomerPortal() {
 
                 <TabsContent value="activity" className="space-y-6">
                   <div className="space-y-4">
-                    <SectionHeader title="Free sample requests" description="Sample briefs you've sent us — we'll deliver each one to your inbox." count={sampleRequests.length} />
-                    {sampleRequests.length === 0 ? (
-                      <EmptyState icon={Wand2} title="No sample requests yet" text="Request a free sample from the homepage and it will appear here." />
-                    ) : (
-                      <div className="grid gap-3">
-                        {sampleRequests.map((sample) => <SampleRequestCard key={sample.id} sample={sample} />)}
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <SectionHeader title="Designs" description="Find your generated design drafts here" count={visionPreviews.length} />
                       <Button
