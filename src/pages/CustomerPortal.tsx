@@ -625,14 +625,14 @@ export default function CustomerPortal() {
   );
 }
 
-function SectionHeader({ title, description, count }: { title: string; description: string; count: number }) {
+function SectionHeader({ title, description, count }: { title: string; description: string; count?: number }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <div>
         <h2 className="text-2xl font-semibold tracking-normal">{title}</h2>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
-      <Badge variant="outline">{count}</Badge>
+      {typeof count === "number" && <Badge variant="outline">{count}</Badge>}
     </div>
   );
 }
