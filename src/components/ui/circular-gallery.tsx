@@ -178,12 +178,40 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
   // Desktop: keep the original static box-shadow halo.
   const haloOpacity = mobileMode ? Math.max(0, Math.min(1, glowIntensity)) : 0;
 
+  const url = item.photo.by;
+  const href = url ? (/^https?:\/\//i.test(url) ? url : `https://${url}`) : undefined;
+
   return (
-    <div
-      className="relative w-full h-full"
-      style={{ pointerEvents: 'none' }}
-      aria-hidden
+    <a
+      href={href || '#'}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => {
+        if (!href) e.preventDefault();
+      }}
+      aria-label={`Open ${item.common}`}
+      className="group relative w-full h-full block cursor-pointer [transform-style:preserve-3d] transition-transform duration-300 ease-out hover:[transform:rotateX(8deg)_rotateY(-10deg)_scale(1.06)]"
+      style={{ pointerEvents: 'auto' }}
     >
+      {/* Sparkles — desktop hover only */}
+      <span aria-hidden className="pointer-events-none absolute inset-0 z-30 hidden md:block">
+        {[
+          { top: '10%', left: '15%', delay: '0s' },
+          { top: '20%', right: '12%', delay: '0.25s' },
+          { bottom: '32%', left: '22%', delay: '0.5s' },
+          { bottom: '20%', right: '18%', delay: '0.15s' },
+        ].map((s, idx) => (
+          <span
+            key={idx}
+            className="absolute w-1.5 h-1.5 rounded-full bg-white opacity-0 group-hover:[animation:gallery-sparkle_1.4s_ease-in-out_infinite]"
+            style={{
+              ...s,
+              animationDelay: s.delay,
+              boxShadow: '0 0 8px 2px rgba(255,255,255,0.9), 0 0 14px 4px rgba(255,255,255,0.4)',
+            }}
+          />
+        ))}
+      </span>
       {/* Touch-driven halo (mobile only). Sits behind the card; only the ring
           beyond the card's edge is visible because the inner card is opaque. */}
       <div
@@ -199,7 +227,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         }}
       />
       <div
-        className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl"
+        className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl transition-shadow duration-300 group-hover:shadow-[0_18px_40px_-10px_rgba(255,255,255,0.35)]"
         style={{
           padding: '2px',
           background: 'linear-gradient(90deg, #333333, #555555, #777777, #999999, #777777, #555555, #333333)',
