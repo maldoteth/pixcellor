@@ -64,6 +64,15 @@ export default function VisionPurchaseFlow() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [brief, setBrief] = useState<VisionBrief | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      window.dispatchEvent(new Event("pixcellor:vision-purchase-open"));
+    } else {
+      window.dispatchEvent(new Event("pixcellor:vision-purchase-close"));
+    }
+  }, [open]);
+
   const [stage, setStage] = useState<Stage>("choose");
   const [selected, setSelected] = useState<PackageOption | null>(null);
   const [submitting, setSubmitting] = useState(false);

@@ -260,6 +260,15 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
   const isMobile = useIsMobile();
   const heroReady = useHeroReady();
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      window.dispatchEvent(new Event("pixcellor:vision-gen-open"));
+    } else {
+      window.dispatchEvent(new Event("pixcellor:vision-gen-close"));
+    }
+  }, [open]);
+
   const [stage, setStage] = useState<Stage>("company");
   const [answers, setAnswers] = useState<Record<StepKey, string>>({
     company: "",

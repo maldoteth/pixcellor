@@ -16,6 +16,11 @@ const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [heroScrolled, setHeroScrolled] = useState(false);
   const [packagesOpen, setPackagesOpen] = useState(false);
+  const [letsTalkOpen, setLetsTalkOpen] = useState(false);
+  const [tryBeforeBuyOpen, setTryBeforeBuyOpen] = useState(false);
+  const [visionPurchaseOpen, setVisionPurchaseOpen] = useState(false);
+  const [visionGenOpen, setVisionGenOpen] = useState(false);
+  const [customerAccessOpen, setCustomerAccessOpen] = useState(false);
 
   useEffect(() => {
     let rafId = 0;
@@ -61,8 +66,62 @@ const Index = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const onOpen = () => setLetsTalkOpen(true);
+    const onClose = () => setLetsTalkOpen(false);
+    window.addEventListener("pixcellor:letstalk-open", onOpen as EventListener);
+    window.addEventListener("pixcellor:letstalk-close", onClose as EventListener);
+    return () => {
+      window.removeEventListener("pixcellor:letstalk-open", onOpen as EventListener);
+      window.removeEventListener("pixcellor:letstalk-close", onClose as EventListener);
+    };
+  }, []);
 
-  const overlayOpen = packagesOpen;
+  useEffect(() => {
+    const onOpen = () => setTryBeforeBuyOpen(true);
+    const onClose = () => setTryBeforeBuyOpen(false);
+    window.addEventListener("pixcellor:try-before-buy-open", onOpen as EventListener);
+    window.addEventListener("pixcellor:try-before-buy-close", onClose as EventListener);
+    return () => {
+      window.removeEventListener("pixcellor:try-before-buy-open", onOpen as EventListener);
+      window.removeEventListener("pixcellor:try-before-buy-close", onClose as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onOpen = () => setVisionPurchaseOpen(true);
+    const onClose = () => setVisionPurchaseOpen(false);
+    window.addEventListener("pixcellor:vision-purchase-open", onOpen as EventListener);
+    window.addEventListener("pixcellor:vision-purchase-close", onClose as EventListener);
+    return () => {
+      window.removeEventListener("pixcellor:vision-purchase-open", onOpen as EventListener);
+      window.removeEventListener("pixcellor:vision-purchase-close", onClose as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onOpen = () => setVisionGenOpen(true);
+    const onClose = () => setVisionGenOpen(false);
+    window.addEventListener("pixcellor:vision-gen-open", onOpen as EventListener);
+    window.addEventListener("pixcellor:vision-gen-close", onClose as EventListener);
+    return () => {
+      window.removeEventListener("pixcellor:vision-gen-open", onOpen as EventListener);
+      window.removeEventListener("pixcellor:vision-gen-close", onClose as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onOpen = () => setCustomerAccessOpen(true);
+    const onClose = () => setCustomerAccessOpen(false);
+    window.addEventListener("pixcellor:customer-access-open", onOpen as EventListener);
+    window.addEventListener("pixcellor:customer-access-close", onClose as EventListener);
+    return () => {
+      window.removeEventListener("pixcellor:customer-access-open", onOpen as EventListener);
+      window.removeEventListener("pixcellor:customer-access-close", onClose as EventListener);
+    };
+  }, []);
+
+  const overlayOpen = packagesOpen || chatOpen || letsTalkOpen || tryBeforeBuyOpen || visionPurchaseOpen || visionGenOpen || customerAccessOpen;
 
   return (
     <div className="w-full">
@@ -82,6 +141,7 @@ const Index = () => {
         <IntroAnimation
           onVirtualScrollChange={(value) => setHeroScrolled(value > 80)}
           onPackagesOpenChange={setPackagesOpen}
+          overlayOpen={overlayOpen}
         />
         <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <VisionGenerator hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />

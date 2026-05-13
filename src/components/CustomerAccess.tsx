@@ -101,6 +101,14 @@ export default function CustomerAccess({ hidden = false, chatOpen = false }: Cus
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    if (open) {
+      window.dispatchEvent(new Event("pixcellor:customer-access-open"));
+    } else {
+      window.dispatchEvent(new Event("pixcellor:customer-access-close"));
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (!open) return;
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {

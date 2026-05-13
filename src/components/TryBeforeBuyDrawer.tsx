@@ -27,6 +27,14 @@ export default function TryBeforeBuyDrawer() {
   const [visible, setVisible] = useState(false);
   const isMobile = useIsMobile();
 
+  useEffect(() => {
+    if (visible) {
+      window.dispatchEvent(new Event("pixcellor:try-before-buy-open"));
+    } else {
+      window.dispatchEvent(new Event("pixcellor:try-before-buy-close"));
+    }
+  }, [visible]);
+
   const shownRef = useRef(false);
 
   useEffect(() => {

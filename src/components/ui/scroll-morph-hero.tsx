@@ -311,12 +311,13 @@ const IMAGES = [
 interface IntroAnimationProps {
     onVirtualScrollChange?: (value: number) => void;
     onPackagesOpenChange?: (open: boolean) => void;
+    overlayOpen?: boolean;
 }
 
 // Helper for linear interpolation
 const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;
 
-export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenChange }: IntroAnimationProps) {
+export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenChange, overlayOpen }: IntroAnimationProps) {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
     const introPhaseRef = useRef<AnimationPhase>("scatter");
     const introTimersRef = useRef<number[]>([]);
@@ -867,12 +868,12 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                         advanceHeroFromArrow();
                     }}
                     aria-label="Scroll down"
-                    className="absolute left-1/2 top-[calc(50%+6.8rem)] z-[120] hidden h-12 w-14 -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-manipulation border-0 bg-transparent pointer-events-auto md:block"
+                    className={`absolute left-1/2 top-[calc(50%+6.8rem)] z-[120] hidden h-12 w-14 -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-manipulation border-0 bg-transparent pointer-events-auto md:block ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                     style={{ opacity: arrowOpacity }}
                 />
 
                 {/* Intro Text (Fades out) */}
-                <div className="absolute z-[150] flex flex-col items-center justify-center text-center pointer-events-none top-[230px] md:top-1/2 md:translate-y-[calc(-50%+20px)] lg:translate-y-[calc(-50%+20px)]">
+                <div className={`absolute z-[150] flex flex-col items-center justify-center text-center pointer-events-none top-[230px] md:top-1/2 md:translate-y-[calc(-50%+20px)] lg:translate-y-[calc(-50%+20px)] ${overlayOpen ? "!opacity-0" : ""}`}>
                     <motion.h1
                         initial={{ y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { filter: "blur(10px)" }}
@@ -898,7 +899,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                         }}
                         aria-label="Scroll down"
                         data-hero-scroll-control="true"
-                        className="md:hidden relative z-[110] mt-1 h-10 w-10 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
+                        className={`md:hidden relative z-[110] mt-1 h-10 w-10 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                         style={{ opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                     >
                         <motion.div
@@ -917,7 +918,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                         }}
                         aria-label="Scroll down"
                         data-hero-scroll-control="true"
-                        className="hidden md:flex relative z-[200] mt-3 md:mt-7 md:-translate-y-[20px] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-white transition-[color,filter] duration-200 items-center justify-center touch-manipulation [filter:drop-shadow(0_0_6px_hsla(0,0%,100%,0.7))_drop-shadow(0_0_12px_hsla(0,0%,100%,0.4))] hover:[filter:drop-shadow(0_0_4px_hsla(0,0%,100%,1))_drop-shadow(0_0_12px_hsla(0,0%,100%,1))_drop-shadow(0_0_24px_hsla(0,0%,100%,0.95))_drop-shadow(0_0_44px_hsla(0,0%,100%,0.8))_drop-shadow(0_0_72px_hsla(0,0%,100%,0.55))]"
+                        className={`hidden md:flex relative z-[200] mt-3 md:mt-7 md:-translate-y-[20px] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-white transition-[color,filter] duration-200 items-center justify-center touch-manipulation [filter:drop-shadow(0_0_6px_hsla(0,0%,100%,0.7))_drop-shadow(0_0_12px_hsla(0,0%,100%,0.4))] hover:[filter:drop-shadow(0_0_4px_hsla(0,0%,100%,1))_drop-shadow(0_0_12px_hsla(0,0%,100%,1))_drop-shadow(0_0_24px_hsla(0,0%,100%,0.95))_drop-shadow(0_0_44px_hsla(0,0%,100%,0.8))_drop-shadow(0_0_72px_hsla(0,0%,100%,0.55))] ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                         style={{ opacity: arrowOpacity }}
                     >
                         <motion.div
@@ -931,7 +932,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
 
                 {/* Hero CTA buttons anchored at bottom of hero viewport */}
                 <div
-                    className="absolute left-1/2 -translate-x-1/2 z-[10500] pointer-events-auto bottom-[34px] md:bottom-[23px] w-full md:w-auto px-[1.5rem] md:px-0"
+                    className={`absolute left-1/2 -translate-x-1/2 z-[10500] pointer-events-auto bottom-[34px] md:bottom-[23px] w-full md:w-auto px-[1.5rem] md:px-0 ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                 >
                     {/* Mobile: stacked */}
                     <div className="md:hidden flex flex-col items-stretch gap-2 w-full">
@@ -1198,7 +1199,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     opacity: footerRevealProgress,
                     bottom: "calc(env(safe-area-inset-bottom, 0px) + 3.25rem)",
                 }}
-                className="absolute left-1/2 -translate-x-1/2 z-[130] pointer-events-none"
+                className={`absolute left-1/2 -translate-x-1/2 z-[130] pointer-events-none ${overlayOpen ? "!opacity-0" : ""}`}
             >
                 {/* Mobile arrow */}
                 <motion.button
@@ -1210,7 +1211,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     }}
                     aria-label="Scroll up"
                     data-hero-scroll-control="true"
-                    className={`md:hidden relative z-[140] -mx-10 px-10 py-6 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"}`}
+                    className={`md:hidden relative z-[140] -mx-10 px-10 py-6 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"} ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                     style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                 >
                     <motion.div
@@ -1230,7 +1231,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     }}
                     aria-label="Scroll up"
                     data-hero-scroll-control="true"
-                    className={`hidden md:flex relative z-[140] -mx-12 px-12 py-6 mt-[10px] cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"}`}
+                    className={`hidden md:flex relative z-[140] -mx-12 px-12 py-6 mt-[10px] cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"} ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                     style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                 >
                     <motion.div
@@ -1263,7 +1264,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     requestAnimationFrame(step);
                 }}
                 style={{ opacity: footerRevealProgress, top: "calc(env(safe-area-inset-top, 0px) + 1rem)", right: "calc(env(safe-area-inset-right, 0px) + 1rem)" }}
-                className="pricing-button lg:hidden absolute z-50 flex items-center justify-center w-7 h-7 rounded-md text-foreground transition pointer-events-auto"
+                className={`pricing-button lg:hidden absolute z-50 flex items-center justify-center w-7 h-7 rounded-md text-foreground transition pointer-events-auto ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
             >
                 <X className="w-3.5 h-3.5" strokeWidth={2.25} />
             </motion.button>
