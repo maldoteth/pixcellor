@@ -873,7 +873,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                 />
 
                 {/* Intro Text (Fades out) */}
-                <div className="absolute z-[150] flex flex-col items-center justify-center text-center pointer-events-none top-[230px] md:top-1/2 md:translate-y-[calc(-50%+20px)] lg:translate-y-[calc(-50%+20px)]">
+                <div className={`absolute z-[150] flex flex-col items-center justify-center text-center pointer-events-none top-[230px] md:top-1/2 md:translate-y-[calc(-50%+20px)] lg:translate-y-[calc(-50%+20px)] ${overlayOpen ? "!opacity-0" : ""}`}>
                     <motion.h1
                         initial={{ y: 20, filter: "blur(10px)" }}
                         animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { filter: "blur(10px)" }}
