@@ -127,15 +127,14 @@ const Index = () => {
     <div className="w-full">
       <SeoHead
         title="Premium digital services turbopowered by AI"
-        description="Pixcellor builds bespoke, fast-loading websites for small businesses from £100. Lifetime guarantee, SEO/AEO, unlimited edits and a 2-week MVP sprint option."
+        description="AI powered business solutions by a team who have collectively launched over $500,000,000 in market cap and multi 7 figure GTM/Q1 revenue projects."
         path="/"
       />
       {/* Crawlable semantic heading — visually hidden, surfaces the page topic for SEO/AEO */}
-      <h1 className="sr-only">Pixcellor — Bespoke Websites for Small Businesses</h1>
+      <h1 className="sr-only">Pixcellor — AI Powered Business Solutions</h1>
       <p className="sr-only">
-        Pixcellor designs and builds bespoke websites and web apps for small businesses across the UK.
-        Packages start at £100 with a lifetime guarantee, SEO and AEO included on Elite and Retainer plans,
-        and a 2-week MVP sprint option for fast launches.
+        Pixcellor is a team of AI-powered business solution specialists who have collectively launched
+        over $500,000,000 in market cap and multi 7 figure GTM/Q1 revenue projects.
       </p>
       <div className="relative overflow-hidden" style={{ height: "var(--pixcellor-viewport-height, 100dvh)" }}>
         <IntroAnimation
