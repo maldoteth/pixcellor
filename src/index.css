@@ -205,12 +205,12 @@ All colors MUST be HSL.
 
   .portfolio-card-frame {
     position: relative;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.08) 100%);
+    border: 2px solid rgba(255,255,255,0.2);
+    background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%);
     box-shadow:
       0 30px 80px rgba(0,0,0,0.55),
       0 8px 24px rgba(0,0,0,0.45),
-      inset 0 1px 1px hsl(0 0% 100% / 0.3),
+      inset 0 1px 1px hsl(0 0% 100% / 0.35),
       inset 0 -1px 1px hsl(0 0% 0% / 0.25);
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
@@ -219,10 +219,10 @@ All colors MUST be HSL.
   .portfolio-card-frame::before {
     content: "";
     position: absolute;
-    inset: 0.25rem;
+    inset: 0.35rem;
     pointer-events: none;
     opacity: 0.6;
-    background: linear-gradient(135deg, hsl(0 0% 100% / 0.22) 0%, transparent 50%);
+    background: linear-gradient(135deg, hsl(0 0% 100% / 0.25) 0%, transparent 50%);
     z-index: 1;
   }
 
