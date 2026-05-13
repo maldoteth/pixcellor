@@ -55,7 +55,7 @@ export default function ResetPassword() {
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
       <SeoHead
         title="Reset password · Pixcellor™"
-        description="Reset your Pixcellor portal password."
+        description="Reset the password for your Pixcellor portal account using the secure recovery link sent to your email."
         path="/reset-password"
         noindex
       />

@@ -59,7 +59,7 @@ export default function PortalAuth() {
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
       <SeoHead
         title="Portal login · Pixcellor™"
-        description="Sign in to the Pixcellor dev portal."
+        description="Sign in to the Pixcellor developer portal to manage projects, orders, customers and ongoing client work."
         path="/portal-login"
         noindex
       />

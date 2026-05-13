@@ -59,7 +59,7 @@ export default function Unsubscribe() {
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
       <SeoHead
         title="Unsubscribe · Pixcellor™"
-        description="Manage your Pixcellor email subscription."
+        description="Manage your Pixcellor email subscription preferences and unsubscribe from marketing or transactional updates at any time."
         path="/unsubscribe"
         noindex
       />

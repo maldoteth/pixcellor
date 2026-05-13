@@ -121,7 +121,7 @@ export default function AuthHandoff() {
 
   return (
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center px-6">
-      <SeoHead title="Signing you in · Pixcellor™" description="Cross-device sign-in for Pixcellor." path="/auth/handoff" noindex />
+      <SeoHead title="Signing you in · Pixcellor™" description="Securely complete cross-device sign-in to your Pixcellor account from a magic link or authentication handoff." path="/auth/handoff" noindex />
       <div className="max-w-md w-full text-center space-y-4">
         {stage === "done" ? (
           <>
