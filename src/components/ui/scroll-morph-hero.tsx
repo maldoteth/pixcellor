@@ -932,7 +932,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
 
                 {/* Hero CTA buttons anchored at bottom of hero viewport */}
                 <div
-                    className="absolute left-1/2 -translate-x-1/2 z-[10500] pointer-events-auto bottom-[34px] md:bottom-[23px] w-full md:w-auto px-[1.5rem] md:px-0"
+                    className={`absolute left-1/2 -translate-x-1/2 z-[10500] pointer-events-auto bottom-[34px] md:bottom-[23px] w-full md:w-auto px-[1.5rem] md:px-0 ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                 >
                     {/* Mobile: stacked */}
                     <div className="md:hidden flex flex-col items-stretch gap-2 w-full">
