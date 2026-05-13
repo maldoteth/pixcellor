@@ -1,4 +1,4 @@
-import { Facebook, Linkedin, LogIn, MessageSquare, Phone, ScrollText, ShoppingCart } from "lucide-react";
+import { Facebook, Linkedin, MessageSquare, Phone, ScrollText, ShoppingCart, User } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -71,7 +71,7 @@ const Footer = () => {
             className={itemClass}
             onClick={() => window.dispatchEvent(new Event("pixcellor:open-login"))}
           >
-            <LogIn className={iconClass} />
+            <User className={iconClass} />
           </button>
         </div>
       </div>
