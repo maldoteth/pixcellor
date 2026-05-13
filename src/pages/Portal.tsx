@@ -389,6 +389,7 @@ const contactWizardFields = [
   { key: "website", label: "Website", placeholder: "Website domain", required: false, inputMode: "url" },
   { key: "contact_name", label: "Client name", placeholder: "Client name", required: false, inputMode: "text" },
   { key: "notes", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
+  { key: "note", label: "Note", placeholder: "Add a note (optional)", required: false, inputMode: "text" },
 ] as const;
 
 const salesEventWizardFields = [
@@ -462,7 +463,7 @@ export default function Portal() {
   const [mobileOrdersDrawerOpen, setMobileOrdersDrawerOpen] = useState(false);
   const [mobileContactStep, setMobileContactStep] = useState(0);
   const [mobileSalesStep, setMobileSalesStep] = useState(0);
-  const [contactForm, setContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+  const [contactForm, setContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", note: "" });
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [editContactForm, setEditContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
@@ -1452,8 +1453,23 @@ export default function Portal() {
     if (newContact?.id) {
       setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
       setContactDetailDrawerId(newContact.id);
+      const noteText = contactForm.note.trim();
+      if (noteText) {
+        const { data: eventData, error: eventError } = await (supabase as any).rpc("portal_create_contact_event", {
+          _contact_id: newContact.id,
+          _title: "Note",
+          _description: noteText,
+          _callback_at: null,
+        });
+        if (eventError) {
+          toast.error(`Client saved, but note failed: ${eventError.message}`);
+        } else {
+          const newEvent = eventData as ContactEvent | null;
+          if (newEvent?.id) setContactEvents(current => [newEvent, ...current.filter(e => e.id !== newEvent.id)]);
+        }
+      }
     }
-    setContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+    setContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", note: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
@@ -2022,7 +2038,7 @@ export default function Portal() {
       )) : (
         <div className="px-3 py-3 text-sm text-muted-foreground">No matching {field === "trade" ? "trades" : "locations"}</div>
       )}
-    </div>
+        </div>
   );
 
   const contactFormCard = showContactForm && (
@@ -2048,6 +2064,7 @@ export default function Portal() {
           />
           {contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
         </div>
+        <Input className="md:col-span-2" placeholder="Add a note (optional)" value={contactForm.note} onChange={(e) => setContactForm(f => ({ ...f, note: e.target.value }))} />
         <div className="md:col-span-2 flex gap-2">
           <Button onClick={createContact}>Save client</Button>
           <Button variant="outline" className="rounded-none shadow-none" onClick={() => setShowContactForm(false)}>Cancel</Button>
