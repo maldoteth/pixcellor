@@ -389,6 +389,7 @@ const contactWizardFields = [
   { key: "website", label: "Website", placeholder: "Website domain", required: false, inputMode: "url" },
   { key: "contact_name", label: "Client name", placeholder: "Client name", required: false, inputMode: "text" },
   { key: "notes", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
+  { key: "note", label: "Note", placeholder: "Add a note (optional)", required: false, inputMode: "text" },
 ] as const;
 
 const salesEventWizardFields = [
