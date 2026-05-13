@@ -859,7 +859,7 @@ function VisionPreviewCard({ preview, onHide }: { preview: CustomerVisionPreview
         {preview.brief && <p className="line-clamp-2 text-xs text-muted-foreground">{preview.brief}</p>}
         <div className="flex gap-2">
           <Button asChild variant="pricing" size="sm" className="flex-1 gap-2">
-            <a href={`/preview/${preview.slug}`} target="_blank" rel="noreferrer">Open vision <ExternalLink className="h-3.5 w-3.5" /></a>
+            <a href={`/preview/${preview.slug}`} target="_blank" rel="noreferrer">Preview <ExternalLink className="h-3.5 w-3.5" /></a>
           </Button>
           {onHide && (
             <Button variant="outline" size="sm" className="gap-2 rounded-none" onClick={onHide} title="Hide this design">
