@@ -48,6 +48,7 @@ import { toast } from "sonner";
 import customerPortalPLogo from "@/assets/customer-portal-p-logo.png";
 import ChatBot from "@/components/ChatBot";
 import SeoHead from "@/components/SeoHead";
+import VisionGenerator from "@/components/VisionGenerator";
 
 
 const BUY_AGAIN_PACKAGES = [
@@ -503,7 +504,7 @@ export default function CustomerPortal() {
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <SectionHeader title="Designs" description="Every AI design you've generated — open them any time, or hide ones you don't like." count={visionPreviews.length} />
                       <Button
-                        onClick={() => navigate("/?openVision=1")}
+                        onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-vision"))}
                         variant="pricing"
                         size="sm"
                         className="gap-2 rounded-none"
@@ -619,6 +620,7 @@ export default function CustomerPortal() {
             </section>
           </main>
           <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} showToggle={false} />
+          <VisionGenerator hidden chatOpen={chatOpen} />
         </SidebarInset>
       </div>
     </SidebarProvider>
