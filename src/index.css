@@ -203,29 +203,6 @@ All colors MUST be HSL.
     z-index: 1;
   }
 
-  .portfolio-card-frame {
-    position: relative;
-    border: 2px solid rgba(255,255,255,0.2);
-    background-color: hsl(var(--background) / 0.35);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    box-shadow:
-      0 30px 80px rgba(0,0,0,0.55),
-      0 8px 24px rgba(0,0,0,0.45),
-      inset 0 1px 1px hsl(0 0% 100% / 0.35),
-      inset 0 -1px 1px hsl(0 0% 0% / 0.25);
-  }
-
-  .portfolio-card-frame::before {
-    content: "";
-    position: absolute;
-    inset: 0.35rem;
-    pointer-events: none;
-    opacity: 0.6;
-    background: linear-gradient(135deg, hsl(0 0% 100% / 0.25) 0%, transparent 50%);
-    z-index: 1;
-  }
-
   .request-shimmer {
     position: relative;
     overflow: hidden;
