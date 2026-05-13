@@ -244,7 +244,8 @@ export default function CustomerPortal() {
     setIsAdmin(Boolean(adminRole));
     setData(portalData as CustomerPortalData);
     setLoading(false);
-  }, [navigate]);
+    refreshHiddenCount();
+  }, [navigate, refreshHiddenCount]);
 
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
