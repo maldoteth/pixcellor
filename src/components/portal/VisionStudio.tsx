@@ -341,7 +341,7 @@ export default function VisionStudio() {
                 />
               </div>
               {(latest.palette || latest.fonts) && (
-                <BrandKit palette={latest.palette} fonts={latest.fonts} />
+                <BrandKit palette={latest.palette} fonts={latest.fonts} sideBySide />
               )}
             </div>
           )}
