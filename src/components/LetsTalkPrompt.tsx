@@ -274,7 +274,12 @@ const LetsTalkPrompt = () => {
         dream: dream.trim() || null,
         colours: colours.trim() || null,
         vision_image_url: hostedVision ?? visionUrl ?? null,
-        note: "Visitor requested a free consultation / call back after seeing their AI sample.",
+        preview_slug: previewSlug,
+        preview_title: previewTitle,
+        source_preview_image_url: previewSlug ? (hostedVision ?? visionUrl ?? null) : null,
+        note: previewSlug
+          ? "Visitor requested a consultation from a vision preview link. Image and brief attached."
+          : "Visitor requested a free consultation / call back after seeing their AI sample.",
       };
       const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
         name: name.trim(),
@@ -298,6 +303,12 @@ const LetsTalkPrompt = () => {
           },
         })
         .catch((err) => console.error("process-lets-talk-lead failed:", err));
+
+      window.dispatchEvent(
+        new CustomEvent("pixcellor:letstalk-submitted", {
+          detail: { source: "consultation", email: email.trim() || null },
+        }),
+      );
 
       setStep("consultation");
     } catch (e) {
