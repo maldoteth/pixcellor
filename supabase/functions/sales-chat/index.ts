@@ -1702,7 +1702,7 @@ async function devCreateCustomOrder(supabase: DbClient, args: Record<string, unk
   const amountGbp = Number(args.amount_gbp);
   if (!Number.isFinite(amountGbp) || amountGbp < 0.01 || amountGbp > 1_000_000) return { ok: false, error: "invalid_amount" };
   const amountPence = Math.round(amountGbp * 100);
-  const markPaid = args.mark_paid !== false;
+  const markPaid = args.mark_paid === true;
   const billingRaw = String(args.billing ?? "one-time").toLowerCase();
   const billing = ["one-time", "monthly", "yearly"].includes(billingRaw) ? billingRaw : "one-time";
   const customLabel = cleanText(args.custom_label, 80);
