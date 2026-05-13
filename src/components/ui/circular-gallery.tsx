@@ -158,7 +158,8 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
 }) => {
   const color = useDominantColor(pickWarmupUrl(item.photo.url));
 
-  const openLink = () => {
+  const openLink = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     const url = item.photo.by;
     if (!url) return;
     const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -180,9 +181,9 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
 
   return (
     <div
-      className="relative w-full h-full"
-      style={{ pointerEvents: 'none' }}
-      aria-hidden
+      className="relative w-full h-full cursor-pointer"
+      style={{ pointerEvents: 'auto' }}
+      onClick={openLink}
     >
       {/* Touch-driven halo (mobile only). Sits behind the card; only the ring
           beyond the card's edge is visible because the inner card is opaque. */}
@@ -565,7 +566,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transition: 'opacity 0.3s ease-out',
-                  pointerEvents: 'none',
+                  pointerEvents: 'auto',
                 }}
               >
                 <GalleryCard
