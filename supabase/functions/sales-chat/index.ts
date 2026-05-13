@@ -705,7 +705,7 @@ const devTools = [
           customer_name: { type: "string", description: "Buyer's name, optional." },
           package_name: { type: "string", description: "Package label, e.g. 'Full Works', 'Elite', 'Bespoke build'. Required." },
           amount_gbp: { type: "number", description: "Amount in pounds (e.g. 750 for £750). Required, between 0.01 and 1,000,000." },
-          mark_paid: { type: "boolean", description: "True for an already-paid offline order, false for a draft/quote awaiting payment. Defaults to true." },
+          mark_paid: { type: "boolean", description: "True ONLY if the dev explicitly stated the order is already paid (bank transfer, cash, invoice settled). Defaults to false (unpaid draft/quote). Never assume paid." },
           billing: { type: "string", enum: ["one-time", "monthly", "yearly"], description: "Defaults to one-time." },
           custom_label: { type: "string", description: "Optional free-form label for custom packages." },
           notes: { type: "string", description: "Internal admin notes (max 1000 chars)." },
