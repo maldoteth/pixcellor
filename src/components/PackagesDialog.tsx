@@ -620,7 +620,7 @@ function DesktopShell({ spinIn, initialServices = false }: { spinIn: boolean; in
       <div className="mt-6 -translate-y-[10px] flex justify-center gap-3 md:max-lg:scale-[0.8] min-[880px]:max-lg:scale-[0.89] min-[960px]:max-lg:scale-[1.0] md:max-lg:origin-top lg:scale-[1.05] lg:origin-top">
         <Button
           variant="pricing"
-          className="h-auto w-40 py-2 font-semibold [perspective:600px]"
+          className="h-auto w-[156px] py-2 font-semibold [perspective:600px]"
           onClick={() => setServicesFlipped((v) => !v)}
         >
           <span className="relative inline-block w-full h-[1.25em] [transform-style:preserve-3d]">
@@ -639,7 +639,7 @@ function DesktopShell({ spinIn, initialServices = false }: { spinIn: boolean; in
           </span>
         </Button>
         <DialogClose asChild>
-          <Button variant="pricing" className="h-auto w-40 py-2 font-semibold">
+          <Button variant="pricing" className="h-auto w-[156px] py-2 font-semibold">
             Close
           </Button>
         </DialogClose>
