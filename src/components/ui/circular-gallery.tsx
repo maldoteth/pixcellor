@@ -3,6 +3,28 @@ import React, { useState, useEffect, useRef, HTMLAttributes } from 'react';
 const cn = (...classes: (string | undefined | null | false)[]) =>
   classes.filter(Boolean).join(' ');
 
+// Build responsive variant URLs for portfolio PNGs that have pre-generated
+// AVIF/WebP siblings (see scripts/convert-portfolio.mjs). Returns null for
+// any URL that doesn't follow the /portfolio/<name>.png pattern (e.g. thum.io).
+function portfolioVariants(url: string) {
+  const match = /^\/portfolio\/([^/]+)\.png$/i.exec(url);
+  if (!match) return null;
+  const base = `/portfolio/${match[1]}`;
+  return {
+    avif: `${base}-sm.avif 480w, ${base}-lg.avif 960w`,
+    webp: `${base}-sm.webp 480w, ${base}-lg.webp 960w`,
+  };
+}
+
+// Pick the lightweight WebP variant for warmup/color extraction so the
+// 300-500KB PNG never gets fetched on devices that don't display it.
+function pickWarmupUrl(url: string) {
+  const v = portfolioVariants(url);
+  if (!v) return url;
+  const m = /^\/portfolio\/([^/]+)\.png$/i.exec(url);
+  return m ? `/portfolio/${m[1]}-sm.webp` : url;
+}
+
 // Cache extracted dominant colors per image url across renders
 const colorCache = new Map<string, { r: number; g: number; b: number }>();
 const imageElementCache = new Map<string, HTMLImageElement>();
@@ -134,7 +156,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
   mobileMode = false,
   glowIntensity = 1,
 }) => {
-  const color = useDominantColor(item.photo.url);
+  const color = useDominantColor(pickWarmupUrl(item.photo.url));
 
   const openLink = () => {
     const url = item.photo.by;
@@ -189,17 +211,27 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         }}
       >
         <div className="relative w-full h-full overflow-hidden rounded-2xl bg-black">
-      <img
-        src={item.photo.url}
-        alt={item.photo.text}
-        crossOrigin="anonymous"
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
-        loading="eager"
-        decoding="sync"
-        // @ts-expect-error fetchPriority is valid HTML
-        fetchpriority="high"
-      />
+      {(() => {
+        const variants = portfolioVariants(item.photo.url);
+        const sizes = '(max-width: 768px) 240px, 360px';
+        return (
+          <picture>
+            {variants && <source type="image/avif" srcSet={variants.avif} sizes={sizes} />}
+            {variants && <source type="image/webp" srcSet={variants.webp} sizes={sizes} />}
+            <img
+              src={item.photo.url}
+              alt={item.photo.text}
+              crossOrigin="anonymous"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
+              loading="eager"
+              decoding="sync"
+              // @ts-expect-error fetchPriority is valid HTML
+              fetchpriority="high"
+            />
+          </picture>
+        );
+      })()}
       <div
         className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
         style={{
@@ -343,7 +375,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     // and back never triggers a fresh network/decode pass.
     useEffect(() => {
       items.forEach((it) => {
-        void preloadGalleryImage(it.photo.url);
+        void preloadGalleryImage(pickWarmupUrl(it.photo.url));
       });
     }, [items]);
 
