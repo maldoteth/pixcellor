@@ -206,7 +206,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
       <div
         className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl silver-shimmer-hover"
         style={{
-          padding: '4px',
+          padding: '2px',
           boxShadow: mobileMode
             ? '0 0 0 1px rgba(255,255,255,0.06)'
             : `0 8px 24px -10px ${glow}, 0 0 0 1px rgba(255,255,255,0.06)`,
