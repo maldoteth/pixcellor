@@ -16,6 +16,15 @@ function portfolioVariants(url: string) {
   };
 }
 
+// Pick the lightweight WebP variant for warmup/color extraction so the
+// 300-500KB PNG never gets fetched on devices that don't display it.
+function pickWarmupUrl(url: string) {
+  const v = portfolioVariants(url);
+  if (!v) return url;
+  const m = /^\/portfolio\/([^/]+)\.png$/i.exec(url);
+  return m ? `/portfolio/${m[1]}-sm.webp` : url;
+}
+
 // Cache extracted dominant colors per image url across renders
 const colorCache = new Map<string, { r: number; g: number; b: number }>();
 const imageElementCache = new Map<string, HTMLImageElement>();
