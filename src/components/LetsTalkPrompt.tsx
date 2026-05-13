@@ -126,6 +126,8 @@ const LetsTalkPrompt = () => {
       setRefineInstruction("");
       setOrderRequested(false);
       // Pre-load vision context if we're opening from a generated sample
+      setPreviewSlug(null);
+      setPreviewTitle(null);
       if (nextMode === "consultation") {
         try {
           const raw = sessionStorage.getItem("pixcellor:consultation-context");
@@ -136,12 +138,16 @@ const LetsTalkPrompt = () => {
               company?: string | null;
               email?: string | null;
               phone?: string | null;
+              previewSlug?: string | null;
+              previewTitle?: string | null;
             };
             if (ctx?.imageUrl) setVisionUrl(ctx.imageUrl);
             if (ctx?.brief) setDream(ctx.brief);
             if (ctx?.company) setCompany(ctx.company);
             if (ctx?.email) setEmail(ctx.email);
             if (ctx?.phone) setPhone(ctx.phone);
+            if (ctx?.previewSlug) setPreviewSlug(ctx.previewSlug);
+            if (ctx?.previewTitle) setPreviewTitle(ctx.previewTitle);
           }
         } catch { /* ignore */ }
       }
