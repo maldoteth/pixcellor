@@ -41,7 +41,7 @@ function ensureGoogleFont(family?: string, weights?: (number | string)[]) {
   document.head.appendChild(link);
 }
 
-export default function BrandKit({ palette, fonts, compact, className }: BrandKitProps) {
+export default function BrandKit({ palette, fonts, compact, sideBySide, className }: BrandKitProps) {
   const cleanPalette = useMemo(
     () => (palette ?? []).filter((p) => p && typeof p.hex === "string" && /^#?[0-9a-fA-F]{3,8}$/.test(p.hex.trim())),
     [palette],
@@ -58,6 +58,9 @@ export default function BrandKit({ palette, fonts, compact, className }: BrandKi
 
   const swatchSize = compact ? "h-7 w-7" : "h-10 w-10";
   const labelSize = compact ? "text-[9px]" : "text-[10px]";
+  const hasPalette = cleanPalette.length > 0;
+  const hasFonts = !!(headingFamily || bodyFamily);
+  const useGrid = sideBySide && hasPalette && hasFonts && !compact;
 
   return (
     <div className={`space-y-2 ${className ?? ""}`}>
