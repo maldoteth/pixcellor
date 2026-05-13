@@ -416,10 +416,20 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={(v) => !submitting && onOpenChange(v)}>
+      <Drawer open={open} onOpenChange={(v) => !submitting && onOpenChange(v)} dismissible={false}>
         <DrawerContent className="carousel-label-glass border-foreground/10 text-foreground">
-          <DrawerHeader>
-            <DrawerTitle className="text-foreground text-center">{title}</DrawerTitle>
+          <DrawerHeader className="relative">
+            <DrawerClose asChild>
+              <button
+                type="button"
+                className="absolute right-2 top-2 rounded-sm p-2 text-foreground opacity-70 transition-opacity hover:opacity-100 focus:outline-none"
+                onClick={() => !submitting && onOpenChange(false)}
+              >
+                <X className="h-5 w-5" />
+                <span className="sr-only">Close</span>
+              </button>
+            </DrawerClose>
+            <DrawerTitle className="text-foreground text-center pr-8">{title}</DrawerTitle>
           </DrawerHeader>
           <div className="px-4 pb-6">{content}</div>
         </DrawerContent>
@@ -429,7 +439,11 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
 
   return (
     <Dialog open={open} onOpenChange={(v) => !submitting && onOpenChange(v)}>
-      <DialogContent className="sm:max-w-[460px] carousel-label-glass border-foreground/10 text-foreground">
+      <DialogContent
+        className="sm:max-w-[460px] carousel-label-glass border-foreground/10 text-foreground"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-foreground">{title}</DialogTitle>
         </DialogHeader>
