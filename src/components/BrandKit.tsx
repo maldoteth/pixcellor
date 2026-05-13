@@ -60,7 +60,7 @@ export default function BrandKit({ palette, fonts, compact, sideBySide, classNam
   const labelSize = compact ? "text-[9px]" : "text-[10px]";
   const hasPalette = cleanPalette.length > 0;
   const hasFonts = !!(headingFamily || bodyFamily);
-  const useGrid = sideBySide && hasPalette && hasFonts && !compact;
+  const useGrid = sideBySide && hasPalette && hasFonts;
 
   return (
     <div className={`${useGrid ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-2"} ${className ?? ""}`}>

@@ -884,7 +884,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
             </div>
             {(palette || fonts) && (
               <div className="border border-border/40 p-3 bg-card/40">
-                <BrandKit palette={palette} fonts={fonts} compact />
+                <BrandKit palette={palette} fonts={fonts} compact sideBySide />
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
