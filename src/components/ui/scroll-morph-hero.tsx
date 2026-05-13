@@ -1264,7 +1264,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     requestAnimationFrame(step);
                 }}
                 style={{ opacity: footerRevealProgress, top: "calc(env(safe-area-inset-top, 0px) + 1rem)", right: "calc(env(safe-area-inset-right, 0px) + 1rem)" }}
-                className="pricing-button lg:hidden absolute z-50 flex items-center justify-center w-7 h-7 rounded-md text-foreground transition pointer-events-auto"
+                className={`pricing-button lg:hidden absolute z-50 flex items-center justify-center w-7 h-7 rounded-md text-foreground transition pointer-events-auto ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
             >
                 <X className="w-3.5 h-3.5" strokeWidth={2.25} />
             </motion.button>
