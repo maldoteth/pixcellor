@@ -202,17 +202,27 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         }}
       >
         <div className="relative w-full h-full overflow-hidden rounded-2xl bg-black">
-      <img
-        src={item.photo.url}
-        alt={item.photo.text}
-        crossOrigin="anonymous"
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
-        loading="eager"
-        decoding="sync"
-        // @ts-expect-error fetchPriority is valid HTML
-        fetchpriority="high"
-      />
+      {(() => {
+        const variants = portfolioVariants(item.photo.url);
+        const sizes = '(max-width: 768px) 240px, 360px';
+        return (
+          <picture>
+            {variants && <source type="image/avif" srcSet={variants.avif} sizes={sizes} />}
+            {variants && <source type="image/webp" srcSet={variants.webp} sizes={sizes} />}
+            <img
+              src={item.photo.url}
+              alt={item.photo.text}
+              crossOrigin="anonymous"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
+              loading="eager"
+              decoding="sync"
+              // @ts-expect-error fetchPriority is valid HTML
+              fetchpriority="high"
+            />
+          </picture>
+        );
+      })()}
       <div
         className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
         style={{
