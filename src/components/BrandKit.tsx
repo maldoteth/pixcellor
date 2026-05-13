@@ -63,8 +63,8 @@ export default function BrandKit({ palette, fonts, compact, sideBySide, classNam
   const useGrid = sideBySide && hasPalette && hasFonts && !compact;
 
   return (
-    <div className={`space-y-2 ${className ?? ""}`}>
-      {cleanPalette.length > 0 && (
+    <div className={`${useGrid ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-2"} ${className ?? ""}`}>
+      {hasPalette && (
         <div>
           <p className={`${labelSize} uppercase tracking-[0.18em] text-muted-foreground mb-1.5`}>Brand colours</p>
           <div className="flex flex-wrap gap-2">
@@ -87,7 +87,7 @@ export default function BrandKit({ palette, fonts, compact, sideBySide, classNam
           </div>
         </div>
       )}
-      {(headingFamily || bodyFamily) && (
+      {hasFonts && (
         <div>
           <p className={`${labelSize} uppercase tracking-[0.18em] text-muted-foreground mb-1.5`}>Typography</p>
           <div className="space-y-1">
