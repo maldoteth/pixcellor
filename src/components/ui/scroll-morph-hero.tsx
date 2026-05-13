@@ -311,12 +311,13 @@ const IMAGES = [
 interface IntroAnimationProps {
     onVirtualScrollChange?: (value: number) => void;
     onPackagesOpenChange?: (open: boolean) => void;
+    overlayOpen?: boolean;
 }
 
 // Helper for linear interpolation
 const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;
 
-export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenChange }: IntroAnimationProps) {
+export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenChange, overlayOpen }: IntroAnimationProps) {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
     const introPhaseRef = useRef<AnimationPhase>("scatter");
     const introTimersRef = useRef<number[]>([]);
