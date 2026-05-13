@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import { Loader2, Wand2 } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
+import BrandKit from "@/components/BrandKit";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -126,6 +127,9 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     industry: "", vibe: "", colour: "", headline: "", sections: "",
   });
   const [visionBrief, setVisionBrief] = useState<VisionBrief | null>(initial.vision);
+  const [palette, setPalette] = useState<any>(null);
+  const [fonts, setFonts] = useState<any>(null);
+  const [previewSlug, setPreviewSlug] = useState<string | null>(null);
   const [refineInstruction, setRefineInstruction] = useState("");
 
   useEffect(() => {
@@ -134,6 +138,9 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
       setStep(next.step);
       setValues(next.values);
       setVisionBrief(next.vision);
+      setPalette(null);
+      setFonts(null);
+      setPreviewSlug(null);
       setVisionAnswers({ industry: "", vibe: "", colour: "", headline: "", sections: "" });
       setRefineInstruction("");
       setError(null);
@@ -141,6 +148,31 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  // Poll for brand kit (palette + fonts) generated in the background after the image returns.
+  useEffect(() => {
+    if (!previewSlug) return;
+    if (palette && fonts) return;
+    let cancelled = false;
+    let attempts = 0;
+    const tick = async () => {
+      if (cancelled) return;
+      attempts += 1;
+      try {
+        const { data } = await (supabase as any)
+          .rpc("get_vision_preview_by_slug", { _slug: previewSlug })
+          .maybeSingle();
+        if (!cancelled && data) {
+          if (data.palette) setPalette(data.palette);
+          if (data.fonts) setFonts(data.fonts);
+          if (data.palette && data.fonts) return;
+        }
+      } catch { /* ignore */ }
+      if (!cancelled && attempts < 20) setTimeout(tick, 2000);
+    };
+    const initial = setTimeout(tick, 2500);
+    return () => { cancelled = true; clearTimeout(initial); };
+  }, [previewSlug, palette, fonts]);
 
   // Track visitors who reach the domain step
   useEffect(() => {
@@ -193,11 +225,16 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     setStep("vision-generating");
     setError(null);
     try {
-      const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", { body: { prompt: brief } });
+      const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", {
+        body: { prompt: brief, meta: { source: "buy_flow" } },
+      });
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
       const url = data?.imageUrl ?? null;
       setVisionBrief({ prompt: brief, imageUrl: url });
+      setPalette(data?.palette ?? null);
+      setFonts(data?.fonts ?? null);
+      setPreviewSlug(data?.previewSlug ?? null);
       setStep("vision-result");
     } catch (e) {
       console.error("vision generation failed", e);
@@ -225,6 +262,9 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
       if (data?.error) throw new Error(data.error);
       const url = data?.imageUrl ?? null;
       setVisionBrief({ prompt: `${previousPrompt}\n\nRefinement: ${ins}`, imageUrl: url ?? previousUrl });
+      if (data?.palette) setPalette(data.palette);
+      if (data?.fonts) setFonts(data.fonts);
+      if (data?.previewSlug) setPreviewSlug(data.previewSlug);
       setRefineInstruction("");
       setStep("vision-result");
     } catch (e) {
@@ -461,6 +501,11 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
       ) : (
         <p className="text-red-400 text-xs">No preview was generated. You can continue without one.</p>
       )}
+      {(palette || fonts) && (
+        <div className="border border-foreground/15 p-3 bg-card/40 rounded-md">
+          <BrandKit palette={palette} fonts={fonts} compact sideBySide />
+        </div>
+      )}
       {error && <p className="text-red-400 text-xs">{error}</p>}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
         <Button type="button" variant="outline" onClick={() => { setError(null); setStep("vision-refine"); }} disabled={!visionBrief?.imageUrl} className="h-12 font-semibold gap-2">
@@ -470,7 +515,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
           Looks great → Continue
         </Button>
       </div>
-      <button type="button" onClick={() => { setVisionBrief(null); setStep("vision-intro"); }} className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1 self-center">
+      <button type="button" onClick={() => { setVisionBrief(null); setPalette(null); setFonts(null); setPreviewSlug(null); setStep("vision-intro"); }} className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1 self-center">
         Start over
       </button>
     </>
