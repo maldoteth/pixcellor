@@ -353,7 +353,7 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
         </svg>
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 leading-tight">
         <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase">Free</span>
-        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase -mt-0.5">Samples</span>
+        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase -mt-0.5">DESIGN</span>
         <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider mt-0.5">Don't pay till</span>
         <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider">you're happy</span>
         <button
@@ -1194,7 +1194,7 @@ function MobileFreeSamplesCard() {
             <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
             Free
           </span>
-          <h3 className="mt-2 text-lg font-bold text-foreground leading-tight">Free Samples</h3>
+          <h3 className="mt-2 text-lg font-bold text-foreground leading-tight">Free DESIGN</h3>
           <p className="text-xs text-foreground/70 mt-0.5">Don't pay till you're happy</p>
         </div>
         <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-foreground/30 bg-foreground/10 text-foreground font-bold text-xs uppercase tracking-wide">
