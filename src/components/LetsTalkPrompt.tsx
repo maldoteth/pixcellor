@@ -507,7 +507,7 @@ const LetsTalkPrompt = () => {
   };
 
   const canSkip =
-    step === "email" || (step === "phone" && !emailSkipped) || step === "media";
+    step === "email" || (step === "phone" && !emailSkipped && mode !== "consultation") || step === "media";
 
   const isTextStep = step === "name" || step === "company" || step === "email" || step === "phone";
   const isLongStep = step === "dream" || step === "colours";
