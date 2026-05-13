@@ -225,11 +225,16 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     setStep("vision-generating");
     setError(null);
     try {
-      const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", { body: { prompt: brief } });
+      const { data, error: fnErr } = await supabase.functions.invoke("generate-vision", {
+        body: { prompt: brief, meta: { source: "buy_flow" } },
+      });
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
       const url = data?.imageUrl ?? null;
       setVisionBrief({ prompt: brief, imageUrl: url });
+      setPalette(data?.palette ?? null);
+      setFonts(data?.fonts ?? null);
+      setPreviewSlug(data?.previewSlug ?? null);
       setStep("vision-result");
     } catch (e) {
       console.error("vision generation failed", e);
