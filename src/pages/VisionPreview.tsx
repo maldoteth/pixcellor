@@ -151,7 +151,7 @@ export default function VisionPreview() {
             </div>
             {(preview.palette || preview.fonts) && (
               <div className="border border-border p-4">
-                <BrandKit palette={preview.palette} fonts={preview.fonts} />
+                <BrandKit palette={preview.palette} fonts={preview.fonts} sideBySide />
               </div>
             )}
             {preview.brief && (
