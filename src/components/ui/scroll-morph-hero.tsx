@@ -1211,7 +1211,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     }}
                     aria-label="Scroll up"
                     data-hero-scroll-control="true"
-                    className={`md:hidden relative z-[140] -mx-10 px-10 py-6 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"}`}
+                    className={`md:hidden relative z-[140] -mx-10 px-10 py-6 cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"} ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                     style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                 >
                     <motion.div
