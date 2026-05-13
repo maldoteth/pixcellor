@@ -1453,8 +1453,23 @@ export default function Portal() {
     if (newContact?.id) {
       setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
       setContactDetailDrawerId(newContact.id);
+      const noteText = contactForm.note.trim();
+      if (noteText) {
+        const { data: eventData, error: eventError } = await (supabase as any).rpc("portal_create_contact_event", {
+          _contact_id: newContact.id,
+          _title: "Note",
+          _description: noteText,
+          _callback_at: null,
+        });
+        if (eventError) {
+          toast.error(`Client saved, but note failed: ${eventError.message}`);
+        } else {
+          const newEvent = eventData as ContactEvent | null;
+          if (newEvent?.id) setContactEvents(current => [newEvent, ...current.filter(e => e.id !== newEvent.id)]);
+        }
+      }
     }
-    setContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+    setContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", note: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
