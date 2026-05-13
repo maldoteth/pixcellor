@@ -620,6 +620,7 @@ export default function CustomerPortal() {
             </section>
           </main>
           <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} showToggle={false} />
+          <VisionGenerator hidden chatOpen={chatOpen} />
         </SidebarInset>
       </div>
     </SidebarProvider>
