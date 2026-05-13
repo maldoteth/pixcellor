@@ -2225,6 +2225,18 @@ Deno.serve(async (req) => {
           needsFollowUp = true;
           try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devFetchChatHistory(supabase, JSON.parse(toolCall.function.arguments || "{}"))) }); }
           catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "history_failed" }) }); }
+        } else if (toolCall.function.name === "create_custom_order" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devCreateCustomOrder(supabase, JSON.parse(toolCall.function.arguments), adminEmail)) }); }
+          catch (e) { console.error("create_custom_order:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_order_failed" }) }); }
+        } else if (toolCall.function.name === "create_payment_link" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devCreatePaymentLink(req, JSON.parse(toolCall.function.arguments))) }); }
+          catch (e) { console.error("create_payment_link:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_link_failed" }) }); }
+        } else if (toolCall.function.name === "list_payment_links" && isDevMode) {
+          needsFollowUp = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devListPaymentLinks(supabase, JSON.parse(toolCall.function.arguments || "{}"))) }); }
+          catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "list_links_failed" }) }); }
         } else if (toolCall.function.name === "lookup_customer") {
           needsFollowUp = true;
           try {
