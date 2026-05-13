@@ -126,7 +126,7 @@ const Index = () => {
   return (
     <div className="w-full">
       <SeoHead
-        title="Premium digital services turbopowered by AI"
+        title="Pixcellor - Digital Services"
         description="AI powered business solutions by a team who have collectively launched over $500,000,000 in market cap and multi 7 figure GTM/Q1 revenue projects."
         path="/"
       />
