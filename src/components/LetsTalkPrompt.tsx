@@ -486,7 +486,7 @@ const LetsTalkPrompt = () => {
       return;
     }
     if (step === "phone") {
-      if (emailSkipped) {
+      if (emailSkipped || mode === "consultation") {
         setError("Please enter your number so we can reach you.");
         return;
       }
