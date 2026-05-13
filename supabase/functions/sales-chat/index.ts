@@ -1850,6 +1850,7 @@ Deno.serve(async (req) => {
       const { data: userData } = await supabase.auth.getUser(token);
       adminEmail = userData?.user?.email?.toLowerCase() ?? null;
     }
+    let currentConversationId = conversationId;
     let botPaused = false;
 
     // Get or create conversation
