@@ -501,6 +501,11 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
       ) : (
         <p className="text-red-400 text-xs">No preview was generated. You can continue without one.</p>
       )}
+      {(palette || fonts) && (
+        <div className="border border-foreground/15 p-3 bg-card/40 rounded-md">
+          <BrandKit palette={palette} fonts={fonts} compact sideBySide />
+        </div>
+      )}
       {error && <p className="text-red-400 text-xs">{error}</p>}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
         <Button type="button" variant="outline" onClick={() => { setError(null); setStep("vision-refine"); }} disabled={!visionBrief?.imageUrl} className="h-12 font-semibold gap-2">
@@ -510,7 +515,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
           Looks great → Continue
         </Button>
       </div>
-      <button type="button" onClick={() => { setVisionBrief(null); setStep("vision-intro"); }} className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1 self-center">
+      <button type="button" onClick={() => { setVisionBrief(null); setPalette(null); setFonts(null); setPreviewSlug(null); setStep("vision-intro"); }} className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1 self-center">
         Start over
       </button>
     </>
