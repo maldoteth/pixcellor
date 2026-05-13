@@ -158,6 +158,14 @@ const LetsTalkPrompt = () => {
     return () => window.removeEventListener("pixcellor:open-letstalk", handler);
   }, []);
 
+  useEffect(() => {
+    if (open) {
+      window.dispatchEvent(new Event("pixcellor:letstalk-open"));
+    } else {
+      window.dispatchEvent(new Event("pixcellor:letstalk-close"));
+    }
+  }, [open]);
+
   const submit = async (
     finalEmail: string,
     finalPhone: string,
