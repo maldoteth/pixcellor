@@ -541,7 +541,7 @@ export default function CustomerPortal() {
                 </TabsContent>
 
                 <TabsContent value="payments" className="space-y-4">
-                  <SectionHeader title="Payments" description="Retainer plan details, past payments, and the next scheduled billing date." count={retainerOrders.length} />
+                  <SectionHeader title="Payments" description="Retainer plan details, past payments, and the next scheduled billing date." />
                   <div className="grid gap-4 lg:grid-cols-3">
                     {BUY_AGAIN_PACKAGES.map((plan) => {
                       const hasBoughtPlan = purchasedPackageNames.has(plan.name.toLowerCase());
