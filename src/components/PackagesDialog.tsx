@@ -75,7 +75,7 @@ const SERVICE_BACKS = {
       { name: "Internal tools", info: "Custom systems, automations, agentic flows and more saving you potentially tens of thousands a year." },
       { name: "CRM systems", info: "Want a CRM that suits your exact needs powered by a swarm of AI agents that work to your will, saving you and your staff time and money while ensuring nothing is ever missed? Look no further." },
       { name: "E-commerce stores", info: "Our Shopify stores have scaled tens of thousands of sales on launch days and we're ready to help you get the same results." },
-      { name: "Booking platforms", info: "Have a restaurant, salon or any service business? See how much money we can save you with a free consultation today." },
+      { name: "Blockchain integrations", info: "Have a restaurant, salon or any service business? See how much money we can save you with a free consultation today." },
     ],
   },
   retainer: {
