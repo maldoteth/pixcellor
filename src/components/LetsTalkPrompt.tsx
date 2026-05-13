@@ -74,6 +74,8 @@ const LetsTalkPrompt = () => {
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [refineInstruction, setRefineInstruction] = useState("");
   const [orderRequested, setOrderRequested] = useState(false);
+  const [previewSlug, setPreviewSlug] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState<string | null>(null);
   const { honeypotValue, setHoneypotValue, isHuman } = useAntiSpam();
 
   // Progressive contact save — fires whenever we have name + (email or phone),
