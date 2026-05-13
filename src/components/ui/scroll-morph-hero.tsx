@@ -851,10 +851,17 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const galleryRotation = useTransform(virtualScroll, [HERO_MORPH_END, CAROUSEL_SCROLL_END], isSmallViewport ? [0, 360] : [0, 720]);
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
+    const [portfolioInteractive, setPortfolioInteractive] = useState(false);
     useEffect(() => {
         const unsub = smoothGalleryRotation.on("change", setGalleryRotationValue);
         return () => unsub();
     }, [smoothGalleryRotation]);
+    useEffect(() => {
+        const unsub = virtualScroll.on("change", (value) => {
+            setPortfolioInteractive(value > HERO_MORPH_END + 120);
+        });
+        return () => unsub();
+    }, [virtualScroll]);
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
@@ -1092,7 +1099,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                 {/* Circular Portfolio Gallery — stays mounted so images remain cached while scrolling */}
                 {galleryItems.length > 0 && (
                     <motion.div
-                        style={{ opacity: contentOpacity, filter: contentBlur, pointerEvents: morphValue > 0.85 ? "auto" : "none" }}
+                        style={{ opacity: contentOpacity, filter: contentBlur, pointerEvents: portfolioInteractive ? "auto" : "none" }}
                         className="absolute inset-x-0 top-[calc(28%-5px)] md:top-[32%] bottom-[calc(18%+64px)] md:bottom-[18%] z-[50]"
                     >
                         <CircularGallery
@@ -1105,6 +1112,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                     : 360 + Math.max(0, galleryItems.length - 12) * 13
                             }
                             externalRotation={galleryRotationValue}
+                            interactive={portfolioInteractive}
                         />
                     </motion.div>
                 )}
