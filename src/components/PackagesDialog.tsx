@@ -56,7 +56,12 @@ const SERVICE_BACKS = {
     title: "Marketing Solutions",
     action: "sales" as const,
     items: [
-      { name: "Telesales campaigns\nGTM & Lead Generation\nBroadcast SMS & Outreach\nSEO & AEO optimisation\nSocial media automation\nPaid ads & retargeting", info: "A comprehensive suite of marketing services designed to scale your business from outreach to conversion." },
+      { name: "Telesales campaigns", info: "Every call recorded on your custom client CRM with regular feedback and reviews." },
+      { name: "GTM and Lead Generation", info: "From industry veterans with 9 figure market caps and multi 7 figure Q1 revenue background." },
+      { name: "GTM and lead generation", info: "We will help you create a buzz and get the word out with targeted messaging." },
+      { name: "SEO & AEO optimisation", info: "Get ranked instantly with our team of experts stemming from some of the largest companies in the world." },
+      { name: "Social media automation", info: "Generate leads while you sleep with automated social media management and save 90% on SMM salaries." },
+      { name: "Paid ads & retargeting", info: "Leverage the latest techniques and strategies to maximise ROI with our advertising services." },
     ],
   },
   elite: {
@@ -1142,7 +1147,7 @@ function ServiceBackCard({
         </div>
         <ul className={`space-y-2 text-base text-foreground ${isCenter ? "mb-4" : "flex-1 mb-6"}`}>
           {data.items.map((item) => (
-            <li key={item.name} className="flex items-start gap-2 whitespace-pre-line">
+            <li key={item.name} className="flex items-start gap-2">
               <ServiceItemRow item={item} />
             </li>
           ))}
@@ -1252,7 +1257,7 @@ function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
               </div>
               <ul className="space-y-2 flex-1 mb-4">
                 {g.items.map((item) => (
-                  <li key={item.name} className="flex items-start gap-2 text-base text-foreground whitespace-pre-line">
+                  <li key={item.name} className="flex items-start gap-2 text-base text-foreground">
                     <ServiceItemRow item={item} />
                   </li>
                 ))}
