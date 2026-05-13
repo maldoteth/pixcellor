@@ -557,6 +557,7 @@ export default function CustomerPortal() {
                                 toast.error("Could not hide that design.");
                               } else {
                                 toast.success("Design hidden");
+                                setHiddenCount((c) => c + 1);
                                 setData((prev) => prev ? { ...prev, visionPreviews: (prev.visionPreviews ?? []).filter((p) => p.slug !== preview.slug) } : prev);
                               }
                             }}
