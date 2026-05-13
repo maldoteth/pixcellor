@@ -179,8 +179,8 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
       <div
         className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl"
         style={{
-          padding: '1px',
-          background: 'linear-gradient(90deg, #808080, #A9A9A9, #C0C0C0, #E8E8E8, #C0C0C0, #A9A9A9, #808080)',
+          padding: '2px',
+          background: 'linear-gradient(90deg, #333333, #555555, #777777, #999999, #777777, #555555, #333333)',
           backgroundSize: '200% 100%',
           animation: 'silver-shimmer 3s ease-in-out infinite',
           boxShadow: mobileMode
