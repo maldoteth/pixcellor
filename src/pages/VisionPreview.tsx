@@ -104,7 +104,7 @@ export default function VisionPreview() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SeoHead
-        title={preview?.title ? `${preview.title} — Pixcellor preview` : "Your Pixcellor preview"}
+        title={preview?.title ? `${preview.title} — Pixcellor preview` : "Your Preview"}
         description="A custom AI-rendered website concept made for you by Pixcellor."
         path={`/preview/${slug ?? ""}`}
       />
@@ -132,7 +132,7 @@ export default function VisionPreview() {
         ) : preview && imageUrl ? (
           <>
             <div className="space-y-1">
-              <h1 className="text-xl font-semibold">{preview.title ?? "Your Pixcellor preview"}</h1>
+              <h1 className="text-xl font-semibold">{preview.title ?? "Your Preview"}</h1>
             </div>
             <div
               tabIndex={-1}
@@ -151,7 +151,7 @@ export default function VisionPreview() {
             </div>
             {(preview.palette || preview.fonts) && (
               <div className="border border-border p-4">
-                <BrandKit palette={preview.palette} fonts={preview.fonts} />
+                <BrandKit palette={preview.palette} fonts={preview.fonts} sideBySide />
               </div>
             )}
             {preview.brief && (

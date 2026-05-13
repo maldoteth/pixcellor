@@ -12,7 +12,7 @@ interface GenerationProgressProps {
  */
 const GenerationProgress = ({
   label = "Building your sample…",
-  helper = "Our AI agent is building a free custom design template for you1",
+  helper = "Our AI agent is building a free custom design template for you!",
   estimatedSeconds = 30,
 }: GenerationProgressProps) => {
   const [progress, setProgress] = useState(2);

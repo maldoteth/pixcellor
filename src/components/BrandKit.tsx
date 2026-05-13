@@ -19,6 +19,7 @@ export interface BrandKitProps {
   palette?: BrandPaletteEntry[] | null;
   fonts?: BrandFonts | null;
   compact?: boolean;
+  sideBySide?: boolean;
   className?: string;
 }
 
@@ -40,7 +41,7 @@ function ensureGoogleFont(family?: string, weights?: (number | string)[]) {
   document.head.appendChild(link);
 }
 
-export default function BrandKit({ palette, fonts, compact, className }: BrandKitProps) {
+export default function BrandKit({ palette, fonts, compact, sideBySide, className }: BrandKitProps) {
   const cleanPalette = useMemo(
     () => (palette ?? []).filter((p) => p && typeof p.hex === "string" && /^#?[0-9a-fA-F]{3,8}$/.test(p.hex.trim())),
     [palette],
@@ -57,10 +58,13 @@ export default function BrandKit({ palette, fonts, compact, className }: BrandKi
 
   const swatchSize = compact ? "h-7 w-7" : "h-10 w-10";
   const labelSize = compact ? "text-[9px]" : "text-[10px]";
+  const hasPalette = cleanPalette.length > 0;
+  const hasFonts = !!(headingFamily || bodyFamily);
+  const useGrid = sideBySide && hasPalette && hasFonts && !compact;
 
   return (
-    <div className={`space-y-2 ${className ?? ""}`}>
-      {cleanPalette.length > 0 && (
+    <div className={`${useGrid ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-2"} ${className ?? ""}`}>
+      {hasPalette && (
         <div>
           <p className={`${labelSize} uppercase tracking-[0.18em] text-muted-foreground mb-1.5`}>Brand colours</p>
           <div className="flex flex-wrap gap-2">
@@ -83,7 +87,7 @@ export default function BrandKit({ palette, fonts, compact, className }: BrandKi
           </div>
         </div>
       )}
-      {(headingFamily || bodyFamily) && (
+      {hasFonts && (
         <div>
           <p className={`${labelSize} uppercase tracking-[0.18em] text-muted-foreground mb-1.5`}>Typography</p>
           <div className="space-y-1">
