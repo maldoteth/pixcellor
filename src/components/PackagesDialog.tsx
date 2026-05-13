@@ -58,7 +58,7 @@ const SERVICE_BACKS = {
     items: [
       { name: "Telesales campaigns", info: "Every call recorded on your custom client CRM with regular feedback and reviews." },
       { name: "GTM and Lead Generation", info: "From industry veterans with 9 figure market caps and multi 7 figure Q1 revenue background." },
-      { name: "GTM and lead generation", info: "We will help you create a buzz and get the word out with targeted messaging." },
+      { name: "Token launches", info: "We will help you create a buzz and get the word out with targeted messaging." },
       { name: "SEO & AEO optimisation", info: "Get ranked instantly with our team of experts stemming from some of the largest companies in the world." },
       { name: "Social media automation", info: "Generate leads while you sleep with automated social media management and save 90% on SMM salaries." },
       { name: "Paid ads & retargeting", info: "Leverage the latest techniques and strategies to maximise ROI with our advertising services." },
