@@ -576,6 +576,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                 <GalleryCard
                   item={item}
                   isFrontFacing={isFrontFacing}
+                  interactive={interactive}
                   mobileMode={isMobile}
                   glowIntensity={glowIntensities[i] ?? 0}
                 />
