@@ -2447,10 +2447,29 @@ export default function Portal() {
               const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
               return (
               <Card key={o.session_id}>
-                <CardContent className="p-4 space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                     <div className="space-y-1">
-                       <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
+                 <CardContent className="p-4 space-y-4">
+                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                     <div className="min-w-0 space-y-1">
+                       <div className="flex flex-wrap items-center gap-2">
+                         <span className="font-medium truncate">{o.customer_email ?? "Guest checkout"}</span>
+                         <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>
+                           {o.payment_status ?? "pending"}
+                         </Badge>
+                         {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && o.payment_status !== "paid" ? (
+                           <Badge className="bg-amber-500 text-black hover:bg-amber-500">Draft</Badge>
+                         ) : (
+                           <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
+                             {o.order_status === "delivered" ? "Delivered" : "Orders"}
+                           </Badge>
+                         )}
+                         {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
+                           <Badge variant="secondary">Manual</Badge>
+                         )}
+                         <Badge variant={requirements ? "default" : "outline"}>
+                           {requirements ? "Requirements received" : "Needs requirements"}
+                         </Badge>
+                         {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
+                       </div>
                        <div className="text-xs text-muted-foreground">
                          {new Date(o.created_at).toLocaleString()} · {o.mode}
                          {(() => {
@@ -2462,95 +2481,67 @@ export default function Portal() {
                        </div>
                        {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
                      </div>
-                    <div className="flex flex-wrap items-center justify-end gap-3">
-                      <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>
-                        {o.payment_status ?? "pending"}
-                      </Badge>
-                      {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && o.payment_status !== "paid" ? (
-                        <Badge className="bg-amber-500 text-black hover:bg-amber-500">Draft</Badge>
-                      ) : (
-                        <Badge variant={o.order_status === "delivered" ? "default" : "outline"}>
-                          {o.order_status === "delivered" ? "Delivered" : "Orders"}
-                        </Badge>
-                      )}
-                      {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
-                        <Badge variant="secondary">Manual</Badge>
-                      )}
-                      <Badge variant={requirements ? "default" : "outline"}>
-                        {requirements ? "Requirements received" : "Needs requirements"}
-                      </Badge>
-                      {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
-                      <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => sendOrderConfirmation(o)}
-                        disabled={!o.customer_email || sendingConfirmationId === o.session_id}
-                      >
-                        {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
-                      </Button>
-                      {(() => {
-                        const meta = (o.metadata as Record<string, unknown> | null) ?? {};
-                        const url = typeof meta.payment_link_url === "string" ? meta.payment_link_url : null;
-                        if (!url) return null;
-                        return (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => { navigator.clipboard.writeText(url); toast.success("Stripe payment link copied"); }}
-                          >
-                            <Copy className="h-3.5 w-3.5 mr-1" /> Copy Stripe link
-                          </Button>
-                        );
-                      })()}
-                      {canSendReminder && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => sendRequirementsReminder(o)}
-                          disabled={sendingReminderId === o.session_id}
-                        >
-                          {sendingReminderId === o.session_id ? "Sending…" : "Send reminder"}
-                        </Button>
-                      )}
-                      {o.order_status !== "delivered" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => markOrderDelivered(o)}
-                          disabled={deliveringOrderId === o.session_id}
-                        >
-                          {deliveringOrderId === o.session_id ? (
-                            <span className="inline-flex items-center gap-2">
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              Processing…
-                            </span>
-                          ) : "Mark delivered"}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  {(() => {
-                    const meta = (o.metadata as Record<string, unknown> | null) ?? {};
-                    const url = typeof meta.payment_link_url === "string" ? meta.payment_link_url : null;
-                    if (!url) return null;
-                    const isPaid = o.payment_status === "paid";
-                    return (
-                      <div className="flex flex-wrap items-center gap-2 rounded-none border border-border bg-background/60 p-2 text-xs">
-                        <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-muted-foreground">Stripe link:</span>
-                        <a href={url} target="_blank" rel="noopener noreferrer" className="truncate font-mono text-foreground hover:underline max-w-[320px]">{url}</a>
-                        <Badge variant={isPaid ? "default" : "secondary"}>{isPaid ? "Paid" : "Awaiting payment"}</Badge>
-                        <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => { navigator.clipboard.writeText(url); toast.success("Payment link copied"); }}>
-                          <Copy className="h-3 w-3" /> Copy
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => window.open(url, "_blank", "noopener")}>
-                          <ExternalLink className="h-3 w-3" /> Open
-                        </Button>
-                      </div>
-                    );
-                  })()}
+                     <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:justify-end">
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => sendOrderConfirmation(o)}
+                         disabled={!o.customer_email || sendingConfirmationId === o.session_id}
+                       >
+                         {sendingConfirmationId === o.session_id ? "Sending…" : "Send confirmation"}
+                       </Button>
+                       {(() => {
+                         const meta = (o.metadata as Record<string, unknown> | null) ?? {};
+                         const url = typeof meta.payment_link_url === "string" ? meta.payment_link_url : null;
+                         if (!url) return null;
+                         const isPaid = o.payment_status === "paid";
+                         return (
+                           <>
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               onClick={() => { navigator.clipboard.writeText(url); toast.success("Payment link copied"); }}
+                             >
+                               <Copy className="h-3.5 w-3.5 mr-1" /> Copy pay link
+                             </Button>
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               onClick={() => window.open(url, "_blank", "noopener")}
+                               disabled={isPaid}
+                             >
+                               <ExternalLink className="h-3.5 w-3.5 mr-1" /> {isPaid ? "Paid" : "Open pay link"}
+                             </Button>
+                           </>
+                         );
+                       })()}
+                       {canSendReminder && (
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => sendRequirementsReminder(o)}
+                           disabled={sendingReminderId === o.session_id}
+                         >
+                           {sendingReminderId === o.session_id ? "Sending…" : "Send reminder"}
+                         </Button>
+                       )}
+                       {o.order_status !== "delivered" && (
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => markOrderDelivered(o)}
+                           disabled={deliveringOrderId === o.session_id}
+                         >
+                           {deliveringOrderId === o.session_id ? (
+                             <span className="inline-flex items-center gap-2">
+                               <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                               Processing…
+                             </span>
+                           ) : "Mark delivered"}
+                         </Button>
+                       )}
+                     </div>
+                   </div>
 
                   {editRequestsBySession.has(o.session_id) && (
                     <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
