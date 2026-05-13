@@ -212,6 +212,14 @@ export default function CustomerPortal() {
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
   const [isAdmin, setIsAdmin] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [hiddenCount, setHiddenCount] = useState(0);
+
+  const refreshHiddenCount = useCallback(async () => {
+    const { count } = await supabase
+      .from("customer_hidden_visions")
+      .select("*", { count: "exact", head: true });
+    setHiddenCount(count ?? 0);
+  }, []);
 
   const loadPortal = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getSession();
