@@ -158,7 +158,8 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
 }) => {
   const color = useDominantColor(pickWarmupUrl(item.photo.url));
 
-  const openLink = () => {
+  const openLink = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     const url = item.photo.by;
     if (!url) return;
     const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
