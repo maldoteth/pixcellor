@@ -1199,7 +1199,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     opacity: footerRevealProgress,
                     bottom: "calc(env(safe-area-inset-bottom, 0px) + 3.25rem)",
                 }}
-                className="absolute left-1/2 -translate-x-1/2 z-[130] pointer-events-none"
+                className={`absolute left-1/2 -translate-x-1/2 z-[130] pointer-events-none ${overlayOpen ? "!opacity-0" : ""}`}
             >
                 {/* Mobile arrow */}
                 <motion.button
