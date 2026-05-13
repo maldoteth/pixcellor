@@ -541,7 +541,7 @@ export default function CustomerPortal() {
                 </TabsContent>
 
                 <TabsContent value="payments" className="space-y-4">
-                  <SectionHeader title="Payments" description="Retainer plan details, past payments, and the next scheduled billing date." count={retainerOrders.length} />
+                  <SectionHeader title="Payments" description="Retainer plan details, past payments, and the next scheduled billing date." />
                   <div className="grid gap-4 lg:grid-cols-3">
                     {BUY_AGAIN_PACKAGES.map((plan) => {
                       const hasBoughtPlan = purchasedPackageNames.has(plan.name.toLowerCase());
@@ -625,14 +625,14 @@ export default function CustomerPortal() {
   );
 }
 
-function SectionHeader({ title, description, count }: { title: string; description: string; count: number }) {
+function SectionHeader({ title, description, count }: { title: string; description: string; count?: number }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <div>
         <h2 className="text-2xl font-semibold tracking-normal">{title}</h2>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
-      <Badge variant="outline">{count}</Badge>
+      {typeof count === "number" && <Badge variant="outline">{count}</Badge>}
     </div>
   );
 }
