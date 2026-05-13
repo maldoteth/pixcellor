@@ -179,7 +179,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
       <div
         className="relative w-full h-full overflow-hidden rounded-2xl shadow-2xl"
         style={{
-          padding: '2px',
+          padding: '1px',
           background: 'linear-gradient(90deg, #B8860B, #DAA520, #FFD700, #FFF8DC, #FFD700, #DAA520, #B8860B)',
           backgroundSize: '200% 100%',
           animation: 'gold-shimmer 3s ease-in-out infinite',
