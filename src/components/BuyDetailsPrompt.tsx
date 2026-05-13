@@ -127,6 +127,9 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     industry: "", vibe: "", colour: "", headline: "", sections: "",
   });
   const [visionBrief, setVisionBrief] = useState<VisionBrief | null>(initial.vision);
+  const [palette, setPalette] = useState<any>(null);
+  const [fonts, setFonts] = useState<any>(null);
+  const [previewSlug, setPreviewSlug] = useState<string | null>(null);
   const [refineInstruction, setRefineInstruction] = useState("");
 
   useEffect(() => {
