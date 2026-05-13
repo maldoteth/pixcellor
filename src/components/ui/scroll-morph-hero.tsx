@@ -461,17 +461,21 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
             gestureAxis = "none";
         };
         const handleTouchMove = (e: TouchEvent) => {
-            if (isInteractive(e.target)) return;
             if (isInsideOverlay(e)) return;
 
             const touchY = e.touches[0].clientY;
             const touchX = e.touches[0].clientX;
             const deltaY = touchStartY - touchY;
             const deltaX = touchX - touchStartX;
+            const absX = Math.abs(touchX - touchStartX);
+            const absY = Math.abs(touchY - touchStartY);
+
+            // For taps on buttons/links, allow short movement to register as a tap.
+            // Once vertical movement exceeds threshold, take over as a scroll gesture
+            // so users can swipe through (e.g. over footer buttons) without dead zones.
+            if (isInteractive(e.target) && absY < 12) return;
 
             if (gestureAxis === "none") {
-                const absX = Math.abs(touchX - touchStartX);
-                const absY = Math.abs(touchY - touchStartY);
                 if (absX < 6 && absY < 6) return;
                 if (absX > absY) {
                     // Horizontal swipe inside flipbook → let it handle natively
