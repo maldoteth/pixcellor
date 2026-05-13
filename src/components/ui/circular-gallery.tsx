@@ -181,9 +181,9 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
 
   return (
     <div
-      className="relative w-full h-full"
-      style={{ pointerEvents: 'none' }}
-      aria-hidden
+      className="relative w-full h-full cursor-pointer"
+      style={{ pointerEvents: 'auto' }}
+      onClick={openLink}
     >
       {/* Touch-driven halo (mobile only). Sits behind the card; only the ring
           beyond the card's edge is visible because the inner card is opaque. */}
