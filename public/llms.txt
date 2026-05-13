@@ -1,0 +1,18 @@
+# Pixcellor™
+
+> Pixcellor is a UK digital agency that builds bespoke, fast-loading websites and full-stack web apps for small businesses, starting from £100, with lifetime guarantee, SEO/AEO, unlimited edits and a 2-week MVP sprint option.
+
+Pixcellor offers three packages: Full Works (£100, modern fast site with lifetime guarantee), Elite (£500, animated interactive site with unlimited edits, SEO and AEO), and Retainer (£1,200/month, ongoing tech department covering sites, apps and integrations). Services include web design, web development, app development, full-stack development, SEO, AEO (Answer Engine Optimisation), Web3, blockchain and AI integration.
+
+## Pages
+
+- [Home](/): Pixcellor overview, packages, portfolio and contact.
+- [Legal](/legal): Index of legal documents.
+- [Terms of service](/legal/terms): Terms governing use of Pixcellor services.
+- [Privacy policy](/legal/privacy): How Pixcellor handles personal data.
+- [Refund policy](/legal/refund): Refund and cancellation terms.
+- [Acceptable use](/legal/acceptable-use): Acceptable use policy for Pixcellor services.
+
+## Optional
+
+- [Unsubscribe](/unsubscribe): Manage email subscription preferences.
