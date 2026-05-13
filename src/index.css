@@ -317,6 +317,14 @@ All colors MUST be HSL.
   }
 }
 
+.silver-shimmer-hover {
+  background: linear-gradient(90deg, #333333, #555555, #777777, #999999, #777777, #555555, #333333);
+  background-size: 200% 100%;
+}
+.silver-shimmer-hover:hover {
+  animation: silver-shimmer 3s ease-in-out infinite;
+}
+
   position: absolute;
   inset: -15%;
   pointer-events: none;
