@@ -190,6 +190,9 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - **Check if a lead has visited the site** with **lookup_visitor_activity** (by email or company website).
 - **Generate a paste-ready package recommendation** with **recommend_package**.
 - **Pull chat history** for a client_id or conversation_id with **fetch_chat_history** before replying via send_chat_reply.
+- **Create a manual / custom order** with **create_custom_order** (records a paid offline order or a draft/quote in stripe_checkout_sessions; mirrors the New Order dialog in the portal).
+- **Create a Stripe payment link** for any custom amount with **create_payment_link** (one-time or monthly subscription, optionally attached to a draft order session_id from create_custom_order).
+- **List recent custom payment links** with **list_payment_links** (returns urls, amounts, and paid status).
 
 ## Search & lookup rules
 - find_contact searches name, contact_name, email, phone, company website, location, status, industry — use a single keyword from any of these.
@@ -218,7 +221,14 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - If the dev asks to find/add local businesses without websites, call find_local_leads with the requested trade, location, and lead count. Do not invent leads yourself.
 - Never invent contact details. Save uncertainty in notes/description.
 - If create_contact returns existed: true (matched by email/phone), DO NOT try to create a duplicate. Treat the returned contact.id as the target and attach any callback/sales event to it via create_sales_event.
-- For callback/reminder times, treat relative dates like "tomorrow", "next week", and "in 1 week" as clear. If no time is given, default to 09:00 Europe/London and include callback_at as ISO.`;
+- For callback/reminder times, treat relative dates like "tomorrow", "next week", and "in 1 week" as clear. If no time is given, default to 09:00 Europe/London and include callback_at as ISO.
+
+## Custom orders & payment links (CRITICAL)
+- When the dev says things like "create an order for X", "log a £750 paid order for jane@x.com", "draft order for Acme £500 unpaid", "make a manual order" — call **create_custom_order**. Use mark_paid=true if they say it's already paid (bank transfer, cash, invoice). Use mark_paid=false for drafts/quotes awaiting payment. amount_gbp is in pounds (e.g. 750 not 75000). Default billing is "one-time"; use "monthly" or "yearly" only if they explicitly say it's a subscription.
+- When the dev says "create a payment link", "send Stripe link for £500", "make a £200 link for jane@x.com" — call **create_payment_link**. amount_gbp is in pounds. Default mode is "payment" (one-time); use "subscription" for monthly recurring. After creating, ALWAYS show the resulting url in the reply as a clickable markdown link so the dev can copy it.
+- If the dev wants a draft order WITH a payment link in one go: call create_custom_order first with mark_paid=false, capture the returned session_id, then call create_payment_link with attach_session_id set to that session_id. The link will then be tied to the draft order automatically.
+- For "show me recent payment links" / "what links did I create today" / "list my links" — call **list_payment_links**.
+- Never invent prices, urls, or session ids. If you're missing the amount or email, ask one short question first.`;
 
 const tools = [
   {
@@ -679,6 +689,61 @@ const devTools = [
         properties: {
           client_id: { type: "string" },
           conversation_id: { type: "string", description: "Optional — exact conversation UUID instead of client_id." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_custom_order",
+      description: "Create a manual / custom order in the orders database (mirrors the New Order dialog in the portal). Use for paid offline orders (bank transfer, cash, invoice) and for drafts/quotes awaiting payment. Returns session_id, order_status, payment_status.",
+      parameters: {
+        type: "object",
+        properties: {
+          customer_email: { type: "string", description: "Buyer's email address (required)." },
+          customer_name: { type: "string", description: "Buyer's name, optional." },
+          package_name: { type: "string", description: "Package label, e.g. 'Full Works', 'Elite', 'Bespoke build'. Required." },
+          amount_gbp: { type: "number", description: "Amount in pounds (e.g. 750 for £750). Required, between 0.01 and 1,000,000." },
+          mark_paid: { type: "boolean", description: "True for an already-paid offline order, false for a draft/quote awaiting payment. Defaults to true." },
+          billing: { type: "string", enum: ["one-time", "monthly", "yearly"], description: "Defaults to one-time." },
+          custom_label: { type: "string", description: "Optional free-form label for custom packages." },
+          notes: { type: "string", description: "Internal admin notes (max 1000 chars)." },
+        },
+        required: ["customer_email", "package_name", "amount_gbp"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_payment_link",
+      description: "Create a Stripe payment link for a custom amount (one-time or monthly subscription). Returns the live url to share with the client. Optionally attach to an existing draft order session_id from create_custom_order.",
+      parameters: {
+        type: "object",
+        properties: {
+          description: { type: "string", description: "What the link is for (max 200 chars). Shown on Stripe checkout. Required." },
+          amount_gbp: { type: "number", description: "Amount in pounds. Required, between 1 and 1,000,000." },
+          quantity: { type: "number", description: "Quantity, defaults to 1." },
+          mode: { type: "string", enum: ["payment", "subscription"], description: "payment = one-time charge, subscription = monthly recurring. Defaults to payment." },
+          client_email: { type: "string", description: "Optional client email tied to the link for tracking." },
+          internal_note: { type: "string", description: "Internal note (max 1000 chars)." },
+          attach_session_id: { type: "string", description: "Optional — session_id of a draft order returned by create_custom_order. Ties the link to that order." },
+        },
+        required: ["description", "amount_gbp"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "list_payment_links",
+      description: "List the most recent custom Stripe payment links created from the portal. Returns url, amount, mode, status (open/paid), client_email, created_at.",
+      parameters: {
+        type: "object",
+        properties: {
+          limit: { type: "number", description: "Max links to return (default 10, max 50)." },
+          status: { type: "string", enum: ["open", "paid", "all"], description: "Filter by status. Defaults to all." },
         },
       },
     },
@@ -1628,6 +1693,129 @@ function buildClientContextSummary(ctx: Awaited<ReturnType<typeof loadClientCont
   return lines.join("\n");
 }
 
+async function devCreateCustomOrder(supabase: DbClient, args: Record<string, unknown>, adminEmail: string | null) {
+  const email = cleanText(args.customer_email, 255).toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_customer_email" };
+  const name = cleanText(args.customer_name, 100);
+  const packageName = cleanText(args.package_name, 80);
+  if (!packageName) return { ok: false, error: "package_name_required" };
+  const amountGbp = Number(args.amount_gbp);
+  if (!Number.isFinite(amountGbp) || amountGbp < 0.01 || amountGbp > 1_000_000) return { ok: false, error: "invalid_amount" };
+  const amountPence = Math.round(amountGbp * 100);
+  const markPaid = args.mark_paid !== false;
+  const billingRaw = String(args.billing ?? "one-time").toLowerCase();
+  const billing = ["one-time", "monthly", "yearly"].includes(billingRaw) ? billingRaw : "one-time";
+  const customLabel = cleanText(args.custom_label, 80);
+  const notes = cleanText(args.notes, 1000);
+
+  const sessionId = `manual_${crypto.randomUUID().replace(/-/g, "")}`;
+  const meta = {
+    source: "admin_manual",
+    package_name: packageName,
+    billing,
+    created_by_email: adminEmail,
+    created_via: "alex_chat",
+    buyer_email: email,
+    buyer_name: name || null,
+    custom_label: customLabel || null,
+    admin_notes: notes || null,
+  };
+
+  const { error: evtErr } = await supabase
+    .from("stripe_events")
+    .insert({ stripe_event_id: sessionId, event_type: "manual.order.created", payload: meta, checkout_session_id: sessionId });
+  if (evtErr && !String(evtErr.message).toLowerCase().includes("duplicate")) return { ok: false, error: evtErr.message };
+
+  const { data, error } = await supabase
+    .from("stripe_checkout_sessions")
+    .insert({
+      session_id: sessionId,
+      stripe_event_id: sessionId,
+      mode: "payment",
+      payment_status: markPaid ? "paid" : "unpaid",
+      status: markPaid ? "complete" : "open",
+      amount_total: amountPence,
+      currency: "gbp",
+      customer_email: email,
+      capture_status: markPaid ? "manual" : null,
+      captured_at: markPaid ? new Date().toISOString() : null,
+      order_status: "open",
+      metadata: meta,
+    })
+    .select("session_id, payment_status, status, amount_total, customer_email, created_at")
+    .single();
+  if (error) return { ok: false, error: error.message };
+
+  try { await supabase.rpc("ensure_order_public_reference", { p_session_id: sessionId }); } catch (_) { /* noop */ }
+
+  return {
+    ok: true,
+    order: {
+      session_id: data.session_id,
+      package_name: packageName,
+      billing,
+      amount_gbp: amountGbp,
+      payment_status: data.payment_status,
+      status: data.status,
+      customer_email: data.customer_email,
+      created_at: data.created_at,
+    },
+  };
+}
+
+async function devCreatePaymentLink(req: Request, args: Record<string, unknown>) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const authHeader = req.headers.get("Authorization") || "";
+  if (!authHeader) return { ok: false, error: "missing_auth" };
+
+  const body = {
+    description: cleanText(args.description, 200),
+    amount_gbp: Number(args.amount_gbp),
+    quantity: Number(args.quantity ?? 1) || 1,
+    mode: args.mode === "subscription" ? "subscription" : "payment",
+    client_email: cleanText(args.client_email, 255).toLowerCase() || null,
+    internal_note: cleanText(args.internal_note, 1000) || null,
+    attach_session_id: cleanText(args.attach_session_id, 200) || null,
+  };
+  if (!body.description) return { ok: false, error: "description_required" };
+  if (!Number.isFinite(body.amount_gbp) || body.amount_gbp < 1 || body.amount_gbp > 1_000_000) return { ok: false, error: "invalid_amount" };
+
+  const resp = await fetch(`${supabaseUrl}/functions/v1/create-custom-payment-link`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": authHeader },
+    body: JSON.stringify(body),
+  });
+  const result = await resp.json().catch(() => ({}));
+  if (!resp.ok) return { ok: false, error: result?.error || `create_failed_${resp.status}` };
+  return {
+    ok: true,
+    link: {
+      id: result.id,
+      url: result.url,
+      amount_gbp: body.amount_gbp,
+      mode: body.mode,
+      description: body.description,
+      client_email: body.client_email,
+      attached_session_id: body.attach_session_id,
+    },
+  };
+}
+
+async function devListPaymentLinks(supabase: DbClient, args: Record<string, unknown>) {
+  const limit = Math.max(1, Math.min(50, Number(args.limit ?? 10) | 0));
+  const statusFilter = String(args.status ?? "all").toLowerCase();
+  let query = supabase
+    .from("custom_payment_links")
+    .select("id, url, description, amount_gbp, currency, mode, status, client_email, paid_at, created_at, internal_note")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (statusFilter === "open") query = query.eq("status", "open");
+  else if (statusFilter === "paid") query = query.eq("status", "paid");
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, links: data ?? [] };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -1655,6 +1843,12 @@ Deno.serve(async (req) => {
         _role: "admin",
       });
       if (!hasAdminRole) throw new Error("Admin access required");
+    }
+    let adminEmail: string | null = null;
+    if (isDevMode) {
+      const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+      const { data: userData } = await supabase.auth.getUser(token);
+      adminEmail = userData?.user?.email?.toLowerCase() ?? null;
     }
     let currentConversationId = conversationId;
     let botPaused = false;
@@ -2031,6 +2225,18 @@ Deno.serve(async (req) => {
           needsFollowUp = true;
           try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devFetchChatHistory(supabase, JSON.parse(toolCall.function.arguments || "{}"))) }); }
           catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "history_failed" }) }); }
+        } else if (toolCall.function.name === "create_custom_order" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devCreateCustomOrder(supabase, JSON.parse(toolCall.function.arguments), adminEmail)) }); }
+          catch (e) { console.error("create_custom_order:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_order_failed" }) }); }
+        } else if (toolCall.function.name === "create_payment_link" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devCreatePaymentLink(req, JSON.parse(toolCall.function.arguments))) }); }
+          catch (e) { console.error("create_payment_link:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_link_failed" }) }); }
+        } else if (toolCall.function.name === "list_payment_links" && isDevMode) {
+          needsFollowUp = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devListPaymentLinks(supabase, JSON.parse(toolCall.function.arguments || "{}"))) }); }
+          catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "list_links_failed" }) }); }
         } else if (toolCall.function.name === "lookup_customer") {
           needsFollowUp = true;
           try {
