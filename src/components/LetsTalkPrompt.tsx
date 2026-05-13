@@ -643,20 +643,19 @@ const LetsTalkPrompt = () => {
                 ? `Thanks ${name.split(" ")[0]} — a member of our team will be in touch within 24 hours to confirm your order and get the build started. We've saved your details and your sample.`
                 : `Thanks ${name.split(" ")[0]} — a member of our team will be in touch within 24 hours with your sample!`}
             </p>
-            <MagicLinkSignup
-              email={email}
-              benefit="Sign up today to save your details"
-            />
-            <a
-              href="tel:+441483912430"
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-foreground/20 bg-foreground/5 px-4 text-sm font-semibold text-foreground transition hover:bg-foreground/10"
-            >
-              <Phone className="h-4 w-4" />
-              Call us: +44 1483 912430
-            </a>
-            <Button type="button" variant="pricing" onClick={() => setOpen(false)} className="h-10 px-6 mt-2 font-semibold">
-              I don't want to access these again
-            </Button>
+            <div className="w-full max-w-xs flex flex-col gap-2">
+              <MagicLinkSignup
+                email={email}
+                benefit="Sign up today to save your details"
+              />
+              <a
+                href="tel:+441483912430"
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-foreground/20 bg-foreground/5 px-4 text-sm font-semibold text-foreground transition hover:bg-foreground/10"
+              >
+                <Phone className="h-4 w-4" />
+                Call us: +44 1483 912430
+              </a>
+            </div>
           </motion.div>
         ) : step === "done" ? (
           <motion.div
