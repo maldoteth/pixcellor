@@ -19,6 +19,7 @@ export interface BrandKitProps {
   palette?: BrandPaletteEntry[] | null;
   fonts?: BrandFonts | null;
   compact?: boolean;
+  sideBySide?: boolean;
   className?: string;
 }
 
