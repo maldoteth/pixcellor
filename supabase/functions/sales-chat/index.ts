@@ -1844,7 +1844,12 @@ Deno.serve(async (req) => {
       });
       if (!hasAdminRole) throw new Error("Admin access required");
     }
-    let currentConversationId = conversationId;
+    let adminEmail: string | null = null;
+    if (isDevMode) {
+      const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+      const { data: userData } = await supabase.auth.getUser(token);
+      adminEmail = userData?.user?.email?.toLowerCase() ?? null;
+    }
     let botPaused = false;
 
     // Get or create conversation
