@@ -224,7 +224,7 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - For callback/reminder times, treat relative dates like "tomorrow", "next week", and "in 1 week" as clear. If no time is given, default to 09:00 Europe/London and include callback_at as ISO.
 
 ## Custom orders & payment links (CRITICAL)
-- When the dev says things like "create an order for X", "log a £750 paid order for jane@x.com", "draft order for Acme £500 unpaid", "make a manual order" — call **create_custom_order**. Use mark_paid=true if they say it's already paid (bank transfer, cash, invoice). Use mark_paid=false for drafts/quotes awaiting payment. amount_gbp is in pounds (e.g. 750 not 75000). Default billing is "one-time"; use "monthly" or "yearly" only if they explicitly say it's a subscription.
+- When the dev says things like "create an order for X", "log a £750 order for jane@x.com", "draft order for Acme £500", "make a manual order" — call **create_custom_order**. **NEVER assume an order is paid.** Default to mark_paid=false (unpaid draft/quote). Only use mark_paid=true if the dev EXPLICITLY says it's already paid (e.g. "paid", "bank transfer received", "cash in hand", "invoice settled", "they've paid"). If it's ambiguous, ask "Is this already paid, or unpaid/awaiting payment?" before creating. amount_gbp is in pounds (e.g. 750 not 75000). Default billing is "one-time"; use "monthly" or "yearly" only if they explicitly say it's a subscription.
 - When the dev says "create a payment link", "send Stripe link for £500", "make a £200 link for jane@x.com" — call **create_payment_link**. amount_gbp is in pounds. Default mode is "payment" (one-time); use "subscription" for monthly recurring. After creating, ALWAYS show the resulting url in the reply as a clickable markdown link so the dev can copy it.
 - If the dev wants a draft order WITH a payment link in one go: call create_custom_order first with mark_paid=false, capture the returned session_id, then call create_payment_link with attach_session_id set to that session_id. The link will then be tied to the draft order automatically.
 - For "show me recent payment links" / "what links did I create today" / "list my links" — call **list_payment_links**.
@@ -705,7 +705,7 @@ const devTools = [
           customer_name: { type: "string", description: "Buyer's name, optional." },
           package_name: { type: "string", description: "Package label, e.g. 'Full Works', 'Elite', 'Bespoke build'. Required." },
           amount_gbp: { type: "number", description: "Amount in pounds (e.g. 750 for £750). Required, between 0.01 and 1,000,000." },
-          mark_paid: { type: "boolean", description: "True for an already-paid offline order, false for a draft/quote awaiting payment. Defaults to true." },
+          mark_paid: { type: "boolean", description: "True ONLY if the dev explicitly stated the order is already paid (bank transfer, cash, invoice settled). Defaults to false (unpaid draft/quote). Never assume paid." },
           billing: { type: "string", enum: ["one-time", "monthly", "yearly"], description: "Defaults to one-time." },
           custom_label: { type: "string", description: "Optional free-form label for custom packages." },
           notes: { type: "string", description: "Internal admin notes (max 1000 chars)." },
@@ -1702,7 +1702,7 @@ async function devCreateCustomOrder(supabase: DbClient, args: Record<string, unk
   const amountGbp = Number(args.amount_gbp);
   if (!Number.isFinite(amountGbp) || amountGbp < 0.01 || amountGbp > 1_000_000) return { ok: false, error: "invalid_amount" };
   const amountPence = Math.round(amountGbp * 100);
-  const markPaid = args.mark_paid !== false;
+  const markPaid = args.mark_paid === true;
   const billingRaw = String(args.billing ?? "one-time").toLowerCase();
   const billing = ["one-time", "monthly", "yearly"].includes(billingRaw) ? billingRaw : "one-time";
   const customLabel = cleanText(args.custom_label, 80);
