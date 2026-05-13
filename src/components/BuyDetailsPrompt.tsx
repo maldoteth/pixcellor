@@ -138,6 +138,9 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
       setStep(next.step);
       setValues(next.values);
       setVisionBrief(next.vision);
+      setPalette(null);
+      setFonts(null);
+      setPreviewSlug(null);
       setVisionAnswers({ industry: "", vibe: "", colour: "", headline: "", sections: "" });
       setRefineInstruction("");
       setError(null);
@@ -145,6 +148,31 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  // Poll for brand kit (palette + fonts) generated in the background after the image returns.
+  useEffect(() => {
+    if (!previewSlug) return;
+    if (palette && fonts) return;
+    let cancelled = false;
+    let attempts = 0;
+    const tick = async () => {
+      if (cancelled) return;
+      attempts += 1;
+      try {
+        const { data } = await (supabase as any)
+          .rpc("get_vision_preview_by_slug", { _slug: previewSlug })
+          .maybeSingle();
+        if (!cancelled && data) {
+          if (data.palette) setPalette(data.palette);
+          if (data.fonts) setFonts(data.fonts);
+          if (data.palette && data.fonts) return;
+        }
+      } catch { /* ignore */ }
+      if (!cancelled && attempts < 20) setTimeout(tick, 2000);
+    };
+    const initial = setTimeout(tick, 2500);
+    return () => { cancelled = true; clearTimeout(initial); };
+  }, [previewSlug, palette, fonts]);
 
   // Track visitors who reach the domain step
   useEffect(() => {
