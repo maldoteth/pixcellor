@@ -375,7 +375,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     // and back never triggers a fresh network/decode pass.
     useEffect(() => {
       items.forEach((it) => {
-        void preloadGalleryImage(it.photo.url);
+        void preloadGalleryImage(pickWarmupUrl(it.photo.url));
       });
     }, [items]);
 
