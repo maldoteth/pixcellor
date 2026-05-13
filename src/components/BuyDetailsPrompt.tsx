@@ -262,6 +262,9 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
       if (data?.error) throw new Error(data.error);
       const url = data?.imageUrl ?? null;
       setVisionBrief({ prompt: `${previousPrompt}\n\nRefinement: ${ins}`, imageUrl: url ?? previousUrl });
+      if (data?.palette) setPalette(data.palette);
+      if (data?.fonts) setFonts(data.fonts);
+      if (data?.previewSlug) setPreviewSlug(data.previewSlug);
       setRefineInstruction("");
       setStep("vision-result");
     } catch (e) {
