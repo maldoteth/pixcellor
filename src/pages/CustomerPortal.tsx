@@ -502,7 +502,7 @@ export default function CustomerPortal() {
                   </div>
                   <div className="space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <SectionHeader title="Designs" description="Every AI design you've generated — open them any time, or hide ones you don't like." count={visionPreviews.length} />
+                      <SectionHeader title="Designs" description="Find your generated design drafts here" count={visionPreviews.length} />
                       <Button
                         onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-vision"))}
                         variant="pricing"
