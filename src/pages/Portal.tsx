@@ -2985,7 +2985,7 @@ export default function Portal() {
                     </button>
                   ))}
                   <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    <span className="text-xs text-muted-foreground md:ml-2">Colour:</span>
+                    <span className="text-xs text-muted-foreground md:ml-2">Type:</span>
                     <button
                       type="button"
                       onClick={() => { setClientsStatusFilter("all"); setClientsVisibleCount(10); }}
