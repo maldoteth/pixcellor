@@ -29,7 +29,7 @@ const CustomInvoiceEmail = ({ description, amountFormatted, paymentUrl, orderId,
                   <Column style={markColumn}><Img src={LOGO_URL} alt="Pixcellor" width="40" height="40" style={mark} /></Column>
                 </Row>
                 <Text style={eyebrow}>INVOICE</Text>
-                <Heading style={h1}>Your custom invoice is ready</Heading>
+                <Heading style={h1}>Your invoice is ready</Heading>
                 <Text style={intro}>
                   Below are the details for your custom order. You can pay securely via Stripe using the button below.
                 </Text>
