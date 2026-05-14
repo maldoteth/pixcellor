@@ -307,6 +307,8 @@ const tools = [
           website: { type: "string", description: "Website domain or URL, if provided." },
           industry: { type: "string", description: "Business industry/category if known. Use general if unsure." },
           notes: { type: "string", description: "Project summary or relevant chat context." },
+          status: { type: "string", enum: ["cold","aware","warm","hot","gold"], description: "Lead temperature. Use 'hot' when the lead came in via an uploaded screenshot of contact details, or whenever they've actively requested a callback/quote." },
+          media_image_url: { type: "string", description: "Public URL of an uploaded screenshot/image to attach to the contact's media gallery (e.g. the screenshot used to capture their details)." },
           schedule_callback_tomorrow: { type: "boolean", description: "True when the visitor requested a call. Creates a same-day callback event (2 hours from now)." },
           send_welcome_email: { type: "boolean", description: "True when the visitor requested package/process info by email. Sends the Pixcellor welcome sales email." },
         },
@@ -314,7 +316,21 @@ const tools = [
       },
     },
   },
-];
+  {
+    type: "function" as const,
+    function: {
+      name: "extract_screenshot_contact",
+      description: "Analyze an uploaded screenshot/image URL and extract visible contact details like name, company, location, email, phone, website. Use this whenever the visitor uploads an image — especially screenshots showing a phone number, email, or company name — so the details can then be saved via save_contact.",
+      parameters: {
+        type: "object",
+        properties: {
+          image_url: { type: "string", description: "Public URL of the uploaded screenshot/image." },
+        },
+        required: ["image_url"],
+      },
+    },
+  },
+
 
 const devTools = [
   {
