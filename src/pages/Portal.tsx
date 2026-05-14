@@ -441,7 +441,7 @@ export default function Portal() {
   const [callbacksVisibleCount, setCallbacksVisibleCount] = useState(10);
   const [sectionCounts, setSectionCounts] = useState<Record<string, number>>({});
   const [loadingMore, setLoadingMore] = useState<Record<string, boolean>>({});
-  const [clientsSort, setClientsSort] = useState<"newest" | "oldest" | "hot" | "cold">("newest");
+  const [clientsSort, setClientsSort] = useState<"newest" | "oldest" | "latest_update" | "hot" | "cold">("newest");
   const [clientsStatusFilter, setClientsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [clientsRetainerOnly, setClientsRetainerOnly] = useState(false);
   
