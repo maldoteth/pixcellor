@@ -215,7 +215,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
-  const [quickAction, setQuickAction] = useState<"call" | "email" | "trial" | "services" | "verify" | null>(null);
+  const [quickAction, setQuickAction] = useState<"call" | "email" | "trial" | "services" | "verify" | "pay" | null>(null);
   const [widgetSize, setWidgetSize] = useState(CHAT_WIDGET_DEFAULT_SIZE);
   const [widgetPosition, setWidgetPosition] = useState<{ x: number; y: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -266,11 +266,11 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     return () => window.removeEventListener("resize", clampWidgetToViewport);
   }, [isMobile, widgetSize.height, widgetSize.width]);
 
-  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | "verify" | null>(null);
+  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | "verify" | "pay" | null>(null);
   useEffect(() => {
     const openChat = (e: Event) => {
       setIsOpen(true);
-      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" }>).detail;
+      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" | "pay" }>).detail;
       if (detail?.action === "call" || detail?.action === "email" || detail?.action === "trial" || detail?.action === "services" || detail?.action === "verify") {
         pendingActionRef.current = detail.action;
       }
@@ -525,7 +525,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
-  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify") => {
+  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify" | "pay") => {
     if (isDevMode || isLoading) return;
     setQuickAction(action);
     const reply = {
