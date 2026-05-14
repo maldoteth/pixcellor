@@ -800,6 +800,21 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                       <Wand2 className="h-3.5 w-3.5" />
                       Create
                     </motion.button>
+                    <motion.button
+                      type="button"
+                      onClick={() => startQuickAction("verify")}
+                      disabled={isLoading}
+                      whileHover={{ y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex h-8 items-center gap-2 rounded-sm px-3 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)",
+                        border: "1px solid rgba(255,255,255,0.18)",
+                      }}
+                    >
+                      <Shield className="h-3.5 w-3.5" />
+                      Verify
+                    </motion.button>
                   </div>
                 )}
               </motion.div>
