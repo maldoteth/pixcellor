@@ -2101,7 +2101,7 @@ Deno.serve(async (req) => {
             console.error("Error in save_contact:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "save_contact_failed" }) });
           }
-        } else if (toolCall.function.name === "extract_screenshot_contact" && isDevMode) {
+        } else if (toolCall.function.name === "extract_screenshot_contact") {
           needsFollowUp = true;
           try {
             const args = JSON.parse(toolCall.function.arguments);
