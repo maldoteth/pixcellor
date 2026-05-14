@@ -2984,35 +2984,37 @@ export default function Portal() {
                       {opt.label}
                     </button>
                   ))}
-                  <span className="ml-2 text-xs text-muted-foreground">Colour:</span>
-                  <button
-                    type="button"
-                    onClick={() => { setClientsStatusFilter("all"); setClientsVisibleCount(10); }}
-                    className={`rounded-none border px-2 py-1 text-xs transition-colors ${clientsStatusFilter === "all" ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
-                  >
-                    All
-                  </button>
-                  {contactStatuses.map(s => (
-                    <button
-                      key={s.value}
-                      type="button"
-                      onClick={() => { setClientsStatusFilter(s.value as Contact["status"]); setClientsVisibleCount(10); }}
-                      className={`flex items-center gap-1.5 rounded-none border px-2 py-1 text-xs transition-colors ${clientsStatusFilter === s.value ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
-                    >
-                      <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
-                      {s.label}
-                    </button>
-                  ))}
-                  {clientsStatusFilter === "gold" && (
+                  <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <span className="text-xs text-muted-foreground md:ml-2">Colour:</span>
                     <button
                       type="button"
-                      onClick={() => { setClientsRetainerOnly(v => !v); setClientsVisibleCount(10); }}
-                      className={`flex items-center gap-1.5 rounded-none border px-2 py-1 text-xs transition-colors ${clientsRetainerOnly ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
+                      onClick={() => { setClientsStatusFilter("all"); setClientsVisibleCount(10); }}
+                      className={`rounded-none border px-2 py-1 text-xs transition-colors ${clientsStatusFilter === "all" ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
                     >
-                      <Repeat className="h-3 w-3" />
-                      On retainer ({filteredRetainers.length})
+                      All
                     </button>
-                  )}
+                    {contactStatuses.map(s => (
+                      <button
+                        key={s.value}
+                        type="button"
+                        onClick={() => { setClientsStatusFilter(s.value as Contact["status"]); setClientsVisibleCount(10); }}
+                        className={`flex items-center gap-1.5 rounded-none border px-2 py-1 text-xs transition-colors ${clientsStatusFilter === s.value ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
+                      >
+                        <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+                        {s.label}
+                      </button>
+                    ))}
+                    {clientsStatusFilter === "gold" && (
+                      <button
+                        type="button"
+                        onClick={() => { setClientsRetainerOnly(v => !v); setClientsVisibleCount(10); }}
+                        className={`flex items-center gap-1.5 rounded-none border px-2 py-1 text-xs transition-colors ${clientsRetainerOnly ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}
+                      >
+                        <Repeat className="h-3 w-3" />
+                        On retainer ({filteredRetainers.length})
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {(sectionCounts.contacts ?? 0) > contacts.length || clientsVisibleCount < clientBookContacts.length ? "" : "Loaded all."}
