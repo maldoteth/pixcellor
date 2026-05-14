@@ -197,7 +197,7 @@ export default function VisionPreview() {
                         : "border-transparent text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    Your image
+                    Compare
                   </button>
                 )}
               </div>
@@ -225,7 +225,7 @@ export default function VisionPreview() {
                     ) : (
                       <Upload className="h-3.5 w-3.5" />
                     )}
-                    Compare
+                  Compare
                   </Button>
                 </>
               )}
