@@ -523,7 +523,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
-  const startQuickAction = (action: "call" | "email" | "trial" | "services") => {
+  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify") => {
     if (isDevMode || isLoading) return;
     setQuickAction(action);
     const reply = {
@@ -534,7 +534,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
           ? "Sure — leave your name and email and I'll send over our full package guide, process breakdown, portfolio and buy links."
           : action === "trial"
             ? "No need to pay upfront — we'll build a free preview so you can try before you buy. Tell me a bit about what you need (you can drop in any screenshots or reference images using the image button), plus your name, email and phone number, and I'll get the team started. We'll reach out the moment your site is ready to check."
-            : "Happy to help! Tell me which services you're interested in (marketing, business solutions, automation, etc.) and a bit about your goals. Drop your name, email and phone number too and I'll get the right person to put together a tailored quote for you.",
+            : action === "services"
+              ? "Happy to help! Tell me which services you're interested in (marketing, business solutions, automation, etc.) and a bit about your goals. Drop your name, email and phone number too and I'll get the right person to put together a tailored quote for you."
+              : "No problem — please share your order ID or any details from the invoice you received, and I'll help you verify it right away.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
     // Focus input synchronously so mobile browsers open the keyboard
