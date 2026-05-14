@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import IntroAnimation from "@/components/ui/scroll-morph-hero";
 import ChatBot from "@/components/ChatBot";
+import { useIsMobile } from "@/hooks/use-mobile";
 import FalloffConsentBanner from "@/components/FalloffConsentBanner";
 import RotateDevicePrompt from "@/components/RotateDevicePrompt";
 import CustomerAccess from "@/components/CustomerAccess";
@@ -13,6 +14,7 @@ import VisionGenerator from "@/components/VisionGenerator";
 import VisionPurchaseFlow from "@/components/VisionPurchaseFlow";
 
 const Index = () => {
+  const isMobile = useIsMobile();
   const [chatOpen, setChatOpen] = useState(false);
   const [heroScrolled, setHeroScrolled] = useState(false);
   const [packagesOpen, setPackagesOpen] = useState(false);
@@ -121,7 +123,11 @@ const Index = () => {
     };
   }, []);
 
-  const overlayOpen = packagesOpen || chatOpen || letsTalkOpen || tryBeforeBuyOpen || visionPurchaseOpen || visionGenOpen || customerAccessOpen;
+  // On tablet/desktop the chat is a movable, mountable panel — keep the
+  // logo and top buttons visible alongside it. On mobile the chat takes
+  // over the screen, so treat it like other overlays.
+  const otherOverlaysOpen = packagesOpen || letsTalkOpen || tryBeforeBuyOpen || visionPurchaseOpen || visionGenOpen || customerAccessOpen;
+  const overlayOpen = otherOverlaysOpen || (isMobile && chatOpen);
 
   return (
     <div className="w-full">
