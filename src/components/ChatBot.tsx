@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon, Phone, Mail, Wand2, Shield } from "lucide-react";
+import { MessageSquare, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon, Phone, Mail, Wand2, Shield, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useHeroReady } from "@/hooks/use-hero-ready";
@@ -215,7 +215,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
-  const [quickAction, setQuickAction] = useState<"call" | "email" | "trial" | "services" | "verify" | null>(null);
+  const [quickAction, setQuickAction] = useState<"call" | "email" | "trial" | "services" | "verify" | "pay" | null>(null);
   const [widgetSize, setWidgetSize] = useState(CHAT_WIDGET_DEFAULT_SIZE);
   const [widgetPosition, setWidgetPosition] = useState<{ x: number; y: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -266,12 +266,12 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     return () => window.removeEventListener("resize", clampWidgetToViewport);
   }, [isMobile, widgetSize.height, widgetSize.width]);
 
-  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | "verify" | null>(null);
+  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | "verify" | "pay" | null>(null);
   useEffect(() => {
     const openChat = (e: Event) => {
       setIsOpen(true);
-      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" }>).detail;
-      if (detail?.action === "call" || detail?.action === "email" || detail?.action === "trial" || detail?.action === "services" || detail?.action === "verify") {
+      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" | "pay" }>).detail;
+      if (detail?.action === "call" || detail?.action === "email" || detail?.action === "trial" || detail?.action === "services" || detail?.action === "verify" || detail?.action === "pay") {
         pendingActionRef.current = detail.action;
       }
     };
@@ -390,9 +390,11 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
           ? "\n\n[Quick action: Try-before-you-buy lead. Save these details as a contact, capture project requirements (any uploaded screenshots/images), and flag the team to build a free preview site.]"
           : quickAction === "services"
             ? "\n\n[Quick action: Services enquiry. Capture which marketing/business services they need, save contact details, and route to the team for a tailored quote.]"
-            : quickAction === "verify"
-              ? "\n\n[Quick action: Invoice verification. The user wants to verify an order/invoice. Ask for their order ID if not provided, look up their order details, and confirm payment status or answer any invoice concerns.]"
-              : "";
+              : quickAction === "verify"
+                ? "\n\n[Quick action: Invoice verification. The user wants to verify an order/invoice. Ask for their order ID if not provided, look up their order details, and confirm payment status or answer any invoice concerns.]"
+                : quickAction === "pay"
+                  ? "\n\n[Quick action: Custom payment. The user wants to pay a custom amount. Collect amount in GBP and a short reason/description, then call create_custom_payment to generate a Stripe link and reply with that link.]"
+                  : "";
     const userMessage: Message = { role: "user", content: visibleContent };
     const apiUserMessage = { role: "user" as const, content: `${visibleContent}${actionInstruction}` };
     const newMessages = [...messages, userMessage];
@@ -525,7 +527,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
-  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify") => {
+  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify" | "pay") => {
     if (isDevMode || isLoading) return;
     setQuickAction(action);
     const reply = {
@@ -538,7 +540,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             ? "No need to pay upfront — we'll build a free preview so you can try before you buy. Tell me a bit about what you need (you can drop in any screenshots or reference images using the image button), plus your name, email and phone number, and I'll get the team started. We'll reach out the moment your site is ready to check."
             : action === "services"
               ? "Happy to help! Tell me which services you're interested in (marketing, business solutions, automation, etc.) and a bit about your goals. Drop your name, email and phone number too and I'll get the right person to put together a tailored quote for you."
-              : "No problem — please share your order ID or any details from the invoice you received, and I'll help you verify it right away.",
+              : action === "verify"
+                ? "No problem — please share your order ID or any details from the invoice you received, and I'll help you verify it right away."
+                : "Sure — tell me the amount you'd like to pay (in £) and a short reason (e.g. 'Deposit for Acme website' or 'Invoice INV-203'), and I'll generate a secure Stripe link you can pay with right away.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
     // Focus input synchronously so mobile browsers open the keyboard
@@ -815,6 +819,21 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                       <Shield className="h-3.5 w-3.5" />
                       Verify
                     </motion.button>
+                    <motion.button
+                      type="button"
+                      onClick={() => startQuickAction("pay")}
+                      disabled={isLoading}
+                      whileHover={{ y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex h-8 items-center gap-2 rounded-sm px-3 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)",
+                        border: "1px solid rgba(255,255,255,0.18)",
+                      }}
+                    >
+                      <CreditCard className="h-3.5 w-3.5" />
+                      Pay
+                    </motion.button>
                   </div>
                 )}
               </motion.div>
@@ -870,7 +889,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isDevMode ? "Paste contact details or describe a sales event" : quickAction === "call" ? "Name and phone number" : quickAction === "email" ? "Name and email address" : quickAction === "trial" ? "Project details + name, email, phone" : quickAction === "services" ? "Services needed + name, email, phone" : quickAction === "verify" ? "Order ID or invoice details" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
+            placeholder={isDevMode ? "Paste contact details or describe a sales event" : quickAction === "call" ? "Name and phone number" : quickAction === "email" ? "Name and email address" : quickAction === "trial" ? "Project details + name, email, phone" : quickAction === "services" ? "Services needed + name, email, phone" : quickAction === "verify" ? "Order ID or invoice details" : quickAction === "pay" ? "Amount in £ and reason e.g. 250 deposit for Acme" : manualHandoff ? "Reply to the team" : "Ask something or just leave email address"}
             className="h-9 min-w-0 flex-1 rounded-sm px-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-0 focus-visible:outline-none"
             style={{
               background: "rgba(255,255,255,0.08)",

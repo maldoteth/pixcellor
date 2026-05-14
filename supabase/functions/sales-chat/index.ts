@@ -111,7 +111,8 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
    a. Call **extract_screenshot_contact** with that image URL to pull any visible name, company, phone, email, website.
    b. As soon as ANY contact detail comes back (even just a phone number, or just an email, or just a company name), call **save_contact** straight away with: the extracted details (use the company name OR phone OR email as the name placeholder if no real name is visible), status set to "hot", schedule_callback_tomorrow set to true, and media_image_url set to that same image URL so the screenshot is saved to the contact's media gallery.
    c. Then reply briefly confirming you've saved their details and arranged a call back today — do NOT ask them to retype the info you can already see.
-   d. If extraction returns nothing usable, politely ask the visitor to type their name and phone/email so you can still book the callback.
+    d. If extraction returns nothing usable, politely ask the visitor to type their name and phone/email so you can still book the callback.
+9. **CUSTOM PAYMENTS — "Pay" QUICK ACTION:** If the visitor uses the "Pay" quick action OR asks to "pay an amount", "pay a deposit", "settle a balance", "pay an invoice", "make a custom payment" — collect TWO things: (a) the amount in GBP (e.g. £250), (b) a short reason/description (e.g. "Deposit for Acme website", "Final balance — invoice INV-203"). Once you have BOTH, call **create_custom_payment** with amount_gbp and description. If the visitor has already shared an email, pass it as client_email so we can track the payment. Reply with the Stripe link returned (the link itself is enough — visitor can click it to pay). Do NOT make up amounts. If amount is unclear or below £1, ask once for clarification.
 
 ## CRITICAL Rules — Qualifying Questions:
 - DO NOT list or recommend all three packages at once. That overwhelms clients.
@@ -332,6 +333,22 @@ const tools = [
           image_url: { type: "string", description: "Public URL of the uploaded screenshot/image." },
         },
         required: ["image_url"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_custom_payment",
+      description: "Create a Stripe payment link for a custom amount the visitor wants to pay (e.g. deposit, balance, invoice settlement). Returns a live Stripe URL the visitor clicks to pay. Use ONLY when the visitor has explicitly told you the amount AND a short reason/description.",
+      parameters: {
+        type: "object",
+        properties: {
+          amount_gbp: { type: "number", description: "Amount in pounds, between 1 and 1,000,000." },
+          description: { type: "string", description: "Short description of what this payment is for (max 200 chars). Shown on Stripe checkout." },
+          client_email: { type: "string", description: "Visitor's email if known, for tracking." },
+        },
+        required: ["amount_gbp", "description"],
       },
     },
   },
@@ -1825,6 +1842,70 @@ async function devCreateCustomOrder(supabase: DbClient, args: Record<string, unk
   };
 }
 
+async function salesCreateCustomPayment(supabase: DbClient, args: Record<string, unknown>) {
+  const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
+  if (!stripeSecretKey) return { ok: false, error: "stripe_not_configured" };
+
+  const description = cleanText(args.description, 200);
+  const amount = Number(args.amount_gbp);
+  const clientEmail = cleanText(args.client_email, 255).toLowerCase() || null;
+
+  if (!description) return { ok: false, error: "description_required" };
+  if (!Number.isFinite(amount) || amount < 1 || amount > 1_000_000) return { ok: false, error: "invalid_amount" };
+  if (clientEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clientEmail)) return { ok: false, error: "invalid_email" };
+
+  const { default: Stripe } = await import("https://esm.sh/stripe@18.5.0");
+  const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
+
+  try {
+    const product = await stripe.products.create({
+      name: description.slice(0, 250),
+      metadata: { kind: "custom", source: "sales_chat", client_email: clientEmail ?? "" },
+    });
+    const price = await stripe.prices.create({
+      product: product.id,
+      currency: "gbp",
+      unit_amount: Math.round(amount * 100),
+    });
+
+    const linkRow = await supabase
+      .from("custom_payment_links")
+      .insert({
+        stripe_product_id: product.id,
+        stripe_price_id: price.id,
+        url: "pending",
+        description,
+        amount_gbp: amount,
+        currency: "gbp",
+        quantity: 1,
+        mode: "payment",
+        client_email: clientEmail,
+        internal_note: "Created by Alex via sales chat",
+        status: "open",
+      })
+      .select("id")
+      .single();
+    if (linkRow.error || !linkRow.data) return { ok: false, error: "db_insert_failed" };
+    const linkId = linkRow.data.id;
+
+    const paymentLink = await stripe.paymentLinks.create({
+      line_items: [{ price: price.id, quantity: 1 }],
+      metadata: { kind: "custom", custom_link_id: linkId, client_email: clientEmail ?? "", source: "sales_chat" },
+      payment_intent_data: { metadata: { kind: "custom", custom_link_id: linkId, source: "sales_chat" } },
+    });
+
+    await supabase
+      .from("custom_payment_links")
+      .update({ stripe_payment_link_id: paymentLink.id, url: paymentLink.url })
+      .eq("id", linkId);
+
+    return { ok: true, url: paymentLink.url, amount_gbp: amount, description };
+  } catch (e) {
+    console.error("salesCreateCustomPayment error", e);
+    return { ok: false, error: e instanceof Error ? e.message : "stripe_failed" };
+  }
+}
+
 async function devCreatePaymentLink(req: Request, args: Record<string, unknown>) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const authHeader = req.headers.get("Authorization") || "";
@@ -2126,6 +2207,17 @@ Deno.serve(async (req) => {
           } catch (e) {
             console.error("Error in save_contact:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "save_contact_failed" }) });
+          }
+        } else if (toolCall.function.name === "create_custom_payment" && !isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await salesCreateCustomPayment(supabase, args);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in create_custom_payment:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_payment_failed" }) });
           }
         } else if (toolCall.function.name === "extract_screenshot_contact") {
           needsFollowUp = true;
