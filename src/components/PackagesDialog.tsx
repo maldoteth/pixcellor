@@ -752,7 +752,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-1 flex items-baseline gap-2">
           <div className="text-3xl font-extrabold text-foreground">£150</div>
-          <span className="text-xs text-muted-foreground line-through">RRP £375</span>
+          <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-through">RRP £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
         <ul className="mb-6 space-y-2 text-base text-foreground">
@@ -810,7 +810,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
         <div className="mb-1 flex items-baseline gap-2">
           <div className="text-5xl font-black text-foreground">£500</div>
-          <span className="text-xs text-muted-foreground line-through">RRP £1,500</span>
+          <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-through">RRP £1,500</span>
         </div>
         <IntroductoryOfferText discount="67%" />
         <ul className="mb-4 space-y-1.5 text-base text-foreground">
@@ -903,7 +903,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 <div className="text-3xl font-extrabold text-foreground">
                   {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
                 </div>
-                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
+                <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-through">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
               <IntroductoryOfferText discount="52%" />
               <ul className="mb-6 space-y-2 text-base text-foreground">
@@ -960,7 +960,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 <SnakeFlipButton label="Retainer" sizeClass="h-7 px-2 text-[10px]" active={desktopAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="mb-1 text-3xl font-extrabold text-foreground">Solutions</div>
-              <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
+              <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 mb-4">Built around your operation</p>
               <ul className="mb-6 space-y-2 text-base text-foreground">
                 {PACKAGES.enterprise.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
@@ -1242,7 +1242,7 @@ function MobileCards() {
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-1 flex items-baseline gap-2">
           <span className="text-3xl font-extrabold text-foreground">£150</span>
-          <span className="text-xs text-muted-foreground line-through">RRP £375</span>
+          <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-through">RRP £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
         <ul className="space-y-2 flex-1 mb-4">
@@ -1274,7 +1274,7 @@ function MobileCards() {
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
         <div className="mt-3 mb-1 flex items-baseline gap-2">
           <span className="text-3xl font-extrabold text-foreground">£500</span>
-          <span className="text-xs text-muted-foreground line-through">RRP £1,500</span>
+          <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-through">RRP £1,500</span>
         </div>
         <IntroductoryOfferText discount="67%" />
         <ul className="space-y-2 flex-1 mb-4">
@@ -1345,7 +1345,7 @@ function MobileCards() {
                 <div className="text-3xl font-extrabold text-foreground">
                   {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
                 </div>
-                <span className="text-xs text-muted-foreground line-through">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
+                <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-through">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
               <IntroductoryOfferText discount="52%" />
               <ul className="space-y-2 flex-1 mb-4">
@@ -1393,7 +1393,7 @@ function MobileCards() {
               <div className="mt-3 mb-1">
                 <span className="text-3xl font-extrabold text-foreground">Solutions</span>
               </div>
-              <p className="text-xs text-muted-foreground mb-4">Built around your operation</p>
+              <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 mb-4">Built around your operation</p>
               <ul className="space-y-2 flex-1 mb-4">
                 {PACKAGES.enterprise.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-base text-foreground">

@@ -213,7 +213,7 @@ export default function BroadcastCampaigns() {
                 className="text-left p-3 border border-input rounded-md hover:bg-muted/50 transition-colors"
               >
                 <div className="text-sm font-semibold">{t.name}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{t.description}</div>
+                <div className="text-muted-foreground text-lg text-slate-50 bg-white/0 mt-0.5">{t.description}</div>
               </button>
             ))}
           </div>
@@ -241,7 +241,7 @@ export default function BroadcastCampaigns() {
 
             <RichEmailEditor value={bodyHtml} onChange={setBodyHtml} />
 
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-lg text-slate-50 bg-white/0">
               From <code>hello@mail.pixcellor.com</code> · replies go to <code>hello@pixcellor.com</code> · branded header,
               footer and unsubscribe link are added automatically.
             </p>

@@ -534,7 +534,7 @@ const Legal = () => {
           ))}
         </div>
 
-        <footer className="mt-16 pt-6 border-t border-white/10 text-xs text-muted-foreground">
+        <footer className="mt-16 pt-6 border-t border-white/10 text-muted-foreground text-lg text-slate-50 bg-white/0">
           © {new Date().getFullYear()} {COMPANY}. All rights reserved.
         </footer>
       </div>
