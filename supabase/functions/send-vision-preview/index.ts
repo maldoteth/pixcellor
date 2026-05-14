@@ -43,18 +43,23 @@ Deno.serve(async (req) => {
 
     const variant = body.variant === 'cold' ? 'cold' : 'warm'
     const templateName = variant === 'cold' ? 'cold-outreach' : 'vision-preview-ready'
+    // Tag the link so the preview page knows the visitor arrived via email
+    // and can hide the "save to dashboard" magic-link prompt.
+    const taggedPreviewUrl = body.previewUrl
+      ? `${body.previewUrl}${body.previewUrl.includes('?') ? '&' : '?'}src=email`
+      : body.previewUrl
     const templateData = variant === 'cold'
       ? {
           clientName: body.clientName,
           companyName: body.companyName || body.title,
-          previewUrl: body.previewUrl,
+          previewUrl: taggedPreviewUrl,
           imageUrl: body.imageUrl,
         }
       : {
           clientName: body.clientName,
           title: body.title,
           brief: body.brief,
-          previewUrl: body.previewUrl,
+          previewUrl: taggedPreviewUrl,
           imageUrl: body.imageUrl,
         }
 
