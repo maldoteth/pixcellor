@@ -123,7 +123,11 @@ const Index = () => {
     };
   }, []);
 
-  const overlayOpen = packagesOpen || chatOpen || letsTalkOpen || tryBeforeBuyOpen || visionPurchaseOpen || visionGenOpen || customerAccessOpen;
+  // On tablet/desktop the chat is a movable, mountable panel — keep the
+  // logo and top buttons visible alongside it. On mobile the chat takes
+  // over the screen, so treat it like other overlays.
+  const otherOverlaysOpen = packagesOpen || letsTalkOpen || tryBeforeBuyOpen || visionPurchaseOpen || visionGenOpen || customerAccessOpen;
+  const overlayOpen = otherOverlaysOpen || (isMobile && chatOpen);
 
   return (
     <div className="w-full">
