@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import DomainPicker, { DomainChoice } from "@/components/DomainPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext } from "@/lib/checkoutTracking";
+import { SUGGESTIONS as VISION_SUGGESTIONS } from "@/components/VisionGenerator";
 
 function useIsMobileOrTablet() {
   const [match, setMatch] = useState<boolean>(() =>
