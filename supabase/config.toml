@@ -13,6 +13,8 @@ project_id = "rkgjkvghejcmostuqkgw"
     verify_jwt = true
   [functions.send-sales-followup]
     verify_jwt = true
+  [functions.extract-vision-brand-kit]
+    verify_jwt = true
   [functions.preview-transactional-email]
     verify_jwt = false
   [functions.handle-email-unsubscribe]
