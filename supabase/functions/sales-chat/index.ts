@@ -1013,9 +1013,11 @@ async function createDevContact(supabase: DbClient, args: Record<string, unknown
   const trade = cleanTrade(args.trade);
   const industry = cleanText(args.industry, 80).toLowerCase() || inferIndustry(`${trade} ${args.name} ${args.notes}`);
   const website = cleanWebsite(args.website);
-  const notes = [
+  const cleanedNotes = cleanDevNotes(args.notes, 900);
+  // Notes/extra context now live as a contact_event ("Note"), NOT on the contact row itself.
+  const noteBody = [
     trade ? `Trade: ${trade}` : "",
-    cleanDevNotes(args.notes, 900),
+    cleanedNotes,
   ].filter(Boolean).join("\n");
 
   const phone = cleanText(args.phone, 40);
@@ -1027,31 +1029,39 @@ async function createDevContact(supabase: DbClient, args: Record<string, unknown
     location: cleanText(args.location, 160) || null,
     industry: industry || "general",
     website: website || null,
-    notes: notes || null,
+    notes: null,
     source: "dev_chat",
   };
 
+  const insertNoteEvent = async (contactId: string) => {
+    if (!noteBody) return;
+    await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: "Note",
+      description: noteBody,
+      event_type: "note",
+    });
+  };
+
   // Dedup: if a contact with same email or normalized phone exists, return it instead of erroring.
-  let existing: { id: string; name: string; email: string | null; phone: string | null; notes: string | null } | null = null;
+  let existing: { id: string; name: string; email: string | null; phone: string | null } | null = null;
   if (email) {
-    const { data } = await supabase.from("contacts").select("id, name, email, phone, notes").ilike("email", email).limit(1).maybeSingle();
+    const { data } = await supabase.from("contacts").select("id, name, email, phone").ilike("email", email).limit(1).maybeSingle();
     if (data) existing = data as typeof existing;
   }
   if (!existing && normalizedPhone && normalizedPhone.length >= 5) {
-    const { data } = await supabase.from("contacts").select("id, name, email, phone, notes").limit(50);
+    const { data } = await supabase.from("contacts").select("id, name, email, phone").limit(50);
     const match = (data ?? []).find((c) => (c.phone ?? "").replace(/[^0-9+]/g, "") === normalizedPhone);
     if (match) existing = match as typeof existing;
   }
   if (existing) {
-    const mergedNotes = [existing.notes, notes].filter(Boolean).join("\n");
-    if (notes) {
-      await supabase.from("contacts").update({ notes: mergedNotes, updated_at: new Date().toISOString() }).eq("id", existing.id);
-    }
+    await insertNoteEvent(existing.id);
     return { ok: true, contact: { id: existing.id, name: existing.name, email: existing.email, phone: existing.phone }, existed: true };
   }
 
   const { data, error } = await supabase.from("contacts").insert(payload).select("id, name, email, phone").single();
   if (error) return { ok: false, error: error.message };
+  await insertNoteEvent(data.id);
   return { ok: true, contact: data, existed: false };
 }
 
