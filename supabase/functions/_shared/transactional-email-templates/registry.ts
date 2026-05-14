@@ -17,6 +17,7 @@ import { template as projectRequirementsReminder } from './project-requirements-
 import { template as orderComplete } from './order-complete.tsx'
 import { template as salesWelcomeInfo } from './sales-welcome-info.tsx'
 import { template as visionPreviewReady } from './vision-preview-ready.tsx'
+import { template as coldOutreach } from './cold-outreach.tsx'
 import { template as customInvoice } from './custom-invoice.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
