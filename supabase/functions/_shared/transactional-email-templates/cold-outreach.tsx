@@ -10,9 +10,11 @@ type ColdOutreachProps = {
   companyName?: string
   previewUrl?: string
   imageUrl?: string
+  signName?: string
+  signRole?: string
 }
 
-const ColdOutreachEmail = ({ clientName, companyName, previewUrl, imageUrl }: ColdOutreachProps) => (
+const ColdOutreachEmail = ({ clientName, companyName, previewUrl, imageUrl, signName, signRole }: ColdOutreachProps) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>{`A website concept for ${companyName || 'your business'}`}</Preview>
@@ -28,7 +30,7 @@ const ColdOutreachEmail = ({ clientName, companyName, previewUrl, imageUrl }: Co
               <Text style={eyebrow}>A QUICK NOTE</Text>
               <Heading style={h1}>{clientName ? `Hi ${clientName},` : 'Hi there,'}</Heading>
               <Text style={intro}>
-                I tried calling today as I think you will love this website concept I made for {companyName || 'your business'}.
+                Here's a custom site branding design I put together for {companyName || 'your business'} — it's all yours to keep, no strings attached.
               </Text>
             </Column>
           </Row>
@@ -49,14 +51,15 @@ const ColdOutreachEmail = ({ clientName, companyName, previewUrl, imageUrl }: Co
             <Column style={panelInner}>
               {previewUrl && <Button style={button} href={previewUrl}>View your preview</Button>}
               <Text style={text}>
-                Our websites start from as little as <strong style={strong}>£150</strong>, and we take care of everything from domains to hosting so you don't lift a finger.
+                If you'd like us to build it out, just reply to this email and we'll take it from there. We operate on a try-before-you-buy basis so you can see the finished product before committing.
               </Text>
               <Text style={text}>
-                If you like the concept and want us to get to work bringing this to life, get in touch!
+                Our service is fully inclusive — domains, hosting, copy, imagery and ongoing edits are all handled by our team. You don't have to do a thing. Every site we ship is also covered by our <strong style={strong}>lifetime warranty</strong>, so it stays looking sharp and running smoothly for as long as you're with us.
               </Text>
               <Text style={signoff}>Warm regards,</Text>
-              <Text style={signName}>Alexie</Text>
-              <Text style={signRole}>Pixcellor Sales Director</Text>
+              <Text style={signName_}>{signName || 'Alex Reyes'}</Text>
+              <Text style={signRole_}>{signRole || 'Sales Director'}</Text>
+              <Text style={signRole_}>Pixcellor.com</Text>
             </Column>
           </Row>
         </Section>
@@ -96,5 +99,5 @@ const text = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '1
 const strong = { color: '#ffffff', fontWeight: '800' as const }
 const button = { backgroundColor: '#ffffff', borderRadius: '0', color: '#050505', display: 'inline-block', fontSize: '14px', fontWeight: '800' as const, margin: '0 0 6px', padding: '13px 18px', textDecoration: 'none' }
 const signoff = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '24px 0 0' }
-const signName = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as const, margin: '2px 0 0' }
-const signRole = { color: '#929292', fontSize: '12px', lineHeight: '1.6', margin: '2px 0 0' }
+const signName_ = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as const, margin: '2px 0 0' }
+const signRole_ = { color: '#929292', fontSize: '12px', lineHeight: '1.6', margin: '2px 0 0' }
