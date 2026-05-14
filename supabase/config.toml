@@ -11,6 +11,8 @@ project_id = "rkgjkvghejcmostuqkgw"
     verify_jwt = false
   [functions.send-vision-preview]
     verify_jwt = true
+  [functions.send-sales-followup]
+    verify_jwt = true
   [functions.preview-transactional-email]
     verify_jwt = false
   [functions.handle-email-unsubscribe]
