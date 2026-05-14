@@ -225,7 +225,7 @@ export default function VisionPreview() {
                     ) : (
                       <Upload className="h-3.5 w-3.5" />
                     )}
-                    Compare
+                  Your image
                   </Button>
                 </>
               )}
