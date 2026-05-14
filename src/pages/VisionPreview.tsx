@@ -174,6 +174,62 @@ export default function VisionPreview() {
             <div className="space-y-1">
               <h1 className="text-xl font-semibold">{preview.title ?? "Your Preview"}</h1>
             </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border">
+              <div className="flex">
+                <button
+                  type="button"
+                  onClick={() => setTab("preview")}
+                  className={`px-4 py-2 text-sm border-b-2 -mb-px transition-colors ${
+                    tab === "preview"
+                      ? "border-foreground text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Preview
+                </button>
+                {comparisonUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setTab("compare")}
+                    className={`px-4 py-2 text-sm border-b-2 -mb-px transition-colors ${
+                      tab === "compare"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Your image
+                  </button>
+                )}
+              </div>
+              {!comparisonUrl && (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleCompareUpload(f);
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-none gap-1 mb-1"
+                    disabled={uploading}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {uploading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="h-3.5 w-3.5" />
+                    )}
+                    Compare
+                  </Button>
+                </>
+              )}
+            </div>
             <div
               tabIndex={-1}
               className="border border-border bg-black/40 overflow-auto outline-none focus:outline-none focus-visible:outline-none select-none"
@@ -181,7 +237,7 @@ export default function VisionPreview() {
               onContextMenu={(e) => e.preventDefault()}
             >
               <img
-                src={imageUrl}
+                src={tab === "compare" && comparisonUrl ? comparisonUrl : imageUrl}
                 alt={preview.title ?? "Generated website preview"}
                 className="w-full block pointer-events-none select-none"
                 draggable={false}
