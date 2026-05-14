@@ -26,7 +26,8 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({})) as { slug?: string; phone?: string }
     const slug = String(body.slug || '').trim()
-    const providedPhone = (body.phone || '').toString().trim()
+    const phoneProvided = Object.prototype.hasOwnProperty.call(body, 'phone')
+    const providedPhone = (body.phone ?? '').toString().trim()
 
     if (!slug || !/^[a-zA-Z0-9_-]{3,128}$/.test(slug)) {
       return json({ error: 'Invalid slug' }, 400)
