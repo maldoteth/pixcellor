@@ -7,9 +7,11 @@ const LOGO_URL = 'https://rkgjkvghejcmostuqkgw.supabase.co/storage/v1/object/pub
 
 type SalesFollowupProps = {
   clientName?: string
+  signName?: string
+  signRole?: string
 }
 
-const SalesFollowupEmail = ({ clientName }: SalesFollowupProps) => (
+const SalesFollowupEmail = ({ clientName, signName, signRole }: SalesFollowupProps) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Following up on our call — try Pixcellor for free</Preview>
@@ -41,9 +43,9 @@ const SalesFollowupEmail = ({ clientName }: SalesFollowupProps) => (
                 Our try before you buy services exist as we're so confident teams will love us!
               </Text>
               <Text style={signoff}>Best regards,</Text>
-              <Text style={signName}>Alex Reyes</Text>
-              <Text style={signRole}>Sales Director</Text>
-              <Text style={signRole}>Pixcellor.com</Text>
+              <Text style={signNameStyle}>{signName || 'Alex Reyes'}</Text>
+              <Text style={signRoleStyle}>{signRole || 'Sales Director'}</Text>
+              <Text style={signRoleStyle}>Pixcellor.com</Text>
             </Column>
           </Row>
         </Section>
@@ -75,5 +77,5 @@ const panel = {}
 const panelInner = { padding: '28px 34px 28px' }
 const text = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '14px 0 0' }
 const signoff = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '24px 0 0' }
-const signName = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as const, margin: '2px 0 0' }
-const signRole = { color: '#929292', fontSize: '12px', lineHeight: '1.6', margin: '2px 0 0' }
+const signNameStyle = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as const, margin: '2px 0 0' }
+const signRoleStyle = { color: '#929292', fontSize: '12px', lineHeight: '1.6', margin: '2px 0 0' }
