@@ -1058,6 +1058,10 @@ async function saveCustomerContact(supabase: DbClient, args: Record<string, unkn
   const website = cleanWebsite(args.website);
   const shouldScheduleCallback = args.schedule_callback_tomorrow === true;
   const shouldSendWelcomeEmail = args.send_welcome_email === true;
+  const requestedStatus = cleanText(args.status, 20).toLowerCase();
+  const status = ["cold","aware","warm","hot","gold"].includes(requestedStatus) ? requestedStatus : null;
+  const mediaImageUrl = cleanText(args.media_image_url, 1000);
+  const mediaUrl = /^https:\/\//i.test(mediaImageUrl) ? mediaImageUrl : "";
   if (!name) return { ok: false, error: "missing_name" };
   if (!email && !phone) return { ok: false, error: "email_or_phone_required" };
   if (shouldSendWelcomeEmail && !email) return { ok: false, error: "email_required_for_welcome_email" };
@@ -1067,30 +1071,44 @@ async function saveCustomerContact(supabase: DbClient, args: Record<string, unkn
     cleanText(args.notes, 850),
     shouldScheduleCallback ? "Requested a callback from Alex chat." : "",
     shouldSendWelcomeEmail ? "Requested Pixcellor package/process info by email." : "",
+    mediaUrl ? "Details captured from uploaded screenshot." : "",
     conversationId ? `Live chat: ${conversationId}` : "Live chat lead",
   ].filter(Boolean).join("\n");
-  const existingQuery = supabase.from("contacts").select("id, notes").limit(1);
+  const existingQuery = supabase.from("contacts").select("id, notes, media").limit(1);
   const { data: existing } = email
     ? await existingQuery.ilike("email", email).maybeSingle()
     : await existingQuery.eq("phone", phone).maybeSingle();
 
+  const mergeMedia = (current: unknown): string[] => {
+    const arr = Array.isArray(current) ? current.filter((v): v is string => typeof v === "string") : [];
+    if (mediaUrl && !arr.includes(mediaUrl)) arr.push(mediaUrl);
+    return arr;
+  };
+
   if (existing?.id) {
+    const update: Record<string, unknown> = {
+      name, phone: phone || null, email: email || null, industry, website: website || null,
+      notes: [existing.notes, notes].filter(Boolean).join("\n"),
+      updated_at: new Date().toISOString(),
+    };
+    if (status) update.status = status;
+    if (mediaUrl) update.media = mergeMedia(existing.media);
     const { data, error } = await supabase
-      .from("contacts")
-      .update({ name, phone: phone || null, email: email || null, industry, website: website || null, notes: [existing.notes, notes].filter(Boolean).join("\n"), updated_at: new Date().toISOString() })
-      .eq("id", existing.id)
-      .select("id, name, email, phone")
-      .single();
+      .from("contacts").update(update).eq("id", existing.id)
+      .select("id, name, email, phone").single();
     if (error) return { ok: false, error: error.message };
     await handleCustomerContactFollowUps(supabase, data.id, { name, email, phone, shouldScheduleCallback, shouldSendWelcomeEmail });
     return { ok: true, contact: data, updated: true, callback_scheduled: shouldScheduleCallback, welcome_email_requested: shouldSendWelcomeEmail };
   }
 
+  const insert: Record<string, unknown> = {
+    name, phone: phone || null, email: email || null, industry, website: website || null, notes, source: "chat",
+  };
+  if (status) insert.status = status;
+  if (mediaUrl) insert.media = [mediaUrl];
   const { data, error } = await supabase
-    .from("contacts")
-    .insert({ name, phone: phone || null, email: email || null, industry, website: website || null, notes, source: "chat" })
-    .select("id, name, email, phone")
-    .single();
+    .from("contacts").insert(insert)
+    .select("id, name, email, phone").single();
   if (error) return { ok: false, error: error.message };
   await handleCustomerContactFollowUps(supabase, data.id, { name, email, phone, shouldScheduleCallback, shouldSendWelcomeEmail });
   return { ok: true, contact: data, updated: false, callback_scheduled: shouldScheduleCallback, welcome_email_requested: shouldSendWelcomeEmail };
