@@ -29,5 +29,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'order-complete': orderComplete,
   'sales-welcome-info': salesWelcomeInfo,
   'vision-preview-ready': visionPreviewReady,
+  'cold-outreach': coldOutreach,
   'custom-invoice': customInvoice,
 }
