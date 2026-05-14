@@ -277,6 +277,15 @@ const formatWebsiteHref = (value?: string | null) => {
 
 const normalizePhoneDigits = (value?: string | null) => (value ?? "").replace(/\D/g, "");
 
+const copyToClipboard = async (text: string, label = "Copied") => {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success(label);
+  } catch {
+    toast.error("Copy failed");
+  }
+};
+
 const leadSearchMemoryKey = "pixcellor-lead-search-memory";
 const readLeadSearchMemory = () => {
   if (typeof window === "undefined") return { trades: [] as string[], locations: [] as string[] };
@@ -3226,13 +3235,30 @@ export default function Portal() {
             <div className="mx-auto w-full max-w-3xl space-y-4 overflow-y-auto pb-2">
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/60 p-3">
                 <div className="min-w-0 space-y-1">
-                  {contactDetailDrawerContact.phone && (contactDetailDrawerPhoneHref ? (
-                    <a href={contactDetailDrawerPhoneHref} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline mx-[10px]" aria-label={`Call ${contactDetailDrawerContact.phone}`}>
-                      {contactDetailDrawerContact.phone}
-                    </a>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.phone}</div>
-                  ))}
+                  {contactDetailDrawerContact.phone && (
+                    <div className="flex items-center gap-1.5">
+                      {contactDetailDrawerPhoneHref ? (
+                        <a href={contactDetailDrawerPhoneHref} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contactDetailDrawerContact.phone}`}>
+                          {contactDetailDrawerContact.phone}
+                        </a>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">{contactDetailDrawerContact.phone}</div>
+                      )}
+                      <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 rounded-none" aria-label="Copy number" title="Copy number" onClick={() => copyToClipboard(contactDetailDrawerContact.phone!, "Number copied")}>
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                  {contactDetailDrawerContact.email && (
+                    <div className="flex items-center gap-1.5">
+                      <a href={`mailto:${contactDetailDrawerContact.email}`} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" aria-label={`Email ${contactDetailDrawerContact.email}`}>
+                        {contactDetailDrawerContact.email}
+                      </a>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 rounded-none" aria-label="Copy email" title="Copy email" onClick={() => copyToClipboard(contactDetailDrawerContact.email!, "Email copied")}>
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
                   {contactDetailDrawerContact.contact_name && <div className="text-sm text-muted-foreground">Client: {contactDetailDrawerContact.contact_name}</div>}
                   {contactDetailDrawerContact.industry && <Badge variant="outline" className="rounded-none capitalize">{contactDetailDrawerContact.industry}</Badge>}
                   {contactDetailDrawerContact.source_platform && <Badge variant="secondary" className="rounded-none">{contactDetailDrawerContact.source_platform}</Badge>}
@@ -3328,6 +3354,11 @@ export default function Portal() {
                     <div className="min-w-0">
                       <div className="font-medium">{person.name}</div>
                       <div className="text-xs text-muted-foreground">{[person.job_title, person.phone].filter(Boolean).join(" · ") || "—"}</div>
+                      {person.phone && (
+                        <Button variant="ghost" size="icon" className="mt-1 h-6 w-6 shrink-0 rounded-none" aria-label="Copy number" title="Copy number" onClick={() => copyToClipboard(person.phone!, "Number copied")}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                     <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Remove" onClick={() => deleteContactPerson(person.id)}>
                       <Trash2 className="h-3.5 w-3.5" />
