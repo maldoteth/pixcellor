@@ -390,9 +390,11 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
           ? "\n\n[Quick action: Try-before-you-buy lead. Save these details as a contact, capture project requirements (any uploaded screenshots/images), and flag the team to build a free preview site.]"
           : quickAction === "services"
             ? "\n\n[Quick action: Services enquiry. Capture which marketing/business services they need, save contact details, and route to the team for a tailored quote.]"
-            : quickAction === "verify"
-              ? "\n\n[Quick action: Invoice verification. The user wants to verify an order/invoice. Ask for their order ID if not provided, look up their order details, and confirm payment status or answer any invoice concerns.]"
-              : "";
+              : quickAction === "verify"
+                ? "\n\n[Quick action: Invoice verification. The user wants to verify an order/invoice. Ask for their order ID if not provided, look up their order details, and confirm payment status or answer any invoice concerns.]"
+                : quickAction === "pay"
+                  ? "\n\n[Quick action: Custom payment. The user wants to pay a custom amount. Collect amount in GBP and a short reason/description, then call create_custom_payment to generate a Stripe link and reply with that link.]"
+                  : "";
     const userMessage: Message = { role: "user", content: visibleContent };
     const apiUserMessage = { role: "user" as const, content: `${visibleContent}${actionInstruction}` };
     const newMessages = [...messages, userMessage];
