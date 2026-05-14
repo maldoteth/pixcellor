@@ -2285,13 +2285,30 @@ export default function Portal() {
                         <div className="space-y-1">
                           <div className="font-medium">{e.title}</div>
                           <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">{contact?.name ?? "Unknown client"} · Follow-up: {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
-                          {contact?.phone && (phoneHref ? (
-                            <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
-                              {contact.phone}
-                            </a>
-                          ) : (
-                            <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">{contact.phone}</div>
-                          ))}
+                          {contact?.phone && (
+                            <div className="flex items-center gap-1.5">
+                              {phoneHref ? (
+                                <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
+                                  {contact.phone}
+                                </a>
+                              ) : (
+                                <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">{contact.phone}</div>
+                              )}
+                              <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 rounded-none" aria-label="Copy number" title="Copy number" onClick={(event) => { event.stopPropagation(); copyToClipboard(contact.phone, "Number copied"); }}>
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          {contact?.email && (
+                            <div className="flex items-center gap-1.5">
+                              <a href={`mailto:${contact.email}`} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Email ${contact.email}`} onClick={(event) => event.stopPropagation()}>
+                                {contact.email}
+                              </a>
+                              <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 rounded-none" aria-label="Copy email" title="Copy email" onClick={(event) => { event.stopPropagation(); copyToClipboard(contact.email, "Email copied"); }}>
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
                           {e.description && <LinkifiedText text={e.description} className="block text-sm whitespace-pre-wrap" stopPropagation />}
                         </div>
                         <div className="flex flex-row flex-wrap items-center justify-end gap-2">
