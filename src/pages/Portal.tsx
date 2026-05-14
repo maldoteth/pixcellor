@@ -405,7 +405,6 @@ const salesEventWizardFields = [
   { key: "contact", label: "Client", placeholder: "Search client", required: true, inputMode: "text" },
   { key: "title", label: "What happened?", placeholder: "Let's Talk, email, quote…", required: true, inputMode: "text" },
   { key: "callback_at", label: "Call Back?", placeholder: "Call Back?", required: false, inputMode: "text" },
-  { key: "description", label: "Notes", placeholder: "Add notes", required: false, inputMode: "text" },
 ] as const;
 
 export default function Portal() {
