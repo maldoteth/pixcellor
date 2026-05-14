@@ -98,71 +98,6 @@ type ServiceItem = { name: string; info?: string };
 
 function ServiceItemRow({ item }: { item: ServiceItem }) {
   const [open, setOpen] = useState(false);
-  const [pinned, setPinned] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : true
-  );
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const tipRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number; placeAbove: boolean } | null>(null);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  const updatePos = useCallback(() => {
-    const btn = btnRef.current;
-    if (!btn) return;
-    const r = btn.getBoundingClientRect();
-    const tipW = 240;
-    const tipH = tipRef.current?.offsetHeight ?? 96;
-    const margin = 8;
-    const placeAbove = r.top > tipH + margin + 8;
-    let left = r.right - tipW;
-    left = Math.max(margin, Math.min(left, window.innerWidth - tipW - margin));
-    const top = placeAbove ? r.top - tipH - margin : r.bottom + margin;
-    setPos({ top, left, placeAbove });
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!open || !isDesktop) return;
-    updatePos();
-    const onScroll = () => updatePos();
-    window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll, true);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [open, isDesktop, updatePos]);
-
-  useEffect(() => {
-    if (!open || !isDesktop) return;
-    const onDown = (e: MouseEvent | TouchEvent) => {
-      const t = e.target as Node;
-      if (btnRef.current?.contains(t) || tipRef.current?.contains(t)) return;
-      setOpen(false);
-      setPinned(false);
-    };
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("touchstart", onDown);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("touchstart", onDown);
-    };
-  }, [open, isDesktop]);
-
-  const desktopHandlers = isDesktop
-    ? {
-        onMouseEnter: () => setOpen(true),
-        onMouseLeave: () => { if (!pinned) setOpen(false); },
-        onFocus: () => setOpen(true),
-        onBlur: () => { if (!pinned) setOpen(false); },
-      }
-    : {};
 
   return (
     <>
@@ -171,51 +106,26 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
       {item.info && (
         <div className="relative shrink-0">
           <button
-            ref={btnRef}
             type="button"
             aria-label={`More info about ${item.name}`}
             onClick={(e) => {
               e.stopPropagation();
-              if (isDesktop) {
-                setPinned((p) => {
-                  const next = !p;
-                  setOpen(next);
-                  return next;
-                });
-              } else {
-                setOpen((v) => !v);
-              }
+              setOpen((v) => !v);
             }}
-            {...desktopHandlers}
             className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40"
           >
             <Info className="h-3.5 w-3.5" />
           </button>
-          {isDesktop && open && pos && createPortal(
-            <div
-              ref={tipRef}
-              role="tooltip"
-              onMouseEnter={() => setOpen(true)}
-              onMouseLeave={() => { if (!pinned) setOpen(false); }}
-              style={{ position: "fixed", top: pos.top, left: pos.left, width: 240, zIndex: 2147483647 }}
-              className="rounded-md border border-border bg-popover p-3 text-xs leading-relaxed text-popover-foreground shadow-lg pointer-events-auto"
-            >
-              {item.info}
-            </div>,
-            document.body
-          )}
-          {!isDesktop && (
-            <Drawer open={open} onOpenChange={setOpen}>
-              <DrawerContent className="z-[10030]" overlayClassName="z-[10020]">
-                <DrawerHeader>
-                  <DrawerTitle>{item.name}</DrawerTitle>
-                  <DrawerDescription className="pt-2 text-sm leading-relaxed text-foreground/80">
-                    {item.info}
-                  </DrawerDescription>
-                </DrawerHeader>
-              </DrawerContent>
-            </Drawer>
-          )}
+          <Drawer open={open} onOpenChange={setOpen}>
+            <DrawerContent className="z-[10030]" overlayClassName="z-[10020]">
+              <DrawerHeader>
+                <DrawerTitle>{item.name}</DrawerTitle>
+                <DrawerDescription className="pt-2 text-sm leading-relaxed text-foreground/80">
+                  {item.info}
+                </DrawerDescription>
+              </DrawerHeader>
+            </DrawerContent>
+          </Drawer>
         </div>
       )}
     </>
