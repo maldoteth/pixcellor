@@ -254,11 +254,18 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
 
       let row = insert.data;
 
-      // Fire brand-kit extraction in background so palette/fonts populate on the preview page
+      // Extract brand kit so palette/fonts show on thumbnails and preview page
       const publicImg = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
-      void supabase.functions.invoke("extract-vision-brand-kit", {
-        body: { slug, imageUrl: publicImg, brief },
-      }).catch((e) => console.error("brand kit extract failed", e));
+      try {
+        const { data: kit } = await supabase.functions.invoke("extract-vision-brand-kit", {
+          body: { slug, imageUrl: publicImg, brief },
+        });
+        if (kit?.palette || kit?.fonts) {
+          row = { ...row, palette: kit.palette ?? null, fonts: kit.fonts ?? null };
+        }
+      } catch (e) {
+        console.error("brand kit extract failed", e);
+      }
 
       if (trimmedEmail) {
         row = await sendEmail(row, clientName.trim() || undefined, trimmedEmail);
