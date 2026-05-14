@@ -234,10 +234,10 @@ export default function VisionStudio() {
         />
       </div>
 
-      <Tabs defaultValue="visitors" className="w-full">
+      <Tabs defaultValue="ours" className="w-full">
         <TabsList className="rounded-none">
+          <TabsTrigger value="ours" className="rounded-none">Admins ({filteredPreviews.length})</TabsTrigger>
           <TabsTrigger value="visitors" className="rounded-none">Visitor generations ({filteredVisitorGens.length})</TabsTrigger>
-          <TabsTrigger value="ours" className="rounded-none">Our previews ({filteredPreviews.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="visitors" className="mt-4">
