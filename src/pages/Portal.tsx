@@ -2021,7 +2021,7 @@ export default function Portal() {
           onClick={() => selectEventContact(contact)}
         >
           <span className="font-medium text-foreground">{contact.name}</span>
-          <span className="text-xs text-muted-foreground">{[contact.email, contact.phone, contact.location, contact.industry].filter(Boolean).join(" · ") || "No extra details"}</span>
+          <span className="text-muted-foreground text-lg text-slate-50 bg-white/0">{[contact.email, contact.phone, contact.location, contact.industry].filter(Boolean).join(" · ") || "No extra details"}</span>
         </button>
       )) : (
         <div className="flex h-full items-center justify-center px-3 text-sm text-muted-foreground">No clients found</div>
@@ -2109,11 +2109,11 @@ export default function Portal() {
         <Input placeholder="Event title" value={eventForm.title} onChange={(e) => setEventForm(f => ({ ...f, title: e.target.value }))} />
         <Input className="md:col-span-2" placeholder="Event description" value={eventForm.description} onChange={(e) => setEventForm(f => ({ ...f, description: e.target.value }))} />
         <div>
-          <label className="text-xs text-muted-foreground">Optional follow-up date</label>
+          <label className="text-muted-foreground text-lg text-slate-50 bg-white/0">Optional follow-up date</label>
           <Input type="datetime-local" value={eventForm.callback_at} onChange={(e) => setEventForm(f => ({ ...f, callback_at: e.target.value }))} />
         </div>
         <div>
-          <label className="text-xs text-muted-foreground">Quick follow-up</label>
+          <label className="text-muted-foreground text-lg text-slate-50 bg-white/0">Quick follow-up</label>
           <select defaultValue="" onChange={(e) => applyCallbackPreset(e.target.value)} className="h-10 w-full rounded-none border border-input bg-background px-3 text-sm">
             <option value="">Pick time</option>
             {callbackPresets.map(preset => <option key={preset.label} value={preset.label}>{preset.label}</option>)}
@@ -2222,7 +2222,7 @@ export default function Portal() {
                 />
               </div>
               {!contactsQ && filteredContacts.length > 10 && (
-                <p className="mt-1 text-xs text-muted-foreground">Showing most recent clients. Search to find older clients.</p>
+                <p className="mt-1 text-muted-foreground text-lg text-slate-50 bg-white/0">Showing most recent clients. Search to find older clients.</p>
               )}
             </div>
 
@@ -2246,7 +2246,7 @@ export default function Portal() {
               <h3 className="font-medium">CALL BACKS</h3>
               {salesCallbacks.length === 0 && <p className="text-sm text-muted-foreground">No items waiting{salesQ ? " match your search" : ""}.</p>}
               {salesCallbacks.length > 0 && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-lg text-slate-50 bg-white/0">
                   {callbacksVisibleCount < salesCallbacks.length || (sectionCounts.contactEvents ?? 0) > contactEvents.length ? "" : "Loaded all."}
                 </p>
               )}
@@ -2284,13 +2284,13 @@ export default function Portal() {
                       <CardContent className="p-4 flex flex-wrap items-start justify-between gap-3">
                         <div className="space-y-1">
                           <div className="font-medium">{e.title}</div>
-                          <div className="text-xs text-muted-foreground">{contact?.name ?? "Unknown client"} · Follow-up: {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
+                          <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">{contact?.name ?? "Unknown client"} · Follow-up: {new Date(e.callback_at!).toLocaleString()} · {getEventAuthorLabel(e)}</div>
                           {contact?.phone && (phoneHref ? (
                             <a href={phoneHref} className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contact.phone}`} onClick={(event) => event.stopPropagation()}>
                               {contact.phone}
                             </a>
                           ) : (
-                            <div className="text-xs text-muted-foreground">{contact.phone}</div>
+                            <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">{contact.phone}</div>
                           ))}
                           {e.description && <LinkifiedText text={e.description} className="block text-sm whitespace-pre-wrap" stopPropagation />}
                         </div>
@@ -2366,17 +2366,17 @@ export default function Portal() {
                             <div className="space-y-0.5">
                               <div className="font-medium flex flex-wrap items-center gap-2">
                                 {r.name}
-                                {company && <span className="text-xs text-muted-foreground">· {company}</span>}
+                                {company && <span className="text-muted-foreground text-lg text-slate-50 bg-white/0">· {company}</span>}
                                 <Badge variant={r.paid_at ? "default" : "outline"}>{r.paid_at ? "Paid" : "Unpaid"}</Badge>
                                 <Badge variant={r.delivered_at ? "default" : "outline"}>{r.delivered_at ? "Delivered" : "Orders"}</Badge>
                                 {kind && <Badge variant="secondary">{kind === "sample" ? "Custom sample" : kind === "order" ? "Style order" : kind}</Badge>}
                                 {origin && origin !== `vision_${kind}_request` && <Badge variant="outline" className="text-[10px]">{origin}</Badge>}
                               </div>
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">
                                 {[r.email, r.phone].filter(Boolean).join(" · ") || "No contact"} · {new Date(r.created_at).toLocaleString()}
                               </div>
                               {r.delivered_at && (
-                                <div className="text-xs text-muted-foreground">Delivered {new Date(r.delivered_at).toLocaleString()}{r.delivered_domain ? ` · ${r.delivered_domain}` : ""}</div>
+                                <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Delivered {new Date(r.delivered_at).toLocaleString()}{r.delivered_domain ? ` · ${r.delivered_domain}` : ""}</div>
                               )}
                             </div>
                             <div className="flex flex-wrap gap-2">
@@ -2449,7 +2449,7 @@ export default function Portal() {
             )}
             {orderReqsFilter !== "samples" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
             {orderReqsFilter !== "samples" && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-lg text-slate-50 bg-white/0">
                 {(sectionCounts.orders ?? 0) > orders.length ? "" : "Loaded all."}
               </p>
             )}
@@ -2490,7 +2490,7 @@ export default function Portal() {
                          </Badge>
                          {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                        </div>
-                       <div className="text-xs text-muted-foreground">
+                       <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">
                          {new Date(o.created_at).toLocaleString()} · {o.mode}
                          {(() => {
                            const meta = (o.metadata as Record<string, unknown> | null) ?? {};
@@ -2499,7 +2499,7 @@ export default function Portal() {
                          })()}
                          {" · "}<span className="font-semibold text-foreground">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</span>
                        </div>
-                       {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
+                       {o.delivered_at && <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Delivered {new Date(o.delivered_at).toLocaleString()}</div>}
                      </div>
                      <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:justify-end">
                        <Button
@@ -2588,7 +2588,7 @@ export default function Portal() {
                     <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
                       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                         <div className="font-medium">{requirements.site_name}</div>
-                        <div className="text-xs text-muted-foreground">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
+                        <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
                       </div>
                       <div className="grid gap-3 md:grid-cols-2">
                         <div><span className="text-muted-foreground">Contents:</span> {requirements.site_contents}</div>
@@ -2616,7 +2616,7 @@ export default function Portal() {
 
           <TabsContent value="completed" className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">
                 {completedOrders.length} delivered orders
               </div>
               <Button variant="outline" size="sm" onClick={sendTestOrderCompleteEmail}>
@@ -2644,8 +2644,8 @@ export default function Portal() {
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="space-y-1">
                         <div className="font-medium">{o.customer_email ?? "Guest checkout"}</div>
-                        <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
-                        {o.delivered_at && <div className="text-xs text-muted-foreground">Delivered {new Date(o.delivered_at).toLocaleString()}{o.delivered_domain ? ` · ${o.delivered_domain}` : ""}</div>}
+                        <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">{new Date(o.created_at).toLocaleString()} · {o.mode}</div>
+                        {o.delivered_at && <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Delivered {new Date(o.delivered_at).toLocaleString()}{o.delivered_domain ? ` · ${o.delivered_domain}` : ""}</div>}
                       </div>
                       <div className="flex flex-wrap items-center justify-end gap-3">
                         <Badge variant="default">Delivered</Badge>
@@ -2663,7 +2663,7 @@ export default function Portal() {
                       <div className="rounded-none border border-border bg-background/50 p-4 text-sm">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="font-medium">{requirements.site_name}</div>
-                          <div className="text-xs text-muted-foreground">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
+                          <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Updated {new Date(requirements.updated_at).toLocaleString()}</div>
                         </div>
                         <div className="grid gap-3 md:grid-cols-2">
                           <div><span className="text-muted-foreground">Contents:</span> {requirements.site_contents}</div>
@@ -2694,7 +2694,7 @@ export default function Portal() {
               <Input value={falloffsSearch} onChange={(e) => setFalloffsSearch(e.target.value)} placeholder="Search falloffs by company, email, IP, location, session…" className="pl-9" />
             </div>
             {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-lg text-slate-50 bg-white/0">
               {(sectionCounts.falloffs ?? 0) > falloffs.length ? "" : "Loaded all."}
             </p>
             <div
@@ -2711,9 +2711,9 @@ export default function Portal() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="break-words font-medium">{f.company_name ?? f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
-                      <div className="text-xs text-muted-foreground">{[f.company_domain, f.company_type, f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(" · ") || "Company/location unknown"}</div>
-                      <div className="break-words text-xs text-muted-foreground">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? f.ip_timezone ?? "timezone unknown"}</div>
-                      <div className="break-all text-xs text-muted-foreground">Visitor {f.visitor_id} · Session {f.session_id}</div>
+                      <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">{[f.company_domain, f.company_type, f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(" · ") || "Company/location unknown"}</div>
+                      <div className="break-words text-muted-foreground text-lg text-slate-50 bg-white/0">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? f.ip_timezone ?? "timezone unknown"}</div>
+                      <div className="break-all text-muted-foreground text-lg text-slate-50 bg-white/0">Visitor {f.visitor_id} · Session {f.session_id}</div>
                     </div>
                     <div className="flex min-w-0 flex-wrap items-center justify-start gap-2 md:justify-end">
                       {((f as VisitorFalloff & { _duplicateCount?: number })._duplicateCount ?? 1) > 1 && (
@@ -2774,7 +2774,7 @@ export default function Portal() {
                       <div className="text-muted-foreground">{f.enriched_at ? `Enriched ${new Date(f.enriched_at).toLocaleString()}` : f.enrichment_error ?? "Pending enrichment"}</div>
                     </div>
                   </div>
-                  <div className="grid gap-2 text-xs text-muted-foreground md:grid-cols-2">
+                  <div className="grid gap-2 text-muted-foreground text-lg text-slate-50 bg-white/0 md:grid-cols-2">
                     <div>Scroll depth: {f.max_scroll_percent ?? 0}%</div>
                     <div>Portfolio pages: {f.portfolio_pages_viewed ?? 0}</div>
                     <div>Pricing opened: {f.pricing_opened_at ? new Date(f.pricing_opened_at).toLocaleString() : "—"}</div>
@@ -2841,8 +2841,8 @@ export default function Portal() {
                         </div>
                       </div>
                       <div className="text-sm truncate">{message.subject}</div>
-                      <div className="text-xs text-muted-foreground line-clamp-2">{message.snippet}</div>
-                      {relatedOrder && <div className="text-xs text-muted-foreground mt-1">Linked order · {relatedOrder.amount_total != null ? formatGBP(relatedOrder.amount_total) : "—"}</div>}
+                      <div className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-clamp-2">{message.snippet}</div>
+                      {relatedOrder && <div className="text-muted-foreground text-lg text-slate-50 bg-white/0 mt-1">Linked order · {relatedOrder.amount_total != null ? formatGBP(relatedOrder.amount_total) : "—"}</div>}
                     </div>
                   );
                 })}
@@ -2911,7 +2911,7 @@ export default function Portal() {
                         <LinkifiedText text={last.content} />
                       </div>
                     ) : (
-                      <div className="text-xs text-muted-foreground italic mt-1">No messages</div>
+                      <div className="text-muted-foreground text-lg text-slate-50 bg-white/0 italic mt-1">No messages</div>
                     )}
                     <div className="text-[10px] text-muted-foreground mt-1">{new Date(c.updated_at).toLocaleString()}</div>
                   </button>
@@ -2976,7 +2976,7 @@ export default function Portal() {
                 </Button>
               </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="text-xs text-muted-foreground">Sort:</span>
+                  <span className="text-muted-foreground text-lg text-slate-50 bg-white/0">Sort:</span>
                   {([
                     { value: "newest", label: "Newest first" },
                     { value: "oldest", label: "Oldest first" },
@@ -2994,7 +2994,7 @@ export default function Portal() {
                     </button>
                   ))}
                   <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    <span className="text-xs text-muted-foreground md:ml-2">Type:</span>
+                    <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 md:ml-2">Type:</span>
                     <button
                       type="button"
                       onClick={() => { setClientsStatusFilter("all"); setClientsVisibleCount(10); }}
@@ -3025,7 +3025,7 @@ export default function Portal() {
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-lg text-slate-50 bg-white/0">
                   {(sectionCounts.contacts ?? 0) > contacts.length || clientsVisibleCount < clientBookContacts.length ? "" : "Loaded all."}
                 </p>
                 {clientBookContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {profilesQ ? "match your search" : "yet"}.</p>}
@@ -3063,7 +3063,7 @@ export default function Portal() {
                               )}
                             </div>
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">
                             {[c.email, c.phone, c.location, c.industry].filter(Boolean).join(" · ") || "No details on file"}
                           </div>
                           {c.notes && <LinkifiedText text={c.notes} className="block text-sm text-muted-foreground" stopPropagation />}
@@ -3111,19 +3111,19 @@ export default function Portal() {
                       <CardContent className="grid grid-cols-2 gap-3">
                         <div>
                           <div className="text-2xl font-semibold">{s ? s.uniqueVisitors : "—"}</div>
-                          <div className="text-xs text-muted-foreground">Visitors</div>
+                          <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Visitors</div>
                         </div>
                         <div>
                           <div className="text-2xl font-semibold">{s ? s.totalVisitEvents : "—"}</div>
-                          <div className="text-xs text-muted-foreground">Events</div>
+                          <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Events</div>
                         </div>
                         <div>
                           <div className="text-2xl font-semibold">{s ? s.pricingViews : "—"}</div>
-                          <div className="text-xs text-muted-foreground">Pricing opens</div>
+                          <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Pricing opens</div>
                         </div>
                         <div>
                           <div className="text-2xl font-semibold">{s ? s.buyClicks : "—"}</div>
-                          <div className="text-xs text-muted-foreground">Buy clicks</div>
+                          <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Buy clicks</div>
                         </div>
                       </CardContent>
                     </Card>
@@ -3170,7 +3170,7 @@ export default function Portal() {
                     <Card key={alert.id} className={`p-4 ${sevColor} ${alert.resolved_at ? "opacity-50" : ""}`}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-2 text-muted-foreground text-lg text-slate-50 bg-white/0">
                             <span className="uppercase tracking-wide font-semibold">{alert.severity}</span>
                             <span>•</span>
                             <span>{alert.source}</span>
@@ -3269,8 +3269,8 @@ export default function Portal() {
                   {contactDetailDrawerContact.social_url && formatWebsiteHref(contactDetailDrawerContact.social_url) && <a href={formatWebsiteHref(contactDetailDrawerContact.social_url)!} target="_blank" rel="noopener noreferrer" className="block text-sm font-medium text-primary underline-offset-4 hover:underline">Social: {contactDetailDrawerContact.social_url}</a>}
                   {contactDetailDrawerContact.lead_score_reason && <LinkifiedText text={contactDetailDrawerContact.lead_score_reason} className="block text-sm text-muted-foreground" />}
                   {contactDetailDrawerContact.notes && <LinkifiedText text={contactDetailDrawerContact.notes} className="block text-sm text-muted-foreground" />}
-                  <div className="text-xs text-muted-foreground">{getContactCreatorLabel(contactDetailDrawerContact)} · {new Date(contactDetailDrawerContact.created_at).toLocaleString()}</div>
-                  {contactDetailDrawerOrderStats && <div className="text-xs text-muted-foreground">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
+                  <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">{getContactCreatorLabel(contactDetailDrawerContact)} · {new Date(contactDetailDrawerContact.created_at).toLocaleString()}</div>
+                  {contactDetailDrawerOrderStats && <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
                 <div className="flex w-full items-center justify-end gap-2 overflow-x-auto md:w-auto md:flex-wrap md:overflow-visible text-left">
                   <div className="mr-auto flex h-9 shrink-0 items-center gap-1 md:mr-0" aria-label="Client status">
@@ -3353,7 +3353,7 @@ export default function Portal() {
                   <div key={person.id} className="flex items-start justify-between gap-2 rounded-none border border-border bg-card/60 p-3 text-sm">
                     <div className="min-w-0">
                       <div className="font-medium">{person.name}</div>
-                      <div className="text-xs text-muted-foreground">{[person.job_title, person.phone].filter(Boolean).join(" · ") || "—"}</div>
+                      <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">{[person.job_title, person.phone].filter(Boolean).join(" · ") || "—"}</div>
                       {person.phone && (
                         <Button variant="ghost" size="icon" className="mt-1 h-6 w-6 shrink-0 rounded-none" aria-label="Copy number" title="Copy number" onClick={() => copyToClipboard(person.phone!, "Number copied")}>
                           <Copy className="h-3 w-3" />
@@ -3422,7 +3422,7 @@ export default function Portal() {
                       <div key={order.session_id} className="rounded-none border border-border bg-card/60 p-3 text-sm">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="font-medium">{order.amount_total != null ? formatGBP(order.amount_total) : "—"}</span>
-                          <span className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</span>
+                          <span className="text-muted-foreground text-lg text-slate-50 bg-white/0">{new Date(order.created_at).toLocaleString()}</span>
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <Badge variant={order.order_status === "delivered" ? "default" : "outline"}>{order.order_status === "delivered" ? "Delivered" : "Open"}</Badge>
@@ -3441,7 +3441,7 @@ export default function Portal() {
                   <div key={message.id} className="rounded-none border border-border bg-card/60 p-3 text-sm">
                     <div className="flex flex-wrap justify-between gap-2">
                       <span className="font-medium capitalize">{message.role}</span>
-                      <span className="text-xs text-muted-foreground">{new Date(message.created_at).toLocaleString()}</span>
+                      <span className="text-muted-foreground text-lg text-slate-50 bg-white/0">{new Date(message.created_at).toLocaleString()}</span>
                     </div>
                     <LinkifiedText text={message.content} className="block mt-1 whitespace-pre-wrap text-muted-foreground" />
                   </div>
@@ -3454,10 +3454,10 @@ export default function Portal() {
                   <div key={e.id} className="rounded-none border border-border bg-card/60 p-3 text-sm">
                     <div className="flex flex-wrap justify-between gap-2">
                       <span className="font-medium">{e.title}</span>
-                      <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()} · {getEventAuthorLabel(e)}</span>
+                      <span className="text-muted-foreground text-lg text-slate-50 bg-white/0">{new Date(e.created_at).toLocaleString()} · {getEventAuthorLabel(e)}</span>
                     </div>
                     {e.description && <LinkifiedText text={e.description} className="block mt-1 whitespace-pre-wrap" />}
-                    {e.callback_at && <div className="mt-1 text-xs text-muted-foreground">Let's Talk: {new Date(e.callback_at).toLocaleString()}</div>}
+                    {e.callback_at && <div className="mt-1 text-muted-foreground text-lg text-slate-50 bg-white/0">Let's Talk: {new Date(e.callback_at).toLocaleString()}</div>}
                   </div>
                 ))}
               </div>
@@ -3642,7 +3642,7 @@ export default function Portal() {
                 <div key={o.session_id} className="space-y-3 rounded-none border border-border bg-card/60 p-3">
                   <div className="space-y-1">
                     <div className="break-all text-sm font-medium">{o.customer_email ?? "Guest checkout"}</div>
-                    <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>
+                    <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">{new Date(o.created_at).toLocaleString()}</div>
                     <div className="text-xl font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
                   </div>
                   <div className="flex flex-wrap gap-2">
