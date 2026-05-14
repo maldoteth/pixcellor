@@ -521,6 +521,8 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
         className="max-w-2xl border border-white/15 text-foreground shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl backdrop-saturate-150"
         style={{
           background:
