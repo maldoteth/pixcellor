@@ -989,8 +989,8 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         </motion.button>
       )}
 
-      {/* Mobile: Drawer */}
-      {isMobile ? (
+      {/* Mobile + tablet: Drawer */}
+      {!isDesktop ? (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerContent 
             className="h-[85vh] border-0 border-t-0 [&>div:first-child]:hidden"
