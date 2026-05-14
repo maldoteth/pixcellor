@@ -514,6 +514,13 @@ export default function Portal() {
       return "sales";
     }
   });
+  useEffect(() => {
+    try {
+      localStorage.setItem("portal_active_tab", activeTab);
+    } catch {
+      /* ignore */
+    }
+  }, [activeTab]);
   const [devChatOpen, setDevChatOpen] = useState(false);
   const [leadAgentForm, setLeadAgentForm] = useState({ trade: "", location: "", limit: "3" });
   const [leadAgentLoading, setLeadAgentLoading] = useState(false);
