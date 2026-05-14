@@ -3354,6 +3354,11 @@ export default function Portal() {
                     <div className="min-w-0">
                       <div className="font-medium">{person.name}</div>
                       <div className="text-xs text-muted-foreground">{[person.job_title, person.phone].filter(Boolean).join(" · ") || "—"}</div>
+                      {person.phone && (
+                        <Button variant="ghost" size="icon" className="mt-1 h-6 w-6 shrink-0 rounded-none" aria-label="Copy number" title="Copy number" onClick={() => copyToClipboard(person.phone!, "Number copied")}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                     <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Remove" onClick={() => deleteContactPerson(person.id)}>
                       <Trash2 className="h-3.5 w-3.5" />
