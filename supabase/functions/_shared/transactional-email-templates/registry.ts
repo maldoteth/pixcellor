@@ -7,6 +7,8 @@ export interface TemplateEntry {
   to?: string
   displayName?: string
   previewData?: Record<string, any>
+  fromAddress?: string
+  fromName?: string
 }
 
 import { template as fullWorksOrderConfirmation } from './full-works-order-confirmation.tsx'
@@ -18,6 +20,7 @@ import { template as orderComplete } from './order-complete.tsx'
 import { template as salesWelcomeInfo } from './sales-welcome-info.tsx'
 import { template as visionPreviewReady } from './vision-preview-ready.tsx'
 import { template as coldOutreach } from './cold-outreach.tsx'
+import { template as salesCallFollowup } from './sales-call-followup.tsx'
 import { template as customInvoice } from './custom-invoice.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
@@ -30,5 +33,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'sales-welcome-info': salesWelcomeInfo,
   'vision-preview-ready': visionPreviewReady,
   'cold-outreach': coldOutreach,
+  'sales-call-followup': salesCallFollowup,
   'custom-invoice': customInvoice,
 }
