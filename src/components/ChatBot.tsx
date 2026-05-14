@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X, Send, Loader2, Check, Mic, MicOff, Image as ImageIcon, Phone, Mail, Wand2, Shield, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsDesktop } from "@/hooks/use-desktop";
 import { useHeroReady } from "@/hooks/use-hero-ready";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending, updateCheckoutPendingSessionId } from "@/lib/checkoutTracking";
 import {
@@ -223,6 +224,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
+  const isDesktop = useIsDesktop();
   const clientId = useRef(getClientId(mode));
   const isDevMode = mode === "dev";
 
@@ -943,7 +945,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       {showToggle && (
         <motion.button
           onClick={() => setIsOpen(!isOpen)}
-          className={`fixed left-1/2 top-4 z-[10500] flex items-center justify-center rounded-sm transition-opacity duration-500 ease-out md:top-6 md:z-[10000] ${(hidden || !heroReady) ? 'pointer-events-none opacity-0' : 'opacity-100'} ${isMobile && isOpen ? 'lg:flex hidden' : 'flex'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
+          className={`fixed left-1/2 top-4 z-[10500] flex items-center justify-center rounded-sm transition-opacity duration-500 ease-out md:top-6 md:z-[10000] ${(hidden || !heroReady) ? 'pointer-events-none opacity-0' : 'opacity-100'} ${!isDesktop && isOpen ? 'lg:flex hidden' : 'flex'} ${!isDesktop ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
           aria-label="Open chat with Alex from Pixcellor"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
@@ -987,8 +989,8 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
         </motion.button>
       )}
 
-      {/* Mobile: Drawer */}
-      {isMobile ? (
+      {/* Mobile + tablet: Drawer */}
+      {!isDesktop ? (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerContent 
             className="h-[85vh] border-0 border-t-0 [&>div:first-child]:hidden"
