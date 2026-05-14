@@ -14,6 +14,7 @@ import VisionGenerator from "@/components/VisionGenerator";
 import VisionPurchaseFlow from "@/components/VisionPurchaseFlow";
 
 const Index = () => {
+  const isMobile = useIsMobile();
   const [chatOpen, setChatOpen] = useState(false);
   const [heroScrolled, setHeroScrolled] = useState(false);
   const [packagesOpen, setPackagesOpen] = useState(false);
