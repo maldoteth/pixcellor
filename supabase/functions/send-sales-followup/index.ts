@@ -41,6 +41,12 @@ Deno.serve(async (req) => {
 
     const idempotencyKey = `sales-followup-${body.contactId || body.recipientEmail}-${Date.now()}`
 
+    const senderEmail = (userData.user.email || '').toLowerCase()
+    const isErica = senderEmail === 'evhernandezph61@gmail.com'
+    const fromAddress = isErica ? 'erica@pixcellor.com' : 'alex@pixcellor.com'
+    const fromName = isErica ? 'Erica Hernandez' : 'Alex Reyes'
+    const signRole = isErica ? 'Client Director' : 'Sales Director'
+
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
       method: 'POST',
       headers: {
@@ -51,7 +57,9 @@ Deno.serve(async (req) => {
         templateName: 'sales-call-followup',
         recipientEmail: body.recipientEmail,
         idempotencyKey,
-        templateData: { clientName: body.clientName },
+        fromAddress,
+        fromName,
+        templateData: { clientName: body.clientName, signName: fromName, signRole },
       }),
     })
 

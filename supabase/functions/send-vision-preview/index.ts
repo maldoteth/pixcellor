@@ -43,6 +43,14 @@ Deno.serve(async (req) => {
 
     const variant = body.variant === 'cold' ? 'cold' : 'warm'
     const templateName = variant === 'cold' ? 'cold-outreach' : 'vision-preview-ready'
+
+    const senderEmail = (userData.user.email || '').toLowerCase()
+    const isErica = senderEmail === 'evhernandezph61@gmail.com'
+    const fromAddress = isErica ? 'erica@pixcellor.com' : undefined
+    const fromName = isErica ? 'Erica Hernandez' : undefined
+    const signName = isErica ? 'Erica Hernandez' : 'Alex Reyes'
+    const signRole = isErica ? 'Client Director' : 'Sales Director'
+
     // Tag the link so the preview page knows the visitor arrived via email
     // and can hide the "save to dashboard" magic-link prompt.
     const taggedPreviewUrl = body.previewUrl
@@ -54,6 +62,8 @@ Deno.serve(async (req) => {
           companyName: body.companyName || body.title,
           previewUrl: taggedPreviewUrl,
           imageUrl: body.imageUrl,
+          signName,
+          signRole,
         }
       : {
           clientName: body.clientName,
@@ -61,6 +71,8 @@ Deno.serve(async (req) => {
           brief: body.brief,
           previewUrl: taggedPreviewUrl,
           imageUrl: body.imageUrl,
+          signName,
+          signRole,
         }
 
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
@@ -73,6 +85,8 @@ Deno.serve(async (req) => {
         templateName,
         recipientEmail: body.recipientEmail,
         idempotencyKey: `vision-preview-${variant}-${body.previewId}-${Date.now()}`,
+        fromAddress,
+        fromName,
         templateData,
       }),
     })
