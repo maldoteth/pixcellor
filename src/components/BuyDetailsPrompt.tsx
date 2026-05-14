@@ -431,8 +431,32 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     </>
   );
 
+  const applyVisionSuggestion = (key: VisionAnswerKey, value: string) => {
+    setVisionAnswers((a) => {
+      const current = (a[key] || "").trim();
+      if (key === "sections") {
+        const items = current ? current.split(",").map((s) => s.trim()).filter(Boolean) : [];
+        const exists = items.findIndex((s) => s.toLowerCase() === value.toLowerCase());
+        if (exists >= 0) items.splice(exists, 1);
+        else items.push(value);
+        return { ...a, sections: items.join(", ") };
+      }
+      return { ...a, [key]: value };
+    });
+  };
+
+  const isVisionSuggestionActive = (key: VisionAnswerKey, value: string) => {
+    const current = (visionAnswers[key] || "").trim();
+    if (!current) return false;
+    if (key === "sections") {
+      return current.split(",").map((s) => s.trim().toLowerCase()).includes(value.toLowerCase());
+    }
+    return current.toLowerCase() === value.toLowerCase();
+  };
+
   const renderVisionQuestion = () => {
     if (!currentVisionQ) return null;
+    const suggestions = VISION_SUGGESTIONS[currentVisionQ.key as keyof typeof VISION_SUGGESTIONS];
     return (
       <>
         <div className="flex items-center justify-between">
@@ -468,6 +492,36 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
             maxLength={300}
             className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
           />
+        )}
+        {suggestions && suggestions.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 max-h-[140px] overflow-y-auto pr-1">
+            {suggestions.map((s) => {
+              const active = isVisionSuggestionActive(currentVisionQ.key, s.value);
+              return (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => applyVisionSuggestion(currentVisionQ.key, s.value)}
+                  className={`px-2.5 py-1 rounded-full text-xs border transition ${
+                    active
+                      ? "bg-foreground text-background border-foreground"
+                      : "bg-foreground/5 text-foreground/80 border-foreground/15 hover:border-foreground/40 hover:bg-foreground/10"
+                  }`}
+                >
+                  {active && currentVisionQ.key === "sections" ? "✓ " : ""}{s.label}
+                </button>
+              );
+            })}
+            {currentVisionQ.key === "sections" && (visionAnswers.sections || "").trim() && (
+              <button
+                type="button"
+                onClick={() => setVisionAnswers((a) => ({ ...a, sections: "" }))}
+                className="px-2.5 py-1 rounded-full text-xs border border-foreground/15 text-foreground/60 hover:text-foreground hover:border-foreground/40 transition"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
         )}
         <div className="grid grid-cols-2 gap-2 mt-1">
           <Button type="button" variant="outline" onClick={visionBack} className="h-12 font-semibold">Back</Button>
