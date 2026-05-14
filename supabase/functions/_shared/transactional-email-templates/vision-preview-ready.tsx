@@ -16,7 +16,7 @@ type VisionPreviewReadyProps = {
 const VisionPreviewReadyEmail = ({ clientName, title, brief, previewUrl, imageUrl }: VisionPreviewReadyProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your Pixcellor preview is ready</Preview>
+    <Preview>Your custom built design preview for {title || 'your project'}</Preview>
     <Body style={main}>
       <Container style={shell}>
         <Section style={hero}>
@@ -63,7 +63,7 @@ const VisionPreviewReadyEmail = ({ clientName, title, brief, previewUrl, imageUr
 
 export const template = {
   component: VisionPreviewReadyEmail,
-  subject: (data: Record<string, any>) => data?.title ? `Your Pixcellor preview: ${data.title}` : 'Your Pixcellor preview is ready',
+  subject: (data: Record<string, any>) => `Your custom built design preview for ${data?.title || 'your project'}`,
   displayName: 'Vision preview ready',
   previewData: {
     clientName: 'Jane',
