@@ -3330,6 +3330,21 @@ export default function Portal() {
                   <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
                     Edit
                   </Button>
+                  <Button
+                    variant="pricing"
+                    size="sm"
+                    className="h-9 shrink-0 rounded-none shadow-none"
+                    onClick={() => sendSalesFollowup(contactDetailDrawerContact)}
+                    disabled={!contactDetailDrawerContact.email || salesFollowupSendingFor === contactDetailDrawerContact.id}
+                    title="Send sales call follow up"
+                  >
+                    {salesFollowupSendingFor === contactDetailDrawerContact.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin md:mr-2" />
+                    ) : (
+                      <Mail className="h-4 w-4 md:mr-2" />
+                    )}
+                    <span className="hidden md:inline">Sales follow up</span>
+                  </Button>
                   <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 w-9 shrink-0 rounded-none px-0 shadow-none md:w-auto md:px-3" aria-label="Create note" title="Create note" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
                     <Plus className="h-4 w-4 md:mr-2" />
                     <span className="hidden md:inline">Create note</span>
