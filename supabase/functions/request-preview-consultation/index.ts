@@ -78,9 +78,8 @@ Deno.serve(async (req) => {
     }
 
     const finalPhone = (providedPhone || knownPhone || '').trim()
-    if (!finalPhone && !providedPhone) {
-      // Caller hasn't supplied a phone and we have none on file → ask for one.
-      // (If they explicitly skip, they can re-call with phone="" and we'll proceed.)
+    if (!finalPhone && !phoneProvided) {
+      // No phone on file and caller hasn't been prompted yet — ask for one.
       return json({ ok: false, reason: 'phone_required', email })
     }
 
