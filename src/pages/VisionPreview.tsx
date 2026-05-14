@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Loader2, ArrowLeft, Wand2, CheckCircle2 } from "lucide-react";
+import { Loader2, ArrowLeft, Wand2, CheckCircle2, Upload } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import SeoHead from "@/components/SeoHead";
 import MagicLinkSignup from "@/components/MagicLinkSignup";
@@ -14,6 +15,7 @@ interface Preview {
   brief: string | null;
   title: string | null;
   image_path: string;
+  comparison_image_path?: string | null;
   created_at: string;
   palette?: any;
   fonts?: any;
