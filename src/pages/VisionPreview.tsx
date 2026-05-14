@@ -339,15 +339,13 @@ export default function VisionPreview() {
                 )}
               </div>
             ) : (
-              <div className="border border-border p-5 space-y-3">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-base font-semibold">Our team will be in touch soon 🎉</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Thanks for letting us know you love this preview — we'll reach out within 24 hours to scope your build.
-                    </p>
-                  </div>
+              <div className="border border-border p-5 flex flex-col items-center text-center space-y-3">
+                <div className="flex flex-col items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+                  <p className="text-base font-semibold">Our team will be in touch soon 🎉</p>
+                  <p className="text-sm text-muted-foreground">
+                    Thanks for letting us know you love this preview — we'll reach out within 24 hours to scope your build.
+                  </p>
                 </div>
                 {authedEmail ? (
                   <Button
@@ -357,9 +355,9 @@ export default function VisionPreview() {
                   >
                     Back to your dashboard
                   </Button>
-                ) : (
-                  <div className="space-y-2">
-                    <label className="text-xs text-foreground/70">
+                ) : new URLSearchParams(window.location.search).get("src") === "email" ? null : (
+                  <div className="space-y-2 w-full flex flex-col items-center">
+                    <label className="text-xs text-foreground/70 text-center">
                       Want to track this in your own dashboard? Get a magic link sent to {submittedEmail || "your email"}.
                     </label>
                     <MagicLinkSignup
