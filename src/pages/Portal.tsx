@@ -2971,6 +2971,7 @@ export default function Portal() {
                   {([
                     { value: "newest", label: "Newest first" },
                     { value: "oldest", label: "Oldest first" },
+                    { value: "latest_update", label: "Latest update" },
                     { value: "hot", label: "Hot → Cold" },
                     { value: "cold", label: "Cold → Hot" },
                   ] as const).map(opt => (
