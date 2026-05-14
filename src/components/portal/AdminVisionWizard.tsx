@@ -253,6 +253,13 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
       if (insert.error) throw insert.error;
 
       let row = insert.data;
+
+      // Fire brand-kit extraction in background so palette/fonts populate on the preview page
+      const publicImg = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+      void supabase.functions.invoke("extract-vision-brand-kit", {
+        body: { slug, imageUrl: publicImg, brief },
+      }).catch((e) => console.error("brand kit extract failed", e));
+
       if (trimmedEmail) {
         row = await sendEmail(row, clientName.trim() || undefined, trimmedEmail);
       }
