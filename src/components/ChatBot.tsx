@@ -540,7 +540,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             ? "No need to pay upfront — we'll build a free preview so you can try before you buy. Tell me a bit about what you need (you can drop in any screenshots or reference images using the image button), plus your name, email and phone number, and I'll get the team started. We'll reach out the moment your site is ready to check."
             : action === "services"
               ? "Happy to help! Tell me which services you're interested in (marketing, business solutions, automation, etc.) and a bit about your goals. Drop your name, email and phone number too and I'll get the right person to put together a tailored quote for you."
-              : "No problem — please share your order ID or any details from the invoice you received, and I'll help you verify it right away.",
+              : action === "verify"
+                ? "No problem — please share your order ID or any details from the invoice you received, and I'll help you verify it right away."
+                : "Sure — tell me the amount you'd like to pay (in £) and a short reason (e.g. 'Deposit for Acme website' or 'Invoice INV-203'), and I'll generate a secure Stripe link you can pay with right away.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
     // Focus input synchronously so mobile browsers open the keyboard
