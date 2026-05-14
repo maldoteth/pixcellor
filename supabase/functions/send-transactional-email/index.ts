@@ -328,8 +328,10 @@ Deno.serve(async (req) => {
     payload: {
       message_id: messageId,
       to: effectiveRecipient,
-      from: `${SITE_NAME} <projects@${FROM_DOMAIN}>`,
-      reply_to: `help@${FROM_DOMAIN}`,
+      from: template.fromAddress
+        ? `${template.fromName || SITE_NAME} <${template.fromAddress}>`
+        : `${SITE_NAME} <projects@${FROM_DOMAIN}>`,
+      reply_to: template.fromAddress || `help@${FROM_DOMAIN}`,
       sender_domain: SENDER_DOMAIN,
       subject: resolvedSubject,
       html,

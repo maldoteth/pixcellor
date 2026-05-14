@@ -1529,6 +1529,31 @@ export default function Portal() {
   };
 
   const [mediaUploadingFor, setMediaUploadingFor] = useState<string | null>(null);
+  const [salesFollowupSendingFor, setSalesFollowupSendingFor] = useState<string | null>(null);
+
+  const sendSalesFollowup = async (contact: Contact) => {
+    const email = normalizeEmail(contact.email);
+    if (!email) { toast.error("Client has no email address."); return; }
+    const ok = window.confirm(`Send sales call follow-up email to ${email}?`);
+    if (!ok) return;
+    setSalesFollowupSendingFor(contact.id);
+    try {
+      const { error } = await supabase.functions.invoke("send-sales-followup", {
+        body: {
+          contactId: contact.id,
+          recipientEmail: email,
+          clientName: contact.contact_name || contact.name,
+        },
+      });
+      if (error) throw error;
+      toast.success("Sales follow-up email queued.");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to send follow-up.");
+    } finally {
+      setSalesFollowupSendingFor(null);
+    }
+  };
+
 
   const saveContactMedia = async (contactId: string, media: string[]) => {
     const { error } = await (supabase as any).rpc("portal_update_contact_media", { _contact_id: contactId, _media: media });
@@ -3304,6 +3329,21 @@ export default function Portal() {
                   </div>
                   <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
                     Edit
+                  </Button>
+                  <Button
+                    variant="pricing"
+                    size="sm"
+                    className="h-9 shrink-0 rounded-none shadow-none"
+                    onClick={() => sendSalesFollowup(contactDetailDrawerContact)}
+                    disabled={!contactDetailDrawerContact.email || salesFollowupSendingFor === contactDetailDrawerContact.id}
+                    title="Send sales call follow up"
+                  >
+                    {salesFollowupSendingFor === contactDetailDrawerContact.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin md:mr-2" />
+                    ) : (
+                      <Mail className="h-4 w-4 md:mr-2" />
+                    )}
+                    <span className="hidden md:inline">Sales follow up</span>
                   </Button>
                   <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 w-9 shrink-0 rounded-none px-0 shadow-none md:w-auto md:px-3" aria-label="Create note" title="Create note" onClick={() => { openEventFormForContact(contactDetailDrawerContact.id); setContactDetailDrawerId(null); }}>
                     <Plus className="h-4 w-4 md:mr-2" />
