@@ -44,7 +44,7 @@ const PACKAGE_OPTIONS: PackageOption[] = [
     rrp: "£375",
     pages: "Up to 3 pages",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
-    bullets: ["Industry-leading website", "Lifetime warranty", "Base animations", "Fast delivery"],
+    bullets: ["Industry-leading website", "Lifetime warranty", "Base animations", "All inclusive service"],
   },
   {
     key: "elite",
