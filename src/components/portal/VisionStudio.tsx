@@ -117,7 +117,13 @@ export default function VisionStudio() {
     setPreviews((p) => [row, ...p]);
   };
 
-  const sendEmail = async (row: Preview, name?: string, overrideEmail?: string) => {
+  const sendEmail = async (
+    row: Preview,
+    name?: string,
+    overrideEmail?: string,
+    variant: "warm" | "cold" = "warm",
+    companyName?: string,
+  ) => {
     const recipient = overrideEmail || row.client_email;
     if (!recipient) {
       toast.error("No client email on this preview");
@@ -136,6 +142,8 @@ export default function VisionStudio() {
           brief: row.brief ?? undefined,
           previewUrl,
           imageUrl,
+          variant,
+          companyName: companyName || row.title || undefined,
         },
       });
       if (error) throw error;
@@ -146,7 +154,7 @@ export default function VisionStudio() {
         .eq("id", row.id);
       setPreviews((p) => p.map((r) => (r.id === row.id ? { ...r, sent_at: sentAt, client_email: recipient } : r)));
       if (latest?.id === row.id) setLatest({ ...latest, sent_at: sentAt, client_email: recipient });
-      toast.success(`Sent to ${recipient}`);
+      toast.success(`Sent to ${recipient} (${variant})`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not send email");
     } finally {
@@ -157,15 +165,33 @@ export default function VisionStudio() {
   const promptAndSend = async (row: Preview) => {
     const result = await promptDialog({
       title: "Send preview",
-      description: "We'll email this preview to the recipient.",
+      description: "Choose a tone — warm (already in touch) or cold (first outreach).",
       fields: [
+        {
+          name: "variant",
+          label: "Email type",
+          type: "select",
+          defaultValue: "warm",
+          options: [
+            { value: "warm", label: "Warm — preview ready" },
+            { value: "cold", label: "Cold — first outreach (Alexie)" },
+          ],
+        },
         { name: "email", label: "Recipient email", type: "email", required: true, defaultValue: row.client_email ?? "", placeholder: "name@example.com" },
         { name: "name", label: "Client name (optional)", placeholder: "Jane Doe" },
+        { name: "company", label: "Company name (cold only)", placeholder: row.title ?? "Acme Ltd", defaultValue: row.title ?? "" },
       ],
       confirmLabel: "Send",
     });
     if (!result) return;
-    await sendEmail(row, result.name?.trim() || undefined, result.email.trim());
+    const variant = (result.variant as "warm" | "cold") || "warm";
+    await sendEmail(
+      row,
+      result.name?.trim() || undefined,
+      result.email.trim(),
+      variant,
+      result.company?.trim() || undefined,
+    );
   };
 
   const shareUrl = (slug: string) => `${window.location.origin}/preview/${slug}`;

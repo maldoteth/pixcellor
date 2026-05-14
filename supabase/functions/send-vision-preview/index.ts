@@ -35,11 +35,28 @@ Deno.serve(async (req) => {
     if (!isAdmin) return json({ error: 'Admin access required' }, 403)
 
     const body = await req.json().catch(() => null) as
-      | { previewId?: string; recipientEmail?: string; clientName?: string; title?: string; brief?: string; previewUrl?: string; imageUrl?: string }
+      | { previewId?: string; recipientEmail?: string; clientName?: string; title?: string; brief?: string; previewUrl?: string; imageUrl?: string; variant?: 'warm' | 'cold'; companyName?: string }
       | null
     if (!body?.previewId || !body.recipientEmail) {
       return json({ error: 'previewId and recipientEmail required' }, 400)
     }
+
+    const variant = body.variant === 'cold' ? 'cold' : 'warm'
+    const templateName = variant === 'cold' ? 'cold-outreach' : 'vision-preview-ready'
+    const templateData = variant === 'cold'
+      ? {
+          clientName: body.clientName,
+          companyName: body.companyName || body.title,
+          previewUrl: body.previewUrl,
+          imageUrl: body.imageUrl,
+        }
+      : {
+          clientName: body.clientName,
+          title: body.title,
+          brief: body.brief,
+          previewUrl: body.previewUrl,
+          imageUrl: body.imageUrl,
+        }
 
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
       method: 'POST',
@@ -48,16 +65,10 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${SERVICE_KEY}`,
       },
       body: JSON.stringify({
-        templateName: 'vision-preview-ready',
+        templateName,
         recipientEmail: body.recipientEmail,
-        idempotencyKey: `vision-preview-${body.previewId}-${Date.now()}`,
-        templateData: {
-          clientName: body.clientName,
-          title: body.title,
-          brief: body.brief,
-          previewUrl: body.previewUrl,
-          imageUrl: body.imageUrl,
-        },
+        idempotencyKey: `vision-preview-${variant}-${body.previewId}-${Date.now()}`,
+        templateData,
       }),
     })
 

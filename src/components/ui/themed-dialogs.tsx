@@ -8,10 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 export type PromptField = {
   name: string;
   label: string;
-  type?: "text" | "email" | "url" | "textarea";
+  type?: "text" | "email" | "url" | "textarea" | "select";
   placeholder?: string;
   defaultValue?: string;
   required?: boolean;
+  options?: { value: string; label: string }[];
 };
 
 export type PromptOptions = {
@@ -102,6 +103,17 @@ export const ThemedDialogsProvider: React.FC<{ children: React.ReactNode }> = ({
                         placeholder={f.placeholder}
                         onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
                       />
+                    ) : f.type === "select" ? (
+                      <select
+                        id={`prompt-${f.name}`}
+                        value={values[f.name] ?? ""}
+                        onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none"
+                      >
+                        {(f.options ?? []).map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
                     ) : (
                       <Input
                         id={`prompt-${f.name}`}
