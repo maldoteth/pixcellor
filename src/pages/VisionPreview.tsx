@@ -32,6 +32,9 @@ export default function VisionPreview() {
   const [authedEmail, setAuthedEmail] = useState<string | null>(null);
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [requested, setRequested] = useState(false);
+  const [tab, setTab] = useState<"preview" | "compare">("preview");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -83,6 +86,41 @@ export default function VisionPreview() {
   const imageUrl = preview
     ? supabase.storage.from(BUCKET).getPublicUrl(preview.image_path).data.publicUrl
     : null;
+  const comparisonUrl = preview?.comparison_image_path
+    ? supabase.storage.from(BUCKET).getPublicUrl(preview.comparison_image_path).data.publicUrl
+    : null;
+
+  const handleCompareUpload = async (file: File) => {
+    if (!preview) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be 10MB or smaller");
+      return;
+    }
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("slug", preview.slug);
+      form.append("file", file);
+      const { data, error } = await supabase.functions.invoke("upload-vision-comparison", {
+        body: form,
+      });
+      if (error) throw error;
+      const newPath = (data as any)?.path as string | undefined;
+      if (!newPath) throw new Error("Upload failed");
+      setPreview({ ...preview, comparison_image_path: newPath });
+      setTab("compare");
+      toast.success("Comparison image uploaded");
+    } catch (e: any) {
+      toast.error(e?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const openLetsTalk = () => {
     if (!preview) return;
