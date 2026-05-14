@@ -277,6 +277,15 @@ const formatWebsiteHref = (value?: string | null) => {
 
 const normalizePhoneDigits = (value?: string | null) => (value ?? "").replace(/\D/g, "");
 
+const copyToClipboard = async (text: string, label = "Copied") => {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success(label);
+  } catch {
+    toast.error("Copy failed");
+  }
+};
+
 const leadSearchMemoryKey = "pixcellor-lead-search-memory";
 const readLeadSearchMemory = () => {
   if (typeof window === "undefined") return { trades: [] as string[], locations: [] as string[] };
