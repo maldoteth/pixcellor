@@ -8,10 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 export type PromptField = {
   name: string;
   label: string;
-  type?: "text" | "email" | "url" | "textarea";
+  type?: "text" | "email" | "url" | "textarea" | "select";
   placeholder?: string;
   defaultValue?: string;
   required?: boolean;
+  options?: { value: string; label: string }[];
 };
 
 export type PromptOptions = {
