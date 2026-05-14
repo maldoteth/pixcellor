@@ -2208,6 +2208,17 @@ Deno.serve(async (req) => {
             console.error("Error in save_contact:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "save_contact_failed" }) });
           }
+        } else if (toolCall.function.name === "create_custom_payment" && !isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await salesCreateCustomPayment(supabase, args);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) });
+          } catch (e) {
+            console.error("Error in create_custom_payment:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_payment_failed" }) });
+          }
         } else if (toolCall.function.name === "extract_screenshot_contact") {
           needsFollowUp = true;
           try {
