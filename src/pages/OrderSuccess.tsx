@@ -160,15 +160,15 @@ export default function OrderSuccess() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-left">
                   <div className="rounded-md border border-border bg-background/50 p-4">
-                    <div className="text-xs text-muted-foreground">Package</div>
+                    <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Package</div>
                     <div className="font-medium mt-1">{packageName}</div>
                   </div>
                   <div className="rounded-md border border-border bg-background/50 p-4">
-                    <div className="text-xs text-muted-foreground">Amount</div>
+                    <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Amount</div>
                     <div className="font-medium mt-1">{order.amount || "Confirmed"}</div>
                   </div>
                   <div className="rounded-md border border-border bg-background/50 p-4">
-                    <div className="text-xs text-muted-foreground">Status</div>
+                    <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Status</div>
                     <div className="font-medium mt-1">Paid</div>
                   </div>
                 </div>

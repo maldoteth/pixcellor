@@ -75,7 +75,7 @@ function CustomerAuthForm() {
           {buttonLabel}
         </Button>
         {linkSent && (
-          <p className="text-xs text-muted-foreground text-center inline-flex items-center justify-center gap-2 w-full">
+          <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 text-center inline-flex items-center justify-center gap-2 w-full">
             {handoff.status === "claiming" || handoff.status === "claimed" ? (
               <><Loader2 className="h-3 w-3 animate-spin" />Signing you in…</>
             ) : (

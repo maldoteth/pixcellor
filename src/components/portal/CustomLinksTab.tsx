@@ -161,7 +161,7 @@ export default function CustomLinksTab() {
             <div className="flex items-center justify-between rounded-md border border-border bg-background/50 px-3 py-2">
               <div>
                 <Label htmlFor="cl-recurring" className="cursor-pointer">Recurring (monthly)</Label>
-                <p className="text-xs text-muted-foreground">Off = one-off charge</p>
+                <p className="text-muted-foreground text-lg text-slate-50 bg-white/0">Off = one-off charge</p>
               </div>
               <Switch id="cl-recurring" checked={recurring} onCheckedChange={setRecurring} />
             </div>
@@ -229,7 +229,7 @@ export default function CustomLinksTab() {
                         {row.status}
                       </Badge>
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-muted-foreground text-lg text-slate-50 bg-white/0">
                       {new Date(row.created_at).toLocaleString()}
                       {row.client_email ? ` · ${row.client_email}` : ""}
                       {row.paid_at ? ` · paid ${new Date(row.paid_at).toLocaleDateString()}` : ""}

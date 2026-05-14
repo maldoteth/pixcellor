@@ -582,7 +582,7 @@ export default function CustomerPortal() {
                               <h3 className="text-xl font-semibold">{plan.name}</h3>
                               <div className="flex items-baseline gap-2">
                                 <span className="text-3xl font-bold">{plan.price}</span>
-                                <span className="text-xs text-muted-foreground line-through">{plan.rrp}</span>
+                                <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-through">{plan.rrp}</span>
                               </div>
                               <p className="text-xs font-semibold text-foreground">Introductory offer — {plan.discount}</p>
                             </div>
@@ -827,7 +827,7 @@ function SampleRequestCard({ sample }: { sample: CustomerSampleRequest }) {
               <Wand2 className="h-4 w-4 text-primary" />
               <h3 className="text-base font-semibold">Free sample request</h3>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Submitted {new Date(sample.created_at).toLocaleString()}</p>
+            <p className="mt-1 text-muted-foreground text-lg text-slate-50 bg-white/0">Submitted {new Date(sample.created_at).toLocaleString()}</p>
           </div>
           {sample.delivered_at ? (
             <Badge className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">
@@ -841,13 +841,13 @@ function SampleRequestCard({ sample }: { sample: CustomerSampleRequest }) {
           <div className="grid gap-2 text-sm md:grid-cols-2">
             {dream && (
               <div className="rounded-md border border-border bg-background/50 p-3">
-                <div className="text-xs text-muted-foreground">Brief</div>
+                <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Brief</div>
                 <p className="mt-1 line-clamp-4 whitespace-pre-wrap leading-snug">{dream}</p>
               </div>
             )}
             {colours && (
               <div className="rounded-md border border-border bg-background/50 p-3">
-                <div className="text-xs text-muted-foreground">Colours & style</div>
+                <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">Colours & style</div>
                 <p className="mt-1 line-clamp-4 whitespace-pre-wrap leading-snug">{colours}</p>
               </div>
             )}
@@ -881,9 +881,9 @@ function VisionPreviewCard({ preview, onHide }: { preview: CustomerVisionPreview
       <CardContent className="space-y-2 p-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="truncate text-sm font-semibold">{preview.title || "AI vision"}</h3>
-          <span className="shrink-0 text-xs text-muted-foreground">{new Date(preview.created_at).toLocaleDateString()}</span>
+          <span className="shrink-0 text-muted-foreground text-lg text-slate-50 bg-white/0">{new Date(preview.created_at).toLocaleDateString()}</span>
         </div>
-        {preview.brief && <p className="line-clamp-2 text-xs text-muted-foreground">{preview.brief}</p>}
+        {preview.brief && <p className="line-clamp-2 text-muted-foreground text-lg text-slate-50 bg-white/0">{preview.brief}</p>}
         <div className="flex gap-2">
           <Button asChild variant="pricing" size="sm" className="flex-1 gap-2">
             <a href={`/preview/${preview.slug}`} target="_blank" rel="noreferrer">Preview <ExternalLink className="h-3.5 w-3.5" /></a>
