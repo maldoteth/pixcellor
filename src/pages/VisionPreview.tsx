@@ -290,13 +290,53 @@ export default function VisionPreview() {
               </details>
             )}
             {!requested ? (
-              <div className="border border-border p-4 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm">
-                  Like what you see? We can build this as a real, fully-custom site.
-                </p>
-                <Button onClick={openLetsTalk} className="rounded-none gap-1">
-                  Get started <Wand2 className="h-3.5 w-3.5" />
-                </Button>
+              <div className="border border-border p-4 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm">
+                    Like what you see? We can build this as a real, fully-custom site.
+                  </p>
+                  {!needPhone && (
+                    <Button onClick={() => requestConsultation()} disabled={requesting} className="rounded-none gap-1">
+                      {requesting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                      Get started
+                    </Button>
+                  )}
+                </div>
+                {needPhone && (
+                  <div className="space-y-2">
+                    <label className="text-xs text-foreground/70">
+                      What's the best number to reach you on? We'll call to scope your build.
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      <Input
+                        type="tel"
+                        inputMode="tel"
+                        autoFocus
+                        placeholder="e.g. +44 7700 900123"
+                        value={phoneInput}
+                        onChange={(e) => setPhoneInput(e.target.value)}
+                        className="rounded-none flex-1 min-w-[200px]"
+                        disabled={requesting}
+                      />
+                      <Button
+                        onClick={() => requestConsultation(phoneInput.trim())}
+                        disabled={requesting || phoneInput.trim().length < 5}
+                        className="rounded-none gap-1"
+                      >
+                        {requesting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+                        Send
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => requestConsultation("")}
+                        disabled={requesting}
+                        className="rounded-none"
+                      >
+                        Skip
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="border border-border p-5 space-y-3">
