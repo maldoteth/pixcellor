@@ -1153,6 +1153,7 @@ export type Database = {
         Row: {
           brief: string | null
           client_email: string | null
+          comparison_image_path: string | null
           created_at: string
           created_by_email: string | null
           created_by_user_id: string | null
@@ -1168,6 +1169,7 @@ export type Database = {
         Insert: {
           brief?: string | null
           client_email?: string | null
+          comparison_image_path?: string | null
           created_at?: string
           created_by_email?: string | null
           created_by_user_id?: string | null
@@ -1183,6 +1185,7 @@ export type Database = {
         Update: {
           brief?: string | null
           client_email?: string | null
+          comparison_image_path?: string | null
           created_at?: string
           created_by_email?: string | null
           created_by_user_id?: string | null
@@ -1406,6 +1409,7 @@ export type Database = {
         Args: { _slug: string }
         Returns: {
           brief: string
+          comparison_image_path: string
           created_at: string
           fonts: Json
           image_path: string
