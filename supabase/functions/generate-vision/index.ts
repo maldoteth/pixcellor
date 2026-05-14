@@ -223,10 +223,12 @@ function embellishBrief(raw: string): string {
     lines.push("Include sensible follow-up sections after the hero: features/value, social proof or testimonials, a showcase or gallery, and a contact / footer block.");
   }
   if (raw && !company && !industry && !vibe && !colours && !headline && !sections) {
-    // fallback: user freeform brief
+    // fallback: user freeform brief — elevate aggressively
     lines.push(`Additional notes from the user: ${raw}`);
+    lines.push("The user's brief is short. Do NOT default to a basic/template look. Elevate it: assume they want an Awwwards-tier, editorially art-directed site. Invent a believable premium brand identity, write specific on-brand copy, choose a sophisticated palette (not generic SaaS-blue), use editorial typography, and design with confident asymmetry, oversized type and considered whitespace.");
   }
-  lines.push("Keep copy real and specific — no lorem ipsum, no placeholder text. Make it look like a real shipped website.");
+  lines.push("Keep copy real and specific — no lorem ipsum, no placeholder text, no 'Welcome to our website'. Make it look like a real shipped premium website worth £15k+.");
+  lines.push("Avoid the cheap/tacky default: no generic blue+white SaaS template, no clip-art icons, no stock smiling-team photo, no centred mobile-stacked layout, no rainbow gradients, no default Bootstrap/Material vibe.");
   return lines.join("\n");
 }
 
