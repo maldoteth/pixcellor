@@ -271,7 +271,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     const openChat = (e: Event) => {
       setIsOpen(true);
       const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" | "pay" }>).detail;
-      if (detail?.action === "call" || detail?.action === "email" || detail?.action === "trial" || detail?.action === "services" || detail?.action === "verify") {
+      if (detail?.action === "call" || detail?.action === "email" || detail?.action === "trial" || detail?.action === "services" || detail?.action === "verify" || detail?.action === "pay") {
         pendingActionRef.current = detail.action;
       }
     };
