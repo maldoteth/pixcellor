@@ -1529,6 +1529,31 @@ export default function Portal() {
   };
 
   const [mediaUploadingFor, setMediaUploadingFor] = useState<string | null>(null);
+  const [salesFollowupSendingFor, setSalesFollowupSendingFor] = useState<string | null>(null);
+
+  const sendSalesFollowup = async (contact: Contact) => {
+    const email = normalizeEmail(contact.email);
+    if (!email) { toast.error("Client has no email address."); return; }
+    const ok = window.confirm(`Send sales call follow-up email to ${email}?`);
+    if (!ok) return;
+    setSalesFollowupSendingFor(contact.id);
+    try {
+      const { error } = await supabase.functions.invoke("send-sales-followup", {
+        body: {
+          contactId: contact.id,
+          recipientEmail: email,
+          clientName: contact.contact_name || contact.name,
+        },
+      });
+      if (error) throw error;
+      toast.success("Sales follow-up email queued.");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to send follow-up.");
+    } finally {
+      setSalesFollowupSendingFor(null);
+    }
+  };
+
 
   const saveContactMedia = async (contactId: string, media: string[]) => {
     const { error } = await (supabase as any).rpc("portal_update_contact_media", { _contact_id: contactId, _media: media });
