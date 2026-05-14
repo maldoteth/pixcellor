@@ -1,9 +1,14 @@
-Add a "Latest update" sort tab to the Clients section in the Portal.
+## Change Info Buttons to Drawers on Desktop
 
-## What
-A new sort tab next to "Oldest first" that reorders the client list by the most recently edited contacts first (using the `contacts.updated_at` timestamp).
+### What
+The `ServiceItemRow` component in `PackagesDialog.tsx` currently shows **custom tooltips** on desktop (hover to reveal, click to pin) and **bottom drawers** on mobile. This change makes the info buttons open **drawers on all screen sizes** — desktop included.
 
-## How
-1. **State type** — Extend the `clientsSort` union in `src/pages/Portal.tsx` from `"newest" | "oldest" | "hot" | "cold"` to also include `"latest_update"`.
-2. **Tab UI** — Add a new button `{ value: "latest_update", label: "Latest update" }` into the sort tabs array inside the clients section.
-3. **Sort logic** — In the `clientBookContacts` `useMemo`, add a branch for `clientsSort === "latest_update"` that sorts by `updated_at` descending (most recent edits first).
+### How
+Replace the desktop-only tooltip implementation in `ServiceItemRow` with the existing `Drawer` component:
+
+- Remove: `isDesktop` media-query state, `pos` positioning state, `createPortal` tooltip, `onMouseEnter`/`onMouseLeave`/`onFocus`/`onBlur` hover handlers, `useLayoutEffect` scroll/resize listeners, and `useEffect` outside-click dismiss logic.
+- Keep: `open` state, click handler on the info button, and the `Drawer` component already used for mobile.
+- Result: Clicking any info button opens the same bottom drawer regardless of device, showing the service name and description.
+
+### Scope
+Single file: `src/components/PackagesDialog.tsx`. No backend or design-system changes needed.
