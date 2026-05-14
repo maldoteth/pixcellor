@@ -506,7 +506,14 @@ export default function Portal() {
   const [sendingConfirmationId, setSendingConfirmationId] = useState<string | null>(null);
   const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
   const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("sales");
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const saved = localStorage.getItem("portal_active_tab");
+      return saved || "sales";
+    } catch {
+      return "sales";
+    }
+  });
   const [devChatOpen, setDevChatOpen] = useState(false);
   const [leadAgentForm, setLeadAgentForm] = useState({ trade: "", location: "", limit: "3" });
   const [leadAgentLoading, setLeadAgentLoading] = useState(false);
