@@ -336,6 +336,22 @@ const tools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_custom_payment",
+      description: "Create a Stripe payment link for a custom amount the visitor wants to pay (e.g. deposit, balance, invoice settlement). Returns a live Stripe URL the visitor clicks to pay. Use ONLY when the visitor has explicitly told you the amount AND a short reason/description.",
+      parameters: {
+        type: "object",
+        properties: {
+          amount_gbp: { type: "number", description: "Amount in pounds, between 1 and 1,000,000." },
+          description: { type: "string", description: "Short description of what this payment is for (max 200 chars). Shown on Stripe checkout." },
+          client_email: { type: "string", description: "Visitor's email if known, for tracking." },
+        },
+        required: ["amount_gbp", "description"],
+      },
+    },
+  },
 ];
 
 
