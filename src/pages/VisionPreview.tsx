@@ -270,13 +270,25 @@ export default function VisionPreview() {
               onContextMenu={(e) => e.preventDefault()}
             >
               <img
-                src={tab === "compare" && comparisonUrl ? comparisonUrl : imageUrl}
+                src={imageUrl}
                 alt={preview.title ?? "Generated website preview"}
-                className="w-full block pointer-events-none select-none"
+                className={`w-full block pointer-events-none select-none ${tab === "compare" && comparisonUrl ? "hidden" : ""}`}
                 draggable={false}
+                decoding="async"
                 onContextMenu={(e) => e.preventDefault()}
                 onDragStart={(e) => e.preventDefault()}
               />
+              {comparisonUrl && (
+                <img
+                  src={comparisonUrl}
+                  alt="Comparison"
+                  className={`w-full block pointer-events-none select-none ${tab === "compare" ? "" : "hidden"}`}
+                  draggable={false}
+                  decoding="async"
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
+                />
+              )}
             </div>
             {(preview.palette || preview.fonts) && (
               <div className="border border-border p-4">
