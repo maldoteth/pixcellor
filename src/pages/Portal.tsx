@@ -441,7 +441,7 @@ export default function Portal() {
   const [callbacksVisibleCount, setCallbacksVisibleCount] = useState(10);
   const [sectionCounts, setSectionCounts] = useState<Record<string, number>>({});
   const [loadingMore, setLoadingMore] = useState<Record<string, boolean>>({});
-  const [clientsSort, setClientsSort] = useState<"newest" | "oldest" | "hot" | "cold">("newest");
+  const [clientsSort, setClientsSort] = useState<"newest" | "oldest" | "latest_update" | "hot" | "cold">("newest");
   const [clientsStatusFilter, setClientsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [clientsRetainerOnly, setClientsRetainerOnly] = useState(false);
   
@@ -1066,12 +1066,26 @@ export default function Portal() {
     const heatRank: Record<Contact["status"], number> = {
       hot: 0, gold: 1, aware: 2, cold: 3, archived: 4,
     } as any;
+    const latestActivityByContact = new Map<string, number>();
+    for (const e of contactEvents) {
+      const t = new Date((e as any).updated_at || e.created_at).getTime();
+      const prev = latestActivityByContact.get(e.contact_id) ?? 0;
+      if (t > prev) latestActivityByContact.set(e.contact_id, t);
+    }
+    const latestActivity = (c: Contact) => {
+      const u = new Date(c.updated_at || c.created_at).getTime();
+      const e = latestActivityByContact.get(c.id) ?? 0;
+      return Math.max(u, e);
+    };
     return [...retainerFiltered].sort((a, b) => {
       if (clientsSort === "newest") {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
       if (clientsSort === "oldest") {
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      }
+      if (clientsSort === "latest_update") {
+        return latestActivity(b) - latestActivity(a);
       }
       if (clientsSort === "hot") {
         const ar = heatRank[a.status] ?? 99;
@@ -2957,6 +2971,7 @@ export default function Portal() {
                   {([
                     { value: "newest", label: "Newest first" },
                     { value: "oldest", label: "Oldest first" },
+                    { value: "latest_update", label: "Latest update" },
                     { value: "hot", label: "Hot → Cold" },
                     { value: "cold", label: "Cold → Hot" },
                   ] as const).map(opt => (
