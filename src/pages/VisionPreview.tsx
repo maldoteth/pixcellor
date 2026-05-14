@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Loader2, ArrowLeft, Wand2, CheckCircle2 } from "lucide-react";
+import { Loader2, ArrowLeft, Wand2, CheckCircle2, Upload } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import SeoHead from "@/components/SeoHead";
 import MagicLinkSignup from "@/components/MagicLinkSignup";
@@ -14,6 +15,7 @@ interface Preview {
   brief: string | null;
   title: string | null;
   image_path: string;
+  comparison_image_path?: string | null;
   created_at: string;
   palette?: any;
   fonts?: any;
@@ -30,6 +32,9 @@ export default function VisionPreview() {
   const [authedEmail, setAuthedEmail] = useState<string | null>(null);
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [requested, setRequested] = useState(false);
+  const [tab, setTab] = useState<"preview" | "compare">("preview");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -81,6 +86,41 @@ export default function VisionPreview() {
   const imageUrl = preview
     ? supabase.storage.from(BUCKET).getPublicUrl(preview.image_path).data.publicUrl
     : null;
+  const comparisonUrl = preview?.comparison_image_path
+    ? supabase.storage.from(BUCKET).getPublicUrl(preview.comparison_image_path).data.publicUrl
+    : null;
+
+  const handleCompareUpload = async (file: File) => {
+    if (!preview) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be 10MB or smaller");
+      return;
+    }
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("slug", preview.slug);
+      form.append("file", file);
+      const { data, error } = await supabase.functions.invoke("upload-vision-comparison", {
+        body: form,
+      });
+      if (error) throw error;
+      const newPath = (data as any)?.path as string | undefined;
+      if (!newPath) throw new Error("Upload failed");
+      setPreview({ ...preview, comparison_image_path: newPath });
+      setTab("compare");
+      toast.success("Comparison image uploaded");
+    } catch (e: any) {
+      toast.error(e?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const openLetsTalk = () => {
     if (!preview) return;
@@ -134,6 +174,62 @@ export default function VisionPreview() {
             <div className="space-y-1">
               <h1 className="text-xl font-semibold">{preview.title ?? "Your Preview"}</h1>
             </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border">
+              <div className="flex">
+                <button
+                  type="button"
+                  onClick={() => setTab("preview")}
+                  className={`px-4 py-2 text-sm border-b-2 -mb-px transition-colors ${
+                    tab === "preview"
+                      ? "border-foreground text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Preview
+                </button>
+                {comparisonUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setTab("compare")}
+                    className={`px-4 py-2 text-sm border-b-2 -mb-px transition-colors ${
+                      tab === "compare"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Your image
+                  </button>
+                )}
+              </div>
+              {!comparisonUrl && (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleCompareUpload(f);
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-none gap-1 mb-1"
+                    disabled={uploading}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {uploading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="h-3.5 w-3.5" />
+                    )}
+                    Compare
+                  </Button>
+                </>
+              )}
+            </div>
             <div
               tabIndex={-1}
               className="border border-border bg-black/40 overflow-auto outline-none focus:outline-none focus-visible:outline-none select-none"
@@ -141,7 +237,7 @@ export default function VisionPreview() {
               onContextMenu={(e) => e.preventDefault()}
             >
               <img
-                src={imageUrl}
+                src={tab === "compare" && comparisonUrl ? comparisonUrl : imageUrl}
                 alt={preview.title ?? "Generated website preview"}
                 className="w-full block pointer-events-none select-none"
                 draggable={false}
