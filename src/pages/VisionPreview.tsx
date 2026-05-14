@@ -144,6 +144,35 @@ export default function VisionPreview() {
     );
   };
 
+  const requestConsultation = async (phone?: string) => {
+    if (!preview) return;
+    setRequesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("request-preview-consultation", {
+        body: { slug: preview.slug, ...(phone !== undefined ? { phone } : {}) },
+      });
+      if (error) throw error;
+      const res = data as { ok: boolean; reason?: string; email?: string };
+      if (res?.ok) {
+        if (res.email) setSubmittedEmail(res.email);
+        setRequested(true);
+        setNeedPhone(false);
+        return;
+      }
+      if (res?.reason === "phone_required") {
+        if (res.email) setSubmittedEmail(res.email);
+        setNeedPhone(true);
+        return;
+      }
+      // no_client_email or anything else → fall back to full form
+      openLetsTalk();
+    } catch (e: any) {
+      toast.error(e?.message || "Couldn't send your request — please try again.");
+    } finally {
+      setRequesting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SeoHead
