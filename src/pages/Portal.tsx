@@ -1068,9 +1068,6 @@ export default function Portal() {
     } as any;
     return [...retainerFiltered].sort((a, b) => {
       if (clientsSort === "newest") {
-        const aClient = a.status === "gold" ? 0 : 1;
-        const bClient = b.status === "gold" ? 0 : 1;
-        if (aClient !== bClient) return aClient - bClient;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
       if (clientsSort === "oldest") {
