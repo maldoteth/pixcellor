@@ -330,6 +330,7 @@ const tools = [
       },
     },
   },
+];
 
 
 const devTools = [
