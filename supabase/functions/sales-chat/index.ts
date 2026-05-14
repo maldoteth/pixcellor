@@ -1842,6 +1842,70 @@ async function devCreateCustomOrder(supabase: DbClient, args: Record<string, unk
   };
 }
 
+async function salesCreateCustomPayment(supabase: DbClient, args: Record<string, unknown>) {
+  const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
+  if (!stripeSecretKey) return { ok: false, error: "stripe_not_configured" };
+
+  const description = cleanText(args.description, 200);
+  const amount = Number(args.amount_gbp);
+  const clientEmail = cleanText(args.client_email, 255).toLowerCase() || null;
+
+  if (!description) return { ok: false, error: "description_required" };
+  if (!Number.isFinite(amount) || amount < 1 || amount > 1_000_000) return { ok: false, error: "invalid_amount" };
+  if (clientEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clientEmail)) return { ok: false, error: "invalid_email" };
+
+  const { default: Stripe } = await import("https://esm.sh/stripe@18.5.0");
+  const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
+
+  try {
+    const product = await stripe.products.create({
+      name: description.slice(0, 250),
+      metadata: { kind: "custom", source: "sales_chat", client_email: clientEmail ?? "" },
+    });
+    const price = await stripe.prices.create({
+      product: product.id,
+      currency: "gbp",
+      unit_amount: Math.round(amount * 100),
+    });
+
+    const linkRow = await supabase
+      .from("custom_payment_links")
+      .insert({
+        stripe_product_id: product.id,
+        stripe_price_id: price.id,
+        url: "pending",
+        description,
+        amount_gbp: amount,
+        currency: "gbp",
+        quantity: 1,
+        mode: "payment",
+        client_email: clientEmail,
+        internal_note: "Created by Alex via sales chat",
+        status: "open",
+      })
+      .select("id")
+      .single();
+    if (linkRow.error || !linkRow.data) return { ok: false, error: "db_insert_failed" };
+    const linkId = linkRow.data.id;
+
+    const paymentLink = await stripe.paymentLinks.create({
+      line_items: [{ price: price.id, quantity: 1 }],
+      metadata: { kind: "custom", custom_link_id: linkId, client_email: clientEmail ?? "", source: "sales_chat" },
+      payment_intent_data: { metadata: { kind: "custom", custom_link_id: linkId, source: "sales_chat" } },
+    });
+
+    await supabase
+      .from("custom_payment_links")
+      .update({ stripe_payment_link_id: paymentLink.id, url: paymentLink.url })
+      .eq("id", linkId);
+
+    return { ok: true, url: paymentLink.url, amount_gbp: amount, description };
+  } catch (e) {
+    console.error("salesCreateCustomPayment error", e);
+    return { ok: false, error: e instanceof Error ? e.message : "stripe_failed" };
+  }
+}
+
 async function devCreatePaymentLink(req: Request, args: Record<string, unknown>) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const authHeader = req.headers.get("Authorization") || "";
