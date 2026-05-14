@@ -224,6 +224,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
+  const isDesktop = useIsDesktop();
   const clientId = useRef(getClientId(mode));
   const isDevMode = mode === "dev";
 
