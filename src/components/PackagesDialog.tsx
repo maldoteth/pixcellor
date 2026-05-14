@@ -70,7 +70,7 @@ const SERVICE_BACKS = {
     action: "pricing" as const,
     items: [
       { name: "Landing pages", info: "Save time and have our team take care of all your landing page needs." },
-      { name: "Animated sites", info: "20k websites last year are now 1k websites if you speak to the right people — we are the right people." },
+      { name: "Animated sites", info: "£10K websites last year are now £500 websites if you speak to the right people — we are the right people." },
       { name: "Full web apps", info: "We've built custom solutions and full stack apps across tech, retail, web3 and more!" },
       { name: "Internal tools", info: "Custom systems, automations, agentic flows and more saving you potentially tens of thousands a year." },
       { name: "CRM systems", info: "Want a CRM that suits your exact needs powered by a swarm of AI agents that work to your will, saving you and your staff time and money while ensuring nothing is ever missed? Look no further." },
