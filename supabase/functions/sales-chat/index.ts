@@ -1082,14 +1082,14 @@ async function saveCustomerContact(supabase: DbClient, args: Record<string, unkn
   if (shouldSendWelcomeEmail && !email) return { ok: false, error: "email_required_for_welcome_email" };
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "invalid_email" };
 
-  const notes = [
+  // Notes/context now live as a contact_event ("Note"), NOT on the contact row itself.
+  const noteBody = [
     cleanText(args.notes, 850),
-    shouldScheduleCallback ? "Requested a callback from Alex chat." : "",
     shouldSendWelcomeEmail ? "Requested Pixcellor package/process info by email." : "",
     mediaUrl ? "Details captured from uploaded screenshot." : "",
     conversationId ? `Live chat: ${conversationId}` : "Live chat lead",
   ].filter(Boolean).join("\n");
-  const existingQuery = supabase.from("contacts").select("id, notes, media").limit(1);
+  const existingQuery = supabase.from("contacts").select("id, media").limit(1);
   const { data: existing } = email
     ? await existingQuery.ilike("email", email).maybeSingle()
     : await existingQuery.eq("phone", phone).maybeSingle();
@@ -1100,10 +1100,19 @@ async function saveCustomerContact(supabase: DbClient, args: Record<string, unkn
     return arr;
   };
 
+  const insertNoteEvent = async (contactId: string) => {
+    if (!noteBody) return;
+    await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: "Note",
+      description: noteBody,
+      event_type: "note",
+    });
+  };
+
   if (existing?.id) {
     const update: Record<string, unknown> = {
       name, phone: phone || null, email: email || null, industry, website: website || null,
-      notes: [existing.notes, notes].filter(Boolean).join("\n"),
       updated_at: new Date().toISOString(),
     };
     if (status) update.status = status;
@@ -1112,12 +1121,13 @@ async function saveCustomerContact(supabase: DbClient, args: Record<string, unkn
       .from("contacts").update(update).eq("id", existing.id)
       .select("id, name, email, phone").single();
     if (error) return { ok: false, error: error.message };
+    await insertNoteEvent(data.id);
     await handleCustomerContactFollowUps(supabase, data.id, { name, email, phone, shouldScheduleCallback, shouldSendWelcomeEmail });
     return { ok: true, contact: data, updated: true, callback_scheduled: shouldScheduleCallback, welcome_email_requested: shouldSendWelcomeEmail };
   }
 
   const insert: Record<string, unknown> = {
-    name, phone: phone || null, email: email || null, industry, website: website || null, notes, source: "chat",
+    name, phone: phone || null, email: email || null, industry, website: website || null, notes: null, source: "chat",
   };
   if (status) insert.status = status;
   if (mediaUrl) insert.media = [mediaUrl];
@@ -1125,6 +1135,7 @@ async function saveCustomerContact(supabase: DbClient, args: Record<string, unkn
     .from("contacts").insert(insert)
     .select("id, name, email, phone").single();
   if (error) return { ok: false, error: error.message };
+  await insertNoteEvent(data.id);
   await handleCustomerContactFollowUps(supabase, data.id, { name, email, phone, shouldScheduleCallback, shouldSendWelcomeEmail });
   return { ok: true, contact: data, updated: false, callback_scheduled: shouldScheduleCallback, welcome_email_requested: shouldSendWelcomeEmail };
 }
