@@ -74,7 +74,7 @@ const CustomInvoiceEmail = ({ description, amountFormatted, paymentUrl, orderId,
               <Column style={nextInner}>
                 <Text style={sectionKicker}>Pay securely</Text>
                 <Text style={text}>
-                  Click the button to complete payment via our secure Stripe checkout. Once paid, we'll be in touch to kick things off.
+                  Click the button to complete payment via our secure Stripe checkout. If you weren't expecting this email, verify this order ID using the chat button on Pixcellor.com or email us back for assistance.
                 </Text>
                 <Button style={button} href={payHref}>Pay now</Button>
                 <Text style={smallLink}>
