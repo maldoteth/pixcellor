@@ -489,7 +489,7 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
+      <Drawer open={open} onOpenChange={onOpenChange} dismissible={false}>
         <DrawerContent
           className="border border-white/15 px-4 pb-6 text-foreground shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl backdrop-saturate-150"
           style={{
@@ -499,10 +499,18 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
             backdropFilter: "blur(28px) saturate(160%)",
           }}
         >
-          <DrawerHeader>
-            <DrawerTitle className="flex items-center justify-center gap-2">
+          <DrawerHeader className="flex items-center justify-between">
+            <DrawerTitle className="flex items-center gap-2">
               <Wand2 className="h-4 w-4" /> Generate preview
             </DrawerTitle>
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </DrawerHeader>
           {body}
         </DrawerContent>
