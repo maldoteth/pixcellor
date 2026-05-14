@@ -34,6 +34,9 @@ export default function VisionPreview() {
   const [requested, setRequested] = useState(false);
   const [tab, setTab] = useState<"preview" | "compare">("preview");
   const [uploading, setUploading] = useState(false);
+  const [requesting, setRequesting] = useState(false);
+  const [needPhone, setNeedPhone] = useState(false);
+  const [phoneInput, setPhoneInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
