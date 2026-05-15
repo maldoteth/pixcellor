@@ -8,7 +8,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, ExternalLink, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+
+const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
+  {
+    id: "free-sample",
+    title: "Free sample offer",
+    body: `Hi, I'm calling with a free sample offer from pixcellor.com.\n\nAfter studying the brand a bit, I've built you a sample website and design document I think you're going to love.\n\nWant to see?`,
+  },
+  {
+    id: "cold-outreach",
+    title: "Cold outreach",
+    body: `Hi, I'm just calling about your website — I work for pixcellor.com.\n\nDo you like it?`,
+  },
+];
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
