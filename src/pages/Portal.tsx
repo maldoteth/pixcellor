@@ -3197,8 +3197,10 @@ export default function Portal() {
               </DialogHeader>
               <p className="text-sm text-muted-foreground">Quick openers for sales calls. Tap copy to grab the script.</p>
               <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-                {SALES_SCRIPTS.map((script) => (
-                  <Card key={script.id} className="rounded-none border-border/60">
+                {SALES_SCRIPTS.map((script) => {
+                  const isSpeaking = speakingScriptId === script.id;
+                  return (
+                  <Card key={script.id} className="relative rounded-none border-border/60">
                     <CardContent className="p-4 space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <h4 className="font-medium">{script.title}</h4>
@@ -3207,9 +3209,21 @@ export default function Portal() {
                         </Button>
                       </div>
                       <pre className="whitespace-pre-wrap font-sans text-sm text-foreground/90 bg-muted/30 p-3 rounded-none border border-border/40">{script.body}</pre>
+                      <div className="flex justify-end">
+                        <Button
+                          variant={isSpeaking ? "default" : "outline"}
+                          size="sm"
+                          className="h-8 rounded-none px-3 text-xs"
+                          onClick={() => toggleSpeakScript(script.id, script.body)}
+                          aria-label={isSpeaking ? "Stop reading" : "Read aloud"}
+                        >
+                          {isSpeaking ? <><Square className="w-3.5 h-3.5 mr-1.5" /> Stop</> : <><Volume2 className="w-3.5 h-3.5 mr-1.5" /> Play</>}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
-                ))}
+                  );
+                })}
               </div>
             </DialogContent>
           </Dialog>
