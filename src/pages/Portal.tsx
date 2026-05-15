@@ -490,7 +490,7 @@ export default function Portal() {
 
   const toggleSpeakScript = useCallback((id: string, text: string) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      toast({ title: "Speech not supported", description: "Your browser doesn't support text-to-speech." });
+      toast.error("Your browser doesn't support text-to-speech.");
       return;
     }
     const synth = window.speechSynthesis;
