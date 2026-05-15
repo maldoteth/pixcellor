@@ -1,33 +1,39 @@
-## Goal
-On `/preview/:slug`, "Get started" should skip the contact form whenever we already have the visitor's details on file. If a phone number is missing, show only a phone prompt — nothing else.
+## Add "Help" scripts panel to Sales tab
 
-## Behaviour matrix
-Looked up server-side by the preview's `client_email`:
+### Where
+In `src/pages/Portal.tsx`, inside the `sales` TabsContent (around line 2274), add a new **Help** button next to the existing **Stats** button. Clicking it opens a themed dialog with call script ideas for the sales team.
 
-- Email + phone known → submit silently, show "We'll be in touch" success.
-- Email known, phone unknown → show a tiny one-field "What's the best number to call you on?" prompt → submit → success. Phone may be skippable (same as the existing flow allows).
-- Email unknown (preview never sent) → fall back to the current full LetsTalk consultation flow.
+### Button
+```
+[Create note] [Create client] [Stats] [Help]
+```
+- Icon: `HelpCircle` (lucide-react, already common)
+- Opens `helpDialogOpen` state → Dialog component
 
-## Changes
+### Dialog content
+Title: "Call scripts"
+Sub: "Quick openers for sales calls. Tap a script to copy."
 
-### 1. New edge function: `request-preview-consultation`
-- Input: `{ slug, phone? }`
-- Service-role lookup of `vision_previews` by slug to get `client_email`, `title`, `brief`, `image_path`, `slug`.
-- If no `client_email` → return `{ ok: false, reason: "no_client_email" }`.
-- Look up the most recent phone for that email across `contacts.phone` and `lets_talk_leads.phone` (most recent non-null wins).
-- If no phone on file AND no `phone` in the request body → return `{ ok: false, reason: "phone_required", email }`.
-- Otherwise insert a `lets_talk_leads` row and invoke `process-lets-talk-lead` with the same payload shape `LetsTalkPrompt.requestConsultation` uses (source `consultation_request`, preview slug/title, image URL, brief). Use the known name from `contacts` if available, otherwise empty string.
-- Return `{ ok: true, email }`.
-- `verify_jwt = false` (public, gated by slug knowledge — same trust model as the preview page).
+Two script cards, each with a copy-to-clipboard button (reusing existing `copyToClipboard` helper):
 
-### 2. `src/pages/VisionPreview.tsx`
-- "Get started" button calls the new function with no phone first.
-  - `ok: true` → set `requested = true`, `submittedEmail = email`, render existing success block.
-  - `ok: false, reason: "phone_required"` → reveal a small inline phone input + Submit button (with a Skip option). On submit, call the function again with `phone`. On success → success block.
-  - `ok: false, reason: "no_client_email"` → fall back to the existing `openLetsTalk` consultation flow (unchanged code path).
-  - Network/other errors → toast and let user retry.
-- Add a small loading state on the button while requests are in flight.
+**1. Free sample offer**
+> Hi, I'm calling with a free sample offer from pixcellor.com.
+>
+> After studying the brand a bit, I've built you a sample website and design document I think you're going to love.
+>
+> Want to see?
 
-### 3. No changes
-- No DB schema changes.
-- `LetsTalkPrompt`, success UI, magic-link block, and notification pipeline (`process-lets-talk-lead`) are all unchanged.
+**2. Cold outreach**
+> Hi, I'm just calling about your website — I work for pixcellor.com.
+>
+> Do you like it?
+
+Each card: bordered, `rounded-none`, monospace-ish quote block, "Copy" button top-right.
+
+### Future-proof
+Scripts stored as a local `const SALES_SCRIPTS = [{ id, title, body }, ...]` array at top of file so Erica can ask to add more later without schema changes. No DB / backend work in this pass.
+
+### Files touched
+- `src/pages/Portal.tsx` — add state, button, dialog, scripts array.
+
+No backend, no migrations.

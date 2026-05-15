@@ -8,7 +8,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, ExternalLink, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+
+const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
+  {
+    id: "free-sample",
+    title: "Free sample offer",
+    body: `Hi, I'm calling with a free sample offer from pixcellor.com.\n\nAfter studying the brand a bit, I've built you a sample website and design document I think you're going to love.\n\nWant to see?`,
+  },
+  {
+    id: "cold-outreach",
+    title: "Cold outreach",
+    body: `Hi, I'm just calling about your website — I work for pixcellor.com.\n\nDo you like it?`,
+  },
+];
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
@@ -464,6 +477,7 @@ export default function Portal() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
+  const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [statsTotals, setStatsTotals] = useState<{ totalSales: number; totalWebsites: number; potential: number; uniqueVisitors: number; totalVisitEvents: number; pricingViews: number; buyClicks: number } | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [mobileContactDrawerOpen, setMobileContactDrawerOpen] = useState(false);
@@ -2274,6 +2288,9 @@ export default function Portal() {
               <Button variant="outline" onClick={() => setStatsDialogOpen(true)}>
                 <BarChart3 className="w-4 h-4 mr-2" /> Stats
               </Button>
+              <Button variant="outline" onClick={() => setHelpDialogOpen(true)}>
+                <HelpCircle className="w-4 h-4 mr-2" /> Help
+              </Button>
             </div>
 
             {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a client first, then you can create sales events.</p>}
@@ -3137,6 +3154,30 @@ export default function Portal() {
                 </div>
             </div>
           </TabsContent>
+
+          <Dialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Call scripts</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">Quick openers for sales calls. Tap copy to grab the script.</p>
+              <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+                {SALES_SCRIPTS.map((script) => (
+                  <Card key={script.id} className="rounded-none border-border/60">
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-medium">{script.title}</h4>
+                        <Button variant="outline" size="sm" className="h-8 rounded-none px-3 text-xs" onClick={() => copyToClipboard(script.body, "Script copied")}>
+                          <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
+                        </Button>
+                      </div>
+                      <pre className="whitespace-pre-wrap font-sans text-sm text-foreground/90 bg-muted/30 p-3 rounded-none border border-border/40">{script.body}</pre>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
 
           <Dialog open={statsDialogOpen} onOpenChange={setStatsDialogOpen}>
             <DialogContent className="max-w-4xl">
