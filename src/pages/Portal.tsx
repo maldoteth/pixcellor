@@ -478,6 +478,41 @@ export default function Portal() {
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
+  const [speakingScriptId, setSpeakingScriptId] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const toggleSpeakScript = useCallback((id: string, text: string) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      toast({ title: "Speech not supported", description: "Your browser doesn't support text-to-speech." });
+      return;
+    }
+    const synth = window.speechSynthesis;
+    if (speakingScriptId === id) {
+      synth.cancel();
+      setSpeakingScriptId(null);
+      return;
+    }
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1;
+    utter.pitch = 1;
+    const voices = synth.getVoices();
+    const preferred = voices.find(v => /en-GB/i.test(v.lang) && /female|samantha|google uk/i.test(v.name))
+      || voices.find(v => /en-GB/i.test(v.lang))
+      || voices.find(v => /en/i.test(v.lang));
+    if (preferred) utter.voice = preferred;
+    utter.onend = () => setSpeakingScriptId(prev => (prev === id ? null : prev));
+    utter.onerror = () => setSpeakingScriptId(prev => (prev === id ? null : prev));
+    setSpeakingScriptId(id);
+    synth.speak(utter);
+  }, [speakingScriptId]);
   const [statsTotals, setStatsTotals] = useState<{ totalSales: number; totalWebsites: number; potential: number; uniqueVisitors: number; totalVisitEvents: number; pricingViews: number; buyClicks: number } | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [mobileContactDrawerOpen, setMobileContactDrawerOpen] = useState(false);
