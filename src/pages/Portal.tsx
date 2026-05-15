@@ -14,7 +14,7 @@ const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
   {
     id: "free-sample",
     title: "Free sample offer",
-    body: `Hi, I'm calling with a free sample offer from pixcellor.com.\n\nAfter studying the brand a bit, I've built you a custom sample website and design document I think you're going to love.\n\nWant to see?`,
+    body: `Hi, I'm calling with a free sample offer from pixcellor.com.\n\nAfter studying your branding, I've built you a custom sample website and design document I think you're going to love.\n\nWant to see?`,
   },
   {
     id: "cold-outreach",
