@@ -313,7 +313,7 @@ const tools = [
           website: { type: "string", description: "Website domain or URL, if provided." },
           industry: { type: "string", description: "Business industry/category if known. Use general if unsure." },
           notes: { type: "string", description: "Project summary or relevant chat context." },
-          status: { type: "string", enum: ["cold","aware","warm","hot","gold"], description: "Lead temperature. Use 'hot' when the lead came in via an uploaded screenshot of contact details, or whenever they've actively requested a callback/quote." },
+          status: { type: "string", enum: ["cold","aware","warm","hot","gold"], description: "Lead temperature. Default to 'cold' for passive captures (screenshot uploads, just company/contact info added with no engagement). Only use 'hot' when the visitor has actively requested a callback via Let's Talk, asked for a call organically, or completed the website preview/generation flow." },
           media_image_url: { type: "string", description: "Public URL of an uploaded screenshot/image to attach to the contact's media gallery (e.g. the screenshot used to capture their details)." },
           schedule_callback_tomorrow: { type: "boolean", description: "True when the visitor requested a call. Creates a same-day callback event (2 hours from now)." },
           send_welcome_email: { type: "boolean", description: "True when the visitor requested package/process info by email. Sends the Pixcellor welcome sales email." },
