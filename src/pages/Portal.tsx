@@ -3155,6 +3155,30 @@ export default function Portal() {
             </div>
           </TabsContent>
 
+          <Dialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Call scripts</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">Quick openers for sales calls. Tap copy to grab the script.</p>
+              <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+                {SALES_SCRIPTS.map((script) => (
+                  <Card key={script.id} className="rounded-none border-border/60">
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-medium">{script.title}</h4>
+                        <Button variant="outline" size="sm" className="h-8 rounded-none px-3 text-xs" onClick={() => copyToClipboard(script.body, "Script copied")}>
+                          <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
+                        </Button>
+                      </div>
+                      <pre className="whitespace-pre-wrap font-sans text-sm text-foreground/90 bg-muted/30 p-3 rounded-none border border-border/40">{script.body}</pre>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <Dialog open={statsDialogOpen} onOpenChange={setStatsDialogOpen}>
             <DialogContent className="max-w-4xl">
               <DialogHeader>
