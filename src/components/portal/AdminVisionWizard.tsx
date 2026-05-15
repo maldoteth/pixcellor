@@ -466,6 +466,28 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
             })}
           </div>
         )}
+        {currentStep.key === "company" && clientSearchOpen && clientMatches.length > 0 && (
+          <div className="absolute z-30 left-0 right-0 mt-1 max-h-64 overflow-y-auto bg-background/95 backdrop-blur-xl border border-foreground/20 rounded-md shadow-xl">
+            <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-foreground/50 border-b border-foreground/10 flex items-center justify-between">
+              <span>Existing clients {searchingClients ? "(searching…)" : ""}</span>
+              <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => setClientSearchOpen(false)} className="text-foreground/50 hover:text-foreground">×</button>
+            </div>
+            {clientMatches.map((m, i) => (
+              <button
+                key={`${m.source}-${i}-${m.company}-${m.email ?? ""}`}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pickClientMatch(m)}
+                className="w-full text-left px-3 py-2 text-sm border-b border-foreground/5 last:border-0 transition text-foreground/85 hover:bg-foreground/10"
+              >
+                <div className="font-medium text-foreground">{m.company}</div>
+                <div className="text-xs text-foreground/60 truncate">
+                  {[m.name, m.email, m.industry].filter(Boolean).join(" · ")}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {SUGGESTIONS[currentStep.key] && (
