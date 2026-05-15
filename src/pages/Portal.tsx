@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Square, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 
 const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
   {
@@ -478,6 +478,41 @@ export default function Portal() {
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
+  const [speakingScriptId, setSpeakingScriptId] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const toggleSpeakScript = useCallback((id: string, text: string) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      toast.error("Your browser doesn't support text-to-speech.");
+      return;
+    }
+    const synth = window.speechSynthesis;
+    if (speakingScriptId === id) {
+      synth.cancel();
+      setSpeakingScriptId(null);
+      return;
+    }
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1;
+    utter.pitch = 1;
+    const voices = synth.getVoices();
+    const preferred = voices.find(v => /en-GB/i.test(v.lang) && /female|samantha|google uk/i.test(v.name))
+      || voices.find(v => /en-GB/i.test(v.lang))
+      || voices.find(v => /en/i.test(v.lang));
+    if (preferred) utter.voice = preferred;
+    utter.onend = () => setSpeakingScriptId(prev => (prev === id ? null : prev));
+    utter.onerror = () => setSpeakingScriptId(prev => (prev === id ? null : prev));
+    setSpeakingScriptId(id);
+    synth.speak(utter);
+  }, [speakingScriptId]);
   const [statsTotals, setStatsTotals] = useState<{ totalSales: number; totalWebsites: number; potential: number; uniqueVisitors: number; totalVisitEvents: number; pricingViews: number; buyClicks: number } | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [mobileContactDrawerOpen, setMobileContactDrawerOpen] = useState(false);
@@ -3162,8 +3197,10 @@ export default function Portal() {
               </DialogHeader>
               <p className="text-sm text-muted-foreground">Quick openers for sales calls. Tap copy to grab the script.</p>
               <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-                {SALES_SCRIPTS.map((script) => (
-                  <Card key={script.id} className="rounded-none border-border/60">
+                {SALES_SCRIPTS.map((script) => {
+                  const isSpeaking = speakingScriptId === script.id;
+                  return (
+                  <Card key={script.id} className="relative rounded-none border-border/60">
                     <CardContent className="p-4 space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <h4 className="font-medium">{script.title}</h4>
@@ -3172,9 +3209,21 @@ export default function Portal() {
                         </Button>
                       </div>
                       <pre className="whitespace-pre-wrap font-sans text-sm text-foreground/90 bg-muted/30 p-3 rounded-none border border-border/40">{script.body}</pre>
+                      <div className="flex justify-end">
+                        <Button
+                          variant={isSpeaking ? "default" : "outline"}
+                          size="sm"
+                          className="h-8 rounded-none px-3 text-xs"
+                          onClick={() => toggleSpeakScript(script.id, script.body)}
+                          aria-label={isSpeaking ? "Stop reading" : "Read aloud"}
+                        >
+                          {isSpeaking ? <><Square className="w-3.5 h-3.5 mr-1.5" /> Stop</> : <><Volume2 className="w-3.5 h-3.5 mr-1.5" /> Play</>}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
-                ))}
+                  );
+                })}
               </div>
             </DialogContent>
           </Dialog>
