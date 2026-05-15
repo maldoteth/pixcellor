@@ -2288,6 +2288,9 @@ export default function Portal() {
               <Button variant="outline" onClick={() => setStatsDialogOpen(true)}>
                 <BarChart3 className="w-4 h-4 mr-2" /> Stats
               </Button>
+              <Button variant="outline" onClick={() => setHelpDialogOpen(true)}>
+                <HelpCircle className="w-4 h-4 mr-2" /> Help
+              </Button>
             </div>
 
             {contacts.length === 0 && <p className="text-sm text-muted-foreground">Add a client first, then you can create sales events.</p>}
