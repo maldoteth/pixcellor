@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -479,12 +479,17 @@ export default function Portal() {
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [speakingScriptId, setSpeakingScriptId] = useState<string | null>(null);
+  const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    const synth = window.speechSynthesis;
+    const loadVoices = () => { voicesRef.current = synth.getVoices(); };
+    loadVoices();
+    synth.addEventListener("voiceschanged", loadVoices);
     return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
+      synth.cancel();
+      synth.removeEventListener("voiceschanged", loadVoices);
     };
   }, []);
 
@@ -503,10 +508,12 @@ export default function Portal() {
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 1;
     utter.pitch = 1;
-    const voices = synth.getVoices();
-    const preferred = voices.find(v => /en-GB/i.test(v.lang) && /female|samantha|google uk/i.test(v.name))
-      || voices.find(v => /en-GB/i.test(v.lang))
-      || voices.find(v => /en/i.test(v.lang));
+    const voices = voicesRef.current.length ? voicesRef.current : synth.getVoices();
+    const preferred =
+      voices.find(v => /en-GB/i.test(v.lang) && /female|samantha|google uk|kate/i.test(v.name)) ||
+      voices.find(v => /en-GB/i.test(v.lang)) ||
+      voices.find(v => /en-US/i.test(v.lang)) ||
+      voices.find(v => /^en[-_]/i.test(v.lang));
     if (preferred) utter.voice = preferred;
     utter.onend = () => setSpeakingScriptId(prev => (prev === id ? null : prev));
     utter.onerror = () => setSpeakingScriptId(prev => (prev === id ? null : prev));
