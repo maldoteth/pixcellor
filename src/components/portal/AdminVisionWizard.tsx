@@ -67,9 +67,108 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
   const [busy, setBusy] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  type ClientMatch = {
+    source: "contact" | "profile";
+    company: string;
+    name?: string | null;
+    email?: string | null;
+    industry?: string | null;
+    colours?: string | null;
+    notes?: string | null;
+  };
+  const [clientMatches, setClientMatches] = useState<ClientMatch[]>([]);
+  const [clientSearchOpen, setClientSearchOpen] = useState(false);
+  const [searchingClients, setSearchingClients] = useState(false);
+
   useEffect(() => {
     setDropdownOpen(false);
   }, [stage]);
+
+  // Search client database (admin only) when typing the company name
+  useEffect(() => {
+    if (stage !== "company") {
+      setClientSearchOpen(false);
+      return;
+    }
+    const q = answers.company.trim();
+    if (q.length < 2) {
+      setClientMatches([]);
+      setClientSearchOpen(false);
+      return;
+    }
+    let cancelled = false;
+    setSearchingClients(true);
+    const t = setTimeout(async () => {
+      try {
+        const like = `%${q}%`;
+        const [contactsRes, profilesRes] = await Promise.all([
+          (supabase as any)
+            .from("contacts")
+            .select("name, contact_name, email, industry")
+            .or(`name.ilike.${like},contact_name.ilike.${like}`)
+            .limit(8),
+          (supabase as any)
+            .from("client_profiles")
+            .select("name, company, email, brand_colours, requirements")
+            .or(`company.ilike.${like},name.ilike.${like},email.ilike.${like}`)
+            .limit(8),
+        ]);
+        if (cancelled) return;
+        const matches: ClientMatch[] = [];
+        for (const c of contactsRes.data ?? []) {
+          matches.push({
+            source: "contact",
+            company: c.name,
+            name: c.contact_name,
+            email: c.email,
+            industry: c.industry,
+          });
+        }
+        for (const p of profilesRes.data ?? []) {
+          matches.push({
+            source: "profile",
+            company: p.company || p.name,
+            name: p.name,
+            email: p.email,
+            colours: p.brand_colours,
+            notes: p.requirements,
+          });
+        }
+        // Dedupe by company+email
+        const seen = new Set<string>();
+        const unique = matches.filter((m) => {
+          const k = `${(m.company ?? "").toLowerCase()}|${(m.email ?? "").toLowerCase()}`;
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return !!m.company;
+        });
+        setClientMatches(unique.slice(0, 8));
+        setClientSearchOpen(unique.length > 0);
+      } catch (e) {
+        console.error("client search failed", e);
+      } finally {
+        if (!cancelled) setSearchingClients(false);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [answers.company, stage]);
+
+  const pickClientMatch = (m: ClientMatch) => {
+    setAnswers((a) => ({
+      ...a,
+      company: m.company,
+      industry: a.industry || m.industry || "",
+      colour: a.colour || m.colours || "",
+    }));
+    if (m.name) setClientName((prev) => prev || m.name!);
+    if (m.email) setClientEmail((prev) => prev || m.email!);
+    if (m.company) setTitle((prev) => prev || `${m.company} v1`);
+    setClientSearchOpen(false);
+    setDropdownOpen(false);
+  };
 
   // Reset when closed
   useEffect(() => {
@@ -365,6 +464,28 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
                 </button>
               );
             })}
+          </div>
+        )}
+        {currentStep.key === "company" && clientSearchOpen && clientMatches.length > 0 && (
+          <div className="absolute z-30 left-0 right-0 mt-1 max-h-64 overflow-y-auto bg-background/95 backdrop-blur-xl border border-foreground/20 rounded-md shadow-xl">
+            <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-foreground/50 border-b border-foreground/10 flex items-center justify-between">
+              <span>Existing clients {searchingClients ? "(searching…)" : ""}</span>
+              <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => setClientSearchOpen(false)} className="text-foreground/50 hover:text-foreground">×</button>
+            </div>
+            {clientMatches.map((m, i) => (
+              <button
+                key={`${m.source}-${i}-${m.company}-${m.email ?? ""}`}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pickClientMatch(m)}
+                className="w-full text-left px-3 py-2 text-sm border-b border-foreground/5 last:border-0 transition text-foreground/85 hover:bg-foreground/10"
+              >
+                <div className="font-medium text-foreground">{m.company}</div>
+                <div className="text-xs text-foreground/60 truncate">
+                  {[m.name, m.email, m.industry].filter(Boolean).join(" · ")}
+                </div>
+              </button>
+            ))}
           </div>
         )}
       </div>
