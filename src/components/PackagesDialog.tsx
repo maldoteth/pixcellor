@@ -98,6 +98,7 @@ type ServiceItem = { name: string; info?: string };
 
 function ServiceItemRow({ item }: { item: ServiceItem }) {
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   return (
     <>
@@ -111,6 +112,9 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
             onClick={(e) => {
               e.stopPropagation();
               setOpen((v) => !v);
+            }}
+            onMouseEnter={() => {
+              if (!isMobile) setOpen(true);
             }}
             className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40"
           >
