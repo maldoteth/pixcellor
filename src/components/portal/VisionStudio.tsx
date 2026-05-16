@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Loader2, Wand2, Copy, ExternalLink, Trash2, Mail, Check, Search } from "lucide-react";
+import { Loader2, Wand2, Copy, ExternalLink, Trash2, Mail, Check, Search, Download } from "lucide-react";
+import { downloadImage } from "@/lib/download-image";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
