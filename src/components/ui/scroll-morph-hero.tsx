@@ -169,7 +169,7 @@ function FlipCard({
                 position: "absolute",
                 width: imgSize,
                 height: imgSize,
-                zIndex: proximity > 0.05 ? 90 : 45 + stackIndex,
+                zIndex: isMobile && phase === "circle" ? 45 + stackIndex : proximity > 0.05 ? 90 : 45 + stackIndex,
                 pointerEvents: "auto",
             }}
             className="group"
@@ -1191,7 +1191,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                 // Mobile: nudge tangent rotation the other way so corners tuck in.
                                 rotation: circleAngle + 90 + (isMobile ? 8 : 0),
                             };
-                            stackIndex = isMobile ? ((TOTAL_IMAGES - i + Math.floor(TOTAL_IMAGES / 4)) % TOTAL_IMAGES) : 0;
+                            stackIndex = isMobile ? ((i - Math.floor(TOTAL_IMAGES / 4) + TOTAL_IMAGES) % TOTAL_IMAGES) : 0;
 
                             const baseRadius = Math.min(containerSize.width, containerSize.height * 1.5);
                             const arcRadius = baseRadius * (isMobile ? 1.4 : 1.1);
