@@ -306,8 +306,8 @@ const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
 // green → blue → purple → magenta → back to red) so the rotating circle
 // reads as a continuous rainbow spectrum. 16 unique + 4 repeated to fill 20 slots.
 const IMAGES = [
-    ui16, ui3, ui4, ui2, ui5, ui6, ui7, ui8, ui1, ui9,
-    ui10, ui13, ui11, ui12, ui14, ui15, ui16, ui3, ui4, ui2
+    ui16, ui3, ui4, ui5, ui6, ui7, ui8, ui1, ui9, ui10,
+    ui13, ui11, ui12, ui14, ui15, ui2, ui16, ui3, ui4, ui5
 ];
 
 interface IntroAnimationProps {
