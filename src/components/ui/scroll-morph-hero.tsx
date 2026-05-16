@@ -39,11 +39,12 @@ interface FlipCardProps {
     phase: AnimationPhase;
     target: { x: number; y: number; rotation: number; scale: number; opacity: number };
     onViewDetails?: () => void;
+    isMobile?: boolean;
 }
 
 // --- FlipCard Component ---
-const IMG_WIDTH = 70;
-const IMG_HEIGHT = 70;
+const IMG_SIZE_DESKTOP = 70;
+const IMG_SIZE_MOBILE = 74; // 5% larger on mobile
 
 const PROXIMITY_RADIUS = 280;
 
