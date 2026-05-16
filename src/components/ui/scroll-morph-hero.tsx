@@ -1231,6 +1231,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                 phase={introPhase}
                                 target={target}
                                 onViewDetails={advanceHeroFromArrow}
+                                isMobile={containerSize.width < 768}
                             />
                         );
                     })}
