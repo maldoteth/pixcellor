@@ -3216,7 +3216,7 @@ export default function Portal() {
           <Dialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen}>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Call scripts</DialogTitle>
+                <DialogTitle>Call Openers </DialogTitle>
               </DialogHeader>
               <p className="text-sm text-muted-foreground">Quick openers for sales calls. Tap copy to grab the script.</p>
               <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
