@@ -610,9 +610,8 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
       exit={{ opacity: 0 }}
       className="flex flex-col items-center gap-3 py-8"
     >
-      <Loader2 className="h-8 w-8 animate-spin text-foreground/70" />
-      <p className="text-sm text-foreground/70">Generating preview…</p>
-    </motion.div>
+      <GenerationProgress label="Generating preview…" />
+
   );
 
   const body = (
