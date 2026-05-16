@@ -1185,8 +1185,8 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                             const circlePos = {
                                 x: Math.cos(circleRad) * circleRadius,
                                 y: Math.sin(circleRad) * circleRadius,
-                                // Mobile: nudge tangent rotation by a few degrees so corners tuck in.
-                                rotation: circleAngle + 90 + (isMobile ? -4 : 0),
+                                // Mobile: nudge tangent rotation the other way so corners tuck in.
+                                rotation: circleAngle + 90 + (isMobile ? 8 : 0),
                             };
 
                             const baseRadius = Math.min(containerSize.width, containerSize.height * 1.5);
