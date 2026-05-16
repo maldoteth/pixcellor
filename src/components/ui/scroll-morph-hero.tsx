@@ -1168,6 +1168,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                 <div className="relative flex items-start md:items-center justify-center w-full h-full pt-[240px] md:pt-0">
                     {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
                         let target = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
+                        let stackIndex = 0;
 
                         if (introPhase === "scatter") {
                             target = scatterPositions[i];
@@ -1190,6 +1191,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                 // Mobile: nudge tangent rotation the other way so corners tuck in.
                                 rotation: circleAngle + 90 + (isMobile ? 8 : 0),
                             };
+                            stackIndex = isMobile ? Math.round(((Math.sin(circleRad) + 1) / 2) * TOTAL_IMAGES) : 0;
 
                             const baseRadius = Math.min(containerSize.width, containerSize.height * 1.5);
                             const arcRadius = baseRadius * (isMobile ? 1.4 : 1.1);
@@ -1235,6 +1237,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                 target={target}
                                 onViewDetails={advanceHeroFromArrow}
                                 isMobile={containerSize.width < 768}
+                                stackIndex={stackIndex}
                             />
                         );
                     })}
