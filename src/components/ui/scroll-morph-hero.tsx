@@ -1185,7 +1185,9 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                             const circlePos = {
                                 x: Math.cos(circleRad) * circleRadius,
                                 y: Math.sin(circleRad) * circleRadius,
-                                rotation: circleAngle + 90,
+                                // Mobile: keep squares axis-aligned so the ring reads as a clean circle
+                                // (tangent rotation makes corners protrude given the larger mobile size).
+                                rotation: isMobile ? 0 : circleAngle + 90,
                             };
 
                             const baseRadius = Math.min(containerSize.width, containerSize.height * 1.5);
