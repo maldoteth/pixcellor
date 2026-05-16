@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Loader2, Wand2, Copy, ExternalLink, Trash2, Mail, Check, Search } from "lucide-react";
+import { Loader2, Wand2, Copy, ExternalLink, Trash2, Mail, Check, Search, Download } from "lucide-react";
+import { downloadImage } from "@/lib/download-image";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -298,6 +299,18 @@ export default function VisionStudio() {
                         {g.source}{g.is_refinement ? " · refinement" : ""}
                       </p>
                       {g.brief && <p className="text-[11px] text-muted-foreground line-clamp-3">{g.brief}</p>}
+                      {g.image_url && (
+                        <div className="pt-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 rounded-none gap-1 text-[11px]"
+                            onClick={() => downloadImage(g.image_url!, `${g.company || g.visitor_id || g.id}.png`)}
+                          >
+                            <Download className="h-3 w-3" /> Save image
+                          </Button>
+                        </div>
+                      )}
                       {(g.palette || g.fonts) && (
                         <div className="pt-2 border-t border-border/30">
                           <BrandKit palette={g.palette} fonts={g.fonts} compact />
@@ -356,6 +369,14 @@ export default function VisionStudio() {
                   >
                     <ExternalLink className="h-3.5 w-3.5" /> Open
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-none gap-1"
+                    onClick={() => downloadImage(publicUrl(latest.image_path), `${latest.slug}.png`)}
+                  >
+                    <Download className="h-3.5 w-3.5" /> Save
+                  </Button>
                 </div>
               </div>
               <div className="border border-border bg-black/40 max-h-[55vh] overflow-auto">
@@ -399,15 +420,26 @@ export default function VisionStudio() {
                             By {row.created_by_email ?? "unknown"}
                           </p>
                         </div>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => remove(row)}
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          aria-label="Delete preview"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => downloadImage(publicUrl(row.image_path), `${row.slug}.png`)}
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                            aria-label="Save image"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => remove(row)}
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                            aria-label="Delete preview"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
                       {row.brief && (
                         <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-clamp-3">{row.brief}</p>
