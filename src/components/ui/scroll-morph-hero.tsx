@@ -1153,7 +1153,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                     ? 225 + Math.max(0, galleryItems.length - 12) * 8
                                     : 360 + Math.max(0, galleryItems.length - 12) * 13
                             }
-                            externalRotation={galleryRotationValue + hintRotation}
+                            externalRotation={galleryRotationValue}
                             interactive={portfolioInteractive}
                         />
                     </motion.div>
