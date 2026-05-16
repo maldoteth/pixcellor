@@ -611,6 +611,7 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
       className="flex flex-col items-center gap-3 py-8"
     >
       <GenerationProgress label="Generating preview…" />
+    </motion.div>
 
   );
 
