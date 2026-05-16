@@ -54,11 +54,13 @@ function FlipCard({
     phase,
     target,
     onViewDetails,
+    isMobile,
 }: FlipCardProps) {
     const cardRef = React.useRef<HTMLDivElement>(null);
     const imgRef = React.useRef<HTMLImageElement>(null);
     const [proximity, setProximity] = React.useState(0); // 0..1
     const [glowColor, setGlowColor] = React.useState<string>("255, 255, 255");
+    const imgSize = isMobile ? IMG_SIZE_MOBILE : IMG_SIZE_DESKTOP;
 
     // Sample dominant color from the image once it loads
     const handleImgLoad = React.useCallback(() => {
@@ -163,8 +165,8 @@ function FlipCard({
             }}
             style={{
                 position: "absolute",
-                width: IMG_WIDTH,
-                height: IMG_HEIGHT,
+                width: imgSize,
+                height: imgSize,
                 zIndex: proximity > 0.05 ? 46 : 45,
                 pointerEvents: "auto",
             }}
