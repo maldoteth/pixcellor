@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Wand2, X } from "lucide-react";
+import GenerationProgress from "@/components/GenerationProgress";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -609,9 +610,9 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
       exit={{ opacity: 0 }}
       className="flex flex-col items-center gap-3 py-8"
     >
-      <Loader2 className="h-8 w-8 animate-spin text-foreground/70" />
-      <p className="text-sm text-foreground/70">Generating preview…</p>
+      <GenerationProgress label="Generating preview…" />
     </motion.div>
+
   );
 
   const body = (
