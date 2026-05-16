@@ -854,7 +854,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     const [portfolioInteractive, setPortfolioInteractive] = useState(false);
-    const [hintRotation, setHintRotation] = useState(0);
+    const [hintRotation, setHintRotation] = useState(-90);
     const hintPlayedRef = useRef(false);
     useEffect(() => {
         const unsub = smoothGalleryRotation.on("change", setGalleryRotationValue);
@@ -866,23 +866,27 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         });
         return () => unsub();
     }, [virtualScroll]);
-    // One-time rotation hint when the carousel first becomes visible so users
-    // immediately sense which way it spins / which way to swipe.
+    // One-time rotation hint starts as the portfolio unblurs, moving in the
+    // same positive direction as normal scroll so there is no backwards bounce.
     useEffect(() => {
-        if (!portfolioInteractive || hintPlayedRef.current) return;
-        hintPlayedRef.current = true;
-        const hintAmount = 60;
-        const duration = 600;
-        const startTime = performance.now();
-        setHintRotation(hintAmount);
-        const step = (now: number) => {
-            const t = Math.min((now - startTime) / duration, 1);
-            const eased = 1 - Math.pow(1 - t, 3);
-            setHintRotation(hintAmount * (1 - eased));
-            if (t < 1) requestAnimationFrame(step);
+        let controls: { stop: () => void } | null = null;
+        const playHint = (value: number) => {
+            if (value < 0.8 || hintPlayedRef.current) return;
+            hintPlayedRef.current = true;
+            setHintRotation(-90);
+            controls = animate(-90, 0, {
+                duration: 0.95,
+                ease: [0.16, 1, 0.3, 1],
+                onUpdate: setHintRotation,
+            });
         };
-        requestAnimationFrame(step);
-    }, [portfolioInteractive]);
+        playHint(smoothMorph.get());
+        const unsub = smoothMorph.on("change", playHint);
+        return () => {
+            controls?.stop();
+            unsub();
+        };
+    }, [smoothMorph]);
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
