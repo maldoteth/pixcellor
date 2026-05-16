@@ -302,10 +302,12 @@ const TABLET_SCROLL_BOOST = 12;
 const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for ≥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
 
-// UI Template Images (16 unique + 4 repeated to fill 20 slots)
+// UI Template Images ordered around the colour wheel (red → orange → yellow →
+// green → blue → purple → magenta → back to red) so the rotating circle
+// reads as a continuous rainbow spectrum. 16 unique + 4 repeated to fill 20 slots.
 const IMAGES = [
-    ui1, ui2, ui3, ui4, ui5, ui6, ui7, ui8, ui9, ui10,
-    ui11, ui12, ui13, ui14, ui15, ui16, ui1, ui2, ui3, ui4
+    ui16, ui3, ui4, ui2, ui5, ui6, ui7, ui8, ui1, ui9,
+    ui10, ui13, ui11, ui12, ui14, ui15, ui16, ui3, ui4, ui2
 ];
 
 interface IntroAnimationProps {
