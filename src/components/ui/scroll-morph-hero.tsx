@@ -875,7 +875,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
             hintPlayedRef.current = true;
             setHintRotation(-90);
             controls = animate(-90, 0, {
-                duration: 0.95,
+                duration: 3.8,
                 ease: [0.16, 1, 0.3, 1],
                 onUpdate: setHintRotation,
             });
