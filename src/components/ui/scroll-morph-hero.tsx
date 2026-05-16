@@ -292,6 +292,7 @@ function ProximityWords({ text, className }: { text: string; className?: string 
 }
 
 // --- Main Hero Component ---
+const TOTAL_IMAGES = 20;
 const HERO_MORPH_END = 600;
 const CAROUSEL_SCROLL_END = HERO_MORPH_END + 8000;
 const MAX_SCROLL = CAROUSEL_SCROLL_END;
@@ -301,13 +302,13 @@ const TABLET_SCROLL_BOOST = 12;
 const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for ≥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
 
-// UI Template Images ordered once around the colour wheel so the hero circle
-// reads as a continuous spectrum without repeated tiles.
+// UI Template Images ordered around the colour wheel (red → orange → yellow →
+// green → blue → purple → magenta → back to red) so the rotating circle
+// reads as a continuous rainbow spectrum. 16 unique + 4 repeated to fill 20 slots.
 const IMAGES = [
-    ui16, ui2, ui4, ui3, ui5, ui7, ui6, ui8,
-    ui9, ui1, ui10, ui11, ui12, ui13, ui14, ui15,
+    ui16, ui3, ui4, ui5, ui6, ui7, ui8, ui1, ui9, ui10,
+    ui13, ui11, ui12, ui14, ui15, ui2, ui16, ui3, ui4, ui5
 ];
-const TOTAL_IMAGES = IMAGES.length;
 
 interface IntroAnimationProps {
     onVirtualScrollChange?: (value: number) => void;
