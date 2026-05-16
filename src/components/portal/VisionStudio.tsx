@@ -357,6 +357,14 @@ export default function VisionStudio() {
                   >
                     <ExternalLink className="h-3.5 w-3.5" /> Open
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-none gap-1"
+                    onClick={() => downloadImage(publicUrl(latest.image_path), `${latest.slug}.png`)}
+                  >
+                    <Download className="h-3.5 w-3.5" /> Save
+                  </Button>
                 </div>
               </div>
               <div className="border border-border bg-black/40 max-h-[55vh] overflow-auto">
