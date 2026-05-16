@@ -1191,7 +1191,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                 // Mobile: nudge tangent rotation the other way so corners tuck in.
                                 rotation: circleAngle + 90 + (isMobile ? 8 : 0),
                             };
-                            stackIndex = isMobile ? Math.round(((Math.sin(circleRad) + 1) / 2) * TOTAL_IMAGES) : 0;
+                            stackIndex = isMobile ? ((i + Math.floor(TOTAL_IMAGES / 2)) % TOTAL_IMAGES) : 0;
 
                             const baseRadius = Math.min(containerSize.width, containerSize.height * 1.5);
                             const arcRadius = baseRadius * (isMobile ? 1.4 : 1.1);
