@@ -22,6 +22,11 @@ const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
     title: "Cold outreach",
     body: `Hi, I'm just calling about your website — I work for pixcellor.com.\n\nDo you like it?`,
   },
+  {
+    id: "leads-pitch",
+    title: "Leads pitch",
+    body: `Hi, would you be interested in a free sample offer that's designed to generate you more business and leads?`,
+  },
 ];
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
