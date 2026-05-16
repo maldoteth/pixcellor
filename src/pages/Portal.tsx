@@ -2527,7 +2527,17 @@ export default function Portal() {
                           )}
                           {visionImg && (
                             <div className="space-y-1">
-                              <div className="text-muted-foreground text-xs">Generated vision</div>
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="text-muted-foreground text-xs">Generated vision</div>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 rounded-none gap-1 text-[11px]"
+                                  onClick={() => downloadImage(visionImg, `vision-${r.id}.png`)}
+                                >
+                                  <Download className="h-3 w-3" /> Save image
+                                </Button>
+                              </div>
                               <a href={visionImg} target="_blank" rel="noopener noreferrer" className="block max-w-xs overflow-hidden rounded-none border border-border bg-muted">
                                 <img src={visionImg} alt="generated vision" className="w-full block" loading="lazy" />
                               </a>
