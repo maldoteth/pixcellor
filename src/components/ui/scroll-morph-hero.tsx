@@ -301,6 +301,7 @@ const MOBILE_SCROLL_BOOST = 24;
 const TABLET_SCROLL_BOOST = 12;
 const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for ≥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
+const CAROUSEL_HINT_ROTATION_DEGREES = 90;
 
 // UI Template Images ordered around the colour wheel (red → orange → yellow →
 // green → blue → purple → magenta → back to red) so the rotating circle
@@ -380,6 +381,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const scrollBreakUntilRef = useRef(0);
     const touchNeedsReleaseRef = useRef(false);
     const arrowActivationRef = useRef(0);
+    const hintScrollControlsRef = useRef<{ stop: () => void } | null>(null);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -395,6 +397,9 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         };
 
         const applyVirtualScrollDelta = (delta: number, source: "wheel" | "touch") => {
+            hintScrollControlsRef.current?.stop();
+            hintScrollControlsRef.current = null;
+
             const currentScroll = scrollRef.current;
             const now = performance.now();
 
@@ -854,7 +859,6 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     const [portfolioInteractive, setPortfolioInteractive] = useState(false);
-    const [hintRotation, setHintRotation] = useState(-90);
     const hintPlayedRef = useRef(false);
     useEffect(() => {
         const unsub = smoothGalleryRotation.on("change", setGalleryRotationValue);
@@ -866,27 +870,40 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         });
         return () => unsub();
     }, [virtualScroll]);
-    // One-time rotation hint starts as the portfolio unblurs, moving in the
-    // same positive direction as normal scroll so there is no backwards bounce.
+    // One-time rotation hint is real scroll progress, not a visual-only offset.
+    // This leaves users inside the carousel range, so a small reverse swipe moves
+    // the carousel back instead of snapping straight to the hero.
     useEffect(() => {
-        let controls: { stop: () => void } | null = null;
         const playHint = (value: number) => {
             if (value < 0.8 || hintPlayedRef.current) return;
             hintPlayedRef.current = true;
-            setHintRotation(-90);
-            controls = animate(-90, 0, {
+            const rotationRange = isSmallViewport ? 360 : 720;
+            const hintScrollOffset = ((CAROUSEL_SCROLL_END - HERO_MORPH_END) * CAROUSEL_HINT_ROTATION_DEGREES) / rotationRange;
+            const start = Math.max(scrollRef.current, HERO_MORPH_END);
+            const end = Math.min(start + hintScrollOffset, MAX_SCROLL);
+
+            hintScrollControlsRef.current?.stop();
+            hintScrollControlsRef.current = animate(start, end, {
                 duration: 3.8,
                 ease: [0.16, 1, 0.3, 1],
-                onUpdate: setHintRotation,
+                onUpdate: (v) => {
+                    scrollRef.current = v;
+                    virtualScroll.set(v);
+                    onVirtualScrollChangeRef.current?.(v);
+                },
+                onComplete: () => {
+                    hintScrollControlsRef.current = null;
+                },
             });
         };
         playHint(smoothMorph.get());
         const unsub = smoothMorph.on("change", playHint);
         return () => {
-            controls?.stop();
+            hintScrollControlsRef.current?.stop();
+            hintScrollControlsRef.current = null;
             unsub();
         };
-    }, [smoothMorph]);
+    }, [isSmallViewport, smoothMorph, virtualScroll]);
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
