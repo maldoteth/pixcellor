@@ -40,6 +40,7 @@ interface FlipCardProps {
     target: { x: number; y: number; rotation: number; scale: number; opacity: number };
     onViewDetails?: () => void;
     isMobile?: boolean;
+    stackIndex?: number;
 }
 
 // --- FlipCard Component ---
@@ -55,6 +56,7 @@ function FlipCard({
     target,
     onViewDetails,
     isMobile,
+    stackIndex = 0,
 }: FlipCardProps) {
     const cardRef = React.useRef<HTMLDivElement>(null);
     const imgRef = React.useRef<HTMLImageElement>(null);
@@ -167,7 +169,7 @@ function FlipCard({
                 position: "absolute",
                 width: imgSize,
                 height: imgSize,
-                zIndex: proximity > 0.05 ? 46 : 45,
+                zIndex: isMobile && phase === "circle" ? 45 + stackIndex : proximity > 0.05 ? 90 : 45 + stackIndex,
                 pointerEvents: "auto",
             }}
             className="group"
@@ -1166,6 +1168,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                 <div className="relative flex items-start md:items-center justify-center w-full h-full pt-[240px] md:pt-0">
                     {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
                         let target = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
+                        let stackIndex = 0;
 
                         if (introPhase === "scatter") {
                             target = scatterPositions[i];
@@ -1188,6 +1191,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                 // Mobile: nudge tangent rotation the other way so corners tuck in.
                                 rotation: circleAngle + 90 + (isMobile ? 8 : 0),
                             };
+                            stackIndex = isMobile ? ((i - Math.floor(TOTAL_IMAGES / 2) + TOTAL_IMAGES) % TOTAL_IMAGES) : 0;
 
                             const baseRadius = Math.min(containerSize.width, containerSize.height * 1.5);
                             const arcRadius = baseRadius * (isMobile ? 1.4 : 1.1);
@@ -1233,6 +1237,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                 target={target}
                                 onViewDetails={advanceHeroFromArrow}
                                 isMobile={containerSize.width < 768}
+                                stackIndex={stackIndex}
                             />
                         );
                     })}
