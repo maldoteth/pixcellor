@@ -40,6 +40,7 @@ interface FlipCardProps {
     target: { x: number; y: number; rotation: number; scale: number; opacity: number };
     onViewDetails?: () => void;
     isMobile?: boolean;
+    stackIndex?: number;
 }
 
 // --- FlipCard Component ---
@@ -55,6 +56,7 @@ function FlipCard({
     target,
     onViewDetails,
     isMobile,
+    stackIndex = 0,
 }: FlipCardProps) {
     const cardRef = React.useRef<HTMLDivElement>(null);
     const imgRef = React.useRef<HTMLImageElement>(null);
@@ -167,7 +169,7 @@ function FlipCard({
                 position: "absolute",
                 width: imgSize,
                 height: imgSize,
-                zIndex: proximity > 0.05 ? 46 : 45,
+                zIndex: proximity > 0.05 ? 90 : 45 + stackIndex,
                 pointerEvents: "auto",
             }}
             className="group"
