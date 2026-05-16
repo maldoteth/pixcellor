@@ -408,15 +408,26 @@ export default function VisionStudio() {
                             By {row.created_by_email ?? "unknown"}
                           </p>
                         </div>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => remove(row)}
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          aria-label="Delete preview"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => downloadImage(publicUrl(row.image_path), `${row.slug}.png`)}
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                            aria-label="Save image"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => remove(row)}
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                            aria-label="Delete preview"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
                       {row.brief && (
                         <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-clamp-3">{row.brief}</p>
