@@ -854,6 +854,8 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     const [portfolioInteractive, setPortfolioInteractive] = useState(false);
+    const [hintRotation, setHintRotation] = useState(0);
+    const hintPlayedRef = useRef(false);
     useEffect(() => {
         const unsub = smoothGalleryRotation.on("change", setGalleryRotationValue);
         return () => unsub();
@@ -864,6 +866,23 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         });
         return () => unsub();
     }, [virtualScroll]);
+    // One-time rotation hint when the carousel first becomes visible so users
+    // immediately sense which way it spins / which way to swipe.
+    useEffect(() => {
+        if (!portfolioInteractive || hintPlayedRef.current) return;
+        hintPlayedRef.current = true;
+        const hintAmount = 60;
+        const duration = 600;
+        const startTime = performance.now();
+        setHintRotation(hintAmount);
+        const step = (now: number) => {
+            const t = Math.min((now - startTime) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            setHintRotation(hintAmount * (1 - eased));
+            if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    }, [portfolioInteractive]);
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
@@ -1113,7 +1132,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                     ? 225 + Math.max(0, galleryItems.length - 12) * 8
                                     : 360 + Math.max(0, galleryItems.length - 12) * 13
                             }
-                            externalRotation={galleryRotationValue}
+                            externalRotation={galleryRotationValue + hintRotation}
                             interactive={portfolioInteractive}
                         />
                     </motion.div>
