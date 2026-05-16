@@ -299,6 +299,18 @@ export default function VisionStudio() {
                         {g.source}{g.is_refinement ? " · refinement" : ""}
                       </p>
                       {g.brief && <p className="text-[11px] text-muted-foreground line-clamp-3">{g.brief}</p>}
+                      {g.image_url && (
+                        <div className="pt-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 rounded-none gap-1 text-[11px]"
+                            onClick={() => downloadImage(g.image_url!, `${g.company || g.visitor_id || g.id}.png`)}
+                          >
+                            <Download className="h-3 w-3" /> Save image
+                          </Button>
+                        </div>
+                      )}
                       {(g.palette || g.fonts) && (
                         <div className="pt-2 border-t border-border/30">
                           <BrandKit palette={g.palette} fonts={g.fonts} compact />
