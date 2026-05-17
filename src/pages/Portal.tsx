@@ -416,8 +416,8 @@ const contactWizardFields = [
   { key: "location", label: "Location", placeholder: "Town or area", required: false, inputMode: "text" },
   { key: "industry", label: "Industry", placeholder: "Industry", required: false, inputMode: "text" },
   { key: "website", label: "Website", placeholder: "Website domain", required: false, inputMode: "url" },
-  { key: "contact_name", label: "Client name", placeholder: "Client name", required: false, inputMode: "text" },
-  { key: "notes", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
+  { key: "contact_name", label: "Contact name", placeholder: "Contact name", required: false, inputMode: "text" },
+  { key: "job_title", label: "Job title", placeholder: "Job title", required: false, inputMode: "text" },
   { key: "note", label: "Note", placeholder: "Add a note (optional)", required: false, inputMode: "text" },
 ] as const;
 
@@ -534,10 +534,10 @@ export default function Portal() {
   const [mobileOrdersDrawerOpen, setMobileOrdersDrawerOpen] = useState(false);
   const [mobileContactStep, setMobileContactStep] = useState(0);
   const [mobileSalesStep, setMobileSalesStep] = useState(0);
-  const [contactForm, setContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", note: "" });
+  const [contactForm, setContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", job_title: "", note: "" });
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
-  const [editContactForm, setEditContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+  const [editContactForm, setEditContactForm] = useState({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", job_title: "" });
   const [eventForm, setEventForm] = useState({ contact_id: "", title: "", description: "", callback_at: "" });
   const [eventContactSearch, setEventContactSearch] = useState("");
   const [eventContactSuggestionCount, setEventContactSuggestionCount] = useState(6);
@@ -1322,7 +1322,7 @@ export default function Portal() {
   }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactsSortOrder, contactOrderStatsByEmail]);
 
   const jobTitleSuggestions = useMemo(() => {
-    const typed = contactForm.notes.trim().toLowerCase();
+    const typed = contactForm.job_title.trim().toLowerCase();
     if (!typed) return [];
     const titles = Array.from(new Set(
       contacts
@@ -1333,7 +1333,7 @@ export default function Portal() {
     return titles
       .filter(title => title.toLowerCase().includes(typed) && title.toLowerCase() !== typed)
       .slice(0, 8);
-  }, [contacts, contactForm.notes]);
+  }, [contacts, contactForm.job_title]);
 
   const leadTradeSuggestions = useMemo(() => {
     const typed = leadAgentForm.trade.trim().toLowerCase();
@@ -1434,8 +1434,36 @@ export default function Portal() {
       industry: contact.industry ?? "general",
       website: contact.website ?? "",
       notes: contact.notes ?? "",
+      job_title: "",
     });
     setOpenContactId(contact.id);
+  };
+
+  const ensureContactPersonFromForm = async (
+    contactId: string,
+    contactName: string,
+    jobTitle: string,
+    phone: string,
+  ) => {
+    const name = contactName.trim();
+    if (!name) return;
+    const lower = name.toLowerCase();
+    const exists = contactPersons.some(
+      p => p.contact_id === contactId && (p.name || "").trim().toLowerCase() === lower,
+    );
+    if (exists) return;
+    const { data, error } = await (supabase as any).rpc("portal_add_contact_person", {
+      _contact_id: contactId,
+      _name: name,
+      _job_title: jobTitle.trim() || null,
+      _phone: phone.trim() || null,
+    });
+    if (error) {
+      console.warn("auto-add contact person failed", error);
+      return;
+    }
+    const created = data as ContactPerson | null;
+    if (created?.id) setContactPersons(curr => [created, ...curr.filter(p => p.id !== created.id)]);
   };
 
   const applyCallbackPreset = (presetLabel: string) => {
@@ -1536,7 +1564,7 @@ export default function Portal() {
       _phone: contactForm.phone,
       _email: contactForm.email,
       _location: contactForm.location,
-      _notes: contactForm.notes,
+      _notes: "",
       _industry: contactForm.industry || "general",
       _website: contactForm.website,
     });
@@ -1549,6 +1577,12 @@ export default function Portal() {
     if (newContact?.id) {
       setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
       setContactDetailDrawerId(newContact.id);
+      await ensureContactPersonFromForm(
+        newContact.id,
+        contactForm.contact_name,
+        contactForm.job_title,
+        contactForm.phone,
+      );
       const noteText = contactForm.note.trim();
       if (noteText) {
         const { data: eventData, error: eventError } = await (supabase as any).rpc("portal_create_contact_event", {
@@ -1565,7 +1599,7 @@ export default function Portal() {
         }
       }
     }
-    setContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", note: "" });
+    setContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", job_title: "", note: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
@@ -1783,8 +1817,14 @@ export default function Portal() {
       toast.error(error.message);
       return;
     }
+    await ensureContactPersonFromForm(
+      editingContactId,
+      editContactForm.contact_name,
+      editContactForm.job_title,
+      editContactForm.phone,
+    );
     setEditingContactId(null);
-    setEditContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+    setEditContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", job_title: "" });
     await loadPortalSnapshot();
     toast.success("Client updated.");
   };
@@ -2138,7 +2178,7 @@ export default function Portal() {
           type="button"
           className="flex min-h-11 w-full items-center border-b border-border px-3 py-2 text-left text-sm last:border-b-0"
           onClick={() => {
-            setContactForm(f => ({ ...f, notes: title }));
+            setContactForm(f => ({ ...f, job_title: title }));
             setContactJobTitleSuggestionsOpen(false);
           }}
         >
@@ -2171,16 +2211,16 @@ export default function Portal() {
         <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
         <Input placeholder="Industry" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
         <Input placeholder="Website domain" value={contactForm.website} onChange={(e) => setContactForm(f => ({ ...f, website: e.target.value }))} />
-        <Input placeholder="Client name" value={contactForm.contact_name} onChange={(e) => setContactForm(f => ({ ...f, contact_name: e.target.value }))} />
+        <Input placeholder="Contact name" value={contactForm.contact_name} onChange={(e) => setContactForm(f => ({ ...f, contact_name: e.target.value }))} />
         <div className="relative">
           <Input
             placeholder="Job title"
-            value={contactForm.notes}
+            value={contactForm.job_title}
             onChange={(e) => {
-              setContactForm(f => ({ ...f, notes: e.target.value }));
+              setContactForm(f => ({ ...f, job_title: e.target.value }));
               setContactJobTitleSuggestionsOpen(Boolean(e.target.value.trim()));
             }}
-            onFocus={() => setContactJobTitleSuggestionsOpen(Boolean(contactForm.notes.trim()))}
+            onFocus={() => setContactJobTitleSuggestionsOpen(Boolean(contactForm.job_title.trim()))}
             onBlur={() => window.setTimeout(() => setContactJobTitleSuggestionsOpen(false), 120)}
           />
           {contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
@@ -3516,8 +3556,8 @@ export default function Portal() {
                   <Input placeholder="Location" value={editContactForm.location} onChange={(e) => setEditContactForm(f => ({ ...f, location: e.target.value }))} />
                   <Input placeholder="Industry" value={editContactForm.industry} onChange={(e) => setEditContactForm(f => ({ ...f, industry: e.target.value }))} />
                   <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
-                  <Input placeholder="Client name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
-                  <Input placeholder="Job title" value={editContactForm.notes} onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))} />
+                  <Input placeholder="Contact name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
+                  <Input placeholder="Job title" value={editContactForm.job_title} onChange={(e) => setEditContactForm(f => ({ ...f, job_title: e.target.value }))} />
                   <div className="flex gap-2 md:col-span-2">
                     <Button onClick={updateContact}>Save changes</Button>
                     <Button variant="outline" className="rounded-none shadow-none" onClick={() => setEditingContactId(null)}>Cancel</Button>
@@ -3690,10 +3730,10 @@ export default function Portal() {
                     value={contactForm[currentContactField.key]}
                     onChange={(e) => {
                       setContactForm(f => ({ ...f, [currentContactField.key]: e.target.value }));
-                      if (currentContactField.key === "notes") setContactJobTitleSuggestionsOpen(Boolean(e.target.value.trim()));
+                      if (currentContactField.key === "job_title") setContactJobTitleSuggestionsOpen(Boolean(e.target.value.trim()));
                     }}
                     onFocus={() => {
-                      if (currentContactField.key === "notes") setContactJobTitleSuggestionsOpen(Boolean(contactForm.notes.trim()));
+                      if (currentContactField.key === "job_title") setContactJobTitleSuggestionsOpen(Boolean(contactForm.job_title.trim()));
                     }}
                     onBlur={() => window.setTimeout(() => setContactJobTitleSuggestionsOpen(false), 120)}
                     onKeyDown={(e) => {
@@ -3711,7 +3751,7 @@ export default function Portal() {
                   <UserPlus className="mr-2 h-4 w-4" /> Save & add contact person
                 </Button>
               )}
-              {currentContactField.key === "notes" && contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
+              {currentContactField.key === "job_title" && contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button variant="outline" className="rounded-none shadow-none" onClick={() => mobileContactStep > 0 ? setMobileContactStep(step => step - 1) : setMobileContactDrawerOpen(false)}>
