@@ -2571,6 +2571,10 @@ Deno.serve(async (req) => {
           needsFollowUp = true; actionTaken = true;
           try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devArchiveContact(supabase, JSON.parse(toolCall.function.arguments))) }); }
           catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "archive_failed" }) }); }
+        } else if (toolCall.function.name === "merge_contacts" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devMergeContacts(supabase, JSON.parse(toolCall.function.arguments))) }); }
+          catch (e) { console.error("merge_contacts:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "merge_failed" }) }); }
         } else if (toolCall.function.name === "schedule_callback_today" && isDevMode) {
           needsFollowUp = true; actionTaken = true;
           try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devScheduleCallbackToday(supabase, JSON.parse(toolCall.function.arguments))) }); }
