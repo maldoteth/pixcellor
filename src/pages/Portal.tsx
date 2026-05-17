@@ -2211,16 +2211,16 @@ export default function Portal() {
         <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
         <Input placeholder="Industry" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
         <Input placeholder="Website domain" value={contactForm.website} onChange={(e) => setContactForm(f => ({ ...f, website: e.target.value }))} />
-        <Input placeholder="Client name" value={contactForm.contact_name} onChange={(e) => setContactForm(f => ({ ...f, contact_name: e.target.value }))} />
+        <Input placeholder="Contact name" value={contactForm.contact_name} onChange={(e) => setContactForm(f => ({ ...f, contact_name: e.target.value }))} />
         <div className="relative">
           <Input
             placeholder="Job title"
-            value={contactForm.notes}
+            value={contactForm.job_title}
             onChange={(e) => {
-              setContactForm(f => ({ ...f, notes: e.target.value }));
+              setContactForm(f => ({ ...f, job_title: e.target.value }));
               setContactJobTitleSuggestionsOpen(Boolean(e.target.value.trim()));
             }}
-            onFocus={() => setContactJobTitleSuggestionsOpen(Boolean(contactForm.notes.trim()))}
+            onFocus={() => setContactJobTitleSuggestionsOpen(Boolean(contactForm.job_title.trim()))}
             onBlur={() => window.setTimeout(() => setContactJobTitleSuggestionsOpen(false), 120)}
           />
           {contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
