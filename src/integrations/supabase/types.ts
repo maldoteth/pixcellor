@@ -122,6 +122,7 @@ export type Database = {
         Row: {
           bot_paused: boolean
           client_id: string
+          contact_id: string | null
           created_at: string
           id: string
           manual_handoff_at: string | null
@@ -130,6 +131,7 @@ export type Database = {
         Insert: {
           bot_paused?: boolean
           client_id: string
+          contact_id?: string | null
           created_at?: string
           id?: string
           manual_handoff_at?: string | null
@@ -138,6 +140,7 @@ export type Database = {
         Update: {
           bot_paused?: boolean
           client_id?: string
+          contact_id?: string | null
           created_at?: string
           id?: string
           manual_handoff_at?: string | null
@@ -1428,6 +1431,10 @@ export type Database = {
       match_manual_order_to_stripe: {
         Args: { _real_session_id: string }
         Returns: string
+      }
+      merge_contacts: {
+        Args: { duplicate_ids: string[]; survivor_id: string }
+        Returns: Json
       }
       move_to_dlq: {
         Args: {
