@@ -1996,8 +1996,13 @@ Deno.serve(async (req) => {
     let currentConversationId = conversationId;
     let botPaused = false;
 
+    // Only persist a conversation once the visitor has actually sent a message.
+    // Greeting-only opens (no user message in payload) stay ephemeral so the
+    // Chats tab doesn't fill up with one-sided bot greetings.
+    const hasUserMessage = messages.some((m: { role: string }) => m.role === "user");
+
     // Get or create conversation
-    if (!currentConversationId && safeClientId) {
+    if (!currentConversationId && safeClientId && hasUserMessage) {
       const { data: existingConv } = await supabase
         .from("chat_conversations")
         .select("id, bot_paused")
@@ -2028,6 +2033,8 @@ Deno.serve(async (req) => {
         .single();
       if (!existingConv) throw new Error("Invalid chat session");
       botPaused = Boolean(existingConv?.bot_paused);
+    } else if (!hasUserMessage && safeClientId) {
+      // Greeting-only open with no existing conversation — proceed ephemerally.
     } else {
       throw new Error("Invalid chat session");
     }
