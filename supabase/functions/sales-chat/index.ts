@@ -2033,6 +2033,8 @@ Deno.serve(async (req) => {
         .single();
       if (!existingConv) throw new Error("Invalid chat session");
       botPaused = Boolean(existingConv?.bot_paused);
+    } else if (!hasUserMessage && safeClientId) {
+      // Greeting-only open with no existing conversation — proceed ephemerally.
     } else {
       throw new Error("Invalid chat session");
     }
