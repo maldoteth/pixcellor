@@ -2208,6 +2208,12 @@ Deno.serve(async (req) => {
           role: "user",
           content: lastMessage.content,
         });
+
+        // Auto-create / link a CRM contact when the visitor shares email or phone.
+        // Skipped in dev mode (admin chatting with the CRM AI, not a visitor).
+        if (!isDevMode && typeof lastMessage.content === "string") {
+          await linkChatVisitorToContact(supabase, currentConversationId, lastMessage.content);
+        }
       }
     }
 
