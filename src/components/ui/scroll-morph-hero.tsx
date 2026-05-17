@@ -1191,7 +1191,9 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                 // Mobile: nudge tangent rotation the other way so corners tuck in.
                                 rotation: circleAngle + 90 + (isMobile ? 8 : 0),
                             };
-                            stackIndex = isMobile ? ((i - Math.floor(TOTAL_IMAGES / 2) + TOTAL_IMAGES) % TOTAL_IMAGES) : 0;
+                            // Circular stacks have one unavoidable seam (a card under both neighbours).
+                            // Park it at 6 o'clock (i=5 → angle 90° → bottom) where the chevron/centre masks it.
+                            stackIndex = isMobile ? ((i - 5 + TOTAL_IMAGES) % TOTAL_IMAGES) : 0;
 
                             const baseRadius = Math.min(containerSize.width, containerSize.height * 1.5);
                             const arcRadius = baseRadius * (isMobile ? 1.4 : 1.1);
