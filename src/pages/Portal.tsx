@@ -1564,7 +1564,7 @@ export default function Portal() {
       _phone: contactForm.phone,
       _email: contactForm.email,
       _location: contactForm.location,
-      _notes: contactForm.notes,
+      _notes: "",
       _industry: contactForm.industry || "general",
       _website: contactForm.website,
     });
@@ -1577,6 +1577,12 @@ export default function Portal() {
     if (newContact?.id) {
       setContacts(current => [newContact, ...current.filter(contact => contact.id !== newContact.id)]);
       setContactDetailDrawerId(newContact.id);
+      await ensureContactPersonFromForm(
+        newContact.id,
+        contactForm.contact_name,
+        contactForm.job_title,
+        contactForm.phone,
+      );
       const noteText = contactForm.note.trim();
       if (noteText) {
         const { data: eventData, error: eventError } = await (supabase as any).rpc("portal_create_contact_event", {
@@ -1593,7 +1599,7 @@ export default function Portal() {
         }
       }
     }
-    setContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", note: "" });
+    setContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", job_title: "", note: "" });
     setShowContactForm(false);
     setMobileContactDrawerOpen(false);
     setMobileContactStep(0);
