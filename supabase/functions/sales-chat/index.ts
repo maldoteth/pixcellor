@@ -674,6 +674,21 @@ const devTools = [
   {
     type: "function" as const,
     function: {
+      name: "merge_contacts",
+      description: "Merge duplicate contacts into one survivor record. Re-parents all events/persons/chats/AI samples to the survivor and deletes the duplicates. Only call when the dev has explicitly confirmed a merge or asked to dedupe specific records — never auto-merge based on your own judgement. Max 5 duplicates per call.",
+      parameters: {
+        type: "object",
+        properties: {
+          survivor_id: { type: "string", description: "UUID of the contact to keep." },
+          duplicate_ids: { type: "array", items: { type: "string" }, description: "UUIDs of duplicate contacts to merge into the survivor. Max 5." },
+        },
+        required: ["survivor_id", "duplicate_ids"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "schedule_callback_today",
       description: "Schedule a callback today (or a given date) at a UK local time. Defaults to 09:00 Europe/London if no time given. Pass either a contact_id or contact_name to find one.",
       parameters: {
