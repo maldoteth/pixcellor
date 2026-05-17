@@ -3582,6 +3582,13 @@ export default function Portal() {
                   <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
                   <Input placeholder="Contact name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
                   <Input placeholder="Job title" value={editContactForm.job_title} onChange={(e) => setEditContactForm(f => ({ ...f, job_title: e.target.value }))} />
+                  <Textarea
+                    className="md:col-span-2"
+                    rows={3}
+                    placeholder="Notes about this client (internal)"
+                    value={editContactForm.notes}
+                    onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))}
+                  />
                   <div className="flex gap-2 md:col-span-2">
                     <Button onClick={updateContact}>Save changes</Button>
                     <Button variant="outline" className="rounded-none shadow-none" onClick={() => setEditingContactId(null)}>Cancel</Button>
