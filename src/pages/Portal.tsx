@@ -1322,7 +1322,7 @@ export default function Portal() {
   }, [filteredContacts, contactEvents, contactsQ, contactsStatusFilter, contactsSortOrder, contactOrderStatsByEmail]);
 
   const jobTitleSuggestions = useMemo(() => {
-    const typed = contactForm.notes.trim().toLowerCase();
+    const typed = contactForm.job_title.trim().toLowerCase();
     if (!typed) return [];
     const titles = Array.from(new Set(
       contacts
@@ -1333,7 +1333,7 @@ export default function Portal() {
     return titles
       .filter(title => title.toLowerCase().includes(typed) && title.toLowerCase() !== typed)
       .slice(0, 8);
-  }, [contacts, contactForm.notes]);
+  }, [contacts, contactForm.job_title]);
 
   const leadTradeSuggestions = useMemo(() => {
     const typed = leadAgentForm.trade.trim().toLowerCase();
