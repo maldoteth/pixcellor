@@ -946,7 +946,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       {showToggle && (
         <motion.button
           onClick={() => setIsOpen(!isOpen)}
-          className={`fixed left-1/2 top-4 z-[10500] flex items-center justify-center rounded-sm transition-opacity duration-500 ease-out md:top-6 md:z-[10000] ${(hidden || !heroReady) ? 'pointer-events-none opacity-0' : 'opacity-100'} ${!isDesktop && isOpen ? 'lg:flex hidden' : 'flex'} ${!isDesktop ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
+          className={`fixed left-1/2 top-4 z-[10500] flex items-center justify-center rounded-sm transition-opacity duration-500 ease-out md:top-6 md:z-[10000] ${(hidden || !heroReady) ? 'pointer-events-none opacity-0' : 'opacity-100'} ${isMobile && isOpen ? 'lg:flex hidden' : 'flex'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
           aria-label="Open chat with Alex from Pixcellor"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
