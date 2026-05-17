@@ -3751,7 +3751,7 @@ export default function Portal() {
                   <UserPlus className="mr-2 h-4 w-4" /> Save & add contact person
                 </Button>
               )}
-              {currentContactField.key === "notes" && contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
+              {currentContactField.key === "job_title" && contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button variant="outline" className="rounded-none shadow-none" onClick={() => mobileContactStep > 0 ? setMobileContactStep(step => step - 1) : setMobileContactDrawerOpen(false)}>
