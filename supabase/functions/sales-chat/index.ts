@@ -934,6 +934,166 @@ function extractLatestEmail(messages: Array<{ role?: string; content?: string }>
   return null;
 }
 
+function extractPhoneFromText(text: string): string | null {
+  if (!text) return null;
+  // Look for digit groups; tolerate +, spaces, dashes, parens
+  const candidates = text.match(/(\+?\d[\d\s().-]{7,}\d)/g) ?? [];
+  for (const raw of candidates) {
+    const digits = raw.replace(/\D/g, "");
+    // UK mobile/landline length 10-11, intl 9-15
+    if (digits.length >= 9 && digits.length <= 15) {
+      return raw.trim().replace(/\s+/g, " ").slice(0, 40);
+    }
+  }
+  return null;
+}
+
+function normalisePhoneKey(phone: string | null | undefined): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length < 9) return null;
+  return digits.slice(-10);
+}
+
+function extractNameHint(text: string): string | null {
+  if (!text) return null;
+  // Patterns like "I'm Alex", "my name is Alex Smith", "this is Alex"
+  const m =
+    text.match(/\b(?:i'?m|i am|my name is|name's|this is|it'?s)\s+([A-Z][a-zA-Z'’-]+(?:\s+[A-Z][a-zA-Z'’-]+)?)/) ||
+    text.match(/\b(?:i'?m|i am|my name is|name's|this is|it'?s)\s+([a-z][a-z'’-]+(?:\s+[a-z][a-z'’-]+)?)/i);
+  if (!m) return null;
+  const candidate = m[1].trim().slice(0, 80);
+  // Reject common false positives
+  if (/^(looking|interested|trying|here|good|fine|ok|okay|just|the|a)\b/i.test(candidate)) return null;
+  return candidate;
+}
+
+// Auto-upsert a CRM contact when a live-chat visitor shares email or phone.
+// Idempotent: only runs when the conversation has no contact_id yet.
+async function linkChatVisitorToContact(
+  supabase: DbClient,
+  conversationId: string,
+  latestUserText: string,
+): Promise<void> {
+  try {
+    const { data: conv } = await supabase
+      .from("chat_conversations")
+      .select("id, contact_id")
+      .eq("id", conversationId)
+      .maybeSingle();
+    if (!conv || conv.contact_id) return;
+
+    const email = (latestUserText.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] ?? "")
+      .toLowerCase()
+      .trim();
+    const phone = extractPhoneFromText(latestUserText);
+    if (!email && !phone) return;
+
+    const nameHint = extractNameHint(latestUserText);
+    const phoneKey = normalisePhoneKey(phone);
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Find existing contact by email then phone
+    let existingId: string | null = null;
+    let existingStatus: string | null = null;
+    let existingName: string | null = null;
+    let existingNotes: string | null = null;
+
+    if (email) {
+      const { data } = await supabase
+        .from("contacts")
+        .select("id, status, name, notes")
+        .ilike("email", email)
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        existingId = data.id;
+        existingStatus = data.status;
+        existingName = data.name;
+        existingNotes = data.notes;
+      }
+    }
+    if (!existingId && phoneKey) {
+      // Pull a small set and match in JS on normalised key
+      const { data: candidates } = await supabase
+        .from("contacts")
+        .select("id, status, name, notes, phone")
+        .not("phone", "is", null)
+        .limit(500);
+      const hit = (candidates ?? []).find((c) => normalisePhoneKey(c.phone) === phoneKey);
+      if (hit) {
+        existingId = hit.id;
+        existingStatus = hit.status;
+        existingName = hit.name;
+        existingNotes = hit.notes;
+      }
+    }
+
+    let contactId: string;
+    if (existingId) {
+      const noteLine = `Shared contact via live chat on ${today}.`;
+      const mergedNotes = [existingNotes, noteLine].filter(Boolean).join("\n").slice(0, 4000);
+      const shouldWarm = existingStatus === "cold" || existingStatus === "aware";
+      const nameNeedsFix = !existingName || existingName === "Unknown" || existingName === "Chat visitor";
+      await supabase
+        .from("contacts")
+        .update({
+          email: email || undefined,
+          phone: phone || undefined,
+          name: nameNeedsFix && nameHint ? nameHint : undefined,
+          notes: mergedNotes,
+          status: shouldWarm ? "warm" : undefined,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingId);
+      contactId = existingId;
+    } else {
+      const fallbackName = nameHint
+        || (email ? email.split("@")[0] : null)
+        || (phone ? `Chat visitor • ${phone.replace(/\D/g, "").slice(-4)}` : "Chat visitor");
+      const { data: created, error: insertErr } = await supabase
+        .from("contacts")
+        .insert({
+          name: fallbackName,
+          contact_name: nameHint || null,
+          email: email || null,
+          phone: phone || null,
+          industry: "general",
+          source: "chat",
+          status: "warm",
+          notes: `Shared from live chat on ${today}.`,
+        })
+        .select("id")
+        .single();
+      if (insertErr || !created) {
+        console.error("linkChatVisitorToContact insert failed:", insertErr);
+        return;
+      }
+      contactId = created.id;
+    }
+
+    // Link conversation to contact
+    await supabase
+      .from("chat_conversations")
+      .update({ contact_id: contactId, updated_at: new Date().toISOString() })
+      .eq("id", conversationId);
+
+    // Audit event
+    await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: "Shared contact via live chat",
+      description: [
+        email ? `Email: ${email}` : null,
+        phone ? `Phone: ${phone}` : null,
+        nameHint ? `Name: ${nameHint}` : null,
+      ].filter(Boolean).join("\n"),
+      event_type: "communication",
+    });
+  } catch (e) {
+    console.error("linkChatVisitorToContact error:", e);
+  }
+}
+
 function isOrderLookupIntent(text: string) {
   return /(order|update|status|payment|charged|checkout|website|site|progress|bought|purchase|purchased)/i.test(text);
 }
