@@ -2178,7 +2178,7 @@ export default function Portal() {
           type="button"
           className="flex min-h-11 w-full items-center border-b border-border px-3 py-2 text-left text-sm last:border-b-0"
           onClick={() => {
-            setContactForm(f => ({ ...f, notes: title }));
+            setContactForm(f => ({ ...f, job_title: title }));
             setContactJobTitleSuggestionsOpen(false);
           }}
         >
