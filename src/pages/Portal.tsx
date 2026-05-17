@@ -3730,10 +3730,10 @@ export default function Portal() {
                     value={contactForm[currentContactField.key]}
                     onChange={(e) => {
                       setContactForm(f => ({ ...f, [currentContactField.key]: e.target.value }));
-                      if (currentContactField.key === "notes") setContactJobTitleSuggestionsOpen(Boolean(e.target.value.trim()));
+                      if (currentContactField.key === "job_title") setContactJobTitleSuggestionsOpen(Boolean(e.target.value.trim()));
                     }}
                     onFocus={() => {
-                      if (currentContactField.key === "notes") setContactJobTitleSuggestionsOpen(Boolean(contactForm.notes.trim()));
+                      if (currentContactField.key === "job_title") setContactJobTitleSuggestionsOpen(Boolean(contactForm.job_title.trim()));
                     }}
                     onBlur={() => window.setTimeout(() => setContactJobTitleSuggestionsOpen(false), 120)}
                     onKeyDown={(e) => {
