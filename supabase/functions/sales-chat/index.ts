@@ -674,6 +674,21 @@ const devTools = [
   {
     type: "function" as const,
     function: {
+      name: "merge_contacts",
+      description: "Merge duplicate contacts into one survivor record. Re-parents all events/persons/chats/AI samples to the survivor and deletes the duplicates. Only call when the dev has explicitly confirmed a merge or asked to dedupe specific records — never auto-merge based on your own judgement. Max 5 duplicates per call.",
+      parameters: {
+        type: "object",
+        properties: {
+          survivor_id: { type: "string", description: "UUID of the contact to keep." },
+          duplicate_ids: { type: "array", items: { type: "string" }, description: "UUIDs of duplicate contacts to merge into the survivor. Max 5." },
+        },
+        required: ["survivor_id", "duplicate_ids"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "schedule_callback_today",
       description: "Schedule a callback today (or a given date) at a UK local time. Defaults to 09:00 Europe/London if no time given. Pass either a contact_id or contact_name to find one.",
       parameters: {
@@ -932,6 +947,166 @@ function extractLatestEmail(messages: Array<{ role?: string; content?: string }>
     if (match) return match[0];
   }
   return null;
+}
+
+function extractPhoneFromText(text: string): string | null {
+  if (!text) return null;
+  // Look for digit groups; tolerate +, spaces, dashes, parens
+  const candidates = text.match(/(\+?\d[\d\s().-]{7,}\d)/g) ?? [];
+  for (const raw of candidates) {
+    const digits = raw.replace(/\D/g, "");
+    // UK mobile/landline length 10-11, intl 9-15
+    if (digits.length >= 9 && digits.length <= 15) {
+      return raw.trim().replace(/\s+/g, " ").slice(0, 40);
+    }
+  }
+  return null;
+}
+
+function normalisePhoneKey(phone: string | null | undefined): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length < 9) return null;
+  return digits.slice(-10);
+}
+
+function extractNameHint(text: string): string | null {
+  if (!text) return null;
+  // Patterns like "I'm Alex", "my name is Alex Smith", "this is Alex"
+  const m =
+    text.match(/\b(?:i'?m|i am|my name is|name's|this is|it'?s)\s+([A-Z][a-zA-Z'’-]+(?:\s+[A-Z][a-zA-Z'’-]+)?)/) ||
+    text.match(/\b(?:i'?m|i am|my name is|name's|this is|it'?s)\s+([a-z][a-z'’-]+(?:\s+[a-z][a-z'’-]+)?)/i);
+  if (!m) return null;
+  const candidate = m[1].trim().slice(0, 80);
+  // Reject common false positives
+  if (/^(looking|interested|trying|here|good|fine|ok|okay|just|the|a)\b/i.test(candidate)) return null;
+  return candidate;
+}
+
+// Auto-upsert a CRM contact when a live-chat visitor shares email or phone.
+// Idempotent: only runs when the conversation has no contact_id yet.
+async function linkChatVisitorToContact(
+  supabase: DbClient,
+  conversationId: string,
+  latestUserText: string,
+): Promise<void> {
+  try {
+    const { data: conv } = await supabase
+      .from("chat_conversations")
+      .select("id, contact_id")
+      .eq("id", conversationId)
+      .maybeSingle();
+    if (!conv || conv.contact_id) return;
+
+    const email = (latestUserText.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] ?? "")
+      .toLowerCase()
+      .trim();
+    const phone = extractPhoneFromText(latestUserText);
+    if (!email && !phone) return;
+
+    const nameHint = extractNameHint(latestUserText);
+    const phoneKey = normalisePhoneKey(phone);
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Find existing contact by email then phone
+    let existingId: string | null = null;
+    let existingStatus: string | null = null;
+    let existingName: string | null = null;
+    let existingNotes: string | null = null;
+
+    if (email) {
+      const { data } = await supabase
+        .from("contacts")
+        .select("id, status, name, notes")
+        .ilike("email", email)
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        existingId = data.id;
+        existingStatus = data.status;
+        existingName = data.name;
+        existingNotes = data.notes;
+      }
+    }
+    if (!existingId && phoneKey) {
+      // Pull a small set and match in JS on normalised key
+      const { data: candidates } = await supabase
+        .from("contacts")
+        .select("id, status, name, notes, phone")
+        .not("phone", "is", null)
+        .limit(500);
+      const hit = (candidates ?? []).find((c) => normalisePhoneKey(c.phone) === phoneKey);
+      if (hit) {
+        existingId = hit.id;
+        existingStatus = hit.status;
+        existingName = hit.name;
+        existingNotes = hit.notes;
+      }
+    }
+
+    let contactId: string;
+    if (existingId) {
+      const noteLine = `Shared contact via live chat on ${today}.`;
+      const mergedNotes = [existingNotes, noteLine].filter(Boolean).join("\n").slice(0, 4000);
+      const shouldWarm = existingStatus === "cold" || existingStatus === "aware";
+      const nameNeedsFix = !existingName || existingName === "Unknown" || existingName === "Chat visitor";
+      await supabase
+        .from("contacts")
+        .update({
+          email: email || undefined,
+          phone: phone || undefined,
+          name: nameNeedsFix && nameHint ? nameHint : undefined,
+          notes: mergedNotes,
+          status: shouldWarm ? "warm" : undefined,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingId);
+      contactId = existingId;
+    } else {
+      const fallbackName = nameHint
+        || (email ? email.split("@")[0] : null)
+        || (phone ? `Chat visitor • ${phone.replace(/\D/g, "").slice(-4)}` : "Chat visitor");
+      const { data: created, error: insertErr } = await supabase
+        .from("contacts")
+        .insert({
+          name: fallbackName,
+          contact_name: nameHint || null,
+          email: email || null,
+          phone: phone || null,
+          industry: "general",
+          source: "chat",
+          status: "warm",
+          notes: `Shared from live chat on ${today}.`,
+        })
+        .select("id")
+        .single();
+      if (insertErr || !created) {
+        console.error("linkChatVisitorToContact insert failed:", insertErr);
+        return;
+      }
+      contactId = created.id;
+    }
+
+    // Link conversation to contact
+    await supabase
+      .from("chat_conversations")
+      .update({ contact_id: contactId, updated_at: new Date().toISOString() })
+      .eq("id", conversationId);
+
+    // Audit event
+    await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: "Shared contact via live chat",
+      description: [
+        email ? `Email: ${email}` : null,
+        phone ? `Phone: ${phone}` : null,
+        nameHint ? `Name: ${nameHint}` : null,
+      ].filter(Boolean).join("\n"),
+      event_type: "communication",
+    });
+  } catch (e) {
+    console.error("linkChatVisitorToContact error:", e);
+  }
 }
 
 function isOrderLookupIntent(text: string) {
@@ -1627,6 +1802,26 @@ async function devArchiveContact(supabase: DbClient, args: Record<string, unknow
   return devBulkUpdateStatus(supabase, { contact_ids: [args.contact_id], status: "archived" });
 }
 
+async function devMergeContacts(supabase: DbClient, args: Record<string, unknown>) {
+  const survivorId = cleanText(args.survivor_id, 80);
+  const rawIds = Array.isArray(args.duplicate_ids) ? args.duplicate_ids : [];
+  const duplicateIds = rawIds
+    .map((v) => cleanText(v, 80))
+    .filter((id) => UUID_RE.test(id) && id !== survivorId);
+  if (!UUID_RE.test(survivorId)) return { ok: false, error: "invalid_survivor" };
+  if (duplicateIds.length === 0) return { ok: false, error: "no_duplicates" };
+  if (duplicateIds.length > 5) return { ok: false, error: "too_many_duplicates" };
+  const { data, error } = await supabase.rpc("merge_contacts", {
+    survivor_id: survivorId,
+    duplicate_ids: duplicateIds,
+  });
+  if (error) {
+    console.error("devMergeContacts rpc error:", error);
+    return { ok: false, error: error.message ?? "merge_failed" };
+  }
+  return { ok: true, result: data };
+}
+
 async function devScheduleCallbackToday(supabase: DbClient, args: Record<string, unknown>) {
   const contactId = cleanText(args.contact_id, 80);
   const title = cleanText(args.title, 160);
@@ -2048,6 +2243,12 @@ Deno.serve(async (req) => {
           role: "user",
           content: lastMessage.content,
         });
+
+        // Auto-create / link a CRM contact when the visitor shares email or phone.
+        // Skipped in dev mode (admin chatting with the CRM AI, not a visitor).
+        if (!isDevMode && typeof lastMessage.content === "string") {
+          await linkChatVisitorToContact(supabase, currentConversationId, lastMessage.content);
+        }
       }
     }
 
@@ -2370,6 +2571,10 @@ Deno.serve(async (req) => {
           needsFollowUp = true; actionTaken = true;
           try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devArchiveContact(supabase, JSON.parse(toolCall.function.arguments))) }); }
           catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "archive_failed" }) }); }
+        } else if (toolCall.function.name === "merge_contacts" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devMergeContacts(supabase, JSON.parse(toolCall.function.arguments))) }); }
+          catch (e) { console.error("merge_contacts:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "merge_failed" }) }); }
         } else if (toolCall.function.name === "schedule_callback_today" && isDevMode) {
           needsFollowUp = true; actionTaken = true;
           try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devScheduleCallbackToday(supabase, JSON.parse(toolCall.function.arguments))) }); }

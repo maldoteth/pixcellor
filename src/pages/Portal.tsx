@@ -34,6 +34,7 @@ import BroadcastCampaigns from "@/components/BroadcastCampaigns";
 import { useDomainPrompt } from "@/components/DomainPromptDialog";
 import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
+import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPanel";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 import SeoHead from "@/components/SeoHead";
 
@@ -3096,6 +3097,7 @@ export default function Portal() {
 
           <TabsContent value="profiles" className="space-y-3">
             <div className="min-w-0 space-y-2">
+              <DuplicateContactsPanel contacts={contacts} onMerged={loadPortalSnapshot} />
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative flex-1 min-w-[220px]">
                   <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
