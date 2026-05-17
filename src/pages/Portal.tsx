@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -2202,32 +2204,54 @@ export default function Portal() {
         </div>
   );
 
+  const labeledField = (id: string, label: string, required: boolean, children: React.ReactNode, className = "") => (
+    <div className={`flex flex-col gap-1 ${className}`}>
+      <Label htmlFor={id} className="text-xs text-muted-foreground">
+        {label}{required && <span className="ml-0.5 text-destructive">*</span>}
+      </Label>
+      {children}
+    </div>
+  );
+
   const contactFormCard = showContactForm && (
     <Card>
       <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-        <Input placeholder="Company name" value={contactForm.name} onChange={(e) => setContactForm(f => ({ ...f, name: e.target.value }))} />
-        <Input placeholder="Phone number" value={contactForm.phone} onChange={(e) => setContactForm(f => ({ ...f, phone: e.target.value }))} />
-        <Input placeholder="Email" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />
-        <Input placeholder="Location" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />
-        <Input placeholder="Industry" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />
-        <Input placeholder="Website domain" value={contactForm.website} onChange={(e) => setContactForm(f => ({ ...f, website: e.target.value }))} />
-        <Input placeholder="Contact name" value={contactForm.contact_name} onChange={(e) => setContactForm(f => ({ ...f, contact_name: e.target.value }))} />
-        <div className="relative">
-          <Input
-            placeholder="Job title"
-            value={contactForm.job_title}
-            onChange={(e) => {
-              setContactForm(f => ({ ...f, job_title: e.target.value }));
-              setContactJobTitleSuggestionsOpen(Boolean(e.target.value.trim()));
-            }}
-            onFocus={() => setContactJobTitleSuggestionsOpen(Boolean(contactForm.job_title.trim()))}
-            onBlur={() => window.setTimeout(() => setContactJobTitleSuggestionsOpen(false), 120)}
-          />
-          {contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
-        </div>
-        <Input className="md:col-span-2" placeholder="Add a note (optional)" value={contactForm.note} onChange={(e) => setContactForm(f => ({ ...f, note: e.target.value }))} />
+        {labeledField("nc-name", "Company name", true,
+          <Input id="nc-name" placeholder="e.g. Acme Plumbing Ltd" value={contactForm.name} onChange={(e) => setContactForm(f => ({ ...f, name: e.target.value }))} />)}
+        {labeledField("nc-phone", "Phone", false,
+          <Input id="nc-phone" inputMode="tel" placeholder="07…" value={contactForm.phone} onChange={(e) => setContactForm(f => ({ ...f, phone: e.target.value }))} />)}
+        {labeledField("nc-email", "Email", false,
+          <Input id="nc-email" inputMode="email" placeholder="name@company.com" value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} />)}
+        {labeledField("nc-location", "Location", false,
+          <Input id="nc-location" placeholder="Town or area" value={contactForm.location} onChange={(e) => setContactForm(f => ({ ...f, location: e.target.value }))} />)}
+        {labeledField("nc-industry", "Industry", false,
+          <Input id="nc-industry" placeholder="Plumber, salon, café…" value={contactForm.industry} onChange={(e) => setContactForm(f => ({ ...f, industry: e.target.value }))} />)}
+        {labeledField("nc-website", "Website", false,
+          <Input id="nc-website" inputMode="url" placeholder="example.com" value={contactForm.website} onChange={(e) => setContactForm(f => ({ ...f, website: e.target.value }))} />)}
+        {labeledField("nc-contact", "Contact name", false,
+          <Input id="nc-contact" placeholder="Person you spoke to" value={contactForm.contact_name} onChange={(e) => setContactForm(f => ({ ...f, contact_name: e.target.value }))} />)}
+        {labeledField("nc-jobtitle", "Job title", false,
+          <div className="relative">
+            <Input
+              id="nc-jobtitle"
+              placeholder="Owner, Manager…"
+              value={contactForm.job_title}
+              onChange={(e) => {
+                setContactForm(f => ({ ...f, job_title: e.target.value }));
+                setContactJobTitleSuggestionsOpen(Boolean(e.target.value.trim()));
+              }}
+              onFocus={() => setContactJobTitleSuggestionsOpen(Boolean(contactForm.job_title.trim()))}
+              onBlur={() => window.setTimeout(() => setContactJobTitleSuggestionsOpen(false), 120)}
+            />
+            {contactJobTitleSuggestionsOpen && renderJobTitleSuggestionList()}
+          </div>
+        )}
+        {labeledField("nc-note", "First note (optional)", false,
+          <Textarea id="nc-note" rows={3} placeholder="What did you discuss? Anything to remember…" value={contactForm.note} onChange={(e) => setContactForm(f => ({ ...f, note: e.target.value }))} />,
+          "md:col-span-2"
+        )}
         <div className="md:col-span-2 flex gap-2">
-          <Button onClick={createContact}>Save client</Button>
+          <Button onClick={createContact} disabled={contactSubmitting}>{contactSubmitting ? "Saving…" : "Save client"}</Button>
           <Button variant="outline" className="rounded-none shadow-none" onClick={() => setShowContactForm(false)}>Cancel</Button>
         </div>
       </CardContent>
@@ -3558,6 +3582,13 @@ export default function Portal() {
                   <Input placeholder="Website domain" value={editContactForm.website} onChange={(e) => setEditContactForm(f => ({ ...f, website: e.target.value }))} />
                   <Input placeholder="Contact name" value={editContactForm.contact_name} onChange={(e) => setEditContactForm(f => ({ ...f, contact_name: e.target.value }))} />
                   <Input placeholder="Job title" value={editContactForm.job_title} onChange={(e) => setEditContactForm(f => ({ ...f, job_title: e.target.value }))} />
+                  <Textarea
+                    className="md:col-span-2"
+                    rows={3}
+                    placeholder="Notes about this client (internal)"
+                    value={editContactForm.notes}
+                    onChange={(e) => setEditContactForm(f => ({ ...f, notes: e.target.value }))}
+                  />
                   <div className="flex gap-2 md:col-span-2">
                     <Button onClick={updateContact}>Save changes</Button>
                     <Button variant="outline" className="rounded-none shadow-none" onClick={() => setEditingContactId(null)}>Cancel</Button>
