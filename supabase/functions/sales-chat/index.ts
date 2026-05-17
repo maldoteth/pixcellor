@@ -1787,6 +1787,26 @@ async function devArchiveContact(supabase: DbClient, args: Record<string, unknow
   return devBulkUpdateStatus(supabase, { contact_ids: [args.contact_id], status: "archived" });
 }
 
+async function devMergeContacts(supabase: DbClient, args: Record<string, unknown>) {
+  const survivorId = cleanText(args.survivor_id, 80);
+  const rawIds = Array.isArray(args.duplicate_ids) ? args.duplicate_ids : [];
+  const duplicateIds = rawIds
+    .map((v) => cleanText(v, 80))
+    .filter((id) => UUID_RE.test(id) && id !== survivorId);
+  if (!UUID_RE.test(survivorId)) return { ok: false, error: "invalid_survivor" };
+  if (duplicateIds.length === 0) return { ok: false, error: "no_duplicates" };
+  if (duplicateIds.length > 5) return { ok: false, error: "too_many_duplicates" };
+  const { data, error } = await supabase.rpc("merge_contacts", {
+    survivor_id: survivorId,
+    duplicate_ids: duplicateIds,
+  });
+  if (error) {
+    console.error("devMergeContacts rpc error:", error);
+    return { ok: false, error: error.message ?? "merge_failed" };
+  }
+  return { ok: true, result: data };
+}
+
 async function devScheduleCallbackToday(supabase: DbClient, args: Record<string, unknown>) {
   const contactId = cleanText(args.contact_id, 80);
   const title = cleanText(args.title, 160);
