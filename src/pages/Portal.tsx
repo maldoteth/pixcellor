@@ -1817,8 +1817,14 @@ export default function Portal() {
       toast.error(error.message);
       return;
     }
+    await ensureContactPersonFromForm(
+      editingContactId,
+      editContactForm.contact_name,
+      editContactForm.job_title,
+      editContactForm.phone,
+    );
     setEditingContactId(null);
-    setEditContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "" });
+    setEditContactForm({ name: "", contact_name: "", phone: "", email: "", location: "", industry: "", website: "", notes: "", job_title: "" });
     await loadPortalSnapshot();
     toast.success("Client updated.");
   };
