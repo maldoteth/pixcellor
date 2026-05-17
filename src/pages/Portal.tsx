@@ -1434,8 +1434,36 @@ export default function Portal() {
       industry: contact.industry ?? "general",
       website: contact.website ?? "",
       notes: contact.notes ?? "",
+      job_title: "",
     });
     setOpenContactId(contact.id);
+  };
+
+  const ensureContactPersonFromForm = async (
+    contactId: string,
+    contactName: string,
+    jobTitle: string,
+    phone: string,
+  ) => {
+    const name = contactName.trim();
+    if (!name) return;
+    const lower = name.toLowerCase();
+    const exists = contactPersons.some(
+      p => p.contact_id === contactId && (p.name || "").trim().toLowerCase() === lower,
+    );
+    if (exists) return;
+    const { data, error } = await (supabase as any).rpc("portal_add_contact_person", {
+      _contact_id: contactId,
+      _name: name,
+      _job_title: jobTitle.trim() || null,
+      _phone: phone.trim() || null,
+    });
+    if (error) {
+      console.warn("auto-add contact person failed", error);
+      return;
+    }
+    const created = data as ContactPerson | null;
+    if (created?.id) setContactPersons(curr => [created, ...curr.filter(p => p.id !== created.id)]);
   };
 
   const applyCallbackPreset = (presetLabel: string) => {
