@@ -150,7 +150,6 @@ function FlipCard({
     const glowBlur = 18 + proximity * 28;
     const glowSpread = proximity * 8;
     const baseZIndex = 45 + stackIndex;
-    const hoverZLift = Math.round(proximity * 10);
 
     return (
         <motion.div
@@ -171,7 +170,7 @@ function FlipCard({
                 position: "absolute",
                 width: imgSize,
                 height: imgSize,
-                zIndex: baseZIndex + hoverZLift,
+                zIndex: baseZIndex,
                 pointerEvents: "auto",
             }}
             className="group"
