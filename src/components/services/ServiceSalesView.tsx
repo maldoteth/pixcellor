@@ -259,12 +259,13 @@ export default function ServiceSalesView({
             {service.heroBlurb}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} />
+            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} onAction={onAction} />
             {service.secondaryCta && (
               <CtaButton
                 label={service.secondaryCta.label}
                 action={service.secondaryCta.action}
                 variant="secondary"
+                onAction={onAction}
               />
             )}
           </div>
