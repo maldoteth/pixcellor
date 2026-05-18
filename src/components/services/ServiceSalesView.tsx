@@ -224,21 +224,41 @@ export default function ServiceSalesView({
       {/* FOOTER CTA */}
       <motion.section
         {...fadeUp}
-        className="rounded-xl border border-foreground/15 bg-foreground/[0.04] p-6 md:p-10 text-center backdrop-blur-md"
+        className="relative overflow-hidden rounded-xl border border-foreground/15 bg-foreground/[0.04] p-6 md:p-10 text-center backdrop-blur-md"
       >
-        <h3 className="text-xl md:text-2xl font-bold">Ready to get started?</h3>
-        <p className="mt-2 text-sm md:text-base text-foreground/70 max-w-xl mx-auto">
-          {service.heroBlurb}
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} />
-          {service.secondaryCta && (
-            <CtaButton
-              label={service.secondaryCta.label}
-              action={service.secondaryCta.action}
-              variant="secondary"
+        {heroImage && (
+          <>
+            <img
+              src={heroImage}
+              alt=""
+              aria-hidden="true"
+              width={1280}
+              height={720}
+              loading="lazy"
+              decoding="async"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25"
             />
-          )}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
+            />
+          </>
+        )}
+        <div className="relative">
+          <h3 className="text-xl md:text-2xl font-bold">Ready to get started?</h3>
+          <p className="mt-2 text-sm md:text-base text-foreground/70 max-w-xl mx-auto">
+            {service.heroBlurb}
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} />
+            {service.secondaryCta && (
+              <CtaButton
+                label={service.secondaryCta.label}
+                action={service.secondaryCta.action}
+                variant="secondary"
+              />
+            )}
+          </div>
         </div>
       </motion.section>
     </div>
