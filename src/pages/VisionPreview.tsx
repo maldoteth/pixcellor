@@ -180,7 +180,7 @@ export default function VisionPreview() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen w-full overflow-x-hidden bg-background text-foreground">
       <SeoHead
         title={preview?.title ? `${preview.title} — Pixcellor preview` : "Your Preview"}
         description="A custom AI-rendered website concept made for you by Pixcellor."
@@ -271,7 +271,7 @@ export default function VisionPreview() {
             <div
               ref={scrollRef}
               tabIndex={-1}
-              className="border border-border bg-black/40 overflow-auto outline-none focus:outline-none focus-visible:outline-none select-none"
+              className="border border-border bg-black/40 overflow-y-auto overflow-x-hidden outline-none focus:outline-none focus-visible:outline-none select-none"
               style={{ maxHeight: "min(75vh, calc(100dvh - 220px))", minHeight: "320px" }}
               onContextMenu={(e) => e.preventDefault()}
             >
@@ -304,7 +304,7 @@ export default function VisionPreview() {
             {preview.brief && (
               <details className="border border-border p-3 text-sm text-muted-foreground">
                 <summary className="cursor-pointer text-foreground/80">Design brief</summary>
-                <pre className="mt-2 whitespace-pre-wrap text-xs">{preview.brief}</pre>
+                <pre className="mt-2 whitespace-pre-wrap break-words text-xs">{preview.brief}</pre>
               </details>
             )}
             {!requested ? (
