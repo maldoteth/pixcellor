@@ -123,7 +123,7 @@ export const SERVICES: Service[] = [
     ],
     process: [
       "Strategy session and timeline lock",
-      "Pre-launch content and KOL outreach",
+      "90-day post-launch growth sprint",
       "Launch-day war room",
       "30-day post-launch growth sprint",
     ],
