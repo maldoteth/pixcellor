@@ -1,128 +1,74 @@
+## Goal
 
-# Fix items 5, 6, 12
+Replace each service "i" info drawer with a full-screen sales page. Same content lives at a permalink route `/services/:slug`. ~20 services across Marketing, Tech, and Business.
 
-Three focused changes from the CRM audit. Independent — can be shipped in any order, but P12 first makes 5 + 6 land in much smaller files.
+## Architecture
 
----
+**1. Single source of truth — `src/data/services.ts`**
+Migrate `SERVICE_BACKS` into a typed registry. Each service:
+- `slug`, `name`, `category` (`marketing` | `tech` | `business`), `icon`
+- `tagline`, `heroBlurb` (short value prop)
+- `info` (kept — the existing one-liner)
+- `features[]` (5–8 bullets), `process[]` (3–5 steps), `deliverables[]` (3–6 outputs)
+- `pricing?` (free-form string, e.g. "£22/hr" — only on services with public pricing)
+- `clients?` (logos/names array — only on services with named past clients)
+- `primaryCta` ({ label, action: 'request' | 'sales' | 'pricing' })
 
-## 12. Split `src/pages/Portal.tsx` (3,886 lines → ~9 files)
+**2. Shared full-screen view — `src/components/services/ServiceSalesView.tsx`**
+Used by both the drawer and the route page. Sections in order:
+- Hero: category chip, name, tagline, blurb, primary CTA + secondary "Request free sample"
+- "What you get" features grid
+- "How it works" numbered process
+- "Deliverables" list
+- Optional pricing band (only if `pricing` set)
+- Optional "Trusted by" client strip (only if `clients` set)
+- Footer CTA band
+- Black theme, glass surfaces, gold accent on CTAs, Framer Motion entrance
 
-Pure refactor, **zero behaviour change**. Just moves JSX + handlers into per-tab components so the next two features (and everything after) land safely.
+**3. Drawer → full-screen on every device**
+In `PackagesDialog.tsx` `ServiceItemRow`, swap the bottom `<Drawer>` for a full-viewport overlay. Keep the `Drawer` component but style content `inset-0 h-[100dvh] w-screen rounded-none max-w-none`, or switch to Radix `Dialog` with fullscreen className. Renders `<ServiceSalesView slug={…} />` plus a top-right close. Header includes "Open page ↗" linking to `/services/:slug` (new tab).
 
-**New structure**
-```text
-src/pages/Portal.tsx                 ← shell only: auth gate, tabs frame, shared state
-src/components/portal/PortalContext.tsx  ← React context for snapshot, filters, drawers
-src/components/portal/tabs/
-  SalesTab.tsx
-  OrdersTab.tsx
-  CompletedTab.tsx
-  FalloffsTab.tsx
-  CampaignsTab.tsx
-  ChatsTab.tsx
-  ClientsTab.tsx
-  StudioTab.tsx
-  AlertsTab.tsx
-src/components/portal/drawers/
-  ContactDetailDrawer.tsx
-  OrderDetailDrawer.tsx
-  FalloffDetailDrawer.tsx
-```
+**4. Routes**
+- Add `/services/:slug` → new `src/pages/ServicePage.tsx`
+- Add `/services` index → `src/pages/ServicesIndex.tsx` (lists all 20 grouped by category — boosts SEO/internal linking)
+- Both lazy-loaded in `src/App.tsx`
+- 404 for unknown slugs
 
-**Rules**
-- All shared state (snapshot, realtime subscriptions, filters, active drawer ids) lives in `PortalContext`.
-- Each tab is a self-contained component that reads from context — no prop drilling.
-- Existing tab keys (`sales|orders|completed|falloffs|campaigns|chats|profiles|studio|alerts`) and the `localStorage.portal_active_tab` value are preserved.
-- All Tailwind classes, drawer behaviour, realtime channels, and AI tool wiring stay identical.
+**5. SEO**
+- Add `react-helmet-async` + wrap app in `<HelmetProvider>` in `src/main.tsx`
+- Remove `<link rel="canonical">` from `index.html` (Helmet will own canonical per route; index `/` page gets its own Helmet too)
+- Per service page: `<title>`, description, canonical, og:*, and `Service` JSON-LD with `provider: Organization (Pixcellor)`
+- Append all 20 service URLs + `/services` to `public/sitemap.xml`
 
----
+## Seed content highlights (using your info)
 
-## 5. Auto-create contact from chat
+- **Telesales campaigns** — `pricing: "£22/hr — every call recorded, full CRM access"`. `clients: ["3M", "Barclays Bank", "Guide Dogs", …]`. CTA: Book a sales call.
+- **Recruitment & ATS** — `pricing: "15% on temps · 5% on perms (flat)"`. `clients: ["TikTok", "LinkedIn", "Berkeley Homes", "Bupa", "Galliford Try", "Morgan Sindall", "NHS"]`. CTA: Book a sales call.
+- All other services: features/process/deliverables drafted from existing `info` blurbs + Pixcellor positioning (lifetime warranty, 10-day turnaround, AI-agent CRMs, 9-figure caps, multi-7-figure Q1 revenue). No pricing or clients shown unless you give them.
 
-When a visitor types an email or phone number into the live chat, upsert a `contacts` row and link the conversation.
+## Default CTA mapping
 
-**Schema change** (one migration)
-- `chat_conversations.contact_id uuid NULL` — link conversation to the contact it produced.
-- Index on `lower(contacts.email)` and on `contacts.phone` (only if not already present) for the upsert lookup.
+- Marketing → "Book a sales call" (`pixcellor:open-letstalk` mode `sales`)
+- Tech → "Request free sample" + secondary "See pricing" (opens Packages)
+- Business → "Book a sales call"
 
-**Edge function: `supabase/functions/sales-chat/index.ts`**
-In the request handler, just before the existing `hasUserMessage` block:
-1. Take the latest `user` message content.
-2. Extract:
-   - email — RFC-lite regex
-   - phone — UK + international, min 9 digits after stripping non-numerics
-3. If either found AND visitor has no `contact_id` on the conversation yet:
-   - Look up existing contact by `lower(email)` then by normalised phone.
-   - If found: update `name` if currently empty/"Unknown", append a note "Shared contact via live chat on YYYY-MM-DD", set `status='warm'` only if currently `cold`/`aware`.
-   - If not found: insert `contacts` row with `source='chat'`, `status='warm'`, `name = visitor-supplied name or "Chat visitor"`, `notes = "Shared from live chat on <date>"`.
-   - Write `chat_conversations.contact_id`.
-   - Insert a `contact_events` row (`event_type='communication'`, title `"Started live chat"`).
-4. Never auto-set `hot` — that follows the guardrails decided in the audit.
+## Files
 
-**Idempotency**
-- Only runs when `chat_conversations.contact_id IS NULL` for that conversation, so re-pastes don't create duplicates.
+**New**
+- `src/data/services.ts`
+- `src/components/services/ServiceSalesView.tsx`
+- `src/pages/ServicePage.tsx`
+- `src/pages/ServicesIndex.tsx`
 
-**Portal UI**
-- `ChatsTab` shows a small "Linked contact" chip on each conversation row when `contact_id` is set, click → opens `ContactDetailDrawer`.
+**Edited**
+- `src/components/PackagesDialog.tsx` — drawer becomes fullscreen, pulls from `services.ts`, adds permalink link
+- `src/App.tsx` — add `/services` and `/services/:slug`
+- `src/main.tsx` — add `<HelmetProvider>`
+- `index.html` — remove sitewide canonical
+- `public/sitemap.xml` — add new URLs
 
----
+## Out of scope (per your earlier answers)
 
-## 6. Dedup / merge contacts
-
-Two parts: a UI panel that surfaces likely duplicates, and a `merge_contacts` action (admin button + AI tool).
-
-**Detection rule** (no schema change needed)
-A normalised key per contact:
-- `email_key` = `lower(trim(email))`
-- `phone_key` = digits-only phone, last 10 digits
-- `name_company_key` = `lower(trim(name))` + `lower(trim(coalesce(website,'')))`
-
-Two contacts are "likely duplicates" if they share a non-empty `email_key` OR `phone_key`, OR (`name_company_key` matches AND one of email/phone is null on either side).
-
-Computed client-side in `ClientsTab` from the already-loaded snapshot — no extra query.
-
-**UI**
-- New collapsible "Possible duplicates" panel at the top of `ClientsTab`, grouped by match key.
-- Each group shows 2–4 candidate rows side-by-side with: name, email, phone, source, status, lead_score, last_seen.
-- Two actions per group:
-  - **Merge into…** (pick the survivor) — opens a confirm modal previewing the merged record.
-  - **Not a duplicate** — adds match key to `localStorage.portal_dedup_dismissed` so it stays hidden for that admin.
-
-**Backend: new RPC + edge function**
-- Postgres function `merge_contacts(survivor_id uuid, duplicate_ids uuid[])` (security definer, admin-only via `has_role`):
-  - Re-parents `contact_events.contact_id`, `contact_persons.contact_id`, `chat_conversations.contact_id`, `ai_sample_generations.contact_id` to the survivor.
-  - Merges fields: survivor wins on non-null collisions; missing fields filled from duplicates (prefer most recent `updated_at`).
-  - Appends a note: `"Merged from <duplicate names/ids> on <date>."`
-  - Picks max `lead_score`, max status temperature (`gold > hot > warm > aware > cold > archived`).
-  - Deletes the duplicate `contacts` rows.
-- Expose via `sales-chat` as a tool:
-  ```ts
-  { name: "merge_contacts",
-    description: "Merge duplicate contacts into one survivor. Only call when the dev explicitly confirms a merge or asks to dedupe specific records.",
-    parameters: { survivor_id: string, duplicate_ids: string[] (max 5) } }
-  ```
-
-**Safety**
-- Hard-cap merges at 5 duplicates per call.
-- Always logs a `contact_events` row on the survivor with `event_type='note'`, title `"Merged duplicates"`, description listing the old IDs + key fields so it can be audited / partially un-done by hand.
-
----
-
-## Order of work
-
-```text
-1. P12 Portal split          (refactor, no behaviour change)
-2. P5  chat → contact        (migration + sales-chat edit + ChatsTab chip)
-3. P6  merge_contacts        (RPC migration + ClientsTab panel + AI tool)
-```
-
-## Files touched (summary)
-
-- **New:** 9 tab components, 3 drawer components, `PortalContext.tsx`
-- **Migrations:** add `chat_conversations.contact_id`, indexes, `merge_contacts()` RPC
-- **Edited:** `supabase/functions/sales-chat/index.ts` (contact extraction + new tool), `src/pages/Portal.tsx` (shrunk to shell)
-
-## Questions before building
-
-1. For #6 merge: should the AI ever auto-merge (when it's confident), or always require a human click? Default in this plan: human click only — AI can suggest but not execute without explicit "merge X into Y".
-2. For #5: if the visitor shares only a phone (no email, no name), still create the contact? Default: yes, `name = "Chat visitor • <last4digits>"`.
+- No changes to other drawers (Packages, Let's Talk, BuyDetails, etc.)
+- No case studies, FAQ, or full pricing sections beyond the optional pricing band
+- No backend changes
