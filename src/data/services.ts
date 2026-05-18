@@ -532,7 +532,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "consultations-audits",
-    name: "Consultations & audits",
+    name: "Analytics and intel",
     category: "business",
     info: "Senior consultants from some of the world's largest companies — including start-up founders who scaled to half a billion in market cap and multi 7 figure Q1 revenue.",
     tagline: "Operator-grade advice. Not a slide deck.",
@@ -665,8 +665,8 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Recruitment & ATS": "recruitment-ats",
   "Payroll & HR tooling": "payroll-hr-tooling",
   "AI agents and integrations": "ai-integrations-agents",
-  "Consultations and audits": "consultations-audits",
-  "Consultations & audits": "analytics-dashboards",
+  "Analytics and intel": "consultations-audits",
+  "Analytics dashboards": "analytics-dashboards",
   "API & third-party": "api-third-party",
   "Product/project management": "product-project-management",
 };
