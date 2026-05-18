@@ -2644,11 +2644,6 @@ export default function Portal() {
             )}
             <div
               className={orderReqsFilter !== "samples" ? "max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2" : ""}
-              onScroll={orderReqsFilter !== "samples" ? makeNearBottomHandler(() => {
-                if ((sectionCounts.orders ?? 0) > orders.length && !loadingMore.orders) {
-                  loadMoreSection("orders", orders.length, 20);
-                }
-              }) : undefined}
             >
             {orderReqsFilter !== "samples" && filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
