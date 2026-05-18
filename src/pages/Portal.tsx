@@ -3179,7 +3179,7 @@ export default function Portal() {
                     { value: "newest", label: "Edit" },
                     { value: "oldest", label: "Oldest first" },
                     { value: "latest_update", label: "Latest update" },
-                    { value: "hot", label: "Hot → Cold" },
+                    { value: "hot", label: "Updated" },
                     { value: "cold", label: "Cold → Hot" },
                   ] as const).map(opt => (
                     <button
