@@ -138,7 +138,7 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
               </button>
               <DrawerTitle className="sr-only">{item.name}</DrawerTitle>
               <DrawerDescription className="sr-only">{item.info}</DrawerDescription>
-              <div className="flex-1 overflow-y-auto overscroll-contain">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain">
                 {service ? (
                   <ServiceSalesView service={service} showPermalink />
                 ) : (
