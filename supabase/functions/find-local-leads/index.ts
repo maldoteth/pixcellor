@@ -628,7 +628,81 @@ async function runChunked<T, R>(items: T[], concurrency: number, worker: (item: 
   return results;
 }
 
-async function runLeadGeneration(jobId: string, supabase: ReturnType<typeof createClient>, firecrawlKey: string, trade: string, location: string, limit: number) {
+// ---------- Thunderbit: full-page fetch + structured extraction ----------
+const THUNDERBIT_LEAD_SCHEMA = {
+  business_name: "official business or trading name",
+  phone: "primary UK phone number in original format",
+  email: "primary contact email address",
+  website_url: "the business's own external website URL (not the directory page itself)",
+  social_url: "primary Facebook or Instagram profile URL for the business",
+  address: "street address or service area",
+  about: "1-2 sentence summary of what the business does",
+};
+
+type ThunderbitExtract = Partial<Record<keyof typeof THUNDERBIT_LEAD_SCHEMA, string>>;
+
+async function thunderbitFetch(path: string, body: Record<string, unknown>, apiKey: string, timeoutMs = 25000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${THUNDERBIT_V1}${path}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    const data = await response.json().catch(() => ({} as Record<string, unknown>));
+    if (!response.ok) throw new Error(`Thunderbit ${path} failed (${response.status}): ${JSON.stringify(data).slice(0, 240)}`);
+    return data as Record<string, unknown>;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function thunderbitDistillAndExtract(url: string, apiKey: string): Promise<{ markdown: string; extract: ThunderbitExtract }> {
+  const [distillRes, extractRes] = await Promise.allSettled([
+    thunderbitFetch("/distill", { url, render_mode: "basic", country_code: "GB", timeout: 20000 }, apiKey),
+    thunderbitFetch("/extract", { url, schema: THUNDERBIT_LEAD_SCHEMA, render_mode: "basic", country_code: "GB", timeout: 20000 }, apiKey),
+  ]);
+
+  const distillData = distillRes.status === "fulfilled" ? distillRes.value : {};
+  const extractData = extractRes.status === "fulfilled" ? extractRes.value : {};
+
+  const markdown = cleanText(
+    (distillData?.markdown as string) ??
+      (distillData?.content as string) ??
+      ((distillData?.data as Record<string, unknown>)?.markdown as string) ??
+      "",
+    18000,
+  );
+
+  const rawExtract =
+    (extractData?.data as Record<string, unknown>) ??
+    (extractData?.result as Record<string, unknown>) ??
+    (extractData?.fields as Record<string, unknown>) ??
+    extractData ??
+    {};
+
+  const extract: ThunderbitExtract = {};
+  for (const key of Object.keys(THUNDERBIT_LEAD_SCHEMA) as Array<keyof typeof THUNDERBIT_LEAD_SCHEMA>) {
+    const v = (rawExtract as Record<string, unknown>)[key];
+    if (typeof v === "string" && v.trim()) extract[key] = cleanText(v, 500);
+  }
+  return { markdown, extract };
+}
+
+function pageFromThunderbit(url: string, markdown: string, fallbackTitle: string): ScrapedPage {
+  return {
+    url: normalizeUrl(url) || url,
+    title: cleanText(fallbackTitle, 200),
+    markdown: cleanText(markdown, 18000),
+    html: "",
+    links: [],
+    statusCode: 200,
+  };
+}
+
+async function runLeadGeneration(jobId: string, supabase: ReturnType<typeof createClient>, firecrawlKey: string, trade: string, location: string, limit: number, thunderbitKey?: string) {
   const startedAt = Date.now();
   const wallClockBudgetMs = 110_000; // ~110s safety budget
 
