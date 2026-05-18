@@ -1132,7 +1132,7 @@ function MobileFreeSamplesCard() {
           <h3 className="mt-2 text-lg font-bold text-[hsl(45,65%,75%)] leading-tight">FREE SAMPLES</h3>
           <p className="text-xs text-[hsl(45,65%,55%)]/70 mt-0.5">Don't pay till you're happy</p>
         </div>
-        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-[hsl(45,65%,55%)]/30 bg-[hsl(45,65%,55%)]/10 text-[hsl(45,65%,55%)] font-bold text-xs uppercase tracking-wide">
+        <div className="pricing-button-gold flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full font-bold text-xs uppercase tracking-wide">
           Try
         </div>
       </div>
