@@ -16,6 +16,8 @@ import gpayLogo from "@/assets/gpay-logo.png";
 import BuyDetailsPrompt, { BuyerDetails, BuyerDomainChoice, VisionBrief } from "@/components/BuyDetailsPrompt";
 import HoneypotField from "@/components/HoneypotField";
 import { useAntiSpam } from "@/lib/anti-spam";
+import { getServiceByName } from "@/data/services";
+import ServiceSalesView from "@/components/services/ServiceSalesView";
 
 const PACKAGES = {
   fullWorks: {
@@ -98,6 +100,7 @@ type ServiceItem = { name: string; info?: string };
 
 function ServiceItemRow({ item }: { item: ServiceItem }) {
   const [open, setOpen] = useState(false);
+  const service = getServiceByName(item.name);
 
   return (
     <>
@@ -116,14 +119,31 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
           >
             <Info className="h-3.5 w-3.5" />
           </button>
-          <Drawer open={open} onOpenChange={setOpen}>
-            <DrawerContent className="z-[10030]" overlayClassName="z-[10020]">
-              <DrawerHeader>
-                <DrawerTitle>{item.name}</DrawerTitle>
-                <DrawerDescription className="pt-2 text-sm leading-relaxed text-foreground/80">
-                  {item.info}
-                </DrawerDescription>
-              </DrawerHeader>
+          <Drawer open={open} onOpenChange={setOpen} shouldScaleBackground={false}>
+            <DrawerContent
+              className="z-[10030] inset-0 mt-0 h-[100dvh] w-screen max-w-none rounded-none border-0 bg-background/95 backdrop-blur-xl [&>div:first-child]:hidden flex flex-col"
+              overlayClassName="z-[10020]"
+            >
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close"
+                className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-foreground/20 bg-background/60 text-foreground/80 backdrop-blur transition-colors hover:bg-background hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <DrawerTitle className="sr-only">{item.name}</DrawerTitle>
+              <DrawerDescription className="sr-only">{item.info}</DrawerDescription>
+              <div className="flex-1 overflow-y-auto overscroll-contain">
+                {service ? (
+                  <ServiceSalesView service={service} showPermalink />
+                ) : (
+                  <div className="mx-auto max-w-2xl px-5 py-16 text-foreground">
+                    <h2 className="text-2xl font-bold">{item.name}</h2>
+                    <p className="mt-4 text-sm leading-relaxed text-foreground/80">{item.info}</p>
+                  </div>
+                )}
+              </div>
             </DrawerContent>
           </Drawer>
         </div>

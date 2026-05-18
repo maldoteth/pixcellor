@@ -23,6 +23,8 @@ const CustomerPortal = lazy(() => import("./pages/CustomerPortal"));
 const Legal = lazy(() => import("./pages/Legal"));
 const VisionPreview = lazy(() => import("./pages/VisionPreview"));
 const AuthHandoff = lazy(() => import("./pages/AuthHandoff"));
+const ServicePage = lazy(() => import("./pages/ServicePage"));
+const ServicesIndex = lazy(() => import("./pages/ServicesIndex"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,6 +87,8 @@ const App = () => (
               <Route path="/legal/:doc" element={<Legal />} />
               <Route path="/preview/:slug" element={<VisionPreview />} />
               <Route path="/auth/handoff" element={<AuthHandoff />} />
+              <Route path="/services" element={<ServicesIndex />} />
+              <Route path="/services/:slug" element={<ServicePage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
