@@ -63,6 +63,7 @@ export default function ServiceSalesView({
 }) {
   const cat = SERVICE_CATEGORIES[service.category];
   const Icon = cat.icon;
+  const heroImage = SERVICE_IMAGES[service.slug];
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
