@@ -203,6 +203,53 @@ All colors MUST be HSL.
     z-index: 1;
   }
 
+  .pricing-button-gold {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0;
+    border: 1px solid #d4af37;
+    background: linear-gradient(135deg, #f5e6a8 0%, #d4af37 50%, #8a6a1f 100%);
+    color: #1a1205;
+    box-shadow:
+      0 30px 80px rgba(0,0,0,0.55),
+      0 0 18px rgba(212,175,55,0.35),
+      inset 0 1px 1px hsl(0 0% 100% / 0.45),
+      inset 0 -1px 1px hsl(0 0% 0% / 0.15);
+  }
+
+  .pricing-button-gold::before {
+    content: "";
+    position: absolute;
+    inset: 0.25rem;
+    border-radius: 0;
+    opacity: 0.55;
+    pointer-events: none;
+    background: linear-gradient(135deg, hsl(0 0% 100% / 0.45) 0%, transparent 50%);
+  }
+
+  .pricing-button-gold::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, hsl(48 90% 80% / 0.55), transparent);
+    transition: transform 700ms ease-in-out;
+  }
+
+  .pricing-button-gold:hover {
+    filter: brightness(1.15);
+  }
+
+  .pricing-button-gold:hover::after {
+    transform: translateX(100%);
+  }
+
+  .pricing-button-gold > * {
+    position: relative;
+    z-index: 1;
+  }
+
   .request-shimmer {
     position: relative;
     overflow: hidden;
