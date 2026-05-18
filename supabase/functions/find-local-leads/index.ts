@@ -910,6 +910,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
+    const thunderbitKey = Deno.env.get("THUNDERBIT_API_KEY");
     if (!firecrawlKey) throw new Error("Firecrawl connector is not configured");
 
     const supabase = createClient(supabaseUrl, serviceKey);
