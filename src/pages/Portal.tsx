@@ -3365,7 +3365,7 @@ export default function Portal() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold">System alerts</h2>
-                <p className="text-sm text-muted-foreground">Refunds, disputes, payment failures and webhook errors. Newest first.</p>
+                <p className="text-sm text-muted-foreground">Refunds, disputes, payment failures and webhook errors. Newest.</p>
               </div>
               {adminAlerts.some(a => !a.resolved_at) && (
                 <Button
