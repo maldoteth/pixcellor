@@ -746,16 +746,58 @@ async function runLeadGeneration(jobId: string, supabase: ReturnType<typeof crea
     let candidatesExtracted = 0;
     let verifyBudget = 12; // cap calls to verifyOwnWebsite per run
     let phoneRevealBudget = 6; // cap calls to revealPhoneFromProfile per run
+    let thunderbitBudget = thunderbitKey ? 12 : 0; // cap Thunderbit calls per run
+    let thunderbitUsed = 0;
 
     for (const url of profileUrls) {
       if (Date.now() - startedAt > wallClockBudgetMs) break;
-      const page = pageFromSearchResult(searchResults.find((result) => normalizeUrl(result.url) === normalizeUrl(url)) ?? { url, title: "", description: "", markdown: "" });
+      const snippet = searchResults.find((result) => normalizeUrl(result.url) === normalizeUrl(url));
+
+      // Try Thunderbit first for full-page content + structured fields
+      let tbExtract: ThunderbitExtract = {};
+      let page: ScrapedPage;
+      if (thunderbitKey && thunderbitBudget > 0) {
+        thunderbitBudget -= 1;
+        try {
+          const { markdown, extract } = await thunderbitDistillAndExtract(url, thunderbitKey);
+          tbExtract = extract;
+          const fallbackTitle = extract.business_name || snippet?.title || "";
+          page = markdown
+            ? pageFromThunderbit(url, `${fallbackTitle}\n${markdown}`, fallbackTitle)
+            : pageFromSearchResult(snippet ?? { url, title: fallbackTitle, description: "", markdown: "" });
+          thunderbitUsed += 1;
+        } catch (err) {
+          console.warn("Thunderbit fallback to snippet", url, err instanceof Error ? err.message : err);
+          page = pageFromSearchResult(snippet ?? { url, title: "", description: "", markdown: "" });
+        }
+      } else {
+        page = pageFromSearchResult(snippet ?? { url, title: "", description: "", markdown: "" });
+      }
+
       profilePagesScraped += 1;
-      const skipVerify = verifyBudget <= 0;
+      // If Thunderbit already gave us a website_url, we can skip the costly verify call
+      const skipVerify = verifyBudget <= 0 || !!tbExtract.website_url;
       const candidate = await parseCandidateFromProfile(page, trade, location, firecrawlKey, { skipVerify });
       if (!candidate) continue;
-      // Only "spend" verify budget if a verification call would have been made
       if (!skipVerify) verifyBudget -= 1;
+
+      // Merge Thunderbit-extracted fields (preferred over heuristic regex)
+      if (tbExtract.business_name) candidate.name = cleanCompanyName(tbExtract.business_name, trade, location) || candidate.name;
+      if (tbExtract.phone && !candidate.phone) candidate.phone = cleanText(tbExtract.phone, 40);
+      if (tbExtract.email && !candidate.email) candidate.email = cleanEmail(tbExtract.email);
+      if (tbExtract.website_url && !candidate.website_url) {
+        const normalized = normalizeUrl(tbExtract.website_url);
+        if (normalized && !isDirectoryHost(normalized) && isAcceptedSourceUrl(normalized)) {
+          candidate.website_url = normalized;
+          candidate.has_standalone_website = true;
+          candidate.website_status = "has_website";
+        }
+      }
+      if (tbExtract.social_url && !candidate.social_url) {
+        const normalized = normalizeUrl(tbExtract.social_url);
+        if (normalized) candidate.social_url = normalized;
+      }
+
       candidatesExtracted += 1;
       const name = cleanText(candidate.name, 100);
       const sourceUrl = cleanText(candidate.source_url, 500);
@@ -783,6 +825,8 @@ async function runLeadGeneration(jobId: string, supabase: ReturnType<typeof crea
       seenSourceUrls.add(normalizeUrl(sourceUrl));
       if (added.length >= limit) break;
     }
+
+    console.log(`[find-local-leads] thunderbit_used=${thunderbitUsed} profiles=${profilePagesScraped} added=${added.length}`);
 
     await updateJob({ progress: 75 });
 
