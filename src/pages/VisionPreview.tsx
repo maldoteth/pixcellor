@@ -180,7 +180,7 @@ export default function VisionPreview() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen w-full overflow-x-hidden bg-background text-foreground">
       <SeoHead
         title={preview?.title ? `${preview.title} — Pixcellor preview` : "Your Preview"}
         description="A custom AI-rendered website concept made for you by Pixcellor."
