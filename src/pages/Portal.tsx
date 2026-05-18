@@ -2421,13 +2421,6 @@ export default function Portal() {
               )}
               <div
                 className="max-h-[70vh] overflow-y-auto pr-1 space-y-2 rounded-none border border-border/40 bg-card/20 p-2"
-                onScroll={makeNearBottomHandler(() => {
-                  if (callbacksVisibleCount < salesCallbacks.length) {
-                    setCallbacksVisibleCount((n) => n + 10);
-                  } else if ((sectionCounts.contactEvents ?? 0) > contactEvents.length && !loadingMore.contactEvents) {
-                    loadMoreSection("contactEvents", contactEvents.length, 20);
-                  }
-                })}
               >
                 {salesCallbacks.slice(0, callbacksVisibleCount).map(e => {
                   const contact = getContact(e.contact_id);
