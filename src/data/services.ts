@@ -119,6 +119,7 @@ export const SERVICES: Service[] = [
       "Twitter/X, Telegram and Discord ramp-up",
       "Launch-day comms and incident response",
       "Post-launch holder engagement and retention",
+      "Investor outreach and launchpads",
     ],
     process: [
       "Strategy session and timeline lock",
