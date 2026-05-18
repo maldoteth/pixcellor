@@ -304,7 +304,7 @@ export default function VisionPreview() {
             {preview.brief && (
               <details className="border border-border p-3 text-sm text-muted-foreground">
                 <summary className="cursor-pointer text-foreground/80">Design brief</summary>
-                <pre className="mt-2 whitespace-pre-wrap text-xs">{preview.brief}</pre>
+                <pre className="mt-2 whitespace-pre-wrap break-words text-xs">{preview.brief}</pre>
               </details>
             )}
             {!requested ? (
