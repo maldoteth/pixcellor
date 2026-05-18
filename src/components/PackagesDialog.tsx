@@ -1111,8 +1111,8 @@ function MobileFreeSamplesCard() {
     <button
       type="button"
       onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }))}
-      className="group relative w-full overflow-hidden rounded-none border border-foreground/40 bg-background p-5 text-left transition-transform active:scale-[0.99] my-[10px]"
-      style={{ boxShadow: "0 0 0 1px hsl(var(--foreground) / 0.15), 0 8px 30px -10px hsl(var(--foreground) / 0.35)" }}
+      className="group relative w-full overflow-hidden rounded-none border border-[hsl(45,65%,55%)]/40 bg-background p-5 text-left transition-transform active:scale-[0.99] my-[10px]"
+      style={{ boxShadow: "0 0 0 1px hsl(45 65% 55% / 0.15), 0 8px 30px -10px hsl(45 65% 55% / 0.35)" }}
       aria-label="Request free samples — don't pay until you're happy"
     >
       <div
@@ -1120,19 +1120,19 @@ function MobileFreeSamplesCard() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "linear-gradient(135deg, hsl(var(--foreground) / 0.08) 0%, transparent 40%, transparent 60%, hsl(var(--foreground) / 0.08) 100%)",
+            "linear-gradient(135deg, hsl(45 65% 55% / 0.08) 0%, transparent 40%, transparent 60%, hsl(45 65% 55% / 0.08) 100%)",
         }}
       />
       <div className="relative z-10 flex items-center justify-between gap-4">
         <div className="flex flex-col">
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-foreground/30 bg-foreground/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[hsl(45,65%,55%)]/30 bg-[hsl(45,65%,55%)]/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(45,65%,55%)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[hsl(45,65%,55%)] animate-pulse" />
             Free
           </span>
-          <h3 className="mt-2 text-lg font-bold text-foreground leading-tight">Free DESIGN</h3>
-          <p className="text-xs text-foreground/70 mt-0.5">Don't pay till you're happy</p>
+          <h3 className="mt-2 text-lg font-bold text-[hsl(45,65%,75%)] leading-tight">Free DESIGN</h3>
+          <p className="text-xs text-[hsl(45,65%,55%)]/70 mt-0.5">Don't pay till you're happy</p>
         </div>
-        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-foreground/30 bg-foreground/10 text-foreground font-bold text-xs uppercase tracking-wide">
+        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-[hsl(45,65%,55%)]/30 bg-[hsl(45,65%,55%)]/10 text-[hsl(45,65%,55%)] font-bold text-xs uppercase tracking-wide">
           Try
         </div>
       </div>
