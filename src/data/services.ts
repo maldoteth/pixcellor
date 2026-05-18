@@ -369,8 +369,7 @@ export const SERVICES: Service[] = [
       "Data migrated from your existing system",
       "AI agents running on your pipeline",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "ecommerce-stores",
