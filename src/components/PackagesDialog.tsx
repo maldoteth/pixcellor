@@ -101,6 +101,10 @@ type ServiceItem = { name: string; info?: string };
 function ServiceItemRow({ item }: { item: ServiceItem }) {
   const [open, setOpen] = useState(false);
   const service = getServiceByName(item.name);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (open && scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [open]);
 
   return (
     <>
