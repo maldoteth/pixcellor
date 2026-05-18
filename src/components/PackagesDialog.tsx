@@ -419,7 +419,10 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
   // Mobile-only: track whether we entered via Services so closing pricing returns to services first
   const [mobileShowServices, setMobileShowServices] = useState(false);
   const [mobileCameFromServices, setMobileCameFromServices] = useState(false);
-  const effectiveOpen = mobileTop ? internalOpen : open;
+  // When no external `open` is provided, fall back to internal state so the dialog
+  // can be opened by the global "pixcellor:open-packages" event on any page.
+  const isExternallyControlled = open !== undefined;
+  const effectiveOpen = mobileTop || !isExternallyControlled ? internalOpen : open;
 
   useEffect(() => {
     if (!mobileTop || !isMobile) return;
@@ -435,17 +438,19 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
     return () => window.removeEventListener("pixcellor:open-packages", handler);
   }, [mobileTop, isMobile]);
 
-  // Desktop: capture spinIn / initial services intent
+  // Desktop: capture spinIn / initial services intent, and open internally if
+  // this instance isn't externally controlled (e.g. on the /services pages).
   useEffect(() => {
     if (isMobile) return;
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ spinIn?: boolean; services?: boolean }>).detail;
       setSpinIn(Boolean(detail?.spinIn));
       setInitialServices(Boolean(detail?.services));
+      if (!isExternallyControlled) setInternalOpen(true);
     };
     window.addEventListener("pixcellor:open-packages", handler);
     return () => window.removeEventListener("pixcellor:open-packages", handler);
-  }, [isMobile]);
+  }, [isMobile, isExternallyControlled]);
 
   // Reset transient flags on close
   useEffect(() => {
