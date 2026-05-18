@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/services";
 import { Button } from "@/components/ui/button";
+import { SERVICE_IMAGES } from "@/assets/services";
 
 function dispatchCta(action: ServiceCtaAction) {
   if (action === "request") {
