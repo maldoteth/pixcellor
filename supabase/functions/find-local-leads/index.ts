@@ -940,7 +940,7 @@ Deno.serve(async (req) => {
     if (jobError || !job) throw new Error(jobError?.message || "Failed to queue job");
 
     // @ts-ignore - EdgeRuntime is provided by the Supabase Edge runtime
-    EdgeRuntime.waitUntil(runLeadGeneration(job.id as string, supabase, firecrawlKey, trade, location, limit));
+    EdgeRuntime.waitUntil(runLeadGeneration(job.id as string, supabase, firecrawlKey, trade, location, limit, thunderbitKey));
 
     return new Response(JSON.stringify({ ok: true, job_id: job.id, status: "queued" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
