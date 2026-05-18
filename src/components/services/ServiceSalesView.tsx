@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/services";
 import { Button } from "@/components/ui/button";
+import { SERVICE_IMAGES } from "@/assets/services";
 
 function dispatchCta(action: ServiceCtaAction) {
   if (action === "request") {
@@ -62,15 +63,40 @@ export default function ServiceSalesView({
 }) {
   const cat = SERVICE_CATEGORIES[service.category];
   const Icon = cat.icon;
+  const heroImage = SERVICE_IMAGES[service.slug];
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
       {/* HERO */}
       <motion.section {...fadeUp} className="mb-12 md:mb-16">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-foreground/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-foreground/80">
-          <Icon className="h-3.5 w-3.5" />
-          <span>{cat.title}</span>
-        </div>
+        {heroImage && (
+          <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9]">
+            <img
+              src={heroImage}
+              alt={`${service.name} — ${service.tagline}`}
+              width={1280}
+              height={720}
+              className="absolute inset-0 h-full w-full object-cover"
+              decoding="async"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"
+            />
+            <div className="absolute left-5 top-5 md:left-7 md:top-7">
+              <div className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-background/50 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-foreground/90 backdrop-blur-md">
+                <Icon className="h-3.5 w-3.5" />
+                <span>{cat.title}</span>
+              </div>
+            </div>
+          </div>
+        )}
+        {!heroImage && (
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-foreground/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-foreground/80">
+            <Icon className="h-3.5 w-3.5" />
+            <span>{cat.title}</span>
+          </div>
+        )}
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
           {service.name}
         </h1>
@@ -198,21 +224,41 @@ export default function ServiceSalesView({
       {/* FOOTER CTA */}
       <motion.section
         {...fadeUp}
-        className="rounded-xl border border-foreground/15 bg-foreground/[0.04] p-6 md:p-10 text-center backdrop-blur-md"
+        className="relative overflow-hidden rounded-xl border border-foreground/15 bg-foreground/[0.04] p-6 md:p-10 text-center backdrop-blur-md"
       >
-        <h3 className="text-xl md:text-2xl font-bold">Ready to get started?</h3>
-        <p className="mt-2 text-sm md:text-base text-foreground/70 max-w-xl mx-auto">
-          {service.heroBlurb}
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} />
-          {service.secondaryCta && (
-            <CtaButton
-              label={service.secondaryCta.label}
-              action={service.secondaryCta.action}
-              variant="secondary"
+        {heroImage && (
+          <>
+            <img
+              src={heroImage}
+              alt=""
+              aria-hidden="true"
+              width={1280}
+              height={720}
+              loading="lazy"
+              decoding="async"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25"
             />
-          )}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
+            />
+          </>
+        )}
+        <div className="relative">
+          <h3 className="text-xl md:text-2xl font-bold">Ready to get started?</h3>
+          <p className="mt-2 text-sm md:text-base text-foreground/70 max-w-xl mx-auto">
+            {service.heroBlurb}
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} />
+            {service.secondaryCta && (
+              <CtaButton
+                label={service.secondaryCta.label}
+                action={service.secondaryCta.action}
+                variant="secondary"
+              />
+            )}
+          </div>
         </div>
       </motion.section>
     </div>
