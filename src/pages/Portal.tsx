@@ -3158,7 +3158,7 @@ export default function Portal() {
                     { value: "oldest", label: "Oldest" },
                     { value: "latest_update", label: "Updated" },
                     { value: "hot", label: "Hottest" },
-                    { value: "cold", label: "Cold → Hot" },
+                    { value: "cold", label: "Coldest" },
                   ] as const).map(opt => (
                     <button
                       key={opt.value}
