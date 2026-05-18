@@ -7,6 +7,7 @@ import ServiceSalesView from "@/components/services/ServiceSalesView";
 import LetsTalkPrompt from "@/components/LetsTalkPrompt";
 import PackagesDialog from "@/components/PackagesDialog";
 import { getServiceBySlug } from "@/data/services";
+import { SERVICE_SEO } from "@/data/serviceSeo";
 
 export default function ServicePage() {
   const { slug = "" } = useParams();
@@ -19,7 +20,11 @@ export default function ServicePage() {
   if (!service) return <Navigate to="/services" replace />;
 
   const url = `https://pixcellor.com/services/${service.slug}`;
-  const jsonLd = {
+  const seo = SERVICE_SEO[service.slug];
+  const seoTitle = seo?.title ?? `${service.name} — Pixcellor`;
+  const seoDescription = seo?.description ?? service.tagline;
+
+  const serviceLd = {
     "@context": "https://schema.org",
     "@type": "Service",
     name: service.name,
@@ -32,19 +37,45 @@ export default function ServicePage() {
       url: "https://pixcellor.com/",
     },
     areaServed: "Worldwide",
+    ...(seo?.keywords ? { keywords: seo.keywords.join(", ") } : {}),
+    ...(service.pricing
+      ? {
+          offers: {
+            "@type": "Offer",
+            description: service.pricing,
+            priceCurrency: "GBP",
+            url,
+          },
+        }
+      : {}),
+  };
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://pixcellor.com/" },
+      { "@type": "ListItem", position: 2, name: "Services", item: "https://pixcellor.com/services" },
+      { "@type": "ListItem", position: 3, name: service.name, item: url },
+    ],
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SeoHead
-        title={`${service.name} — Pixcellor`}
-        description={service.tagline}
+        title={seoTitle}
+        description={seoDescription}
         path={`/services/${service.slug}`}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+
 
       <header className="sticky top-0 z-30 border-b border-foreground/10 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3 md:px-10">
