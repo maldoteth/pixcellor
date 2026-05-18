@@ -1136,6 +1136,10 @@ function MobileShell({
   showServices: boolean;
   onShowServicesChange: (v: boolean) => void;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [showServices]);
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="mx-auto mt-3 h-2 w-[100px] flex-shrink-0 rounded-full bg-muted" />
@@ -1145,7 +1149,7 @@ function MobileShell({
         </h2>
         {!showServices && <StripeBadge />}
       </div>
-      <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
         <div className="mb-4">
           <MobileFreeSamplesCard />
         </div>
