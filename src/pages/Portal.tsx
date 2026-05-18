@@ -37,6 +37,7 @@ import { useDomainPrompt } from "@/components/DomainPromptDialog";
 import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
 import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPanel";
+import FindLeadsButton from "@/components/portal/FindLeadsButton";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 import SeoHead from "@/components/SeoHead";
 
