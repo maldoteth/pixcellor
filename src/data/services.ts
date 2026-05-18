@@ -577,8 +577,7 @@ export const SERVICES: Service[] = [
       "Documented data pipelines",
       "KPI playbook",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "api-third-party",
