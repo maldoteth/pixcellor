@@ -1129,7 +1129,7 @@ function MobileFreeSamplesCard() {
             <span className="h-1.5 w-1.5 rounded-full bg-[hsl(45,65%,55%)] animate-pulse" />
             Free
           </span>
-          <h3 className="mt-2 text-lg font-bold text-[hsl(45,65%,75%)] leading-tight">Free DESIGN</h3>
+          <h3 className="mt-2 text-lg font-bold text-[hsl(45,65%,75%)] leading-tight">FREE SAMPLES</h3>
           <p className="text-xs text-[hsl(45,65%,55%)]/70 mt-0.5">Don't pay till you're happy</p>
         </div>
         <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-[hsl(45,65%,55%)]/30 bg-[hsl(45,65%,55%)]/10 text-[hsl(45,65%,55%)] font-bold text-xs uppercase tracking-wide">
