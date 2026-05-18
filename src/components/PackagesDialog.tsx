@@ -16,6 +16,8 @@ import gpayLogo from "@/assets/gpay-logo.png";
 import BuyDetailsPrompt, { BuyerDetails, BuyerDomainChoice, VisionBrief } from "@/components/BuyDetailsPrompt";
 import HoneypotField from "@/components/HoneypotField";
 import { useAntiSpam } from "@/lib/anti-spam";
+import { getServiceByName } from "@/data/services";
+import ServiceSalesView from "@/components/services/ServiceSalesView";
 
 const PACKAGES = {
   fullWorks: {
