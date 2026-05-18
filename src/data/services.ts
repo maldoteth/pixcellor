@@ -191,8 +191,7 @@ export const SERVICES: Service[] = [
       "Lead pipeline from DMs and comments",
       "Performance dashboard",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "paid-ads-retargeting",
