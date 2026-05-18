@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, Search, ShoppingBag, Square, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 import { downloadImage } from "@/lib/download-image";
 
 const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
@@ -2345,7 +2345,12 @@ export default function Portal() {
       />
       <div className="mx-auto max-w-7xl min-w-0 space-y-6">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl md:text-3xl font-semibold">Dev Portal</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-semibold">Dev Portal</h1>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={loadPortalSnapshot} title="Refresh">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="flex shrink-0 items-center gap-2">
             <Button variant="pricing" size="sm" onClick={() => setDevChatOpen(true)}>
               <MessageSquare className="h-4 w-4" />
