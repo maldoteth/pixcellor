@@ -23,6 +23,8 @@ const CustomerPortal = lazy(() => import("./pages/CustomerPortal"));
 const Legal = lazy(() => import("./pages/Legal"));
 const VisionPreview = lazy(() => import("./pages/VisionPreview"));
 const AuthHandoff = lazy(() => import("./pages/AuthHandoff"));
+const ServicePage = lazy(() => import("./pages/ServicePage"));
+const ServicesIndex = lazy(() => import("./pages/ServicesIndex"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
