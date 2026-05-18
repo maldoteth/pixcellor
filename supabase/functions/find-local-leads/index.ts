@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const FIRECRAWL_V2 = "https://api.firecrawl.dev/v2";
+const THUNDERBIT_V1 = "https://openapi.thunderbit.com/openapi/v1";
 const CHECKATRADE_HOST_RE = /(^|\.)checkatrade\.com$/i;
 // Known directory/listing hosts — used for platform recognition + to identify "not a real own-domain" sources
 const DIRECTORY_HOSTS = [
@@ -627,7 +628,81 @@ async function runChunked<T, R>(items: T[], concurrency: number, worker: (item: 
   return results;
 }
 
-async function runLeadGeneration(jobId: string, supabase: ReturnType<typeof createClient>, firecrawlKey: string, trade: string, location: string, limit: number) {
+// ---------- Thunderbit: full-page fetch + structured extraction ----------
+const THUNDERBIT_LEAD_SCHEMA = {
+  business_name: "official business or trading name",
+  phone: "primary UK phone number in original format",
+  email: "primary contact email address",
+  website_url: "the business's own external website URL (not the directory page itself)",
+  social_url: "primary Facebook or Instagram profile URL for the business",
+  address: "street address or service area",
+  about: "1-2 sentence summary of what the business does",
+};
+
+type ThunderbitExtract = Partial<Record<keyof typeof THUNDERBIT_LEAD_SCHEMA, string>>;
+
+async function thunderbitFetch(path: string, body: Record<string, unknown>, apiKey: string, timeoutMs = 25000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${THUNDERBIT_V1}${path}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    const data = await response.json().catch(() => ({} as Record<string, unknown>));
+    if (!response.ok) throw new Error(`Thunderbit ${path} failed (${response.status}): ${JSON.stringify(data).slice(0, 240)}`);
+    return data as Record<string, unknown>;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function thunderbitDistillAndExtract(url: string, apiKey: string): Promise<{ markdown: string; extract: ThunderbitExtract }> {
+  const [distillRes, extractRes] = await Promise.allSettled([
+    thunderbitFetch("/distill", { url, render_mode: "basic", country_code: "GB", timeout: 20000 }, apiKey),
+    thunderbitFetch("/extract", { url, schema: THUNDERBIT_LEAD_SCHEMA, render_mode: "basic", country_code: "GB", timeout: 20000 }, apiKey),
+  ]);
+
+  const distillData = distillRes.status === "fulfilled" ? distillRes.value : {};
+  const extractData = extractRes.status === "fulfilled" ? extractRes.value : {};
+
+  const markdown = cleanText(
+    (distillData?.markdown as string) ??
+      (distillData?.content as string) ??
+      ((distillData?.data as Record<string, unknown>)?.markdown as string) ??
+      "",
+    18000,
+  );
+
+  const rawExtract =
+    (extractData?.data as Record<string, unknown>) ??
+    (extractData?.result as Record<string, unknown>) ??
+    (extractData?.fields as Record<string, unknown>) ??
+    extractData ??
+    {};
+
+  const extract: ThunderbitExtract = {};
+  for (const key of Object.keys(THUNDERBIT_LEAD_SCHEMA) as Array<keyof typeof THUNDERBIT_LEAD_SCHEMA>) {
+    const v = (rawExtract as Record<string, unknown>)[key];
+    if (typeof v === "string" && v.trim()) extract[key] = cleanText(v, 500);
+  }
+  return { markdown, extract };
+}
+
+function pageFromThunderbit(url: string, markdown: string, fallbackTitle: string): ScrapedPage {
+  return {
+    url: normalizeUrl(url) || url,
+    title: cleanText(fallbackTitle, 200),
+    markdown: cleanText(markdown, 18000),
+    html: "",
+    links: [],
+    statusCode: 200,
+  };
+}
+
+async function runLeadGeneration(jobId: string, supabase: ReturnType<typeof createClient>, firecrawlKey: string, trade: string, location: string, limit: number, thunderbitKey?: string) {
   const startedAt = Date.now();
   const wallClockBudgetMs = 110_000; // ~110s safety budget
 
@@ -671,16 +746,58 @@ async function runLeadGeneration(jobId: string, supabase: ReturnType<typeof crea
     let candidatesExtracted = 0;
     let verifyBudget = 12; // cap calls to verifyOwnWebsite per run
     let phoneRevealBudget = 6; // cap calls to revealPhoneFromProfile per run
+    let thunderbitBudget = thunderbitKey ? 12 : 0; // cap Thunderbit calls per run
+    let thunderbitUsed = 0;
 
     for (const url of profileUrls) {
       if (Date.now() - startedAt > wallClockBudgetMs) break;
-      const page = pageFromSearchResult(searchResults.find((result) => normalizeUrl(result.url) === normalizeUrl(url)) ?? { url, title: "", description: "", markdown: "" });
+      const snippet = searchResults.find((result) => normalizeUrl(result.url) === normalizeUrl(url));
+
+      // Try Thunderbit first for full-page content + structured fields
+      let tbExtract: ThunderbitExtract = {};
+      let page: ScrapedPage;
+      if (thunderbitKey && thunderbitBudget > 0) {
+        thunderbitBudget -= 1;
+        try {
+          const { markdown, extract } = await thunderbitDistillAndExtract(url, thunderbitKey);
+          tbExtract = extract;
+          const fallbackTitle = extract.business_name || snippet?.title || "";
+          page = markdown
+            ? pageFromThunderbit(url, `${fallbackTitle}\n${markdown}`, fallbackTitle)
+            : pageFromSearchResult(snippet ?? { url, title: fallbackTitle, description: "", markdown: "" });
+          thunderbitUsed += 1;
+        } catch (err) {
+          console.warn("Thunderbit fallback to snippet", url, err instanceof Error ? err.message : err);
+          page = pageFromSearchResult(snippet ?? { url, title: "", description: "", markdown: "" });
+        }
+      } else {
+        page = pageFromSearchResult(snippet ?? { url, title: "", description: "", markdown: "" });
+      }
+
       profilePagesScraped += 1;
-      const skipVerify = verifyBudget <= 0;
+      // If Thunderbit already gave us a website_url, we can skip the costly verify call
+      const skipVerify = verifyBudget <= 0 || !!tbExtract.website_url;
       const candidate = await parseCandidateFromProfile(page, trade, location, firecrawlKey, { skipVerify });
       if (!candidate) continue;
-      // Only "spend" verify budget if a verification call would have been made
       if (!skipVerify) verifyBudget -= 1;
+
+      // Merge Thunderbit-extracted fields (preferred over heuristic regex)
+      if (tbExtract.business_name) candidate.name = cleanCompanyName(tbExtract.business_name, trade, location) || candidate.name;
+      if (tbExtract.phone && !candidate.phone) candidate.phone = cleanText(tbExtract.phone, 40);
+      if (tbExtract.email && !candidate.email) candidate.email = cleanEmail(tbExtract.email);
+      if (tbExtract.website_url && !candidate.website_url) {
+        const normalized = normalizeUrl(tbExtract.website_url);
+        if (normalized && !isDirectoryHost(normalized) && isAcceptedSourceUrl(normalized)) {
+          candidate.website_url = normalized;
+          candidate.has_standalone_website = true;
+          candidate.website_status = "has_website";
+        }
+      }
+      if (tbExtract.social_url && !candidate.social_url) {
+        const normalized = normalizeUrl(tbExtract.social_url);
+        if (normalized) candidate.social_url = normalized;
+      }
+
       candidatesExtracted += 1;
       const name = cleanText(candidate.name, 100);
       const sourceUrl = cleanText(candidate.source_url, 500);
@@ -708,6 +825,8 @@ async function runLeadGeneration(jobId: string, supabase: ReturnType<typeof crea
       seenSourceUrls.add(normalizeUrl(sourceUrl));
       if (added.length >= limit) break;
     }
+
+    console.log(`[find-local-leads] thunderbit_used=${thunderbitUsed} profiles=${profilePagesScraped} added=${added.length}`);
 
     await updateJob({ progress: 75 });
 
@@ -791,6 +910,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
+    const thunderbitKey = Deno.env.get("THUNDERBIT_API_KEY");
     if (!firecrawlKey) throw new Error("Firecrawl connector is not configured");
 
     const supabase = createClient(supabaseUrl, serviceKey);
@@ -820,7 +940,7 @@ Deno.serve(async (req) => {
     if (jobError || !job) throw new Error(jobError?.message || "Failed to queue job");
 
     // @ts-ignore - EdgeRuntime is provided by the Supabase Edge runtime
-    EdgeRuntime.waitUntil(runLeadGeneration(job.id as string, supabase, firecrawlKey, trade, location, limit));
+    EdgeRuntime.waitUntil(runLeadGeneration(job.id as string, supabase, firecrawlKey, trade, location, limit, thunderbitKey));
 
     return new Response(JSON.stringify({ ok: true, job_id: job.id, status: "queued" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
