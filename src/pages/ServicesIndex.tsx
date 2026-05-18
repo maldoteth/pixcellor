@@ -55,12 +55,12 @@ export default function ServicesIndex() {
                         className="group flex h-full flex-col gap-2 rounded-lg border border-foreground/10 bg-foreground/[0.03] p-5 backdrop-blur-md transition-colors hover:border-foreground/30 hover:bg-foreground/[0.06]"
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="text-base font-semibold leading-tight">{s.name}</h3>
-                          <ArrowUpRight className="h-4 w-4 shrink-0 text-foreground/40 group-hover:text-foreground" />
+                          <h3 className="text-base font-semibold leading-tight text-foreground/90 transition-colors group-hover:text-white">{s.name}</h3>
+                          <ArrowUpRight className="h-4 w-4 shrink-0 text-foreground/40 transition-colors group-hover:text-foreground" />
                         </div>
-                        <p className="text-sm leading-relaxed text-foreground/70">{s.tagline}</p>
+                        <p className="text-sm leading-relaxed text-foreground/70 transition-colors group-hover:text-foreground/90">{s.tagline}</p>
                         {s.pricing && (
-                          <p className="mt-1 text-[11px] uppercase tracking-wider text-foreground/50">
+                          <p className="mt-1 text-[11px] uppercase tracking-wider text-foreground/50 transition-colors group-hover:text-foreground/70">
                             {s.pricing}
                           </p>
                         )}
