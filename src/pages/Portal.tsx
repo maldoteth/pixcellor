@@ -3207,13 +3207,6 @@ export default function Portal() {
                 {clientBookContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {profilesQ ? "match your search" : "yet"}.</p>}
                 <div
                   className="max-h-[70vh] overflow-y-auto pr-1 space-y-2 rounded-none border border-border/40 bg-card/20 p-2"
-                  onScroll={makeNearBottomHandler(() => {
-                    if (clientsVisibleCount < clientBookContacts.length) {
-                      setClientsVisibleCount((n) => n + 10);
-                    } else if ((sectionCounts.contacts ?? 0) > contacts.length && !loadingMore.contacts) {
-                      loadMoreSection("contacts", contacts.length, 20);
-                    }
-                  })}
                 >
                   {clientBookContacts.slice(0, clientsVisibleCount).map(c => {
                     const stats = contactOrderStatsByEmail.get(normalizeEmail(c.email) ?? "");
