@@ -645,3 +645,32 @@ export const getServiceBySlug = (slug: string) =>
 
 export const getServicesByCategory = (cat: ServiceCategory) =>
   SERVICES.filter((s) => s.category === cat);
+
+// Map historical SERVICE_BACKS row names → slugs so existing PackagesDialog rows can link to the new sales pages.
+const NAME_TO_SLUG: Record<string, string> = {
+  "Telesales campaigns": "telesales-campaigns",
+  "GTM and Lead Generation": "gtm-lead-generation",
+  "Token launches": "token-launches",
+  "SEO & AEO optimisation": "seo-aeo-optimisation",
+  "Social media automation": "social-media-automation",
+  "Paid ads & retargeting": "paid-ads-retargeting",
+  "Landing pages": "landing-pages",
+  "Animated sites": "animated-sites",
+  "Full web apps": "full-web-apps",
+  "Internal tools": "internal-tools",
+  "CRM systems": "crm-systems",
+  "E-commerce stores": "ecommerce-stores",
+  "Blockchain integrations": "blockchain-integrations",
+  "Recruitment & ATS": "recruitment-ats",
+  "Payroll & HR tooling": "payroll-hr-tooling",
+  "AI integrations & agents": "ai-integrations-agents",
+  "Consultations and audits": "consultations-audits",
+  "Consultations & audits": "analytics-dashboards",
+  "API & third-party": "api-third-party",
+  "Product/project management": "product-project-management",
+};
+
+export const getServiceByName = (name: string) => {
+  const slug = NAME_TO_SLUG[name];
+  return slug ? getServiceBySlug(slug) : undefined;
+};
