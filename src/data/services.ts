@@ -184,7 +184,7 @@ export const SERVICES: Service[] = [
     process: [
       "Brand voice + content pillar workshop",
       "Tooling + automation setup",
-      "Two-week content sprint",
+      "Campaign run + review",
       "Hand over, or we keep running it",
     ],
     deliverables: [
