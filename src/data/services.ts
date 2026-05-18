@@ -311,7 +311,7 @@ export const SERVICES: Service[] = [
       "Source code + technical documentation",
       "Admin tooling for your team",
     ],
-    primaryCta: requestCta,
+    primaryCta: salesCta,
     secondaryCta: pricingCta,
   },
   {
