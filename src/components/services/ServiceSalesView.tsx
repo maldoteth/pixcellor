@@ -63,9 +63,11 @@ const fadeUp = {
 export default function ServiceSalesView({
   service,
   showPermalink = false,
+  onAction,
 }: {
   service: Service;
   showPermalink?: boolean;
+  onAction?: () => void;
 }) {
   const cat = SERVICE_CATEGORIES[service.category];
   const Icon = cat.icon;
