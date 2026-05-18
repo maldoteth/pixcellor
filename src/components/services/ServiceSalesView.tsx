@@ -163,7 +163,7 @@ export default function ServiceSalesView({
           </div>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="text-lg md:text-2xl font-semibold">{service.pricing}</div>
-            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} />
+            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} onAction={onAction} />
           </div>
         </motion.section>
       )}
