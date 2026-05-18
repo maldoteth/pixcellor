@@ -107,7 +107,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "token-launches",
-    name: "Token launches",
+    name: "Tokenization & launches",
     category: "marketing",
     info: "We will help you create a buzz and get the word out with targeted messaging.",
     tagline: "Launch loud. Launch credible.",
@@ -650,6 +650,7 @@ export const getServicesByCategory = (cat: ServiceCategory) =>
 const NAME_TO_SLUG: Record<string, string> = {
   "Telesales campaigns": "telesales-campaigns",
   "GTM and Lead Generation": "gtm-lead-generation",
+  "Tokenization & launches": "token-launches",
   "Token launches": "token-launches",
   "SEO & AEO optimisation": "seo-aeo-optimisation",
   "Social media automation": "social-media-automation",
