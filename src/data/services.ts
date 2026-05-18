@@ -522,8 +522,7 @@ export const SERVICES: Service[] = [
       "Admin dashboard with logs",
       "Training and runbooks",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "consultations-audits",
