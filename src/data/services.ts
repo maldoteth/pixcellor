@@ -663,7 +663,7 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Blockchain integrations": "blockchain-integrations",
   "Recruitment & ATS": "recruitment-ats",
   "Payroll & HR tooling": "payroll-hr-tooling",
-  "AI integrations & agents": "ai-integrations-agents",
+  "AI agents and integrations": "ai-integrations-agents",
   "Consultations and audits": "consultations-audits",
   "Consultations & audits": "analytics-dashboards",
   "API & third-party": "api-third-party",
