@@ -188,48 +188,27 @@ function PaymentMethodIcons() {
   return (
     <div className="flex items-center justify-center mt-2 gap-[21px]">
       {/* Visa */}
-      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>
-        <rect width="48" height="32" rx="2" fill="url(#visaGold)"/>
-        <defs>
-          <linearGradient id="visaGold" x1="0" y1="0" x2="48" y2="32" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#f5e6a8"/>
-            <stop offset="0.5" stopColor="#d4af37"/>
-            <stop offset="1" stopColor="#8a6a1f"/>
-          </linearGradient>
-        </defs>
-        <text x="24" y="20" textAnchor="middle" fontSize="12" fontWeight="bold" fontStyle="italic" fill="#1a1205">VISA</text>
+      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
+        <rect width="48" height="32" fill="currentColor" className="text-foreground"/>
+        <text x="24" y="20" textAnchor="middle" fontSize="12" fontWeight="bold" fontStyle="italic" fill="currentColor" className="text-background">VISA</text>
       </svg>
       {/* Mastercard */}
-      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>
-        <rect width="48" height="32" rx="2" fill="url(#mcGold)"/>
-        <defs>
-          <linearGradient id="mcGold" x1="0" y1="0" x2="48" y2="32" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#f5e6a8"/>
-            <stop offset="0.5" stopColor="#d4af37"/>
-            <stop offset="1" stopColor="#8a6a1f"/>
-          </linearGradient>
-        </defs>
-        <circle cx="20" cy="16" r="8" fill="#1a1205" opacity="0.95"/>
-        <circle cx="28" cy="16" r="8" fill="#1a1205" opacity="0.7"/>
+      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
+        <rect width="48" height="32" fill="currentColor" className="text-foreground"/>
+        <circle cx="20" cy="16" r="8" fill="currentColor" className="text-background" opacity="0.95"/>
+        <circle cx="28" cy="16" r="8" fill="currentColor" className="text-background" opacity="0.7"/>
       </svg>
       {/* Amex */}
-      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>
-        <rect width="48" height="32" rx="2" fill="url(#amexGold)"/>
-        <defs>
-          <linearGradient id="amexGold" x1="0" y1="0" x2="48" y2="32" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#f5e6a8"/>
-            <stop offset="0.5" stopColor="#d4af37"/>
-            <stop offset="1" stopColor="#8a6a1f"/>
-          </linearGradient>
-        </defs>
-        <text x="24" y="18" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1a1205">AMEX</text>
+      <svg viewBox="0 0 48 32" className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7" fill="none">
+        <rect width="48" height="32" fill="currentColor" className="text-foreground"/>
+        <text x="24" y="18" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="currentColor" className="text-background">AMEX</text>
       </svg>
       {/* Apple Pay */}
-      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 flex items-center justify-center rounded-sm" style={{ background: "linear-gradient(135deg, #f5e6a8 0%, #d4af37 50%, #8a6a1f 100%)", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>
+      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 flex items-center justify-center" style={{ background: "rgba(255,255,255,1)" }}>
         <img src={applePayLogo} alt="Apple Pay" className="h-5 md:h-4 w-auto" style={{ filter: "brightness(0)", opacity: 1 }} />
       </div>
       {/* Google Pay */}
-      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 flex items-center justify-center rounded-sm" style={{ background: "linear-gradient(135deg, #f5e6a8 0%, #d4af37 50%, #8a6a1f 100%)", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>
+      <div className="w-[3.3rem] h-[2.15rem] md:w-11 md:h-7 flex items-center justify-center" style={{ background: "rgba(255,255,255,1)" }}>
         <img src={gpayLogo} alt="Google Pay" className="h-5 md:h-4 w-auto" style={{ filter: "brightness(0)", opacity: 1 }} />
       </div>
     </div>
@@ -1097,12 +1076,11 @@ function ServiceBackCard({
           <div
             className="flex h-10 w-10 items-center justify-center rounded-lg"
             style={{
-              background: "linear-gradient(135deg, #f5e6a8 0%, #d4af37 50%, #8a6a1f 100%)",
-              border: "1px solid #d4af37",
-              boxShadow: "0 2px 8px rgba(212,175,55,0.35)",
+              background: "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))",
+              border: "1px solid rgba(255,255,255,0.2)",
             }}
           >
-            <Icon className="h-5 w-5" style={{ color: "#1a1205" }} />
+            <Icon className="h-5 w-5 text-foreground" />
           </div>
           <h3 className="text-lg font-bold text-foreground">{data.title}</h3>
         </div>
