@@ -503,7 +503,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "ai-integrations-agents",
-    name: "AI integrations & agents",
+    name: "AI agents and integrations",
     category: "business",
     info: "Automate your entire business and workflow with highly secure and sophisticated agents that work 24/7, 365, custom built to maximise your ROI.",
     tagline: "Agents that run your business while you sleep.",
