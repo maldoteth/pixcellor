@@ -114,12 +114,13 @@ export default function ServiceSalesView({
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
-          <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} />
+          <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} onAction={onAction} />
           {service.secondaryCta && (
             <CtaButton
               label={service.secondaryCta.label}
               action={service.secondaryCta.action}
               variant="secondary"
+              onAction={onAction}
             />
           )}
           {showPermalink && (
