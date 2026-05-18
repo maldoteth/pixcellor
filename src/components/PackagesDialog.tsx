@@ -478,6 +478,8 @@ export default function PackagesDialog({ open, onOpenChange, mobileTop = false, 
         return;
       }
       setInternalOpen(next);
+    } else if (!isExternallyControlled) {
+      setInternalOpen(next);
     }
     onOpenChange?.(next);
   };
