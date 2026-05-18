@@ -73,7 +73,6 @@ export const SERVICES: Service[] = [
     pricing: "£22 / hour — every call recorded, full CRM access included",
     clients: ["3M", "Barclays Bank", "Guide Dogs"],
     primaryCta: salesCta,
-    secondaryCta: requestCta,
   },
   {
     slug: "gtm-lead-generation",
@@ -163,8 +162,7 @@ export const SERVICES: Service[] = [
       "Published content cluster",
       "Monthly performance dashboard",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "social-media-automation",
@@ -193,8 +191,7 @@ export const SERVICES: Service[] = [
       "Lead pipeline from DMs and comments",
       "Performance dashboard",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "paid-ads-retargeting",
@@ -314,7 +311,7 @@ export const SERVICES: Service[] = [
       "Source code + technical documentation",
       "Admin tooling for your team",
     ],
-    primaryCta: requestCta,
+    primaryCta: salesCta,
     secondaryCta: pricingCta,
   },
   {
@@ -343,8 +340,7 @@ export const SERVICES: Service[] = [
       "Automation workflows",
       "Team training and documentation",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "crm-systems",
@@ -373,8 +369,7 @@ export const SERVICES: Service[] = [
       "Data migrated from your existing system",
       "AI agents running on your pipeline",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "ecommerce-stores",
@@ -402,8 +397,7 @@ export const SERVICES: Service[] = [
       "Email/SMS automation flows",
       "Analytics and conversion tracking",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "blockchain-integrations",
@@ -528,8 +522,7 @@ export const SERVICES: Service[] = [
       "Admin dashboard with logs",
       "Training and runbooks",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "consultations-audits",
@@ -584,8 +577,7 @@ export const SERVICES: Service[] = [
       "Documented data pipelines",
       "KPI playbook",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "api-third-party",

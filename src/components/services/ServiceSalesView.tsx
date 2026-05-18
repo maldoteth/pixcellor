@@ -5,30 +5,36 @@ import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/
 import { Button } from "@/components/ui/button";
 import { SERVICE_IMAGES } from "@/assets/services";
 
-function dispatchCta(action: ServiceCtaAction) {
-  if (action === "request") {
-    window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }));
-  } else if (action === "sales") {
-    window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "sales" } }));
-  } else if (action === "pricing") {
-    window.dispatchEvent(new CustomEvent("pixcellor:open-packages"));
-  }
+function dispatchCta(action: ServiceCtaAction, onAction?: () => void) {
+  onAction?.();
+  // Defer so the closing drawer doesn't swallow the focus / pointer events.
+  setTimeout(() => {
+    if (action === "request") {
+      window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }));
+    } else if (action === "sales") {
+      window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "sales" } }));
+    } else if (action === "pricing") {
+      window.dispatchEvent(new CustomEvent("pixcellor:open-packages"));
+    }
+  }, 60);
 }
 
 function CtaButton({
   label,
   action,
   variant = "primary",
+  onAction,
 }: {
   label: string;
   action: ServiceCtaAction;
   variant?: "primary" | "secondary";
+  onAction?: () => void;
 }) {
   if (variant === "primary") {
     return (
       <Button
         variant="goldPricing"
-        onClick={() => dispatchCta(action)}
+        onClick={() => dispatchCta(action, onAction)}
         className="h-auto px-5 py-3 text-sm font-semibold uppercase tracking-wider"
       >
         {label} <ArrowRight className="h-4 w-4" />
@@ -38,7 +44,7 @@ function CtaButton({
   return (
     <button
       type="button"
-      onClick={() => dispatchCta(action)}
+      onClick={() => dispatchCta(action, onAction)}
       className="inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-semibold uppercase tracking-wider transition-all hover:brightness-110 active:scale-[0.98] border border-foreground/20 bg-background/30 text-foreground backdrop-blur-md hover:bg-background/50"
     >
       {label}
@@ -57,9 +63,11 @@ const fadeUp = {
 export default function ServiceSalesView({
   service,
   showPermalink = false,
+  onAction,
 }: {
   service: Service;
   showPermalink?: boolean;
+  onAction?: () => void;
 }) {
   const cat = SERVICE_CATEGORIES[service.category];
   const Icon = cat.icon;
@@ -106,12 +114,13 @@ export default function ServiceSalesView({
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
-          <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} />
+          <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} onAction={onAction} />
           {service.secondaryCta && (
             <CtaButton
               label={service.secondaryCta.label}
               action={service.secondaryCta.action}
               variant="secondary"
+              onAction={onAction}
             />
           )}
           {showPermalink && (
@@ -154,7 +163,7 @@ export default function ServiceSalesView({
           </div>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="text-lg md:text-2xl font-semibold">{service.pricing}</div>
-            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} />
+            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} onAction={onAction} />
           </div>
         </motion.section>
       )}
@@ -250,12 +259,13 @@ export default function ServiceSalesView({
             {service.heroBlurb}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} />
+            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} onAction={onAction} />
             {service.secondaryCta && (
               <CtaButton
                 label={service.secondaryCta.label}
                 action={service.secondaryCta.action}
                 variant="secondary"
+                onAction={onAction}
               />
             )}
           </div>

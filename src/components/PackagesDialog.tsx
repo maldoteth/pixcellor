@@ -140,7 +140,7 @@ function ServiceItemRow({ item }: { item: ServiceItem }) {
               <DrawerDescription className="sr-only">{item.info}</DrawerDescription>
               <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain">
                 {service ? (
-                  <ServiceSalesView service={service} showPermalink />
+                  <ServiceSalesView service={service} showPermalink onAction={() => setOpen(false)} />
                 ) : (
                   <div className="mx-auto max-w-2xl px-5 py-16 text-foreground">
                     <h2 className="text-2xl font-bold">{item.name}</h2>
