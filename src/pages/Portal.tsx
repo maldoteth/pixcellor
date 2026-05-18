@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -3262,30 +3262,24 @@ export default function Portal() {
                             </div>
                           </div>
                           <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">
-                            {[
-                              c.email ? (
-                                <a
-                                  key="email"
-                                  href={`mailto:${c.email}`}
-                                  className="text-primary underline-offset-4 hover:underline"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {c.email}
-                                </a>
-                              ) : null,
-                              c.phone ? (
-                                <a
-                                  key="phone"
-                                  href={formatPhoneHref(c.phone) || undefined}
-                                  className="text-primary underline-offset-4 hover:underline"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {c.phone}
-                                </a>
-                              ) : null,
-                              c.location,
-                              c.industry,
-                            ].filter(Boolean).join(" · ") || "No details on file"}
+                            {(() => {
+                              const parts: React.ReactNode[] = [];
+                              if (c.email) parts.push(
+                                <a key="email" href={`mailto:${c.email}`} className="text-primary underline-offset-4 hover:underline" onClick={(e) => e.stopPropagation()}>{c.email}</a>
+                              );
+                              if (c.phone) parts.push(
+                                <a key="phone" href={formatPhoneHref(c.phone) || undefined} className="text-primary underline-offset-4 hover:underline" onClick={(e) => e.stopPropagation()}>{c.phone}</a>
+                              );
+                              if (c.location) parts.push(<span key="loc">{c.location}</span>);
+                              if (c.industry) parts.push(<span key="ind">{c.industry}</span>);
+                              if (parts.length === 0) return "No details on file";
+                              return parts.map((node, i) => (
+                                <React.Fragment key={i}>
+                                  {i > 0 && <span className="mx-1">·</span>}
+                                  {node}
+                                </React.Fragment>
+                              ));
+                            })()}
                           </div>
                           {c.notes && <LinkifiedText text={c.notes} className="block text-sm text-muted-foreground" stopPropagation />}
                         </CardContent>
