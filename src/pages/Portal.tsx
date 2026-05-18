@@ -3262,7 +3262,30 @@ export default function Portal() {
                             </div>
                           </div>
                           <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">
-                            {[c.email, c.phone, c.location, c.industry].filter(Boolean).join(" · ") || "No details on file"}
+                            {[
+                              c.email ? (
+                                <a
+                                  key="email"
+                                  href={`mailto:${c.email}`}
+                                  className="text-primary underline-offset-4 hover:underline"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {c.email}
+                                </a>
+                              ) : null,
+                              c.phone ? (
+                                <a
+                                  key="phone"
+                                  href={formatPhoneHref(c.phone) || undefined}
+                                  className="text-primary underline-offset-4 hover:underline"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {c.phone}
+                                </a>
+                              ) : null,
+                              c.location,
+                              c.industry,
+                            ].filter(Boolean).join(" · ") || "No details on file"}
                           </div>
                           {c.notes && <LinkifiedText text={c.notes} className="block text-sm text-muted-foreground" stopPropagation />}
                         </CardContent>
