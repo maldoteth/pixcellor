@@ -162,8 +162,7 @@ export const SERVICES: Service[] = [
       "Published content cluster",
       "Monthly performance dashboard",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "social-media-automation",
