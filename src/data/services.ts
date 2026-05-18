@@ -503,7 +503,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "ai-integrations-agents",
-    name: "AI integrations & agents",
+    name: "AI agents and integrations",
     category: "business",
     info: "Automate your entire business and workflow with highly secure and sophisticated agents that work 24/7, 365, custom built to maximise your ROI.",
     tagline: "Agents that run your business while you sleep.",
@@ -663,7 +663,7 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Blockchain integrations": "blockchain-integrations",
   "Recruitment & ATS": "recruitment-ats",
   "Payroll & HR tooling": "payroll-hr-tooling",
-  "AI integrations & agents": "ai-integrations-agents",
+  "AI agents and integrations": "ai-integrations-agents",
   "Consultations and audits": "consultations-audits",
   "Consultations & audits": "analytics-dashboards",
   "API & third-party": "api-third-party",
