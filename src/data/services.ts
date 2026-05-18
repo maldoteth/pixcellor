@@ -340,8 +340,7 @@ export const SERVICES: Service[] = [
       "Automation workflows",
       "Team training and documentation",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "crm-systems",
