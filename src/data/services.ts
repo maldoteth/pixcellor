@@ -73,7 +73,6 @@ export const SERVICES: Service[] = [
     pricing: "£22 / hour — every call recorded, full CRM access included",
     clients: ["3M", "Barclays Bank", "Guide Dogs"],
     primaryCta: salesCta,
-    secondaryCta: requestCta,
   },
   {
     slug: "gtm-lead-generation",
