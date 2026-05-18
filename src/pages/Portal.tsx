@@ -2421,13 +2421,6 @@ export default function Portal() {
               )}
               <div
                 className="max-h-[70vh] overflow-y-auto pr-1 space-y-2 rounded-none border border-border/40 bg-card/20 p-2"
-                onScroll={makeNearBottomHandler(() => {
-                  if (callbacksVisibleCount < salesCallbacks.length) {
-                    setCallbacksVisibleCount((n) => n + 10);
-                  } else if ((sectionCounts.contactEvents ?? 0) > contactEvents.length && !loadingMore.contactEvents) {
-                    loadMoreSection("contactEvents", contactEvents.length, 20);
-                  }
-                })}
               >
                 {salesCallbacks.slice(0, callbacksVisibleCount).map(e => {
                   const contact = getContact(e.contact_id);
@@ -2651,11 +2644,6 @@ export default function Portal() {
             )}
             <div
               className={orderReqsFilter !== "samples" ? "max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2" : ""}
-              onScroll={orderReqsFilter !== "samples" ? makeNearBottomHandler(() => {
-                if ((sectionCounts.orders ?? 0) > orders.length && !loadingMore.orders) {
-                  loadMoreSection("orders", orders.length, 20);
-                }
-              }) : undefined}
             >
             {orderReqsFilter !== "samples" && filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
@@ -2895,11 +2883,6 @@ export default function Portal() {
             </p>
             <div
               className="max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2"
-              onScroll={makeNearBottomHandler(() => {
-                if ((sectionCounts.falloffs ?? 0) > falloffs.length && !loadingMore.falloffs) {
-                  loadMoreSection("falloffs", falloffs.length, 20);
-                }
-              })}
             >
             {filteredFalloffs.map(f => (
                <Card key={f.id} className="min-w-0 overflow-hidden">
@@ -3081,11 +3064,6 @@ export default function Portal() {
           <TabsContent value="chats" className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
             <div
               className="space-y-2 max-h-[70vh] overflow-y-auto pr-1 rounded-none border border-border/40 bg-card/20 p-2"
-              onScroll={makeNearBottomHandler(() => {
-                if ((sectionCounts.conversations ?? 0) > conversations.length && !loadingMore.conversations) {
-                  loadMoreSection("conversations", conversations.length, 20);
-                }
-              })}
             >
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -3229,13 +3207,6 @@ export default function Portal() {
                 {clientBookContacts.length === 0 && <p className="text-muted-foreground text-sm">No contacts {profilesQ ? "match your search" : "yet"}.</p>}
                 <div
                   className="max-h-[70vh] overflow-y-auto pr-1 space-y-2 rounded-none border border-border/40 bg-card/20 p-2"
-                  onScroll={makeNearBottomHandler(() => {
-                    if (clientsVisibleCount < clientBookContacts.length) {
-                      setClientsVisibleCount((n) => n + 10);
-                    } else if ((sectionCounts.contacts ?? 0) > contacts.length && !loadingMore.contacts) {
-                      loadMoreSection("contacts", contacts.length, 20);
-                    }
-                  })}
                 >
                   {clientBookContacts.slice(0, clientsVisibleCount).map(c => {
                     const stats = contactOrderStatsByEmail.get(normalizeEmail(c.email) ?? "");
