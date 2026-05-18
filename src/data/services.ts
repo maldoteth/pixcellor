@@ -397,8 +397,7 @@ export const SERVICES: Service[] = [
       "Email/SMS automation flows",
       "Analytics and conversion tracking",
     ],
-    primaryCta: requestCta,
-    secondaryCta: salesCta,
+    primaryCta: salesCta,
   },
   {
     slug: "blockchain-integrations",
