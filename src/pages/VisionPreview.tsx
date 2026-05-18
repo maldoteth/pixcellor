@@ -39,6 +39,11 @@ export default function VisionPreview() {
   const [needPhone, setNeedPhone] = useState(false);
   const [phoneInput, setPhoneInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [tab]);
 
   useEffect(() => {
     let active = true;
