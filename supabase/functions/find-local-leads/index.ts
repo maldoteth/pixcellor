@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const FIRECRAWL_V2 = "https://api.firecrawl.dev/v2";
+const THUNDERBIT_V1 = "https://openapi.thunderbit.com/openapi/v1";
 const CHECKATRADE_HOST_RE = /(^|\.)checkatrade\.com$/i;
 // Known directory/listing hosts — used for platform recognition + to identify "not a real own-domain" sources
 const DIRECTORY_HOSTS = [
