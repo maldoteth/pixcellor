@@ -3164,13 +3164,14 @@ export default function Portal() {
             <div className="min-w-0 space-y-2">
               <DuplicateContactsPanel contacts={contacts} onMerged={loadPortalSnapshot} />
               <div className="flex flex-wrap items-center gap-2">
-                <div className="relative flex-1 min-w-[220px]">
+                <div className="relative flex-1 min-w-[220px] md:max-w-[65%]">
                   <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input value={profilesSearch} onChange={(e) => { setProfilesSearch(e.target.value); setClientsVisibleCount(10); }} placeholder="Search the contact book by name, email, company, phone, notes…" className="pl-9" />
                 </div>
                 <Button onClick={openMobileContactForm} className="h-9 shrink-0">
                   <UserPlus className="w-4 h-4 mr-2" /> Add Client
                 </Button>
+                <FindLeadsButton onQueued={loadPortalSnapshot} />
               </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="text-muted-foreground text-lg text-slate-50 bg-white/0">Sort:</span>
