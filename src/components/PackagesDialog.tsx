@@ -292,13 +292,7 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
             e.stopPropagation();
             openRequest();
           }}
-          className="request-shimmer mt-1 rounded-sm px-2 py-[2px] text-[8px] font-extrabold uppercase tracking-wider shadow transition hover:brightness-110"
-          style={{
-            background: "linear-gradient(135deg, #f5e6a8 0%, #d4af37 50%, #8a6a1f 100%)",
-            border: "1px solid #d4af37",
-            color: "#1a1205",
-            boxShadow: "0 0 6px rgba(212,175,55,0.55)",
-          }}
+          className="pricing-button-gold mt-1 px-2 py-[2px] text-[8px] font-extrabold uppercase tracking-wider"
         >
           Request
         </button>

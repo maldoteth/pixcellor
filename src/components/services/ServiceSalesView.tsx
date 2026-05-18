@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/services";
+import { Button } from "@/components/ui/button";
 
 function dispatchCta(action: ServiceCtaAction) {
   if (action === "request") {
@@ -22,35 +23,28 @@ function CtaButton({
   action: ServiceCtaAction;
   variant?: "primary" | "secondary";
 }) {
-  const base =
-    "inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-semibold uppercase tracking-wider transition-all hover:brightness-110 active:scale-[0.98]";
   if (variant === "primary") {
     return (
-      <button
-        type="button"
+      <Button
+        variant="goldPricing"
         onClick={() => dispatchCta(action)}
-        className={base}
-        style={{
-          background: "linear-gradient(135deg, #f5e6a8 0%, #d4af37 50%, #8a6a1f 100%)",
-          color: "#1a1205",
-          boxShadow: "0 0 18px rgba(212,175,55,0.35)",
-          border: "1px solid #d4af37",
-        }}
+        className="h-auto px-5 py-3 text-sm font-semibold uppercase tracking-wider"
       >
         {label} <ArrowRight className="h-4 w-4" />
-      </button>
+      </Button>
     );
   }
   return (
     <button
       type="button"
       onClick={() => dispatchCta(action)}
-      className={`${base} border border-foreground/20 bg-background/30 text-foreground backdrop-blur-md hover:bg-background/50`}
+      className="inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-semibold uppercase tracking-wider transition-all hover:brightness-110 active:scale-[0.98] border border-foreground/20 bg-background/30 text-foreground backdrop-blur-md hover:bg-background/50"
     >
       {label}
     </button>
   );
 }
+
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },

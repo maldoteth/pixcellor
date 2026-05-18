@@ -11,6 +11,7 @@ const buttonVariants = cva(
       variant: {
         default: "pricing-button text-foreground hover:text-foreground transition disabled:opacity-50",
         pricing: "pricing-button text-foreground hover:text-foreground transition disabled:opacity-50",
+        goldPricing: "pricing-button-gold transition disabled:opacity-50",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
