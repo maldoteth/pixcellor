@@ -69,10 +69,34 @@ export default function ServiceSalesView({
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
       {/* HERO */}
       <motion.section {...fadeUp} className="mb-12 md:mb-16">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-foreground/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-foreground/80">
-          <Icon className="h-3.5 w-3.5" />
-          <span>{cat.title}</span>
-        </div>
+        {heroImage && (
+          <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9]">
+            <img
+              src={heroImage}
+              alt={`${service.name} — ${service.tagline}`}
+              width={1280}
+              height={720}
+              className="absolute inset-0 h-full w-full object-cover"
+              decoding="async"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"
+            />
+            <div className="absolute left-5 top-5 md:left-7 md:top-7">
+              <div className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-background/50 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-foreground/90 backdrop-blur-md">
+                <Icon className="h-3.5 w-3.5" />
+                <span>{cat.title}</span>
+              </div>
+            </div>
+          </div>
+        )}
+        {!heroImage && (
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-foreground/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-foreground/80">
+            <Icon className="h-3.5 w-3.5" />
+            <span>{cat.title}</span>
+          </div>
+        )}
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
           {service.name}
         </h1>
