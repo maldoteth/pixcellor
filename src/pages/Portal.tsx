@@ -3154,8 +3154,8 @@ export default function Portal() {
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="text-muted-foreground text-lg text-slate-50 bg-white/0">Sort:</span>
                   {([
-                    { value: "newest", label: "Newest first" },
-                    { value: "oldest", label: "Oldest first" },
+                    { value: "newest", label: "Newest" },
+                    { value: "oldest", label: "Oldest" },
                     { value: "latest_update", label: "Latest update" },
                     { value: "hot", label: "Hot → Cold" },
                     { value: "cold", label: "Cold → Hot" },
@@ -3365,7 +3365,7 @@ export default function Portal() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold">System alerts</h2>
-                <p className="text-sm text-muted-foreground">Refunds, disputes, payment failures and webhook errors. Newest first.</p>
+                <p className="text-sm text-muted-foreground">Refunds, disputes, payment failures and webhook errors. Newest.</p>
               </div>
               {adminAlerts.some(a => !a.resolved_at) && (
                 <Button
