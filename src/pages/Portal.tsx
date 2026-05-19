@@ -3462,8 +3462,21 @@ export default function Portal() {
           </DrawerHeader>
           {contactDetailDrawerContact && (
             <div className="mx-auto w-full max-w-3xl space-y-4 overflow-y-auto pb-2">
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/60 p-3">
-                <div className="min-w-0 space-y-1">
+              <div className="relative flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/60 p-3">
+                <div className="absolute right-3 top-3 flex h-9 shrink-0 items-center gap-1" aria-label="Client status">
+                  {contactStatuses.map(status => (
+                    <button
+                      key={status.value}
+                      type="button"
+                      title={status.label}
+                      aria-label={status.label}
+                      onClick={() => updateContactStatus(contactDetailDrawerContact.id, status.value)}
+                      className={`h-9 w-7 rounded-none border transition-opacity ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
+                      style={{ backgroundColor: status.color }}
+                    />
+                  ))}
+                </div>
+                <div className="min-w-0 space-y-1 pr-28">
                   {contactDetailDrawerContact.phone && (
                     <div className="flex items-center gap-1.5">
                       {contactDetailDrawerPhoneHref ? (
@@ -3502,19 +3515,6 @@ export default function Portal() {
                   {contactDetailDrawerOrderStats && <div className="text-muted-foreground text-lg text-slate-50 bg-white/0">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
                 <div className="flex w-full items-center justify-end gap-2 overflow-x-auto md:w-auto md:flex-wrap md:overflow-visible text-left">
-                  <div className="mr-auto flex h-9 shrink-0 items-center gap-1 md:mr-0" aria-label="Client status">
-                    {contactStatuses.map(status => (
-                      <button
-                        key={status.value}
-                        type="button"
-                        title={status.label}
-                        aria-label={status.label}
-                        onClick={() => updateContactStatus(contactDetailDrawerContact.id, status.value)}
-                        className={`h-9 w-7 rounded-none border transition-opacity ${(contactDetailDrawerOrderStats ? "gold" : contactDetailDrawerContact.status) === status.value ? "border-foreground opacity-100" : "border-border opacity-55"}`}
-                        style={{ backgroundColor: status.color }}
-                      />
-                    ))}
-                  </div>
                   <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
                     Edit
                   </Button>
