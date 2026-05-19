@@ -1170,7 +1170,7 @@ function MobileShell({
         </h2>
         {!showServices && <StripeBadge />}
       </div>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+5rem)] [-webkit-overflow-scrolling:touch]">
         {!showServices && (
           <div className="mb-4">
             <MobileFreeSamplesCard />
