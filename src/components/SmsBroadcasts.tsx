@@ -34,12 +34,12 @@ type OptOut = { id: string; phone: string; reason: string; created_at: string };
 const SMS_TEMPLATES: { id: string; label: string; body: string }[] = [
   {
     id: "cold-no-website",
-    label: "Grant Script",
+    label: "Private SME Grant Script",
     body: `Hi, it's Alex from Pixcellor.
 
-I'm calling regarding a digital grant to get you online and growing with a market leading website powered by AI - with no upfront costs and a heavily reduced fee!
+I'm messaging regarding Pixcellor's private SME grant to get you online and growing with a market leading website powered by AI - with no upfront costs and a heavily reduced fee!
 
-This is only available exclusively for small and medium businesses in the UK, and I have your details here for {name} - would you like me to send you out the free sample pack so you can get started?`,
+Privately funded by Pixcellor (not a government grant), available to UK SMEs like {name}. Reply YES to check eligibility and get your free sample pack.`,
   },
 ];
 

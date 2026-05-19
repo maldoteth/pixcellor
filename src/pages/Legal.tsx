@@ -267,17 +267,19 @@ const TERMS: Section[] = [
   },
   {
     id: "20",
-    heading: "20. SME Subsidy / Pixcellor Digital Grant Programme",
+    heading: "20. Pixcellor Private SME Grant Programme",
     body: (
       <>
         <p>
-          The "SME Subsidy", "Digital Grant", "Grant Script" offer, and any related discount of up to
-          ~67% off our standard package pricing (collectively the "<strong>Grant Programme</strong>")
-          is a <strong>privately funded</strong> commercial subsidy operated solely by {COMPANY}. It is
-          <strong> not</strong> a government grant, is <strong>not</strong> affiliated with, endorsed by,
-          or administered on behalf of the UK Government, His Majesty's Government, any local authority,
-          Innovate UK, the British Business Bank, or any other public body or statutory scheme. No
-          public money is involved.
+          The "<strong>Pixcellor Private SME Grant</strong>" (also referred to in our marketing as the
+          "Pixcellor private SME grant", "private SME grant", "SME Grant", "Grant Script" offer, or
+          "SME Subsidy"), and any related discount of up to ~67% off our standard package pricing
+          (collectively the "<strong>Grant Programme</strong>"), is a <strong>privately funded</strong>
+          commercial discount programme operated solely by {COMPANY}. It is <strong>not</strong> a
+          government grant, is <strong>not</strong> affiliated with, endorsed by, or administered on
+          behalf of the UK Government, His Majesty's Government, any local authority, Innovate UK, the
+          British Business Bank, or any other public body or statutory scheme. No public money is
+          involved.
         </p>
         <p className="mt-3">
           The Grant Programme is funded from a private pool contributed by a consortium of independent
