@@ -230,18 +230,95 @@ export default function SmsBroadcasts() {
         <TabsContent value="compose" className="mt-4 space-y-3">
           <Card><CardContent className="space-y-3 p-4">
             <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Recipient status filter</div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Contact statuses</div>
               <div className="flex flex-wrap gap-2">
                 {STATUS_OPTIONS.map((s) => (
-                  <Button key={s} type="button" size="sm" variant={statuses.includes(s) ? "default" : "outline"} onClick={() => toggleStatus(s)}>
+                  <Badge
+                    key={s}
+                    onClick={() => toggleStatus(s)}
+                    className={`cursor-pointer capitalize ${statuses.includes(s) ? "" : "opacity-40"}`}
+                  >
                     {s}
-                  </Button>
+                  </Badge>
                 ))}
               </div>
+            </div>
+
+            {allIndustries.length > 0 && (
+              <div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Industries {industries.length === 0 && <span className="text-muted-foreground/70">(all)</span>}
+                </div>
+                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                  {allIndustries.map((ind) => (
+                    <Badge
+                      key={ind}
+                      onClick={() => toggleIndustry(ind)}
+                      variant="outline"
+                      className={`cursor-pointer capitalize ${industries.includes(ind) ? "border-primary text-primary" : "opacity-60"}`}
+                    >
+                      {ind}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Add specific contacts</div>
+              <div className="relative">
+                <Input
+                  placeholder="Search by name or phone…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                {searchResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-lg max-h-64 overflow-y-auto">
+                    {searchResults.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => addManual(c.id)}
+                        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted/50"
+                      >
+                        <span className="truncate">{c.name}</span>
+                        <span className="text-xs text-muted-foreground font-mono">{c.phone}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                Recipients ({eligible.length})
+              </div>
+              {eligible.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No contacts match yet. Adjust filters or add manually.</p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+                  {eligible.slice(0, 80).map((c) => (
+                    <Badge
+                      key={c.id}
+                      variant="secondary"
+                      onClick={() => removeContact(c.id)}
+                      className="cursor-pointer gap-1"
+                      title="Click to remove"
+                    >
+                      {c.name} <span className="opacity-60">×</span>
+                    </Badge>
+                  ))}
+                  {eligible.length > 80 && (
+                    <span className="text-xs text-muted-foreground self-center">+{eligible.length - 80} more</span>
+                  )}
+                </div>
+              )}
               <p className="mt-2 text-xs text-muted-foreground">
-                {eligible.length} contact{eligible.length === 1 ? "" : "s"} with phone numbers will receive this. Opt-outs auto-filtered server-side.
+                Opt-outs are auto-filtered server-side.
               </p>
             </div>
+
             <Input placeholder="Internal title (optional)" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={160} />
             <div>
               <Textarea
