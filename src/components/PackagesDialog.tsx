@@ -1273,7 +1273,7 @@ function MobileCards() {
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-1 flex items-baseline gap-2">
           <span className="text-3xl font-extrabold text-foreground">£150</span>
-          <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-through">RRP £375</span>
+          <span className="text-muted-foreground text-slate-50 bg-white/0 line-through text-base">RRP £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
         <ul className="space-y-2 flex-1 mb-4">
