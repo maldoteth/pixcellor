@@ -1,17 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import IntroAnimation from "@/components/ui/scroll-morph-hero";
 import ChatBot from "@/components/ChatBot";
 import { useIsMobile } from "@/hooks/use-mobile";
-import FalloffConsentBanner from "@/components/FalloffConsentBanner";
-import RotateDevicePrompt from "@/components/RotateDevicePrompt";
 import CustomerAccess from "@/components/CustomerAccess";
 import PackagesDialog from "@/components/PackagesDialog";
 import SeoHead from "@/components/SeoHead";
-
-import TryBeforeBuyDrawer from "@/components/TryBeforeBuyDrawer";
-import LetsTalkPrompt from "@/components/LetsTalkPrompt";
 import VisionGenerator from "@/components/VisionGenerator";
-import VisionPurchaseFlow from "@/components/VisionPurchaseFlow";
+
+// Lazy-loaded: these have no initial visible UI — they mount on user events.
+const FalloffConsentBanner = lazy(() => import("@/components/FalloffConsentBanner"));
+const RotateDevicePrompt = lazy(() => import("@/components/RotateDevicePrompt"));
+const TryBeforeBuyDrawer = lazy(() => import("@/components/TryBeforeBuyDrawer"));
+const LetsTalkPrompt = lazy(() => import("@/components/LetsTalkPrompt"));
+const VisionPurchaseFlow = lazy(() => import("@/components/VisionPurchaseFlow"));
 
 const Index = () => {
   const isMobile = useIsMobile();
