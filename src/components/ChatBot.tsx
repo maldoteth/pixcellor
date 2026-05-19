@@ -1015,8 +1015,12 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       {!isDesktop ? (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerContent 
-            className="h-[85vh] border-0 border-t-0 [&>div:first-child]:hidden"
-            style={glassStyle}
+            className="border-0 border-t-0 [&>div:first-child]:hidden"
+            style={{
+              ...glassStyle,
+              height: mobileDrawerHeight ? `${mobileDrawerHeight}px` : "85vh",
+              maxHeight: mobileDrawerHeight ? `${mobileDrawerHeight}px` : "85vh",
+            }}
           >
             <DrawerHeader className="sr-only">
               <DrawerTitle>Chat with Alex</DrawerTitle>
