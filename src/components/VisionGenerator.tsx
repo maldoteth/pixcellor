@@ -30,7 +30,7 @@ interface VisionGeneratorProps {
   chatOpen?: boolean;
 }
 
-type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
+type StepKey = "company" | "industry" | "vibe" | "colour" | "sections";
 type Stage = StepKey | "contact" | "generating" | "result" | "refine" | "sample_edits" | "requested";
 export type { StepKey };
 
@@ -76,13 +76,6 @@ export const STEPS: StepDef[] = [
     helper: "Tap a palette or describe your own.",
     placeholder: "e.g. sage green & cream",
     prefix: "Colours",
-  },
-  {
-    key: "headline",
-    label: "MAIN HEADLINE",
-    helper: "The first thing visitors see — keep it bold and clear.",
-    placeholder: "e.g. Hand-picked bouquets delivered daily",
-    prefix: "Headline",
   },
   {
     key: "sections",
@@ -275,7 +268,6 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     industry: "",
     vibe: "",
     colour: "",
-    headline: "",
     sections: "",
   });
   const [busy, setBusy] = useState(false);
@@ -396,7 +388,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     setImageUrl(null);
     setGeneratedFor("");
     setRefineInstruction("");
-    setAnswers({ company: "", industry: "", vibe: "", colour: "", headline: "", sections: "" });
+    setAnswers({ company: "", industry: "", vibe: "", colour: "", sections: "" });
     setStage("company");
   };
 
