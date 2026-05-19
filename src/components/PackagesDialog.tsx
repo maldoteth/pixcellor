@@ -286,8 +286,8 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
           </defs>
         </svg>
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 leading-tight">
-        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase">LIMITED</span>
-        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase -mt-0.5">TIME</span>
+        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase">GUARANTEE</span>
+        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase -mt-0.5">{"\n"}</span>
         <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider mt-0.5">Don't pay till</span>
         <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider">you're happy</span>
         <button
@@ -1134,7 +1134,7 @@ function MobileFreeSamplesCard() {
         <div className="flex flex-col">
           <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[hsl(45,65%,55%)]/30 bg-[hsl(45,65%,55%)]/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(45,65%,55%)]">
             <span className="h-1.5 w-1.5 rounded-full bg-[hsl(45,65%,55%)] animate-pulse" />
-            LIMITED TIME
+            GUARANTEE{"\n"}
           </span>
           <h3 className="mt-2 text-lg font-bold text-[hsl(45,65%,75%)] leading-tight">FREE SAMPLES</h3>
           <p className="text-xs text-[hsl(45,65%,55%)]/70 mt-0.5">Don't pay till you're happy</p>
