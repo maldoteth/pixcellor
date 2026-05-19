@@ -2371,7 +2371,7 @@ export default function Portal() {
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats</TabsTrigger>
             <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients</TabsTrigger>
             <TabsTrigger value="studio" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Wand2 className="h-3.5 w-3.5 shrink-0" />Studio</TabsTrigger>
-            <TabsTrigger value="alerts" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><AlertTriangle className="h-3.5 w-3.5 shrink-0" />Alerts</TabsTrigger>
+            <TabsTrigger value="alerts" className="pricing-button col-span-2 md:col-span-1 h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><AlertTriangle className="h-3.5 w-3.5 shrink-0" />Alerts</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sales" className="space-y-4">
