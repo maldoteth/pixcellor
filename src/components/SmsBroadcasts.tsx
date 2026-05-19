@@ -39,7 +39,7 @@ const SMS_TEMPLATES: { id: string; label: string; body: string }[] = [
 
 I'm calling regarding a digital grant to get you online and growing with a market leading website powered by AI - with no upfront costs and a heavily reduced fee!
 
-Available exclusively for small and medium businesses in the UK so apply now by texting back YES or calling 01483219430.`,
+This is only available exclusively for small and medium businesses in the UK, and I have your details here for {name} - would you like me to send you out the free sample pack so you can get started?`,
   },
 ];
 

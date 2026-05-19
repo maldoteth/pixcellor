@@ -32,7 +32,7 @@ const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
   {
     id: "cold-no-website",
     title: "Grant Script",
-    body: `Hi, it's Alex from Pixcellor.\n\nI'm calling regarding a digital grant to get you online and growing with a market leading website powered by AI - with no upfront costs and a heavily reduced fee!\n\nAvailable exclusively for small and medium businesses in the UK so apply now by texting back YES or calling 01483219430.`,
+    body: `Hi, it's Alex from Pixcellor.\n\nI'm calling regarding a digital grant to get you online and growing with a market leading website powered by AI - with no upfront costs and a heavily reduced fee!\n\nThis is only available exclusively for small and medium businesses in the UK, and I have your details here for (say company name) - would you like me to send you out the free sample pack so you can get started?`,
   },
 ];
 import { toast } from "sonner";
