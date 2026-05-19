@@ -42,3 +42,5 @@ project_id = "rkgjkvghejcmostuqkgw"
     verify_jwt = true
   [functions.process-sms-queue]
     verify_jwt = false
+  [functions.twilio-divert]
+    verify_jwt = false
