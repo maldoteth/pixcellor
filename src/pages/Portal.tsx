@@ -3561,6 +3561,10 @@ export default function Portal() {
                       />
                     </label>
                   </Button>
+                  <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
+                    <Pencil className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">Edit</span>
+                  </Button>
                   <Button variant="pricing" size="icon" className="h-9 w-9 shrink-0 rounded-none shadow-none" aria-label="Archive client" title="Archive client" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
