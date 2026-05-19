@@ -3463,7 +3463,7 @@ export default function Portal() {
           {contactDetailDrawerContact && (
             <div className="mx-auto w-full max-w-3xl space-y-4 overflow-y-auto pb-2">
               <div className="relative flex flex-wrap items-center justify-between gap-3 rounded-none border border-border bg-card/60 p-3">
-                <div className="absolute right-3 top-3 flex h-9 shrink-0 items-center gap-1" aria-label="Client status">
+                <div className="absolute left-3 bottom-3 md:left-auto md:bottom-auto md:right-3 md:top-3 flex h-9 shrink-0 items-center gap-1" aria-label="Client status">
                   {contactStatuses.map(status => (
                     <button
                       key={status.value}
@@ -3476,7 +3476,7 @@ export default function Portal() {
                     />
                   ))}
                 </div>
-                <div className="min-w-0 space-y-1 pr-28">
+                <div className="min-w-0 space-y-1 md:pr-28">
                   {contactDetailDrawerContact.phone && (
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm text-muted-foreground">Number:</span>
