@@ -38,14 +38,14 @@ const PACKAGES = {
     features: ["Sites or web apps", "Lifetime warranty", "Unlimited revisions", "SEO & AEO optimisation", "10 pages - 3D animated", "10 day turnaround "],
   },
   retainer: {
-    name: "Retainer",
+    name: "Custom",
     monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription" as const,
     features: ["A fractionalised C-suite", "Outsource departments", "Consultancy and execution", "2 week MVP sprints", "Daily updates"],
   },
   enterprise: {
-    name: "Enterprise",
+    name: "Custom",
     features: ["Custom packages small to large", "Hosting & managed services", "Infrastructure and ecosystems", "Quarterly & annual reviews", "Dedicated team 24/7 - 365"],
   },
 };
