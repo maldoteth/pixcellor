@@ -247,6 +247,27 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     if (isOpen) setAdminUnreadCount(0);
   }, [isOpen]);
 
+  // Track mobile visual viewport so the drawer shrinks with the on-screen keyboard
+  const [mobileDrawerHeight, setMobileDrawerHeight] = useState<number | null>(null);
+  useEffect(() => {
+    if (!isOpen || isDesktop) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      setMobileDrawerHeight(vv.height);
+      // keep latest message in view when keyboard opens
+      requestAnimationFrame(() => messagesEndRef.current?.scrollIntoView({ block: "end" }));
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+      setMobileDrawerHeight(null);
+    };
+  }, [isOpen, isDesktop]);
+
   useEffect(() => {
     if (!isOpen || isMobile) return;
     setWidgetPosition((current) => current ?? getDefaultWidgetPosition());
@@ -994,8 +1015,12 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       {!isDesktop ? (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerContent 
-            className="h-[85vh] border-0 border-t-0 [&>div:first-child]:hidden"
-            style={glassStyle}
+            className="border-0 border-t-0 [&>div:first-child]:hidden"
+            style={{
+              ...glassStyle,
+              height: mobileDrawerHeight ? `${mobileDrawerHeight}px` : "85vh",
+              maxHeight: mobileDrawerHeight ? `${mobileDrawerHeight}px` : "85vh",
+            }}
           >
             <DrawerHeader className="sr-only">
               <DrawerTitle>Chat with Alex</DrawerTitle>
