@@ -513,15 +513,17 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
             touchStartY = touchY;
             touchStartX = touchX;
 
-            // Combine vertical + horizontal across the whole page so side-swipes
-            // anywhere drive the virtual scroll (swipe right = advance, left = back).
+            // Once the gesture is locked to vertical, only use deltaY. On iOS Safari
+            // finger jitter can briefly make |deltaX| > |deltaY| with the opposite
+            // sign, which would otherwise lurch virtualScroll back and forth and make
+            // the carousel spin erratically until the spring catches up.
             const inCarousel = scrollRef.current >= HERO_MORPH_END;
-            const combinedDelta = Math.abs(deltaY) >= Math.abs(deltaX) ? deltaY : deltaX;
+            const gestureDelta = gestureAxis === "vertical" ? deltaY : deltaX;
 
             const w = window.innerWidth;
             const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : DESKTOP_TOUCH_BOOST;
             const carouselMult = inCarousel ? CAROUSEL_SCROLL_SENSITIVITY : 1;
-            const scrollDelta = combinedDelta * boost * carouselMult;
+            const scrollDelta = gestureDelta * boost * carouselMult;
             applyVirtualScrollDelta(scrollDelta, "touch");
         };
         const handleTouchEnd = () => {
