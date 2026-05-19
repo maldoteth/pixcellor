@@ -37,9 +37,9 @@ const SMS_TEMPLATES: { id: string; label: string; body: string }[] = [
     label: "Private SME Grant Script",
     body: `Hi, it's Alex from Pixcellor.
 
-I'm messaging regarding Pixcellor's private SME grant to get you online and growing with a market leading website powered by AI - with no upfront costs and a heavily reduced fee!
+I'm messaging regarding our SME grant (privately funded UK small and medium enterprise grants) to get local businesses online with a market leading AI powered website designed to grow revenue - with no upfront costs and a heavily subsidized annual fees for the first 5 years!
 
-Privately funded by Pixcellor (not a government grant), available to UK SMEs like {name}. Reply YES to check eligibility and get your free sample pack.`,
+This is only available to small and medium enterprises. Reply YES to check eligibility and get your free sample pack.`,
   },
 ];
 
