@@ -1004,7 +1004,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           </div>
         </motion.div>
       </motion.div>
+      </div>
     </div>
+
     {/* Services back side - absolutely positioned, rotated 180° */}
     <div
       className="absolute inset-0"
