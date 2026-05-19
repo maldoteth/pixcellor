@@ -30,7 +30,7 @@ interface VisionGeneratorProps {
   chatOpen?: boolean;
 }
 
-type StepKey = "company" | "industry" | "vibe" | "colour" | "headline" | "sections";
+type StepKey = "company" | "industry" | "vibe" | "colour" | "sections";
 type Stage = StepKey | "contact" | "generating" | "result" | "refine" | "sample_edits" | "requested";
 export type { StepKey };
 
