@@ -175,7 +175,7 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
     if (!open) {
       setTimeout(() => {
         setStage("company");
-        setAnswers({ company: "", industry: "", vibe: "", colour: "", headline: "", sections: "" });
+        setAnswers({ company: "", industry: "", vibe: "", colour: "", sections: "" });
         setTitle("");
         setClientName("");
         setClientEmail("");
