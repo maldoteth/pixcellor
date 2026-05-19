@@ -582,7 +582,7 @@ export default function CustomerPortal() {
                               <h3 className="text-xl font-semibold">{plan.name}</h3>
                               <div className="flex items-baseline gap-2">
                                 <span className="text-3xl font-bold">{plan.price}</span>
-                                <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-through">{plan.rrp}</span>
+                                <span className="text-muted-foreground text-slate-50 bg-white/0 line-through text-sm">{plan.rrp}</span>
                               </div>
                               <p className="text-xs font-semibold text-foreground">Introductory offer — {plan.discount}</p>
                             </div>
