@@ -449,8 +449,11 @@ export default function SmsBroadcasts() {
           <Card><CardContent className="space-y-3 p-4">
             <div>
               <label className="text-xs uppercase tracking-wider text-muted-foreground">Sender ID / From number</label>
-              <Input placeholder="+44... or alphanumeric e.g. Pixcellor" value={senderId} onChange={(e) => setSenderId(e.target.value)} maxLength={40} />
-              <p className="text-xs text-muted-foreground mt-1">Must be a Twilio-purchased number or registered alphanumeric ID.</p>
+              <div className="flex gap-2">
+                <Input placeholder="Auto-detected from Twilio" value={senderId} onChange={(e) => setSenderId(e.target.value)} maxLength={40} />
+                <Button type="button" variant="outline" onClick={() => detectTwilioNumber(false)}>Detect</Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Auto-detected from your connected Twilio account. Override only if you have multiple numbers.</p>
             </div>
             <div>
               <label className="text-xs uppercase tracking-wider text-muted-foreground">Mandatory footer (PECR)</label>
