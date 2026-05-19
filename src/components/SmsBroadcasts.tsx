@@ -85,7 +85,37 @@ export default function SmsBroadcasts() {
     setLoading(false);
   };
 
-  useEffect(() => { void loadAll(); }, []);
+  const detectTwilioNumber = async (silent = false) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("twilio-list-numbers");
+      if (error) throw error;
+      const first = data?.numbers?.[0]?.phone_number;
+      if (!first) {
+        if (!silent) toast.error("No Twilio numbers found on your account");
+        return null;
+      }
+      setSenderId(first);
+      if (!silent) toast.success(`Detected Twilio number ${first}`);
+      return first;
+    } catch (e: any) {
+      if (!silent) toast.error(e.message || "Failed to detect Twilio number");
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    void (async () => {
+      await loadAll();
+    })();
+  }, []);
+
+  // Auto-detect from Twilio if no sender saved yet
+  useEffect(() => {
+    if (!loading && !senderId) {
+      void detectTwilioNumber(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   const allIndustries = useMemo(
     () => Array.from(new Set(contacts.map((c) => (c.industry || "").toLowerCase()).filter(Boolean))).sort(),
