@@ -388,7 +388,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     setImageUrl(null);
     setGeneratedFor("");
     setRefineInstruction("");
-    setAnswers({ company: "", industry: "", vibe: "", colour: "", headline: "", sections: "" });
+    setAnswers({ company: "", industry: "", vibe: "", colour: "", sections: "" });
     setStage("company");
   };
 
