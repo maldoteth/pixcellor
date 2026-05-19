@@ -363,7 +363,7 @@ const callbackPresets = [
 
 const getEventAuthorLabel = (event: ContactEvent) => event.created_by_email ? `Logged by ${event.created_by_email}` : "Logged by admin";
 
-const getContactCreatorLabel = (contact: Contact) => contact.created_by_email ? `Created by ${contact.created_by_email}` : contact.source === "lead_agent" ? "Created by AI lead finder" : "Created by admin";
+const getContactCreatorLabel = (contact: Contact) => contact.created_by_email ? `By ${contact.created_by_email}` : contact.source === "lead_agent" ? "By AI lead finder" : "By admin";
 
 const contactStatuses = [
   { value: "cold", label: "Cold", color: "hsl(217 91% 60%)" },
