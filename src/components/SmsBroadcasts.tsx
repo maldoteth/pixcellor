@@ -39,6 +39,10 @@ export default function SmsBroadcasts() {
   // compose
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [statuses, setStatuses] = useState<string[]>(["warm", "hot", "gold"]);
+  const [industries, setIndustries] = useState<string[]>([]);
+  const [manualIds, setManualIds] = useState<string[]>([]);
+  const [excludedIds, setExcludedIds] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
   const [body, setBody] = useState("");
   const [title, setTitle] = useState("");
   const [sending, setSending] = useState(false);
@@ -76,13 +80,58 @@ export default function SmsBroadcasts() {
 
   useEffect(() => { void loadAll(); }, []);
 
-  const eligible = useMemo(
-    () => contacts.filter((c) => c.phone && statuses.includes(c.status)),
-    [contacts, statuses]
+  const allIndustries = useMemo(
+    () => Array.from(new Set(contacts.map((c) => (c.industry || "").toLowerCase()).filter(Boolean))).sort(),
+    [contacts]
   );
+
+  const filtered = useMemo(
+    () => contacts.filter((c) => {
+      if (!c.phone) return false;
+      if (!statuses.includes(c.status)) return false;
+      if (industries.length > 0 && !industries.includes((c.industry || "").toLowerCase())) return false;
+      return true;
+    }),
+    [contacts, statuses, industries]
+  );
+
+  const eligible = useMemo(() => {
+    const byId = new Map<string, Contact>();
+    filtered.forEach((c) => { if (!excludedIds.includes(c.id)) byId.set(c.id, c); });
+    manualIds.forEach((id) => {
+      const c = contacts.find((x) => x.id === id);
+      if (c && c.phone) byId.set(c.id, c);
+    });
+    return Array.from(byId.values());
+  }, [filtered, manualIds, excludedIds, contacts]);
+
+  const searchResults = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return contacts
+      .filter((c) =>
+        c.phone &&
+        !eligible.find((e) => e.id === c.id) &&
+        ((c.name || "").toLowerCase().includes(q) || (c.phone || "").toLowerCase().includes(q))
+      )
+      .slice(0, 8);
+  }, [search, contacts, eligible]);
 
   const toggleStatus = (s: string) =>
     setStatuses((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
+  const toggleIndustry = (i: string) =>
+    setIndustries((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
+  const addManual = (id: string) => {
+    setManualIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    setExcludedIds((prev) => prev.filter((x) => x !== id));
+    setSearch("");
+  };
+  const removeContact = (id: string) => {
+    setManualIds((prev) => prev.filter((x) => x !== id));
+    if (filtered.some((c) => c.id === id)) {
+      setExcludedIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    }
+  };
 
   const charCount = body.length;
   const hasUnicode = /[^\u0000-\u007F\u00A0-\u00FF€£]/.test(body);
