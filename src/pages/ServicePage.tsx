@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import ServiceSalesView from "@/components/services/ServiceSalesView";
 import LetsTalkPrompt from "@/components/LetsTalkPrompt";
 import PackagesDialog from "@/components/PackagesDialog";
+import VisionGenerator from "@/components/VisionGenerator";
 import { getServiceBySlug } from "@/data/services";
 import { SERVICE_SEO } from "@/data/serviceSeo";
 
@@ -104,6 +105,7 @@ export default function ServicePage() {
       {/* Mounted so CTAs work on this standalone route */}
       <LetsTalkPrompt />
       <PackagesDialog hidden />
+      <VisionGenerator hidden />
     </div>
   );
 }
