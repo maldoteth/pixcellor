@@ -176,7 +176,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
     >
       <div className="flex items-baseline justify-between mb-1">
         <span className="text-white font-bold text-sm">{card.name}</span>
-        <span className="text-white/40 text-[10px] line-through">{card.rrp}</span>
+        <span className="text-white/40 text-[10px]">Standard {card.rrp.replace(/^RRP\s*/i, "")}</span>
       </div>
       <div className="text-white text-lg font-extrabold mb-2">{card.price}</div>
       <ul className="space-y-1 mb-3">

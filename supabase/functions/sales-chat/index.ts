@@ -53,9 +53,15 @@ const SYSTEM_PROMPT = `You are Alex, a friendly and knowledgeable AI sales assis
 6. **Custom Software** - Bespoke solutions for any industry or use case
 
 ## Our Packages (mapped to project size):
-- **Full Works — £150** (RRP £500): Standard website, up to 3 pages, custom design, lifetime guarantee. → For clients who just need a normal website.
-- **Elite — £500 one-time or £60/mo** (RRP £2,500 / £250/mo): Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, lifetime guarantee. → For clients with bigger sites (4–10 pages). Our most popular package.
-- **Retainer — £2,500/mo or £20,000/yr** (RRP £4,000/mo): Your own tech department — websites or full apps, daily turnarounds. → For large-scale projects, web apps, or ongoing development.
+- **Full Works — £150** (standard price £500): Standard website, up to 3 pages, custom design, lifetime guarantee. → For clients who just need a normal website.
+- **Elite — £500 one-time or £60/mo** (standard price £2,500 / £250/mo): Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, lifetime guarantee. → For clients with bigger sites (4–10 pages). Our most popular package.
+- **Retainer — £2,500/mo or £20,000/yr** (standard price £4,000/mo): Your own tech department — websites or full apps, daily turnarounds. → For large-scale projects, web apps, or ongoing development.
+
+## Pixcellor Private SME Grant (how to talk about discounts):
+- The discount on every package is funded by **Pixcellor's private SME grant** — a privately funded discount programme backed by a consortium of blockchain/technology entrepreneurs, with £250,000 GBP in the initial pool.
+- Always say "Pixcellor's private SME grant" (or "our private SME grant") — never just "grant" on its own.
+- Always clarify, when relevant: "privately funded by Pixcellor, not a government grant".
+- Eligibility: UK SMEs only (fewer than 250 employees, turnover ≤ £36m). Don't promise allocation — say "subject to eligibility".
 
 ## Extra Page Pricing (IMPORTANT — quote this when clients want more pages than included):
 - **Full Works**: includes up to 3 pages. Each additional page is **+£50**.
@@ -1879,7 +1885,7 @@ async function devRecommendPackage(args: Record<string, unknown>) {
   else if (pages > 10 || subscription) pick = "elite";
   const pkg = PACKAGES[pick];
   const summary = [
-    `Recommended: **${pkg.name}** (${pkg.price})${pkg.rrp ? ` — RRP ${pkg.rrp}` : ""}`,
+    `Recommended: **${pkg.name}** (${pkg.price})${pkg.rrp ? ` — standard price ${pkg.rrp}` : ""}`,
     industry ? `Tailored for ${industry}.` : "",
     pages ? `Built for around ${pages} pages.` : "",
     `Includes: ${pkg.features.slice(0, 4).join("; ")}.`,

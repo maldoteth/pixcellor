@@ -165,7 +165,7 @@ export default function VisionPurchaseFlow() {
             </div>
             <div className="mt-1 flex items-baseline gap-2">
               <span className="text-foreground text-xl font-bold">{p.price}</span>
-              <span className="text-foreground/50 text-xs line-through">{p.rrp}</span>
+              <span className="text-foreground/50 text-xs">Standard {p.rrp.replace(/^RRP\s*/i, "")}</span>
             </div>
             <p className="text-foreground/80 text-sm mt-1 font-medium">{p.pages}</p>
             <ul className="mt-2 space-y-1">
