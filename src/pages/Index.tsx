@@ -153,12 +153,16 @@ const Index = () => {
         <VisionGenerator hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
-        <TryBeforeBuyDrawer />
-        <LetsTalkPrompt />
-        <VisionPurchaseFlow />
-        <FalloffConsentBanner />
+        <Suspense fallback={null}>
+          <TryBeforeBuyDrawer />
+          <LetsTalkPrompt />
+          <VisionPurchaseFlow />
+          <FalloffConsentBanner />
+        </Suspense>
       </div>
-      <RotateDevicePrompt />
+      <Suspense fallback={null}>
+        <RotateDevicePrompt />
+      </Suspense>
     </div>
   );
 };
