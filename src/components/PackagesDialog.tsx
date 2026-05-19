@@ -871,6 +871,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       </motion.div>
 
       {/* Retainer / Enterprise flip card */}
+      <div className="md:max-lg:-translate-x-[16px]">
       <motion.div
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
