@@ -3520,7 +3520,7 @@ export default function Portal() {
                   <Button
                     variant="pricing"
                     size="sm"
-                    className="h-9 shrink-0 rounded-none shadow-none"
+                    className="hidden md:inline-flex h-9 shrink-0 rounded-none shadow-none"
                     onClick={() => sendSalesFollowup(contactDetailDrawerContact)}
                     disabled={!contactDetailDrawerContact.email || salesFollowupSendingFor === contactDetailDrawerContact.id}
                     title="Send sales call follow up"
