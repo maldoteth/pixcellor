@@ -1110,7 +1110,7 @@ function MobileFreeSamplesCard() {
   return (
     <button
       type="button"
-      onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }))}
+      onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-vision"))}
       className="group relative w-full overflow-hidden rounded-none border border-[hsl(45,65%,55%)]/40 bg-background p-5 text-left transition-transform active:scale-[0.99] my-[10px]"
       style={{ boxShadow: "0 0 0 1px hsl(45 65% 55% / 0.15), 0 8px 30px -10px hsl(45 65% 55% / 0.35)" }}
       aria-label="Request free samples — don't pay until you're happy"
