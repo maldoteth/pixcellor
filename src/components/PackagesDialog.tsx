@@ -905,7 +905,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             <div className="relative z-10">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="text-lg font-bold text-foreground">Retainer</div>
-                <SnakeFlipButton label="Enterprise" sizeClass="h-7 px-2 text-[10px]" active={desktopAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
+                <SnakeFlipButton label="Enterprise" sizeClass="h-7 px-2 text-[10px]" durationMs={10000} active={desktopAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="flex items-center gap-2 mb-3">
                 <button
@@ -987,7 +987,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             <div className="relative z-10">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="text-lg font-bold text-foreground">Enterprise</div>
-                <SnakeFlipButton label="Retainer" sizeClass="h-7 px-2 text-[10px]" active={desktopAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
+                <SnakeFlipButton label="Retainer" sizeClass="h-7 px-2 text-[10px]" durationMs={10000} active={desktopAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="mb-1 text-3xl font-extrabold text-foreground">Solutions</div>
               <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 mb-4">Built around your operation</p>
@@ -1355,7 +1355,7 @@ function MobileCards() {
             <div className="relative z-10 flex flex-col flex-1">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-foreground">Retainer</h3>
-                <SnakeFlipButton label="Enterprise" sizeClass="h-8 px-2 text-xs" active={mobileAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
+                <SnakeFlipButton label="Enterprise" sizeClass="h-8 px-2 text-xs" durationMs={10000} active={mobileAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="flex items-center gap-2 mt-2 mb-3">
                 <button
@@ -1426,7 +1426,7 @@ function MobileCards() {
             <div className="relative z-10 flex flex-col flex-1">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
-                <SnakeFlipButton label="Retainer" sizeClass="h-8 px-2 text-xs" active={mobileAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
+                <SnakeFlipButton label="Retainer" sizeClass="h-8 px-2 text-xs" durationMs={10000} active={mobileAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
               <div className="mt-3 mb-1">
                 <span className="text-3xl font-extrabold text-foreground">Solutions</span>
