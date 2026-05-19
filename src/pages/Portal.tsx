@@ -29,6 +29,11 @@ const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
     title: "Leads pitch",
     body: `Hi, would you be interested in a free sample offer that's designed to generate you more business and leads?`,
   },
+  {
+    id: "cold-no-website",
+    title: "Cold outreach – no website",
+    body: `Hi, it's Alex from Pixcellor.\n\nThis text is regarding a digital grant to get you online and growing with a market leading website powered by AI - with no upfront costs and a heavily reduced fee!\n\nAvailable exclusively for small and medium businesses in the UK so apply now by texting back YES or calling 01483219430.`,
+  },
 ];
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
