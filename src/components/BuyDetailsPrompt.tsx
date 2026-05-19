@@ -638,7 +638,10 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="carousel-label-glass border-foreground/10 text-foreground max-h-[92vh]">
+        <DrawerContent
+          className="carousel-label-glass border-foreground/10 text-foreground max-h-[92vh] z-[10041]"
+          overlayClassName="z-[10040]"
+        >
           <DrawerHeader>
             <DrawerTitle className="text-foreground text-center">{title}</DrawerTitle>
           </DrawerHeader>
@@ -650,7 +653,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto carousel-label-glass border-foreground/10 text-foreground">
+      <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto carousel-label-glass border-foreground/10 text-foreground z-[10041]">
         <DialogHeader>
           <DialogTitle className="text-foreground">{title}</DialogTitle>
         </DialogHeader>
