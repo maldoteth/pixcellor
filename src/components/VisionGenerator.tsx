@@ -268,7 +268,6 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
     industry: "",
     vibe: "",
     colour: "",
-    headline: "",
     sections: "",
   });
   const [busy, setBusy] = useState(false);
