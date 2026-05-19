@@ -3503,7 +3503,7 @@ export default function Portal() {
                       </Button>
                     </div>
                   )}
-                  {contactDetailDrawerContact.contact_name && <div className="text-sm text-muted-foreground">Client: {contactDetailDrawerContact.contact_name}</div>}
+                  {contactDetailDrawerContact.contact_name && <div className="text-sm text-muted-foreground">POC: {contactDetailDrawerContact.contact_name}</div>}
                   {contactDetailDrawerContact.industry && <div className="text-sm text-muted-foreground capitalize">Industry: {contactDetailDrawerContact.industry}</div>}
                   {contactDetailDrawerContact.source_platform && <Badge variant="secondary" className="rounded-none">{contactDetailDrawerContact.source_platform}</Badge>}
                   {contactDetailDrawerContact.lead_score != null && <Badge variant="outline" className="rounded-none">Lead score {contactDetailDrawerContact.lead_score}</Badge>}
