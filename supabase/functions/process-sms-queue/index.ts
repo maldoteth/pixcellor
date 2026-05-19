@@ -73,13 +73,19 @@ Deno.serve(async (req) => {
   let failed = 0;
   const touchedBroadcasts = new Set<string>();
 
+  const messagingServiceSid = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
+
   for (const msg of queued) {
     try {
       const params = new URLSearchParams({
         To: msg.to_phone!,
-        From: msg.from_phone!,
         Body: msg.body,
       });
+      if (messagingServiceSid) {
+        params.set("MessagingServiceSid", messagingServiceSid);
+      } else {
+        params.set("From", msg.from_phone!);
+      }
       // Add status callback if SUPABASE_URL is public
       const supaUrl = Deno.env.get("SUPABASE_URL");
       if (supaUrl) {
