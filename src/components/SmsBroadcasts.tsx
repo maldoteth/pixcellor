@@ -11,6 +11,13 @@ import { toast } from "sonner";
 import { useConfirmDialog } from "@/components/ui/themed-dialogs";
 
 const STATUS_OPTIONS = ["cold", "aware", "warm", "hot", "gold"] as const;
+const STATUS_COLORS: Record<string, string> = {
+  cold: "hsl(217 91% 60%)",
+  aware: "hsl(142 71% 45%)",
+  warm: "hsl(25 95% 53%)",
+  hot: "hsl(0 84% 60%)",
+  gold: "hsl(45 93% 47%)",
+};
 
 type Contact = { id: string; name: string; phone: string | null; status: string; industry: string | null };
 type Broadcast = {
@@ -38,7 +45,7 @@ export default function SmsBroadcasts() {
 
   // compose
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [statuses, setStatuses] = useState<string[]>(["warm", "hot", "gold"]);
+  const [statuses, setStatuses] = useState<string[]>([]);
   const [industries, setIndustries] = useState<string[]>([]);
   const [manualIds, setManualIds] = useState<string[]>([]);
   const [excludedIds, setExcludedIds] = useState<string[]>([]);
@@ -232,15 +239,23 @@ export default function SmsBroadcasts() {
             <div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Contact statuses</div>
               <div className="flex flex-wrap gap-2">
-                {STATUS_OPTIONS.map((s) => (
-                  <Badge
-                    key={s}
-                    onClick={() => toggleStatus(s)}
-                    className={`cursor-pointer capitalize ${statuses.includes(s) ? "" : "opacity-40"}`}
-                  >
-                    {s}
-                  </Badge>
-                ))}
+                {STATUS_OPTIONS.map((s) => {
+                  const active = statuses.includes(s);
+                  return (
+                    <Badge
+                      key={s}
+                      onClick={() => toggleStatus(s)}
+                      className={`cursor-pointer capitalize border ${active ? "" : "opacity-40"}`}
+                      style={{
+                        backgroundColor: active ? STATUS_COLORS[s] : "transparent",
+                        borderColor: STATUS_COLORS[s],
+                        color: active ? "hsl(var(--background))" : STATUS_COLORS[s],
+                      }}
+                    >
+                      {s}
+                    </Badge>
+                  );
+                })}
               </div>
             </div>
 
