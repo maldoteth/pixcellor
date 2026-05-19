@@ -584,7 +584,7 @@ export default function CustomerPortal() {
                                 <span className="text-3xl font-bold">{plan.price}</span>
                                 <span className="text-muted-foreground text-slate-50 bg-white/0 line-through text-sm">{plan.rrp}</span>
                               </div>
-                              <p className="text-xs font-semibold text-foreground">Introductory offer — {plan.discount}</p>
+                              <p className="text-xs font-semibold text-foreground">SME Subsidy — {plan.discount}</p>
                             </div>
                             <ul className="my-5 flex-1 space-y-2 text-sm text-muted-foreground">
                               {plan.features.map((feature) => (
