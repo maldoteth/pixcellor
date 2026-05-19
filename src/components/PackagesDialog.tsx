@@ -42,11 +42,11 @@ const PACKAGES = {
     monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription" as const,
-    features: ["Outsource departments", "2 week MVP sprints", "Daily updates"],
+    features: ["A fractionalised C-suite", "Outsource departments", "2 week MVP sprints", "Daily updates"],
   },
   enterprise: {
     name: "Enterprise",
-    features: ["Custom packages small to large", "Infrastructure and ecosystems", "Dedicated team 24/7 - 365"],
+    features: ["Custom packages small to large", "Hosting & managed services", "Infrastructure and ecosystems", "Dedicated team 24/7 - 365"],
   },
 };
 
