@@ -34,3 +34,11 @@ project_id = "rkgjkvghejcmostuqkgw"
     verify_jwt = false
   [functions.send-requirements-reminder]
     verify_jwt = false
+  [functions.twilio-inbound-webhook]
+    verify_jwt = false
+  [functions.twilio-status-webhook]
+    verify_jwt = false
+  [functions.send-sms-broadcast]
+    verify_jwt = true
+  [functions.process-sms-queue]
+    verify_jwt = false
