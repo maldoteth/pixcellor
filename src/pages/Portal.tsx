@@ -3604,13 +3604,24 @@ export default function Portal() {
                 )}
                 {contactPersons.filter(p => p.contact_id === contactDetailDrawerContact.id).map(person => (
                   <div key={person.id} className="flex items-start justify-between gap-2 rounded-none border border-border bg-card/60 p-3 text-sm">
-                    <div className="min-w-0">
+                    <div className="min-w-0 space-y-1">
                       <div className="font-medium">{person.name}</div>
-                      <div className="text-muted-foreground text-slate-50 bg-white/0 text-base">{[person.job_title, person.phone].filter(Boolean).join(" · ") || "—"}</div>
+                      {person.job_title && <div className="text-muted-foreground text-slate-50 bg-white/0 text-base">{person.job_title}</div>}
                       {person.phone && (
-                        <Button variant="ghost" size="icon" className="mt-1 h-6 w-6 shrink-0 rounded-none" aria-label="Copy number" title="Copy number" onClick={() => copyToClipboard(person.phone!, "Number copied")}>
-                          <Copy className="h-3 w-3" />
-                        </Button>
+                        <div className="flex items-center gap-1.5">
+                          <a href={`tel:${person.phone}`} className="text-sm font-medium text-primary underline-offset-4 hover:underline" onClick={() => copyToClipboard(person.phone!, "Number copied")}>{person.phone}</a>
+                          <Button variant="ghost" size="icon" className="hidden md:inline-flex h-6 w-6 shrink-0 rounded-none" aria-label="Copy number" title="Copy number" onClick={() => copyToClipboard(person.phone!, "Number copied")}>
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+                      {person.email && (
+                        <div className="flex items-center gap-1.5">
+                          <a href={`mailto:${person.email}`} className="text-sm font-medium text-primary underline-offset-4 hover:underline break-all" onClick={() => copyToClipboard(person.email!, "Email copied")}>{person.email}</a>
+                          <Button variant="ghost" size="icon" className="hidden md:inline-flex h-6 w-6 shrink-0 rounded-none" aria-label="Copy email" title="Copy email" onClick={() => copyToClipboard(person.email!, "Email copied")}>
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
                       )}
                     </div>
                     <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Remove" onClick={() => deleteContactPerson(person.id)}>
