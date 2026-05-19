@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Pencil, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 import { downloadImage } from "@/lib/download-image";
 
 const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
@@ -3517,9 +3517,6 @@ export default function Portal() {
                   {contactDetailDrawerOrderStats && <div className="text-muted-foreground text-slate-50 bg-white/0 text-xs">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
                 <div className="flex w-full items-center justify-end gap-2 overflow-x-auto md:w-auto md:flex-wrap md:overflow-visible text-left">
-                  <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
-                    Edit
-                  </Button>
                   <Button
                     variant="pricing"
                     size="sm"
@@ -3563,6 +3560,10 @@ export default function Portal() {
                         }}
                       />
                     </label>
+                  </Button>
+                  <Button variant="pricing" size="sm" className="h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
+                    <Pencil className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">Edit</span>
                   </Button>
                   <Button variant="pricing" size="icon" className="h-9 w-9 shrink-0 rounded-none shadow-none" aria-label="Archive client" title="Archive client" onClick={() => archiveContact(contactDetailDrawerContact.id)}>
                     <Trash2 className="h-4 w-4" />
