@@ -11,6 +11,13 @@ import { toast } from "sonner";
 import { useConfirmDialog } from "@/components/ui/themed-dialogs";
 
 const STATUS_OPTIONS = ["cold", "aware", "warm", "hot", "gold"] as const;
+const STATUS_COLORS: Record<string, string> = {
+  cold: "hsl(217 91% 60%)",
+  aware: "hsl(142 71% 45%)",
+  warm: "hsl(25 95% 53%)",
+  hot: "hsl(0 84% 60%)",
+  gold: "hsl(45 93% 47%)",
+};
 
 type Contact = { id: string; name: string; phone: string | null; status: string; industry: string | null };
 type Broadcast = {
