@@ -797,6 +797,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         />
         </div>
       </motion.div>
+      </div>
+
+
 
       {/* Elite - center, elevated */}
       <motion.div data-lava-card
