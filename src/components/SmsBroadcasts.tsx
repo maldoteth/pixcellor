@@ -31,6 +31,18 @@ type Reply = {
 };
 type OptOut = { id: string; phone: string; reason: string; created_at: string };
 
+const SMS_TEMPLATES: { id: string; label: string; body: string }[] = [
+  {
+    id: "cold-no-website",
+    label: "Cold outreach – no website",
+    body: `Hi, it's Alex from Pixcellor.
+
+This text is regarding a digital grant to get you online and growing with a market leading website powered by AI - with no upfront costs and a heavily reduced fee!
+
+Available exclusively for small and medium businesses in the UK so apply now by texting back YES or calling 01483219430.`,
+  },
+];
+
 export default function SmsBroadcasts() {
   const confirm = useConfirmDialog();
   const [tab, setTab] = useState("compose");
@@ -366,6 +378,19 @@ export default function SmsBroadcasts() {
 
             <Input placeholder="Internal title (optional)" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={160} />
             <div>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground mr-1">Templates</span>
+                {SMS_TEMPLATES.map((t) => (
+                  <Badge
+                    key={t.id}
+                    variant="outline"
+                    onClick={() => { setBody(t.body); if (!title.trim()) setTitle(t.label); }}
+                    className="cursor-pointer"
+                  >
+                    {t.label}
+                  </Badge>
+                ))}
+              </div>
               <Textarea
                 placeholder="Hi {name}, your message here…"
                 value={body}
