@@ -782,7 +782,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-1 flex items-baseline gap-2">
           <div className="text-3xl font-extrabold text-foreground">£150</div>
-          <span className="text-muted-foreground text-sm">Standard price £375</span>
+          <span className="text-muted-foreground text-sm">or £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
         <ul className="mb-6 space-y-2 text-base text-foreground">
@@ -843,7 +843,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
         <div className="mb-1 flex items-baseline gap-2">
           <div className="text-5xl font-black text-foreground">£500</div>
-          <span className="text-muted-foreground text-sm">Standard price £1,500</span>
+          <span className="text-muted-foreground text-sm">or £1,500</span>
         </div>
         <IntroductoryOfferText discount="67%" />
         <ul className="mb-4 space-y-1.5 text-base text-foreground">
@@ -937,7 +937,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 <div className="text-3xl font-extrabold text-foreground">
                   {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
                 </div>
-                <span className="text-muted-foreground text-sm">Standard price {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
+                <span className="text-muted-foreground text-sm">or {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
               <IntroductoryOfferText discount="52%" />
               <ul className="mb-6 space-y-2 text-base text-foreground">
@@ -1284,7 +1284,7 @@ function MobileCards() {
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-1 flex items-baseline gap-2">
           <span className="text-3xl font-extrabold text-foreground">£150</span>
-          <span className="text-muted-foreground text-sm">Standard price £375</span>
+          <span className="text-muted-foreground text-sm">or £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
         <ul className="space-y-2 flex-1 mb-4">
@@ -1316,7 +1316,7 @@ function MobileCards() {
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
         <div className="mt-3 mb-1 flex items-baseline gap-2">
           <span className="text-3xl font-extrabold text-foreground">£500</span>
-          <span className="text-muted-foreground text-sm">Standard price £1,500</span>
+          <span className="text-muted-foreground text-sm">or £1,500</span>
         </div>
         <IntroductoryOfferText discount="67%" />
         <ul className="space-y-2 flex-1 mb-4">
@@ -1387,7 +1387,7 @@ function MobileCards() {
                 <div className="text-3xl font-extrabold text-foreground">
                   {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
                 </div>
-                <span className="text-muted-foreground text-sm">Standard price {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
+                <span className="text-muted-foreground text-sm">or {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
               <IntroductoryOfferText discount="52%" />
               <ul className="space-y-2 flex-1 mb-4">
