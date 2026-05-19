@@ -1273,7 +1273,7 @@ function MobileCards() {
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-1 flex items-baseline gap-2">
           <span className="text-3xl font-extrabold text-foreground">£150</span>
-          <span className="text-muted-foreground text-slate-50 bg-white/0 line-through text-sm">RRP £375</span>
+          <span className="text-muted-foreground text-slate-50 bg-white/0 line-through text-base">RRP £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
         <ul className="space-y-2 flex-1 mb-4">
@@ -1305,7 +1305,7 @@ function MobileCards() {
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
         <div className="mt-3 mb-1 flex items-baseline gap-2">
           <span className="text-3xl font-extrabold text-foreground">£500</span>
-          <span className="text-muted-foreground text-slate-50 bg-white/0 line-through text-sm">RRP £1,500</span>
+          <span className="text-muted-foreground text-slate-50 bg-white/0 line-through text-base">RRP £1,500</span>
         </div>
         <IntroductoryOfferText discount="67%" />
         <ul className="space-y-2 flex-1 mb-4">
@@ -1376,7 +1376,7 @@ function MobileCards() {
                 <div className="text-3xl font-extrabold text-foreground">
                   {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
                 </div>
-                <span className="text-muted-foreground text-slate-50 bg-white/0 line-through text-sm">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
+                <span className="text-muted-foreground text-slate-50 bg-white/0 line-through text-base">RRP {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
               <IntroductoryOfferText discount="52%" />
               <ul className="space-y-2 flex-1 mb-4">
