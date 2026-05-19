@@ -52,7 +52,7 @@ export const STEPS: StepDef[] = [
   {
     key: "company",
     label: "WHAT'S YOUR COMPANY OR BRAND NAME?",
-    helper: "We'll use this draft to create your dream site or app",
+    helper: "We'll use this to help us create your perfect site",
     placeholder: "e.g. Acme Florist",
     prefix: "Company / brand name",
   },
