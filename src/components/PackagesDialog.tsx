@@ -286,8 +286,9 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
           </defs>
         </svg>
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 leading-tight">
-        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase">LIMITED</span>
-        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase -mt-0.5">TIME</span>
+        <span className="text-[12px] font-extrabold tracking-wide text-foreground uppercase leading-none">&nbsp;</span>
+        <span className="text-[11px] font-extrabold tracking-wide text-foreground uppercase leading-tight mt-1">LIMITED TIME</span>
+        <span className="text-[11px] font-extrabold tracking-wide text-foreground uppercase leading-tight">WEBSITE OFFER</span>
         <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider mt-0.5">Don't pay till</span>
         <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider">you're happy</span>
         <button
