@@ -105,6 +105,7 @@ export default function ServicePage() {
       {/* Mounted so CTAs work on this standalone route */}
       <LetsTalkPrompt />
       <PackagesDialog hidden />
+      <VisionGenerator hidden />
     </div>
   );
 }
