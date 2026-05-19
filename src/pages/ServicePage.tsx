@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import ServiceSalesView from "@/components/services/ServiceSalesView";
 import LetsTalkPrompt from "@/components/LetsTalkPrompt";
 import PackagesDialog from "@/components/PackagesDialog";
+import VisionGenerator from "@/components/VisionGenerator";
 import { getServiceBySlug } from "@/data/services";
 import { SERVICE_SEO } from "@/data/serviceSeo";
 
