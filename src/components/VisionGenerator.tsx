@@ -78,13 +78,6 @@ export const STEPS: StepDef[] = [
     prefix: "Colours",
   },
   {
-    key: "headline",
-    label: "MAIN HEADLINE",
-    helper: "The first thing visitors see — keep it bold and clear.",
-    placeholder: "e.g. Hand-picked bouquets delivered daily",
-    prefix: "Headline",
-  },
-  {
     key: "sections",
     label: "PAGES & SPECIAL REQUESTS",
     helper: "Tap to add parts or any customizations to your site",
