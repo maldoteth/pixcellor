@@ -267,7 +267,78 @@ const TERMS: Section[] = [
   },
   {
     id: "20",
-    heading: "20. Contact",
+    heading: "20. SME Subsidy / Pixcellor Digital Grant Programme",
+    body: (
+      <>
+        <p>
+          The "SME Subsidy", "Digital Grant", "Grant Script" offer, and any related discount of up to
+          ~67% off our standard package pricing (collectively the "<strong>Grant Programme</strong>")
+          is a <strong>privately funded</strong> commercial subsidy operated solely by {COMPANY}. It is
+          <strong> not</strong> a government grant, is <strong>not</strong> affiliated with, endorsed by,
+          or administered on behalf of the UK Government, His Majesty's Government, any local authority,
+          Innovate UK, the British Business Bank, or any other public body or statutory scheme. No
+          public money is involved.
+        </p>
+        <p className="mt-3">
+          The Grant Programme is funded from a private pool contributed by a consortium of independent
+          blockchain and technology entrepreneurs who back {COMPANY}'s mission to get UK small and
+          medium-sized businesses online. The total committed funding for the initial round is{" "}
+          <strong>£250,000 GBP</strong>, allocated on a first-come, first-served basis until exhausted,
+          withdrawn, paused, or replaced by a successor round at our discretion. We may close, extend,
+          top-up, or modify the Programme at any time without notice; published discount percentages are
+          indicative of the typical subsidy applied and do not constitute a binding offer until an order
+          is accepted in writing (including by automated order confirmation).
+        </p>
+        <p className="mt-3">
+          <strong>Eligibility.</strong> The Grant Programme is available only to small and medium-sized
+          enterprises ("SMEs") that (a) are established, registered or trading in the United Kingdom,
+          (b) meet the UK Companies Act 2006 / Companies (Accounts) Regulations definition of a small or
+          medium-sized company (broadly: fewer than 250 employees and turnover not exceeding £36m, or
+          such updated thresholds as are in force from time to time), (c) are purchasing the Services for
+          genuine business use, and (d) are not a competitor of {COMPANY}, a public body, or a regulated
+          entity prohibited from receiving private commercial discounts. Sole traders and partnerships
+          carrying on a bona fide UK business are eligible. We may require reasonable proof of
+          eligibility (e.g. Companies House number, VAT number, trading address) before applying or
+          continuing the subsidy.
+        </p>
+        <p className="mt-3">
+          <strong>How the subsidy works.</strong> The Grant Programme is applied as a discount against
+          our standard list price for eligible packages at the point of order. The subsidised amount is
+          paid to {COMPANY} from the privately funded grant pool described above; no cash is paid to the
+          customer and no separate "grant award" letter is issued. The subsidy is non-transferable, has
+          no cash value, cannot be combined with other promotional discounts unless we say so in writing,
+          and applies only to the initial build / first paid term of the relevant package. Renewals,
+          third-party pass-through costs (domains, hosting overages, paid ads, premium APIs) and
+          out-of-scope work are charged at standard rates and are not subsidised.
+        </p>
+        <p className="mt-3">
+          <strong>Withdrawal & clawback.</strong> We may withdraw the subsidy and re-invoice the full
+          undiscounted list price (and suspend Services until paid) where (i) the customer provided
+          materially false or misleading eligibility information, (ii) the customer is not a UK SME as
+          defined above, (iii) the customer cancels, charges back or fails to pay within the agreed
+          terms, (iv) the customer breaches these Terms or our Acceptable Use Policy, or (v) the
+          customer resells, sublicenses or transfers the subsidised Services to a non-eligible third
+          party without our written consent.
+        </p>
+        <p className="mt-3">
+          <strong>Tax & accounting.</strong> The Grant Programme is a commercial price reduction, not a
+          grant of money to the customer, and is not intended to constitute taxable income, "de minimis"
+          subsidy, or notifiable State aid / Subsidy Control assistance under the UK Subsidy Control Act
+          2022. Customers are responsible for their own tax treatment and for taking independent advice
+          where needed.
+        </p>
+        <p className="mt-3">
+          <strong>No guarantee.</strong> Inclusion of the SME Subsidy on our website, in marketing
+          messages, SMS or call scripts is for information only and does not create a contractual right
+          to a subsidy until an order is accepted by {COMPANY}. Allocation, eligibility decisions and any
+          dispute about the Programme are at {COMPANY}'s sole and reasonable discretion.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "21",
+    heading: "21. Contact",
     body: (
       <>
         Questions about these Terms? Email {CONTACT} or call {PHONE}.
