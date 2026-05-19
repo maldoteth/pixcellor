@@ -33,6 +33,7 @@ const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
 import BroadcastCampaigns from "@/components/BroadcastCampaigns";
+import SmsBroadcasts from "@/components/SmsBroadcasts";
 import { useDomainPrompt } from "@/components/DomainPromptDialog";
 import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
