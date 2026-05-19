@@ -58,7 +58,6 @@ export default function AdminVisionWizard({ open, onOpenChange, onCreated }: Adm
     industry: "",
     vibe: "",
     colour: "",
-    headline: "",
     sections: "",
   });
   const [title, setTitle] = useState("");
