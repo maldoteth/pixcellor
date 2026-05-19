@@ -14,6 +14,13 @@ import { useConfirmDialog } from "@/components/ui/themed-dialogs";
 type Source = "contacts" | "customers" | "both";
 
 const STATUS_OPTIONS = ["cold", "aware", "warm", "hot", "gold"] as const;
+const STATUS_COLORS: Record<string, string> = {
+  cold: "hsl(217 91% 60%)",
+  aware: "hsl(142 71% 45%)",
+  warm: "hsl(25 95% 53%)",
+  hot: "hsl(0 84% 60%)",
+  gold: "hsl(45 93% 47%)",
+};
 
 export default function BroadcastCampaigns() {
   const confirmDialog = useConfirmDialog();
