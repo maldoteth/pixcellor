@@ -955,6 +955,250 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_broadcasts: {
+        Row: {
+          body: string
+          completed_at: string | null
+          created_at: string
+          created_by_email: string | null
+          created_by_user_id: string | null
+          delivered_count: number
+          failed_count: number
+          filters: Json
+          id: string
+          recipient_count: number
+          reply_count: number
+          scheduled_for: string | null
+          sender_id: string | null
+          sent_count: number
+          started_at: string | null
+          status: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          completed_at?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          delivered_count?: number
+          failed_count?: number
+          filters?: Json
+          id?: string
+          recipient_count?: number
+          reply_count?: number
+          scheduled_for?: string | null
+          sender_id?: string | null
+          sent_count?: number
+          started_at?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          delivered_count?: number
+          failed_count?: number
+          filters?: Json
+          id?: string
+          recipient_count?: number
+          reply_count?: number
+          scheduled_for?: string | null
+          sender_id?: string | null
+          sent_count?: number
+          started_at?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sms_inbound_replies: {
+        Row: {
+          body: string
+          contact_id: string | null
+          created_at: string
+          from_phone: string
+          handled: boolean
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          message_id: string | null
+          to_phone: string | null
+        }
+        Insert: {
+          body: string
+          contact_id?: string | null
+          created_at?: string
+          from_phone: string
+          handled?: boolean
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          message_id?: string | null
+          to_phone?: string | null
+        }
+        Update: {
+          body?: string
+          contact_id?: string | null
+          created_at?: string
+          from_phone?: string
+          handled?: boolean
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          message_id?: string | null
+          to_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_inbound_replies_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "sms_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_messages: {
+        Row: {
+          body: string
+          broadcast_id: string | null
+          contact_id: string | null
+          contact_person_id: string | null
+          created_at: string
+          delivered_at: string | null
+          direction: string
+          error_code: string | null
+          error_message: string | null
+          from_phone: string | null
+          id: string
+          price: number | null
+          price_unit: string | null
+          segments: number | null
+          sent_at: string | null
+          status: string
+          to_phone: string | null
+          twilio_sid: string | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          broadcast_id?: string | null
+          contact_id?: string | null
+          contact_person_id?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          direction?: string
+          error_code?: string | null
+          error_message?: string | null
+          from_phone?: string | null
+          id?: string
+          price?: number | null
+          price_unit?: string | null
+          segments?: number | null
+          sent_at?: string | null
+          status?: string
+          to_phone?: string | null
+          twilio_sid?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          broadcast_id?: string | null
+          contact_id?: string | null
+          contact_person_id?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          direction?: string
+          error_code?: string | null
+          error_message?: string | null
+          from_phone?: string | null
+          id?: string
+          price?: number | null
+          price_unit?: string | null
+          segments?: number | null
+          sent_at?: string | null
+          status?: string
+          to_phone?: string | null
+          twilio_sid?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_messages_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "sms_broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_opt_outs: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          id: string
+          phone: string
+          reason: string
+          source: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          phone: string
+          reason?: string
+          source?: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          phone?: string
+          reason?: string
+          source?: string
+        }
+        Relationships: []
+      }
+      sms_settings: {
+        Row: {
+          enforce_quiet_hours: boolean
+          footer: string
+          id: number
+          quiet_hours_end: number
+          quiet_hours_start: number
+          rate_per_second: number
+          sender_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          enforce_quiet_hours?: boolean
+          footer?: string
+          id?: number
+          quiet_hours_end?: number
+          quiet_hours_start?: number
+          rate_per_second?: number
+          sender_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          enforce_quiet_hours?: boolean
+          footer?: string
+          id?: number
+          quiet_hours_end?: number
+          quiet_hours_start?: number
+          rate_per_second?: number
+          sender_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stripe_checkout_sessions: {
         Row: {
           amount_total: number | null
