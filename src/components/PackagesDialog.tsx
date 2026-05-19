@@ -287,9 +287,8 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
         </svg>
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 leading-tight">
         <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase">GUARANTEE</span>
-        <span className="text-[13px] font-extrabold tracking-wide text-foreground uppercase -mt-0.5">{"\n"}</span>
-        <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider mt-0.5">Don't pay till</span>
-        <span className="text-[8px] font-medium text-foreground/70 uppercase tracking-wider">you're happy</span>
+        <span className="text-[10px] font-extrabold tracking-wide text-foreground uppercase mt-0.5">DON'T PAY TILL</span>
+        <span className="text-[10px] font-extrabold tracking-wide text-foreground uppercase">YOU'RE HAPPY</span>
         <button
           type="button"
           onClick={(e) => {
@@ -306,7 +305,7 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
 }
 
 function IntroductoryOfferText({ discount }: { discount: string }) {
-  return <p className="mb-4 text-xs font-semibold text-foreground">Introductary offer — {discount} off</p>;
+  return <p className="mb-4 text-xs font-semibold text-foreground">SME Subsidy — {discount} off</p>;
 }
 
 function SnakeFlipButton({
@@ -833,7 +832,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
           className="absolute top-1.5 right-2 rounded-sm border border-foreground/30 bg-foreground px-3 text-[10px] font-extrabold text-background shadow z-20 uppercase tracking-wider py-[2px] mx-[2px] my-[6px]"
         >
-          Most Popular
+          MOST POPULAR
         </motion.div>
         <div className="relative z-10 -mt-28">
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
@@ -1307,7 +1306,7 @@ function MobileCards() {
         <div className="lava-blob lava-blob-featured-3" />
         <div className="relative z-10 flex flex-col flex-1">
         <span className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-2">
-          Most Popular
+          MOST POPULAR
         </span>
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
         <div className="mt-3 mb-1 flex items-baseline gap-2">
