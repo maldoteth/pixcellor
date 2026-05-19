@@ -752,6 +752,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     >
       
       {/* Full Works - tilted left */}
+      <div className="md:max-lg:translate-x-[16px]">
       <motion.div data-lava-card
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
