@@ -10,7 +10,7 @@ function dispatchCta(action: ServiceCtaAction, onAction?: () => void) {
   // Defer so the closing drawer doesn't swallow the focus / pointer events.
   setTimeout(() => {
     if (action === "request") {
-      window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }));
+      window.dispatchEvent(new CustomEvent("pixcellor:open-vision"));
     } else if (action === "sales") {
       window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "sales" } }));
     } else if (action === "pricing") {
