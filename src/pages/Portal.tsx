@@ -2874,8 +2874,16 @@ export default function Portal() {
 
 
           <TabsContent value="campaigns" className="min-w-0">
-            <BroadcastCampaigns />
+            <Tabs defaultValue="email" className="space-y-4">
+              <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 max-w-md">
+                <TabsTrigger value="email" className="pricing-button h-10 rounded-none text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm">Email</TabsTrigger>
+                <TabsTrigger value="sms" className="pricing-button h-10 rounded-none text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm">SMS</TabsTrigger>
+              </TabsList>
+              <TabsContent value="email" className="mt-0"><BroadcastCampaigns /></TabsContent>
+              <TabsContent value="sms" className="mt-0"><SmsBroadcasts /></TabsContent>
+            </Tabs>
           </TabsContent>
+
 
 
           <TabsContent value="falloffs" className="min-w-0 space-y-2">
