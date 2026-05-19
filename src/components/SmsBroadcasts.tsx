@@ -237,6 +237,32 @@ export default function SmsBroadcasts() {
         <TabsContent value="compose" className="mt-4 space-y-3">
           <Card><CardContent className="space-y-3 p-4">
             <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Add specific contacts</div>
+              <div className="relative">
+                <Input
+                  placeholder="Search by name or phone…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                {searchResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-lg max-h-64 overflow-y-auto">
+                    {searchResults.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => addManual(c.id)}
+                        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted/50"
+                      >
+                        <span className="truncate">{c.name}</span>
+                        <span className="text-xs text-muted-foreground font-mono">{c.phone}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Contact statuses</div>
               <div className="flex flex-wrap gap-2">
                 {STATUS_OPTIONS.map((s) => {
@@ -278,32 +304,6 @@ export default function SmsBroadcasts() {
                 </div>
               </div>
             )}
-
-            <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Add specific contacts</div>
-              <div className="relative">
-                <Input
-                  placeholder="Search by name or phone…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-                {searchResults.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-lg max-h-64 overflow-y-auto">
-                    {searchResults.map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => addManual(c.id)}
-                        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted/50"
-                      >
-                        <span className="truncate">{c.name}</span>
-                        <span className="text-xs text-muted-foreground font-mono">{c.phone}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
 
             <div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
