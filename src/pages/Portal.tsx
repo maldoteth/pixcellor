@@ -3479,6 +3479,7 @@ export default function Portal() {
                 <div className="min-w-0 space-y-1 pr-28">
                   {contactDetailDrawerContact.phone && (
                     <div className="flex items-center gap-1.5">
+                      <span className="text-sm text-muted-foreground">Number:</span>
                       {contactDetailDrawerPhoneHref ? (
                         <a href={contactDetailDrawerPhoneHref} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" aria-label={`Call ${contactDetailDrawerContact.phone}`}>
                           {contactDetailDrawerContact.phone}
@@ -3493,6 +3494,7 @@ export default function Portal() {
                   )}
                   {contactDetailDrawerContact.email && (
                     <div className="flex items-center gap-1.5">
+                      <span className="text-sm text-muted-foreground">Email:</span>
                       <a href={`mailto:${contactDetailDrawerContact.email}`} className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" aria-label={`Email ${contactDetailDrawerContact.email}`}>
                         {contactDetailDrawerContact.email}
                       </a>
@@ -3502,7 +3504,7 @@ export default function Portal() {
                     </div>
                   )}
                   {contactDetailDrawerContact.contact_name && <div className="text-sm text-muted-foreground">Client: {contactDetailDrawerContact.contact_name}</div>}
-                  {contactDetailDrawerContact.industry && <Badge variant="outline" className="rounded-none capitalize">{contactDetailDrawerContact.industry}</Badge>}
+                  {contactDetailDrawerContact.industry && <div className="text-sm text-muted-foreground capitalize">Industry: {contactDetailDrawerContact.industry}</div>}
                   {contactDetailDrawerContact.source_platform && <Badge variant="secondary" className="rounded-none">{contactDetailDrawerContact.source_platform}</Badge>}
                   {contactDetailDrawerContact.lead_score != null && <Badge variant="outline" className="rounded-none">Lead score {contactDetailDrawerContact.lead_score}</Badge>}
                   {contactDetailDrawerContact.website_status && contactDetailDrawerContact.website_status !== "unknown" && <Badge variant="secondary" className="rounded-none capitalize">{contactDetailDrawerContact.website_status.replace(/_/g, " ")}</Badge>}
