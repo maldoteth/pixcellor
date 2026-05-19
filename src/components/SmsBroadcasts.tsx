@@ -239,15 +239,23 @@ export default function SmsBroadcasts() {
             <div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Contact statuses</div>
               <div className="flex flex-wrap gap-2">
-                {STATUS_OPTIONS.map((s) => (
-                  <Badge
-                    key={s}
-                    onClick={() => toggleStatus(s)}
-                    className={`cursor-pointer capitalize ${statuses.includes(s) ? "" : "opacity-40"}`}
-                  >
-                    {s}
-                  </Badge>
-                ))}
+                {STATUS_OPTIONS.map((s) => {
+                  const active = statuses.includes(s);
+                  return (
+                    <Badge
+                      key={s}
+                      onClick={() => toggleStatus(s)}
+                      className={`cursor-pointer capitalize border ${active ? "" : "opacity-40"}`}
+                      style={{
+                        backgroundColor: active ? STATUS_COLORS[s] : "transparent",
+                        borderColor: STATUS_COLORS[s],
+                        color: active ? "hsl(var(--background))" : STATUS_COLORS[s],
+                      }}
+                    >
+                      {s}
+                    </Badge>
+                  );
+                })}
               </div>
             </div>
 
