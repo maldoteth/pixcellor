@@ -308,7 +308,6 @@ function IntroductoryOfferText({ discount }: { discount: string }) {
   return (
     <div className="mb-4">
       <p className="text-xs font-semibold text-foreground">Pixcellor private SME grant — {discount} off</p>
-      <p className="text-[10px] text-muted-foreground mt-0.5">Privately funded by Pixcellor. Not a government grant.</p>
     </div>
   );
 }
