@@ -3215,7 +3215,13 @@ export default function Portal() {
                         On retainer ({filteredRetainers.length})
                       </button>
                     )}
-                  </div>
+                </div>
+                <div className="flex md:hidden items-center gap-2 pt-2">
+                  <Button onClick={openMobileContactForm} className="h-9 shrink-0">
+                    <UserPlus className="w-4 h-4 mr-2" /> Add Client
+                  </Button>
+                  <FindLeadsButton onQueued={loadPortalSnapshot} />
+                </div>
                 </div>
                 <p className="text-muted-foreground text-slate-50 bg-white/0 text-xs">
                   {(sectionCounts.contacts ?? 0) > contacts.length || clientsVisibleCount < clientBookContacts.length ? "" : "Loaded all."}
