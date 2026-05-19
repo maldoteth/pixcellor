@@ -32,7 +32,7 @@ const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
   {
     id: "cold-no-website",
     title: "Private SME Grant Script",
-    body: `Hi, it's Alex from Pixcellor.\n\nI'm calling regarding Pixcellor's private SME grant to get you online and growing with a market leading website powered by AI - with no upfront costs and a heavily reduced fee!\n\nThis is privately funded by Pixcellor (not a government grant) and is only available for small and medium businesses in the UK. I'm calling UK SMEs like (say company name) - would you like me to send you out the free sample pack so you can check eligibility and get started?`,
+    body: `Hi, it's Alex from Pixcellor.\n\nI'm messaging regarding a SME grant (privately funded UK small and medium enterprise grants) to get local businesses online with a market leading AI powered website designed to grow revenue - with no upfront costs and a heavily subsidized annual fees for the first 5 years!\n\nThis is only available to small and medium enterprises. Reply YES to check eligibility and get your free sample pack.`,
   },
 ];
 import { toast } from "sonner";
