@@ -11,23 +11,23 @@ import { CircularGallery, type GalleryItem } from "@/components/ui/circular-gall
 import { supabase } from "@/integrations/supabase/client";
 
 // Import hero UI images
-import ui1 from '@/assets/hero/ui-1.png';
+import ui1 from '@/assets/hero/ui-1.webp';
 import pixcellorWordmarkWhite from '@/assets/pixcellor-wordmark-white.png';
-import ui2 from '@/assets/hero/ui-2.png';
-import ui3 from '@/assets/hero/ui-3.png';
-import ui4 from '@/assets/hero/ui-4.png';
-import ui5 from '@/assets/hero/ui-5.png';
-import ui6 from '@/assets/hero/ui-6.png';
-import ui7 from '@/assets/hero/ui-7.png';
-import ui8 from '@/assets/hero/ui-8.png';
-import ui9 from '@/assets/hero/ui-9.png';
-import ui10 from '@/assets/hero/ui-10.png';
-import ui11 from '@/assets/hero/ui-11.png';
-import ui12 from '@/assets/hero/ui-12.png';
-import ui13 from '@/assets/hero/ui-13.png';
-import ui14 from '@/assets/hero/ui-14.png';
-import ui15 from '@/assets/hero/ui-15.png';
-import ui16 from '@/assets/hero/ui-16.png';
+import ui2 from '@/assets/hero/ui-2.webp';
+import ui3 from '@/assets/hero/ui-3.webp';
+import ui4 from '@/assets/hero/ui-4.webp';
+import ui5 from '@/assets/hero/ui-5.webp';
+import ui6 from '@/assets/hero/ui-6.webp';
+import ui7 from '@/assets/hero/ui-7.webp';
+import ui8 from '@/assets/hero/ui-8.webp';
+import ui9 from '@/assets/hero/ui-9.webp';
+import ui10 from '@/assets/hero/ui-10.webp';
+import ui11 from '@/assets/hero/ui-11.webp';
+import ui12 from '@/assets/hero/ui-12.webp';
+import ui13 from '@/assets/hero/ui-13.webp';
+import ui14 from '@/assets/hero/ui-14.webp';
+import ui15 from '@/assets/hero/ui-15.webp';
+import ui16 from '@/assets/hero/ui-16.webp';
 
 // --- Types ---
 export type AnimationPhase = "scatter" | "line" | "circle" | "bottom-strip";
