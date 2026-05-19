@@ -3517,9 +3517,6 @@ export default function Portal() {
                   {contactDetailDrawerOrderStats && <div className="text-muted-foreground text-slate-50 bg-white/0 text-xs">LTV {formatGBP(contactDetailDrawerOrderStats.ltv)} · {contactDetailDrawerOrderStats.orders.length} order{contactDetailDrawerOrderStats.orders.length === 1 ? "" : "s"}</div>}
                 </div>
                 <div className="flex w-full items-center justify-end gap-2 overflow-x-auto md:w-auto md:flex-wrap md:overflow-visible text-left">
-                  <Button variant="pricing" size="sm" className="hidden md:inline-flex h-9 shrink-0 rounded-none shadow-none" onClick={() => startEditingContact(contactDetailDrawerContact)}>
-                    Edit
-                  </Button>
                   <Button
                     variant="pricing"
                     size="sm"
