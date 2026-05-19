@@ -236,7 +236,7 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
     return `${50 + r * Math.cos(angle)},${50 + r * Math.sin(angle)}`;
   }).join(" ");
   const openRequest = () =>
-    window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "request" } }));
+    window.dispatchEvent(new CustomEvent("pixcellor:open-vision"));
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
