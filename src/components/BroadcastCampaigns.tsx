@@ -25,7 +25,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function BroadcastCampaigns() {
   const confirmDialog = useConfirmDialog();
   const [source, setSource] = useState<Source>("contacts");
-  const [statuses, setStatuses] = useState<string[]>(["warm", "hot", "gold"]);
+  const [statuses, setStatuses] = useState<string[]>([]);
   const [industries, setIndustries] = useState<string[]>([]);
   const [allIndustries, setAllIndustries] = useState<string[]>([]);
   const [subject, setSubject] = useState("");
