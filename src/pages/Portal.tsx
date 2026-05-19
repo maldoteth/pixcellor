@@ -3160,10 +3160,12 @@ export default function Portal() {
                   <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input value={profilesSearch} onChange={(e) => { setProfilesSearch(e.target.value); setClientsVisibleCount(10); }} placeholder="Search the contact book by name, email, company, phone, notes…" className="pl-9" />
                 </div>
-                <Button onClick={openMobileContactForm} className="h-9 shrink-0">
-                  <UserPlus className="w-4 h-4 mr-2" /> Add Client
-                </Button>
-                <FindLeadsButton onQueued={loadPortalSnapshot} />
+                <div className="hidden md:flex items-center gap-2">
+                  <Button onClick={openMobileContactForm} className="h-9 shrink-0">
+                    <UserPlus className="w-4 h-4 mr-2" /> Add Client
+                  </Button>
+                  <FindLeadsButton onQueued={loadPortalSnapshot} />
+                </div>
               </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="text-muted-foreground text-slate-50 bg-white/0 text-xs">Sort:</span>
@@ -3213,7 +3215,13 @@ export default function Portal() {
                         On retainer ({filteredRetainers.length})
                       </button>
                     )}
-                  </div>
+                </div>
+                <div className="flex md:hidden items-center gap-2 pt-2">
+                  <Button onClick={openMobileContactForm} className="h-9 shrink-0">
+                    <UserPlus className="w-4 h-4 mr-2" /> Add Client
+                  </Button>
+                  <FindLeadsButton onQueued={loadPortalSnapshot} />
+                </div>
                 </div>
                 <p className="text-muted-foreground text-slate-50 bg-white/0 text-xs">
                   {(sectionCounts.contacts ?? 0) > contacts.length || clientsVisibleCount < clientBookContacts.length ? "" : "Loaded all."}
