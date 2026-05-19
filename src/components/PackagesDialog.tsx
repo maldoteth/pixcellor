@@ -777,7 +777,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-1 flex items-baseline gap-2">
           <div className="text-3xl font-extrabold text-foreground">£150</div>
-          <span className="text-muted-foreground text-lg text-slate-50 bg-white/0 line-through">RRP £375</span>
+          <span className="text-muted-foreground text-slate-50 bg-white/0 line-through text-base">RRP £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
         <ul className="mb-6 space-y-2 text-base text-foreground">
