@@ -2874,13 +2874,13 @@ export default function Portal() {
 
 
           <TabsContent value="campaigns" className="min-w-0">
-            <Tabs defaultValue="email" className="space-y-4">
+            <Tabs defaultValue="sms" className="space-y-4">
               <TabsList className="inline-flex h-auto w-auto items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur-sm">
-                <TabsTrigger value="email" className="h-8 rounded-full px-4 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm sm:text-sm">Email</TabsTrigger>
                 <TabsTrigger value="sms" className="h-8 rounded-full px-4 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm sm:text-sm">SMS</TabsTrigger>
+                <TabsTrigger value="email" className="h-8 rounded-full px-4 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm sm:text-sm">Email</TabsTrigger>
               </TabsList>
-              <TabsContent value="email" className="mt-0"><BroadcastCampaigns /></TabsContent>
               <TabsContent value="sms" className="mt-0"><SmsBroadcasts /></TabsContent>
+              <TabsContent value="email" className="mt-0"><BroadcastCampaigns /></TabsContent>
             </Tabs>
           </TabsContent>
 
