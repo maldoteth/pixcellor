@@ -752,6 +752,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     >
       
       {/* Full Works - tilted left */}
+      <div className="md:max-lg:translate-x-[16px]">
       <motion.div data-lava-card
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -796,6 +797,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         />
         </div>
       </motion.div>
+      </div>
+
+
 
       {/* Elite - center, elevated */}
       <motion.div data-lava-card
@@ -867,6 +871,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       </motion.div>
 
       {/* Retainer / Enterprise flip card */}
+      <div className="md:max-lg:-translate-x-[16px]">
       <motion.div
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -999,7 +1004,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           </div>
         </motion.div>
       </motion.div>
+      </div>
     </div>
+
     {/* Services back side - absolutely positioned, rotated 180° */}
     <div
       className="absolute inset-0"
