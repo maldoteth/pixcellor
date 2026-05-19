@@ -45,7 +45,7 @@ export default function SmsBroadcasts() {
 
   // compose
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [statuses, setStatuses] = useState<string[]>(["warm", "hot", "gold"]);
+  const [statuses, setStatuses] = useState<string[]>([]);
   const [industries, setIndustries] = useState<string[]>([]);
   const [manualIds, setManualIds] = useState<string[]>([]);
   const [excludedIds, setExcludedIds] = useState<string[]>([]);
