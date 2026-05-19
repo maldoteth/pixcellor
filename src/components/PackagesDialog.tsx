@@ -46,7 +46,7 @@ const PACKAGES = {
   },
   enterprise: {
     name: "Enterprise",
-    features: ["Custom packages small to large", "Hosting & managed services", "Infrastructure and ecosystems", "Weekly, quarterly & annual reviews", "Dedicated team 24/7 - 365"],
+    features: ["Custom packages small to large", "Hosting & managed services", "Infrastructure and ecosystems", "Quarterly & annual reviews", "Dedicated team 24/7 - 365"],
   },
 };
 
