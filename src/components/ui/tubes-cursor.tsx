@@ -28,12 +28,13 @@ export default function TubesCursor() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      import(
-        /* @vite-ignore */
-        "https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js"
-      )
+      const url =
+        "https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js";
+      (import(/* @vite-ignore */ url) as Promise<{
+        default: (canvas: HTMLCanvasElement, opts: unknown) => TubesApp;
+      }>)
         .then((mod) => {
-          const TubesCursorFn = (mod as { default: (canvas: HTMLCanvasElement, opts: unknown) => TubesApp }).default;
+          const TubesCursorFn = mod.default;
           if (!canvasRef.current) return;
           appRef.current = TubesCursorFn(canvasRef.current, {
             tubes: {
