@@ -5,28 +5,87 @@ import { cn } from "@/lib/utils";
 
 /**
  * Aceternity-style animated background boxes.
- * Tilted grid; each cell flashes a random pastel color on hover.
+ * Desktop: tilted grid; each cell flashes a random pastel color on hover.
+ * Mobile/touch: auto-flashes random cells, and lights up where the user taps.
  */
 export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
   const rows = new Array(60).fill(1);
   const cols = new Array(40).fill(1);
 
-  const colors = [
-    "rgb(125 211 252)",
-    "rgb(249 168 212)",
-    "rgb(134 239 172)",
-    "rgb(253 224 71)",
-    "rgb(252 165 165)",
-    "rgb(216 180 254)",
-    "rgb(147 197 253)",
-    "rgb(165 180 252)",
-    "rgb(196 181 253)",
-  ];
-  const getRandomColor = () =>
-    colors[Math.floor(Math.random() * colors.length)];
+  const colors = React.useMemo(
+    () => [
+      "rgb(125 211 252)",
+      "rgb(249 168 212)",
+      "rgb(134 239 172)",
+      "rgb(253 224 71)",
+      "rgb(252 165 165)",
+      "rgb(216 180 254)",
+      "rgb(147 197 253)",
+      "rgb(165 180 252)",
+      "rgb(196 181 253)",
+    ],
+    []
+  );
+  const getRandomColor = React.useCallback(
+    () => colors[Math.floor(Math.random() * colors.length)],
+    [colors]
+  );
+
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const cellRefs = React.useRef<Map<string, HTMLDivElement>>(new Map());
+
+  const flashCell = React.useCallback(
+    (el: HTMLDivElement | null | undefined) => {
+      if (!el) return;
+      el.style.transition = "background-color 0s";
+      el.style.backgroundColor = getRandomColor();
+      window.setTimeout(() => {
+        el.style.transition = "background-color 2s";
+        el.style.backgroundColor = "";
+      }, 50);
+    },
+    [getRandomColor]
+  );
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(hover: none), (pointer: coarse)");
+    if (!mq.matches) return;
+
+    // Auto-flash random cells
+    const interval = window.setInterval(() => {
+      const keys = Array.from(cellRefs.current.keys());
+      if (!keys.length) return;
+      const burst = 2 + Math.floor(Math.random() * 3);
+      for (let k = 0; k < burst; k++) {
+        const key = keys[Math.floor(Math.random() * keys.length)];
+        flashCell(cellRefs.current.get(key));
+      }
+    }, 350);
+
+    // Tap to light up where user touches
+    const onTouch = (e: TouchEvent) => {
+      for (let i = 0; i < e.touches.length; i++) {
+        const t = e.touches[i];
+        const target = document.elementFromPoint(t.clientX, t.clientY) as HTMLElement | null;
+        const cell = target?.closest("[data-cell]") as HTMLDivElement | null;
+        if (cell) flashCell(cell);
+      }
+    };
+    const node = containerRef.current;
+    node?.addEventListener("touchstart", onTouch, { passive: true });
+    node?.addEventListener("touchmove", onTouch, { passive: true });
+
+    return () => {
+      window.clearInterval(interval);
+      node?.removeEventListener("touchstart", onTouch);
+      node?.removeEventListener("touchmove", onTouch);
+    };
+  }, [flashCell]);
 
   return (
     <div
+      ref={containerRef}
       style={{
         transform:
           "translate(-50%,-50%) skewX(-48deg) skewY(14deg) scale(0.7) rotate(0deg) translateZ(0)",
@@ -50,6 +109,12 @@ export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
               }}
               animate={{ transition: { duration: 2 } }}
               key={`col-${j}`}
+              data-cell=""
+              ref={(el) => {
+                const key = `${i}-${j}`;
+                if (el) cellRefs.current.set(key, el);
+                else cellRefs.current.delete(key);
+              }}
               className="relative h-8 w-16 border-r border-t border-foreground/20"
             >
               {j % 2 === 0 && i % 2 === 0 ? (
