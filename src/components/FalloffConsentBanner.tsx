@@ -59,7 +59,7 @@ export default function FalloffConsentBanner() {
               className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-border bg-card text-card-foreground shadow-2xl touch-pan-y"
               style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
             >
-              <div className="mx-auto mt-3 mb-4 h-1.5 w-12 rounded-full bg-muted" />
+              <div className="mx-auto mt-3 mb-4 h-1 w-[60px] rounded-full bg-muted" />
               <div className="px-5 pb-2 flex flex-col gap-4">
                 <p className="text-sm text-muted-foreground">
                   Can Pixcellor remember your visit, device basics, and checkout progress so we can improve follow-up if you leave before ordering?
