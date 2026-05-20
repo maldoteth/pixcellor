@@ -85,9 +85,9 @@ export default function ServiceSalesView({
             {service.slug === "animated-sites" ? (
               <TubesCursor />
             ) : service.slug === "full-web-apps" ? (
-              <FullWebAppsHero />
-            ) : service.slug === "landing-pages" ? (
               <LandingPagesHero />
+            ) : service.slug === "landing-pages" ? (
+              <FullWebAppsHero />
             ) : (
               <img
                 src={heroImage}
@@ -245,7 +245,7 @@ export default function ServiceSalesView({
         {service.slug === "landing-pages" ? (
           <>
             <div className="absolute inset-0 opacity-60">
-              <LandingPagesHero />
+              <FullWebAppsHero />
             </div>
             <div
               aria-hidden="true"
@@ -265,7 +265,7 @@ export default function ServiceSalesView({
         ) : service.slug === "full-web-apps" ? (
           <>
             <div className="absolute inset-0 opacity-60">
-              <FullWebAppsHero />
+              <LandingPagesHero />
             </div>
             <div
               aria-hidden="true"
