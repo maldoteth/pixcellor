@@ -96,6 +96,7 @@ export default function ServiceSalesView({
                 height={720}
                 className="absolute inset-0 h-full w-full object-cover"
                 decoding="async"
+                loading="lazy"
               />
             )}
             <div
