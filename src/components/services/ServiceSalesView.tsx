@@ -5,6 +5,7 @@ import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/
 import { Button } from "@/components/ui/button";
 import { SERVICE_IMAGES } from "@/assets/services";
 import AnimatedSitesHero from "@/components/services/AnimatedSitesHero";
+import LandingPagesHero from "@/components/services/LandingPagesHero";
 
 function dispatchCta(action: ServiceCtaAction, onAction?: () => void) {
   onAction?.();
@@ -82,6 +83,8 @@ export default function ServiceSalesView({
           <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9]">
             {service.slug === "animated-sites" ? (
               <AnimatedSitesHero />
+            ) : service.slug === "landing-pages" ? (
+              <LandingPagesHero />
             ) : (
               <img
                 src={heroImage}
