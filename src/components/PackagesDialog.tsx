@@ -306,7 +306,7 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
 
 function IntroductoryOfferText({ discount }: { discount: string }) {
   return (
-    <div className="mb-4">
+    <div className="mb-4 my-[4px]">
       <p className="text-xs font-semibold text-foreground">Pixcellor private SME grant — {discount} off</p>
     </div>
   );
@@ -1172,7 +1172,7 @@ function MobileShell({
       </div>
       <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+5rem)] [-webkit-overflow-scrolling:touch]">
         {!showServices && (
-          <div className="mb-4">
+          <div className="mb-4 my-[4px]">
             <MobileFreeSamplesCard />
           </div>
         )}
