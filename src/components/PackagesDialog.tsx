@@ -217,7 +217,7 @@ function PaymentMethodIcons() {
 
 function StripeBadge() {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center my-0 pb-[10px]">
       <div className="flex items-center justify-center gap-1.5 mt-3 opacity-90">
         <Lock className="w-3 h-3 text-foreground" />
         <span className="text-[10px] text-foreground tracking-wide">Powered by</span>
