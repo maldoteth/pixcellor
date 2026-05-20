@@ -249,7 +249,7 @@ export default function ServiceSalesView({
               className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
             />
           </>
-        ) : service.slug === "animated-sites" ? (
+        ) : service.slug === "animated-sites" || service.slug === "full-web-apps" ? (
           <>
             <div className="absolute inset-0 opacity-60">
               <TubesCursor />
