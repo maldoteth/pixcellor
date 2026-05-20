@@ -81,7 +81,7 @@ export default function ServiceSalesView({
       <motion.section {...fadeUp} className="mb-12 md:mb-16">
         {heroImage && (
           <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9]">
-            {service.slug === "animated-sites" ? (
+            {service.slug === "animated-sites" || service.slug === "full-web-apps" ? (
               <TubesCursor />
             ) : service.slug === "landing-pages" ? (
               <LandingPagesHero />
