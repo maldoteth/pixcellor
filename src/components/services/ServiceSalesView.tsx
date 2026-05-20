@@ -241,7 +241,7 @@ export default function ServiceSalesView({
       >
         {service.slug === "landing-pages" ? (
           <>
-            <div className="pointer-events-none absolute inset-0 opacity-60">
+            <div className="absolute inset-0 opacity-60">
               <LandingPagesHero />
             </div>
             <div
@@ -251,7 +251,7 @@ export default function ServiceSalesView({
           </>
         ) : service.slug === "animated-sites" ? (
           <>
-            <div className="pointer-events-none absolute inset-0 opacity-60">
+            <div className="absolute inset-0 opacity-60">
               <TubesCursor />
             </div>
             <div
