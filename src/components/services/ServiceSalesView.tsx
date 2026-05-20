@@ -83,6 +83,8 @@ export default function ServiceSalesView({
           <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9]">
             {service.slug === "animated-sites" ? (
               <AnimatedSitesHero />
+            ) : service.slug === "landing-pages" ? (
+              <LandingPagesHero />
             ) : (
               <img
                 src={heroImage}
