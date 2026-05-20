@@ -198,11 +198,7 @@ export default function ServiceSalesView({
               className="flex items-start gap-4 rounded-lg border border-foreground/10 bg-foreground/[0.03] p-4 backdrop-blur-md"
             >
               <span
-                className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[12px] font-bold"
-                style={{
-                  background: "linear-gradient(135deg, #f5e6a8 0%, #d4af37 50%, #8a6a1f 100%)",
-                  color: "#1a1205",
-                }}
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-foreground/20 bg-foreground/10 text-[12px] font-bold text-foreground"
               >
                 {i + 1}
               </span>
