@@ -191,8 +191,8 @@ function FlipCard({
                     onLoad={handleImgLoad}
                     crossOrigin="anonymous"
                     decoding="async"
-                    loading={index < 4 ? "eager" : "lazy"}
-                    fetchPriority={index === 0 ? "high" : index < 4 ? "auto" : "low"}
+                    loading="eager"
+                    fetchPriority="high"
                     className="h-full w-full object-cover"
                 />
                 <div
