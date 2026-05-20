@@ -57,15 +57,26 @@ export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
 
     let interval: number | undefined;
     if (isTouch) {
+      // Expanding ring pattern from the center — far more visible on mobile
+      // than scattered random flashes.
+      const rows = 60;
+      const cols = 40;
+      const cy = rows / 2;
+      const cx = cols / 2;
+      const maxR = Math.ceil(Math.hypot(cy, cx));
+      let ring = 0;
       interval = window.setInterval(() => {
-        const keys = Array.from(cellRefs.current.keys());
-        if (!keys.length) return;
-        const burst = 2 + Math.floor(Math.random() * 3);
-        for (let k = 0; k < burst; k++) {
-          const key = keys[Math.floor(Math.random() * keys.length)];
-          flashCell(cellRefs.current.get(key));
+        const r = ring % (maxR + 4);
+        for (let i = 0; i < rows; i++) {
+          for (let j = 0; j < cols; j++) {
+            const d = Math.hypot(i - cy, j - cx);
+            if (Math.abs(d - r) < 0.6) {
+              flashCell(cellRefs.current.get(`${i}-${j}`));
+            }
+          }
         }
-      }, 350);
+        ring++;
+      }, 140);
     }
 
     const onTouch = (e: TouchEvent) => {
