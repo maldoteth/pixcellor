@@ -176,10 +176,11 @@ function FlipCard({
             className="group"
         >
             <motion.div
-                className="relative h-full w-full overflow-hidden rounded-none shadow-lg bg-muted"
+                className="relative h-full w-full overflow-hidden rounded-none shadow-lg"
                 animate={{ scale: hoverScale }}
                 transition={{ type: "spring", stiffness: 220, damping: 18 }}
                 style={{
+                    backgroundColor: `hsl(${(index * 47) % 360}, 75%, 55%)`,
                     boxShadow: `0 0 ${glowBlur}px ${glowSpread}px rgba(${glowColor}, ${glowAlpha})`,
                 }}
             >
