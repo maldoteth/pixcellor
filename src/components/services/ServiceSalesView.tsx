@@ -257,8 +257,12 @@ export default function ServiceSalesView({
             <div className="absolute inset-0 opacity-60">
               <TubesCursor />
             </div>
-        </>
-        ) : null && false ? null : service.slug === "full-web-apps" ? (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
+            />
+          </>
+        ) : service.slug === "full-web-apps" ? (
           <>
             <div className="absolute inset-0 opacity-60">
               <FullWebAppsHero />
