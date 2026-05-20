@@ -77,7 +77,7 @@ const SERVICE_BACKS = {
       { name: "Internal tools", info: "Custom systems, automations, agentic flows and more saving you potentially tens of thousands a year." },
       { name: "CRM systems", info: "Want a CRM that suits your exact needs powered by a swarm of AI agents that work to your will, saving you and your staff time and money while ensuring nothing is ever missed? Look no further." },
       { name: "E-commerce stores", info: "Our Shopify stores have scaled tens of thousands of sales on launch days and we're ready to help you get the same results." },
-      { name: "Blockchain integrations", info: "Our team have scaled top 300 crypto projects and generated hundreds of millions in market cap, and millions in year 1 revenue for multiple projects, as well as numerous 7 figure fundraises." },
+      { name: "AI & blockchain integrations", info: "Our team have scaled top 300 crypto projects and generated hundreds of millions in market cap, and millions in year 1 revenue for multiple projects, as well as numerous 7 figure fundraises." },
     ],
   },
   retainer: {
