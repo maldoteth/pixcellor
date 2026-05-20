@@ -50,7 +50,10 @@ export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const mq = window.matchMedia("(hover: none), (pointer: coarse)");
-    const isTouch = mq.matches;
+    // Also treat narrow viewports as touch so preview/devtools mobile mode
+    // still gets auto-flashing (desktop browsers report hover: hover even when
+    // emulating a phone viewport).
+    const isTouch = mq.matches || window.innerWidth <= 1024;
 
     let interval: number | undefined;
     if (isTouch) {
