@@ -80,14 +80,18 @@ export default function ServiceSalesView({
       <motion.section {...fadeUp} className="mb-12 md:mb-16">
         {heroImage && (
           <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9]">
-            <img
-              src={heroImage}
-              alt={`${service.name} — ${service.tagline}`}
-              width={1280}
-              height={720}
-              className="absolute inset-0 h-full w-full object-cover"
-              decoding="async"
-            />
+            {service.slug === "animated-sites" ? (
+              <AnimatedSitesHero />
+            ) : (
+              <img
+                src={heroImage}
+                alt={`${service.name} — ${service.tagline}`}
+                width={1280}
+                height={720}
+                className="absolute inset-0 h-full w-full object-cover"
+                decoding="async"
+              />
+            )}
             <div
               aria-hidden="true"
               className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"
