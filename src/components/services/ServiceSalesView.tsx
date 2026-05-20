@@ -97,7 +97,7 @@ export default function ServiceSalesView({
             )}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"
+              className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"
             />
             <div className="absolute left-5 top-5 md:left-7 md:top-7">
               <div className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-background/50 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-foreground/90 backdrop-blur-md">
