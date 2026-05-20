@@ -239,7 +239,27 @@ export default function ServiceSalesView({
         {...fadeUp}
         className="relative overflow-hidden rounded-xl border border-foreground/15 bg-foreground/[0.04] p-6 md:p-10 text-center backdrop-blur-md"
       >
-        {heroImage && (
+        {service.slug === "landing-pages" ? (
+          <>
+            <div className="pointer-events-none absolute inset-0 opacity-60">
+              <LandingPagesHero />
+            </div>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
+            />
+          </>
+        ) : service.slug === "animated-sites" ? (
+          <>
+            <div className="pointer-events-none absolute inset-0 opacity-60">
+              <TubesCursor />
+            </div>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
+            />
+          </>
+        ) : heroImage && (
           <>
             <img
               src={heroImage}
