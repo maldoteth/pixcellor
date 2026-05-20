@@ -50,20 +50,21 @@ export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const mq = window.matchMedia("(hover: none), (pointer: coarse)");
-    if (!mq.matches) return;
+    const isTouch = mq.matches;
 
-    // Auto-flash random cells
-    const interval = window.setInterval(() => {
-      const keys = Array.from(cellRefs.current.keys());
-      if (!keys.length) return;
-      const burst = 2 + Math.floor(Math.random() * 3);
-      for (let k = 0; k < burst; k++) {
-        const key = keys[Math.floor(Math.random() * keys.length)];
-        flashCell(cellRefs.current.get(key));
-      }
-    }, 350);
+    let interval: number | undefined;
+    if (isTouch) {
+      interval = window.setInterval(() => {
+        const keys = Array.from(cellRefs.current.keys());
+        if (!keys.length) return;
+        const burst = 2 + Math.floor(Math.random() * 3);
+        for (let k = 0; k < burst; k++) {
+          const key = keys[Math.floor(Math.random() * keys.length)];
+          flashCell(cellRefs.current.get(key));
+        }
+      }, 350);
+    }
 
-    // Tap to light up where user touches
     const onTouch = (e: TouchEvent) => {
       for (let i = 0; i < e.touches.length; i++) {
         const t = e.touches[i];
@@ -72,16 +73,34 @@ export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
         if (cell) flashCell(cell);
       }
     };
+
+    // Desktop: find cell beneath overlays via elementsFromPoint so buttons stay clickable
+    let lastCell: HTMLDivElement | null = null;
+    const onMove = (e: MouseEvent) => {
+      const stack = document.elementsFromPoint(e.clientX, e.clientY) as HTMLElement[];
+      const cell = stack.find((el) => el.hasAttribute?.("data-cell")) as HTMLDivElement | undefined;
+      if (cell && cell !== lastCell) {
+        lastCell = cell;
+        flashCell(cell);
+      }
+    };
+
     const node = containerRef.current;
-    node?.addEventListener("touchstart", onTouch, { passive: true });
-    node?.addEventListener("touchmove", onTouch, { passive: true });
+    if (isTouch) {
+      node?.addEventListener("touchstart", onTouch, { passive: true });
+      node?.addEventListener("touchmove", onTouch, { passive: true });
+    } else {
+      window.addEventListener("mousemove", onMove);
+    }
 
     return () => {
-      window.clearInterval(interval);
+      if (interval) window.clearInterval(interval);
       node?.removeEventListener("touchstart", onTouch);
       node?.removeEventListener("touchmove", onTouch);
+      window.removeEventListener("mousemove", onMove);
     };
   }, [flashCell]);
+
 
   return (
     <div
