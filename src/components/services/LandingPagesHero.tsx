@@ -49,11 +49,13 @@ export default function LandingPagesHero() {
         }
         .frosted-nav-wrap nav .hover-area i {
           display: block;
-          transition: backdrop-filter .35s ease, -webkit-backdrop-filter .35s ease;
+          background: transparent;
+          transition: backdrop-filter .28s ease, -webkit-backdrop-filter .28s ease, background-color .28s ease;
         }
         .frosted-nav-wrap nav .hover-area i:hover {
-          backdrop-filter: url(#frosted-snowflake);
-          -webkit-backdrop-filter: url(#frosted-snowflake);
+          background: hsl(0 0% 100% / 0.08);
+          backdrop-filter: url(#frosted-snowflake) blur(1px) saturate(1.35);
+          -webkit-backdrop-filter: url(#frosted-snowflake) blur(1px) saturate(1.35);
         }
       `}</style>
 
@@ -73,6 +75,7 @@ export default function LandingPagesHero() {
         height="0"
         width="0"
         viewBox="0 0 1 1"
+        colorInterpolationFilters="sRGB"
         style={{ position: "absolute", width: 0, height: 0 }}
       >
         <defs>
@@ -105,6 +108,7 @@ export default function LandingPagesHero() {
               <feFuncG type="discrete" tableValues={QUANT_TABLE} />
               <feFuncB type="discrete" tableValues={QUANT_TABLE} />
             </feComponentTransfer>
+            <feBlend result="SourceMask" />
             <feColorMatrix
               result="color-matrix-0"
               in="SourceMask"
