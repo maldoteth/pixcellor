@@ -9,6 +9,11 @@ const HOVER_AREAS = 30;
 const IMAGE_SRC =
   "https://images.pexels.com/photos/5516061/pexels-photo-5516061.jpeg";
 
+const LINEAR_TABLE =
+  "0.000 0.016 0.032 0.048 0.063 0.079 0.095 0.111 0.127 0.143 0.159 0.175 0.190 0.206 0.222 0.238 0.254 0.270 0.286 0.302 0.317 0.333 0.349 0.365 0.381 0.397 0.413 0.429 0.444 0.460 0.476 0.492 0.508 0.524 0.540 0.556 0.571 0.587 0.603 0.619 0.635 0.651 0.667 0.683 0.698 0.714 0.730 0.746 0.762 0.778 0.794 0.810 0.825 0.841 0.857 0.873 0.889 0.905 0.921 0.937 0.952 0.968 0.984 1.000";
+
+const QUANT_TABLE = Array.from({ length: 60 }, () => "0.000 0.333 0.667 1.000").join(" ");
+
 type NavStyle = React.CSSProperties & { "--max-a": number };
 
 export default function LandingPagesHero() {
@@ -47,8 +52,8 @@ export default function LandingPagesHero() {
           transition: backdrop-filter .35s ease, -webkit-backdrop-filter .35s ease;
         }
         .frosted-nav-wrap nav .hover-area i:hover {
-          backdrop-filter: url(#❄️);
-          -webkit-backdrop-filter: url(#❄️);
+          backdrop-filter: url(#frosted-snowflake);
+          -webkit-backdrop-filter: url(#frosted-snowflake);
         }
       `}</style>
 
@@ -72,7 +77,7 @@ export default function LandingPagesHero() {
       >
         <defs>
           <filter
-            id="❄️"
+            id="frosted-snowflake"
             primitiveUnits="userSpaceOnUse"
             x="0%"
             y="0%"
@@ -80,30 +85,13 @@ export default function LandingPagesHero() {
             height="120%"
           >
             <feComponentTransfer result="SourceBackground" in="SourceGraphic">
-              <feFuncR
-                type="discrete"
-                tableValues="0.000 0.016 0.032 0.048 0.063 0.079 0.095 0.111 0.127 0.143 0.159 0.175 0.190 0.206 0.222 0.238 0.254 0.270 0.286 0.302 0.317 0.333 0.349 0.365 0.381 0.397 0.413 0.429 0.444 0.460 0.476 0.492 0.508 0.524 0.540 0.556 0.571 0.587 0.603 0.619 0.635 0.651 0.667 0.683 0.698 0.714 0.730 0.746 0.762 0.778 0.794 0.810 0.825 0.841 0.857 0.873 0.889 0.905 0.921 0.937 0.952 0.968 0.984 1.000"
-              />
-              <feFuncG
-                type="discrete"
-                tableValues="0.000 0.016 0.032 0.048 0.063 0.079 0.095 0.111 0.127 0.143 0.159 0.175 0.190 0.206 0.222 0.238 0.254 0.270 0.286 0.302 0.317 0.333 0.349 0.365 0.381 0.397 0.413 0.429 0.444 0.460 0.476 0.492 0.508 0.524 0.540 0.556 0.571 0.587 0.603 0.619 0.635 0.651 0.667 0.683 0.698 0.714 0.730 0.746 0.762 0.778 0.794 0.810 0.825 0.841 0.857 0.873 0.889 0.905 0.921 0.937 0.952 0.968 0.984 1.000"
-              />
-              <feFuncB
-                type="discrete"
-                tableValues="0.000 0.016 0.032 0.048 0.063 0.079 0.095 0.111 0.127 0.143 0.159 0.175 0.190 0.206 0.222 0.238 0.254 0.270 0.286 0.302 0.317 0.333 0.349 0.365 0.381 0.397 0.413 0.429 0.444 0.460 0.476 0.492 0.508 0.524 0.540 0.556 0.571 0.587 0.603 0.619 0.635 0.651 0.667 0.683 0.698 0.714 0.730 0.746 0.762 0.778 0.794 0.810 0.825 0.841 0.857 0.873 0.889 0.905 0.921 0.937 0.952 0.968 0.984 1.000"
-              />
+              <feFuncR type="discrete" tableValues={LINEAR_TABLE} />
+              <feFuncG type="discrete" tableValues={LINEAR_TABLE} />
+              <feFuncB type="discrete" tableValues={LINEAR_TABLE} />
             </feComponentTransfer>
             <feBlend result="blend-0" in="SourceBackground" in2="none" />
-            <feGaussianBlur
-              result="gaussian-blur-6"
-              in="blend-0"
-              stdDeviation="10"
-            />
-            <feTurbulence
-              result="turbulence-0"
-              baseFrequency="0.420"
-              type="fractalNoise"
-            />
+            <feGaussianBlur result="gaussian-blur-6" in="blend-0" stdDeviation="10" />
+            <feTurbulence result="turbulence-0" baseFrequency="0.420" type="fractalNoise" />
             <feDisplacementMap
               result="displacement-map-0"
               in="gaussian-blur-6"
@@ -112,9 +100,27 @@ export default function LandingPagesHero() {
               xChannelSelector="R"
               yChannelSelector="G"
             />
+            <feComponentTransfer result="SourceMask" in="SourceGraphic">
+              <feFuncR type="discrete" tableValues={QUANT_TABLE} />
+              <feFuncG type="discrete" tableValues={QUANT_TABLE} />
+              <feFuncB type="discrete" tableValues={QUANT_TABLE} />
+            </feComponentTransfer>
+            <feColorMatrix
+              result="color-matrix-0"
+              in="SourceMask"
+              values="0.761905 0.190476 0.047619 0 0 0.761905 0.190476 0.047619 0 0 0.761905 0.190476 0.047619 0 0 0 0 0 1 0"
+            />
+            <feColorMatrix result="color-matrix-1" in="color-matrix-0" type="luminanceToAlpha" />
+            <feGaussianBlur result="gaussian-blur-0" in="color-matrix-1" stdDeviation="0" />
+            <feComposite
+              result="composite-1"
+              in="displacement-map-0"
+              in2="gaussian-blur-0"
+              operator="in"
+            />
             <feMerge result="merge-0">
               <feMergeNode in="blend-0" />
-              <feMergeNode in="displacement-map-0" />
+              <feMergeNode in="composite-1" />
             </feMerge>
           </filter>
         </defs>
