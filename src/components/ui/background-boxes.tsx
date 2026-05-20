@@ -5,25 +5,23 @@ import { cn } from "@/lib/utils";
 
 /**
  * Aceternity-style animated background boxes.
- * Each cell highlights on hover with a randomised pastel color, and a sparse
- * plus-sign grid overlay adds depth. Tilted with a 3D skew for visual interest.
+ * Tilted grid; each cell flashes a random pastel color on hover.
  */
 export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
-  const rows = new Array(150).fill(1);
-  const cols = new Array(100).fill(1);
+  const rows = new Array(60).fill(1);
+  const cols = new Array(40).fill(1);
 
   const colors = [
-    "rgb(125 211 252)", // sky-300
-    "rgb(249 168 212)", // pink-300
-    "rgb(134 239 172)", // green-300
-    "rgb(253 224 71)", // yellow-300
-    "rgb(252 165 165)", // red-300
-    "rgb(216 180 254)", // purple-300
-    "rgb(147 197 253)", // blue-300
-    "rgb(165 180 252)", // indigo-300
-    "rgb(196 181 253)", // violet-300
+    "rgb(125 211 252)",
+    "rgb(249 168 212)",
+    "rgb(134 239 172)",
+    "rgb(253 224 71)",
+    "rgb(252 165 165)",
+    "rgb(216 180 254)",
+    "rgb(147 197 253)",
+    "rgb(165 180 252)",
+    "rgb(196 181 253)",
   ];
-
   const getRandomColor = () =>
     colors[Math.floor(Math.random() * colors.length)];
 
@@ -31,10 +29,10 @@ export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
     <div
       style={{
         transform:
-          "translate(-40%,-60%) skewX(-48deg) skewY(14deg) scale(0.675) rotate(0deg) translateZ(0)",
+          "translate(-50%,-50%) skewX(-48deg) skewY(14deg) scale(0.7) rotate(0deg) translateZ(0)",
       }}
       className={cn(
-        "absolute left-1/4 p-4 -top-1/4 flex -translate-x-1/2 -translate-y-1/2 w-full h-full z-0",
+        "absolute left-1/2 top-1/2 z-0 flex h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 p-4",
         className
       )}
       {...rest}
@@ -42,7 +40,7 @@ export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
       {rows.map((_, i) => (
         <motion.div
           key={`row-${i}`}
-          className="w-16 h-8 border-l border-foreground/20 relative"
+          className="relative h-8 w-16 border-l border-foreground/20"
         >
           {cols.map((_, j) => (
             <motion.div
@@ -52,7 +50,7 @@ export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
               }}
               animate={{ transition: { duration: 2 } }}
               key={`col-${j}`}
-              className="w-16 h-8 border-r border-t border-foreground/20 relative"
+              className="relative h-8 w-16 border-r border-t border-foreground/20"
             >
               {j % 2 === 0 && i % 2 === 0 ? (
                 <svg
@@ -61,7 +59,7 @@ export const BoxesCore = ({ className, ...rest }: { className?: string }) => {
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
                   stroke="currentColor"
-                  className="absolute h-6 w-10 -top-[14px] -left-[22px] text-foreground/30 stroke-[1px] pointer-events-none"
+                  className="pointer-events-none absolute -left-[22px] -top-[14px] h-6 w-10 stroke-[1px] text-foreground/30"
                 >
                   <path
                     strokeLinecap="round"
