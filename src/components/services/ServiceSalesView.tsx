@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SERVICE_IMAGES } from "@/assets/services";
 import TubesCursor from "@/components/ui/tubes-cursor";
 import LandingPagesHero from "@/components/services/LandingPagesHero";
+import FullWebAppsHero from "@/components/services/FullWebAppsHero";
 
 function dispatchCta(action: ServiceCtaAction, onAction?: () => void) {
   onAction?.();
@@ -81,8 +82,10 @@ export default function ServiceSalesView({
       <motion.section {...fadeUp} className="mb-12 md:mb-16">
         {heroImage && (
           <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9]">
-            {service.slug === "animated-sites" || service.slug === "full-web-apps" ? (
+            {service.slug === "animated-sites" ? (
               <TubesCursor />
+            ) : service.slug === "full-web-apps" ? (
+              <FullWebAppsHero />
             ) : service.slug === "landing-pages" ? (
               <LandingPagesHero />
             ) : (
@@ -249,10 +252,20 @@ export default function ServiceSalesView({
               className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
             />
           </>
-        ) : service.slug === "animated-sites" || service.slug === "full-web-apps" ? (
+        ) : service.slug === "animated-sites" ? (
           <>
             <div className="absolute inset-0 opacity-60">
               <TubesCursor />
+            </div>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
+            />
+          </>
+        ) : service.slug === "full-web-apps" ? (
+          <>
+            <div className="absolute inset-0 opacity-60">
+              <FullWebAppsHero />
             </div>
             <div
               aria-hidden="true"
