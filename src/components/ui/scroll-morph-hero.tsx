@@ -881,40 +881,8 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         });
         return () => unsub();
     }, [virtualScroll]);
-    // One-time rotation hint is real scroll progress, not a visual-only offset.
-    // This leaves users inside the carousel range, so a small reverse swipe moves
-    // the carousel back instead of snapping straight to the hero.
-    useEffect(() => {
-        const playHint = (value: number) => {
-            if (value < 0.8 || hintPlayedRef.current) return;
-            hintPlayedRef.current = true;
-            const rotationRange = isSmallViewport ? 360 : 720;
-            const hintScrollOffset = ((CAROUSEL_SCROLL_END - HERO_MORPH_END) * CAROUSEL_HINT_ROTATION_DEGREES) / rotationRange;
-            const start = Math.max(scrollRef.current, HERO_MORPH_END);
-            const end = Math.min(start + hintScrollOffset, MAX_SCROLL);
-
-            hintScrollControlsRef.current?.stop();
-            hintScrollControlsRef.current = animate(start, end, {
-                duration: 3.8,
-                ease: [0.16, 1, 0.3, 1],
-                onUpdate: (v) => {
-                    scrollRef.current = v;
-                    virtualScroll.set(v);
-                    onVirtualScrollChangeRef.current?.(v);
-                },
-                onComplete: () => {
-                    hintScrollControlsRef.current = null;
-                },
-            });
-        };
-        playHint(smoothMorph.get());
-        const unsub = smoothMorph.on("change", playHint);
-        return () => {
-            hintScrollControlsRef.current?.stop();
-            hintScrollControlsRef.current = null;
-            unsub();
-        };
-    }, [isSmallViewport, smoothMorph, virtualScroll]);
+    // Carousel rotation hint disabled — caused runaway spinning on iOS Safari
+    // when the animation conflicted with the user's in-progress touch gesture.
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
