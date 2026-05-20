@@ -33,7 +33,7 @@ function CtaButton({
   if (variant === "primary") {
     return (
       <Button
-        variant="goldPricing"
+        variant="pricing"
         onClick={() => dispatchCta(action, onAction)}
         className="h-auto px-5 py-3 text-sm font-semibold uppercase tracking-wider"
       >
