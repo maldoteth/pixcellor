@@ -4,7 +4,7 @@ import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/services";
 import { Button } from "@/components/ui/button";
 import { SERVICE_IMAGES } from "@/assets/services";
-import AnimatedSitesHero from "@/components/services/AnimatedSitesHero";
+import TubesCursor from "@/components/ui/tubes-cursor";
 import LandingPagesHero from "@/components/services/LandingPagesHero";
 
 function dispatchCta(action: ServiceCtaAction, onAction?: () => void) {
@@ -82,7 +82,7 @@ export default function ServiceSalesView({
         {heroImage && (
           <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9]">
             {service.slug === "animated-sites" ? (
-              <AnimatedSitesHero />
+              <TubesCursor />
             ) : service.slug === "landing-pages" ? (
               <LandingPagesHero />
             ) : (
