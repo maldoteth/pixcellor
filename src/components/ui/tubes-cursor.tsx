@@ -27,6 +27,31 @@ export default function TubesCursor() {
   const appRef = useRef<TubesApp | null>(null);
 
   useEffect(() => {
+    let cycleId: number | undefined;
+    const GOLD_HUE = 45;
+    const STEP = 0.6; // degrees per tick — smooth rainbow loop back to gold
+    let hue = GOLD_HUE;
+
+    const hsl = (h: number, s: number, l: number) =>
+      `hsl(${((h % 360) + 360) % 360}, ${s}%, ${l}%)`;
+
+    const tick = () => {
+      const app = appRef.current;
+      if (!app) return;
+      hue = (hue + STEP) % 360;
+      app.tubes.setColors([
+        hsl(hue, 85, 55),
+        hsl(hue + 25, 90, 65),
+        hsl(hue - 25, 70, 40),
+      ]);
+      app.tubes.setLightsColors([
+        hsl(hue + 10, 90, 70),
+        hsl(hue, 85, 55),
+        "#ffffff",
+        hsl(hue - 20, 80, 45),
+      ]);
+    };
+
     const t = setTimeout(() => {
       const url =
         "https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js";
@@ -38,19 +63,21 @@ export default function TubesCursor() {
           if (!canvasRef.current) return;
           appRef.current = TubesCursorFn(canvasRef.current, {
             tubes: {
-              colors: ["#d4af37", "#f5e6a8", "#8a6a1f"],
+              colors: [hsl(GOLD_HUE, 85, 55), hsl(GOLD_HUE + 25, 90, 65), hsl(GOLD_HUE - 25, 70, 40)],
               lights: {
                 intensity: 200,
-                colors: ["#f5e6a8", "#d4af37", "#ffffff", "#b8860b"],
+                colors: [hsl(GOLD_HUE + 10, 90, 70), hsl(GOLD_HUE, 85, 55), "#ffffff", hsl(GOLD_HUE - 20, 80, 45)],
               },
             },
           });
+          cycleId = window.setInterval(tick, 80);
         })
         .catch((err) => console.error("Failed to load TubesCursor:", err));
     }, 100);
 
     return () => {
       clearTimeout(t);
+      if (cycleId !== undefined) clearInterval(cycleId);
       if (appRef.current?.dispose) appRef.current.dispose();
       appRef.current = null;
     };
