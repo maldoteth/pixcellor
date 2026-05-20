@@ -655,6 +655,7 @@ const NAME_TO_SLUG: Record<string, string> = {
   "CRM systems": "crm-systems",
   "E-commerce stores": "ecommerce-stores",
   "Blockchain integrations": "blockchain-integrations",
+  "AI & blockchain integrations": "blockchain-integrations",
   "Recruitment & ATS": "recruitment-ats",
   "Payroll & HR tooling": "payroll-hr-tooling",
   "AI agents and integrations": "ai-integrations-agents",
