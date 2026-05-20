@@ -1344,11 +1344,11 @@ function MobileCards() {
       </div>
 
       {/* Retainer / Enterprise flip card */}
-      <div className="relative min-h-[360px]" style={{ perspective: "1200px" }}>
+      <div className="relative min-h-[440px]" style={{ perspective: "1200px" }}>
         <motion.div
           animate={{ rotateY: retainerFlipped ? 180 : 0 }}
           transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative min-h-[360px] rounded-none"
+          className="relative min-h-[440px] rounded-none"
           style={{ transformStyle: "preserve-3d" }}
         >
           <div data-lava-card className={`absolute inset-0 rounded-none p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`} style={{ backfaceVisibility: "hidden" }}>
