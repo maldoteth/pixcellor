@@ -1158,7 +1158,7 @@ function MobileFreeSamplesCard() {
             NO UPFRONT COSTS
           </span>
           <h3 className="mt-2 text-lg font-bold text-[hsl(45,65%,75%)] leading-tight">FREE SAMPLES</h3>
-          <p className="text-xs text-[hsl(45,65%,55%)]/70 mt-0.5">Don't pay till you're happy</p>
+          <p className="text-xs text-[hsl(45,65%,55%)]/70 mt-0.5">Don't pay till you're happy. SMEs only.</p>
         </div>
         <div className="pricing-button-gold flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full font-bold text-xs uppercase tracking-wide">
           Try
