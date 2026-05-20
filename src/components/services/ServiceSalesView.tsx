@@ -4,6 +4,7 @@ import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/services";
 import { Button } from "@/components/ui/button";
 import { SERVICE_IMAGES } from "@/assets/services";
+import AnimatedSitesHero from "@/components/services/AnimatedSitesHero";
 
 function dispatchCta(action: ServiceCtaAction, onAction?: () => void) {
   onAction?.();
