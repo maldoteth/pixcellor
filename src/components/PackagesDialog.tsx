@@ -1155,7 +1155,7 @@ function MobileFreeSamplesCard() {
         <div className="flex flex-col">
           <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[hsl(45,65%,55%)]/30 bg-[hsl(45,65%,55%)]/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(45,65%,55%)]">
             <span className="h-1.5 w-1.5 rounded-full bg-[hsl(45,65%,55%)] animate-pulse" />
-            GUARANTEE{"\n"}
+            NO UPFRONT COSTS
           </span>
           <h3 className="mt-2 text-lg font-bold text-[hsl(45,65%,75%)] leading-tight">FREE SAMPLES</h3>
           <p className="text-xs text-[hsl(45,65%,55%)]/70 mt-0.5">Don't pay till you're happy</p>
