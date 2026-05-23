@@ -1,0 +1,2 @@
+INSERT INTO public.portfolio_projects (name, url, full_url, category, description, display_order, image_url)
+VALUES ('Life Brownie', 'lifebrownie.com', 'https://lifebrownie.com', 'Artisan Brownies', 'Life Brownie — artisan brownie brand with signature tins including The Trifecta, Blonde Bombshell and The Original.', 23, '/portfolio/life-brownie.png');
