@@ -325,7 +325,7 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
 function IntroductoryOfferText({ discount }: { discount: string }) {
   return (
     <div className="mb-4 my-[4px]">
-      <p className="text-xs font-semibold text-foreground">Pixcellor private SME grant — {discount} off</p>
+      <p className="text-xs font-semibold text-foreground">Pixcellor SME exclusive — {discount} off</p>
     </div>
   );
 }
