@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue, animate } from "framer-motion";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { ChevronDown, ChevronUp, X, BookOpen, ShoppingCart, Phone } from "lucide-react";
 
 import PackagesDialog from "@/components/PackagesDialog";
 import Footer from "@/components/Footer";
