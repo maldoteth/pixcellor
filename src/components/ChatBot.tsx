@@ -967,7 +967,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       {showToggle && (
         <motion.button
           onClick={() => setIsOpen(!isOpen)}
-          className={`pricing-button overflow-hidden fixed left-1/2 top-4 z-[10500] flex items-center justify-center rounded-sm transition-opacity duration-500 ease-out md:top-6 md:z-[10000] ${(hidden || !heroReady) ? 'pointer-events-none opacity-0' : 'opacity-100'} ${isMobile && isOpen ? 'lg:flex hidden' : 'flex'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
+          className={`group fixed left-1/2 top-4 z-[10500] flex items-center justify-center rounded-sm overflow-hidden transition-opacity duration-500 ease-out md:top-6 md:z-[10000] ${(hidden || !heroReady) ? 'pointer-events-none opacity-0' : 'opacity-100'} ${isMobile && isOpen ? 'lg:flex hidden' : 'flex'} ${isMobile ? 'h-[34px] w-[34px]' : 'h-[42px] w-[42px]'}`}
           aria-label="Open chat with Alex from Pixcellor"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
@@ -986,6 +986,13 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
             `,
           }}
         >
+        <div
+          className="absolute inset-1 rounded-sm opacity-60 pointer-events-none"
+          style={{
+            background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)",
+          }}
+        />
+        <span aria-hidden className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 ease-in-out group-hover:translate-x-full" />
         <AnimatePresence mode="wait">
           {isOpen ? (
             <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
