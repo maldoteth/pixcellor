@@ -1010,8 +1010,9 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                             style={{ opacity: ctaOpacity }}
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { services: true } })); }}
-                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center text-xs font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center gap-1.5 text-xs font-semibold rounded-md"
                         >
+                            <ShoppingCart className="w-3.5 h-3.5" />
                             Services
                         </motion.button>
                         <motion.button
