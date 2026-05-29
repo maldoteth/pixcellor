@@ -1071,24 +1071,27 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                                 };
                                 requestAnimationFrame(step);
                             }}
-                            className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center gap-2 text-sm font-semibold rounded-md"
                         >
+                            <BookOpen className="w-4 h-4" />
                             Portfolio
                         </motion.button>
                         <motion.button
                             style={{ opacity: ctaOpacity }}
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-packages", { detail: { services: true } })); }}
-                            className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center gap-2 text-sm font-semibold rounded-md"
                         >
+                            <ShoppingCart className="w-4 h-4" />
                             Services
                         </motion.button>
                         <motion.button
                             style={{ opacity: ctaOpacity }}
                             type="button"
                             onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk")); }}
-                            className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center text-sm font-semibold rounded-md"
+                            className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center gap-2 text-sm font-semibold rounded-md"
                         >
+                            <Phone className="w-4 h-4" />
                             Let's Talk
                         </motion.button>
                     </div>
