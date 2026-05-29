@@ -700,7 +700,7 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
       initial={{ x: "-50%", y: -8, filter: "blur(10px)" }}
       animate={{ x: "-50%", y: heroReady ? 0 : -8, filter: heroReady ? "blur(0px)" : "blur(10px)" }}
       transition={{ duration: 0.6, delay: 0, ease: "easeOut" }}
-      className={`fixed left-[calc(50%-44px)] top-4 z-[10500] flex items-center justify-center rounded-sm outline-none ring-0 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-opacity duration-500 ease-out md:left-[calc(50%-52px)] md:top-6 md:z-[10000] ${((hidden || !heroReady) && !open) || (isMobile && open) ? "pointer-events-none opacity-0" : "opacity-100 pointer-events-auto"} ${isMobile && chatOpen && !open ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
+      className={`pricing-button overflow-hidden fixed left-[calc(50%-44px)] top-4 z-[10500] flex items-center justify-center rounded-sm outline-none ring-0 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-opacity duration-500 ease-out md:left-[calc(50%-52px)] md:top-6 md:z-[10000] ${((hidden || !heroReady) && !open) || (isMobile && open) ? "pointer-events-none opacity-0" : "opacity-100 pointer-events-auto"} ${isMobile && chatOpen && !open ? "lg:flex hidden" : "flex"} ${isMobile ? "h-[34px] w-[34px]" : "h-[42px] w-[42px]"}`}
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 100%)",
         backdropFilter: "blur(28px) saturate(160%)",
@@ -710,10 +710,6 @@ export default function VisionGenerator({ hidden = false, chatOpen = false }: Vi
           "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.1)",
       }}
     >
-      <div
-        className="absolute inset-1 rounded-sm opacity-60"
-        style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%)" }}
-      />
       <AnimatePresence mode="wait">
         {open ? (
           <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }} className="relative z-10">
