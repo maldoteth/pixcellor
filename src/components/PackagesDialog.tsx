@@ -1018,10 +1018,10 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   className="relative h-7 w-[96px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
-                    className="absolute top-0.5 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+                    className="absolute left-0 top-0.5 z-10 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
                     style={{ transform: retainerBilling === "yearly" ? "translateX(2px)" : "translateX(68px)" }}
                   />
-                  <span className={`absolute inset-y-0 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
+                  <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
                     {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
                   </span>
                 </button>
@@ -1478,10 +1478,10 @@ function MobileCards() {
                   className="relative h-7 w-[96px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
-                    className="absolute top-0.5 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+                    className="absolute left-0 top-0.5 z-10 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
                     style={{ transform: retainerBilling === "yearly" ? "translateX(2px)" : "translateX(68px)" }}
                   />
-                  <span className={`absolute inset-y-0 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
+                  <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
                     {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
                   </span>
                 </button>
