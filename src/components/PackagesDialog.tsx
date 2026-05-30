@@ -1470,11 +1470,22 @@ function MobileCards() {
                   </div>
                 </div>
                 <button
+                  type="button"
+                  role="switch"
+                  aria-checked={retainerBilling === "yearly"}
                   onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
-                  className="text-[10px] font-semibold py-1 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors px-[10px]"
+                  className="relative h-6 w-[88px] rounded-sm bg-secondary border border-border overflow-hidden flex-shrink-0"
                 >
-                  {retainerBilling === "monthly" ? "Yearly" : "Monthly"}
+                  <span
+                    className="absolute top-0.5 bottom-0.5 w-[42px] rounded-[2px] bg-foreground transition-transform duration-200 ease-out"
+                    style={{ transform: retainerBilling === "yearly" ? "translateX(44px)" : "translateX(2px)" }}
+                  />
+                  <span className="relative z-10 grid grid-cols-2 h-full text-[10px] font-semibold uppercase tracking-wide">
+                    <span className={`flex items-center justify-center transition-colors ${retainerBilling === "monthly" ? "text-background" : "text-muted-foreground"}`}>Month</span>
+                    <span className={`flex items-center justify-center transition-colors ${retainerBilling === "yearly" ? "text-background" : "text-muted-foreground"}`}>Year</span>
+                  </span>
                 </button>
+
               </div>
               {retainerBilling === "yearly" && (
                 <div className="text-xs text-muted-foreground mb-2">
