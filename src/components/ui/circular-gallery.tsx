@@ -11,8 +11,8 @@ function portfolioVariants(url: string) {
   if (!match) return null;
   const base = `/portfolio/${match[1]}`;
   return {
-    avif: `${base}-sm.avif 480w, ${base}-lg.avif 960w`,
-    webp: `${base}-sm.webp 480w, ${base}-lg.webp 960w`,
+    avif: `${base}-sm.avif 640w, ${base}-lg.avif 960w`,
+    webp: `${base}-sm.webp 640w, ${base}-lg.webp 960w`,
   };
 }
 
