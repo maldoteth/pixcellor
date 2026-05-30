@@ -1009,29 +1009,12 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                     {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
                   </div>
                 </div>
-                <div className="relative inline-flex items-center rounded-full bg-secondary p-0.5">
-                  <div
-                    className={`absolute inset-y-0.5 rounded-full bg-foreground transition-all duration-200 ease-out ${
-                      retainerBilling === "monthly" ? "left-0.5 right-1/2" : "left-1/2 right-0.5"
-                    }`}
-                  />
-                  <button
-                    onClick={() => setRetainerBilling("monthly")}
-                    className={`relative z-10 text-[10px] font-semibold px-2 py-0.5 flex-1 text-center rounded-full transition-colors ${
-                      retainerBilling === "monthly" ? "text-background" : "text-muted-foreground"
-                    }`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => setRetainerBilling("yearly")}
-                    className={`relative z-10 text-[10px] font-semibold px-2 py-0.5 flex-1 text-center rounded-full transition-colors ${
-                      retainerBilling === "yearly" ? "text-background" : "text-muted-foreground"
-                    }`}
-                  >
-                    Yearly
-                  </button>
-                </div>
+                <button
+                  onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
+                  className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {retainerBilling === "monthly" ? "Yearly" : "Monthly"}
+                </button>
               </div>
               {retainerBilling === "yearly" && (
                 <div className="text-xs text-muted-foreground mb-2">
@@ -1475,29 +1458,12 @@ function MobileCards() {
                     {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
                   </div>
                 </div>
-                <div className="relative inline-flex items-center rounded-full bg-secondary p-0.5">
-                  <div
-                    className={`absolute inset-y-0.5 rounded-full bg-foreground transition-all duration-200 ease-out ${
-                      retainerBilling === "monthly" ? "left-0.5 right-1/2" : "left-1/2 right-0.5"
-                    }`}
-                  />
-                  <button
-                    onClick={() => setRetainerBilling("monthly")}
-                    className={`relative z-10 text-[10px] font-semibold px-2 py-0.5 flex-1 text-center rounded-full transition-colors ${
-                      retainerBilling === "monthly" ? "text-background" : "text-muted-foreground"
-                    }`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => setRetainerBilling("yearly")}
-                    className={`relative z-10 text-[10px] font-semibold px-2 py-0.5 flex-1 text-center rounded-full transition-colors ${
-                      retainerBilling === "yearly" ? "text-background" : "text-muted-foreground"
-                    }`}
-                  >
-                    Yearly
-                  </button>
-                </div>
+                <button
+                  onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
+                  className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {retainerBilling === "monthly" ? "Yearly" : "Monthly"}
+                </button>
               </div>
               {retainerBilling === "yearly" && (
                 <div className="text-xs text-muted-foreground mb-2">
