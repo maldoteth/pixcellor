@@ -28,11 +28,13 @@ for (const file of files) {
     [smW, "sm"],
     [lgW, "lg"],
   ]) {
-    const base = sharp(inputPath).resize({ width: w, withoutEnlargement: true });
+    const base = sharp(inputPath)
+      .resize({ width: w, withoutEnlargement: true })
+      .sharpen({ sigma: 0.6 });
     const avifPath = join(DIR, `${name}-${suffix}.avif`);
     const webpPath = join(DIR, `${name}-${suffix}.webp`);
-    await base.clone().avif({ quality: 50, effort: 4 }).toFile(avifPath);
-    await base.clone().webp({ quality: 78 }).toFile(webpPath);
+    await base.clone().avif({ quality: 70, effort: 6 }).toFile(avifPath);
+    await base.clone().webp({ quality: 86 }).toFile(webpPath);
     variantTotal += statSync(avifPath).size + statSync(webpPath).size;
   }
   console.log(`${file}: sm=${smW}px, lg=${lgW}px`);
