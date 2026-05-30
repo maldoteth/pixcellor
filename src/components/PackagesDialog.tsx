@@ -988,6 +988,21 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 <div className="text-lg font-bold text-foreground">Retainer</div>
                 <SnakeFlipButton label="Custom" sizeClass="h-7 px-2 text-[10px]" durationMs={10000} active={desktopAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
+              <div className="flex items-center gap-1.5 mb-3">
+                {RETAINER_TIER_ORDER.map((k) => (
+                  <button
+                    key={k}
+                    onClick={() => setRetainerTier(k)}
+                    className={`text-[11px] px-2.5 py-1 rounded-full transition font-semibold ${
+                      retainerTier === k
+                        ? "bg-foreground text-background"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {RETAINER_TIERS[k].name}
+                  </button>
+                ))}
+              </div>
               <div className="flex items-center gap-2 mb-3">
                 <button
                   onClick={() => setRetainerBilling("monthly")}
@@ -1012,43 +1027,41 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
               </div>
               <div className="mb-1 flex items-baseline gap-2">
                 <div className="text-3xl font-extrabold text-foreground">
-                  {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
+                  {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
                 </div>
-                <span className="text-muted-foreground text-sm">or {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
-              <IntroductoryOfferText discount="52%" />
+              {retainerBilling === "yearly" && (
+                <div className="text-xs text-muted-foreground mb-2">
+                  Save £{(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} vs monthly
+                </div>
+              )}
               <ul className="mb-6 space-y-2 text-base text-foreground">
-                {PACKAGES.retainer.features.map((f) => (
+                {RETAINER_TIERS[retainerTier].features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>
                 ))}
-                {retainerBilling === "yearly" && (
-                  <li className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-                    Billed yearly (save £2,400)
-                  </li>
-                )}
               </ul>
               <GlassBuyButton
                 onClick={() =>
                   buy(
                     retainerBilling === "monthly"
-                      ? PACKAGES.retainer.monthlyPriceId
-                      : PACKAGES.retainer.yearlyPriceId,
-                    PACKAGES.retainer.mode,
-                    "retainer",
-                    PACKAGES.retainer.name,
+                      ? RETAINER_TIERS[retainerTier].monthlyPriceId
+                      : RETAINER_TIERS[retainerTier].yearlyPriceId,
+                    "subscription",
+                    `retainer-${retainerTier}`,
+                    `${RETAINER_TIERS[retainerTier].name} Retainer`,
                     retainerBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
                   )
                 }
                 disabled={!!loading}
-                loading={loading === "retainer"}
+                loading={loading === `retainer-${retainerTier}`}
                 label="Subscribe"
               />
             </div>
           </div>
+
 
           <div data-lava-card
             className={`absolute inset-0 rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`}
