@@ -1015,13 +1015,13 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   aria-checked={retainerBilling === "yearly"}
                   aria-label={`Switch to ${retainerBilling === "monthly" ? "yearly" : "monthly"} billing`}
                   onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
-                  className="relative h-6 w-[86px] rounded-[3px] bg-secondary border border-border overflow-hidden flex-shrink-0"
+                  className="relative h-7 w-[96px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
-                    className="absolute top-0.5 h-5 w-5 rounded-[2px] bg-foreground transition-transform duration-200 ease-out"
-                    style={{ transform: retainerBilling === "yearly" ? "translateX(62px)" : "translateX(2px)" }}
+                    className="absolute top-0.5 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+                    style={{ transform: retainerBilling === "yearly" ? "translateX(2px)" : "translateX(68px)" }}
                   />
-                  <span className={`absolute inset-y-0 flex items-center justify-center text-[10px] font-semibold uppercase text-muted-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-2 right-7" : "left-7 right-2"}`}>
+                  <span className={`absolute inset-y-0 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
                     {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
                   </span>
                 </button>
@@ -1475,13 +1475,13 @@ function MobileCards() {
                   aria-checked={retainerBilling === "yearly"}
                   aria-label={`Switch to ${retainerBilling === "monthly" ? "yearly" : "monthly"} billing`}
                   onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
-                  className="relative h-6 w-[86px] rounded-[3px] bg-secondary border border-border overflow-hidden flex-shrink-0"
+                  className="relative h-7 w-[96px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
-                    className="absolute top-0.5 h-5 w-5 rounded-[2px] bg-foreground transition-transform duration-200 ease-out"
-                    style={{ transform: retainerBilling === "yearly" ? "translateX(62px)" : "translateX(2px)" }}
+                    className="absolute top-0.5 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+                    style={{ transform: retainerBilling === "yearly" ? "translateX(2px)" : "translateX(68px)" }}
                   />
-                  <span className={`absolute inset-y-0 flex items-center justify-center text-[10px] font-semibold uppercase text-muted-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-2 right-7" : "left-7 right-2"}`}>
+                  <span className={`absolute inset-y-0 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
                     {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
                   </span>
                 </button>
