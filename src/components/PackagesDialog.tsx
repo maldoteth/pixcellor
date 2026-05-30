@@ -50,6 +50,66 @@ const PACKAGES = {
   },
 };
 
+export const RETAINER_TIERS = {
+  growth: {
+    key: "growth" as const,
+    name: "Growth",
+    monthly: 100,
+    yearly: 1000,
+    monthlyLabel: "£100/mo",
+    yearlyLabel: "£1,000/yr",
+    monthlyPriceId: "price_1TcfyPBtUjwejeUwJmEbSWtN",
+    yearlyPriceId: "price_1Tcg03BtUjwejeUwr7mYzuUb",
+    features: [
+      "Pro website included",
+      "Custom CRM access",
+      "Managed hosting & domain",
+      "Lead generation campaigns",
+      "Email support",
+    ],
+  },
+  scale: {
+    key: "scale" as const,
+    name: "Scale",
+    monthly: 500,
+    yearly: 5000,
+    monthlyLabel: "£500/mo",
+    yearlyLabel: "£5,000/yr",
+    monthlyPriceId: "price_1Tcg07BtUjwejeUwfGGDhftV",
+    yearlyPriceId: "price_1Tcg0ABtUjwejeUwLc5nw8nX",
+    features: [
+      "Everything in Growth",
+      "Unlimited seats & users",
+      "Unlimited edits & revisions",
+      "Priority support & SLA",
+      "Monthly strategy calls",
+      "SEO & AEO optimisation",
+    ],
+  },
+  enterprise: {
+    key: "enterprise" as const,
+    name: "Enterprise",
+    monthly: 2500,
+    yearly: 20000,
+    monthlyLabel: "£2,500/mo",
+    yearlyLabel: "£20,000/yr",
+    monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
+    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
+    features: [
+      "Everything in Scale",
+      "Fractional CTO, CMO & CRO",
+      "Dedicated dev & ops team",
+      "2-week MVP sprints",
+      "Daily updates",
+      "24/7 priority support",
+    ],
+  },
+} as const;
+
+type RetainerTierKey = keyof typeof RETAINER_TIERS;
+const RETAINER_TIER_ORDER: RetainerTierKey[] = ["growth", "scale", "enterprise"];
+
+
 // Services info shown on the back of each desktop pricing card when flipped.
 // Keys map to card slot: fullWorks=left, elite=center, retainer=right.
 const SERVICE_BACKS = {
