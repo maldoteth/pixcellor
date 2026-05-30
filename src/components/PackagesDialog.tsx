@@ -1003,31 +1003,33 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   </button>
                 ))}
               </div>
-              <div className="flex items-center gap-2 mb-3">
-                <button
-                  onClick={() => setRetainerBilling("monthly")}
-                  className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
-                    retainerBilling === "monthly"
-                      ? "bg-foreground text-background"
-                      : "bg-secondary text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Monthly
-                </button>
-                <button
-                  onClick={() => setRetainerBilling("yearly")}
-                  className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
-                    retainerBilling === "yearly"
-                      ? "bg-foreground text-background"
-                      : "bg-secondary text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Yearly
-                </button>
-              </div>
-              <div className="mb-1 flex items-baseline gap-2">
-                <div className="text-3xl font-extrabold text-foreground">
-                  {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <div className="flex items-baseline gap-2">
+                  <div className="text-3xl font-extrabold text-foreground">
+                    {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setRetainerBilling("monthly")}
+                    className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+                      retainerBilling === "monthly"
+                        ? "bg-foreground text-background"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setRetainerBilling("yearly")}
+                    className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+                      retainerBilling === "yearly"
+                        ? "bg-foreground text-background"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Yearly
+                  </button>
                 </div>
               </div>
               {retainerBilling === "yearly" && (
@@ -1466,31 +1468,33 @@ function MobileCards() {
                   </button>
                 ))}
               </div>
-              <div className="flex items-center gap-2 mb-3">
-                <button
-                  onClick={() => setRetainerBilling("monthly")}
-                  className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
-                    retainerBilling === "monthly"
-                      ? "bg-foreground text-background"
-                      : "bg-secondary text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Monthly
-                </button>
-                <button
-                  onClick={() => setRetainerBilling("yearly")}
-                  className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
-                    retainerBilling === "yearly"
-                      ? "bg-foreground text-background"
-                      : "bg-secondary text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Yearly
-                </button>
-              </div>
-              <div className="mb-1 flex items-baseline gap-2">
-                <div className="text-3xl font-extrabold text-foreground">
-                  {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <div className="flex items-baseline gap-2">
+                  <div className="text-3xl font-extrabold text-foreground">
+                    {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setRetainerBilling("monthly")}
+                    className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+                      retainerBilling === "monthly"
+                        ? "bg-foreground text-background"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setRetainerBilling("yearly")}
+                    className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
+                      retainerBilling === "yearly"
+                        ? "bg-foreground text-background"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Yearly
+                  </button>
                 </div>
               </div>
               {retainerBilling === "yearly" && (
