@@ -1345,17 +1345,24 @@ function MobileCards() {
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
+  const retainerAutoFlipStoppedRef = useRef(false);
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
   const mobileAutoActive = !enterpriseOpen && !retainerAutoFlipStopped;
 
+  const stopRetainerAutoFlip = useCallback(() => {
+    retainerAutoFlipStoppedRef.current = true;
+    setRetainerAutoFlipStopped(true);
+  }, []);
+
   const flipRetainerAuto = useCallback(() => {
+    if (retainerAutoFlipStoppedRef.current) return;
     setRetainerFlipped((flipped) => !flipped);
   }, []);
 
   const flipRetainerManually = () => {
-    setRetainerAutoFlipStopped(true);
+    stopRetainerAutoFlip();
     setRetainerFlipped((flipped) => !flipped);
   };
 
