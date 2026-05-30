@@ -1003,7 +1003,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   </button>
                 ))}
               </div>
-              <div className="mb-1 flex items-center justify-between gap-2">
+              <div className="mb-1 flex items-center gap-3">
                 <div className="flex items-baseline gap-2">
                   <div className="text-3xl font-extrabold text-foreground">
                     {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
@@ -1011,7 +1011,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 </div>
                 <button
                   onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
-                  className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-[10px] font-semibold py-1 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors px-[10px]"
                 >
                   {retainerBilling === "monthly" ? "Yearly" : "Monthly"}
                 </button>
@@ -1452,7 +1452,7 @@ function MobileCards() {
                   </button>
                 ))}
               </div>
-              <div className="mb-1 flex items-center justify-between gap-2">
+              <div className="mb-1 flex items-center gap-3">
                 <div className="flex items-baseline gap-2">
                   <div className="text-3xl font-extrabold text-foreground">
                     {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
@@ -1460,7 +1460,7 @@ function MobileCards() {
                 </div>
                 <button
                   onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
-                  className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-[10px] font-semibold py-1 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors px-[10px]"
                 >
                   {retainerBilling === "monthly" ? "Yearly" : "Monthly"}
                 </button>
