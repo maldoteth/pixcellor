@@ -1014,7 +1014,17 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   role="switch"
                   aria-checked={retainerBilling === "yearly"}
                   aria-label={`Switch to ${retainerBilling === "monthly" ? "yearly" : "monthly"} billing`}
-                  onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                    }
+                  }}
                   className="relative h-7 w-[96px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
@@ -1474,7 +1484,17 @@ function MobileCards() {
                   role="switch"
                   aria-checked={retainerBilling === "yearly"}
                   aria-label={`Switch to ${retainerBilling === "monthly" ? "yearly" : "monthly"} billing`}
-                  onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                    }
+                  }}
                   className="relative h-7 w-[96px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
