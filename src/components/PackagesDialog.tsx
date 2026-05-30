@@ -29,7 +29,7 @@ const PACKAGES = {
     features: ["Industry leading website", "Lifetime warranty", "Base animations ", "Up to 3 pages", "All inclusive service"],
   },
   elite: {
-    name: "Elite",
+    name: "Elite Build",
     price: "£500",
     rrp: "£1,500",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
