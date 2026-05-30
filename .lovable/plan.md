@@ -1,53 +1,54 @@
-## Why the carousel looks blurry
+# SEO Cleanup — All Four Fixes
 
-The portfolio cards in `CircularGallery` (`src/components/ui/circular-gallery.tsx`) are served from pre-generated responsive variants built by `scripts/convert-portfolio.mjs`:
+## 1. Auto-generated sitemap (fixes stale `lastmod`)
 
-- `*-sm.avif` / `*-sm.webp` — 480px wide, AVIF **quality 50**, WebP quality 78
-- `*-lg.avif` / `*-lg.webp` — 960px wide, same qualities
-- Original `*.png` kept only as fallback
+- Create `scripts/generate-sitemap.ts` listing all 27 public routes (18 service slugs + `/`, `/services`, `/legal`, `/legal/terms|privacy|refund|acceptable-use`).
+- Use today's date for `lastmod` on every build/dev.
+- Add `predev` + `prebuild` scripts to `package.json` running `bunx tsx scripts/generate-sitemap.ts`.
+- Existing `public/sitemap.xml` is overwritten on next build — same path, same format, no crawler disruption.
 
-The `<picture>` in `GalleryCard` declares:
+## 2. Sitewide Organization + WebSite JSON-LD
 
-```ts
-sizes = '(max-width: 768px) 240px, 360px'
-srcSet: '...-sm.(avif|webp) 480w, ...-lg.(avif|webp) 960w'
-```
+- Inject into `index.html` `<head>` (sitewide, picked up by Google for knowledge-graph / brand recognition).
+- Include: name "Pixcellor™", url, logo, sameAs (social links if known), founder/contact if available.
+- Add a `WebSite` block with `potentialAction` SearchAction stub for future site search.
 
-Each card actually renders at only 138×184 CSS px on desktop (100×144 on mobile), but with `devicePixelRatio` ≈ 1.25–2 and the 3D perspective scaling cards near the camera, the visible raster is somewhere between ~200 and ~480 device px wide. With `sizes: 360px` the browser picks the **sm (480w)** variant on essentially every device. That variant is:
+## 3. LCP fix — hero performance, **without staggering image appearance**
 
-1. Encoded at AVIF q=50, which is aggressive for screenshot-style UI imagery (sharp text, thin lines, flat color blocks compress poorly and go mushy).
-2. The lg (960w) variant is almost never selected, so the higher-quality asset we already ship is wasted.
+The Lighthouse finding is about the hero's largest paint being slow. Fixes that DO NOT affect simultaneous appearance:
 
-So the blur isn't a layout bug — it's an asset-quality bug. The sm variant is doing all the work and it's too compressed for the detail in website screenshots.
+- Add `fetchpriority="high"` + `decoding="async"` to the hero's primary image asset(s) so the browser prioritises their bytes.
+- Add `<link rel="preload" as="image" href="<hero-image>" fetchpriority="high">` in `index.html` for the first hero card image(s) so they start downloading before JS parses.
+- Add `font-display: swap` to any `@font-face` declarations in `src/index.css` so text paints with a fallback while web fonts load (no impact on images).
+- Remove any `loading="lazy"` on above-the-fold hero imagery (lazy = late = LCP miss).
 
-## Fix
+**Constraint respected**: the existing entrance animation (which makes all hero cards appear together via Framer Motion) is untouched. We only speed up *byte delivery*, not change the animation choreography. All cards will continue to fade/morph in simultaneously as they do today.
 
-Two coordinated changes, no behaviour changes elsewhere.
+## 4. Google Search Console connection
 
-### 1. Regenerate sharper variants (`scripts/convert-portfolio.mjs`)
+- Trigger the `google_search_console` connector picker so you authorize OAuth.
+- Request a META verification token, inject `<meta name="google-site-verification" content="...">` into `index.html`.
+- Once you publish, call the verify endpoint, then add `https://pixcellor.com/` as a Search Console property and submit the sitemap URL programmatically.
+- You'll then see impressions, clicks, queries, and index coverage in GSC within ~48h.
 
-- Raise AVIF `quality` from 50 → ~70 and `effort` from 4 → 6 (slower build, smaller+sharper output).
-- Raise WebP `quality` from 78 → 86.
-- Bump the small variant width from 480 → 640 so it has more pixels for the front-facing card after perspective scaling.
-- Keep lg at 960 (still useful for retina front cards).
-- Add a sharpening pass (`.sharpen()`) before encoding — screenshots benefit noticeably.
+## Order of operations
 
-### 2. Prefer the larger variant in `circular-gallery.tsx`
+1. Write sitemap generator + wire npm scripts → regenerate file
+2. Add Organization/WebSite JSON-LD to `index.html`
+3. Hero LCP: `fetchpriority`, preload link, `font-display: swap`, strip any above-fold `loading="lazy"`
+4. Trigger GSC connector → inject verification meta → you publish → I verify + submit sitemap
+5. Mark both SEO findings fixed in the scanner
 
-Update the `<picture>` so the browser is biased toward the lg asset on any non-tiny viewport. Two small edits inside `GalleryCard`:
+## Files touched
 
-- Change `sizes` to roughly match real on-screen size including perspective zoom, e.g. `(max-width: 768px) 320px, 480px`. With srcset `640w` + `960w`, retina desktops will now pick the 960w lg variant; standard-DPI desktops pick 640w sm.
-- Update the srcset descriptors in `portfolioVariants()` to `640w` / `960w` to match the new sm width.
+- `scripts/generate-sitemap.ts` (new)
+- `package.json` (predev/prebuild scripts)
+- `public/sitemap.xml` (regenerated)
+- `index.html` (JSON-LD, preload, GSC verification meta)
+- `src/index.css` (font-display: swap if any @font-face rules exist)
+- Hero image component (fetchpriority/decoding attrs; no animation changes)
 
-No changes to layout, animation, dominant-colour extraction, preloader, or `pickWarmupUrl` logic (still grabs the sm webp — that stays cheap for colour sampling).
+## What you'll need to do
 
-### 3. Run the regen + verify
-
-- Run `node scripts/convert-portfolio.mjs` to rebuild all `*-sm.*` and `*-lg.*` files in `public/portfolio/`.
-- Reload the preview and confirm cards look crisp; spot-check file sizes in the script's summary output to make sure we haven't blown up payload (expected: sm grows ~30–50%, still well under originals).
-
-## Out of scope
-
-- Not touching the gallery's animation, glow, or rotation logic.
-- Not changing which images are in the carousel or their data in `services.ts`.
-- Not adding a third (md) breakpoint — two variants are enough once quality + sm width are raised.
+- **Publish** after step 3 so the verification meta is live on `pixcellor.com` — then I run the verify call.
+- Authorize the Google Search Console connector when the picker appears.
