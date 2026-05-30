@@ -1491,7 +1491,7 @@ function MobileCards() {
                 </div>
               </div>
 
-              <div className="mb-1 flex items-center gap-3">
+              <div className="mb-1 flex items-center gap-3 justify-between">
                 <div className="flex items-baseline gap-2">
                   <div className="text-3xl font-extrabold text-foreground">
                     {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
@@ -1515,7 +1515,7 @@ function MobileCards() {
                       setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
                     }
                   }}
-                  className="relative h-7 w-[96px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                  className="relative ml-auto h-7 w-[96px] rounded-[5px] bg-secondary border-2 border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
                     className="absolute left-0 top-0.5 z-10 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
