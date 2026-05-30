@@ -666,7 +666,7 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Analytics and intel": "consultations-audits",
   "Visitor intel & fall off capture": "consultations-audits",
   "Analytics dashboards": "analytics-dashboards",
-  "API & third-party": "api-third-party",
+  "API & third-party support": "api-third-party",
   "Product/project management": "product-project-management",
 };
 
