@@ -7,7 +7,7 @@ import { readdirSync, statSync } from "fs";
 import { join, parse } from "path";
 
 const DIR = "public/portfolio";
-const SMALL_W = 480;
+const SMALL_W = 640;
 const LARGE_W = 960;
 
 const files = readdirSync(DIR).filter((f) => f.endsWith(".png"));
