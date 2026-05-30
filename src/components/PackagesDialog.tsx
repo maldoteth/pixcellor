@@ -1326,6 +1326,7 @@ function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
 function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
+  const [retainerTier, setRetainerTier] = useState<RetainerTierKey>("enterprise");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
