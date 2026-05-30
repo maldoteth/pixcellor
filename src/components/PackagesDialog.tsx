@@ -993,25 +993,25 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
             <div className="relative z-10">
-              <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="mb-3 flex items-center justify-between gap-3">
                 <div className="text-lg font-bold text-foreground">Retainer</div>
-                <SnakeFlipButton label="Custom" sizeClass="h-7 px-2 text-[10px]" durationMs={10000} active={desktopAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
+                <div className="flex items-center gap-1.5">
+                  {RETAINER_TIER_ORDER.map((k) => (
+                    <button
+                      key={k}
+                      onClick={() => setRetainerTier(k)}
+                      className={`text-[11px] px-2.5 py-1 rounded-full transition font-semibold ${
+                        retainerTier === k
+                          ? "bg-foreground text-background"
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {RETAINER_TIERS[k].name}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 mb-3">
-                {RETAINER_TIER_ORDER.map((k) => (
-                  <button
-                    key={k}
-                    onClick={() => setRetainerTier(k)}
-                    className={`text-[11px] px-2.5 py-1 rounded-full transition font-semibold ${
-                      retainerTier === k
-                        ? "bg-foreground text-background"
-                        : "bg-secondary text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {RETAINER_TIERS[k].name}
-                  </button>
-                ))}
-              </div>
+
               <div className="mb-1 flex items-center gap-3">
                 <div className="flex items-baseline gap-2">
                   <div className="text-3xl font-extrabold text-foreground">
@@ -1472,25 +1472,25 @@ function MobileCards() {
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
             <div className="relative z-10 flex flex-col flex-1">
-              <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-foreground">Retainer</h3>
-                <SnakeFlipButton label="Custom" sizeClass="h-8 px-2 text-xs" durationMs={10000} active={mobileAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
+                <div className="flex items-center gap-1.5">
+                  {RETAINER_TIER_ORDER.map((k) => (
+                    <button
+                      key={k}
+                      onClick={() => setRetainerTier(k)}
+                      className={`text-[11px] px-2.5 py-1 rounded-full transition font-semibold ${
+                        retainerTier === k
+                          ? "bg-foreground text-background"
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {RETAINER_TIERS[k].name}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 mt-2 mb-3">
-                {RETAINER_TIER_ORDER.map((k) => (
-                  <button
-                    key={k}
-                    onClick={() => setRetainerTier(k)}
-                    className={`text-[11px] px-2.5 py-1 rounded-full transition font-semibold ${
-                      retainerTier === k
-                        ? "bg-foreground text-background"
-                        : "bg-secondary text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {RETAINER_TIERS[k].name}
-                  </button>
-                ))}
-              </div>
+
               <div className="mb-1 flex items-center gap-3">
                 <div className="flex items-baseline gap-2">
                   <div className="text-3xl font-extrabold text-foreground">
