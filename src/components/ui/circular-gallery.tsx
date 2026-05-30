@@ -11,8 +11,8 @@ function portfolioVariants(url: string) {
   if (!match) return null;
   const base = `/portfolio/${match[1]}`;
   return {
-    avif: `${base}-sm.avif 480w, ${base}-lg.avif 960w`,
-    webp: `${base}-sm.webp 480w, ${base}-lg.webp 960w`,
+    avif: `${base}-sm.avif 640w, ${base}-lg.avif 960w`,
+    webp: `${base}-sm.webp 640w, ${base}-lg.webp 960w`,
   };
 }
 
@@ -215,7 +215,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         <div className="relative w-full h-full overflow-hidden rounded-2xl bg-black">
       {(() => {
         const variants = portfolioVariants(item.photo.url);
-        const sizes = '(max-width: 768px) 240px, 360px';
+        const sizes = '(max-width: 768px) 320px, 480px';
         return (
           <picture>
             {variants && <source type="image/avif" srcSet={variants.avif} sizes={sizes} />}
