@@ -84,7 +84,7 @@ export const RETAINER_TIERS = {
       "Unlimited edits & revisions",
       "Priority support & SLA",
       "Monthly strategy calls",
-      "SEO & AEO optimisation",
+      "AI agents & automations",
     ],
   },
   enterprise: {
