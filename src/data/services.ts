@@ -585,7 +585,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "api-third-party",
-    name: "API & third-party integrations",
+    name: "API & third-party support",
     category: "business",
     info: "We will help you set up systems requiring technical knowledge.",
     tagline: "Plumbing between every tool you use.",
@@ -666,7 +666,7 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Analytics and intel": "consultations-audits",
   "Visitor intel & fall off capture": "consultations-audits",
   "Analytics dashboards": "analytics-dashboards",
-  "API & third-party": "api-third-party",
+  "API & third-party support": "api-third-party",
   "Product/project management": "product-project-management",
 };
 
