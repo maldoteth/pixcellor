@@ -77,7 +77,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tcg07BtUjwejeUwfGGDhftV",
     yearlyPriceId: "price_1Tcg0ABtUjwejeUwLc5nw8nX",
     features: [
-      "Everything in Growth",
+      "Unlimited seats & users",
       "Unlimited seats & users",
       "Unlimited edits & revisions",
       "Priority support & SLA",
@@ -95,7 +95,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     features: [
-      "Everything in Scale",
+      "Fractional CTO, CMO & CRO",
       "Fractional CTO, CMO & CRO",
       "Dedicated dev & ops team",
       "2-week MVP sprints",
