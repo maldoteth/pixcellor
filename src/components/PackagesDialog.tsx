@@ -63,7 +63,7 @@ export const RETAINER_TIERS = {
     features: [
       "Pro website included",
       "Custom CRM access",
-      "Hosting, domain * bandwidth ",
+      "Hosting, domain & cloud",
       "AI lead generation bot",
     ],
   },
