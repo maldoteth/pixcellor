@@ -1036,7 +1036,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                       setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
                     }
                   }}
-                  className="relative h-7 w-[96px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                  className="relative ml-auto self-center h-7 w-[96px] rounded-[5px] bg-secondary border-2 border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
                     className="absolute left-0 top-0.5 z-10 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
