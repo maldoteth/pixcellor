@@ -1017,11 +1017,13 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   onPointerDown={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
+                    setRetainerAutoFlipStopped(true);
                     setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
                   }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
+                      setRetainerAutoFlipStopped(true);
                       setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
                     }
                   }}
@@ -1487,11 +1489,13 @@ function MobileCards() {
                   onPointerDown={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
+                    setRetainerAutoFlipStopped(true);
                     setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
                   }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
+                      setRetainerAutoFlipStopped(true);
                       setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
                     }
                   }}
