@@ -770,6 +770,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
+  const retainerAutoFlipStoppedRef = useRef(false);
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
@@ -777,12 +778,18 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   // smoothly while the Services face is shown, and resumes mid-lap when flipped back.
   const desktopAutoActive = !enterpriseOpen && !retainerAutoFlipStopped;
 
+  const stopRetainerAutoFlip = useCallback(() => {
+    retainerAutoFlipStoppedRef.current = true;
+    setRetainerAutoFlipStopped(true);
+  }, []);
+
   const flipRetainerAuto = useCallback(() => {
+    if (retainerAutoFlipStoppedRef.current) return;
     setRetainerFlipped((flipped) => !flipped);
   }, []);
 
   const flipRetainerManually = () => {
-    setRetainerAutoFlipStopped(true);
+    stopRetainerAutoFlip();
     setRetainerFlipped((flipped) => !flipped);
   };
 
@@ -970,6 +977,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           style={{ transformStyle: "preserve-3d" }}
         >
           <div data-lava-card
+            onPointerEnter={stopRetainerAutoFlip}
+            onFocusCapture={stopRetainerAutoFlip}
             className={`absolute inset-0 rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`}
             style={{
               backfaceVisibility: "hidden",
@@ -1014,14 +1023,26 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   role="switch"
                   aria-checked={retainerBilling === "yearly"}
                   aria-label={`Switch to ${retainerBilling === "monthly" ? "yearly" : "monthly"} billing`}
-                  onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    stopRetainerAutoFlip();
+                    setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      stopRetainerAutoFlip();
+                      setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                    }
+                  }}
                   className="relative h-7 w-[96px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
-                    className="absolute top-0.5 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+                    className="absolute left-0 top-0.5 z-10 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
                     style={{ transform: retainerBilling === "yearly" ? "translateX(2px)" : "translateX(68px)" }}
                   />
-                  <span className={`absolute inset-y-0 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
+                  <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
                     {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
                   </span>
                 </button>
@@ -1326,17 +1347,24 @@ function MobileCards() {
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
+  const retainerAutoFlipStoppedRef = useRef(false);
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
   const mobileAutoActive = !enterpriseOpen && !retainerAutoFlipStopped;
 
+  const stopRetainerAutoFlip = useCallback(() => {
+    retainerAutoFlipStoppedRef.current = true;
+    setRetainerAutoFlipStopped(true);
+  }, []);
+
   const flipRetainerAuto = useCallback(() => {
+    if (retainerAutoFlipStoppedRef.current) return;
     setRetainerFlipped((flipped) => !flipped);
   }, []);
 
   const flipRetainerManually = () => {
-    setRetainerAutoFlipStopped(true);
+    stopRetainerAutoFlip();
     setRetainerFlipped((flipped) => !flipped);
   };
 
@@ -1439,7 +1467,7 @@ function MobileCards() {
           className="relative min-h-[440px] rounded-none"
           style={{ transformStyle: "preserve-3d" }}
         >
-          <div data-lava-card className={`absolute inset-0 rounded-none p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`} style={{ backfaceVisibility: "hidden" }}>
+          <div data-lava-card onPointerEnter={stopRetainerAutoFlip} onFocusCapture={stopRetainerAutoFlip} className={`absolute inset-0 rounded-none p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`} style={{ backfaceVisibility: "hidden" }}>
             <div className="lava-blob lava-blob-1" />
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
@@ -1474,14 +1502,26 @@ function MobileCards() {
                   role="switch"
                   aria-checked={retainerBilling === "yearly"}
                   aria-label={`Switch to ${retainerBilling === "monthly" ? "yearly" : "monthly"} billing`}
-                  onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    stopRetainerAutoFlip();
+                    setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      stopRetainerAutoFlip();
+                      setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                    }
+                  }}
                   className="relative h-7 w-[96px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
-                    className="absolute top-0.5 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+                    className="absolute left-0 top-0.5 z-10 h-6 w-6 rounded-[4px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
                     style={{ transform: retainerBilling === "yearly" ? "translateX(2px)" : "translateX(68px)" }}
                   />
-                  <span className={`absolute inset-y-0 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
+                  <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
                     {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
                   </span>
                 </button>
