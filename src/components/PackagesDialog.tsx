@@ -65,7 +65,6 @@ export const RETAINER_TIERS = {
       "Custom CRM access",
       "Managed hosting & domain",
       "Lead generation campaigns",
-      "Email support",
     ],
   },
   scale: {
