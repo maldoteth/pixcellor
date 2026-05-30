@@ -215,7 +215,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
         <div className="relative w-full h-full overflow-hidden rounded-2xl bg-black">
       {(() => {
         const variants = portfolioVariants(item.photo.url);
-        const sizes = '(max-width: 768px) 240px, 360px';
+        const sizes = '(max-width: 768px) 320px, 480px';
         return (
           <picture>
             {variants && <source type="image/avif" srcSet={variants.avif} sizes={sizes} />}
