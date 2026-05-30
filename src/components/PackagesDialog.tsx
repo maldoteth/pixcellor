@@ -1013,16 +1013,16 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   type="button"
                   role="switch"
                   aria-checked={retainerBilling === "yearly"}
+                  aria-label={`Switch to ${retainerBilling === "monthly" ? "yearly" : "monthly"} billing`}
                   onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
-                  className="relative h-6 w-[88px] rounded-sm bg-secondary border border-border overflow-hidden flex-shrink-0"
+                  className="relative h-6 w-[86px] rounded-[3px] bg-secondary border border-border overflow-hidden flex-shrink-0"
                 >
                   <span
-                    className="absolute top-0.5 bottom-0.5 w-[42px] rounded-[2px] bg-foreground transition-transform duration-200 ease-out"
-                    style={{ transform: retainerBilling === "yearly" ? "translateX(44px)" : "translateX(2px)" }}
+                    className="absolute top-0.5 h-5 w-5 rounded-[2px] bg-foreground transition-transform duration-200 ease-out"
+                    style={{ transform: retainerBilling === "yearly" ? "translateX(62px)" : "translateX(2px)" }}
                   />
-                  <span className="relative z-10 grid grid-cols-2 h-full text-[10px] font-semibold uppercase tracking-wide">
-                    <span className={`flex items-center justify-center transition-colors ${retainerBilling === "monthly" ? "text-background" : "text-muted-foreground"}`}>Month</span>
-                    <span className={`flex items-center justify-center transition-colors ${retainerBilling === "yearly" ? "text-background" : "text-muted-foreground"}`}>Year</span>
+                  <span className={`absolute inset-y-0 flex items-center justify-center text-[10px] font-semibold uppercase text-muted-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-2 right-7" : "left-7 right-2"}`}>
+                    {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
                   </span>
                 </button>
 
@@ -1473,16 +1473,16 @@ function MobileCards() {
                   type="button"
                   role="switch"
                   aria-checked={retainerBilling === "yearly"}
+                  aria-label={`Switch to ${retainerBilling === "monthly" ? "yearly" : "monthly"} billing`}
                   onClick={() => setRetainerBilling(retainerBilling === "monthly" ? "yearly" : "monthly")}
-                  className="relative h-6 w-[88px] rounded-sm bg-secondary border border-border overflow-hidden flex-shrink-0"
+                  className="relative h-6 w-[86px] rounded-[3px] bg-secondary border border-border overflow-hidden flex-shrink-0"
                 >
                   <span
-                    className="absolute top-0.5 bottom-0.5 w-[42px] rounded-[2px] bg-foreground transition-transform duration-200 ease-out"
-                    style={{ transform: retainerBilling === "yearly" ? "translateX(44px)" : "translateX(2px)" }}
+                    className="absolute top-0.5 h-5 w-5 rounded-[2px] bg-foreground transition-transform duration-200 ease-out"
+                    style={{ transform: retainerBilling === "yearly" ? "translateX(62px)" : "translateX(2px)" }}
                   />
-                  <span className="relative z-10 grid grid-cols-2 h-full text-[10px] font-semibold uppercase tracking-wide">
-                    <span className={`flex items-center justify-center transition-colors ${retainerBilling === "monthly" ? "text-background" : "text-muted-foreground"}`}>Month</span>
-                    <span className={`flex items-center justify-center transition-colors ${retainerBilling === "yearly" ? "text-background" : "text-muted-foreground"}`}>Year</span>
+                  <span className={`absolute inset-y-0 flex items-center justify-center text-[10px] font-semibold uppercase text-muted-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-2 right-7" : "left-7 right-2"}`}>
+                    {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
                   </span>
                 </button>
 
