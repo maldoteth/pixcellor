@@ -50,6 +50,66 @@ const PACKAGES = {
   },
 };
 
+export const RETAINER_TIERS = {
+  growth: {
+    key: "growth" as const,
+    name: "Growth",
+    monthly: 100,
+    yearly: 1000,
+    monthlyLabel: "£100/mo",
+    yearlyLabel: "£1,000/yr",
+    monthlyPriceId: "price_1TcfyPBtUjwejeUwJmEbSWtN",
+    yearlyPriceId: "price_1Tcg03BtUjwejeUwr7mYzuUb",
+    features: [
+      "Pro website included",
+      "Custom CRM access",
+      "Managed hosting & domain",
+      "Lead generation campaigns",
+      "Email support",
+    ],
+  },
+  scale: {
+    key: "scale" as const,
+    name: "Scale",
+    monthly: 500,
+    yearly: 5000,
+    monthlyLabel: "£500/mo",
+    yearlyLabel: "£5,000/yr",
+    monthlyPriceId: "price_1Tcg07BtUjwejeUwfGGDhftV",
+    yearlyPriceId: "price_1Tcg0ABtUjwejeUwLc5nw8nX",
+    features: [
+      "Everything in Growth",
+      "Unlimited seats & users",
+      "Unlimited edits & revisions",
+      "Priority support & SLA",
+      "Monthly strategy calls",
+      "SEO & AEO optimisation",
+    ],
+  },
+  enterprise: {
+    key: "enterprise" as const,
+    name: "Enterprise",
+    monthly: 2500,
+    yearly: 20000,
+    monthlyLabel: "£2,500/mo",
+    yearlyLabel: "£20,000/yr",
+    monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
+    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
+    features: [
+      "Everything in Scale",
+      "Fractional CTO, CMO & CRO",
+      "Dedicated dev & ops team",
+      "2-week MVP sprints",
+      "Daily updates",
+      "24/7 priority support",
+    ],
+  },
+} as const;
+
+type RetainerTierKey = keyof typeof RETAINER_TIERS;
+const RETAINER_TIER_ORDER: RetainerTierKey[] = ["growth", "scale", "enterprise"];
+
+
 // Services info shown on the back of each desktop pricing card when flipped.
 // Keys map to card slot: fullWorks=left, elite=center, retainer=right.
 const SERVICE_BACKS = {
@@ -707,6 +767,7 @@ type ServiceAction = "pricing" | "sales";
 function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFlipped?: boolean; onServiceAction?: (action: ServiceAction) => void }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
+  const [retainerTier, setRetainerTier] = useState<RetainerTierKey>("enterprise");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
@@ -928,6 +989,21 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 <div className="text-lg font-bold text-foreground">Retainer</div>
                 <SnakeFlipButton label="Custom" sizeClass="h-7 px-2 text-[10px]" durationMs={10000} active={desktopAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
+              <div className="flex items-center gap-1.5 mb-3">
+                {RETAINER_TIER_ORDER.map((k) => (
+                  <button
+                    key={k}
+                    onClick={() => setRetainerTier(k)}
+                    className={`text-[11px] px-2.5 py-1 rounded-full transition font-semibold ${
+                      retainerTier === k
+                        ? "bg-foreground text-background"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {RETAINER_TIERS[k].name}
+                  </button>
+                ))}
+              </div>
               <div className="flex items-center gap-2 mb-3">
                 <button
                   onClick={() => setRetainerBilling("monthly")}
@@ -952,43 +1028,41 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
               </div>
               <div className="mb-1 flex items-baseline gap-2">
                 <div className="text-3xl font-extrabold text-foreground">
-                  {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
+                  {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
                 </div>
-                <span className="text-muted-foreground text-sm">or {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
-              <IntroductoryOfferText discount="52%" />
+              {retainerBilling === "yearly" && (
+                <div className="text-xs text-muted-foreground mb-2">
+                  Save £{(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} vs monthly
+                </div>
+              )}
               <ul className="mb-6 space-y-2 text-base text-foreground">
-                {PACKAGES.retainer.features.map((f) => (
+                {RETAINER_TIERS[retainerTier].features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>
                 ))}
-                {retainerBilling === "yearly" && (
-                  <li className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-                    Billed yearly (save £2,400)
-                  </li>
-                )}
               </ul>
               <GlassBuyButton
                 onClick={() =>
                   buy(
                     retainerBilling === "monthly"
-                      ? PACKAGES.retainer.monthlyPriceId
-                      : PACKAGES.retainer.yearlyPriceId,
-                    PACKAGES.retainer.mode,
-                    "retainer",
-                    PACKAGES.retainer.name,
+                      ? RETAINER_TIERS[retainerTier].monthlyPriceId
+                      : RETAINER_TIERS[retainerTier].yearlyPriceId,
+                    "subscription",
+                    `retainer-${retainerTier}`,
+                    `${RETAINER_TIERS[retainerTier].name} Retainer`,
                     retainerBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
                   )
                 }
                 disabled={!!loading}
-                loading={loading === "retainer"}
+                loading={loading === `retainer-${retainerTier}`}
                 label="Subscribe"
               />
             </div>
           </div>
+
 
           <div data-lava-card
             className={`absolute inset-0 rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`}
@@ -1252,6 +1326,7 @@ function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
 function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
+  const [retainerTier, setRetainerTier] = useState<RetainerTierKey>("enterprise");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
@@ -1377,7 +1452,22 @@ function MobileCards() {
                 <h3 className="text-lg font-bold text-foreground">Retainer</h3>
                 <SnakeFlipButton label="Custom" sizeClass="h-8 px-2 text-xs" durationMs={10000} active={mobileAutoActive && !retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
               </div>
-              <div className="flex items-center gap-2 mt-2 mb-3">
+              <div className="flex items-center gap-1.5 mt-2 mb-3">
+                {RETAINER_TIER_ORDER.map((k) => (
+                  <button
+                    key={k}
+                    onClick={() => setRetainerTier(k)}
+                    className={`text-[11px] px-2.5 py-1 rounded-full transition font-semibold ${
+                      retainerTier === k
+                        ? "bg-foreground text-background"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {RETAINER_TIERS[k].name}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 mb-3">
                 <button
                   onClick={() => setRetainerBilling("monthly")}
                   className={`text-xs px-3 py-1 rounded-full transition font-semibold ${
@@ -1401,42 +1491,40 @@ function MobileCards() {
               </div>
               <div className="mb-1 flex items-baseline gap-2">
                 <div className="text-3xl font-extrabold text-foreground">
-                  {retainerBilling === "monthly" ? "£2,500/mo" : "£20,000/yr"}
+                  {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
                 </div>
-                <span className="text-muted-foreground text-sm">or {retainerBilling === "monthly" ? "£4,000/mo" : "£40,000/yr"}</span>
               </div>
-              <IntroductoryOfferText discount="52%" />
+              {retainerBilling === "yearly" && (
+                <div className="text-xs text-muted-foreground mb-2">
+                  Save £{(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} vs monthly
+                </div>
+              )}
               <ul className="space-y-2 flex-1 mb-4">
-                {PACKAGES.retainer.features.map((f) => (
+                {RETAINER_TIERS[retainerTier].features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-base text-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>
                 ))}
-                {retainerBilling === "yearly" && (
-                  <li className="flex items-start gap-2 text-base text-foreground">
-                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-                    Billed yearly (save £2,400)
-                  </li>
-                )}
               </ul>
               <GlassBuyButton
                 onClick={() =>
                   buy(
                     retainerBilling === "monthly"
-                      ? PACKAGES.retainer.monthlyPriceId
-                      : PACKAGES.retainer.yearlyPriceId,
-                    PACKAGES.retainer.mode,
-                    "retainer",
-                    PACKAGES.retainer.name,
+                      ? RETAINER_TIERS[retainerTier].monthlyPriceId
+                      : RETAINER_TIERS[retainerTier].yearlyPriceId,
+                    "subscription",
+                    `retainer-${retainerTier}`,
+                    `${RETAINER_TIERS[retainerTier].name} Retainer`,
                     retainerBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
                   )
                 }
                 disabled={!!loading}
-                loading={loading === "retainer"}
+                loading={loading === `retainer-${retainerTier}`}
                 label="Subscribe"
               />
             </div>
+
           </div>
 
           <div data-lava-card className={`absolute inset-0 rounded-none p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`} style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
