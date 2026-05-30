@@ -977,6 +977,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           style={{ transformStyle: "preserve-3d" }}
         >
           <div data-lava-card
+            onPointerEnter={stopRetainerAutoFlip}
+            onFocusCapture={stopRetainerAutoFlip}
             className={`absolute inset-0 rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`}
             style={{
               backfaceVisibility: "hidden",
@@ -1465,7 +1467,7 @@ function MobileCards() {
           className="relative min-h-[440px] rounded-none"
           style={{ transformStyle: "preserve-3d" }}
         >
-          <div data-lava-card className={`absolute inset-0 rounded-none p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`} style={{ backfaceVisibility: "hidden" }}>
+          <div data-lava-card onPointerEnter={stopRetainerAutoFlip} onFocusCapture={stopRetainerAutoFlip} className={`absolute inset-0 rounded-none p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`} style={{ backfaceVisibility: "hidden" }}>
             <div className="lava-blob lava-blob-1" />
             <div className="lava-blob lava-blob-2" />
             <div className="lava-blob lava-blob-3" />
