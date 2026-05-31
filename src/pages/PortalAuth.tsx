@@ -80,14 +80,14 @@ export default function PortalAuth() {
       />
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Dev Portal</CardTitle>
+          <CardTitle>Portal sign in</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-3">
             <Input
               type="email"
               autoComplete="email"
-              placeholder="Admin email"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
