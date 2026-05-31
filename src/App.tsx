@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Portal = lazy(() => import("./pages/Portal"));
+const PartnerPortal = lazy(() => import("./pages/PartnerPortal"));
 const PortalAuth = lazy(() => import("./pages/PortalAuth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
