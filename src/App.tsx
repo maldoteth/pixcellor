@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Portal = lazy(() => import("./pages/Portal"));
+const PartnerPortal = lazy(() => import("./pages/PartnerPortal"));
 const PortalAuth = lazy(() => import("./pages/PortalAuth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -75,6 +76,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/portal" element={<Portal />} />
+              <Route path="/partner" element={<PartnerPortal />} />
               <Route path="/portal-login" element={<PortalAuth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />

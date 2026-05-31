@@ -13,11 +13,32 @@ export default function PortalAuth() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate("/portal", { replace: true });
+  const routeForUser = async (userId: string) => {
+    const { data: isAdmin } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
     });
-  }, [navigate]);
+    if (isAdmin) {
+      navigate("/portal", { replace: true });
+      return true;
+    }
+    const { data: partner } = await (supabase as any)
+      .from("partner_accounts")
+      .select("email")
+      .maybeSingle();
+    if (partner) {
+      navigate("/partner", { replace: true });
+      return true;
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session) await routeForUser(data.session.user.id);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,23 +57,17 @@ export default function PortalAuth() {
     const { data: sessionData } = await supabase.auth.getSession();
     const userId = sessionData.session?.user.id;
     if (!userId) {
-      toast.error("Could not verify admin access.");
+      toast.error("Could not verify access.");
       setBusy(false);
       return;
     }
 
-    const { data: isAdmin, error: roleError } = await supabase.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
-    if (roleError || !isAdmin) {
+    const routed = await routeForUser(userId);
+    if (!routed) {
       await supabase.auth.signOut();
-      toast.error("Admin access required.");
+      toast.error("This account doesn't have portal access.");
       setBusy(false);
-      return;
     }
-
-    navigate("/portal", { replace: true });
   };
 
   return (
@@ -65,14 +80,14 @@ export default function PortalAuth() {
       />
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Dev Portal</CardTitle>
+          <CardTitle>Portal sign in</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-3">
             <Input
               type="email"
               autoComplete="email"
-              placeholder="Admin email"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
