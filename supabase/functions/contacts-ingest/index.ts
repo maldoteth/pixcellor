@@ -7,6 +7,16 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Partner registry — add new partner websites here.
+// `source` keys are stored on contacts.source; they drive labels in the CRM
+// and the notification email recipient.
+const PARTNERS: Record<string, { label: string; notifyEmail: string }> = {
+  dmb_scaffolding: {
+    label: "DMB Scaffolding",
+    notifyEmail: "dmbscaffoldingltd@outlook.com",
+  },
+};
+
 const BodySchema = z.object({
   source: z.string().trim().min(1).max(80).optional(),
   name: z.string().trim().max(200).optional(),
@@ -21,7 +31,6 @@ const json = (status: number, body: unknown) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-// Constant-time string compare
 const safeEq = (a: string, b: string) => {
   if (a.length !== b.length) return false;
   let r = 0;
@@ -49,16 +58,16 @@ Deno.serve(async (req) => {
     return json(400, { ok: false, error: "invalid_input", fields: parsed.error.flatten().fieldErrors });
   }
   const { name, phone, email, message } = parsed.data;
-  const source = parsed.data.source?.trim() || "dmb_scaffolding";
+  const sourceKey = (parsed.data.source?.trim() || "dmb_scaffolding").toLowerCase();
+  const partner = PARTNERS[sourceKey] ?? { label: sourceKey, notifyEmail: "" };
 
   if (!email && !phone) {
     return json(400, { ok: false, error: "email_or_phone_required" });
   }
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+  const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
   const displayName = name || email || phone || "Unknown";
   const notes = message ? message.slice(0, 4000) : null;
@@ -71,7 +80,7 @@ Deno.serve(async (req) => {
       email: email ? email.toLowerCase() : null,
       phone: phone || null,
       industry: "general",
-      source: "dmb_scaffolding",
+      source: sourceKey,
       status: "new",
       notes,
     })
@@ -86,10 +95,41 @@ Deno.serve(async (req) => {
   // Best-effort timeline event
   await supabase.from("contact_events").insert({
     contact_id: data.id,
-    title: `Inbound from ${source}`,
-    description: message || `Contact submitted via ${source}`,
+    title: `Inbound from ${partner.label}`,
+    description: message || `Contact submitted via ${partner.label}`,
     event_type: "note",
   }).then(() => {}, () => {});
+
+  // Best-effort partner notification email
+  if (partner.notifyEmail) {
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SERVICE_KEY}`,
+        },
+        body: JSON.stringify({
+          templateName: "partner-lead-notification",
+          recipientEmail: partner.notifyEmail,
+          templateData: {
+            partnerName: partner.label,
+            leadName: name || "",
+            leadEmail: email || "",
+            leadPhone: phone || "",
+            leadMessage: message || "",
+            receivedAt: new Date().toLocaleString("en-GB", { timeZone: "Europe/London" }),
+          },
+        }),
+      });
+      if (!resp.ok) {
+        const t = await resp.text().catch(() => "");
+        console.warn("partner notification email failed:", resp.status, t);
+      }
+    } catch (e) {
+      console.warn("partner notification email error:", e);
+    }
+  }
 
   return json(200, { ok: true, contact_id: data.id });
 });
