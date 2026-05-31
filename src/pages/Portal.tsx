@@ -719,6 +719,7 @@ export default function Portal() {
       if (!mounted) return;
       if (!sessionData.session) {
         setIsAdmin(false);
+        setPartner(null);
         setAuthChecked(true);
         navigate("/portal-login", { replace: true });
         return;
@@ -729,15 +730,31 @@ export default function Portal() {
         _role: "admin",
       });
       if (!mounted) return;
-      if (error || !data) {
-        await supabase.auth.signOut();
-        setIsAdmin(false);
+      if (!error && data) {
+        setIsAdmin(true);
+        setPartner(null);
         setAuthChecked(true);
-        navigate("/portal-login", { replace: true });
         return;
       }
-      setIsAdmin(true);
+
+      // Not an admin — check if this account is a partner client
+      const { data: partnerRow } = await (supabase as any)
+        .from("partner_accounts")
+        .select("email, source_key, label")
+        .maybeSingle();
+      if (!mounted) return;
+      if (partnerRow) {
+        setIsAdmin(false);
+        setPartner(partnerRow as PartnerAccount);
+        setAuthChecked(true);
+        return;
+      }
+
+      await supabase.auth.signOut();
+      setIsAdmin(false);
+      setPartner(null);
       setAuthChecked(true);
+      navigate("/portal-login", { replace: true });
     };
 
     const { data: listener } = supabase.auth.onAuthStateChange(() => {
