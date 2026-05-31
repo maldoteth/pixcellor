@@ -1254,7 +1254,7 @@ export default function Portal() {
     );
     return contacts.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.actual_website_url) || matchesQuery(contactsQ, c.source_platform) || matchesQuery(contactsQ, c.website_status) || matchesQuery(contactsQ, c.lead_score_reason) || matchesQuery(contactsQ, c.notes) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.actual_website_url) || matchesQuery(contactsQ, c.source_platform) || matchesQuery(contactsQ, c.website_status) || matchesQuery(contactsQ, c.lead_score_reason) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.source) || matchesQuery(contactsQ, getPartnerLabel(c.source)) || matchingContactIds.has(c.id)
     );
   }, [contacts, contactEvents, contactsQ]);
 
