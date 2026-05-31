@@ -370,8 +370,8 @@ const callbackPresets = [
 
 const getEventAuthorLabel = (event: ContactEvent) => event.created_by_email ? `Logged by ${event.created_by_email}` : "Logged by admin";
 
-// Partner sources — websites we built that feed leads into this CRM.
-// Add new partners here to label and filter their leads automatically.
+// Customer website sources — websites we built that feed leads into this CRM.
+// Add new customer sources here to label and filter their leads automatically.
 const PARTNER_SOURCES: Record<string, string> = {
   dmb_scaffolding: "DMB Scaffolding",
 };
