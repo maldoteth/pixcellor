@@ -47,6 +47,7 @@ import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPan
 import FindLeadsButton from "@/components/portal/FindLeadsButton";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 import SeoHead from "@/components/SeoHead";
+import PartnerLeadsView, { type PartnerAccount } from "@/pages/PartnerPortal";
 
 // Auto-load-on-scroll helper for paginated list containers.
 // Triggers `onNearBottom` when the user scrolls within 200px of the bottom.
@@ -460,6 +461,7 @@ export default function Portal() {
   const confirmDialog = useConfirmDialog();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [partner, setPartner] = useState<PartnerAccount | null>(null);
   const [authError, setAuthError] = useState("");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
@@ -717,6 +719,7 @@ export default function Portal() {
       if (!mounted) return;
       if (!sessionData.session) {
         setIsAdmin(false);
+        setPartner(null);
         setAuthChecked(true);
         navigate("/portal-login", { replace: true });
         return;
@@ -727,15 +730,31 @@ export default function Portal() {
         _role: "admin",
       });
       if (!mounted) return;
-      if (error || !data) {
-        await supabase.auth.signOut();
-        setIsAdmin(false);
+      if (!error && data) {
+        setIsAdmin(true);
+        setPartner(null);
         setAuthChecked(true);
-        navigate("/portal-login", { replace: true });
         return;
       }
-      setIsAdmin(true);
+
+      // Not an admin — check if this account is a partner client
+      const { data: partnerRow } = await (supabase as any)
+        .from("partner_accounts")
+        .select("email, source_key, label")
+        .maybeSingle();
+      if (!mounted) return;
+      if (partnerRow) {
+        setIsAdmin(false);
+        setPartner(partnerRow as PartnerAccount);
+        setAuthChecked(true);
+        return;
+      }
+
+      await supabase.auth.signOut();
+      setIsAdmin(false);
+      setPartner(null);
       setAuthChecked(true);
+      navigate("/portal-login", { replace: true });
     };
 
     const { data: listener } = supabase.auth.onAuthStateChange(() => {
@@ -2319,6 +2338,10 @@ export default function Portal() {
 
   if (!authChecked) {
     return <div className="min-h-screen bg-background text-foreground flex items-center justify-center">Loading…</div>;
+  }
+
+  if (partner && !isAdmin) {
+    return <PartnerLeadsView partner={partner} />;
   }
 
   if (authError) {
