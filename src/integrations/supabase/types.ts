@@ -1711,7 +1711,6 @@ export type Database = {
         }
         Returns: number
       }
-      partner_source_for: { Args: { _user_id: string }; Returns: string }
       portal_add_contact_person: {
         Args: {
           _contact_id: string
