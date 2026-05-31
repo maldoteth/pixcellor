@@ -44,3 +44,5 @@ project_id = "rkgjkvghejcmostuqkgw"
     verify_jwt = false
   [functions.twilio-divert]
     verify_jwt = false
+  [functions.contacts-ingest]
+    verify_jwt = false
