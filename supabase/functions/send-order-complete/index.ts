@@ -11,7 +11,7 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 const BodySchema = z.object({
-  sessionId: z.string().regex(/^cs_(test|live)_[A-Za-z0-9]+$/, "Invalid order id"),
+  sessionId: z.string().regex(/^(cs_(test|live)_[A-Za-z0-9]+|manual_[A-Za-z0-9]+)$/, "Invalid order id"),
   deliveredDomain: z.string().trim().min(3).max(253),
 });
 
