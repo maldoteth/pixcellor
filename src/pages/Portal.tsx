@@ -372,18 +372,18 @@ const getEventAuthorLabel = (event: ContactEvent) => event.created_by_email ? `L
 
 // Customer website sources — websites we built that feed leads into this CRM.
 // Add new customer sources here to label and filter their leads automatically.
-const PARTNER_SOURCES: Record<string, string> = {
+const CUSTOMER_WEBSITE_SOURCES: Record<string, string> = {
   dmb_scaffolding: "DMB Scaffolding",
 };
 
-const getPartnerLabel = (source?: string | null): string | null => {
+const getCustomerWebsiteLabel = (source?: string | null): string | null => {
   if (!source) return null;
-  return PARTNER_SOURCES[source.toLowerCase()] ?? null;
+  return CUSTOMER_WEBSITE_SOURCES[source.toLowerCase()] ?? null;
 };
 
 const getContactCreatorLabel = (contact: Contact) => {
-  const partner = getPartnerLabel(contact.source);
-  if (partner) return `Lead from ${partner}`;
+  const customerWebsite = getCustomerWebsiteLabel(contact.source);
+  if (customerWebsite) return `Lead from ${customerWebsite}`;
   if (contact.created_by_email) return `By ${contact.created_by_email}`;
   if (contact.source === "lead_agent") return "By AI lead finder";
   return "By admin";
