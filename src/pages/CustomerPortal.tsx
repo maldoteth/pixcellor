@@ -873,6 +873,41 @@ function DeliveredPreview({ order }: { order: CustomerOrder }) {
   );
 }
 
+function LeadCard({ lead }: { lead: CustomerLead }) {
+  return (
+    <Card className="border-border bg-card/70 backdrop-blur-xl">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-xl">{lead.contact_name || lead.name}</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">Received {new Date(lead.created_at).toLocaleString()}</p>
+          </div>
+          <Badge variant="outline" className="capitalize">{lead.status}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-2 text-sm">
+          {lead.email && (
+            <Button asChild variant="outline" size="sm" className="gap-2 rounded-none">
+              <a href={`mailto:${lead.email}`}><Mail className="h-4 w-4" />{lead.email}</a>
+            </Button>
+          )}
+          {lead.phone && (
+            <Button asChild variant="outline" size="sm" className="gap-2 rounded-none">
+              <a href={`tel:${lead.phone}`}><Phone className="h-4 w-4" />{lead.phone}</a>
+            </Button>
+          )}
+        </div>
+        {lead.notes ? (
+          <p className="whitespace-pre-wrap rounded-md border border-border bg-background/50 p-4 text-sm leading-relaxed text-muted-foreground">{lead.notes}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">No message provided.</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function SampleRequestCard({ sample }: { sample: CustomerSampleRequest }) {
   const details = sample.request_details ?? {};
   const dream = typeof (details as Record<string, unknown>).dream === "string" ? ((details as Record<string, unknown>).dream as string) : null;
