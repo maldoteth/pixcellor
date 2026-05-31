@@ -2340,6 +2340,10 @@ export default function Portal() {
     return <div className="min-h-screen bg-background text-foreground flex items-center justify-center">Loading…</div>;
   }
 
+  if (partner && !isAdmin) {
+    return <PartnerLeadsView partner={partner} />;
+  }
+
   if (authError) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 gap-4 text-center">
