@@ -505,6 +505,27 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_lead_sources: {
+        Row: {
+          created_at: string
+          email: string
+          label: string | null
+          source_key: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          label?: string | null
+          source_key: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          label?: string | null
+          source_key?: string
+        }
+        Relationships: []
+      }
       domain_registrations: {
         Row: {
           attempts: number
@@ -799,27 +820,6 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
-        }
-        Relationships: []
-      }
-      partner_accounts: {
-        Row: {
-          created_at: string
-          email: string
-          label: string | null
-          source_key: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          label?: string | null
-          source_key: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          label?: string | null
-          source_key?: string
         }
         Relationships: []
       }
@@ -1655,6 +1655,7 @@ export type Database = {
     Functions: {
       claim_login_handoff: { Args: { _sid: string }; Returns: Json }
       customer_fetch_portal: { Args: never; Returns: Json }
+      customer_lead_source_for: { Args: { _user_id: string }; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
