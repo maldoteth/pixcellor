@@ -47,6 +47,7 @@ import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPan
 import FindLeadsButton from "@/components/portal/FindLeadsButton";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 import SeoHead from "@/components/SeoHead";
+import PartnerLeadsView, { type PartnerAccount } from "@/pages/PartnerPortal";
 
 // Auto-load-on-scroll helper for paginated list containers.
 // Triggers `onNearBottom` when the user scrolls within 200px of the bottom.
