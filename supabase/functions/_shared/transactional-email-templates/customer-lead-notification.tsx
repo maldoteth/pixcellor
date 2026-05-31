@@ -2,8 +2,8 @@ import * as React from 'npm:react@18.3.1'
 import { Body, Column, Container, Head, Heading, Html, Preview, Row, Section, Text } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-interface PartnerLeadProps {
-  partnerName?: string
+interface CustomerLeadProps {
+  customerWebsiteName?: string
   leadName?: string
   leadEmail?: string
   leadPhone?: string
@@ -21,7 +21,7 @@ const DetailRow = ({ label, value }: { label: string; value?: string }) => {
   )
 }
 
-const PartnerLeadEmail = ({ partnerName, leadName, leadEmail, leadPhone, leadMessage, receivedAt }: PartnerLeadProps) => (
+const CustomerLeadEmail = ({ customerWebsiteName, leadName, leadEmail, leadPhone, leadMessage, receivedAt }: CustomerLeadProps) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>New lead from your website</Preview>
@@ -30,7 +30,7 @@ const PartnerLeadEmail = ({ partnerName, leadName, leadEmail, leadPhone, leadMes
         <Section style={hero}>
           <Row>
             <Column style={heroInner}>
-              <Text style={brand}>{partnerName || 'Your website'}</Text>
+              <Text style={brand}>{customerWebsiteName || 'Your website'}</Text>
               <Text style={eyebrow}>NEW ENQUIRY</Text>
               <Heading style={h1}>You've got a new lead</Heading>
               <Text style={intro}>Someone just submitted an enquiry through your website. Reply to them as soon as you can — fast responses win jobs.</Text>
@@ -51,18 +51,18 @@ const PartnerLeadEmail = ({ partnerName, leadName, leadEmail, leadPhone, leadMes
           </Row>
         </Section>
 
-        <Text style={footer}>This notification was sent automatically by Pixcellor on behalf of {partnerName || 'your website'}.</Text>
+        <Text style={footer}>This notification was sent automatically by Pixcellor on behalf of {customerWebsiteName || 'your website'}.</Text>
       </Container>
     </Body>
   </Html>
 )
 
 export const template = {
-  component: PartnerLeadEmail,
+  component: CustomerLeadEmail,
   subject: (data: Record<string, any>) => `New lead${data.leadName ? ` from ${data.leadName}` : ''}`,
-  displayName: 'Partner lead notification',
+  displayName: 'Customer lead notification',
   previewData: {
-    partnerName: 'DMB Scaffolding',
+    customerWebsiteName: 'DMB Scaffolding',
     leadName: 'Jane Smith',
     leadEmail: 'jane@example.com',
     leadPhone: '07123 456789',
