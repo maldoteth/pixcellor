@@ -370,7 +370,24 @@ const callbackPresets = [
 
 const getEventAuthorLabel = (event: ContactEvent) => event.created_by_email ? `Logged by ${event.created_by_email}` : "Logged by admin";
 
-const getContactCreatorLabel = (contact: Contact) => contact.created_by_email ? `By ${contact.created_by_email}` : contact.source === "lead_agent" ? "By AI lead finder" : "By admin";
+// Partner sources — websites we built that feed leads into this CRM.
+// Add new partners here to label and filter their leads automatically.
+const PARTNER_SOURCES: Record<string, string> = {
+  dmb_scaffolding: "DMB Scaffolding",
+};
+
+const getPartnerLabel = (source?: string | null): string | null => {
+  if (!source) return null;
+  return PARTNER_SOURCES[source.toLowerCase()] ?? null;
+};
+
+const getContactCreatorLabel = (contact: Contact) => {
+  const partner = getPartnerLabel(contact.source);
+  if (partner) return `Lead from ${partner}`;
+  if (contact.created_by_email) return `By ${contact.created_by_email}`;
+  if (contact.source === "lead_agent") return "By AI lead finder";
+  return "By admin";
+};
 
 const contactStatuses = [
   { value: "cold", label: "Cold", color: "hsl(217 91% 60%)" },
