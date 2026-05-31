@@ -521,6 +521,28 @@ export default function CustomerPortal() {
                   </div>
                 </TabsContent>
 
+                <TabsContent value="leads" className="space-y-4">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                    <SectionHeader title="Leads" description={`Leads from ${data?.leadSource?.label ?? "your website"}.`} count={leads.length} />
+                    <div className="relative w-full md:max-w-sm">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        value={leadQuery}
+                        onChange={(event) => setLeadQuery(event.target.value)}
+                        placeholder="Search leads"
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+                  {filteredLeads.length === 0 ? (
+                    <EmptyState icon={Inbox} title="No leads yet" text="New enquiries from your website will appear here." />
+                  ) : (
+                    <div className="grid gap-4 xl:grid-cols-2">
+                      {filteredLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                    </div>
+                  )}
+                </TabsContent>
+
                 <TabsContent value="orders" className="space-y-4">
                   <SectionHeader title="Order history" description="Every order attached to this account, shown as one clean history." count={orders.length} />
                   {orders.length === 0 ? <EmptyState icon={PackageCheck} title="No order history yet" text="Orders will appear here after checkout." /> : orders.map((order) => <OrderCard key={order.id} order={order} requirement={requirementsBySession.get(order.session_id)} />)}
