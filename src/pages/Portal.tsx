@@ -2885,7 +2885,16 @@ export default function Portal() {
                 <TabsTrigger value="email" className="h-8 rounded-full px-4 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm sm:text-sm">Email</TabsTrigger>
               </TabsList>
               <TabsContent value="sms" className="mt-0"><SmsBroadcasts /></TabsContent>
-              <TabsContent value="email" className="mt-0"><BroadcastCampaigns /></TabsContent>
+              <TabsContent value="email" className="mt-0">
+                <Tabs defaultValue="compose" className="space-y-4">
+                  <TabsList className="inline-flex h-auto w-auto items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur-sm">
+                    <TabsTrigger value="compose" className="h-8 rounded-full px-4 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm sm:text-sm">Compose</TabsTrigger>
+                    <TabsTrigger value="sent" className="h-8 rounded-full px-4 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm sm:text-sm">Sent</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="compose" className="mt-0"><BroadcastCampaigns /></TabsContent>
+                  <TabsContent value="sent" className="mt-0"><SentEmails /></TabsContent>
+                </Tabs>
+              </TabsContent>
             </Tabs>
           </TabsContent>
 
