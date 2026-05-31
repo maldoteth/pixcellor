@@ -329,7 +329,9 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     }, []);
     const cardW = isMobile ? 100 : 138;
     const cardH = isMobile ? 144 : 184;
-    const effectiveRadius = isMobile ? Math.max(radius * 1.1, 374) : radius * 1.25;
+    // Mobile: ~3x radius => ~200% more arc spacing between adjacent cards.
+    // Desktop/tablet untouched.
+    const effectiveRadius = isMobile ? Math.max(radius * 3.3, 1122) : radius * 1.25;
 
     // Determine which item is most front-facing for the flat overlay label.
     let frontIndex = 0;
