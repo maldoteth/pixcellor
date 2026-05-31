@@ -461,6 +461,7 @@ export default function Portal() {
   const confirmDialog = useConfirmDialog();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [partner, setPartner] = useState<PartnerAccount | null>(null);
   const [authError, setAuthError] = useState("");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
