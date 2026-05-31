@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
           templateName: "customer-lead-notification",
           recipientEmail: customerWebsite.notifyEmail,
           templateData: {
-            partnerName: customerWebsite.label,
+            customerWebsiteName: customerWebsite.label,
             leadName: name || "",
             leadEmail: email || "",
             leadPhone: phone || "",
