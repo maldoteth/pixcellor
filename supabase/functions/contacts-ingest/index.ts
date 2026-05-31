@@ -7,10 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// Partner registry — add new partner websites here.
+// Customer website registry — add new customer websites here.
 // `source` keys are stored on contacts.source; they drive labels in the CRM
 // and the notification email recipient.
-const PARTNERS: Record<string, { label: string; notifyEmail: string }> = {
+const CUSTOMER_WEBSITES: Record<string, { label: string; notifyEmail: string }> = {
   dmb_scaffolding: {
     label: "DMB Scaffolding",
     notifyEmail: "dmbscaffoldingltd@outlook.com",
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
   }
   const { name, phone, email, message } = parsed.data;
   const sourceKey = (parsed.data.source?.trim() || "dmb_scaffolding").toLowerCase();
-  const partner = PARTNERS[sourceKey] ?? { label: sourceKey, notifyEmail: "" };
+  const customerWebsite = CUSTOMER_WEBSITES[sourceKey] ?? { label: sourceKey, notifyEmail: "" };
 
   if (!email && !phone) {
     return json(400, { ok: false, error: "email_or_phone_required" });
@@ -95,13 +95,13 @@ Deno.serve(async (req) => {
   // Best-effort timeline event
   await supabase.from("contact_events").insert({
     contact_id: data.id,
-    title: `Inbound from ${partner.label}`,
-    description: message || `Contact submitted via ${partner.label}`,
+    title: `Inbound from ${customerWebsite.label}`,
+    description: message || `Contact submitted via ${customerWebsite.label}`,
     event_type: "note",
   }).then(() => {}, () => {});
 
-  // Best-effort partner notification email
-  if (partner.notifyEmail) {
+  // Best-effort customer notification email
+  if (customerWebsite.notifyEmail) {
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
         method: "POST",
@@ -110,10 +110,10 @@ Deno.serve(async (req) => {
           "Authorization": `Bearer ${SERVICE_KEY}`,
         },
         body: JSON.stringify({
-          templateName: "partner-lead-notification",
-          recipientEmail: partner.notifyEmail,
+          templateName: "customer-lead-notification",
+          recipientEmail: customerWebsite.notifyEmail,
           templateData: {
-            partnerName: partner.label,
+            partnerName: customerWebsite.label,
             leadName: name || "",
             leadEmail: email || "",
             leadPhone: phone || "",
@@ -124,10 +124,10 @@ Deno.serve(async (req) => {
       });
       if (!resp.ok) {
         const t = await resp.text().catch(() => "");
-        console.warn("partner notification email failed:", resp.status, t);
+        console.warn("customer notification email failed:", resp.status, t);
       }
     } catch (e) {
-      console.warn("partner notification email error:", e);
+      console.warn("customer notification email error:", e);
     }
   }
 
