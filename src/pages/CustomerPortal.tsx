@@ -239,6 +239,7 @@ export default function CustomerPortal() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [hiddenCount, setHiddenCount] = useState(0);
+  const [leadQuery, setLeadQuery] = useState("");
 
   const refreshHiddenCount = useCallback(async () => {
     const { count } = await supabase
@@ -296,6 +297,16 @@ export default function CustomerPortal() {
   const retainerOrders = useMemo(() => orders.filter(isRetainerOrder), [orders]);
   const sampleRequests = useMemo(() => data?.sampleRequests ?? [], [data?.sampleRequests]);
   const visionPreviews = useMemo(() => data?.visionPreviews ?? [], [data?.visionPreviews]);
+  const leads = useMemo(() => data?.leads ?? [], [data?.leads]);
+  const filteredLeads = useMemo(() => {
+    const q = leadQuery.trim().toLowerCase();
+    if (!q) return leads;
+    return leads.filter((lead) =>
+      [lead.name, lead.contact_name, lead.email, lead.phone, lead.notes, lead.status, lead.location].some((value) =>
+        value?.toLowerCase().includes(q),
+      ),
+    );
+  }, [leadQuery, leads]);
   const activityCount = sampleRequests.length + visionPreviews.length;
   const latestRetainer = retainerOrders[0] ?? null;
   const nextRetainerPayment = latestRetainer ? addBillingPeriod(latestRetainer.created_at, billingLabel(latestRetainer)) : null;
@@ -308,6 +319,7 @@ export default function CustomerPortal() {
     { title: "Domains", value: "delivered", icon: Globe2 },
     { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Payments", value: "payments", icon: CreditCard },
+    ...(data?.leadSource ? [{ title: "Leads", value: "leads" as const, icon: Inbox }] : []),
   ];
 
   const handleSignOut = async () => {
@@ -469,7 +481,7 @@ export default function CustomerPortal() {
               </div>
 
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PortalTab)} className="space-y-5">
-                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 lg:grid-cols-6">
+                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 lg:grid-cols-7">
                   {navItems.map((item) => (
                     <TabsTrigger
                       key={item.value}
