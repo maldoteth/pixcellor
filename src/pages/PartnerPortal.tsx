@@ -39,8 +39,8 @@ export default function PartnerPortal() {
         navigate("/portal-login", { replace: true });
         return;
       }
-      const { data: pa, error: paErr } = await supabase
-        .from("partner_accounts" as any)
+      const { data: pa, error: paErr } = await (supabase as any)
+        .from("partner_accounts")
         .select("email, source_key, label")
         .maybeSingle();
       if (!active) return;
