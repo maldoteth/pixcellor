@@ -47,7 +47,6 @@ import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPan
 import FindLeadsButton from "@/components/portal/FindLeadsButton";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 import SeoHead from "@/components/SeoHead";
-import PartnerLeadsView, { type PartnerAccount } from "@/pages/PartnerPortal";
 
 // Auto-load-on-scroll helper for paginated list containers.
 // Triggers `onNearBottom` when the user scrolls within 200px of the bottom.
@@ -371,20 +370,20 @@ const callbackPresets = [
 
 const getEventAuthorLabel = (event: ContactEvent) => event.created_by_email ? `Logged by ${event.created_by_email}` : "Logged by admin";
 
-// Partner sources — websites we built that feed leads into this CRM.
-// Add new partners here to label and filter their leads automatically.
-const PARTNER_SOURCES: Record<string, string> = {
+// Customer website sources — websites we built that feed leads into this CRM.
+// Add new customer sources here to label and filter their leads automatically.
+const CUSTOMER_WEBSITE_SOURCES: Record<string, string> = {
   dmb_scaffolding: "DMB Scaffolding",
 };
 
-const getPartnerLabel = (source?: string | null): string | null => {
+const getCustomerWebsiteLabel = (source?: string | null): string | null => {
   if (!source) return null;
-  return PARTNER_SOURCES[source.toLowerCase()] ?? null;
+  return CUSTOMER_WEBSITE_SOURCES[source.toLowerCase()] ?? null;
 };
 
 const getContactCreatorLabel = (contact: Contact) => {
-  const partner = getPartnerLabel(contact.source);
-  if (partner) return `Lead from ${partner}`;
+  const customerWebsite = getCustomerWebsiteLabel(contact.source);
+  if (customerWebsite) return `Lead from ${customerWebsite}`;
   if (contact.created_by_email) return `By ${contact.created_by_email}`;
   if (contact.source === "lead_agent") return "By AI lead finder";
   return "By admin";
@@ -461,7 +460,6 @@ export default function Portal() {
   const confirmDialog = useConfirmDialog();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [partner, setPartner] = useState<PartnerAccount | null>(null);
   const [authError, setAuthError] = useState("");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
@@ -719,7 +717,6 @@ export default function Portal() {
       if (!mounted) return;
       if (!sessionData.session) {
         setIsAdmin(false);
-        setPartner(null);
         setAuthChecked(true);
         navigate("/portal-login", { replace: true });
         return;
@@ -732,27 +729,12 @@ export default function Portal() {
       if (!mounted) return;
       if (!error && data) {
         setIsAdmin(true);
-        setPartner(null);
-        setAuthChecked(true);
-        return;
-      }
-
-      // Not an admin — check if this account is a partner client
-      const { data: partnerRow } = await (supabase as any)
-        .from("partner_accounts")
-        .select("email, source_key, label")
-        .maybeSingle();
-      if (!mounted) return;
-      if (partnerRow) {
-        setIsAdmin(false);
-        setPartner(partnerRow as PartnerAccount);
         setAuthChecked(true);
         return;
       }
 
       await supabase.auth.signOut();
       setIsAdmin(false);
-      setPartner(null);
       setAuthChecked(true);
       navigate("/portal-login", { replace: true });
     };
@@ -1273,7 +1255,7 @@ export default function Portal() {
     );
     return contacts.filter(c =>
       matchesQuery(contactsQ, c.name) || matchesQuery(contactsQ, c.phone) || matchesQuery(contactsQ, c.email) ||
-      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.actual_website_url) || matchesQuery(contactsQ, c.source_platform) || matchesQuery(contactsQ, c.website_status) || matchesQuery(contactsQ, c.lead_score_reason) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.source) || matchesQuery(contactsQ, getPartnerLabel(c.source)) || matchingContactIds.has(c.id)
+      matchesQuery(contactsQ, c.location) || matchesQuery(contactsQ, c.industry) || matchesQuery(contactsQ, c.website) || matchesQuery(contactsQ, c.actual_website_url) || matchesQuery(contactsQ, c.source_platform) || matchesQuery(contactsQ, c.website_status) || matchesQuery(contactsQ, c.lead_score_reason) || matchesQuery(contactsQ, c.notes) || matchesQuery(contactsQ, c.source) || matchesQuery(contactsQ, getCustomerWebsiteLabel(c.source)) || matchingContactIds.has(c.id)
     );
   }, [contacts, contactEvents, contactsQ]);
 
@@ -2338,10 +2320,6 @@ export default function Portal() {
 
   if (!authChecked) {
     return <div className="min-h-screen bg-background text-foreground flex items-center justify-center">Loading…</div>;
-  }
-
-  if (partner && !isAdmin) {
-    return <PartnerLeadsView partner={partner} />;
   }
 
   if (authError) {

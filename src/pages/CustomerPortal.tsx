@@ -12,12 +12,16 @@ import {
   Globe2,
   Home,
   Image as ImageIcon,
+  Inbox,
   Loader2,
   LogOut,
+  Mail,
   MessageCircle,
   PackageCheck,
   PanelLeft,
+  Phone,
   ReceiptText,
+  Search,
   ShieldCheck,
   Wand2,
   EyeOff,
@@ -26,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -93,7 +98,7 @@ const BUY_AGAIN_PACKAGES = [
   },
 ] as const;
 
-type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "activity" | "payments";
+type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads";
 
 type CustomerOrder = {
   id: string;
@@ -151,8 +156,29 @@ type CustomerVisionPreview = {
   created_at: string;
 };
 
+type CustomerLeadSource = {
+  email: string;
+  source_key: string;
+  label: string | null;
+};
+
+type CustomerLead = {
+  id: string;
+  name: string;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  status: string;
+  source: string;
+  location: string | null;
+  created_at: string;
+};
+
 type CustomerPortalData = {
   email: string;
+  leadSource?: CustomerLeadSource | null;
+  leads?: CustomerLead[];
   orders: CustomerOrder[];
   projectRequirements: CustomerRequirement[];
   sampleRequests?: CustomerSampleRequest[];
@@ -213,6 +239,7 @@ export default function CustomerPortal() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [hiddenCount, setHiddenCount] = useState(0);
+  const [leadQuery, setLeadQuery] = useState("");
 
   const refreshHiddenCount = useCallback(async () => {
     const { count } = await supabase
@@ -270,6 +297,16 @@ export default function CustomerPortal() {
   const retainerOrders = useMemo(() => orders.filter(isRetainerOrder), [orders]);
   const sampleRequests = useMemo(() => data?.sampleRequests ?? [], [data?.sampleRequests]);
   const visionPreviews = useMemo(() => data?.visionPreviews ?? [], [data?.visionPreviews]);
+  const leads = useMemo(() => data?.leads ?? [], [data?.leads]);
+  const filteredLeads = useMemo(() => {
+    const q = leadQuery.trim().toLowerCase();
+    if (!q) return leads;
+    return leads.filter((lead) =>
+      [lead.name, lead.contact_name, lead.email, lead.phone, lead.notes, lead.status, lead.location].some((value) =>
+        value?.toLowerCase().includes(q),
+      ),
+    );
+  }, [leadQuery, leads]);
   const activityCount = sampleRequests.length + visionPreviews.length;
   const latestRetainer = retainerOrders[0] ?? null;
   const nextRetainerPayment = latestRetainer ? addBillingPeriod(latestRetainer.created_at, billingLabel(latestRetainer)) : null;
@@ -282,6 +319,7 @@ export default function CustomerPortal() {
     { title: "Domains", value: "delivered", icon: Globe2 },
     { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Payments", value: "payments", icon: CreditCard },
+    ...(data?.leadSource ? [{ title: "Leads", value: "leads" as const, icon: Inbox }] : []),
   ];
 
   const handleSignOut = async () => {
@@ -443,7 +481,7 @@ export default function CustomerPortal() {
               </div>
 
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PortalTab)} className="space-y-5">
-                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 lg:grid-cols-6">
+                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 lg:grid-cols-7">
                   {navItems.map((item) => (
                     <TabsTrigger
                       key={item.value}
@@ -481,6 +519,28 @@ export default function CustomerPortal() {
                     <SectionHeader title="Recent orders" description="Your latest purchases and project status." count={orders.length} />
                     {orders.length === 0 ? <EmptyState icon={PackageCheck} title="No order history yet" text="Orders will appear here after checkout." /> : orders.slice(0, 3).map((order) => <OrderCard key={order.id} order={order} requirement={requirementsBySession.get(order.session_id)} />)}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="leads" className="space-y-4">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                    <SectionHeader title="Leads" description={`Leads from ${data?.leadSource?.label ?? "your website"}.`} count={leads.length} />
+                    <div className="relative w-full md:max-w-sm">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        value={leadQuery}
+                        onChange={(event) => setLeadQuery(event.target.value)}
+                        placeholder="Search leads"
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+                  {filteredLeads.length === 0 ? (
+                    <EmptyState icon={Inbox} title="No leads yet" text="New enquiries from your website will appear here." />
+                  ) : (
+                    <div className="grid gap-4 xl:grid-cols-2">
+                      {filteredLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="orders" className="space-y-4">
@@ -807,6 +867,41 @@ function DeliveredPreview({ order }: { order: CustomerOrder }) {
           </div>
         ) : (
           <div className="rounded-md border border-border bg-background/50 p-6 text-sm text-muted-foreground">Preview domain is being prepared.</div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function LeadCard({ lead }: { lead: CustomerLead }) {
+  return (
+    <Card className="border-border bg-card/70 backdrop-blur-xl">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-xl">{lead.contact_name || lead.name}</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">Received {new Date(lead.created_at).toLocaleString()}</p>
+          </div>
+          <Badge variant="outline" className="capitalize">{lead.status}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-2 text-sm">
+          {lead.email && (
+            <Button asChild variant="outline" size="sm" className="gap-2 rounded-none">
+              <a href={`mailto:${lead.email}`}><Mail className="h-4 w-4" />{lead.email}</a>
+            </Button>
+          )}
+          {lead.phone && (
+            <Button asChild variant="outline" size="sm" className="gap-2 rounded-none">
+              <a href={`tel:${lead.phone}`}><Phone className="h-4 w-4" />{lead.phone}</a>
+            </Button>
+          )}
+        </div>
+        {lead.notes ? (
+          <p className="whitespace-pre-wrap rounded-md border border-border bg-background/50 p-4 text-sm leading-relaxed text-muted-foreground">{lead.notes}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">No message provided.</p>
         )}
       </CardContent>
     </Card>

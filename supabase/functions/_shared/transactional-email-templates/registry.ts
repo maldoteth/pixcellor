@@ -22,7 +22,7 @@ import { template as visionPreviewReady } from './vision-preview-ready.tsx'
 import { template as coldOutreach } from './cold-outreach.tsx'
 import { template as salesCallFollowup } from './sales-call-followup.tsx'
 import { template as customInvoice } from './custom-invoice.tsx'
-import { template as partnerLeadNotification } from './partner-lead-notification.tsx'
+import { template as customerLeadNotification } from './customer-lead-notification.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'full-works-order-confirmation': fullWorksOrderConfirmation,
@@ -36,5 +36,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'cold-outreach': coldOutreach,
   'sales-call-followup': salesCallFollowup,
   'custom-invoice': customInvoice,
-  'partner-lead-notification': partnerLeadNotification,
+  'customer-lead-notification': customerLeadNotification,
 }
