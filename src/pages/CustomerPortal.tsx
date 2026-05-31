@@ -12,12 +12,16 @@ import {
   Globe2,
   Home,
   Image as ImageIcon,
+  Inbox,
   Loader2,
   LogOut,
+  Mail,
   MessageCircle,
   PackageCheck,
   PanelLeft,
+  Phone,
   ReceiptText,
+  Search,
   ShieldCheck,
   Wand2,
   EyeOff,
@@ -26,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -93,7 +98,7 @@ const BUY_AGAIN_PACKAGES = [
   },
 ] as const;
 
-type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "activity" | "payments";
+type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads";
 
 type CustomerOrder = {
   id: string;
@@ -151,8 +156,29 @@ type CustomerVisionPreview = {
   created_at: string;
 };
 
+type CustomerLeadSource = {
+  email: string;
+  source_key: string;
+  label: string | null;
+};
+
+type CustomerLead = {
+  id: string;
+  name: string;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  status: string;
+  source: string;
+  location: string | null;
+  created_at: string;
+};
+
 type CustomerPortalData = {
   email: string;
+  leadSource?: CustomerLeadSource | null;
+  leads?: CustomerLead[];
   orders: CustomerOrder[];
   projectRequirements: CustomerRequirement[];
   sampleRequests?: CustomerSampleRequest[];
