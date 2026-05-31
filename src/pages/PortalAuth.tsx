@@ -13,16 +13,36 @@ export default function PortalAuth() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const routeForSignedInUser = async (userId: string) => {
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (isAdmin) {
+      navigate("/portal", { replace: true });
+      return;
+    }
+
+    const { data: customerSource } = await (supabase as any)
+      .from("customer_lead_sources")
+      .select("email")
+      .maybeSingle();
+    if (customerSource) {
+      navigate("/customer-portal", { replace: true });
+      return;
+    }
+
+    await supabase.auth.signOut();
+    toast.error("No dashboard access found for this account.");
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate("/portal", { replace: true });
+      if (data.session) void routeForSignedInUser(data.session.user.id);
     });
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
@@ -33,7 +53,8 @@ export default function PortalAuth() {
       return;
     }
 
-    navigate("/portal", { replace: true });
+    if (data.user) await routeForSignedInUser(data.user.id);
+    setBusy(false);
   };
 
   return (
