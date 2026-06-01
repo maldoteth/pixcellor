@@ -125,7 +125,8 @@ const WIZARD: { key: FormKey; label: string; placeholder: string; required: bool
 ];
 const emptyForm = (): Record<FormKey, string> => ({ name: "", phone: "", email: "", location: "", company: "", contact_name: "", notes: "" });
 
-export default function MyLeadsPanel() {
+export default function MyLeadsPanel({ maxLeads, planLabel }: { maxLeads?: number; planLabel?: string } = {}) {
+  const unlimited = maxLeads === undefined || !isFinite(maxLeads) || maxLeads < 0;
   const [leads, setLeads] = useState<MyLead[]>([]);
   const [events, setEvents] = useState<LeadEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -194,10 +195,18 @@ export default function MyLeadsPanel() {
     [events, detailId],
   );
 
-  const openWizard = () => { setForm(emptyForm()); setStep(0); setWizardOpen(true); };
+  const usedCount = leads.length;
+  const remaining = unlimited ? Infinity : Math.max(0, (maxLeads as number) - usedCount);
+  const limitReached = !unlimited && remaining <= 0;
+
+  const openWizard = () => {
+    if (limitReached) { toast.error(`Lead limit reached (${maxLeads}). Upgrade to add more.`); return; }
+    setForm(emptyForm()); setStep(0); setWizardOpen(true);
+  };
   const currentField = WIZARD[step];
 
   const saveLead = async () => {
+    if (limitReached) { toast.error(`Lead limit reached (${maxLeads}).`); return; }
     const name = form.name.trim() || form.contact_name.trim() || form.company.trim() || form.email.trim();
     if (!name) { toast.error("Add at least a name"); return; }
     setSaving(true);
@@ -327,6 +336,7 @@ export default function MyLeadsPanel() {
 
   const handleCsvFile = async (file: File) => {
     if (!file) return;
+    if (limitReached) { toast.error(`Lead limit reached (${maxLeads}). Upgrade to import more.`); return; }
     if (file.size > 5 * 1024 * 1024) { toast.error("CSV must be under 5MB"); return; }
     setUploading(true);
     try {
@@ -356,9 +366,14 @@ export default function MyLeadsPanel() {
       }).filter(r => (r.name && r.name !== "Unnamed") || r.email || r.phone);
       if (records.length === 0) { toast.error("No valid rows found"); return; }
       if (records.length > 2000) { toast.error("Max 2000 rows per upload"); return; }
+      let toImport = records;
+      if (!unlimited && records.length > remaining) {
+        toast.message(`Only ${remaining} of ${records.length} rows will be imported (plan limit ${maxLeads}).`);
+        toImport = records.slice(0, remaining);
+      }
       let inserted = 0;
-      for (let i = 0; i < records.length; i += 500) {
-        const chunk = records.slice(i, i + 500);
+      for (let i = 0; i < toImport.length; i += 500) {
+        const chunk = toImport.slice(i, i + 500);
         const { error } = await supabase.from("customer_leads").insert(chunk);
         if (error) { toast.error(`Import failed: ${error.message}`); break; }
         inserted += chunk.length;
@@ -373,9 +388,14 @@ export default function MyLeadsPanel() {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-lg font-semibold">
-            My leads <span className="text-sm font-normal text-muted-foreground">· {statusCounts.all ?? 0}</span>
+            My leads <span className="text-sm font-normal text-muted-foreground">· {statusCounts.all ?? 0}{unlimited ? "" : ` / ${maxLeads}`}</span>
           </h2>
-          <p className="text-sm text-muted-foreground">Add leads, set hot/cold, schedule callbacks, and save notes. Only you see these.</p>
+          <p className="text-sm text-muted-foreground">
+            Add leads, set hot/cold, schedule callbacks, and save notes. Only you see these.
+            {unlimited
+              ? <span className="ml-1 text-emerald-300">Unlimited{planLabel ? ` · ${planLabel}` : ""}.</span>
+              : <span className={`ml-1 ${limitReached ? "text-red-300" : "text-muted-foreground"}`}>{remaining} of {maxLeads} remaining{planLabel ? ` · ${planLabel}` : ""}.</span>}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-full md:w-64">
@@ -384,10 +404,10 @@ export default function MyLeadsPanel() {
           </div>
           <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvFile(f); }} />
-          <Button variant="outline" size="sm" disabled={uploading} onClick={() => fileInputRef.current?.click()} className="gap-2">
+          <Button variant="outline" size="sm" disabled={uploading || limitReached} onClick={() => fileInputRef.current?.click()} className="gap-2">
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload CSV
           </Button>
-          <Button variant="pricing" size="sm" className="gap-2" onClick={openWizard}>
+          <Button variant="pricing" size="sm" className="gap-2" disabled={limitReached} onClick={openWizard}>
             <Plus className="h-4 w-4" /> Add lead
           </Button>
         </div>

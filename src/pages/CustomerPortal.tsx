@@ -337,6 +337,18 @@ export default function CustomerPortal() {
   const nextRetainerPayment = latestRetainer ? addBillingPeriod(latestRetainer.created_at, billingLabel(latestRetainer)) : null;
   const nextOrder = orders.find((order) => order.order_status !== "delivered") ?? orders[0] ?? null;
 
+  const leadEntitlement = useMemo(() => {
+    const activeSub = subscription && ["active", "trialing", "past_due"].includes(subscription.status?.toLowerCase?.() ?? "");
+    if (activeSub) return { max: Infinity, label: `${subscription?.tier || "Subscription"} plan` };
+    const paidOrders = orders.filter((o) => o.payment_status === "paid" || o.order_status === "delivered");
+    const names = paidOrders.map((o) => packageName(o).toLowerCase());
+    const hasElite = names.some((n) => n.includes("elite"));
+    const hasFullWorks = names.some((n) => n.includes("full works") || n.includes("fullworks"));
+    if (hasElite) return { max: 250, label: "Elite website" };
+    if (hasFullWorks) return { max: 10, label: "Full Works website" };
+    return { max: 10, label: "Free tier" };
+  }, [subscription, orders]);
+
   const navItems: { title: string; value: PortalTab; icon: typeof Home }[] = [
     { title: "Overview", value: "overview", icon: Home },
     { title: "Order history", value: "orders", icon: ReceiptText },
@@ -587,7 +599,7 @@ export default function CustomerPortal() {
                       <Separator className="my-2" />
                     </div>
                   )}
-                  <MyLeadsPanel />
+                  <MyLeadsPanel maxLeads={leadEntitlement.max} planLabel={leadEntitlement.label} />
                 </TabsContent>
 
                 <TabsContent value="orders" className="space-y-4">
