@@ -388,9 +388,14 @@ export default function MyLeadsPanel({ maxLeads, planLabel }: { maxLeads?: numbe
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-lg font-semibold">
-            My leads <span className="text-sm font-normal text-muted-foreground">· {statusCounts.all ?? 0}</span>
+            My leads <span className="text-sm font-normal text-muted-foreground">· {statusCounts.all ?? 0}{unlimited ? "" : ` / ${maxLeads}`}</span>
           </h2>
-          <p className="text-sm text-muted-foreground">Add leads, set hot/cold, schedule callbacks, and save notes. Only you see these.</p>
+          <p className="text-sm text-muted-foreground">
+            Add leads, set hot/cold, schedule callbacks, and save notes. Only you see these.
+            {unlimited
+              ? <span className="ml-1 text-emerald-300">Unlimited{planLabel ? ` · ${planLabel}` : ""}.</span>
+              : <span className={`ml-1 ${limitReached ? "text-red-300" : "text-muted-foreground"}`}>{remaining} of {maxLeads} remaining{planLabel ? ` · ${planLabel}` : ""}.</span>}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-full md:w-64">
