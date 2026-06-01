@@ -141,10 +141,39 @@ Deno.serve(async (req) => {
     from_address: fromAddressOverride,
     from_name: fromNameOverride,
     template_data: templateData,
+    idempotency_key: idempotencyKey,
   }
 
   // Create Supabase client with service role (bypasses RLS)
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  // Idempotency dedupe: if a prior send used the same idempotency_key and is
+  // pending or already sent, skip this send entirely. Prevents duplicate
+  // emails when retries, webhooks, or admin re-clicks fire the same logical event.
+  if (idempotencyKey && idempotencyKey !== messageId) {
+    const { data: existing, error: dedupeError } = await supabase
+      .from('email_send_log')
+      .select('id, status, message_id')
+      .eq('template_name', templateName)
+      .eq('recipient_email', effectiveRecipient)
+      .filter('metadata->>idempotency_key', 'eq', idempotencyKey)
+      .in('status', ['pending', 'sent'])
+      .limit(1)
+      .maybeSingle()
+
+    if (!dedupeError && existing) {
+      console.log('Duplicate transactional email suppressed by idempotency_key', {
+        templateName,
+        effectiveRecipient,
+        idempotencyKey,
+        existingStatus: existing.status,
+      })
+      return new Response(
+        JSON.stringify({ success: true, duplicate: true, message_id: existing.message_id }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+  }
 
   // 2. Check suppression list (fail-closed: if we can't verify, don't send)
   const { data: suppressed, error: suppressionError } = await supabase

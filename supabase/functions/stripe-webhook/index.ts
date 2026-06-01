@@ -117,7 +117,7 @@ async function sendOrderConfirmationEmails(opts: {
     body: JSON.stringify({
       templateName: templateForPackage(packageName),
       recipientEmail: email,
-      idempotencyKey: `order-confirmation-${session.id}-${idempotencySuffix}`,
+      idempotencyKey: `order-confirmation-${session.id}`,
       templateData,
     }),
   });
@@ -128,7 +128,7 @@ async function sendOrderConfirmationEmails(opts: {
     body: JSON.stringify({
       templateName: "internal-new-order-notification",
       recipientEmail: "projects@pixcellor.com",
-      idempotencyKey: `internal-order-notification-${session.id}-${idempotencySuffix}`,
+      idempotencyKey: `internal-order-notification-${session.id}`,
       templateData,
     }),
   });
