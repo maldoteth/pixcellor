@@ -2696,13 +2696,25 @@ export default function Portal() {
                              {o.order_status === "delivered" ? "Delivered" : "Orders"}
                            </Badge>
                          )}
-                         {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
-                           <Badge variant="secondary">Manual</Badge>
-                         )}
-                         <Badge variant={requirements ? "default" : "outline"}>
-                           {requirements ? "Requirements received" : "Needs requirements"}
-                         </Badge>
-                         {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
+                          {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
+                            <Badge variant="secondary">Manual</Badge>
+                          )}
+                          {(() => {
+                            const meta = (o.metadata as Record<string, unknown> | null) ?? {};
+                            const via = typeof meta.created_via === "string" ? meta.created_via : null;
+                            const byEmail = typeof meta.created_by_email === "string" ? meta.created_by_email : null;
+                            if (via === "alex_chat") {
+                              return <Badge className="bg-violet-500/20 text-violet-200 border border-violet-500/40">Created by Alex (AI)</Badge>;
+                            }
+                            if (meta.source === "admin_manual" && byEmail) {
+                              return <Badge variant="outline">Created by {byEmail}</Badge>;
+                            }
+                            return null;
+                          })()}
+                          <Badge variant={requirements ? "default" : "outline"}>
+                            {requirements ? "Requirements received" : "Needs requirements"}
+                          </Badge>
+                          {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                        </div>
                        <div className="text-muted-foreground text-slate-50 bg-white/0 text-xs">
                          {new Date(o.created_at).toLocaleString()} · {o.mode}
