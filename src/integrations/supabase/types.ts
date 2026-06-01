@@ -1372,6 +1372,69 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          amount_total: number | null
+          billing_interval: string | null
+          cancel_at_period_end: boolean
+          canceled_at: string | null
+          created_at: string
+          currency: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          customer_email: string | null
+          customer_id: string | null
+          ended_at: string | null
+          id: string
+          metadata: Json
+          price_id: string | null
+          status: string
+          subscription_id: string
+          tier: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_total?: number | null
+          billing_interval?: string | null
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          customer_email?: string | null
+          customer_id?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json
+          price_id?: string | null
+          status: string
+          subscription_id: string
+          tier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_total?: number | null
+          billing_interval?: string | null
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          customer_email?: string | null
+          customer_id?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json
+          price_id?: string | null
+          status?: string
+          subscription_id?: string
+          tier?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
