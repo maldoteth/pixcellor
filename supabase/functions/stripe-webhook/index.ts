@@ -957,6 +957,40 @@ serve(async (req) => {
               },
             });
           }
+
+          // Detect customer-initiated cancellation scheduled at period end
+          // (cancel_at_period_end flipped false→true). Send acknowledgement
+          // immediately — the final subscription-cancelled email won't fire
+          // until the period actually ends via customer.subscription.deleted.
+          const cancelScheduled =
+            (previous as any).cancel_at_period_end === false &&
+            subscription.cancel_at_period_end === true;
+          if (cancelScheduled && email) {
+            const tierInfo = resolveTierFromPriceId(newPriceId);
+            const periodEnd = ((newItem as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
+            await invokeEmail({
+              templateName: "subscription-cancelled",
+              recipientEmail: email,
+              idempotencyKey: `subscription-cancel-scheduled-${subscription.id}-${periodEnd ?? "x"}`,
+              templateData: {
+                customerEmail: email,
+                tierName: tierInfo?.displayName ?? "Subscription",
+                endDate: formatDateGB(periodEnd),
+                reactivateUrl: `${SITE_URL}/portal`,
+              },
+            });
+            await logAdminAlert({
+              supabase,
+              source: "stripe.subscription_cancel_scheduled",
+              severity: "warning",
+              title: `Cancellation scheduled — ${tierInfo?.displayName ?? "Subscription"}`,
+              message: `Customer ${email} scheduled cancellation; access ends ${formatDateGB(periodEnd) ?? "at period end"}.`,
+              context: { subscription_id: subscription.id, customer_email: email, period_end: periodEnd },
+              emailNotify: true,
+              supabaseUrl,
+              serviceRoleKey: supabaseServiceRoleKey,
+            });
+          }
         } catch (err) {
           console.error("customer.subscription.updated handler failed", err);
         }
