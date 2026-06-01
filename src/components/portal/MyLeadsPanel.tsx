@@ -366,9 +366,14 @@ export default function MyLeadsPanel({ maxLeads, planLabel }: { maxLeads?: numbe
       }).filter(r => (r.name && r.name !== "Unnamed") || r.email || r.phone);
       if (records.length === 0) { toast.error("No valid rows found"); return; }
       if (records.length > 2000) { toast.error("Max 2000 rows per upload"); return; }
+      let toImport = records;
+      if (!unlimited && records.length > remaining) {
+        toast.message(`Only ${remaining} of ${records.length} rows will be imported (plan limit ${maxLeads}).`);
+        toImport = records.slice(0, remaining);
+      }
       let inserted = 0;
-      for (let i = 0; i < records.length; i += 500) {
-        const chunk = records.slice(i, i + 500);
+      for (let i = 0; i < toImport.length; i += 500) {
+        const chunk = toImport.slice(i, i + 500);
         const { error } = await supabase.from("customer_leads").insert(chunk);
         if (error) { toast.error(`Import failed: ${error.message}`); break; }
         inserted += chunk.length;
