@@ -363,6 +363,22 @@ export default function CustomerPortal() {
     }
   };
 
+  const handleManageBilling = async () => {
+    setBillingPortalLoading(true);
+    try {
+      const { data: portal, error } = await supabase.functions.invoke("create-billing-portal");
+      if (error) throw error;
+      if (portal?.url) {
+        window.location.href = portal.url;
+      } else {
+        throw new Error("No portal URL returned");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not open billing portal");
+      setBillingPortalLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
