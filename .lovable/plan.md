@@ -1,54 +1,84 @@
-# SEO Cleanup — All Four Fixes
+## Goal
 
-## 1. Auto-generated sitemap (fixes stale `lastmod`)
+Build a proper email lifecycle for the new monthly/yearly retainer tiers (Growth £100, Scale £500, Enterprise £2,500) so subscribers get the right email at every key moment — not just the existing generic "Retainer" one-off confirmation.
 
-- Create `scripts/generate-sitemap.ts` listing all 27 public routes (18 service slugs + `/`, `/services`, `/legal`, `/legal/terms|privacy|refund|acceptable-use`).
-- Use today's date for `lastmod` on every build/dev.
-- Add `predev` + `prebuild` scripts to `package.json` running `bunx tsx scripts/generate-sitemap.ts`.
-- Existing `public/sitemap.xml` is overwritten on next build — same path, same format, no crawler disruption.
+## What exists today
 
-## 2. Sitewide Organization + WebSite JSON-LD
+- One template `retainer-order-confirmation` is sent once on `checkout.session.completed` for any subscription.
+- It's generic ("Retainer"), uses the one-off order layout, and pushes the project-requirements form — wrong tone for an ongoing monthly subscription.
+- No webhook handlers for `invoice.payment_succeeded` (renewals), `invoice.payment_failed`, `customer.subscription.updated` (tier change), or `customer.subscription.deleted` (cancellation).
+- No tier detection — Growth/Scale/Enterprise are indistinguishable downstream.
 
-- Inject into `index.html` `<head>` (sitewide, picked up by Google for knowledge-graph / brand recognition).
-- Include: name "Pixcellor™", url, logo, sameAs (social links if known), founder/contact if available.
-- Add a `WebSite` block with `potentialAction` SearchAction stub for future site search.
+## What we'll build
 
-## 3. LCP fix — hero performance, **without staggering image appearance**
+### 1. Tier-aware templates (4 new + 1 rework)
 
-The Lighthouse finding is about the hero's largest paint being slow. Fixes that DO NOT affect simultaneous appearance:
+Each tier has different value, so each gets its own onboarding email. Renewals/failures/cancellations are shared across tiers (the tier name is just a variable).
 
-- Add `fetchpriority="high"` + `decoding="async"` to the hero's primary image asset(s) so the browser prioritises their bytes.
-- Add `<link rel="preload" as="image" href="<hero-image>" fetchpriority="high">` in `index.html` for the first hero card image(s) so they start downloading before JS parses.
-- Add `font-display: swap` to any `@font-face` declarations in `src/index.css` so text paints with a fallback while web fonts load (no impact on images).
-- Remove any `loading="lazy"` on above-the-fold hero imagery (lazy = late = LCP miss).
+| Template | When sent | Trigger |
+|---|---|---|
+| `subscription-welcome-growth` | First payment of Growth | `checkout.session.completed` (mode=subscription) |
+| `subscription-welcome-scale` | First payment of Scale | same |
+| `subscription-welcome-enterprise` | First payment of Enterprise | same |
+| `subscription-renewal-receipt` | Each recurring charge | `invoice.payment_succeeded` (billing_reason ≠ subscription_create) |
+| `subscription-payment-failed` | Card declined | `invoice.payment_failed` |
+| `subscription-cancelled` | Sub ends | `customer.subscription.deleted` |
+| `subscription-tier-changed` | Upgrade/downgrade | `customer.subscription.updated` (price change) |
 
-**Constraint respected**: the existing entrance animation (which makes all hero cards appear together via Framer Motion) is untouched. We only speed up *byte delivery*, not change the animation choreography. All cards will continue to fade/morph in simultaneously as they do today.
+Welcome emails per tier reflect what the customer actually unlocked (the feature lists from `RETAINER_TIERS`), point them to portal/login, set expectations for what happens next (kickoff call, onboarding form, account manager, etc.), and explain billing cadence. They drop the "add project requirements" CTA for tiers where it doesn't fit.
 
-## 4. Google Search Console connection
+The existing `retainer-order-confirmation` is kept but only used for the legacy `price_1TSmB8...` Custom/Enterprise retainer for back-compat. New tiers route to the new templates.
 
-- Trigger the `google_search_console` connector picker so you authorize OAuth.
-- Request a META verification token, inject `<meta name="google-site-verification" content="...">` into `index.html`.
-- Once you publish, call the verify endpoint, then add `https://pixcellor.com/` as a Search Console property and submit the sitemap URL programmatically.
-- You'll then see impressions, clicks, queries, and index coverage in GSC within ~48h.
+### 2. Tier resolver
 
-## Order of operations
+A shared mapping (priceId → tier key) lives in `stripe-webhook` so we can look up the tier from `subscription.items[0].price.id`. Tier key determines which welcome template to send and is also passed to all subscription emails as `templateData.tierName`.
 
-1. Write sitemap generator + wire npm scripts → regenerate file
-2. Add Organization/WebSite JSON-LD to `index.html`
-3. Hero LCP: `fetchpriority`, preload link, `font-display: swap`, strip any above-fold `loading="lazy"`
-4. Trigger GSC connector → inject verification meta → you publish → I verify + submit sitemap
-5. Mark both SEO findings fixed in the scanner
+### 3. Stripe webhook additions
+
+Extend `supabase/functions/stripe-webhook/index.ts`:
+
+- On `checkout.session.completed` with `mode === "subscription"`: retrieve the subscription, resolve the tier, send the matching `subscription-welcome-<tier>` instead of the generic retainer email. Idempotency key: `subscription-welcome-${subscription_id}`.
+- New handlers for `invoice.payment_succeeded`, `invoice.payment_failed`, `customer.subscription.deleted`, `customer.subscription.updated` — gated on the existing `pixcellor_site` source check (read from subscription metadata; we'll set it on creation).
+- Renewal idempotency key: `subscription-renewal-${invoice.id}` (Stripe invoice IDs are unique per cycle, so this naturally dedupes the duplicate-webhook problem we just fixed).
+- All new handlers go through `send-transactional-email` (which already dedupes against `email_send_log`).
+
+### 4. Subscriptions table
+
+New `public.subscriptions` table to track current state per customer (subscription_id, customer_email, tier, status, current_period_end, cancel_at_period_end, price_id). Upserted from every subscription webhook. Used by:
+- Customer Portal — show current plan + renewal date.
+- Internal admin alerts — failed payments, cancellations.
+- Future logic (gating features by tier).
+
+### 5. Internal notifications
+
+Re-use `internal-new-order-notification` for new subscriptions (with tier in the subject). Add a lightweight admin alert email for `invoice.payment_failed` and `customer.subscription.deleted` so we can intervene.
+
+### 6. Make sure metadata is set on subscription creation
+
+Update `create-checkout` to pass `source: pixcellor_site` and `tier: <key>` into `subscription_data.metadata` (not just session metadata) so all downstream invoice/subscription webhooks can identify Pixcellor subs.
+
+## Technical notes
+
+- All new templates follow the existing dark-shell Pixcellor design (matches `retainer-order-confirmation.tsx`).
+- Renewal receipts include amount, period end, invoice URL (`invoice.hosted_invoice_url`), and a "Manage subscription" link to a Stripe billing portal session — we'll add a `create-billing-portal` edge function for the portal link.
+- Payment-failed email includes the `invoice.hosted_invoice_url` so the customer can update their card directly.
+- Cancellation email confirms access until `current_period_end` and offers a "reactivate" CTA.
+- All sends use idempotency keys derived from Stripe object IDs (invoice id / subscription id) → no duplicates even on webhook redelivery.
 
 ## Files touched
 
-- `scripts/generate-sitemap.ts` (new)
-- `package.json` (predev/prebuild scripts)
-- `public/sitemap.xml` (regenerated)
-- `index.html` (JSON-LD, preload, GSC verification meta)
-- `src/index.css` (font-display: swap if any @font-face rules exist)
-- Hero image component (fetchpriority/decoding attrs; no animation changes)
+- New: 6 templates in `supabase/functions/_shared/transactional-email-templates/`
+- New: `supabase/functions/create-billing-portal/index.ts`
+- Edit: `supabase/functions/_shared/transactional-email-templates/registry.ts` (register new templates)
+- Edit: `supabase/functions/stripe-webhook/index.ts` (tier resolver + 4 new event handlers)
+- Edit: `supabase/functions/create-checkout/index.ts` (subscription_data.metadata)
+- New migration: `public.subscriptions` table with RLS + GRANTs
+- Edit: `src/pages/CustomerPortal.tsx` — show current subscription tier + renewal date + manage-billing button (optional, can be a follow-up)
 
-## What you'll need to do
+## Out of scope (flagging now)
 
-- **Publish** after step 3 so the verification meta is live on `pixcellor.com` — then I run the verify call.
-- Authorize the Google Search Console connector when the picker appears.
+- Dunning sequences (multiple reminder emails after failed payment). Stripe Smart Retries handles retry attempts; we send one email per failed invoice.
+- Trial-end emails (no trials configured today).
+- Marketing/nurture sequences — blocked by transactional rules anyway.
+
+Confirm and I'll build it.
