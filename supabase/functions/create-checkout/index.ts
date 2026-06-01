@@ -134,6 +134,20 @@ serve(async (req) => {
         capture_method: "manual",
         description: `Pixcellor – ${typeof packageName === "string" && packageName ? packageName : "order"}`,
       };
+    } else if (checkoutMode === "subscription") {
+      // Stamp the subscription itself with our metadata so downstream
+      // invoice.* and customer.subscription.* webhooks can identify Pixcellor
+      // subs (we filter on metadata.source === "pixcellor_site").
+      sessionParams.subscription_data = {
+        metadata: {
+          source: "pixcellor_site",
+          package_name: typeof packageName === "string" ? packageName : "",
+          billing: typeof billing === "string" ? billing : checkoutMode,
+          price_id: priceId,
+          buyer_email: buyerEmail,
+          buyer_company: buyerCompany,
+        },
+      };
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
