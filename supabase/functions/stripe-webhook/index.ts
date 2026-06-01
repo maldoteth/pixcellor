@@ -1002,6 +1002,45 @@ serve(async (req) => {
               serviceRoleKey: supabaseServiceRoleKey,
             });
           }
+
+          // Reactivation: cancel_at_period_end flipped true→false
+          // (covers Stripe event payload OR DB-tracked previous state).
+          const prevCancelFromEvent = (previous as any).cancel_at_period_end;
+          const prevCancelFromDb = (priorRow as any)?.cancel_at_period_end ?? false;
+          const wasCancelling = prevCancelFromEvent === true || (prevCancelFromEvent === undefined && prevCancelFromDb === true);
+          const reactivated = wasCancelling && subscription.cancel_at_period_end === false && subscription.status === "active";
+          if (reactivated && email) {
+            const tierInfo = resolveTierFromPriceId(newPriceId);
+            const periodEnd = ((newItem as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
+            await invokeEmail({
+              templateName: "subscription-reactivated",
+              recipientEmail: email,
+              idempotencyKey: `subscription-reactivated-${subscription.id}-${periodEnd ?? "x"}`,
+              templateData: {
+                customerEmail: email,
+                tierName: tierInfo?.displayName ?? "Subscription",
+                nextRenewalDate: formatDateGB(periodEnd),
+                portalUrl: `${SITE_URL}/portal`,
+              },
+            });
+          }
+
+          // Status flipped to past_due (outside of invoice events) → admin alert.
+          const prevStatus = (previous as any).status ?? (priorRow as any)?.status ?? null;
+          if (prevStatus && prevStatus !== "past_due" && subscription.status === "past_due") {
+            const tierInfo = resolveTierFromPriceId(newPriceId);
+            await logAdminAlert({
+              supabase,
+              source: "stripe.subscription_past_due",
+              severity: "warning",
+              title: `Subscription past due — ${tierInfo?.displayName ?? "Subscription"}`,
+              message: `Customer ${email ?? "unknown"} subscription is past_due (was ${prevStatus}). Stripe will retry per dunning settings.`,
+              context: { subscription_id: subscription.id, customer_email: email, prev_status: prevStatus },
+              emailNotify: true,
+              supabaseUrl,
+              serviceRoleKey: supabaseServiceRoleKey,
+            });
+          }
         } catch (err) {
           console.error("customer.subscription.updated handler failed", err);
         }
