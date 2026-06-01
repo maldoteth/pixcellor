@@ -925,10 +925,21 @@ serve(async (req) => {
             : (subscription.customer as Stripe.Customer);
           const email = (customer && !customer.deleted) ? customer.email : null;
 
+          // Snapshot previous DB row BEFORE upserting so we can diff against
+          // what we last saw (more reliable than Stripe previous_attributes
+          // which only contains changed top-level fields).
+          const { data: priorRow } = await supabase
+            .from("subscriptions")
+            .select("price_id, status, cancel_at_period_end")
+            .eq("subscription_id", subscription.id)
+            .maybeSingle();
+
           await upsertSubscriptionRow({ supabase, subscription, customerEmail: email });
 
           const prevItems = (previous as any).items?.data as Stripe.SubscriptionItem[] | undefined;
-          const prevPriceId = prevItems?.[0]?.price?.id ?? null;
+          const prevPriceFromEvent = prevItems?.[0]?.price?.id ?? null;
+          const prevPriceFromDb = (priorRow as any)?.price_id ?? null;
+          const prevPriceId = prevPriceFromEvent ?? prevPriceFromDb ?? null;
           const newItem = subscription.items?.data?.[0];
           const newPriceId = newItem?.price?.id ?? null;
           const priceChanged = prevPriceId && newPriceId && prevPriceId !== newPriceId;
