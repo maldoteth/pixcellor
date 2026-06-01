@@ -195,8 +195,11 @@ async function upsertSubscriptionRow(opts: {
   const item = subscription.items?.data?.[0];
   const priceId = item?.price?.id ?? null;
   const tierInfo = resolveTierFromPriceId(priceId);
-  const periodStart = (subscription as any).current_period_start as number | undefined;
-  const periodEnd = (subscription as any).current_period_end as number | undefined;
+  // In Stripe API 2025-08-27.basil, current_period_start/end moved from the
+  // Subscription onto the SubscriptionItem. Read item first, fall back to
+  // subscription for older payloads/legacy events.
+  const periodStart = ((item as any)?.current_period_start ?? (subscription as any).current_period_start) as number | undefined;
+  const periodEnd = ((item as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
   const canceledAt = (subscription as any).canceled_at as number | undefined;
   const endedAt = (subscription as any).ended_at as number | undefined;
   const interval = item?.price?.recurring?.interval ?? null;
