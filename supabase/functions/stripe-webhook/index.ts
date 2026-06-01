@@ -561,7 +561,20 @@ serve(async (req) => {
       // - One-off payments awaiting capture → DO NOT send confirmation yet. Capture handler will send it.
       if (event.type === "checkout.session.completed" && session.customer_details?.email && !mergedIntoManualId) {
         const isAuthorizedAwaitingCapture = mode === "payment" && captureStatus === "requires_capture";
-        if (!isAuthorizedAwaitingCapture && (paymentStatus === "paid" || mode === "subscription")) {
+        if (mode === "subscription") {
+          // Route subscriptions to the tier-aware welcome email (Growth/Scale/Enterprise).
+          try {
+            await sendSubscriptionWelcomeEmails({
+              supabaseUrl,
+              serviceRoleKey: supabaseServiceRoleKey,
+              supabase,
+              stripe,
+              session,
+            });
+          } catch (err) {
+            console.error("sendSubscriptionWelcomeEmails failed", err);
+          }
+        } else if (!isAuthorizedAwaitingCapture && paymentStatus === "paid") {
           await sendOrderConfirmationEmails({
             supabaseUrl,
             serviceRoleKey: supabaseServiceRoleKey,
