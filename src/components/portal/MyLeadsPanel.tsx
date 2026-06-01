@@ -125,7 +125,8 @@ const WIZARD: { key: FormKey; label: string; placeholder: string; required: bool
 ];
 const emptyForm = (): Record<FormKey, string> => ({ name: "", phone: "", email: "", location: "", company: "", contact_name: "", notes: "" });
 
-export default function MyLeadsPanel() {
+export default function MyLeadsPanel({ maxLeads, planLabel }: { maxLeads?: number; planLabel?: string } = {}) {
+  const unlimited = maxLeads === undefined || !isFinite(maxLeads) || maxLeads < 0;
   const [leads, setLeads] = useState<MyLead[]>([]);
   const [events, setEvents] = useState<LeadEvent[]>([]);
   const [loading, setLoading] = useState(true);
