@@ -107,7 +107,7 @@ serve(async (req) => {
         amount: formatGBP(order.amount_total),
         billing,
       };
-      idempotencyKey = `manual-order-confirmation-${order.session_id}-${Date.now()}`;
+      idempotencyKey = `order-confirmation-${order.session_id}`;
     }
 
     const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
