@@ -599,7 +599,7 @@ export default function CustomerPortal() {
                       <Separator className="my-2" />
                     </div>
                   )}
-                  <MyLeadsPanel />
+                  <MyLeadsPanel maxLeads={leadEntitlement.max} planLabel={leadEntitlement.label} />
                 </TabsContent>
 
                 <TabsContent value="orders" className="space-y-4">
