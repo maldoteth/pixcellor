@@ -23,6 +23,13 @@ import { template as coldOutreach } from './cold-outreach.tsx'
 import { template as salesCallFollowup } from './sales-call-followup.tsx'
 import { template as customInvoice } from './custom-invoice.tsx'
 import { template as customerLeadNotification } from './customer-lead-notification.tsx'
+import { template as subscriptionWelcomeGrowth } from './subscription-welcome-growth.tsx'
+import { template as subscriptionWelcomeScale } from './subscription-welcome-scale.tsx'
+import { template as subscriptionWelcomeEnterprise } from './subscription-welcome-enterprise.tsx'
+import { template as subscriptionRenewalReceipt } from './subscription-renewal-receipt.tsx'
+import { template as subscriptionPaymentFailed } from './subscription-payment-failed.tsx'
+import { template as subscriptionCancelled } from './subscription-cancelled.tsx'
+import { template as subscriptionTierChanged } from './subscription-tier-changed.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'full-works-order-confirmation': fullWorksOrderConfirmation,
@@ -37,4 +44,11 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'sales-call-followup': salesCallFollowup,
   'custom-invoice': customInvoice,
   'customer-lead-notification': customerLeadNotification,
+  'subscription-welcome-growth': subscriptionWelcomeGrowth,
+  'subscription-welcome-scale': subscriptionWelcomeScale,
+  'subscription-welcome-enterprise': subscriptionWelcomeEnterprise,
+  'subscription-renewal-receipt': subscriptionRenewalReceipt,
+  'subscription-payment-failed': subscriptionPaymentFailed,
+  'subscription-cancelled': subscriptionCancelled,
+  'subscription-tier-changed': subscriptionTierChanged,
 }
