@@ -344,7 +344,7 @@ export default function CustomerPortal() {
     { title: "Domains", value: "delivered", icon: Globe2 },
     { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Payments", value: "payments", icon: CreditCard },
-    ...(data?.leadSource ? [{ title: "Leads", value: "leads" as const, icon: Inbox }] : []),
+    { title: "Leads", value: "leads" as const, icon: Inbox },
   ];
 
   const handleSignOut = async () => {
