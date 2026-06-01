@@ -404,10 +404,10 @@ export default function MyLeadsPanel({ maxLeads, planLabel }: { maxLeads?: numbe
           </div>
           <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvFile(f); }} />
-          <Button variant="outline" size="sm" disabled={uploading} onClick={() => fileInputRef.current?.click()} className="gap-2">
+          <Button variant="outline" size="sm" disabled={uploading || limitReached} onClick={() => fileInputRef.current?.click()} className="gap-2">
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload CSV
           </Button>
-          <Button variant="pricing" size="sm" className="gap-2" onClick={openWizard}>
+          <Button variant="pricing" size="sm" className="gap-2" disabled={limitReached} onClick={openWizard}>
             <Plus className="h-4 w-4" /> Add lead
           </Button>
         </div>
