@@ -8,6 +8,46 @@ const SITE_URL = "https://pixcellor.com";
 // auto-capture or warn before we lose the auth.
 const AUTH_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
+// Map Stripe price IDs → internal subscription tier key.
+// Keep in sync with src/components/PackagesDialog.tsx RETAINER_TIERS.
+const PRICE_TO_TIER: Record<string, { tier: "growth" | "scale" | "enterprise"; displayName: string; interval: "monthly" | "yearly" }> = {
+  // Growth
+  "price_1TcfyPBtUjwejeUwJmEbSWtN": { tier: "growth", displayName: "Growth", interval: "monthly" },
+  "price_1Tcg03BtUjwejeUwr7mYzuUb": { tier: "growth", displayName: "Growth", interval: "yearly" },
+  // Scale
+  "price_1Tcg07BtUjwejeUwfGGDhftV": { tier: "scale", displayName: "Scale", interval: "monthly" },
+  "price_1Tcg0ABtUjwejeUwLc5nw8nX": { tier: "scale", displayName: "Scale", interval: "yearly" },
+  // Enterprise (also the legacy Custom retainer)
+  "price_1TSmB8BtUjwejeUw8UXRTbBQ": { tier: "enterprise", displayName: "Enterprise", interval: "monthly" },
+  "price_1TSmBtBtUjwejeUwb8xPSvvf": { tier: "enterprise", displayName: "Enterprise", interval: "yearly" },
+};
+
+const resolveTierFromPriceId = (priceId?: string | null) => {
+  if (!priceId) return null;
+  return PRICE_TO_TIER[priceId] ?? null;
+};
+
+const formatDateGB = (epochSeconds?: number | null) => {
+  if (!epochSeconds) return undefined;
+  try {
+    return new Date(epochSeconds * 1000).toLocaleDateString("en-GB", {
+      day: "numeric", month: "long", year: "numeric",
+    });
+  } catch { return undefined; }
+};
+
+const formatIntervalLabel = (interval?: string | null, count?: number | null) => {
+  if (!interval) return undefined;
+  const i = interval.toLowerCase();
+  if (count && count > 1) return `Every ${count} ${i}s`;
+  if (i === "month") return "Monthly";
+  if (i === "year") return "Yearly";
+  if (i === "week") return "Weekly";
+  if (i === "day") return "Daily";
+  return interval;
+};
+
+
 async function logAdminAlert(opts: {
   supabase: ReturnType<typeof createClient>;
   source: string;
@@ -141,6 +181,112 @@ async function sendOrderConfirmationEmails(opts: {
       recipientEmail: "projects@pixcellor.com",
       idempotencyKey: `internal-order-notification-${session.id}`,
       templateData,
+    }),
+  });
+}
+
+// Persist/upsert the subscription row from a Stripe.Subscription.
+async function upsertSubscriptionRow(opts: {
+  supabase: ReturnType<typeof createClient>;
+  subscription: Stripe.Subscription;
+  customerEmail?: string | null;
+}) {
+  const { supabase, subscription, customerEmail } = opts;
+  const item = subscription.items?.data?.[0];
+  const priceId = item?.price?.id ?? null;
+  const tierInfo = resolveTierFromPriceId(priceId);
+  const periodStart = (subscription as any).current_period_start as number | undefined;
+  const periodEnd = (subscription as any).current_period_end as number | undefined;
+  const canceledAt = (subscription as any).canceled_at as number | undefined;
+  const endedAt = (subscription as any).ended_at as number | undefined;
+  const interval = item?.price?.recurring?.interval ?? null;
+  const intervalCount = item?.price?.recurring?.interval_count ?? null;
+
+  await supabase.from("subscriptions").upsert({
+    subscription_id: subscription.id,
+    customer_id: typeof subscription.customer === "string" ? subscription.customer : null,
+    customer_email: customerEmail ?? null,
+    tier: tierInfo?.tier ?? null,
+    price_id: priceId,
+    status: subscription.status,
+    billing_interval: formatIntervalLabel(interval, intervalCount) ?? null,
+    amount_total: item?.price?.unit_amount ?? null,
+    currency: item?.price?.currency ?? null,
+    current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+    current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+    cancel_at_period_end: Boolean(subscription.cancel_at_period_end),
+    canceled_at: canceledAt ? new Date(canceledAt * 1000).toISOString() : null,
+    ended_at: endedAt ? new Date(endedAt * 1000).toISOString() : null,
+    metadata: (subscription.metadata as Record<string, unknown>) ?? {},
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "subscription_id" });
+}
+
+async function sendSubscriptionWelcomeEmails(opts: {
+  supabaseUrl: string;
+  serviceRoleKey: string;
+  supabase: ReturnType<typeof createClient>;
+  stripe: Stripe;
+  session: Stripe.Checkout.Session;
+}) {
+  const { supabaseUrl, serviceRoleKey, supabase, stripe, session } = opts;
+  const email = session.customer_details?.email;
+  const subscriptionId = typeof session.subscription === "string" ? session.subscription : null;
+  if (!email || !subscriptionId) return;
+
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  await upsertSubscriptionRow({ supabase, subscription, customerEmail: email });
+
+  const item = subscription.items?.data?.[0];
+  const priceId = item?.price?.id ?? null;
+  const tierInfo = resolveTierFromPriceId(priceId);
+  const tierKey = tierInfo?.tier ?? "enterprise";
+  const tierDisplay = tierInfo?.displayName ?? "Retainer";
+  const intervalLabel = formatIntervalLabel(item?.price?.recurring?.interval, item?.price?.recurring?.interval_count);
+  const amountFormatted = formatGBP(item?.price?.unit_amount ?? null);
+  const periodEnd = (subscription as any).current_period_end as number | undefined;
+
+  const templateData = {
+    customerEmail: email,
+    subscriptionId,
+    tierName: tierDisplay,
+    amount: amountFormatted,
+    billingInterval: intervalLabel,
+    nextRenewalDate: formatDateGB(periodEnd),
+    portalUrl: `${SITE_URL}/portal`,
+  };
+
+  const emailHeaders = {
+    "Authorization": `Bearer ${serviceRoleKey}`,
+    "apikey": serviceRoleKey,
+    "Content-Type": "application/json",
+  };
+
+  await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+    method: "POST",
+    headers: emailHeaders,
+    body: JSON.stringify({
+      templateName: `subscription-welcome-${tierKey}`,
+      recipientEmail: email,
+      idempotencyKey: `subscription-welcome-${subscriptionId}`,
+      templateData,
+    }),
+  });
+
+  await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+    method: "POST",
+    headers: emailHeaders,
+    body: JSON.stringify({
+      templateName: "internal-new-order-notification",
+      recipientEmail: "projects@pixcellor.com",
+      idempotencyKey: `internal-subscription-notification-${subscriptionId}`,
+      templateData: {
+        ...templateData,
+        orderId: subscriptionId,
+        packageName: `${tierDisplay} Retainer (${intervalLabel || "subscription"})`,
+        billing: intervalLabel || "subscription",
+        requirementsUrl: `${SITE_URL}/portal`,
+      },
     }),
   });
 }
@@ -415,7 +561,20 @@ serve(async (req) => {
       // - One-off payments awaiting capture → DO NOT send confirmation yet. Capture handler will send it.
       if (event.type === "checkout.session.completed" && session.customer_details?.email && !mergedIntoManualId) {
         const isAuthorizedAwaitingCapture = mode === "payment" && captureStatus === "requires_capture";
-        if (!isAuthorizedAwaitingCapture && (paymentStatus === "paid" || mode === "subscription")) {
+        if (mode === "subscription") {
+          // Route subscriptions to the tier-aware welcome email (Growth/Scale/Enterprise).
+          try {
+            await sendSubscriptionWelcomeEmails({
+              supabaseUrl,
+              serviceRoleKey: supabaseServiceRoleKey,
+              supabase,
+              stripe,
+              session,
+            });
+          } catch (err) {
+            console.error("sendSubscriptionWelcomeEmails failed", err);
+          }
+        } else if (!isAuthorizedAwaitingCapture && paymentStatus === "paid") {
           await sendOrderConfirmationEmails({
             supabaseUrl,
             serviceRoleKey: supabaseServiceRoleKey,
@@ -635,6 +794,233 @@ serve(async (req) => {
         serviceRoleKey: supabaseServiceRoleKey,
       });
     }
+
+    // ---- Subscription lifecycle: renewals, failed payments, cancellations, tier changes ----
+    const isPixcellorSub = (metadata: Stripe.Metadata | null | undefined) =>
+      typeof metadata?.source === "string"
+        ? metadata.source === "pixcellor_site"
+        : true; // when metadata.source is absent (legacy subs) we still treat it as ours.
+
+    const emailHeadersV2 = {
+      "Authorization": `Bearer ${supabaseServiceRoleKey}`,
+      "apikey": supabaseServiceRoleKey,
+      "Content-Type": "application/json",
+    };
+    const invokeEmail = (body: Record<string, unknown>) =>
+      fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+        method: "POST",
+        headers: emailHeadersV2,
+        body: JSON.stringify(body),
+      }).catch((err) => console.error("[send-transactional-email failed]", err));
+
+    // -- invoice.payment_succeeded → renewal receipt --
+    if (event.type === "invoice.payment_succeeded") {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscriptionId = typeof (invoice as any).subscription === "string" ? (invoice as any).subscription : null;
+      // billing_reason: subscription_create | subscription_cycle | subscription_update | manual ...
+      const billingReason = (invoice as any).billing_reason as string | undefined;
+      if (subscriptionId && billingReason !== "subscription_create") {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          if (!isPixcellorSub(subscription.metadata)) {
+            return new Response(JSON.stringify({ received: true, skipped: "non_pixcellor_sub" }), { status: 200, headers: { "Content-Type": "application/json" } });
+          }
+          const email = invoice.customer_email || (typeof subscription.customer === "string" ? null : (subscription.customer as Stripe.Customer)?.email) || null;
+          await upsertSubscriptionRow({ supabase, subscription, customerEmail: email });
+
+          if (email) {
+            const item = subscription.items?.data?.[0];
+            const tierInfo = resolveTierFromPriceId(item?.price?.id ?? null);
+            const intervalLabel = formatIntervalLabel(item?.price?.recurring?.interval, item?.price?.recurring?.interval_count);
+            const periodEnd = (subscription as any).current_period_end as number | undefined;
+            await invokeEmail({
+              templateName: "subscription-renewal-receipt",
+              recipientEmail: email,
+              idempotencyKey: `subscription-renewal-${invoice.id}`,
+              templateData: {
+                customerEmail: email,
+                tierName: tierInfo?.displayName ?? "Subscription",
+                amount: formatGBP(invoice.amount_paid ?? null),
+                billingInterval: intervalLabel,
+                invoiceNumber: (invoice.number as string | null) ?? invoice.id,
+                invoiceHostedUrl: (invoice.hosted_invoice_url as string | null) ?? undefined,
+                invoicePdfUrl: (invoice.invoice_pdf as string | null) ?? undefined,
+                nextRenewalDate: formatDateGB(periodEnd),
+                portalUrl: `${SITE_URL}/portal`,
+              },
+            });
+          }
+        } catch (err) {
+          console.error("invoice.payment_succeeded handler failed", err);
+        }
+      }
+    }
+
+    // -- invoice.payment_failed → payment failed email + admin alert --
+    if (event.type === "invoice.payment_failed") {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscriptionId = typeof (invoice as any).subscription === "string" ? (invoice as any).subscription : null;
+      if (subscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          if (!isPixcellorSub(subscription.metadata)) {
+            return new Response(JSON.stringify({ received: true, skipped: "non_pixcellor_sub" }), { status: 200, headers: { "Content-Type": "application/json" } });
+          }
+          const email = invoice.customer_email || null;
+          await upsertSubscriptionRow({ supabase, subscription, customerEmail: email });
+
+          const item = subscription.items?.data?.[0];
+          const tierInfo = resolveTierFromPriceId(item?.price?.id ?? null);
+          const nextAttempt = (invoice as any).next_payment_attempt as number | undefined;
+
+          if (email) {
+            await invokeEmail({
+              templateName: "subscription-payment-failed",
+              recipientEmail: email,
+              idempotencyKey: `subscription-payment-failed-${invoice.id}`,
+              templateData: {
+                customerEmail: email,
+                tierName: tierInfo?.displayName ?? "Subscription",
+                amount: formatGBP(invoice.amount_due ?? null),
+                invoiceHostedUrl: (invoice.hosted_invoice_url as string | null) ?? undefined,
+                nextAttemptDate: formatDateGB(nextAttempt),
+                portalUrl: `${SITE_URL}/portal`,
+              },
+            });
+          }
+
+          await logAdminAlert({
+            supabase,
+            source: "stripe.subscription_payment_failed",
+            severity: "warning",
+            title: `Subscription payment failed — ${tierInfo?.displayName ?? "Subscription"}${invoice.amount_due ? ` ${formatGBP(invoice.amount_due)}` : ""}`,
+            message: `Customer ${email ?? "unknown"} — Stripe will retry${nextAttempt ? ` on ${formatDateGB(nextAttempt)}` : ""}.`,
+            context: { subscription_id: subscriptionId, invoice_id: invoice.id, customer_email: email, amount: formatGBP(invoice.amount_due ?? null) },
+            emailNotify: true,
+            supabaseUrl,
+            serviceRoleKey: supabaseServiceRoleKey,
+          });
+        } catch (err) {
+          console.error("invoice.payment_failed handler failed", err);
+        }
+      }
+    }
+
+    // -- customer.subscription.updated → tier change emails (only when price changed) --
+    if (event.type === "customer.subscription.updated") {
+      const subscription = event.data.object as Stripe.Subscription;
+      const previous = (event.data.previous_attributes ?? {}) as Partial<Stripe.Subscription>;
+      if (isPixcellorSub(subscription.metadata)) {
+        try {
+          // Pull current customer email (subscription doesn't always carry it).
+          const customer = typeof subscription.customer === "string"
+            ? (await stripe.customers.retrieve(subscription.customer)) as Stripe.Customer
+            : (subscription.customer as Stripe.Customer);
+          const email = (customer && !customer.deleted) ? customer.email : null;
+
+          await upsertSubscriptionRow({ supabase, subscription, customerEmail: email });
+
+          const prevItems = (previous as any).items?.data as Stripe.SubscriptionItem[] | undefined;
+          const prevPriceId = prevItems?.[0]?.price?.id ?? null;
+          const newItem = subscription.items?.data?.[0];
+          const newPriceId = newItem?.price?.id ?? null;
+          const priceChanged = prevPriceId && newPriceId && prevPriceId !== newPriceId;
+
+          if (priceChanged && email) {
+            const prevTier = resolveTierFromPriceId(prevPriceId);
+            const newTier = resolveTierFromPriceId(newPriceId);
+            const tierOrder = { growth: 1, scale: 2, enterprise: 3 } as const;
+            const changeKind = prevTier && newTier
+              ? (tierOrder[newTier.tier] > tierOrder[prevTier.tier] ? "upgrade" : tierOrder[newTier.tier] < tierOrder[prevTier.tier] ? "downgrade" : "change")
+              : "change";
+            const intervalLabel = formatIntervalLabel(newItem?.price?.recurring?.interval, newItem?.price?.recurring?.interval_count);
+            await invokeEmail({
+              templateName: "subscription-tier-changed",
+              recipientEmail: email,
+              idempotencyKey: `subscription-tier-changed-${subscription.id}-${newPriceId}`,
+              templateData: {
+                customerEmail: email,
+                previousTier: prevTier?.displayName ?? "Previous plan",
+                newTier: newTier?.displayName ?? "New plan",
+                newAmount: formatGBP(newItem?.price?.unit_amount ?? null),
+                billingInterval: intervalLabel,
+                effectiveDate: formatDateGB(Math.floor(Date.now() / 1000)),
+                portalUrl: `${SITE_URL}/portal`,
+                changeKind,
+              },
+            });
+          }
+        } catch (err) {
+          console.error("customer.subscription.updated handler failed", err);
+        }
+      }
+    }
+
+    // -- customer.subscription.deleted → cancellation email + admin alert --
+    if (event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object as Stripe.Subscription;
+      if (isPixcellorSub(subscription.metadata)) {
+        try {
+          const customer = typeof subscription.customer === "string"
+            ? (await stripe.customers.retrieve(subscription.customer)) as Stripe.Customer
+            : (subscription.customer as Stripe.Customer);
+          const email = (customer && !customer.deleted) ? customer.email : null;
+
+          await upsertSubscriptionRow({ supabase, subscription, customerEmail: email });
+
+          const item = subscription.items?.data?.[0];
+          const tierInfo = resolveTierFromPriceId(item?.price?.id ?? null);
+          const periodEnd = (subscription as any).current_period_end as number | undefined;
+          const endedAt = (subscription as any).ended_at as number | undefined;
+          const endDate = formatDateGB(periodEnd ?? endedAt);
+
+          if (email) {
+            await invokeEmail({
+              templateName: "subscription-cancelled",
+              recipientEmail: email,
+              idempotencyKey: `subscription-cancelled-${subscription.id}`,
+              templateData: {
+                customerEmail: email,
+                tierName: tierInfo?.displayName ?? "Subscription",
+                endDate,
+                reactivateUrl: `${SITE_URL}/portal`,
+              },
+            });
+          }
+
+          await logAdminAlert({
+            supabase,
+            source: "stripe.subscription_cancelled",
+            severity: "warning",
+            title: `Subscription cancelled — ${tierInfo?.displayName ?? "Subscription"}`,
+            message: `Customer ${email ?? "unknown"} cancelled${endDate ? `; access ends ${endDate}` : ""}.`,
+            context: { subscription_id: subscription.id, customer_email: email },
+            emailNotify: true,
+            supabaseUrl,
+            serviceRoleKey: supabaseServiceRoleKey,
+          });
+        } catch (err) {
+          console.error("customer.subscription.deleted handler failed", err);
+        }
+      }
+    }
+
+    // Always keep our subscription row fresh from .created too (covers off-Stripe-Checkout subs).
+    if (event.type === "customer.subscription.created") {
+      const subscription = event.data.object as Stripe.Subscription;
+      if (isPixcellorSub(subscription.metadata)) {
+        try {
+          const customer = typeof subscription.customer === "string"
+            ? (await stripe.customers.retrieve(subscription.customer)) as Stripe.Customer
+            : (subscription.customer as Stripe.Customer);
+          const email = (customer && !customer.deleted) ? customer.email : null;
+          await upsertSubscriptionRow({ supabase, subscription, customerEmail: email });
+        } catch (err) {
+          console.error("customer.subscription.created handler failed", err);
+        }
+      }
+    }
+
 
     return new Response(JSON.stringify({ received: true }), {
       status: 200,
