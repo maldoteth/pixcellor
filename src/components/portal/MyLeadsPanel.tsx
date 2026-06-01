@@ -206,6 +206,7 @@ export default function MyLeadsPanel({ maxLeads, planLabel }: { maxLeads?: numbe
   const currentField = WIZARD[step];
 
   const saveLead = async () => {
+    if (limitReached) { toast.error(`Lead limit reached (${maxLeads}).`); return; }
     const name = form.name.trim() || form.contact_name.trim() || form.company.trim() || form.email.trim();
     if (!name) { toast.error("Add at least a name"); return; }
     setSaving(true);
