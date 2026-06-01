@@ -272,12 +272,18 @@ export default function CustomerPortal() {
       return;
     }
 
-    const [{ data: portalData, error }, { data: adminRole }] = await Promise.all([
+    const [{ data: portalData, error }, { data: adminRole }, { data: subRow }] = await Promise.all([
       supabase.rpc("customer_fetch_portal"),
       supabase.rpc("has_role", {
         _user_id: sessionData.session.user.id,
         _role: "admin",
       }),
+      supabase
+        .from("subscriptions")
+        .select("*")
+        .order("current_period_end", { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
     if (error) {
       toast.error(error.message);
@@ -287,6 +293,7 @@ export default function CustomerPortal() {
 
     setIsAdmin(Boolean(adminRole));
     setData(portalData as CustomerPortalData);
+    setSubscription((subRow as CustomerSubscription | null) ?? null);
     setLoading(false);
     refreshHiddenCount();
   }, [navigate, refreshHiddenCount]);
