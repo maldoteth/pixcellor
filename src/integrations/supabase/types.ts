@@ -505,6 +505,53 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_lead_events: {
+        Row: {
+          callback_at: string | null
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          event_type: string
+          id: string
+          lead_id: string
+          owner_user_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          callback_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          id?: string
+          lead_id: string
+          owner_user_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          callback_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          id?: string
+          lead_id?: string
+          owner_user_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_lead_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "customer_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_lead_sources: {
         Row: {
           created_at: string
@@ -528,6 +575,8 @@ export type Database = {
       }
       customer_leads: {
         Row: {
+          callback_at: string | null
+          callback_completed_at: string | null
           company: string | null
           contact_name: string | null
           created_at: string
@@ -543,6 +592,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          callback_at?: string | null
+          callback_completed_at?: string | null
           company?: string | null
           contact_name?: string | null
           created_at?: string
@@ -558,6 +609,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          callback_at?: string | null
+          callback_completed_at?: string | null
           company?: string | null
           contact_name?: string | null
           created_at?: string
