@@ -195,8 +195,11 @@ async function upsertSubscriptionRow(opts: {
   const item = subscription.items?.data?.[0];
   const priceId = item?.price?.id ?? null;
   const tierInfo = resolveTierFromPriceId(priceId);
-  const periodStart = (subscription as any).current_period_start as number | undefined;
-  const periodEnd = (subscription as any).current_period_end as number | undefined;
+  // In Stripe API 2025-08-27.basil, current_period_start/end moved from the
+  // Subscription onto the SubscriptionItem. Read item first, fall back to
+  // subscription for older payloads/legacy events.
+  const periodStart = ((item as any)?.current_period_start ?? (subscription as any).current_period_start) as number | undefined;
+  const periodEnd = ((item as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
   const canceledAt = (subscription as any).canceled_at as number | undefined;
   const endedAt = (subscription as any).ended_at as number | undefined;
   const interval = item?.price?.recurring?.interval ?? null;
@@ -240,11 +243,15 @@ async function sendSubscriptionWelcomeEmails(opts: {
   const item = subscription.items?.data?.[0];
   const priceId = item?.price?.id ?? null;
   const tierInfo = resolveTierFromPriceId(priceId);
-  const tierKey = tierInfo?.tier ?? "enterprise";
-  const tierDisplay = tierInfo?.displayName ?? "Retainer";
+  if (!tierInfo) {
+    console.warn("[subscription-welcome] Unknown price id, skipping tier-specific email", { priceId, subscriptionId });
+    return;
+  }
+  const tierKey = tierInfo.tier;
+  const tierDisplay = tierInfo.displayName;
   const intervalLabel = formatIntervalLabel(item?.price?.recurring?.interval, item?.price?.recurring?.interval_count);
   const amountFormatted = formatGBP(item?.price?.unit_amount ?? null);
-  const periodEnd = (subscription as any).current_period_end as number | undefined;
+  const periodEnd = ((item as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
 
   const templateData = {
     customerEmail: email,
@@ -832,7 +839,7 @@ serve(async (req) => {
             const item = subscription.items?.data?.[0];
             const tierInfo = resolveTierFromPriceId(item?.price?.id ?? null);
             const intervalLabel = formatIntervalLabel(item?.price?.recurring?.interval, item?.price?.recurring?.interval_count);
-            const periodEnd = (subscription as any).current_period_end as number | undefined;
+            const periodEnd = ((item as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
             await invokeEmail({
               templateName: "subscription-renewal-receipt",
               recipientEmail: email,
@@ -950,6 +957,40 @@ serve(async (req) => {
               },
             });
           }
+
+          // Detect customer-initiated cancellation scheduled at period end
+          // (cancel_at_period_end flipped false→true). Send acknowledgement
+          // immediately — the final subscription-cancelled email won't fire
+          // until the period actually ends via customer.subscription.deleted.
+          const cancelScheduled =
+            (previous as any).cancel_at_period_end === false &&
+            subscription.cancel_at_period_end === true;
+          if (cancelScheduled && email) {
+            const tierInfo = resolveTierFromPriceId(newPriceId);
+            const periodEnd = ((newItem as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
+            await invokeEmail({
+              templateName: "subscription-cancelled",
+              recipientEmail: email,
+              idempotencyKey: `subscription-cancel-scheduled-${subscription.id}-${periodEnd ?? "x"}`,
+              templateData: {
+                customerEmail: email,
+                tierName: tierInfo?.displayName ?? "Subscription",
+                endDate: formatDateGB(periodEnd),
+                reactivateUrl: `${SITE_URL}/portal`,
+              },
+            });
+            await logAdminAlert({
+              supabase,
+              source: "stripe.subscription_cancel_scheduled",
+              severity: "warning",
+              title: `Cancellation scheduled — ${tierInfo?.displayName ?? "Subscription"}`,
+              message: `Customer ${email} scheduled cancellation; access ends ${formatDateGB(periodEnd) ?? "at period end"}.`,
+              context: { subscription_id: subscription.id, customer_email: email, period_end: periodEnd },
+              emailNotify: true,
+              supabaseUrl,
+              serviceRoleKey: supabaseServiceRoleKey,
+            });
+          }
         } catch (err) {
           console.error("customer.subscription.updated handler failed", err);
         }
@@ -970,7 +1011,7 @@ serve(async (req) => {
 
           const item = subscription.items?.data?.[0];
           const tierInfo = resolveTierFromPriceId(item?.price?.id ?? null);
-          const periodEnd = (subscription as any).current_period_end as number | undefined;
+          const periodEnd = ((item as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
           const endedAt = (subscription as any).ended_at as number | undefined;
           const endDate = formatDateGB(periodEnd ?? endedAt);
 
