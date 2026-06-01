@@ -54,6 +54,7 @@ import customerPortalPLogo from "@/assets/customer-portal-p-logo.png";
 import ChatBot from "@/components/ChatBot";
 import SeoHead from "@/components/SeoHead";
 import VisionGenerator from "@/components/VisionGenerator";
+import MyLeadsPanel from "@/components/portal/MyLeadsPanel";
 
 
 const BUY_AGAIN_PACKAGES = [
