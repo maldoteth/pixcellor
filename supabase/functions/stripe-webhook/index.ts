@@ -925,10 +925,21 @@ serve(async (req) => {
             : (subscription.customer as Stripe.Customer);
           const email = (customer && !customer.deleted) ? customer.email : null;
 
+          // Snapshot previous DB row BEFORE upserting so we can diff against
+          // what we last saw (more reliable than Stripe previous_attributes
+          // which only contains changed top-level fields).
+          const { data: priorRow } = await supabase
+            .from("subscriptions")
+            .select("price_id, status, cancel_at_period_end")
+            .eq("subscription_id", subscription.id)
+            .maybeSingle();
+
           await upsertSubscriptionRow({ supabase, subscription, customerEmail: email });
 
           const prevItems = (previous as any).items?.data as Stripe.SubscriptionItem[] | undefined;
-          const prevPriceId = prevItems?.[0]?.price?.id ?? null;
+          const prevPriceFromEvent = prevItems?.[0]?.price?.id ?? null;
+          const prevPriceFromDb = (priorRow as any)?.price_id ?? null;
+          const prevPriceId = prevPriceFromEvent ?? prevPriceFromDb ?? null;
           const newItem = subscription.items?.data?.[0];
           const newPriceId = newItem?.price?.id ?? null;
           const priceChanged = prevPriceId && newPriceId && prevPriceId !== newPriceId;
@@ -986,6 +997,45 @@ serve(async (req) => {
               title: `Cancellation scheduled — ${tierInfo?.displayName ?? "Subscription"}`,
               message: `Customer ${email} scheduled cancellation; access ends ${formatDateGB(periodEnd) ?? "at period end"}.`,
               context: { subscription_id: subscription.id, customer_email: email, period_end: periodEnd },
+              emailNotify: true,
+              supabaseUrl,
+              serviceRoleKey: supabaseServiceRoleKey,
+            });
+          }
+
+          // Reactivation: cancel_at_period_end flipped true→false
+          // (covers Stripe event payload OR DB-tracked previous state).
+          const prevCancelFromEvent = (previous as any).cancel_at_period_end;
+          const prevCancelFromDb = (priorRow as any)?.cancel_at_period_end ?? false;
+          const wasCancelling = prevCancelFromEvent === true || (prevCancelFromEvent === undefined && prevCancelFromDb === true);
+          const reactivated = wasCancelling && subscription.cancel_at_period_end === false && subscription.status === "active";
+          if (reactivated && email) {
+            const tierInfo = resolveTierFromPriceId(newPriceId);
+            const periodEnd = ((newItem as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
+            await invokeEmail({
+              templateName: "subscription-reactivated",
+              recipientEmail: email,
+              idempotencyKey: `subscription-reactivated-${subscription.id}-${periodEnd ?? "x"}`,
+              templateData: {
+                customerEmail: email,
+                tierName: tierInfo?.displayName ?? "Subscription",
+                nextRenewalDate: formatDateGB(periodEnd),
+                portalUrl: `${SITE_URL}/portal`,
+              },
+            });
+          }
+
+          // Status flipped to past_due (outside of invoice events) → admin alert.
+          const prevStatus = (previous as any).status ?? (priorRow as any)?.status ?? null;
+          if (prevStatus && prevStatus !== "past_due" && subscription.status === "past_due") {
+            const tierInfo = resolveTierFromPriceId(newPriceId);
+            await logAdminAlert({
+              supabase,
+              source: "stripe.subscription_past_due",
+              severity: "warning",
+              title: `Subscription past due — ${tierInfo?.displayName ?? "Subscription"}`,
+              message: `Customer ${email ?? "unknown"} subscription is past_due (was ${prevStatus}). Stripe will retry per dunning settings.`,
+              context: { subscription_id: subscription.id, customer_email: email, prev_status: prevStatus },
               emailNotify: true,
               supabaseUrl,
               serviceRoleKey: supabaseServiceRoleKey,
