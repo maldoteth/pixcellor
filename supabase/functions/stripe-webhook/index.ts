@@ -977,7 +977,7 @@ serve(async (req) => {
 
           const item = subscription.items?.data?.[0];
           const tierInfo = resolveTierFromPriceId(item?.price?.id ?? null);
-          const periodEnd = (subscription as any).current_period_end as number | undefined;
+          const periodEnd = ((item as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
           const endedAt = (subscription as any).ended_at as number | undefined;
           const endDate = formatDateGB(periodEnd ?? endedAt);
 
