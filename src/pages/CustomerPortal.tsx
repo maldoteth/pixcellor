@@ -702,44 +702,91 @@ export default function CustomerPortal() {
                       );
                     })}
                   </div>
-                  {retainerOrders.length === 0 ? (
-                    <EmptyState icon={CreditCard} title="No retainer plan found" text="One-time project payments remain visible in order history." />
-                  ) : (
+                  {subscription || retainerOrders.length > 0 ? (
                     <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
                       <Card className="border-border bg-card/70 backdrop-blur-xl">
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2 text-base"><CalendarClock className="h-4 w-4 text-primary" /> Current plan</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm">
-                          <div>
-                            <div className="text-muted-foreground">Plan</div>
-                            <div className="mt-1 text-lg font-semibold">{latestRetainer ? packageName(latestRetainer) : "Retainer"}</div>
-                          </div>
-                          <Separator />
-                          <div className="grid grid-cols-2 gap-3">
-                            <InfoTile label="Billing" value={latestRetainer ? billingLabel(latestRetainer) : "—"} />
-                            <InfoTile label="Status" value={latestRetainer?.payment_status || "Active"} />
-                          </div>
-                          <InfoTile label="Next scheduled payment" value={nextRetainerPayment ? nextRetainerPayment.toLocaleDateString() : "Not available"} />
+                          {subscription ? (
+                            <>
+                              <div>
+                                <div className="text-muted-foreground">Plan</div>
+                                <div className="mt-1 flex items-baseline gap-2">
+                                  <span className="text-lg font-semibold capitalize">{subscription.tier || "Subscription"}</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {formatMoney(subscription.amount_total, subscription.currency)}
+                                    {subscription.billing_interval ? ` / ${subscription.billing_interval}` : ""}
+                                  </span>
+                                </div>
+                              </div>
+                              <Separator />
+                              <div className="grid grid-cols-2 gap-3">
+                                <InfoTile label="Status" value={subscription.status.replace(/_/g, " ")} />
+                                <InfoTile
+                                  label={subscription.cancel_at_period_end ? "Access ends" : "Next renewal"}
+                                  value={subscription.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : "—"}
+                                />
+                              </div>
+                              {subscription.cancel_at_period_end && subscription.current_period_end && (
+                                <p className="text-xs text-muted-foreground">
+                                  Your subscription is set to cancel on {new Date(subscription.current_period_end).toLocaleDateString()}.
+                                </p>
+                              )}
+                              <Button
+                                variant="pricing"
+                                className="w-full gap-2"
+                                onClick={handleManageBilling}
+                                disabled={billingPortalLoading}
+                              >
+                                {billingPortalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                                Manage billing
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <div>
+                                <div className="text-muted-foreground">Plan</div>
+                                <div className="mt-1 text-lg font-semibold">{latestRetainer ? packageName(latestRetainer) : "Retainer"}</div>
+                              </div>
+                              <Separator />
+                              <div className="grid grid-cols-2 gap-3">
+                                <InfoTile label="Billing" value={latestRetainer ? billingLabel(latestRetainer) : "—"} />
+                                <InfoTile label="Status" value={latestRetainer?.payment_status || "Active"} />
+                              </div>
+                              <InfoTile label="Next scheduled payment" value={nextRetainerPayment ? nextRetainerPayment.toLocaleDateString() : "Not available"} />
+                            </>
+                          )}
                         </CardContent>
                       </Card>
                       <div className="space-y-3">
-                        {retainerOrders.map((order) => (
-                          <Card key={order.id} className="border-border bg-card/70 backdrop-blur-xl">
-                            <CardContent className="flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
-                              <div>
-                                <h3 className="font-semibold">{packageName(order)}</h3>
-                                <p className="mt-1 text-sm text-muted-foreground">{new Date(order.created_at).toLocaleString()} · {billingLabel(order)}</p>
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                <Badge variant="outline">{formatMoney(order.amount_total, order.currency)}</Badge>
-                                <Badge className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">{order.payment_status || "scheduled"}</Badge>
-                              </div>
+                        {retainerOrders.length === 0 ? (
+                          <Card className="border-border bg-card/70 backdrop-blur-xl">
+                            <CardContent className="p-5 text-sm text-muted-foreground">
+                              Renewal receipts will appear here after your next billing cycle.
                             </CardContent>
                           </Card>
-                        ))}
+                        ) : (
+                          retainerOrders.map((order) => (
+                            <Card key={order.id} className="border-border bg-card/70 backdrop-blur-xl">
+                              <CardContent className="flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                  <h3 className="font-semibold">{packageName(order)}</h3>
+                                  <p className="mt-1 text-sm text-muted-foreground">{new Date(order.created_at).toLocaleString()} · {billingLabel(order)}</p>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  <Badge variant="outline">{formatMoney(order.amount_total, order.currency)}</Badge>
+                                  <Badge className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">{order.payment_status || "scheduled"}</Badge>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))
+                        )}
                       </div>
                     </div>
+                  ) : (
+                    <EmptyState icon={CreditCard} title="No subscription found" text="One-time project payments remain visible in order history." />
                   )}
                 </TabsContent>
 
