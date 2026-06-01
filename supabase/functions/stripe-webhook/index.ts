@@ -117,7 +117,7 @@ async function sendOrderConfirmationEmails(opts: {
     body: JSON.stringify({
       templateName: templateForPackage(packageName),
       recipientEmail: email,
-      idempotencyKey: `order-confirmation-${session.id}-${idempotencySuffix}`,
+      idempotencyKey: `order-confirmation-${session.id}`,
       templateData,
     }),
   });
