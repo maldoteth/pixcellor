@@ -112,6 +112,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           templateName: "customer-lead-notification",
           recipientEmail: customerWebsite.notifyEmail,
+          idempotencyKey: `lead-notify-${data.id}`,
           templateData: {
             customerWebsiteName: customerWebsite.label,
             leadName: name || "",
