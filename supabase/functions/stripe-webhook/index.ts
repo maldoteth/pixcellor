@@ -839,7 +839,7 @@ serve(async (req) => {
             const item = subscription.items?.data?.[0];
             const tierInfo = resolveTierFromPriceId(item?.price?.id ?? null);
             const intervalLabel = formatIntervalLabel(item?.price?.recurring?.interval, item?.price?.recurring?.interval_count);
-            const periodEnd = (subscription as any).current_period_end as number | undefined;
+            const periodEnd = ((item as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
             await invokeEmail({
               templateName: "subscription-renewal-receipt",
               recipientEmail: email,
