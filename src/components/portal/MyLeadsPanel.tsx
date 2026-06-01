@@ -336,6 +336,7 @@ export default function MyLeadsPanel({ maxLeads, planLabel }: { maxLeads?: numbe
 
   const handleCsvFile = async (file: File) => {
     if (!file) return;
+    if (limitReached) { toast.error(`Lead limit reached (${maxLeads}). Upgrade to import more.`); return; }
     if (file.size > 5 * 1024 * 1024) { toast.error("CSV must be under 5MB"); return; }
     setUploading(true);
     try {
