@@ -250,6 +250,8 @@ export default function CustomerPortal() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<CustomerPortalData | null>(null);
+  const [subscription, setSubscription] = useState<CustomerSubscription | null>(null);
+  const [billingPortalLoading, setBillingPortalLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
   const [isAdmin, setIsAdmin] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
