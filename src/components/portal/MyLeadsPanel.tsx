@@ -1,20 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Inbox, Loader2, Mail, Phone, Plus, Search, Trash2, Upload } from "lucide-react";
+import { Clipboard, Inbox, Loader2, Mail, Phone, Plus, Search, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -31,6 +28,31 @@ export type MyLead = {
   source: string;
   created_at: string;
 };
+
+type LeadFormKey = "name" | "phone" | "email" | "location" | "company" | "contact_name" | "notes";
+
+type WizardField = {
+  key: LeadFormKey;
+  label: string;
+  placeholder: string;
+  required: boolean;
+  inputMode: "text" | "tel" | "email" | "url";
+  multiline?: boolean;
+};
+
+const leadWizardFields: WizardField[] = [
+  { key: "name", label: "Business / lead name", placeholder: "e.g. Smith Roofing", required: true, inputMode: "text" },
+  { key: "phone", label: "Phone", placeholder: "Phone number", required: false, inputMode: "tel" },
+  { key: "email", label: "Email", placeholder: "name@company.com", required: false, inputMode: "email" },
+  { key: "location", label: "Location", placeholder: "Town or area", required: false, inputMode: "text" },
+  { key: "company", label: "Company", placeholder: "Company (if different)", required: false, inputMode: "text" },
+  { key: "contact_name", label: "Contact name", placeholder: "Person you spoke to", required: false, inputMode: "text" },
+  { key: "notes", label: "Notes", placeholder: "Anything to remember…", required: false, inputMode: "text", multiline: true },
+];
+
+const emptyForm = (): Record<LeadFormKey, string> => ({
+  name: "", phone: "", email: "", location: "", company: "", contact_name: "", notes: "",
+});
 
 // Minimal RFC 4180 CSV parser (handles quotes and commas inside quoted fields)
 function parseCsv(text: string): string[][] {
@@ -87,20 +109,12 @@ export default function MyLeadsPanel() {
   const [leads, setLeads] = useState<MyLead[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [addOpen, setAddOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [form, setForm] = useState({
-    name: "",
-    contact_name: "",
-    email: "",
-    phone: "",
-    company: "",
-    notes: "",
-    location: "",
-  });
+  const [form, setForm] = useState<Record<LeadFormKey, string>>(emptyForm());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -108,11 +122,8 @@ export default function MyLeadsPanel() {
       .from("customer_leads")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) {
-      toast.error(error.message);
-    } else {
-      setLeads((data as MyLead[]) ?? []);
-    }
+    if (error) toast.error(error.message);
+    else setLeads((data as MyLead[]) ?? []);
     setLoading(false);
   }, []);
 
@@ -127,12 +138,17 @@ export default function MyLeadsPanel() {
     );
   }, [leads, query]);
 
-  const handleAdd = async () => {
+  const openWizard = () => {
+    setForm(emptyForm());
+    setStep(0);
+    setDrawerOpen(true);
+  };
+
+  const currentField = leadWizardFields[step];
+
+  const saveLead = async () => {
     const name = form.name.trim() || form.contact_name.trim() || form.company.trim() || form.email.trim();
-    if (!name) {
-      toast.error("Add at least a name, contact, company, or email");
-      return;
-    }
+    if (!name) { toast.error("Add at least a name"); return; }
     setSaving(true);
     const { data: sessionData } = await supabase.auth.getSession();
     const uid = sessionData.session?.user.id;
@@ -153,9 +169,34 @@ export default function MyLeadsPanel() {
     setSaving(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Lead added");
-    setAddOpen(false);
-    setForm({ name: "", contact_name: "", email: "", phone: "", company: "", notes: "", location: "" });
+    setDrawerOpen(false);
+    setStep(0);
+    setForm(emptyForm());
     load();
+  };
+
+  const continueWizard = (skip = false) => {
+    const value = form[currentField.key].trim();
+    if (currentField.required && !value) {
+      toast.error(`${currentField.label} is required.`);
+      return;
+    }
+    if (!skip && currentField.key === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      toast.error("Enter a valid email (or skip).");
+      return;
+    }
+    if (skip && !currentField.required) setForm(f => ({ ...f, [currentField.key]: "" }));
+    if (step < leadWizardFields.length - 1) setStep(s => s + 1);
+    else if (!saving) void saveLead();
+  };
+
+  const pasteIntoField = async () => {
+    try {
+      const text = (await navigator.clipboard.readText()).trim();
+      setForm(f => ({ ...f, [currentField.key]: text }));
+    } catch {
+      toast.error("Clipboard not available");
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -201,12 +242,11 @@ export default function MyLeadsPanel() {
           status: (pick(row, "status") || "new").toLowerCase(),
           source: "csv_import",
         };
-      }).filter((r) => r.name && r.name !== "Unnamed" || r.email || r.phone);
+      }).filter((r) => (r.name && r.name !== "Unnamed") || r.email || r.phone);
 
       if (records.length === 0) { toast.error("No valid rows found"); return; }
       if (records.length > 2000) { toast.error("Max 2000 rows per upload"); return; }
 
-      // Batch insert (chunks of 500)
       let inserted = 0;
       for (let i = 0; i < records.length; i += 500) {
         const chunk = records.slice(i, i + 500);
@@ -249,32 +289,9 @@ export default function MyLeadsPanel() {
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
             Upload CSV
           </Button>
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild>
-              <Button variant="pricing" size="sm" className="gap-2"><Plus className="h-4 w-4" /> Add lead</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add a lead</DialogTitle>
-                <DialogDescription>Saved privately to your account.</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="space-y-1.5 md:col-span-2"><Label>Business / lead name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Smith Roofing" /></div>
-                <div className="space-y-1.5"><Label>Contact name</Label><Input value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Company</Label><Input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-                <div className="space-y-1.5 md:col-span-2"><Label>Location</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
-                <div className="space-y-1.5 md:col-span-2"><Label>Notes</Label><Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setAddOpen(false)} disabled={saving}>Cancel</Button>
-                <Button onClick={handleAdd} disabled={saving} className="gap-2">
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save lead
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button variant="pricing" size="sm" className="gap-2" onClick={openWizard}>
+            <Plus className="h-4 w-4" /> Add lead
+          </Button>
         </div>
       </div>
 
@@ -322,6 +339,75 @@ export default function MyLeadsPanel() {
           ))}
         </div>
       )}
+
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <DrawerContent className="border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-xl">
+          <DrawerHeader className="px-0 text-left">
+            <DrawerTitle>Add a lead</DrawerTitle>
+            <DrawerDescription>Step {step + 1} of {leadWizardFields.length}</DrawerDescription>
+          </DrawerHeader>
+          <div className="space-y-5">
+            <div className="h-1.5 overflow-hidden rounded-none bg-muted">
+              <div className="h-full rounded-none bg-primary transition-all" style={{ width: `${((step + 1) / leadWizardFields.length) * 100}%` }} />
+            </div>
+            <div className="space-y-3">
+              <label className="text-sm font-medium">
+                {currentField.label}{currentField.required ? " *" : ""}
+              </label>
+              <div className="flex gap-2">
+                {currentField.multiline ? (
+                  <Textarea
+                    autoFocus
+                    rows={4}
+                    placeholder={currentField.placeholder}
+                    value={form[currentField.key]}
+                    onChange={(e) => setForm(f => ({ ...f, [currentField.key]: e.target.value }))}
+                    className="text-base"
+                  />
+                ) : (
+                  <Input
+                    autoFocus
+                    inputMode={currentField.inputMode}
+                    placeholder={currentField.placeholder}
+                    value={form[currentField.key]}
+                    onChange={(e) => setForm(f => ({ ...f, [currentField.key]: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === "Enter") continueWizard(); }}
+                    className="h-12 text-base"
+                  />
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-12 w-12 shrink-0"
+                  onClick={pasteIntoField}
+                  aria-label={`Paste ${currentField.label}`}
+                >
+                  <Clipboard className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                className="rounded-none shadow-none"
+                onClick={() => step > 0 ? setStep(s => s - 1) : setDrawerOpen(false)}
+                disabled={saving}
+              >
+                {step > 0 ? "Back" : "Cancel"}
+              </Button>
+              <Button disabled={saving} onClick={() => continueWizard()}>
+                {step === leadWizardFields.length - 1 ? (saving ? "Saving…" : "Save") : "Next"}
+              </Button>
+              {!currentField.required && (
+                <Button variant="ghost" className="col-span-2" onClick={() => continueWizard(true)} disabled={saving}>
+                  Skip
+                </Button>
+              )}
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
