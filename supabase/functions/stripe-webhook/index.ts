@@ -8,6 +8,46 @@ const SITE_URL = "https://pixcellor.com";
 // auto-capture or warn before we lose the auth.
 const AUTH_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
+// Map Stripe price IDs → internal subscription tier key.
+// Keep in sync with src/components/PackagesDialog.tsx RETAINER_TIERS.
+const PRICE_TO_TIER: Record<string, { tier: "growth" | "scale" | "enterprise"; displayName: string; interval: "monthly" | "yearly" }> = {
+  // Growth
+  "price_1TcfyPBtUjwejeUwJmEbSWtN": { tier: "growth", displayName: "Growth", interval: "monthly" },
+  "price_1Tcg03BtUjwejeUwr7mYzuUb": { tier: "growth", displayName: "Growth", interval: "yearly" },
+  // Scale
+  "price_1Tcg07BtUjwejeUwfGGDhftV": { tier: "scale", displayName: "Scale", interval: "monthly" },
+  "price_1Tcg0ABtUjwejeUwLc5nw8nX": { tier: "scale", displayName: "Scale", interval: "yearly" },
+  // Enterprise (also the legacy Custom retainer)
+  "price_1TSmB8BtUjwejeUw8UXRTbBQ": { tier: "enterprise", displayName: "Enterprise", interval: "monthly" },
+  "price_1TSmBtBtUjwejeUwb8xPSvvf": { tier: "enterprise", displayName: "Enterprise", interval: "yearly" },
+};
+
+const resolveTierFromPriceId = (priceId?: string | null) => {
+  if (!priceId) return null;
+  return PRICE_TO_TIER[priceId] ?? null;
+};
+
+const formatDateGB = (epochSeconds?: number | null) => {
+  if (!epochSeconds) return undefined;
+  try {
+    return new Date(epochSeconds * 1000).toLocaleDateString("en-GB", {
+      day: "numeric", month: "long", year: "numeric",
+    });
+  } catch { return undefined; }
+};
+
+const formatIntervalLabel = (interval?: string | null, count?: number | null) => {
+  if (!interval) return undefined;
+  const i = interval.toLowerCase();
+  if (count && count > 1) return `Every ${count} ${i}s`;
+  if (i === "month") return "Monthly";
+  if (i === "year") return "Yearly";
+  if (i === "week") return "Weekly";
+  if (i === "day") return "Daily";
+  return interval;
+};
+
+
 async function logAdminAlert(opts: {
   supabase: ReturnType<typeof createClient>;
   source: string;
