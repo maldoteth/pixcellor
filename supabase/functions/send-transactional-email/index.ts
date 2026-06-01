@@ -138,6 +138,9 @@ Deno.serve(async (req) => {
     reply_to: `help@${FROM_DOMAIN}`,
     order_id: typeof templateData.sessionId === 'string' ? templateData.sessionId : typeof templateData.orderId === 'string' ? templateData.orderId : undefined,
     package_name: typeof templateData.packageName === 'string' ? templateData.packageName : undefined,
+    from_address: fromAddressOverride,
+    from_name: fromNameOverride,
+    template_data: templateData,
   }
 
   // Create Supabase client with service role (bypasses RLS)
