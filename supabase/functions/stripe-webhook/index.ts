@@ -185,6 +185,112 @@ async function sendOrderConfirmationEmails(opts: {
   });
 }
 
+// Persist/upsert the subscription row from a Stripe.Subscription.
+async function upsertSubscriptionRow(opts: {
+  supabase: ReturnType<typeof createClient>;
+  subscription: Stripe.Subscription;
+  customerEmail?: string | null;
+}) {
+  const { supabase, subscription, customerEmail } = opts;
+  const item = subscription.items?.data?.[0];
+  const priceId = item?.price?.id ?? null;
+  const tierInfo = resolveTierFromPriceId(priceId);
+  const periodStart = (subscription as any).current_period_start as number | undefined;
+  const periodEnd = (subscription as any).current_period_end as number | undefined;
+  const canceledAt = (subscription as any).canceled_at as number | undefined;
+  const endedAt = (subscription as any).ended_at as number | undefined;
+  const interval = item?.price?.recurring?.interval ?? null;
+  const intervalCount = item?.price?.recurring?.interval_count ?? null;
+
+  await supabase.from("subscriptions").upsert({
+    subscription_id: subscription.id,
+    customer_id: typeof subscription.customer === "string" ? subscription.customer : null,
+    customer_email: customerEmail ?? null,
+    tier: tierInfo?.tier ?? null,
+    price_id: priceId,
+    status: subscription.status,
+    billing_interval: formatIntervalLabel(interval, intervalCount) ?? null,
+    amount_total: item?.price?.unit_amount ?? null,
+    currency: item?.price?.currency ?? null,
+    current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+    current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+    cancel_at_period_end: Boolean(subscription.cancel_at_period_end),
+    canceled_at: canceledAt ? new Date(canceledAt * 1000).toISOString() : null,
+    ended_at: endedAt ? new Date(endedAt * 1000).toISOString() : null,
+    metadata: (subscription.metadata as Record<string, unknown>) ?? {},
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "subscription_id" });
+}
+
+async function sendSubscriptionWelcomeEmails(opts: {
+  supabaseUrl: string;
+  serviceRoleKey: string;
+  supabase: ReturnType<typeof createClient>;
+  stripe: Stripe;
+  session: Stripe.Checkout.Session;
+}) {
+  const { supabaseUrl, serviceRoleKey, supabase, stripe, session } = opts;
+  const email = session.customer_details?.email;
+  const subscriptionId = typeof session.subscription === "string" ? session.subscription : null;
+  if (!email || !subscriptionId) return;
+
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  await upsertSubscriptionRow({ supabase, subscription, customerEmail: email });
+
+  const item = subscription.items?.data?.[0];
+  const priceId = item?.price?.id ?? null;
+  const tierInfo = resolveTierFromPriceId(priceId);
+  const tierKey = tierInfo?.tier ?? "enterprise";
+  const tierDisplay = tierInfo?.displayName ?? "Retainer";
+  const intervalLabel = formatIntervalLabel(item?.price?.recurring?.interval, item?.price?.recurring?.interval_count);
+  const amountFormatted = formatGBP(item?.price?.unit_amount ?? null);
+  const periodEnd = (subscription as any).current_period_end as number | undefined;
+
+  const templateData = {
+    customerEmail: email,
+    subscriptionId,
+    tierName: tierDisplay,
+    amount: amountFormatted,
+    billingInterval: intervalLabel,
+    nextRenewalDate: formatDateGB(periodEnd),
+    portalUrl: `${SITE_URL}/portal`,
+  };
+
+  const emailHeaders = {
+    "Authorization": `Bearer ${serviceRoleKey}`,
+    "apikey": serviceRoleKey,
+    "Content-Type": "application/json",
+  };
+
+  await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+    method: "POST",
+    headers: emailHeaders,
+    body: JSON.stringify({
+      templateName: `subscription-welcome-${tierKey}`,
+      recipientEmail: email,
+      idempotencyKey: `subscription-welcome-${subscriptionId}`,
+      templateData,
+    }),
+  });
+
+  await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+    method: "POST",
+    headers: emailHeaders,
+    body: JSON.stringify({
+      templateName: "internal-new-order-notification",
+      recipientEmail: "projects@pixcellor.com",
+      idempotencyKey: `internal-subscription-notification-${subscriptionId}`,
+      templateData: {
+        ...templateData,
+        orderId: subscriptionId,
+        packageName: `${tierDisplay} Retainer (${intervalLabel || "subscription"})`,
+        billing: intervalLabel || "subscription",
+        requirementsUrl: `${SITE_URL}/portal`,
+      },
+    }),
+  });
+}
+
 serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
