@@ -197,6 +197,47 @@ export default function SentEmails() {
           {loading ? "Loading…" : rows.length < limit ? "All loaded" : "Load more"}
         </Button>
       </div>
+
+      <Dialog open={!!previewRow} onOpenChange={(o) => { if (!o) { setPreviewRow(null); setPreview(null); } }}>
+        <DialogContent className="max-w-3xl w-[95vw] p-0 overflow-hidden">
+          <DialogHeader className="px-5 pt-5 pb-3 text-left">
+            <DialogTitle className="text-left break-all">
+              {preview?.subject || previewRow?.template_name || "Email preview"}
+            </DialogTitle>
+            <DialogDescription className="text-left break-all">
+              To {previewRow?.recipient_email} · <code className="text-xs">{previewRow?.template_name}</code>
+              {previewRow ? ` · ${new Date(previewRow.created_at).toLocaleString()}` : ""}
+            </DialogDescription>
+            {preview?.usedPreviewFallback && (
+              <div className="mt-2 text-xs text-amber-300">
+                Showing preview data — this email was sent before per-send data was logged, so exact contents can’t be reproduced.
+              </div>
+            )}
+            {preview?.renderError && (
+              <div className="mt-2 text-xs text-red-300 break-all">Render error: {preview.renderError}</div>
+            )}
+          </DialogHeader>
+          <div className="bg-black">
+            {previewLoading ? (
+              <div className="flex items-center justify-center h-[60vh] text-muted-foreground">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" /> Rendering…
+              </div>
+            ) : preview?.html ? (
+              <iframe
+                title="Sent email preview"
+                srcDoc={preview.html}
+                sandbox=""
+                className="w-full bg-white"
+                style={{ height: "70vh", border: 0, display: "block" }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-[40vh] text-muted-foreground text-sm px-6 text-center">
+                No preview available.
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
