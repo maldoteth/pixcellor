@@ -195,7 +195,14 @@ export default function MyLeadsPanel({ maxLeads, planLabel }: { maxLeads?: numbe
     [events, detailId],
   );
 
-  const openWizard = () => { setForm(emptyForm()); setStep(0); setWizardOpen(true); };
+  const usedCount = leads.length;
+  const remaining = unlimited ? Infinity : Math.max(0, (maxLeads as number) - usedCount);
+  const limitReached = !unlimited && remaining <= 0;
+
+  const openWizard = () => {
+    if (limitReached) { toast.error(`Lead limit reached (${maxLeads}). Upgrade to add more.`); return; }
+    setForm(emptyForm()); setStep(0); setWizardOpen(true);
+  };
   const currentField = WIZARD[step];
 
   const saveLead = async () => {
