@@ -38,6 +38,27 @@ export default function SentEmails() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [templateFilter, setTemplateFilter] = useState<string>("all");
   const [limit, setLimit] = useState(PAGE);
+  const [previewRow, setPreviewRow] = useState<LogRow | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [preview, setPreview] = useState<{ subject: string; html: string; usedPreviewFallback?: boolean; renderError?: string } | null>(null);
+
+  const openPreview = async (r: LogRow) => {
+    setPreviewRow(r);
+    setPreview(null);
+    setPreviewLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("render-sent-email", {
+        body: { logId: r.id },
+      });
+      if (error) throw error;
+      setPreview(data as any);
+    } catch (e: any) {
+      toast.error(e?.message || "Could not render email preview");
+      setPreviewRow(null);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
