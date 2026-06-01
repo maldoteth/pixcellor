@@ -526,6 +526,54 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_leads: {
+        Row: {
+          company: string | null
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          location: string | null
+          name: string
+          notes: string | null
+          owner_user_id: string
+          phone: string | null
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          notes?: string | null
+          owner_user_id: string
+          phone?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          notes?: string | null
+          owner_user_id?: string
+          phone?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       domain_registrations: {
         Row: {
           attempts: number
