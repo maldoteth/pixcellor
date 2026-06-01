@@ -52,4 +52,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'subscription-payment-failed': subscriptionPaymentFailed,
   'subscription-cancelled': subscriptionCancelled,
   'subscription-tier-changed': subscriptionTierChanged,
+  'subscription-reactivated': subscriptionReactivated,
 }
