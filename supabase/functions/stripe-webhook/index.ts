@@ -243,11 +243,15 @@ async function sendSubscriptionWelcomeEmails(opts: {
   const item = subscription.items?.data?.[0];
   const priceId = item?.price?.id ?? null;
   const tierInfo = resolveTierFromPriceId(priceId);
-  const tierKey = tierInfo?.tier ?? "enterprise";
-  const tierDisplay = tierInfo?.displayName ?? "Retainer";
+  if (!tierInfo) {
+    console.warn("[subscription-welcome] Unknown price id, skipping tier-specific email", { priceId, subscriptionId });
+    return;
+  }
+  const tierKey = tierInfo.tier;
+  const tierDisplay = tierInfo.displayName;
   const intervalLabel = formatIntervalLabel(item?.price?.recurring?.interval, item?.price?.recurring?.interval_count);
   const amountFormatted = formatGBP(item?.price?.unit_amount ?? null);
-  const periodEnd = (subscription as any).current_period_end as number | undefined;
+  const periodEnd = ((item as any)?.current_period_end ?? (subscription as any).current_period_end) as number | undefined;
 
   const templateData = {
     customerEmail: email,
