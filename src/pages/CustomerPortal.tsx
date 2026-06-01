@@ -185,6 +185,21 @@ type CustomerPortalData = {
   visionPreviews?: CustomerVisionPreview[];
 };
 
+type CustomerSubscription = {
+  id: string;
+  subscription_id: string;
+  customer_email: string | null;
+  tier: string | null;
+  status: string;
+  price_id: string | null;
+  amount_total: number | null;
+  currency: string | null;
+  billing_interval: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  canceled_at: string | null;
+};
+
 const formatMoney = (amount: number | null, currency: string | null) => {
   if (amount == null) return "—";
   return new Intl.NumberFormat("en-GB", {
