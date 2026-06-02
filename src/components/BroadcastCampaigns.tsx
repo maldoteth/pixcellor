@@ -107,6 +107,7 @@ export default function BroadcastCampaigns() {
         source,
         contactStatuses: source === "customers" ? [] : statuses,
         contactIndustries: source === "customers" ? [] : industries,
+        extraEmails,
       },
     });
     setPreviewing(false);
