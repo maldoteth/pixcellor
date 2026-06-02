@@ -324,6 +324,9 @@ export default function BroadcastCampaigns() {
               <div className="text-sm">
                 <span className="font-semibold">{previewCount}</span> recipients from {sourceLabel}
                 {sample.length > 0 && <span className="text-muted-foreground"> · e.g. {sample.slice(0, 3).join(", ")}</span>}
+                {suppressedCount > 0 && (
+                  <span className="text-muted-foreground"> · {suppressedCount} unsubscribed skipped</span>
+                )}
               </div>
             )}
           </div>
