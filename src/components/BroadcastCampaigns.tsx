@@ -22,6 +22,8 @@ const STATUS_COLORS: Record<string, string> = {
   gold: "hsl(45 93% 47%)",
 };
 
+type ContactRow = { id: string; name: string | null; email: string | null; status: string | null; industry: string | null };
+
 export default function BroadcastCampaigns() {
   const confirmDialog = useConfirmDialog();
   const [source, setSource] = useState<Source>("contacts");
@@ -37,15 +39,49 @@ export default function BroadcastCampaigns() {
   const [previewing, setPreviewing] = useState(false);
   const [sending, setSending] = useState(false);
 
+  // Add specific contacts
+  const [contacts, setContacts] = useState<ContactRow[]>([]);
+  const [search, setSearch] = useState("");
+  const [extraEmails, setExtraEmails] = useState<string[]>([]);
+
   useEffect(() => {
     void (async () => {
-      const { data } = await supabase.from("contacts").select("industry").not("industry", "is", null);
+      const { data } = await supabase
+        .from("contacts")
+        .select("id,name,email,status,industry")
+        .not("email", "is", null);
+      const rows = (data || []) as ContactRow[];
+      setContacts(rows);
       const uniq = Array.from(
-        new Set((data || []).map((r: { industry: string | null }) => (r.industry || "").toLowerCase()).filter(Boolean))
+        new Set(rows.map((r) => (r.industry || "").toLowerCase()).filter(Boolean))
       ).sort();
       setAllIndustries(uniq);
     })();
   }, []);
+
+  const searchResults = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return contacts
+      .filter((c) => {
+        const email = (c.email || "").toLowerCase();
+        if (!email || extraEmails.includes(email)) return false;
+        return email.includes(q) || (c.name || "").toLowerCase().includes(q);
+      })
+      .slice(0, 8);
+  }, [search, contacts, extraEmails]);
+
+  const addExtraEmail = (email: string) => {
+    const e = email.trim().toLowerCase();
+    if (!e) return;
+    setExtraEmails((prev) => (prev.includes(e) ? prev : [...prev, e]));
+    setSearch("");
+    setPreviewCount(null);
+  };
+  const removeExtraEmail = (email: string) => {
+    setExtraEmails((prev) => prev.filter((x) => x !== email));
+    setPreviewCount(null);
+  };
 
   const toggle = (list: string[], value: string) =>
     list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
