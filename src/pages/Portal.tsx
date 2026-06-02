@@ -2895,7 +2895,7 @@ export default function Portal() {
               <Button variant={completedReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setCompletedReqsFilter("submitted")}>Reqs submitted</Button>
               <Button variant={completedReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setCompletedReqsFilter("waiting")}>Waiting</Button>
             </div>
-            {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No completed orders {completedQ ? "match your search" : "yet"}.</p>}
+            {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No delivered orders {completedQ ? "match your search" : "yet"}.</p>}
             {completedOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
