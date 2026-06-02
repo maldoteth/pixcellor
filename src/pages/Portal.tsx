@@ -2051,6 +2051,41 @@ export default function Portal() {
     toast.success("Order moved back to open.");
   };
 
+  const sendWebsiteUpdateEmail = async (o: { session_id: string; customer_email: string | null }) => {
+    if (!o.customer_email) {
+      toast.error("This order has no customer email on file.");
+      return;
+    }
+    const result = await promptDialog({
+      title: "Send website update email",
+      description: `Notifies ${o.customer_email} that their site has been updated, with hard-refresh / cache / private-browser tips.`,
+      fields: [
+        { name: "customerName", label: "Customer first name (optional)", type: "text", required: false, placeholder: "Jamie" },
+        { name: "message", label: "Custom message (optional)", type: "textarea", required: false, placeholder: "the changes you requested are now live on your website…" },
+      ],
+      confirmLabel: "Send update email",
+    });
+    if (!result) return;
+    toast.info(`Queuing update email to ${o.customer_email}…`);
+    const { data, error } = await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "website-update",
+        recipientEmail: o.customer_email,
+        idempotencyKey: `website-update-${o.session_id}-${Date.now()}`,
+        templateData: {
+          customerName: result.customerName?.trim() || undefined,
+          message: result.message?.trim() || undefined,
+        },
+      },
+    });
+    if (error || (data as { error?: string })?.error) {
+      toast.error((data as { error?: string })?.error || error?.message || "Update email failed to send.");
+      return;
+    }
+    toast.success(`Update email queued to ${o.customer_email}.`);
+  };
+
+
   const sendTestOrderCompleteEmail = async () => {
     const result = await promptDialog({
       title: "Send test order-complete email",
