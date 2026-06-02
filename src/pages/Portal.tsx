@@ -2879,9 +2879,13 @@ export default function Portal() {
                         <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
                         {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                         <div className="text-lg font-semibold">{o.amount_total != null ? formatGBP(o.amount_total) : "—"}</div>
+                        <Button variant="outline" size="sm" onClick={() => sendWebsiteUpdateEmail(o)}>
+                          Update
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => markOrderUndelivered(o.session_id)}>
                           Mark undelivered
                         </Button>
+
                       </div>
                     </div>
 
