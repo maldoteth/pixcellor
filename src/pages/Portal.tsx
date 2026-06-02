@@ -1982,7 +1982,7 @@ export default function Portal() {
       if (data?.emailWarning) {
         toast.warning(`Order marked delivered, but the completion email failed: ${data.emailWarning}`);
       } else {
-        toast.success(`Order completed and email sent to ${data.recipientEmail || order.customer_email}.`);
+        toast.success(`Order delivered and email sent to ${data.recipientEmail || order.customer_email}.`);
       }
     } finally {
       setDeliveringOrderId(null);
@@ -2425,7 +2425,7 @@ export default function Portal() {
             <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 xl:grid-cols-9">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Orders</TabsTrigger>
-            <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Completed</TabsTrigger>
+            <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Delivered</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs</TabsTrigger>
             <TabsTrigger value="campaigns" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Megaphone className="h-3.5 w-3.5 shrink-0" />Email/SMS</TabsTrigger>
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats</TabsTrigger>
@@ -2882,12 +2882,12 @@ export default function Portal() {
               </div>
               <Button variant="outline" size="sm" onClick={sendTestOrderCompleteEmail}>
                 <Mail className="mr-2 h-3.5 w-3.5" />
-                Send test order-complete email
+                Send test order-delivered email
               </Button>
             </div>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search completed orders by email, order ID, status, domain…" className="pl-9" />
+              <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search delivered orders by email, order ID, status, domain…" className="pl-9" />
             </div>
             <div className="flex flex-wrap items-center gap-2 rounded-none border border-border bg-card/50 p-3">
               <span className="text-xs font-medium text-muted-foreground">Requirements</span>
@@ -2895,7 +2895,7 @@ export default function Portal() {
               <Button variant={completedReqsFilter === "submitted" ? "default" : "outline"} size="sm" onClick={() => setCompletedReqsFilter("submitted")}>Reqs submitted</Button>
               <Button variant={completedReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setCompletedReqsFilter("waiting")}>Waiting</Button>
             </div>
-            {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No completed orders {completedQ ? "match your search" : "yet"}.</p>}
+            {completedOrders.length === 0 && <p className="text-muted-foreground text-sm">No delivered orders {completedQ ? "match your search" : "yet"}.</p>}
             {completedOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
