@@ -99,16 +99,20 @@ export default function ServiceSalesView({
       <motion.section {...fadeUp} className="mb-12 md:mb-16">
         {heroImage && (
           <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9] py-0 my-[10px]">
-            {service.slug === "animated-sites" ? (
-              <TubesCursor />
-            ) : service.slug === "full-web-apps" ? (
-              <LandingPagesHero />
-            ) : service.slug === "landing-pages" ? (
-              <FullWebAppsHero />
-            ) : service.slug === "ai-integrations-agents" || service.slug === "blockchain-integrations" ? (
-              <div className="absolute inset-0 bg-black">
-                <Wave />
-              </div>
+            {hasWebglHero ? (
+              <Suspense fallback={<BannerFallback />}>
+                {service.slug === "animated-sites" ? (
+                  <TubesCursor />
+                ) : service.slug === "full-web-apps" ? (
+                  <LandingPagesHero />
+                ) : service.slug === "landing-pages" ? (
+                  <FullWebAppsHero />
+                ) : (
+                  <div className="absolute inset-0 bg-black">
+                    <Wave />
+                  </div>
+                )}
+              </Suspense>
             ) : (
               <img
                 src={heroImage}
