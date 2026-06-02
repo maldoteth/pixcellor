@@ -231,7 +231,7 @@ export default function OrderSuccess() {
                 <div className="space-y-3">
                   <h1 className="text-3xl md:text-5xl font-semibold tracking-normal">Order is still syncing</h1>
                   <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Checkout sent you back successfully, but the final confirmation is taking longer than expected. Your confirmation email should arrive shortly if payment completed.
+                    Checkout sent you back successfully, but the final confirmation is taking longer than expected. Your confirmation email should arrive shortly if payment was successful.
                   </p>
                 </div>
               </>
