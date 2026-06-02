@@ -36,12 +36,25 @@ const WebsiteUpdateEmail = ({ customerName, message }: WebsiteUpdateProps) => (
         <Section style={panel}>
           <Row>
             <Column style={panelInner}>
+              <Text style={panelTitle}>Not seeing the changes?</Text>
+              <Text style={text}>Browsers often cache websites to make them load faster, which can hide recent updates. If the site still looks the same, try one of these:</Text>
+              <Text style={tip}>• Hard refresh the page — <strong>Ctrl + Shift + R</strong> (Windows) or <strong>Cmd + Shift + R</strong> (Mac).</Text>
+              <Text style={tip}>• Clear your browser cache for the site, then reload.</Text>
+              <Text style={tip}>• Open the site in a private / incognito window to bypass the cache entirely.</Text>
+            </Column>
+          </Row>
+        </Section>
+
+        <Section style={panel}>
+          <Row>
+            <Column style={panelInner}>
               <Text style={signOff}>Best,</Text>
               <Text style={signName}>Erica Hernandez</Text>
               <Text style={signRole}>Client Director</Text>
             </Column>
           </Row>
         </Section>
+
       </Container>
     </Body>
   </Html>
@@ -75,3 +88,7 @@ const panelInner = { padding: '28px 34px 32px' }
 const signOff = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.6', margin: '0 0 14px' }
 const signName = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as const, lineHeight: '1.4', margin: '0' }
 const signRole = { color: '#929292', fontSize: '13px', lineHeight: '1.5', margin: '2px 0 0' }
+const panelTitle = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as const, lineHeight: '1.4', margin: '0 0 12px' }
+const text = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '0 0 14px' }
+const tip = { color: '#d0d0d0', fontSize: '14px', lineHeight: '1.7', margin: '0 0 8px' }
+
