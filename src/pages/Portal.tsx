@@ -2887,7 +2887,7 @@ export default function Portal() {
             </div>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search completed orders by email, order ID, status, domain…" className="pl-9" />
+              <Input value={completedSearch} onChange={(e) => setCompletedSearch(e.target.value)} placeholder="Search delivered orders by email, order ID, status, domain…" className="pl-9" />
             </div>
             <div className="flex flex-wrap items-center gap-2 rounded-none border border-border bg-card/50 p-3">
               <span className="text-xs font-medium text-muted-foreground">Requirements</span>
