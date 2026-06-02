@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, Eye, Wand2 } from "lucide-react";
+import { Loader2, Send, Eye, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import RichEmailEditor from "./email/RichEmailEditor";
 import EmailPreview from "./email/EmailPreview";
