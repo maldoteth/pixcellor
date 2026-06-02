@@ -128,12 +128,20 @@ export default function BroadcastCampaigns() {
 
   const send = async (testOnly: boolean) => {
     const plain = bodyHtml.replace(/<[^>]+>/g, "").trim();
-    if (!subject.trim() || plain.length === 0) {
-      toast.error("Subject and body are required");
+    if (!subject.trim() && plain.length === 0) {
+      toast.error("Add a subject line and email body before sending.");
+      return;
+    }
+    if (!subject.trim()) {
+      toast.error("Add a subject line before sending.");
+      return;
+    }
+    if (plain.length === 0) {
+      toast.error("Add an email body before sending.");
       return;
     }
     if (testOnly && !testRecipient.trim()) {
-      toast.error("Enter a test recipient email");
+      toast.error("Enter a valid test recipient email address.");
       return;
     }
     if (!testOnly) {
@@ -161,9 +169,22 @@ export default function BroadcastCampaigns() {
       },
     });
     setSending(false);
-    const result = data as { sent?: number; failed?: number; total?: number; error?: string } | null;
+    const result = data as {
+      sent?: number;
+      failed?: number;
+      total?: number;
+      error?: string;
+      suppressedEmails?: string[];
+    } | null;
     if (error || result?.error) {
-      toast.error(result?.error || error?.message || "Send failed");
+      let msg =
+        result?.error ||
+        error?.message ||
+        "Couldn't send broadcast — check the recipients and try again.";
+      if (result?.suppressedEmails?.length && !msg.includes("unsubscribed")) {
+        msg += ` ${result.suppressedEmails.length} unsubscribed contact${result.suppressedEmails.length === 1 ? " was" : "s were"} skipped.`;
+      }
+      toast.error(msg);
       return;
     }
     toast.success(`Sent ${result?.sent}/${result?.total} (${result?.failed} failed)`);
