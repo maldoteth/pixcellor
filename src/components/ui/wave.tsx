@@ -3,10 +3,21 @@
   Transparent background, centered plane, pointer-reactive shader.
 */
 import type React from "react";
-import { useRef, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import * as THREE from "three";
 import { Canvas, extend, useFrame } from "@react-three/fiber";
 import { shaderMaterial, OrthographicCamera } from "@react-three/drei";
+
+// Detect touch / coarse-pointer devices once at module load. We use this to
+// disable pointer tracking and lower the renderer cost on phones/tablets where
+// hover doesn't apply and the GPU budget is tighter.
+const isCoarsePointer =
+  typeof window !== "undefined" &&
+  (window.matchMedia?.("(pointer: coarse)").matches ||
+    window.matchMedia?.("(max-width: 767px)").matches);
+const prefersReducedMotion =
+  typeof window !== "undefined" &&
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 const WaveMaterial = shaderMaterial(
   {
@@ -123,20 +134,41 @@ export function Wave({
   tiles = 1.5,
   pointer: pointerOverride,
   disablePointerTracking = false,
-  dpr = [1, 2],
+  dpr,
   onPointerMove,
   className,
   style,
 }: WaveProps) {
   const [localPointer, setLocalPointer] = useState<{ x: number; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(true);
+
+  const effectiveDpr: number | [number, number] =
+    dpr ?? (isCoarsePointer ? [1, 1.25] : [1, 1.75]);
+  const trackPointer = !disablePointerTracking && !isCoarsePointer;
   const effectivePointer = pointerOverride ?? localPointer ?? undefined;
+  const effectiveSpeed = prefersReducedMotion ? 0 : speed;
+
+  // Pause the GL loop when offscreen so a second instance (e.g. footer
+  // banner) doesn't burn GPU while the hero is in view.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold: 0.05 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   return (
     <div
+      ref={containerRef}
       className={className}
       style={{ width: "100%", height: "100%", ...style }}
       onPointerMove={(e) => {
-        if (!disablePointerTracking && !pointerOverride) {
+        if (trackPointer && !pointerOverride) {
           const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
           const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
           const ny = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
@@ -145,15 +177,20 @@ export function Wave({
         onPointerMove?.(e);
       }}
     >
-      <Canvas dpr={dpr} gl={{ alpha: true, antialias: true }} style={{ background: "transparent" }}>
+      <Canvas
+        dpr={effectiveDpr}
+        frameloop={visible ? "always" : "demand"}
+        gl={{ alpha: true, antialias: !isCoarsePointer, powerPreference: "low-power" }}
+        style={{ background: "transparent" }}
+      >
         <Suspense fallback={null}>
           <WaveQuad
-            speed={speed}
+            speed={effectiveSpeed}
             tiles={tiles}
             width={width}
             height={height}
             pointerOverride={effectivePointer}
-            trackPointer={!disablePointerTracking}
+            trackPointer={trackPointer}
           />
         </Suspense>
       </Canvas>

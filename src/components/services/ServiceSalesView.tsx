@@ -1,13 +1,22 @@
+import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/services";
 import { Button } from "@/components/ui/button";
 import { SERVICE_IMAGES } from "@/assets/services";
-import TubesCursor from "@/components/ui/tubes-cursor";
-import LandingPagesHero from "@/components/services/LandingPagesHero";
-import FullWebAppsHero from "@/components/services/FullWebAppsHero";
-import { Wave } from "@/components/ui/wave";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+// Code-split the heavy WebGL hero banners so the drawer's initial JS payload
+// stays small. Each banner only downloads its three.js / shader code when the
+// matching service is opened.
+const TubesCursor = lazy(() => import("@/components/ui/tubes-cursor"));
+const LandingPagesHero = lazy(() => import("@/components/services/LandingPagesHero"));
+const FullWebAppsHero = lazy(() => import("@/components/services/FullWebAppsHero"));
+const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
+
+// Lightweight placeholder shown while a banner chunk is loading.
+const BannerFallback = () => <div className="absolute inset-0 bg-black" aria-hidden="true" />;
 
 function dispatchCta(action: ServiceCtaAction, onAction?: () => void) {
   onAction?.();
@@ -76,6 +85,13 @@ export default function ServiceSalesView({
   const cat = SERVICE_CATEGORIES[service.category];
   const Icon = cat.icon;
   const heroImage = SERVICE_IMAGES[service.slug];
+  const isMobile = useIsMobile();
+  const hasWebglHero =
+    service.slug === "animated-sites" ||
+    service.slug === "full-web-apps" ||
+    service.slug === "landing-pages" ||
+    service.slug === "ai-integrations-agents" ||
+    service.slug === "blockchain-integrations";
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
@@ -83,16 +99,20 @@ export default function ServiceSalesView({
       <motion.section {...fadeUp} className="mb-12 md:mb-16">
         {heroImage && (
           <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9] py-0 my-[10px]">
-            {service.slug === "animated-sites" ? (
-              <TubesCursor />
-            ) : service.slug === "full-web-apps" ? (
-              <LandingPagesHero />
-            ) : service.slug === "landing-pages" ? (
-              <FullWebAppsHero />
-            ) : service.slug === "ai-integrations-agents" || service.slug === "blockchain-integrations" ? (
-              <div className="absolute inset-0 bg-black">
-                <Wave />
-              </div>
+            {hasWebglHero ? (
+              <Suspense fallback={<BannerFallback />}>
+                {service.slug === "animated-sites" ? (
+                  <TubesCursor />
+                ) : service.slug === "full-web-apps" ? (
+                  <LandingPagesHero />
+                ) : service.slug === "landing-pages" ? (
+                  <FullWebAppsHero />
+                ) : (
+                  <div className="absolute inset-0 bg-black">
+                    <Wave />
+                  </div>
+                )}
+              </Suspense>
             ) : (
               <img
                 src={heroImage}
@@ -248,40 +268,20 @@ export default function ServiceSalesView({
         {...fadeUp}
         className="relative overflow-hidden rounded-xl border border-foreground/15 bg-foreground/[0.04] p-6 md:p-10 text-center backdrop-blur-md"
       >
-        {service.slug === "landing-pages" ? (
+        {hasWebglHero && !isMobile ? (
           <>
-            <div className="absolute inset-0 opacity-60">
-              <FullWebAppsHero />
-            </div>
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
-            />
-          </>
-        ) : service.slug === "animated-sites" ? (
-          <>
-            <div className="absolute inset-0 opacity-60">
-              <TubesCursor />
-            </div>
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
-            />
-          </>
-        ) : service.slug === "full-web-apps" ? (
-          <>
-            <div className="absolute inset-0 opacity-60">
-              <LandingPagesHero />
-            </div>
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
-            />
-          </>
-        ) : service.slug === "ai-integrations-agents" || service.slug === "blockchain-integrations" ? (
-          <>
-            <div className="absolute inset-0 bg-black opacity-60">
-              <Wave />
+            <div className="absolute inset-0 opacity-60 bg-black">
+              <Suspense fallback={null}>
+                {service.slug === "landing-pages" ? (
+                  <FullWebAppsHero />
+                ) : service.slug === "animated-sites" ? (
+                  <TubesCursor />
+                ) : service.slug === "full-web-apps" ? (
+                  <LandingPagesHero />
+                ) : (
+                  <Wave />
+                )}
+              </Suspense>
             </div>
             <div
               aria-hidden="true"
