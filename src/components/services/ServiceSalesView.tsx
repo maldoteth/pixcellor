@@ -7,6 +7,7 @@ import { SERVICE_IMAGES } from "@/assets/services";
 import TubesCursor from "@/components/ui/tubes-cursor";
 import LandingPagesHero from "@/components/services/LandingPagesHero";
 import FullWebAppsHero from "@/components/services/FullWebAppsHero";
+import { Wave } from "@/components/ui/wave";
 
 function dispatchCta(action: ServiceCtaAction, onAction?: () => void) {
   onAction?.();
@@ -88,6 +89,10 @@ export default function ServiceSalesView({
               <LandingPagesHero />
             ) : service.slug === "landing-pages" ? (
               <FullWebAppsHero />
+            ) : service.slug === "ai-integrations-agents" || service.slug === "blockchain-integrations" ? (
+              <div className="absolute inset-0 bg-black">
+                <Wave />
+              </div>
             ) : (
               <img
                 src={heroImage}
