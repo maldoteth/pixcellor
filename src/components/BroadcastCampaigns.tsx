@@ -173,6 +173,55 @@ export default function BroadcastCampaigns() {
       <Card>
         <CardContent className="p-4 space-y-4">
           <div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Add specific contacts</div>
+            <div className="relative">
+              <Input
+                placeholder="Search by name or email…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(search.trim())) {
+                    e.preventDefault();
+                    addExtraEmail(search);
+                  }
+                }}
+              />
+              {searchResults.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-lg max-h-64 overflow-y-auto">
+                  {searchResults.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => addExtraEmail(c.email || "")}
+                      className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted/50"
+                    >
+                      <span className="truncate">{c.name || c.email}</span>
+                      <span className="text-xs text-muted-foreground font-mono truncate">{c.email}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {extraEmails.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {extraEmails.map((email) => (
+                  <Badge key={email} variant="outline" className="gap-1 pr-1">
+                    <span className="font-mono text-xs">{email}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeExtraEmail(email)}
+                      className="rounded-sm hover:bg-muted p-0.5"
+                      aria-label={`Remove ${email}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
             <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Recipient source</div>
             <div className="flex flex-wrap gap-2">
               {(["contacts", "customers", "both"] as Source[]).map((s) => (
@@ -235,54 +284,7 @@ export default function BroadcastCampaigns() {
             </>
           )}
 
-          <div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Add specific contacts</div>
-            <div className="relative">
-              <Input
-                placeholder="Search by name or email…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(search.trim())) {
-                    e.preventDefault();
-                    addExtraEmail(search);
-                  }
-                }}
-              />
-              {searchResults.length > 0 && (
-                <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-lg max-h-64 overflow-y-auto">
-                  {searchResults.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => addExtraEmail(c.email || "")}
-                      className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted/50"
-                    >
-                      <span className="truncate">{c.name || c.email}</span>
-                      <span className="text-xs text-muted-foreground font-mono truncate">{c.email}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            {extraEmails.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {extraEmails.map((email) => (
-                  <Badge key={email} variant="outline" className="gap-1 pr-1">
-                    <span className="font-mono text-xs">{email}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeExtraEmail(email)}
-                      className="rounded-sm hover:bg-muted p-0.5"
-                      aria-label={`Remove ${email}`}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
+
 
 
           <div className="flex items-center gap-3 flex-wrap">
