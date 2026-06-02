@@ -26,7 +26,7 @@ type ContactRow = { id: string; name: string | null; email: string | null; statu
 
 export default function BroadcastCampaigns() {
   const confirmDialog = useConfirmDialog();
-  const [source, setSource] = useState<Source>("contacts");
+  const [source, setSource] = useState<Source | null>(null);
   const [statuses, setStatuses] = useState<string[]>([]);
   const [industries, setIndustries] = useState<string[]>([]);
   const [allIndustries, setAllIndustries] = useState<string[]>([]);
