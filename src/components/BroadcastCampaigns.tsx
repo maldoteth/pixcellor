@@ -237,7 +237,7 @@ export default function BroadcastCampaigns() {
             </div>
           </div>
 
-          {source !== "customers" && (
+          {source && source !== "customers" && (
             <>
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Contact statuses</div>
