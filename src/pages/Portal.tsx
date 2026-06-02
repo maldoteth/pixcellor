@@ -2882,7 +2882,7 @@ export default function Portal() {
               </div>
               <Button variant="outline" size="sm" onClick={sendTestOrderCompleteEmail}>
                 <Mail className="mr-2 h-3.5 w-3.5" />
-                Send test order-complete email
+                Send test order-delivered email
               </Button>
             </div>
             <div className="relative">
