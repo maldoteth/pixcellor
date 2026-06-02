@@ -3,10 +3,21 @@
   Transparent background, centered plane, pointer-reactive shader.
 */
 import type React from "react";
-import { useRef, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import * as THREE from "three";
 import { Canvas, extend, useFrame } from "@react-three/fiber";
 import { shaderMaterial, OrthographicCamera } from "@react-three/drei";
+
+// Detect touch / coarse-pointer devices once at module load. We use this to
+// disable pointer tracking and lower the renderer cost on phones/tablets where
+// hover doesn't apply and the GPU budget is tighter.
+const isCoarsePointer =
+  typeof window !== "undefined" &&
+  (window.matchMedia?.("(pointer: coarse)").matches ||
+    window.matchMedia?.("(max-width: 767px)").matches);
+const prefersReducedMotion =
+  typeof window !== "undefined" &&
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 const WaveMaterial = shaderMaterial(
   {
