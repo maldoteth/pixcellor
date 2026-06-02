@@ -88,3 +88,7 @@ const panelInner = { padding: '28px 34px 32px' }
 const signOff = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.6', margin: '0 0 14px' }
 const signName = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as const, lineHeight: '1.4', margin: '0' }
 const signRole = { color: '#929292', fontSize: '13px', lineHeight: '1.5', margin: '2px 0 0' }
+const panelTitle = { color: '#ffffff', fontSize: '15px', fontWeight: '800' as const, lineHeight: '1.4', margin: '0 0 12px' }
+const text = { color: '#d0d0d0', fontSize: '15px', lineHeight: '1.7', margin: '0 0 14px' }
+const tip = { color: '#d0d0d0', fontSize: '14px', lineHeight: '1.7', margin: '0 0 8px' }
+
