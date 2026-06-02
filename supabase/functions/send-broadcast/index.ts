@@ -186,25 +186,34 @@ Deno.serve(async (req) => {
     }
 
     const recipientArray = Array.from(recipients);
+    const initialCount = recipientArray.length;
+    let suppressedList: string[] = [];
     if (recipientArray.length > 0) {
       const { data: suppressed } = await admin
         .from("suppressed_emails")
         .select("email")
         .in("email", recipientArray);
       const supSet = new Set((suppressed || []).map((s) => s.email.toLowerCase()));
+      suppressedList = Array.from(supSet);
       for (const e of supSet) recipients.delete(e);
     }
+    const suppressedCount = initialCount - recipients.size;
 
     if (body.action === "preview") {
-      return json({ recipientCount: recipients.size, sample: Array.from(recipients).slice(0, 5) });
+      return json({
+        recipientCount: recipients.size,
+        sample: Array.from(recipients).slice(0, 5),
+        suppressedCount,
+        suppressedSample: suppressedList.slice(0, 5),
+      });
     }
 
     // ----- Send -----
     const subject = String(body.subject || "").trim();
     const rawHtml = (body.bodyHtml || "").trim();
     const rawText = (body.bodyText || "").trim();
-    if (!subject) return json({ error: "Subject is required" }, 400);
-    if (!rawHtml && !rawText) return json({ error: "Email body is required" }, 400);
+    if (!subject) return json({ error: "Add a subject line before sending." }, 400);
+    if (!rawHtml && !rawText) return json({ error: "Add an email body before sending." }, 400);
 
     const innerHtml = rawHtml || `<p style="margin:0 0 16px;white-space:pre-wrap;">${escapeHtml(rawText)}</p>`;
     const plainFallback = rawText || htmlToPlainText(rawHtml);
@@ -217,7 +226,25 @@ Deno.serve(async (req) => {
     if (body.testRecipient && isEmail(body.testRecipient.toLowerCase())) {
       toSend = [body.testRecipient.toLowerCase()];
     }
-    if (toSend.length === 0) return json({ error: "No valid recipients found" }, 400);
+    if (toSend.length === 0) {
+      const hasAnyInput =
+        !!body.source ||
+        (Array.isArray(body.extraEmails) && body.extraEmails.length > 0) ||
+        !!body.testRecipient;
+      if (!hasAnyInput) {
+        return json({ error: "Add at least one recipient: pick a source, add emails, or set a test recipient." }, 400);
+      }
+      if (initialCount === 0) {
+        return json({ error: "The selected recipient source returned 0 contacts. Adjust filters or add emails manually." }, 400);
+      }
+      const sample = suppressedList.slice(0, 3).join(", ");
+      const hint = sample ? ` (e.g. ${sample})` : "";
+      return json({
+        error: `All ${initialCount} recipient${initialCount === 1 ? "" : "s"} are unsubscribed and were skipped${hint}. Nothing to send.`,
+        suppressedCount,
+        suppressedEmails: suppressedList,
+      }, 400);
+    }
 
     const broadcastId = crypto.randomUUID();
     let queued = 0;

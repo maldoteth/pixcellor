@@ -36,6 +36,7 @@ export default function BroadcastCampaigns() {
   const [testRecipient, setTestRecipient] = useState("");
   const [previewCount, setPreviewCount] = useState<number | null>(null);
   const [sample, setSample] = useState<string[]>([]);
+  const [suppressedCount, setSuppressedCount] = useState<number>(0);
   const [previewing, setPreviewing] = useState(false);
   const [sending, setSending] = useState(false);
 
@@ -112,21 +113,35 @@ export default function BroadcastCampaigns() {
     });
     setPreviewing(false);
     if (error || (data as { error?: string })?.error) {
-      toast.error((data as { error?: string })?.error || error?.message || "Preview failed");
+      toast.error(
+        (data as { error?: string })?.error ||
+          error?.message ||
+          "Couldn't load preview — check the recipient source, filters, and added emails.",
+      );
       return;
     }
-    setPreviewCount((data as { recipientCount: number }).recipientCount);
-    setSample((data as { sample: string[] }).sample || []);
+    const d = data as { recipientCount: number; sample?: string[]; suppressedCount?: number };
+    setPreviewCount(d.recipientCount);
+    setSample(d.sample || []);
+    setSuppressedCount(d.suppressedCount ?? 0);
   };
 
   const send = async (testOnly: boolean) => {
     const plain = bodyHtml.replace(/<[^>]+>/g, "").trim();
-    if (!subject.trim() || plain.length === 0) {
-      toast.error("Subject and body are required");
+    if (!subject.trim() && plain.length === 0) {
+      toast.error("Add a subject line and email body before sending.");
+      return;
+    }
+    if (!subject.trim()) {
+      toast.error("Add a subject line before sending.");
+      return;
+    }
+    if (plain.length === 0) {
+      toast.error("Add an email body before sending.");
       return;
     }
     if (testOnly && !testRecipient.trim()) {
-      toast.error("Enter a test recipient email");
+      toast.error("Enter a valid test recipient email address.");
       return;
     }
     if (!testOnly) {
@@ -154,9 +169,22 @@ export default function BroadcastCampaigns() {
       },
     });
     setSending(false);
-    const result = data as { sent?: number; failed?: number; total?: number; error?: string } | null;
+    const result = data as {
+      sent?: number;
+      failed?: number;
+      total?: number;
+      error?: string;
+      suppressedEmails?: string[];
+    } | null;
     if (error || result?.error) {
-      toast.error(result?.error || error?.message || "Send failed");
+      let msg =
+        result?.error ||
+        error?.message ||
+        "Couldn't send broadcast — check the recipients and try again.";
+      if (result?.suppressedEmails?.length && !msg.includes("unsubscribed")) {
+        msg += ` ${result.suppressedEmails.length} unsubscribed contact${result.suppressedEmails.length === 1 ? " was" : "s were"} skipped.`;
+      }
+      toast.error(msg);
       return;
     }
     toast.success(`Sent ${result?.sent}/${result?.total} (${result?.failed} failed)`);
@@ -296,6 +324,9 @@ export default function BroadcastCampaigns() {
               <div className="text-sm">
                 <span className="font-semibold">{previewCount}</span> recipients from {sourceLabel}
                 {sample.length > 0 && <span className="text-muted-foreground"> · e.g. {sample.slice(0, 3).join(", ")}</span>}
+                {suppressedCount > 0 && (
+                  <span className="text-muted-foreground"> · {suppressedCount} unsubscribed skipped</span>
+                )}
               </div>
             )}
           </div>
