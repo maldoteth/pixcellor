@@ -178,6 +178,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (Array.isArray(body.extraEmails)) {
+      body.extraEmails.forEach((raw) => {
+        const e = String(raw || "").trim().toLowerCase();
+        if (isEmail(e)) recipients.add(e);
+      });
+    }
+
     const recipientArray = Array.from(recipients);
     if (recipientArray.length > 0) {
       const { data: suppressed } = await admin
