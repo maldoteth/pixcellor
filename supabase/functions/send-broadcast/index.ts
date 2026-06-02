@@ -38,6 +38,7 @@ type RequestBody = {
   contactStatuses?: string[];
   contactIndustries?: string[];
   testRecipient?: string;
+  extraEmails?: string[];
 };
 
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
