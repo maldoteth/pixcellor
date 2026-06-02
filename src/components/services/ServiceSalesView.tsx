@@ -268,40 +268,20 @@ export default function ServiceSalesView({
         {...fadeUp}
         className="relative overflow-hidden rounded-xl border border-foreground/15 bg-foreground/[0.04] p-6 md:p-10 text-center backdrop-blur-md"
       >
-        {service.slug === "landing-pages" ? (
+        {hasWebglHero && !isMobile ? (
           <>
-            <div className="absolute inset-0 opacity-60">
-              <FullWebAppsHero />
-            </div>
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
-            />
-          </>
-        ) : service.slug === "animated-sites" ? (
-          <>
-            <div className="absolute inset-0 opacity-60">
-              <TubesCursor />
-            </div>
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
-            />
-          </>
-        ) : service.slug === "full-web-apps" ? (
-          <>
-            <div className="absolute inset-0 opacity-60">
-              <LandingPagesHero />
-            </div>
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
-            />
-          </>
-        ) : service.slug === "ai-integrations-agents" || service.slug === "blockchain-integrations" ? (
-          <>
-            <div className="absolute inset-0 bg-black opacity-60">
-              <Wave />
+            <div className="absolute inset-0 opacity-60 bg-black">
+              <Suspense fallback={null}>
+                {service.slug === "landing-pages" ? (
+                  <FullWebAppsHero />
+                ) : service.slug === "animated-sites" ? (
+                  <TubesCursor />
+                ) : service.slug === "full-web-apps" ? (
+                  <LandingPagesHero />
+                ) : (
+                  <Wave />
+                )}
+              </Suspense>
             </div>
             <div
               aria-hidden="true"
