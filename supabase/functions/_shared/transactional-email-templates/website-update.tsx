@@ -36,12 +36,25 @@ const WebsiteUpdateEmail = ({ customerName, message }: WebsiteUpdateProps) => (
         <Section style={panel}>
           <Row>
             <Column style={panelInner}>
+              <Text style={panelTitle}>Not seeing the changes?</Text>
+              <Text style={text}>Browsers often cache websites to make them load faster, which can hide recent updates. If the site still looks the same, try one of these:</Text>
+              <Text style={tip}>• Hard refresh the page — <strong>Ctrl + Shift + R</strong> (Windows) or <strong>Cmd + Shift + R</strong> (Mac).</Text>
+              <Text style={tip}>• Clear your browser cache for the site, then reload.</Text>
+              <Text style={tip}>• Open the site in a private / incognito window to bypass the cache entirely.</Text>
+            </Column>
+          </Row>
+        </Section>
+
+        <Section style={panel}>
+          <Row>
+            <Column style={panelInner}>
               <Text style={signOff}>Best,</Text>
               <Text style={signName}>Erica Hernandez</Text>
               <Text style={signRole}>Client Director</Text>
             </Column>
           </Row>
         </Section>
+
       </Container>
     </Body>
   </Html>
