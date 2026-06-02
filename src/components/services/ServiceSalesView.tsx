@@ -278,6 +278,16 @@ export default function ServiceSalesView({
               className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
             />
           </>
+        ) : service.slug === "ai-integrations-agents" || service.slug === "blockchain-integrations" ? (
+          <>
+            <div className="absolute inset-0 bg-black opacity-60">
+              <Wave />
+            </div>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
+            />
+          </>
         ) : heroImage && (
           <>
             <img
