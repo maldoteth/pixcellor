@@ -1982,7 +1982,7 @@ export default function Portal() {
       if (data?.emailWarning) {
         toast.warning(`Order marked delivered, but the completion email failed: ${data.emailWarning}`);
       } else {
-        toast.success(`Order completed and email sent to ${data.recipientEmail || order.customer_email}.`);
+        toast.success(`Order delivered and email sent to ${data.recipientEmail || order.customer_email}.`);
       }
     } finally {
       setDeliveringOrderId(null);
