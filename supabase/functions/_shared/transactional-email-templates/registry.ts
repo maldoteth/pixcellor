@@ -31,6 +31,7 @@ import { template as subscriptionPaymentFailed } from './subscription-payment-fa
 import { template as subscriptionCancelled } from './subscription-cancelled.tsx'
 import { template as subscriptionTierChanged } from './subscription-tier-changed.tsx'
 import { template as subscriptionReactivated } from './subscription-reactivated.tsx'
+import { template as websiteUpdate } from './website-update.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'full-works-order-confirmation': fullWorksOrderConfirmation,
@@ -53,4 +54,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'subscription-cancelled': subscriptionCancelled,
   'subscription-tier-changed': subscriptionTierChanged,
   'subscription-reactivated': subscriptionReactivated,
+  'website-update': websiteUpdate,
 }
