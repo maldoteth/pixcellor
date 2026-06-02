@@ -113,11 +113,17 @@ export default function BroadcastCampaigns() {
     });
     setPreviewing(false);
     if (error || (data as { error?: string })?.error) {
-      toast.error((data as { error?: string })?.error || error?.message || "Preview failed");
+      toast.error(
+        (data as { error?: string })?.error ||
+          error?.message ||
+          "Couldn't load preview — check the recipient source, filters, and added emails.",
+      );
       return;
     }
-    setPreviewCount((data as { recipientCount: number }).recipientCount);
-    setSample((data as { sample: string[] }).sample || []);
+    const d = data as { recipientCount: number; sample?: string[]; suppressedCount?: number };
+    setPreviewCount(d.recipientCount);
+    setSample(d.sample || []);
+    setSuppressedCount(d.suppressedCount ?? 0);
   };
 
   const send = async (testOnly: boolean) => {
