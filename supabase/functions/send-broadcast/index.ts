@@ -38,6 +38,7 @@ type RequestBody = {
   contactStatuses?: string[];
   contactIndustries?: string[];
   testRecipient?: string;
+  extraEmails?: string[];
 };
 
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -173,6 +174,13 @@ Deno.serve(async (req) => {
       if (cuErr) return json({ error: cuErr.message }, 500);
       customers?.forEach((c) => {
         const e = String(c.customer_email || "").trim().toLowerCase();
+        if (isEmail(e)) recipients.add(e);
+      });
+    }
+
+    if (Array.isArray(body.extraEmails)) {
+      body.extraEmails.forEach((raw) => {
+        const e = String(raw || "").trim().toLowerCase();
         if (isEmail(e)) recipients.add(e);
       });
     }

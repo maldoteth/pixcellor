@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, Eye, Wand2 } from "lucide-react";
+import { Loader2, Send, Eye, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import RichEmailEditor from "./email/RichEmailEditor";
 import EmailPreview from "./email/EmailPreview";
@@ -22,6 +22,8 @@ const STATUS_COLORS: Record<string, string> = {
   gold: "hsl(45 93% 47%)",
 };
 
+type ContactRow = { id: string; name: string | null; email: string | null; status: string | null; industry: string | null };
+
 export default function BroadcastCampaigns() {
   const confirmDialog = useConfirmDialog();
   const [source, setSource] = useState<Source>("contacts");
@@ -37,15 +39,49 @@ export default function BroadcastCampaigns() {
   const [previewing, setPreviewing] = useState(false);
   const [sending, setSending] = useState(false);
 
+  // Add specific contacts
+  const [contacts, setContacts] = useState<ContactRow[]>([]);
+  const [search, setSearch] = useState("");
+  const [extraEmails, setExtraEmails] = useState<string[]>([]);
+
   useEffect(() => {
     void (async () => {
-      const { data } = await supabase.from("contacts").select("industry").not("industry", "is", null);
+      const { data } = await supabase
+        .from("contacts")
+        .select("id,name,email,status,industry")
+        .not("email", "is", null);
+      const rows = (data || []) as ContactRow[];
+      setContacts(rows);
       const uniq = Array.from(
-        new Set((data || []).map((r: { industry: string | null }) => (r.industry || "").toLowerCase()).filter(Boolean))
+        new Set(rows.map((r) => (r.industry || "").toLowerCase()).filter(Boolean))
       ).sort();
       setAllIndustries(uniq);
     })();
   }, []);
+
+  const searchResults = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return contacts
+      .filter((c) => {
+        const email = (c.email || "").toLowerCase();
+        if (!email || extraEmails.includes(email)) return false;
+        return email.includes(q) || (c.name || "").toLowerCase().includes(q);
+      })
+      .slice(0, 8);
+  }, [search, contacts, extraEmails]);
+
+  const addExtraEmail = (email: string) => {
+    const e = email.trim().toLowerCase();
+    if (!e) return;
+    setExtraEmails((prev) => (prev.includes(e) ? prev : [...prev, e]));
+    setSearch("");
+    setPreviewCount(null);
+  };
+  const removeExtraEmail = (email: string) => {
+    setExtraEmails((prev) => prev.filter((x) => x !== email));
+    setPreviewCount(null);
+  };
 
   const toggle = (list: string[], value: string) =>
     list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -71,6 +107,7 @@ export default function BroadcastCampaigns() {
         source,
         contactStatuses: source === "customers" ? [] : statuses,
         contactIndustries: source === "customers" ? [] : industries,
+        extraEmails,
       },
     });
     setPreviewing(false);
@@ -112,6 +149,7 @@ export default function BroadcastCampaigns() {
         source,
         contactStatuses: source === "customers" ? [] : statuses,
         contactIndustries: source === "customers" ? [] : industries,
+        extraEmails,
         testRecipient: testOnly ? testRecipient.trim() : undefined,
       },
     });
@@ -196,6 +234,56 @@ export default function BroadcastCampaigns() {
               )}
             </>
           )}
+
+          <div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Add specific contacts</div>
+            <div className="relative">
+              <Input
+                placeholder="Search by name or email…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(search.trim())) {
+                    e.preventDefault();
+                    addExtraEmail(search);
+                  }
+                }}
+              />
+              {searchResults.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-lg max-h-64 overflow-y-auto">
+                  {searchResults.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => addExtraEmail(c.email || "")}
+                      className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted/50"
+                    >
+                      <span className="truncate">{c.name || c.email}</span>
+                      <span className="text-xs text-muted-foreground font-mono truncate">{c.email}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {extraEmails.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {extraEmails.map((email) => (
+                  <Badge key={email} variant="outline" className="gap-1 pr-1">
+                    <span className="font-mono text-xs">{email}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeExtraEmail(email)}
+                      className="rounded-sm hover:bg-muted p-0.5"
+                      aria-label={`Remove ${email}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
 
           <div className="flex items-center gap-3 flex-wrap">
             <Button onClick={runPreview} disabled={previewing} variant="outline" size="sm">
