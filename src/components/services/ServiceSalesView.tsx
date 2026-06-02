@@ -1,13 +1,22 @@
+import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/services";
 import { Button } from "@/components/ui/button";
 import { SERVICE_IMAGES } from "@/assets/services";
-import TubesCursor from "@/components/ui/tubes-cursor";
-import LandingPagesHero from "@/components/services/LandingPagesHero";
-import FullWebAppsHero from "@/components/services/FullWebAppsHero";
-import { Wave } from "@/components/ui/wave";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+// Code-split the heavy WebGL hero banners so the drawer's initial JS payload
+// stays small. Each banner only downloads its three.js / shader code when the
+// matching service is opened.
+const TubesCursor = lazy(() => import("@/components/ui/tubes-cursor"));
+const LandingPagesHero = lazy(() => import("@/components/services/LandingPagesHero"));
+const FullWebAppsHero = lazy(() => import("@/components/services/FullWebAppsHero"));
+const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
+
+// Lightweight placeholder shown while a banner chunk is loading.
+const BannerFallback = () => <div className="absolute inset-0 bg-black" aria-hidden="true" />;
 
 function dispatchCta(action: ServiceCtaAction, onAction?: () => void) {
   onAction?.();
