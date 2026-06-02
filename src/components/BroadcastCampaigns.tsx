@@ -36,6 +36,7 @@ export default function BroadcastCampaigns() {
   const [testRecipient, setTestRecipient] = useState("");
   const [previewCount, setPreviewCount] = useState<number | null>(null);
   const [sample, setSample] = useState<string[]>([]);
+  const [suppressedCount, setSuppressedCount] = useState<number>(0);
   const [previewing, setPreviewing] = useState(false);
   const [sending, setSending] = useState(false);
 
