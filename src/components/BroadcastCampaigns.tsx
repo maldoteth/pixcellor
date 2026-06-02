@@ -149,6 +149,7 @@ export default function BroadcastCampaigns() {
         source,
         contactStatuses: source === "customers" ? [] : statuses,
         contactIndustries: source === "customers" ? [] : industries,
+        extraEmails,
         testRecipient: testOnly ? testRecipient.trim() : undefined,
       },
     });
