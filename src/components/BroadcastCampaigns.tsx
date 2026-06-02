@@ -26,7 +26,7 @@ type ContactRow = { id: string; name: string | null; email: string | null; statu
 
 export default function BroadcastCampaigns() {
   const confirmDialog = useConfirmDialog();
-  const [source, setSource] = useState<Source>("contacts");
+  const [source, setSource] = useState<Source | null>(null);
   const [statuses, setStatuses] = useState<string[]>([]);
   const [industries, setIndustries] = useState<string[]>([]);
   const [allIndustries, setAllIndustries] = useState<string[]>([]);
@@ -163,7 +163,7 @@ export default function BroadcastCampaigns() {
   };
 
   const sourceLabel = useMemo(
-    () => ({ contacts: "CRM contacts", customers: "Past customers", both: "CRM + customers" }[source]),
+    () => (source ? { contacts: "CRM contacts", customers: "Past customers", both: "CRM + customers" }[source] : "specific contacts"),
     [source],
   );
 
@@ -237,7 +237,7 @@ export default function BroadcastCampaigns() {
             </div>
           </div>
 
-          {source !== "customers" && (
+          {source && source !== "customers" && (
             <>
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Contact statuses</div>
