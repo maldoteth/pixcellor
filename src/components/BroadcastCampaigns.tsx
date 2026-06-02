@@ -163,7 +163,7 @@ export default function BroadcastCampaigns() {
   };
 
   const sourceLabel = useMemo(
-    () => ({ contacts: "CRM contacts", customers: "Past customers", both: "CRM + customers" }[source]),
+    () => (source ? { contacts: "CRM contacts", customers: "Past customers", both: "CRM + customers" }[source] : "specific contacts"),
     [source],
   );
 
