@@ -2,12 +2,13 @@ import { useEffect, useState, lazy, Suspense } from "react";
 import IntroAnimation from "@/components/ui/scroll-morph-hero";
 import ChatBot from "@/components/ChatBot";
 import { useIsMobile } from "@/hooks/use-mobile";
-import CustomerAccess from "@/components/CustomerAccess";
-import PackagesDialog from "@/components/PackagesDialog";
 import SeoHead from "@/components/SeoHead";
-import VisionGenerator from "@/components/VisionGenerator";
 
-// Lazy-loaded: these have no initial visible UI — they mount on user events.
+// Lazy-loaded: large bundles or overlays that mount on user events.
+// Keeping these off the critical path shaves ~200KB of JS off first paint.
+const PackagesDialog = lazy(() => import("@/components/PackagesDialog"));
+const VisionGenerator = lazy(() => import("@/components/VisionGenerator"));
+const CustomerAccess = lazy(() => import("@/components/CustomerAccess"));
 const FalloffConsentBanner = lazy(() => import("@/components/FalloffConsentBanner"));
 const RotateDevicePrompt = lazy(() => import("@/components/RotateDevicePrompt"));
 const TryBeforeBuyDrawer = lazy(() => import("@/components/TryBeforeBuyDrawer"));
@@ -149,9 +150,11 @@ const Index = () => {
           onPackagesOpenChange={setPackagesOpen}
           overlayOpen={overlayOpen}
         />
-        <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
-        <VisionGenerator hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
-        <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+        <Suspense fallback={null}>
+          <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+          <VisionGenerator hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+          <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+        </Suspense>
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
         <Suspense fallback={null}>
           <TryBeforeBuyDrawer />
