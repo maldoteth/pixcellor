@@ -19,6 +19,10 @@ const CUSTOMER_WEBSITES: Record<string, { label: string; notifyEmail: string }> 
     label: "Set In Stone Southern LTD",
     notifyEmail: "setinstoneltd@outlook.com",
   },
+  set_in_stone_tiling: {
+    label: "Set In Stone Tiling LTD",
+    notifyEmail: "setinstoneltd@outlook.com",
+  },
 };
 
 const BodySchema = z.object({

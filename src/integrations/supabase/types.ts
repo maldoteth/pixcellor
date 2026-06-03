@@ -1819,6 +1819,10 @@ export type Database = {
     Functions: {
       claim_login_handoff: { Args: { _sid: string }; Returns: Json }
       customer_fetch_portal: { Args: never; Returns: Json }
+      customer_has_lead_source: {
+        Args: { _source: string; _user_id: string }
+        Returns: boolean
+      }
       customer_lead_source_for: { Args: { _user_id: string }; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }
