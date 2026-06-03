@@ -15,6 +15,10 @@ const CUSTOMER_WEBSITES: Record<string, { label: string; notifyEmail: string }> 
     label: "DMB Scaffolding",
     notifyEmail: "dmbscaffoldingltd@outlook.com",
   },
+  set_in_stone_southern: {
+    label: "Set In Stone Southern LTD",
+    notifyEmail: "",
+  },
 };
 
 const BodySchema = z.object({
