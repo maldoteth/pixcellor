@@ -150,9 +150,11 @@ const Index = () => {
           onPackagesOpenChange={setPackagesOpen}
           overlayOpen={overlayOpen}
         />
-        <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
-        <VisionGenerator hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
-        <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+        <Suspense fallback={null}>
+          <PackagesDialog mobileTop hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+          <VisionGenerator hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+          <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
+        </Suspense>
         <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
         <Suspense fallback={null}>
           <TryBeforeBuyDrawer />
