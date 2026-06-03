@@ -17,7 +17,7 @@ const CUSTOMER_WEBSITES: Record<string, { label: string; notifyEmail: string }> 
   },
   set_in_stone_southern: {
     label: "Set In Stone Southern LTD",
-    notifyEmail: "",
+    notifyEmail: "setinstoneltd@outlook.com",
   },
 };
 
