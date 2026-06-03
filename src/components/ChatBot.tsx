@@ -236,12 +236,14 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     scrollToBottom();
   }, [messages]);
 
+  // Defer the initial chat history / sales-chat init until the user actually
+  // opens the chat. Previously this fired on page load and added a ~2.5s
+  // edge-function request to the critical path, contributing to LCP jitter.
   useEffect(() => {
-    if (!hasStarted) {
-      loadChatHistory();
-    }
+    if (!isOpen || hasStarted) return;
+    loadChatHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) setAdminUnreadCount(0);
