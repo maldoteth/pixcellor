@@ -1,28 +1,16 @@
-## Goal
-Replace the generic "No valid recipients found" / "Send failed" errors in the email composer with messages that tell the user exactly why nothing was sent.
+## Plan
 
-## Backend — `supabase/functions/send-broadcast/index.ts`
+One lead in the database has the unrecognised `source = 'set_in_stone'`:
+- **test name** (test@testemail.com / 07777…) — submitted 2026-06-03 13:00 UTC, with a tiling-services brief.
 
-Track recipient state through the pipeline and return specific 400 responses:
+### Steps
 
-1. Before suppression filtering, capture `initialCount = recipients.size`.
-2. After filtering against `suppressed_emails`, capture `suppressedCount = initialCount - recipients.size` and keep the list of suppressed emails (already in `supSet`).
-3. Replace the single `"No valid recipients found"` branch with:
-   - If no source selected and no extras and no test recipient → `"Add at least one recipient: pick a source, add emails, or set a test recipient."`
-   - If `initialCount === 0` (source selected but produced 0 matches) → `"The selected recipient source returned 0 contacts. Adjust filters or add emails manually."`
-   - If `initialCount > 0 && recipients.size === 0` (everyone filtered out) → `"All ${initialCount} recipient(s) are unsubscribed and were skipped. Nothing to send."` plus include `suppressedEmails` in the response payload so the UI can show them.
-   - Apply the same shape to the preview branch (return `suppressedCount` alongside `recipientCount`).
-4. Keep existing `"Subject is required"` and `"Email body is required"` (already specific).
+1. **Retag the lead**: update `contacts.source` from `set_in_stone` → `set_in_stone_tiling` so it routes to George's portal (`setinstoneltd@outlook.com`) and shows under the Set In Stone Tiling LTD brand.
 
-## Frontend — `src/components/BroadcastCampaigns.tsx`
+2. **Send the notification email** to `setinstoneltd@outlook.com` by invoking `send-transactional-email` with the `customer-lead-notification` template, populated from the lead's name/email/phone/message and brand label "Set In Stone Tiling LTD". Uses an idempotency key tied to the contact id so it can't double-send.
 
-1. In the send handler (around line 159), surface the server `error` field as-is when present, and when the response includes `suppressedEmails`, append a short hint like " (e.g. malik@dehub.net)" using the first one.
-2. Replace generic fallbacks:
-   - `"Subject and body are required"` → split into `"Add a subject line."` and `"Add an email body."` based on which is missing.
-   - `"Enter a test recipient email"` → `"Enter a valid test recipient email address."`
-   - `"Preview failed"` fallback → `"Couldn't load preview — check subject, body, and recipient source."`
-   - `"Send failed"` fallback → `"Couldn't send broadcast — check recipients and try again."`
-3. In the preview panel, if `suppressedCount > 0`, render a small muted line: `"{n} unsubscribed contact(s) will be skipped."`
+3. **Verify**: check `email_send_log` for the new row and confirm status is `pending`/`sent`.
 
-## Out of scope
-SMS composer, transactional email functions, auth flows. UI layout unchanged apart from the new preview hint line.
+### Note on the broader queue issue
+
+This sends one email directly through the transactional pipeline. If the `process-email-queue` cron is stalled on Live, the row may sit at `pending`. If that happens we'll need a separate investigation into the queue cron — out of scope for this plan.
