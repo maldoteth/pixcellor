@@ -225,7 +225,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
               alt={item.photo.text}
               crossOrigin="anonymous"
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: item.photo.pos ?? '50% 50%' }}
+              style={{ objectPosition: item.photo.pos ?? '0% 50%' }}
               loading="eager"
               decoding="sync"
               // @ts-expect-error fetchPriority is valid HTML
