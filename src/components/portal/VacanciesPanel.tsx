@@ -530,7 +530,7 @@ export default function VacanciesPanel() {
               </Select>
             </div>
             <div><Label>Charge rate (to client, /{form.pay_period})</Label><Input type="number" step="0.01" value={form.charge_rate} onChange={(e) => setForm({ ...form, charge_rate: e.target.value })} placeholder="e.g. 22.50" /></div>
-            <div><Label>PAYE on-cost %</Label><Input type="number" step="0.1" value={form.paye_rate_percent} onChange={(e) => setForm({ ...form, paye_rate_percent: e.target.value })} placeholder="17" /></div>
+            <div><Label>PAYE on-cost %</Label><Input type="number" step="0.1" value={form.paye_rate_percent} onChange={(e) => setForm({ ...form, paye_rate_percent: e.target.value })} placeholder="21" /></div>
             <div className="sm:col-span-2 rounded-md border bg-muted/30 px-3 py-2 text-xs">
               {(() => {
                 const pay = Number(form.pay_max || form.pay_min || 0);
