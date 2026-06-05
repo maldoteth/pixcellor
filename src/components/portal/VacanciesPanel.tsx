@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import AIRecommendationsPanel from "./AIRecommendationsPanel";
 import PlaceAutocomplete from "@/components/ui/place-autocomplete";
-import WeekSchedule from "./WeekSchedule";
+import VacancyCalendarStrip from "./VacancyCalendarStrip";
 
 type Vacancy = {
   id: string;
