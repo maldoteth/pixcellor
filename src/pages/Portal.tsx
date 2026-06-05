@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Archive, BarChart3, Briefcase, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Pencil, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Briefcase, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Pencil, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Upload, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 import { downloadImage } from "@/lib/download-image";
 
 const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
@@ -45,6 +45,7 @@ import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
 import CandidatesPanel from "@/components/portal/CandidatesPanel";
 import VacanciesPanel from "@/components/portal/VacanciesPanel";
+import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import ContactMatchingCandidates from "@/components/portal/ContactMatchingCandidates";
 import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPanel";
 import FindLeadsButton from "@/components/portal/FindLeadsButton";
@@ -495,6 +496,7 @@ export default function Portal() {
   const [falloffsSearch, setFalloffsSearch] = useState("");
   const [chatsSearch, setChatsSearch] = useState("");
   const [profilesSearch, setProfilesSearch] = useState("");
+  const [clientsImportOpen, setClientsImportOpen] = useState(false);
   const [clientsVisibleCount, setClientsVisibleCount] = useState(10);
   const [callbacksVisibleCount, setCallbacksVisibleCount] = useState(10);
   const [sectionCounts, setSectionCounts] = useState<Record<string, number>>({});
@@ -3247,6 +3249,9 @@ export default function Portal() {
                   <Button onClick={openMobileContactForm} className="h-9 shrink-0">
                     <UserPlus className="w-4 h-4 mr-2" /> Add Client
                   </Button>
+                  <Button variant="outline" onClick={() => setClientsImportOpen(true)} className="h-9 shrink-0">
+                    <Upload className="w-4 h-4 mr-2" /> Import CSV
+                  </Button>
                   <FindLeadsButton onQueued={loadPortalSnapshot} />
                 </div>
               </div>
@@ -3475,6 +3480,39 @@ export default function Portal() {
           </TabsContent>
 
         </Tabs>
+
+        <CsvImportDialog
+          open={clientsImportOpen}
+          onOpenChange={setClientsImportOpen}
+          title="Import clients"
+          description="Upload a CSV of clients. Headers like Company / Email / Phone are auto-detected."
+          columns={[
+            { key: "name", label: "Company name", required: true, aliases: ["company", "business", "client"] },
+            { key: "contact_name", label: "Contact name", aliases: ["contact", "person", "full_name"] },
+            { key: "email", label: "Email" },
+            { key: "phone", label: "Phone", aliases: ["mobile", "tel"] },
+            { key: "location", label: "Location", aliases: ["city", "address"] },
+            { key: "industry", label: "Industry" },
+            { key: "website", label: "Website", aliases: ["url", "domain"] },
+            { key: "notes", label: "Notes / job title" },
+          ]}
+          importRow={async (r) => {
+            if (!r.name) return { ok: false, error: "Missing company name" };
+            const { error } = await (supabase as any).rpc("portal_create_contact", {
+              _name: r.name,
+              _contact_name: r.contact_name || null,
+              _phone: r.phone || null,
+              _email: r.email || null,
+              _location: r.location || null,
+              _notes: r.notes || null,
+              _industry: r.industry || "general",
+              _website: r.website || null,
+            });
+            if (error) return { ok: false, error: error.message };
+            return { ok: true };
+          }}
+          onDone={loadPortalSnapshot}
+        />
 
       </div>
 
