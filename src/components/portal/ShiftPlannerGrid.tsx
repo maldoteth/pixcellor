@@ -91,7 +91,7 @@ function startOfWeek(d: Date): Date {
 
 const cellKey = (vacancyId: string, date: string) => `${vacancyId}|${date}`;
 
-export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI }: Props) {
+export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
   const { toast } = useToast();
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   const [shifts, setShifts] = useState<Record<string, Record<string, Shift>>>({});
