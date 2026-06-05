@@ -48,6 +48,7 @@ type Props = {
   onAssign: (id: string) => void;
   onDelete: (id: string) => void;
   onOpenAI?: (id: string) => void;
+  onVacancyChanged?: () => void | Promise<void>;
 };
 
 type ClipItem = { start: string | null; finish: string | null };
@@ -90,7 +91,7 @@ function startOfWeek(d: Date): Date {
 
 const cellKey = (vacancyId: string, date: string) => `${vacancyId}|${date}`;
 
-export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI }: Props) {
+export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
   const { toast } = useToast();
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   const [shifts, setShifts] = useState<Record<string, Record<string, Shift>>>({});
@@ -182,11 +183,39 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false };
   }, [vacancies, shifts]);
 
+  const DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"] as const;
+
+  // Ensure the vacancy's date window and schedule_days cover this shift's date/time.
+  // Keeps the Edit form in sync when shifts are created on the calendar.
+  const syncVacancyWindow = async (vacancyId: string, date: string, s: string | null, f: string | null, cancelled: boolean) => {
+    if (cancelled) return;
+    const v = vacancies.find((x) => x.id === vacancyId);
+    if (!v) return;
+    const patch: Record<string, unknown> = {};
+    if (!v.start_date || date < v.start_date) patch.start_date = date;
+    if (!v.end_date || date > v.end_date) patch.end_date = date;
+    const dowFull = DOW_FULL[new Date(date + "T00:00:00").getDay()];
+    const existing = (v.schedule_days ?? []).map((d) => d);
+    const hasDow = existing.some((d) => d.toLowerCase().startsWith(dowFull.toLowerCase().slice(0, 3)));
+    if (!hasDow) patch.schedule_days = [...existing, dowFull];
+    if (s && !v.start_time) patch.start_time = s.length === 5 ? `${s}:00` : s;
+    if (f && !v.finish_time) patch.finish_time = f.length === 5 ? `${f}:00` : f;
+    if (Object.keys(patch).length === 0) return;
+    const { error } = await supabase.rpc("portal_update_vacancy" as never, { _id: vacancyId, _patch: patch } as never);
+    if (error) {
+      // Non-fatal — the shift was saved; just log
+      console.warn("Vacancy window sync failed", error.message);
+    } else {
+      await onVacancyChanged?.();
+    }
+  };
+
   const upsert = async (vacancyId: string, date: string, s: string | null, f: string | null, cancelled = false) => {
     const { error } = await supabase.rpc("portal_upsert_vacancy_shift" as never, {
       _vacancy_id: vacancyId, _date: date, _start: s, _finish: f, _cancelled: cancelled,
     } as never);
-    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    if (error) { toast({ title: "Save failed", description: error.message, variant: "destructive" }); return; }
+    await syncVacancyWindow(vacancyId, date, s, f, cancelled);
   };
 
   const removeShift = async (vacancyId: string, date: string) => {

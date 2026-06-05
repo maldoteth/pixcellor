@@ -358,6 +358,7 @@ export default function VacanciesPanel() {
           onAssign={(id) => setAssignTo(id)}
           onDelete={handleDelete}
           onOpenAI={(id) => setAiFor(id)}
+          onVacancyChanged={load}
         />
       )}
 
