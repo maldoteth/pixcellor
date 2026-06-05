@@ -161,8 +161,10 @@ export default function VacanciesPanel() {
   const toArr = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
   const handleCreate = async () => {
+    const title = form.title.trim();
     if (!form.client_contact_id) { toast({ title: "Select a client", variant: "destructive" }); return; }
-    if (!form.title.trim()) { toast({ title: "Job title is required", variant: "destructive" }); return; }
+    if (!title) { toast({ title: "Job title is required", variant: "destructive" }); return; }
+    if (title.length > 160) { toast({ title: "Job title must be 160 characters or fewer", variant: "destructive" }); return; }
     setSaving(true);
     const extraNotes = customTimes
       ? form.schedule_days
@@ -174,28 +176,44 @@ export default function VacanciesPanel() {
           .filter(Boolean)
           .join(", ")
       : "";
-    const mergedNotes = [form.schedule_notes, extraNotes].filter(Boolean).join(" | ");
-    const payload = {
-      ...form,
-      schedule_notes: mergedNotes,
-      openings: form.openings ? Number(form.openings) : 1,
-      duration_weeks: form.duration_weeks || null,
-      hours_per_week: form.hours_per_week || null,
-      pay_min: form.pay_min || null,
-      pay_max: form.pay_max || null,
+    const mergedNotes = [form.schedule_notes.trim(), extraNotes].filter(Boolean).join(" | ");
+    const numOrNull = (s: string) => (s && !isNaN(Number(s)) ? Number(s) : null);
+    const payload: Record<string, unknown> = {
+      client_contact_id: form.client_contact_id,
+      title,
+      reference: form.reference.trim() || null,
+      description: form.description.trim() || null,
+      location: form.location.trim() || null,
+      arrangement: form.arrangement,
+      employment_type: form.employment_type,
+      status: form.status,
+      openings: numOrNull(form.openings) ?? 1,
+      start_date: form.start_date || null,
+      end_date: form.end_date || null,
+      start_time: form.start_time || null,
+      finish_time: form.finish_time || null,
+      schedule_days: form.schedule_days,
+      schedule_notes: mergedNotes || null,
+      duration_weeks: numOrNull(form.duration_weeks),
+      hours_per_week: numOrNull(form.hours_per_week),
       qualifications: toArr(form.qualifications),
       required_skills: toArr(form.required_skills),
       nice_to_have_skills: toArr(form.nice_to_have_skills),
       certifications: toArr(form.certifications),
+      right_to_work_required: form.right_to_work_required,
+      pay_min: numOrNull(form.pay_min),
+      pay_max: numOrNull(form.pay_max),
+      pay_currency: form.pay_currency.trim() || "GBP",
+      pay_period: form.pay_period,
+      benefits: form.benefits.trim() || null,
+      notes: form.notes.trim() || null,
     };
     const { error } = await supabase.rpc("portal_create_vacancy", { _payload: payload as any });
     setSaving(false);
     if (error) { toast({ title: "Could not create vacancy", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Vacancy created" });
     setOpenDialog(false);
-    setForm({ ...emptyForm });
-    setPerDayTimes({});
-    setCustomTimes(false);
+    resetForm();
     load();
   };
 
