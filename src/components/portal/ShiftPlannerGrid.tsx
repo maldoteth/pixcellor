@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +96,12 @@ const cellKey = (vacancyId: string, date: string) => `${vacancyId}|${date}`;
 
 export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const jobColW = isMobile ? 120 : 260;
+  const clientColW = isMobile ? 90 : 180;
+  const dayMinW = isMobile ? 84 : 140;
+  const gridTemplate = `${jobColW}px ${clientColW}px repeat(7, minmax(${dayMinW}px, 1fr))`;
+  const minGridW = jobColW + clientColW + dayMinW * 7;
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   const [shifts, setShifts] = useState<Record<string, Record<string, Shift>>>({});
   const [loading, setLoading] = useState(false);
@@ -487,12 +494,12 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       </div>
 
       {/* Grid */}
-      <div className="overflow-x-auto">
-        <div className="min-w-[1100px]">
+      <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:thin]" style={{ touchAction: "pan-x pan-y" }}>
+        <div style={{ minWidth: `${minGridW}px` }}>
           {/* Header row */}
-          <div className="grid sticky top-0 z-20 bg-muted/30" style={{ gridTemplateColumns: "260px 180px repeat(7, minmax(140px, 1fr))" }}>
-            <button type="button" onClick={() => toggleSort("title")} className="sticky left-0 z-30 border-b border-r bg-muted/30 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground">Job{sortArrow("title")}</button>
-            <button type="button" onClick={() => toggleSort("client")} className="sticky left-[260px] z-30 border-b border-r bg-muted/30 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground">Client{sortArrow("client")}</button>
+          <div className="grid sticky top-0 z-20 bg-muted/30" style={{ gridTemplateColumns: gridTemplate }}>
+            <button type="button" onClick={() => toggleSort("title")} className="sticky left-0 z-30 border-b border-r bg-muted/30 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground">Job{sortArrow("title")}</button>
+            <button type="button" onClick={() => toggleSort("client")} className="sticky z-30 border-b border-r bg-muted/30 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground" style={{ left: `${jobColW}px` }}>Client{sortArrow("client")}</button>
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
               return (
@@ -513,9 +520,9 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
             sortedVacancies.map((v, rowIdx) => {
               const rowBg = rowIdx % 2 === 0 ? "bg-background" : "bg-muted/10";
               return (
-                <div key={v.id} className="grid" style={{ gridTemplateColumns: "260px 180px repeat(7, minmax(140px, 1fr))" }}>
+                <div key={v.id} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
                   {/* Job (frozen) */}
-                  <div className={`sticky left-0 z-10 border-b border-r ${rowBg} px-3 py-2`}>
+                  <div className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2`}>
                     <div className="text-sm font-semibold leading-tight">{v.title}</div>
                     {v.reference && <div className="text-[10px] text-muted-foreground">Ref {v.reference}</div>}
                     <div className="mt-1 flex flex-wrap items-center gap-1">
@@ -548,7 +555,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                     </div>
                   </div>
                   {/* Client (frozen) */}
-                  <div className={`sticky left-[260px] z-10 border-b border-r ${rowBg} px-3 py-2`}>
+                  <div className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2`} style={{ left: `${jobColW}px` }}>
                     <div className="text-sm">{v.client?.name ?? "—"}</div>
                     {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
                   </div>
