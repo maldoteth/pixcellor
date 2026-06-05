@@ -72,6 +72,7 @@ type Candidate = {
   cv_url: string | null;
   linkedin_url: string | null;
   portfolio_url: string | null;
+  photo_url: string | null;
   created_at: string;
   updated_at: string;
 };
