@@ -3462,70 +3462,8 @@ export default function Portal() {
             <VisionStudio />
           </TabsContent>
 
-          <TabsContent value="alerts" className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">System alerts</h2>
-                <p className="text-sm text-muted-foreground">Refunds, disputes, payment failures and webhook errors. Newest.</p>
-              </div>
-              {adminAlerts.some(a => !a.resolved_at) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    const ids = adminAlerts.filter(a => !a.resolved_at).map(a => a.id);
-                    await (supabase as any).from("admin_alerts").update({ resolved_at: new Date().toISOString() }).in("id", ids);
-                    setAdminAlerts(prev => prev.map(a => a.resolved_at ? a : { ...a, resolved_at: new Date().toISOString() }));
-                  }}
-                >
-                  Mark all resolved
-                </Button>
-              )}
-            </div>
-            {adminAlerts.length === 0 ? (
-              <Card className="p-6 text-sm text-muted-foreground">No alerts. You're all clear.</Card>
-            ) : (
-              <div className="space-y-2">
-                {adminAlerts.map(alert => {
-                  const sevColor = alert.severity === "critical" ? "border-red-500/60 bg-red-500/5"
-                    : alert.severity === "error" ? "border-red-400/40 bg-red-400/5"
-                    : alert.severity === "warning" ? "border-yellow-500/40 bg-yellow-500/5"
-                    : "border-border";
-                  return (
-                    <Card key={alert.id} className={`p-4 ${sevColor} ${alert.resolved_at ? "opacity-50" : ""}`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 text-muted-foreground text-slate-50 bg-white/0 text-xs">
-                            <span className="uppercase tracking-wide font-semibold">{alert.severity}</span>
-                            <span>•</span>
-                            <span>{alert.source}</span>
-                            <span>•</span>
-                            <span>{new Date(alert.created_at).toLocaleString()}</span>
-                          </div>
-                          <div className="mt-1 font-medium">{alert.title}</div>
-                          {alert.message && <div className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{alert.message}</div>}
-                          {alert.context && Object.keys(alert.context).length > 0 && (
-                            <pre className="mt-2 max-h-40 overflow-auto rounded bg-muted/30 p-2 text-[11px]">{JSON.stringify(alert.context, null, 2)}</pre>
-                          )}
-                        </div>
-                        {!alert.resolved_at && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={async () => {
-                              await (supabase as any).from("admin_alerts").update({ resolved_at: new Date().toISOString() }).eq("id", alert.id);
-                              setAdminAlerts(prev => prev.map(a => a.id === alert.id ? { ...a, resolved_at: new Date().toISOString() } : a));
-                            }}
-                          >
-                            Resolve
-                          </Button>
-                        )}
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
+          <TabsContent value="candidates" className="min-w-0">
+            <CandidatesPanel />
           </TabsContent>
 
         </Tabs>
