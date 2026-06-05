@@ -229,6 +229,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                     <div className="mt-1 flex gap-1">
                       <button onClick={() => onEdit(v)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><Pencil className="h-2.5 w-2.5" />Edit</button>
                       <button onClick={() => onAssign(v.id)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><UserPlus className="h-2.5 w-2.5" />Assign</button>
+                      {onOpenAI && <button onClick={() => onOpenAI(v.id)} className="text-[10px] text-primary hover:underline">AI</button>}
                       <button onClick={() => onDelete(v.id)} className="text-[10px] text-destructive hover:underline inline-flex items-center gap-0.5"><Trash2 className="h-2.5 w-2.5" /></button>
                     </div>
                   </div>
