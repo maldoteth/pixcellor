@@ -357,6 +357,13 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
 
   return (
     <div className="rounded-md border bg-card select-none outline-none [&_*]:outline-none" ref={gridRef}>
+      {/* Stats bar */}
+      <div className="grid grid-cols-2 gap-px border-b bg-border md:grid-cols-4">
+        <StatTile label="Total margin (week)" value={fmtMoney(stats.totalMargin)} accent={stats.totalMargin >= 0 ? "good" : "bad"} sub={`Charge: ${fmtMoney(stats.totalCharge)}`} />
+        <StatTile label="Total hours (week)" value={stats.totalHours.toFixed(1)} />
+        <StatTile label="Workers scheduled" value={String(stats.activeWorkers)} />
+        <StatTile label="Idle workers" value={String(stats.idleWorkers)} accent={stats.idleWorkers > 0 ? "warn" : undefined} sub="Assigned but no shifts this week" />
+      </div>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
         <div className="flex items-center gap-2">
