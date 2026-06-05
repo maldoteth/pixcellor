@@ -332,7 +332,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       if (v.pay_currency) currency = v.pay_currency;
       const pay = Number(v.pay_max ?? v.pay_min ?? 0);
       const charge = Number(v.charge_rate ?? 0);
-      const paye = Number(v.paye_rate_percent ?? 17);
+      const paye = Number(v.paye_rate_percent ?? 21);
       const costPerHour = pay + pay * (paye / 100);
       const marginPerHour = charge - costPerHour;
 
@@ -452,7 +452,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                     {(() => {
                       const pay = Number(v.pay_max ?? v.pay_min ?? 0);
                       const charge = Number(v.charge_rate ?? 0);
-                      const paye = Number(v.paye_rate_percent ?? 17);
+                      const paye = Number(v.paye_rate_percent ?? 21);
                       if (!pay || !charge) return null;
                       const cost = pay + pay * (paye / 100);
                       const m = charge - cost;
