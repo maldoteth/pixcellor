@@ -71,9 +71,13 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
         if (!(c.skills ?? []).some((x) => x.toLowerCase().includes(sk))) return false;
       }
       if (rtwOnly && !["uk_citizen", "settled"].includes(c.right_to_work ?? "")) return false;
+      if (maxDistance > 0) {
+        if (c.distance_km == null) return false;
+        if (c.distance_km > maxDistance) return false;
+      }
       return true;
     });
-  }, [cands, minScore, locFilter, skillFilter, rtwOnly]);
+  }, [cands, minScore, locFilter, skillFilter, rtwOnly, maxDistance]);
 
   const inviteByCand = useMemo(() => {
     const m = new Map<string, Invite>();
