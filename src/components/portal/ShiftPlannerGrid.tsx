@@ -654,10 +654,11 @@ function Cell(props: {
   onContextCut: () => void;
   onContextPaste: () => void;
   onContextAdd: () => void;
+  onContextBulkPaste: () => void;
   clipboardHasItems: boolean;
 }) {
   const { date, rowBg, isToday, active, cancelled, start, finish, isSelected, isClipSource, clipMode,
-    onClick, onDoubleClickEdit, onSave, onContextDelete, onContextCopy, onContextCut, onContextPaste, onContextAdd, clipboardHasItems } = props;
+    onClick, onDoubleClickEdit, onSave, onContextDelete, onContextCopy, onContextCut, onContextPaste, onContextAdd, onContextBulkPaste, clipboardHasItems } = props;
 
   const [editOpen, setEditOpen] = useState(false);
   const [st, setSt] = useState(start ?? "09:00");
