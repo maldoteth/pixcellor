@@ -498,8 +498,8 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         <div style={{ minWidth: `${minGridW}px` }}>
           {/* Header row */}
           <div className="grid sticky top-0 z-20 bg-muted/30" style={{ gridTemplateColumns: gridTemplate }}>
-            <button type="button" onClick={() => toggleSort("title")} className="sticky left-0 z-30 border-b border-r bg-muted/30 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground">Job{sortArrow("title")}</button>
-            <button type="button" onClick={() => toggleSort("client")} className="sticky z-30 border-b border-r bg-muted/30 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground" style={{ left: `${jobColW}px` }}>Client{sortArrow("client")}</button>
+            <button type="button" onClick={() => toggleSort("title")} className={`${isMobile ? "" : "sticky left-0 z-30"} border-b border-r bg-muted/30 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground`}>Job{sortArrow("title")}</button>
+            <button type="button" onClick={() => toggleSort("client")} className={`${isMobile ? "" : "sticky z-30"} border-b border-r bg-muted/30 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground`} style={isMobile ? undefined : { left: `${jobColW}px` }}>Client{sortArrow("client")}</button>
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
               return (
@@ -522,7 +522,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
               return (
                 <div key={v.id} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
                   {/* Job (frozen) */}
-                  <div className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2`}>
+                  <div className={`${isMobile ? "" : "sticky left-0 z-10"} border-b border-r ${rowBg} px-2 py-2`}>
                     <div className="text-sm font-semibold leading-tight">{v.title}</div>
                     {v.reference && <div className="text-[10px] text-muted-foreground">Ref {v.reference}</div>}
                     <div className="mt-1 flex flex-wrap items-center gap-1">
@@ -555,7 +555,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                     </div>
                   </div>
                   {/* Client (frozen) */}
-                  <div className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2`} style={{ left: `${jobColW}px` }}>
+                  <div className={`${isMobile ? "" : "sticky z-10"} border-b border-r ${rowBg} px-2 py-2`} style={isMobile ? undefined : { left: `${jobColW}px` }}>
                     <div className="text-sm">{v.client?.name ?? "—"}</div>
                     {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
                   </div>
