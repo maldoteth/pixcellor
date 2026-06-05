@@ -96,6 +96,23 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [lastSelected, setLastSelected] = useState<{ vacancyId: string; dateIdx: number } | null>(null);
   const [clipboard, setClipboard] = useState<{ mode: "copy" | "cut"; items: ClipItem[]; sourceKeys: string[] } | null>(null);
+  const [sortBy, setSortBy] = useState<"title" | "client">("title");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const sortedVacancies = useMemo(() => {
+    const arr = [...vacancies];
+    arr.sort((a, b) => {
+      const av = (sortBy === "title" ? a.title : a.client?.name ?? "") || "";
+      const bv = (sortBy === "title" ? b.title : b.client?.name ?? "") || "";
+      const cmp = av.localeCompare(bv, undefined, { sensitivity: "base" });
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return arr;
+  }, [vacancies, sortBy, sortDir]);
+  const toggleSort = (col: "title" | "client") => {
+    if (sortBy === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortBy(col); setSortDir("asc"); }
+  };
+  const sortArrow = (col: "title" | "client") => sortBy === col ? (sortDir === "asc" ? " ▲" : " ▼") : "";
   const gridRef = useRef<HTMLDivElement>(null);
   // Refs mirror state so the global key handler always sees latest values
   const selectedRef = useRef(selected);
