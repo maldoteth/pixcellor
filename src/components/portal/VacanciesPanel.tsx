@@ -342,101 +342,40 @@ export default function VacanciesPanel() {
 
       {loading ? (
         <div className="flex items-center justify-center py-12 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /></div>
-      ) : filtered.length === 0 ? (
-        <Card><CardContent className="py-10 text-center text-muted-foreground">No vacancies yet. Create your first job opening.</CardContent></Card>
       ) : (
-        <div className="grid gap-3">
-          {filtered.map((v) => (
-            <Card key={v.id}>
-              <CardHeader className="flex flex-row items-start justify-between gap-3 pb-3">
-                <div className="min-w-0">
-                  <CardTitle className="text-base flex flex-wrap items-center gap-2">
-                    {v.title}
-                    <Badge variant="secondary">{v.employment_type}</Badge>
-                    <Badge variant={v.status === "open" ? "default" : "outline"}>{v.status}</Badge>
-                    {v.arrangement && <Badge variant="outline">{v.arrangement}</Badge>}
-                    {v.openings > 1 && <Badge variant="outline">{v.openings} openings</Badge>}
-                  </CardTitle>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    Client: <span className="text-foreground">{v.client?.name ?? "—"}</span>
-                    {v.location && <> · {v.location}</>}
-                    {v.reference && <> · Ref {v.reference}</>}
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(v)} className="gap-1"><Pencil className="h-4 w-4" />Edit</Button>
-                  <Button size="sm" variant="outline" onClick={() => setAssignTo(v.id)} className="gap-1"><UserPlus className="h-4 w-4" />Assign</Button>
-                  <Button size="sm" variant="ghost" onClick={() => handleDelete(v.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3 pt-0 text-sm">
-                <VacancyCalendarStrip
-                  vacancyId={v.id}
-                  scheduleDays={v.schedule_days}
-                  startTime={v.start_time}
-                  finishTime={v.finish_time}
-                />
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 text-muted-foreground">
-                  {(v.start_date || v.end_date) && <div><span className="text-foreground">Dates:</span> {v.start_date ?? "?"} → {v.end_date ?? "ongoing"}</div>}
-                  {v.duration_weeks && <div><span className="text-foreground">Duration:</span> {v.duration_weeks} weeks</div>}
-                  {v.hours_per_week && <div><span className="text-foreground">Hours/week:</span> {v.hours_per_week}</div>}
-                  {(v.pay_min || v.pay_max) && <div><span className="text-foreground">Pay:</span> {v.pay_currency} {v.pay_min ?? "?"}–{v.pay_max ?? "?"} / {v.pay_period}</div>}
-                </div>
-                {v.required_skills && v.required_skills.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5"><span className="text-muted-foreground text-xs">Skills:</span>{v.required_skills.map((s) => <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>)}</div>
-                )}
-                {v.qualifications && v.qualifications.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5"><span className="text-muted-foreground text-xs">Qualifications:</span>{v.qualifications.map((s) => <Badge key={s} variant="outline" className="text-xs">{s}</Badge>)}</div>
-                )}
-                {v.description && <p className="text-muted-foreground whitespace-pre-wrap">{v.description}</p>}
+        <ShiftPlannerGrid
+          vacancies={filtered}
+          onEdit={openEdit}
+          onAssign={(id) => setAssignTo(id)}
+          onDelete={handleDelete}
+        />
+      )}
 
-                <div className="border-t pt-3">
-                  <div className="text-xs font-medium text-muted-foreground mb-2">Assigned candidates ({v.assignments?.length ?? 0})</div>
-                  {(!v.assignments || v.assignments.length === 0) ? (
-                    <div className="text-xs text-muted-foreground">No candidates assigned yet.</div>
-                  ) : (
-                    <div className="space-y-2">
-                      {v.assignments.map((a) => (
-                        <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2">
-                          <div className="min-w-0">
-                            <div className="font-medium">{a.candidate.full_name}</div>
-                            <div className="text-xs text-muted-foreground">{a.candidate.headline ?? a.candidate.email ?? a.candidate.phone ?? ""}</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Select value={a.stage} onValueChange={(val) => handleStageChange(a.id, val)}>
-                              <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
-                              <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                            </Select>
-                            <Button size="icon" variant="ghost" onClick={() => handleUnassign(a.id)} className="h-7 w-7"><X className="h-3.5 w-3.5" /></Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {assignTo === v.id && (
-                    <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-dashed p-2">
-                      <Select value={assignCandidateId} onValueChange={setAssignCandidateId}>
-                        <SelectTrigger className="h-9 min-w-[220px] flex-1"><SelectValue placeholder="Select candidate…" /></SelectTrigger>
-                        <SelectContent>
-                          {candidates.map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}{c.headline ? ` — ${c.headline}` : ""}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <Select value={assignStage} onValueChange={setAssignStage}>
-                        <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
-                        <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                      </Select>
-                      <Button size="sm" onClick={() => handleAssign(v.id)}>Assign</Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setAssignTo(null); setAssignCandidateId(""); }}>Cancel</Button>
-                    </div>
-                  )}
-                </div>
-
-                <AIRecommendationsPanel vacancyId={v.id} />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      {assignTo && (
+        <Dialog open={!!assignTo} onOpenChange={(o) => { if (!o) { setAssignTo(null); setAssignCandidateId(""); } }}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader><DialogTitle>Assign candidate</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <Select value={assignCandidateId} onValueChange={setAssignCandidateId}>
+                <SelectTrigger><SelectValue placeholder="Select candidate…" /></SelectTrigger>
+                <SelectContent>
+                  {candidates.map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}{c.headline ? ` — ${c.headline}` : ""}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={assignStage} onValueChange={setAssignStage}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+              <div className="text-xs text-muted-foreground">
+                Tip: open AI recommendations and assignments by editing the vacancy.
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => { setAssignTo(null); setAssignCandidateId(""); }}>Cancel</Button>
+              <Button onClick={() => assignTo && handleAssign(assignTo)}>Assign</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
 
       <Dialog open={openDialog} onOpenChange={(o) => { setOpenDialog(o); if (!o) resetForm(); }}>
