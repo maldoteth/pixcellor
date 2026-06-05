@@ -603,3 +603,17 @@ function Cell(props: {
     </ContextMenu>
   );
 }
+
+function StatTile({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: "good" | "bad" | "warn" }) {
+  const valueColor =
+    accent === "good" ? "text-emerald-600" :
+    accent === "bad" ? "text-destructive" :
+    accent === "warn" ? "text-amber-600" : "text-foreground";
+  return (
+    <div className="bg-card px-3 py-2">
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={`text-lg font-semibold leading-tight ${valueColor}`}>{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}
+    </div>
+  );
+}
