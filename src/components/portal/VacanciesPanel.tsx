@@ -147,8 +147,20 @@ export default function VacanciesPanel() {
     if (!form.client_contact_id) { toast({ title: "Select a client", variant: "destructive" }); return; }
     if (!form.title.trim()) { toast({ title: "Job title is required", variant: "destructive" }); return; }
     setSaving(true);
+    const extraNotes = customTimes
+      ? form.schedule_days
+          .map((d) => {
+            const t = perDayTimes[d];
+            if (!t || (!t.start && !t.finish)) return null;
+            return `${d} ${t.start || "--:--"}–${t.finish || "--:--"}`;
+          })
+          .filter(Boolean)
+          .join(", ")
+      : "";
+    const mergedNotes = [form.schedule_notes, extraNotes].filter(Boolean).join(" | ");
     const payload = {
       ...form,
+      schedule_notes: mergedNotes,
       openings: form.openings ? Number(form.openings) : 1,
       duration_weeks: form.duration_weeks || null,
       hours_per_week: form.hours_per_week || null,
