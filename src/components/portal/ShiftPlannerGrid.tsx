@@ -414,8 +414,8 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         <div className="min-w-[1100px]">
           {/* Header row */}
           <div className="grid sticky top-0 z-20 bg-muted/30" style={{ gridTemplateColumns: "260px 180px repeat(7, minmax(140px, 1fr))" }}>
-            <div className="sticky left-0 z-30 border-b border-r bg-muted/30 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Job</div>
-            <div className="sticky left-[260px] z-30 border-b border-r bg-muted/30 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Client</div>
+            <button type="button" onClick={() => toggleSort("title")} className="sticky left-0 z-30 border-b border-r bg-muted/30 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground">Job{sortArrow("title")}</button>
+            <button type="button" onClick={() => toggleSort("client")} className="sticky left-[260px] z-30 border-b border-r bg-muted/30 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground">Client{sortArrow("client")}</button>
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
               return (
