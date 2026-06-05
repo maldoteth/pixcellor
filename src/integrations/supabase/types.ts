@@ -2150,6 +2150,50 @@ export type Database = {
           },
         ]
       }
+      vacancy_shifts: {
+        Row: {
+          cancelled: boolean
+          created_at: string
+          finish_time: string | null
+          id: string
+          notes: string | null
+          shift_date: string
+          start_time: string | null
+          updated_at: string
+          vacancy_id: string
+        }
+        Insert: {
+          cancelled?: boolean
+          created_at?: string
+          finish_time?: string | null
+          id?: string
+          notes?: string | null
+          shift_date: string
+          start_time?: string | null
+          updated_at?: string
+          vacancy_id: string
+        }
+        Update: {
+          cancelled?: boolean
+          created_at?: string
+          finish_time?: string | null
+          id?: string
+          notes?: string | null
+          shift_date?: string
+          start_time?: string | null
+          updated_at?: string
+          vacancy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacancy_shifts_vacancy_id_fkey"
+            columns: ["vacancy_id"]
+            isOneToOne: false
+            referencedRelation: "vacancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vision_previews: {
         Row: {
           brief: string | null
@@ -2524,6 +2568,14 @@ export type Database = {
         Args: { _event_id: string }
         Returns: undefined
       }
+      portal_copy_vacancy_shift: {
+        Args: {
+          _source_date: string
+          _target_date: string
+          _vacancy_id: string
+        }
+        Returns: string
+      }
       portal_create_candidate: {
         Args: {
           _availability_date?: string
@@ -2641,6 +2693,10 @@ export type Database = {
         Returns: undefined
       }
       portal_delete_vacancy: { Args: { _id: string }; Returns: undefined }
+      portal_delete_vacancy_shift: {
+        Args: { _date: string; _vacancy_id: string }
+        Returns: undefined
+      }
       portal_fetch_messages: {
         Args: { _conversation_id: string }
         Returns: Json
@@ -2651,6 +2707,18 @@ export type Database = {
       }
       portal_fetch_snapshot: { Args: { _limit?: number }; Returns: Json }
       portal_list_vacancies: { Args: never; Returns: Json }
+      portal_list_vacancy_shifts: {
+        Args: { _from: string; _to: string; _vacancy_id: string }
+        Returns: {
+          cancelled: boolean
+          finish_time: string
+          id: string
+          notes: string
+          shift_date: string
+          start_time: string
+          vacancy_id: string
+        }[]
+      }
       portal_mark_order_delivered:
         | {
             Args: {
@@ -2766,6 +2834,17 @@ export type Database = {
       portal_update_vacancy: {
         Args: { _id: string; _patch: Json }
         Returns: undefined
+      }
+      portal_upsert_vacancy_shift: {
+        Args: {
+          _cancelled?: boolean
+          _date: string
+          _finish: string
+          _notes?: string
+          _start: string
+          _vacancy_id: string
+        }
+        Returns: string
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
