@@ -314,6 +314,7 @@ export type Database = {
           summary: string | null
           tags: string[] | null
           updated_at: string
+          user_id: string | null
           years_experience: number | null
         }
         Insert: {
@@ -357,6 +358,7 @@ export type Database = {
           summary?: string | null
           tags?: string[] | null
           updated_at?: string
+          user_id?: string | null
           years_experience?: number | null
         }
         Update: {
@@ -400,6 +402,7 @@ export type Database = {
           summary?: string | null
           tags?: string[] | null
           updated_at?: string
+          user_id?: string | null
           years_experience?: number | null
         }
         Relationships: []
@@ -2290,6 +2293,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      candidate_link_self: { Args: never; Returns: string }
+      candidate_my_schedule: {
+        Args: never
+        Returns: {
+          arrangement: Database["public"]["Enums"]["vacancy_arrangement"]
+          assignment_id: string
+          benefits: string
+          client_name: string
+          description: string
+          employment_type: Database["public"]["Enums"]["vacancy_employment_type"]
+          end_date: string
+          finish_time: string
+          hours_per_week: number
+          location: string
+          pay_currency: string
+          pay_max: number
+          pay_min: number
+          pay_period: string
+          reference: string
+          schedule_days: string[]
+          schedule_notes: string
+          stage: Database["public"]["Enums"]["vacancy_assignment_stage"]
+          start_date: string
+          start_time: string
+          status: Database["public"]["Enums"]["vacancy_status"]
+          title: string
+          vacancy_id: string
+        }[]
+      }
       claim_login_handoff: { Args: { _sid: string }; Returns: Json }
       create_candidate_from_intake: { Args: { _payload: Json }; Returns: Json }
       customer_fetch_portal: { Args: never; Returns: Json }
