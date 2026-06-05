@@ -2702,17 +2702,16 @@ export default function Portal() {
             {orderReqsFilter === "samples" && sampleRequests.length === 0 && (
               <p className="text-muted-foreground text-sm">No free sample requests yet.</p>
             )}
-            {orderReqsFilter === "vacancies" && (<VacanciesPanel />)}
-            {orderReqsFilter !== "samples" && orderReqsFilter !== "vacancies" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
-            {orderReqsFilter !== "samples" && orderReqsFilter !== "vacancies" && (
+            {orderReqsFilter !== "samples" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
+            {orderReqsFilter !== "samples" && (
               <p className="text-muted-foreground text-slate-50 bg-white/0 text-xs">
                 {(sectionCounts.orders ?? 0) > orders.length ? "" : "Loaded all."}
               </p>
             )}
             <div
-              className={orderReqsFilter !== "samples" && orderReqsFilter !== "vacancies" ? "max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2" : ""}
+              className={orderReqsFilter !== "samples" ? "max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2" : ""}
             >
-            {orderReqsFilter !== "samples" && orderReqsFilter !== "vacancies" && filteredOrders.map(o => {
+            {orderReqsFilter !== "samples" && filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
               const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
