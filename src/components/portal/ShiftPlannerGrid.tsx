@@ -174,7 +174,6 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     }
     // Template-driven recurring days only count within the vacancy's date window.
     const inRange = (() => {
-      if (!v?.start_date && !v?.end_date) return false; // no window = don't auto-fill forever
       if (v?.start_date && date < v.start_date) return false;
       if (v?.end_date && date > v.end_date) return false;
       return true;
