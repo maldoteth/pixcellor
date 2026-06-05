@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Briefcase, Plus, Trash2, UserPlus, X, Search, Loader2 } from "lucide-react";
+import { Briefcase, Plus, Trash2, UserPlus, X, Search, Loader2, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,13 +116,72 @@ export default function VacanciesPanel() {
   const [customTimes, setCustomTimes] = useState(false);
   const [perDayTimes, setPerDayTimes] = useState<Record<string, { start: string; finish: string }>>({});
   const [clientQuery, setClientQuery] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const resetForm = useCallback(() => {
     setForm({ ...emptyForm });
     setPerDayTimes({});
     setCustomTimes(false);
     setClientQuery("");
+    setEditingId(null);
   }, []);
+
+  const openEdit = (v: Vacancy) => {
+    // Parse per-day times out of schedule_notes if present
+    const perDay: Record<string, { start: string; finish: string }> = {};
+    let baseNotes = v.schedule_notes ?? "";
+    if (baseNotes.includes("|")) {
+      const parts = baseNotes.split("|");
+      baseNotes = parts[0].trim();
+      const extras = parts.slice(1).join("|");
+      const re = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(\d{1,2}:\d{2}|--:--)\s*[–—-]\s*(\d{1,2}:\d{2}|--:--)/gi;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(extras)) !== null) {
+        const d = m[1][0].toUpperCase() + m[1].slice(1, 3).toLowerCase();
+        perDay[d] = {
+          start: m[2] === "--:--" ? "" : m[2],
+          finish: m[3] === "--:--" ? "" : m[3],
+        };
+      }
+    }
+    setPerDayTimes(perDay);
+    setCustomTimes(Object.keys(perDay).length > 0);
+    setForm({
+      client_contact_id: v.client_contact_id ?? "",
+      title: v.title ?? "",
+      reference: v.reference ?? "",
+      description: v.description ?? "",
+      location: v.location ?? "",
+      latitude: "",
+      longitude: "",
+      arrangement: v.arrangement ?? "onsite",
+      employment_type: v.employment_type ?? "permanent",
+      status: v.status ?? "open",
+      openings: String(v.openings ?? 1),
+      start_date: v.start_date ?? "",
+      end_date: v.end_date ?? "",
+      start_time: v.start_time ? v.start_time.slice(0, 5) : "",
+      finish_time: v.finish_time ? v.finish_time.slice(0, 5) : "",
+      schedule_days: (v.schedule_days ?? []) as string[],
+      schedule_notes: baseNotes,
+      duration_weeks: v.duration_weeks != null ? String(v.duration_weeks) : "",
+      hours_per_week: v.hours_per_week != null ? String(v.hours_per_week) : "",
+      qualifications: (v.qualifications ?? []).join(", "),
+      required_skills: (v.required_skills ?? []).join(", "),
+      nice_to_have_skills: (v.nice_to_have_skills ?? []).join(", "),
+      certifications: (v.certifications ?? []).join(", "),
+      right_to_work_required: v.right_to_work_required ?? true,
+      pay_min: v.pay_min != null ? String(v.pay_min) : "",
+      pay_max: v.pay_max != null ? String(v.pay_max) : "",
+      pay_currency: v.pay_currency ?? "GBP",
+      pay_period: v.pay_period ?? "hour",
+      benefits: v.benefits ?? "",
+      notes: v.notes ?? "",
+    });
+    setEditingId(v.id);
+    setClientQuery("");
+    setOpenDialog(true);
+  };
 
   const filteredClients = useMemo(() => {
     const q = clientQuery.trim().toLowerCase();
@@ -214,10 +273,12 @@ export default function VacanciesPanel() {
       benefits: form.benefits.trim() || null,
       notes: form.notes.trim() || null,
     };
-    const { error } = await supabase.rpc("portal_create_vacancy", { _payload: payload as any });
+    const { error } = editingId
+      ? await supabase.rpc("portal_update_vacancy", { _id: editingId, _patch: payload as any })
+      : await supabase.rpc("portal_create_vacancy", { _payload: payload as any });
     setSaving(false);
-    if (error) { toast({ title: "Could not create vacancy", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Vacancy created" });
+    if (error) { toast({ title: editingId ? "Could not update vacancy" : "Could not create vacancy", description: error.message, variant: "destructive" }); return; }
+    toast({ title: editingId ? "Vacancy updated" : "Vacancy created" });
     setOpenDialog(false);
     resetForm();
     load();
@@ -302,6 +363,7 @@ export default function VacanciesPanel() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(v)} className="gap-1"><Pencil className="h-4 w-4" />Edit</Button>
                   <Button size="sm" variant="outline" onClick={() => setAssignTo(v.id)} className="gap-1"><UserPlus className="h-4 w-4" />Assign</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleDelete(v.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
                 </div>
@@ -378,7 +440,7 @@ export default function VacanciesPanel() {
 
       <Dialog open={openDialog} onOpenChange={(o) => { setOpenDialog(o); if (!o) resetForm(); }}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
-          <DialogHeader><DialogTitle>New vacancy</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingId ? "Edit vacancy" : "New vacancy"}</DialogTitle></DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label>Client *</Label>
@@ -522,7 +584,7 @@ export default function VacanciesPanel() {
               onClick={handleCreate}
               disabled={saving || !form.client_contact_id || !form.title.trim()}
             >
-              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : "Create vacancy"}
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : editingId ? "Save changes" : "Create vacancy"}
             </Button>
           </DialogFooter>
         </DialogContent>
