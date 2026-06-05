@@ -595,6 +595,42 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
           )}
         </div>
       </div>
+
+      {/* Bulk paste dialog */}
+      <Dialog open={!!bulkPaste} onOpenChange={(o) => { if (!o) setBulkPaste(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Bulk paste shifts</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p className="text-muted-foreground text-xs">
+              Repeats the {clipboard?.items.length ?? 0}-cell clipboard pattern starting from{" "}
+              {bulkPaste ? new Date(bulkPaste.date + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : ""}.
+            </p>
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <div className="text-xs text-muted-foreground mb-1">How many</div>
+                <Input type="number" min={1} value={bulkCount} onChange={(e) => setBulkCount(e.target.value)} />
+              </div>
+              <div className="flex-1">
+                <div className="text-xs text-muted-foreground mb-1">Unit</div>
+                <Select value={bulkUnit} onValueChange={(v) => setBulkUnit(v as "days" | "weeks" | "months")}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="days">days</SelectItem>
+                    <SelectItem value="weeks">weeks</SelectItem>
+                    <SelectItem value="months">months</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkPaste(null)}>Cancel</Button>
+            <Button onClick={runBulkPaste} disabled={!clipboard}>Paste</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
