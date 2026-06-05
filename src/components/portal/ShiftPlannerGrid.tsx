@@ -172,7 +172,14 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         finish: (shift.finish_time ?? tFinish)?.slice(0, 5) ?? null,
       };
     }
-    if (templateSet.has(dow)) return { active: true, cancelled: false, start: tStart, finish: tFinish, hasExplicit: false };
+    // Template-driven recurring days only count within the vacancy's date window.
+    const inRange = (() => {
+      if (!v?.start_date && !v?.end_date) return false; // no window = don't auto-fill forever
+      if (v?.start_date && date < v.start_date) return false;
+      if (v?.end_date && date > v.end_date) return false;
+      return true;
+    })();
+    if (inRange && templateSet.has(dow)) return { active: true, cancelled: false, start: tStart, finish: tFinish, hasExplicit: false };
     return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false };
   }, [vacancies, shifts]);
 
