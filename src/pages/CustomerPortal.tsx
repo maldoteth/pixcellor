@@ -968,13 +968,20 @@ function DeliveredPreview({ order }: { order: CustomerOrder }) {
       </CardHeader>
       <CardContent>
         {url ? (
-          <div className="overflow-hidden rounded-md border border-border bg-background">
-            <iframe title={`${packageName(order)} preview`} src={url} className="h-[360px] w-full" loading="lazy" />
-          </div>
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 break-all text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {url.replace(/^https?:\/\//, "")}
+            <ExternalLink className="h-4 w-4 shrink-0" />
+          </a>
         ) : (
           <div className="rounded-md border border-border bg-background/50 p-6 text-sm text-muted-foreground">Preview domain is being prepared.</div>
         )}
       </CardContent>
+
     </Card>
   );
 }
