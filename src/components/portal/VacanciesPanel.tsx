@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import AIRecommendationsPanel from "./AIRecommendationsPanel";
 import PlaceAutocomplete from "@/components/ui/place-autocomplete";
 import VacancyCalendarStrip from "./VacancyCalendarStrip";
+import ShiftPlannerGrid from "./ShiftPlannerGrid";
 
 type Vacancy = {
   id: string;
