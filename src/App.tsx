@@ -25,6 +25,7 @@ const VisionPreview = lazy(() => import("./pages/VisionPreview"));
 const AuthHandoff = lazy(() => import("./pages/AuthHandoff"));
 const ServicePage = lazy(() => import("./pages/ServicePage"));
 const ServicesIndex = lazy(() => import("./pages/ServicesIndex"));
+const CandidateApply = lazy(() => import("./pages/CandidateApply"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -89,6 +90,7 @@ const App = () => (
               <Route path="/auth/handoff" element={<AuthHandoff />} />
               <Route path="/services" element={<ServicesIndex />} />
               <Route path="/services/:slug" element={<ServicePage />} />
+              <Route path="/jobs/apply" element={<CandidateApply />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
