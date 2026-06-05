@@ -106,6 +106,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     for (let i = 0; i < 7; i++) arr.push(addDays(weekStart, i));
     return arr;
   }, [weekStart]);
+  useEffect(() => { weekDatesRef.current = weekDates; }, [weekDates]);
 
   const fromKey = ymd(weekStart);
   const toKey = ymd(weekDates[6]);
