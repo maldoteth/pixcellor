@@ -520,7 +520,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
             sortedVacancies.map((v, rowIdx) => {
               const rowBg = rowIdx % 2 === 0 ? "bg-background" : "bg-muted/10";
               return (
-                <div key={v.id} className="grid" style={{ gridTemplateColumns: "260px 180px repeat(7, minmax(140px, 1fr))" }}>
+                <div key={v.id} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
                   {/* Job (frozen) */}
                   <div className={`sticky left-0 z-10 border-b border-r ${rowBg} px-3 py-2`}>
                     <div className="text-sm font-semibold leading-tight">{v.title}</div>
