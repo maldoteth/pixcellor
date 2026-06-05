@@ -2584,7 +2584,6 @@ export default function Portal() {
                 <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
                 <Button variant={orderReqsFilter === "samples" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("samples")}>Designs ({sampleRequests.length})</Button>
                 <Button variant={orderReqsFilter === "custom" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("custom")}>Custom orders</Button>
-                <Button variant={orderReqsFilter === "vacancies" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("vacancies")}><Briefcase className="h-3.5 w-3.5" />Vacancies</Button>
               </div>
             </div>
 
