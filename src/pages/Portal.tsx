@@ -2976,7 +2976,7 @@ export default function Portal() {
 
 
 
-          <TabsContent value="falloffs" className="min-w-0 space-y-2">
+          
           <Dialog open={falloffsDialogOpen} onOpenChange={setFalloffsDialogOpen}>
             <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto">
               <DialogHeader><DialogTitle>Falloffs</DialogTitle></DialogHeader>
