@@ -257,9 +257,70 @@ export default function CandidatesPanel() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => setCreateOpen(true)}><Plus className="mr-2 h-4 w-4" /> New candidate</Button>
+          <Button variant="outline" onClick={() => setImportOpen(true)}><Upload className="mr-2 h-4 w-4" /> Import CSV</Button>
           <Button variant="outline" onClick={exportCsv}>Export CSV</Button>
         </div>
       </div>
+
+      <CsvImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        title="Import candidates"
+        description="Upload a CSV of candidates. We'll auto-match common headers — adjust the mapping if needed."
+        columns={[
+          { key: "full_name", label: "Full name", required: true, aliases: ["name", "candidate", "candidate_name"] },
+          { key: "email", label: "Email", aliases: ["e_mail"] },
+          { key: "phone", label: "Phone", aliases: ["mobile", "tel"] },
+          { key: "location", label: "Location", aliases: ["city", "area"] },
+          { key: "headline", label: "Headline", aliases: ["title"] },
+          { key: "current_role_title", label: "Current role", aliases: ["role", "job_title"] },
+          { key: "current_employer", label: "Current employer", aliases: ["employer", "company"] },
+          { key: "years_experience", label: "Years experience", aliases: ["years", "experience"] },
+          { key: "skills", label: "Skills (comma-separated)", aliases: ["skill"] },
+          { key: "preferred_locations", label: "Preferred locations" },
+          { key: "desired_salary_min", label: "Salary min" },
+          { key: "desired_salary_max", label: "Salary max" },
+          { key: "desired_work_type", label: "Work type", aliases: ["type"] },
+          { key: "desired_arrangement", label: "Arrangement" },
+          { key: "right_to_work", label: "Right to work" },
+          { key: "linkedin_url", label: "LinkedIn URL", aliases: ["linkedin"] },
+          { key: "portfolio_url", label: "Portfolio URL", aliases: ["portfolio"] },
+          { key: "cv_url", label: "CV URL", aliases: ["cv", "resume"] },
+          { key: "notes", label: "Notes" },
+        ]}
+        importRow={async (r) => {
+          if (!r.full_name) return { ok: false, error: "Missing name" };
+          if (!r.email && !r.phone) return { ok: false, error: "Need email or phone" };
+          const splitList = (s?: string) => (s ? s.split(/[,;|]/).map(x => x.trim()).filter(Boolean) : []);
+          const num = (s?: string) => (s && !isNaN(Number(s)) ? Number(s) : null);
+          const { error } = await (supabase as any).rpc("portal_create_candidate", {
+            _full_name: r.full_name,
+            _email: r.email || null,
+            _phone: r.phone || null,
+            _location: r.location || null,
+            _headline: r.headline || null,
+            _summary: null,
+            _years_experience: num(r.years_experience),
+            _current_role_title: r.current_role_title || null,
+            _current_employer: r.current_employer || null,
+            _desired_salary_min: num(r.desired_salary_min),
+            _desired_salary_max: num(r.desired_salary_max),
+            _desired_work_type: r.desired_work_type || "permanent",
+            _desired_arrangement: r.desired_arrangement || "onsite",
+            _right_to_work: r.right_to_work || "unknown",
+            _skills: splitList(r.skills),
+            _preferred_locations: splitList(r.preferred_locations),
+            _linkedin_url: r.linkedin_url || null,
+            _portfolio_url: r.portfolio_url || null,
+            _cv_url: r.cv_url || null,
+            _notes: r.notes || null,
+            _source: "csv_import",
+          });
+          if (error) return { ok: false, error: error.message };
+          return { ok: true };
+        }}
+        onDone={load}
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-[240px] flex-1">
