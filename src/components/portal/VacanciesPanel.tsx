@@ -584,7 +584,7 @@ export default function VacanciesPanel() {
               onClick={handleCreate}
               disabled={saving || !form.client_contact_id || !form.title.trim()}
             >
-              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : "Create vacancy"}
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : editingId ? "Save changes" : "Create vacancy"}
             </Button>
           </DialogFooter>
         </DialogContent>
