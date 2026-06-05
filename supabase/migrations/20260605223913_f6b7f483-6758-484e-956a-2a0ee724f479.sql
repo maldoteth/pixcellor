@@ -1,0 +1,1 @@
+ALTER TABLE public.vacancies ALTER COLUMN paye_rate_percent SET DEFAULT 21;
