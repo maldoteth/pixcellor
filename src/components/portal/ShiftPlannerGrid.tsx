@@ -405,7 +405,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
               {clipboard.mode === "cut" ? "Cut" : "Copied"} {clipboard.items.length}
             </span>
           )}
-          <span className="hidden md:inline">Click to select · Shift/Ctrl-click to multi · Del to remove · Ctrl+C/X/V</span>
+          <span className="hidden md:inline">{"\n"}</span>
         </div>
       </div>
 
