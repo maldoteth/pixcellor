@@ -500,8 +500,13 @@ export default function VacanciesPanel() {
             <div className="sm:col-span-2"><Label>Internal notes</Label><Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpenDialog(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={saving}>{saving ? "Saving…" : "Create vacancy"}</Button>
+            <Button variant="outline" onClick={() => { setOpenDialog(false); resetForm(); }}>Cancel</Button>
+            <Button
+              onClick={handleCreate}
+              disabled={saving || !form.client_contact_id || !form.title.trim()}
+            >
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : "Create vacancy"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
