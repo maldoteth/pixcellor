@@ -300,7 +300,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const todayKey = ymd(new Date());
 
   return (
-    <div className="rounded-md border bg-card" ref={gridRef}>
+    <div className="rounded-md border bg-card select-none outline-none [&_*]:outline-none" ref={gridRef}>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
         <div className="flex items-center gap-2">
