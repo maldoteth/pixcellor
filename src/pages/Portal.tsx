@@ -2977,110 +2977,115 @@ export default function Portal() {
 
 
           <TabsContent value="falloffs" className="min-w-0 space-y-2">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={falloffsSearch} onChange={(e) => setFalloffsSearch(e.target.value)} placeholder="Search falloffs by company, email, IP, location, session…" className="pl-9" />
-            </div>
-            {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
-            <p className="text-muted-foreground text-slate-50 bg-white/0 text-xs">
-              {(sectionCounts.falloffs ?? 0) > falloffs.length ? "" : "Loaded all."}
-            </p>
-            <div
-              className="max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2"
-            >
-            {filteredFalloffs.map(f => (
-               <Card key={f.id} className="min-w-0 overflow-hidden">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="break-words font-medium">{f.company_name ?? f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
-                      <div className="text-muted-foreground text-slate-50 bg-white/0 text-xs">{[f.company_domain, f.company_type, f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(" · ") || "Company/location unknown"}</div>
-                      <div className="break-words text-muted-foreground text-slate-50 bg-white/0 text-xs">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? f.ip_timezone ?? "timezone unknown"}</div>
-                      <div className="break-all text-muted-foreground text-slate-50 bg-white/0 text-xs">Visitor {f.visitor_id} · Session {f.session_id}</div>
-                    </div>
-                    <div className="flex min-w-0 flex-wrap items-center justify-start gap-2 md:justify-end">
-                      {((f as VisitorFalloff & { _duplicateCount?: number })._duplicateCount ?? 1) > 1 && (
-                        <Badge>×{(f as VisitorFalloff & { _duplicateCount?: number })._duplicateCount} visits{(f as VisitorFalloff & { _sessionCount?: number })._sessionCount && (f as VisitorFalloff & { _sessionCount?: number })._sessionCount! > 1 ? ` · ${(f as VisitorFalloff & { _sessionCount?: number })._sessionCount} sessions` : ""}</Badge>
-                      )}
-                      {f.checkout_session_id && <Badge variant="secondary">Checkout opened</Badge>}
-                      {f.buy_clicked_at && <Badge variant="secondary">Buy clicked</Badge>}
-                      {f.pricing_opened_at && <Badge variant="outline">Pricing opened</Badge>}
-                      {f.portfolio_opened_at && <Badge variant="outline">Portfolio read</Badge>}
-                      {f.package_name && <Badge variant="outline">{f.package_name}</Badge>}
-                      {f.enrichment_status && <Badge variant={f.enrichment_status === "enriched" ? "secondary" : "outline"}>{f.enrichment_status}</Badge>}
-                    </div>
+          <Dialog open={falloffsDialogOpen} onOpenChange={setFalloffsDialogOpen}>
+            <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto">
+              <DialogHeader><DialogTitle>Falloffs</DialogTitle></DialogHeader>
+              <div className="min-w-0 space-y-2">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input value={falloffsSearch} onChange={(e) => setFalloffsSearch(e.target.value)} placeholder="Search falloffs by company, email, IP, location, session…" className="pl-9" />
+                </div>
+                {filteredFalloffs.length === 0 && <p className="text-muted-foreground text-sm">No falloffs {falloffsQ ? "match your search" : "yet"}.</p>}
+                <p className="text-muted-foreground text-slate-50 bg-white/0 text-xs">
+                  {(sectionCounts.falloffs ?? 0) > falloffs.length ? "" : "Loaded all."}
+                </p>
+                <div className="max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2">
+                {filteredFalloffs.map(f => (
+                   <Card key={f.id} className="min-w-0 overflow-hidden">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="break-words font-medium">{f.company_name ?? f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
+                          <div className="text-muted-foreground text-slate-50 bg-white/0 text-xs">{[f.company_domain, f.company_type, f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(" · ") || "Company/location unknown"}</div>
+                          <div className="break-words text-muted-foreground text-slate-50 bg-white/0 text-xs">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? f.ip_timezone ?? "timezone unknown"}</div>
+                          <div className="break-all text-muted-foreground text-slate-50 bg-white/0 text-xs">Visitor {f.visitor_id} · Session {f.session_id}</div>
+                        </div>
+                        <div className="flex min-w-0 flex-wrap items-center justify-start gap-2 md:justify-end">
+                          {((f as VisitorFalloff & { _duplicateCount?: number })._duplicateCount ?? 1) > 1 && (
+                            <Badge>×{(f as VisitorFalloff & { _duplicateCount?: number })._duplicateCount} visits{(f as VisitorFalloff & { _sessionCount?: number })._sessionCount && (f as VisitorFalloff & { _sessionCount?: number })._sessionCount! > 1 ? ` · ${(f as VisitorFalloff & { _sessionCount?: number })._sessionCount} sessions` : ""}</Badge>
+                          )}
+                          {f.checkout_session_id && <Badge variant="secondary">Checkout opened</Badge>}
+                          {f.buy_clicked_at && <Badge variant="secondary">Buy clicked</Badge>}
+                          {f.pricing_opened_at && <Badge variant="outline">Pricing opened</Badge>}
+                          {f.portfolio_opened_at && <Badge variant="outline">Portfolio read</Badge>}
+                          {f.package_name && <Badge variant="outline">{f.package_name}</Badge>}
+                          {f.enrichment_status && <Badge variant={f.enrichment_status === "enriched" ? "secondary" : "outline"}>{f.enrichment_status}</Badge>}
+                        </div>
+                      </div>
+                      <div className="grid gap-2 text-xs md:grid-cols-3">
+                        <div className="rounded-none border border-border p-2">
+                          <div className="font-medium">Company</div>
+                          <div className="text-muted-foreground">Name: {f.company_name ?? "—"}</div>
+                          <div className="text-muted-foreground break-all">Domain: {f.company_domain ?? "—"}</div>
+                          <div className="text-muted-foreground">Type: {f.company_type ?? "—"}</div>
+                        </div>
+                        <div className="rounded-none border border-border p-2">
+                          <div className="font-medium">Location</div>
+                          <div className="text-muted-foreground">{[f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(", ") || "—"}</div>
+                          <div className="text-muted-foreground">Postal: {f.ip_postal ?? "—"}</div>
+                          <div className="text-muted-foreground break-all">Coordinates: {f.ip_location ?? "—"}</div>
+                        </div>
+                        <div className="rounded-none border border-border p-2">
+                          <div className="font-medium">Network</div>
+                          <div className="text-muted-foreground">ASN: {f.asn ?? "—"}</div>
+                          <div className="text-muted-foreground">Name: {f.as_name ?? "—"}</div>
+                          <div className="text-muted-foreground break-all">Domain: {f.as_domain ?? "—"}</div>
+                          <div className="text-muted-foreground break-all">Route: {f.as_route ?? "—"}</div>
+                        </div>
+                      </div>
+                      <div className="grid gap-2 text-xs md:grid-cols-3">
+                        <div className="rounded-none border border-border p-2">
+                          <div className="font-medium">IP details</div>
+                          <div className="text-muted-foreground break-all">IP: {f.ip_address ?? "—"}</div>
+                          <div className="text-muted-foreground break-all">Host: {f.ip_hostname ?? "—"}</div>
+                          <div className="text-muted-foreground">IP timezone: {f.ip_timezone ?? "—"}</div>
+                        </div>
+                        <div className="rounded-none border border-border p-2">
+                          <div className="font-medium">Carrier</div>
+                          <div className="text-muted-foreground">Name: {f.carrier_name ?? "—"}</div>
+                          <div className="text-muted-foreground">MCC: {f.carrier_mcc ?? "—"}</div>
+                          <div className="text-muted-foreground">MNC: {f.carrier_mnc ?? "—"}</div>
+                        </div>
+                        <div className="rounded-none border border-border p-2">
+                          <div className="font-medium">Privacy flags</div>
+                          <div className="text-muted-foreground">{[
+                            f.privacy_vpn ? "VPN" : null,
+                            f.privacy_proxy ? "Proxy" : null,
+                            f.privacy_tor ? "Tor" : null,
+                            f.privacy_relay ? "Relay" : null,
+                            f.privacy_hosting ? "Hosting" : null,
+                          ].filter(Boolean).join(" · ") || "None detected"}</div>
+                          <div className="text-muted-foreground">Source: {f.enrichment_source ?? "—"}</div>
+                          <div className="text-muted-foreground">{f.enriched_at ? `Enriched ${new Date(f.enriched_at).toLocaleString()}` : f.enrichment_error ?? "Pending enrichment"}</div>
+                        </div>
+                      </div>
+                      <div className="grid gap-2 text-muted-foreground text-slate-50 bg-white/0 text-xs md:grid-cols-2">
+                        <div>Scroll depth: {f.max_scroll_percent ?? 0}%</div>
+                        <div>Portfolio pages: {f.portfolio_pages_viewed ?? 0}</div>
+                        <div>Pricing opened: {f.pricing_opened_at ? new Date(f.pricing_opened_at).toLocaleString() : "—"}</div>
+                        <div>Buy clicked: {f.buy_clicked_at ? new Date(f.buy_clicked_at).toLocaleString() : "—"}</div>
+                        <div className="md:col-span-2">Portfolio project: {f.portfolio_project_opened ?? "—"}</div>
+                        <div>Page: {f.last_page ?? f.first_page ?? "—"}</div>
+                        <div>Referrer: {f.referrer ?? "Direct"}</div>
+                        <div>Device: {f.viewport_size ?? "—"} viewport · {f.screen_size ?? "—"} screen</div>
+                        <div>Language: {f.browser_language ?? "—"}</div>
+                        <div className="md:col-span-2 break-all">User agent: {f.user_agent ?? "—"}</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {(sectionCounts.falloffs ?? 0) > falloffs.length && (
+                  <div className="flex justify-center pt-2">
+                    <Button variant="outline" size="sm" disabled={!!loadingMore.falloffs} onClick={() => loadMoreSection("falloffs", falloffs.length, 20)}>
+                      {loadingMore.falloffs ? "Loading…" : "Load more"}
+                    </Button>
                   </div>
-                  <div className="grid gap-2 text-xs md:grid-cols-3">
-                    <div className="rounded-none border border-border p-2">
-                      <div className="font-medium">Company</div>
-                      <div className="text-muted-foreground">Name: {f.company_name ?? "—"}</div>
-                      <div className="text-muted-foreground break-all">Domain: {f.company_domain ?? "—"}</div>
-                      <div className="text-muted-foreground">Type: {f.company_type ?? "—"}</div>
-                    </div>
-                    <div className="rounded-none border border-border p-2">
-                      <div className="font-medium">Location</div>
-                      <div className="text-muted-foreground">{[f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(", ") || "—"}</div>
-                      <div className="text-muted-foreground">Postal: {f.ip_postal ?? "—"}</div>
-                      <div className="text-muted-foreground break-all">Coordinates: {f.ip_location ?? "—"}</div>
-                    </div>
-                    <div className="rounded-none border border-border p-2">
-                      <div className="font-medium">Network</div>
-                      <div className="text-muted-foreground">ASN: {f.asn ?? "—"}</div>
-                      <div className="text-muted-foreground">Name: {f.as_name ?? "—"}</div>
-                      <div className="text-muted-foreground break-all">Domain: {f.as_domain ?? "—"}</div>
-                      <div className="text-muted-foreground break-all">Route: {f.as_route ?? "—"}</div>
-                    </div>
-                  </div>
-                  <div className="grid gap-2 text-xs md:grid-cols-3">
-                    <div className="rounded-none border border-border p-2">
-                      <div className="font-medium">IP details</div>
-                      <div className="text-muted-foreground break-all">IP: {f.ip_address ?? "—"}</div>
-                      <div className="text-muted-foreground break-all">Host: {f.ip_hostname ?? "—"}</div>
-                      <div className="text-muted-foreground">IP timezone: {f.ip_timezone ?? "—"}</div>
-                    </div>
-                    <div className="rounded-none border border-border p-2">
-                      <div className="font-medium">Carrier</div>
-                      <div className="text-muted-foreground">Name: {f.carrier_name ?? "—"}</div>
-                      <div className="text-muted-foreground">MCC: {f.carrier_mcc ?? "—"}</div>
-                      <div className="text-muted-foreground">MNC: {f.carrier_mnc ?? "—"}</div>
-                    </div>
-                    <div className="rounded-none border border-border p-2">
-                      <div className="font-medium">Privacy flags</div>
-                      <div className="text-muted-foreground">{[
-                        f.privacy_vpn ? "VPN" : null,
-                        f.privacy_proxy ? "Proxy" : null,
-                        f.privacy_tor ? "Tor" : null,
-                        f.privacy_relay ? "Relay" : null,
-                        f.privacy_hosting ? "Hosting" : null,
-                      ].filter(Boolean).join(" · ") || "None detected"}</div>
-                      <div className="text-muted-foreground">Source: {f.enrichment_source ?? "—"}</div>
-                      <div className="text-muted-foreground">{f.enriched_at ? `Enriched ${new Date(f.enriched_at).toLocaleString()}` : f.enrichment_error ?? "Pending enrichment"}</div>
-                    </div>
-                  </div>
-                  <div className="grid gap-2 text-muted-foreground text-slate-50 bg-white/0 text-xs md:grid-cols-2">
-                    <div>Scroll depth: {f.max_scroll_percent ?? 0}%</div>
-                    <div>Portfolio pages: {f.portfolio_pages_viewed ?? 0}</div>
-                    <div>Pricing opened: {f.pricing_opened_at ? new Date(f.pricing_opened_at).toLocaleString() : "—"}</div>
-                    <div>Buy clicked: {f.buy_clicked_at ? new Date(f.buy_clicked_at).toLocaleString() : "—"}</div>
-                    <div className="md:col-span-2">Portfolio project: {f.portfolio_project_opened ?? "—"}</div>
-                    <div>Page: {f.last_page ?? f.first_page ?? "—"}</div>
-                    <div>Referrer: {f.referrer ?? "Direct"}</div>
-                    <div>Device: {f.viewport_size ?? "—"} viewport · {f.screen_size ?? "—"} screen</div>
-                    <div>Language: {f.browser_language ?? "—"}</div>
-                    <div className="md:col-span-2 break-all">User agent: {f.user_agent ?? "—"}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {(sectionCounts.falloffs ?? 0) > falloffs.length && (
-              <div className="flex justify-center pt-2">
-                <Button variant="outline" size="sm" disabled={!!loadingMore.falloffs} onClick={() => loadMoreSection("falloffs", falloffs.length, 20)}>
-                  {loadingMore.falloffs ? "Loading…" : "Load more"}
-                </Button>
+                )}
+                </div>
               </div>
-            )}
-            </div>
-          </TabsContent>
+            </DialogContent>
+          </Dialog>
+
 
           <TabsContent value="mailbox" className="grid min-w-0 grid-cols-1 gap-4 items-start lg:grid-cols-[360px_minmax(0,1fr)]">
             <div className="space-y-3 md:max-h-[70vh] md:overflow-hidden md:flex md:flex-col md:min-h-0">
