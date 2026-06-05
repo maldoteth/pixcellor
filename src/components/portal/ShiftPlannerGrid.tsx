@@ -96,6 +96,12 @@ const cellKey = (vacancyId: string, date: string) => `${vacancyId}|${date}`;
 
 export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const jobColW = isMobile ? 120 : 260;
+  const clientColW = isMobile ? 90 : 180;
+  const dayMinW = isMobile ? 84 : 140;
+  const gridTemplate = `${jobColW}px ${clientColW}px repeat(7, minmax(${dayMinW}px, 1fr))`;
+  const minGridW = jobColW + clientColW + dayMinW * 7;
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   const [shifts, setShifts] = useState<Record<string, Record<string, Shift>>>({});
   const [loading, setLoading] = useState(false);
