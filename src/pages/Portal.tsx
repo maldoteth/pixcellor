@@ -3481,6 +3481,39 @@ export default function Portal() {
 
         </Tabs>
 
+        <CsvImportDialog
+          open={clientsImportOpen}
+          onOpenChange={setClientsImportOpen}
+          title="Import clients"
+          description="Upload a CSV of clients. Headers like Company / Email / Phone are auto-detected."
+          columns={[
+            { key: "name", label: "Company name", required: true, aliases: ["company", "business", "client"] },
+            { key: "contact_name", label: "Contact name", aliases: ["contact", "person", "full_name"] },
+            { key: "email", label: "Email" },
+            { key: "phone", label: "Phone", aliases: ["mobile", "tel"] },
+            { key: "location", label: "Location", aliases: ["city", "address"] },
+            { key: "industry", label: "Industry" },
+            { key: "website", label: "Website", aliases: ["url", "domain"] },
+            { key: "notes", label: "Notes / job title" },
+          ]}
+          importRow={async (r) => {
+            if (!r.name) return { ok: false, error: "Missing company name" };
+            const { error } = await (supabase as any).rpc("portal_create_contact", {
+              _name: r.name,
+              _contact_name: r.contact_name || null,
+              _phone: r.phone || null,
+              _email: r.email || null,
+              _location: r.location || null,
+              _notes: r.notes || null,
+              _industry: r.industry || "general",
+              _website: r.website || null,
+            });
+            if (error) return { ok: false, error: error.message };
+            return { ok: true };
+          }}
+          onDone={loadPortalSnapshot}
+        />
+
       </div>
 
       <Drawer open={Boolean(contactDetailDrawerContact)} onOpenChange={(open) => !open && setContactDetailDrawerId(null)}>
