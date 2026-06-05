@@ -31,6 +31,8 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
   const [locFilter, setLocFilter] = useState("");
   const [skillFilter, setSkillFilter] = useState("");
   const [rtwOnly, setRtwOnly] = useState(false);
+  const [maxDistance, setMaxDistance] = useState<number>(0); // 0 = no limit (km)
+  const [geocoding, setGeocoding] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sendOpen, setSendOpen] = useState(false);
   const [customMessage, setCustomMessage] = useState("");
