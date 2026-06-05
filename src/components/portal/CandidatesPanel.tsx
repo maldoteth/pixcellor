@@ -10,9 +10,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2 } from "lucide-react";
+import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2, Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import CsvImportDialog from "@/components/portal/CsvImportDialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+function initialsOf(name: string) {
+  return (name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "?";
+}
 
 const STATUSES = [
   "new", "screening", "shortlisted", "submitted", "interviewing", "offer", "placed", "rejected", "on_hold", "archived",
