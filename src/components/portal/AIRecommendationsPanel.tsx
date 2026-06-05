@@ -123,11 +123,24 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
     return <Badge variant="outline">{inv.status}</Badge>;
   };
 
+  const handleGeocode = async () => {
+    setGeocoding(true);
+    const { data, error } = await supabase.functions.invoke("geocode-locations", { body: { batch: true, limit: 200 } });
+    setGeocoding(false);
+    if (error) { toast({ title: "Geocode failed", description: error.message, variant: "destructive" }); return; }
+    const r = (data as any)?.results ?? {};
+    toast({ title: "Geocoding complete", description: `Candidates: +${r.candidate?.ok ?? 0} · Vacancies: +${r.vacancy?.ok ?? 0}` });
+    if (cands.length) runRank();
+  };
+
   return (
     <div className="border-t pt-3 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-sm font-medium flex items-center gap-2"><Sparkles className="h-4 w-4" />AI recommendations</div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="outline" onClick={handleGeocode} disabled={geocoding} className="gap-1" title="Geocode any candidates/vacancies missing coordinates">
+            {geocoding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}Geocode
+          </Button>
           <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
             <SelectTrigger className="h-8 w-[100px] text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>{[10, 25, 50, 100].map((n) => <SelectItem key={n} value={String(n)}>Top {n}</SelectItem>)}</SelectContent>
