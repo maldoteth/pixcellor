@@ -508,10 +508,6 @@ export default function VacanciesPanel() {
             <div className="sm:col-span-2"><Label>Nice-to-have skills</Label><Input value={form.nice_to_have_skills} onChange={(e) => setForm({ ...form, nice_to_have_skills: e.target.value })} /></div>
             <div className="sm:col-span-2"><Label>Qualifications</Label><Input value={form.qualifications} onChange={(e) => setForm({ ...form, qualifications: e.target.value })} placeholder="Degree, NVQ Level 3…" /></div>
             <div className="sm:col-span-2"><Label>Certifications / tickets</Label><Input value={form.certifications} onChange={(e) => setForm({ ...form, certifications: e.target.value })} placeholder="CSCS, SMSTS, First Aid…" /></div>
-            <div className="sm:col-span-2 flex items-center gap-2">
-              <Checkbox id="rtw" checked={form.right_to_work_required} onCheckedChange={(v) => setForm({ ...form, right_to_work_required: !!v })} />
-              <Label htmlFor="rtw">Right to work in UK required</Label>
-            </div>
             <div className="sm:col-span-2"><Label>Benefits</Label><Textarea rows={2} value={form.benefits} onChange={(e) => setForm({ ...form, benefits: e.target.value })} /></div>
             <div className="sm:col-span-2"><Label>Description</Label><Textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="sm:col-span-2"><Label>Internal notes</Label><Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
