@@ -369,11 +369,11 @@ export default function VacanciesPanel() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3 pt-0 text-sm">
-                <WeekSchedule
+                <VacancyCalendarStrip
+                  vacancyId={v.id}
                   scheduleDays={v.schedule_days}
                   startTime={v.start_time}
                   finishTime={v.finish_time}
-                  scheduleNotes={v.schedule_notes}
                 />
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 text-muted-foreground">
                   {(v.start_date || v.end_date) && <div><span className="text-foreground">Dates:</span> {v.start_date ?? "?"} → {v.end_date ?? "ongoing"}</div>}
