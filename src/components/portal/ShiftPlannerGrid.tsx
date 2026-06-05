@@ -584,6 +584,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                         onContextCut={() => { if (!isSelected) selectSingle(v.id, dIdx); setTimeout(() => collectClip("cut"), 0); }}
                         onContextPaste={() => { if (!isSelected) selectSingle(v.id, dIdx); setTimeout(() => pasteClip(), 0); }}
                         onContextAdd={async () => { await upsert(v.id, dk, v.start_time?.slice(0, 5) ?? "09:00", v.finish_time?.slice(0, 5) ?? "17:00", false); await load(); }}
+                        onContextBulkPaste={() => setBulkPaste({ vacancyId: v.id, date: dk })}
                         clipboardHasItems={!!clipboard}
                       />
                     );
