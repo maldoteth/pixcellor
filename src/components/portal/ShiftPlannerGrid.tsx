@@ -722,13 +722,14 @@ function Cell(props: {
           </Popover>
         </div>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-44">
+      <ContextMenuContent className="w-48">
         {!active && !cancelled && <ContextMenuItem onSelect={onContextAdd}>Add shift</ContextMenuItem>}
         {active && <ContextMenuItem onSelect={() => setEditOpen(true)}>Edit times</ContextMenuItem>}
         <ContextMenuSeparator />
         <ContextMenuItem onSelect={onContextCopy} disabled={!active}>Copy</ContextMenuItem>
         <ContextMenuItem onSelect={onContextCut} disabled={!active}>Cut</ContextMenuItem>
         <ContextMenuItem onSelect={onContextPaste} disabled={!clipboardHasItems}>Paste</ContextMenuItem>
+        <ContextMenuItem onSelect={onContextBulkPaste} disabled={!clipboardHasItems}>Bulk paste…</ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onSelect={onContextDelete} className="text-destructive" disabled={!active && !cancelled}>Delete</ContextMenuItem>
       </ContextMenuContent>
