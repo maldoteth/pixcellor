@@ -267,7 +267,6 @@ export default function CandidatesPanel() {
     const { error } = await (supabase as any).rpc("portal_update_candidate", { _id: id, _patch: { photo_url: null } });
     if (error) toast.error(error.message); else { toast.success("Photo removed"); load(); }
   };
-  };
 
   const exportCsv = () => {
     const rows = [
