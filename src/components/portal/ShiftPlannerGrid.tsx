@@ -94,6 +94,12 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const [lastSelected, setLastSelected] = useState<{ vacancyId: string; dateIdx: number } | null>(null);
   const [clipboard, setClipboard] = useState<{ mode: "copy" | "cut"; items: ClipItem[]; sourceKeys: string[] } | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  // Refs mirror state so the global key handler always sees latest values
+  const selectedRef = useRef(selected);
+  const clipboardRef = useRef(clipboard);
+  const weekDatesRef = useRef<Date[]>([]);
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
+  useEffect(() => { clipboardRef.current = clipboard; }, [clipboard]);
 
   const weekDates = useMemo(() => {
     const arr: Date[] = [];
