@@ -101,6 +101,9 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [lastSelected, setLastSelected] = useState<{ vacancyId: string; dateIdx: number } | null>(null);
   const [clipboard, setClipboard] = useState<{ mode: "copy" | "cut"; items: ClipItem[]; sourceKeys: string[] } | null>(null);
+  const [bulkPaste, setBulkPaste] = useState<{ vacancyId: string; date: string } | null>(null);
+  const [bulkCount, setBulkCount] = useState<string>("4");
+  const [bulkUnit, setBulkUnit] = useState<"days" | "weeks" | "months">("weeks");
   const [sortBy, setSortBy] = useState<"title" | "client">("title");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const sortedVacancies = useMemo(() => {
