@@ -203,10 +203,12 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   };
 
   // Selection helpers
+  const blurActive = () => { try { (document.activeElement as HTMLElement | null)?.blur(); } catch { /* noop */ } };
   const selectSingle = (vacancyId: string, dateIdx: number) => {
     const date = ymd(weekDates[dateIdx]);
     setSelected(new Set([cellKey(vacancyId, date)]));
     setLastSelected({ vacancyId, dateIdx });
+    blurActive();
   };
   const toggleSelect = (vacancyId: string, dateIdx: number) => {
     const date = ymd(weekDates[dateIdx]);
