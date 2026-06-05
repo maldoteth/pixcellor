@@ -463,7 +463,7 @@ export default function Portal() {
   const [authError, setAuthError] = useState("");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
-  const [adminAlerts, setAdminAlerts] = useState<Array<{ id: string; source: string; severity: string; title: string; message: string | null; context: any; resolved_at: string | null; created_at: string }>>([]);
+  // (alerts removed — Candidates tab replaces it)
   const [falloffs, setFalloffs] = useState<VisitorFalloff[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -756,11 +756,6 @@ export default function Portal() {
 
     loadPortalSnapshot();
 
-    const loadAlerts = async () => {
-      const { data } = await (supabase as any).from("admin_alerts").select("*").order("created_at", { ascending: false }).limit(100);
-      setAdminAlerts((data as any) ?? []);
-    };
-    loadAlerts();
 
     const channel = supabase
       .channel("portal-realtime")
@@ -776,7 +771,7 @@ export default function Portal() {
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_inquiries" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contacts" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_events" }, loadPortalSnapshot)
-      .on("postgres_changes", { event: "*", schema: "public", table: "admin_alerts" }, loadAlerts)
+      
       .subscribe();
 
     return () => {
@@ -2431,7 +2426,7 @@ export default function Portal() {
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats</TabsTrigger>
             <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients</TabsTrigger>
             <TabsTrigger value="studio" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Wand2 className="h-3.5 w-3.5 shrink-0" />Studio</TabsTrigger>
-            <TabsTrigger value="alerts" className="pricing-button col-span-2 md:col-span-1 h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><AlertTriangle className="h-3.5 w-3.5 shrink-0" />Alerts</TabsTrigger>
+            <TabsTrigger value="candidates" className="pricing-button col-span-2 md:col-span-1 h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserPlus className="h-3.5 w-3.5 shrink-0" />Candidates</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sales" className="space-y-4">
