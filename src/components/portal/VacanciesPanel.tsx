@@ -280,6 +280,8 @@ export default function VacanciesPanel() {
       pay_period: form.pay_period,
       benefits: form.benefits.trim() || null,
       notes: form.notes.trim() || null,
+      charge_rate: numOrNull(form.charge_rate),
+      paye_rate_percent: numOrNull(form.paye_rate_percent) ?? 17,
     };
     const { error } = editingId
       ? await supabase.rpc("portal_update_vacancy", { _id: editingId, _patch: payload as any })
