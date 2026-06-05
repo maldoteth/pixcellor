@@ -461,13 +461,8 @@ function Cell(props: {
   const clipBorder = isClipSource ? (clipMode === "cut" ? "outline-dashed outline-2 outline-destructive/60" : "outline-dashed outline-2 outline-primary/60") : "";
 
   let inner: React.ReactNode;
-  if (cancelled) {
-    inner = (
-      <div className="flex h-full items-center justify-center rounded border border-dashed border-destructive/40 bg-destructive/5 text-[11px] text-destructive line-through">
-        Cancelled
-      </div>
-    );
-  } else if (!active) {
+  if (!active) {
+    // Empty / cancelled both render as empty so cancelling a day looks like an empty slot
     inner = (
       <div className="flex h-full w-full items-center justify-center rounded border border-dashed border-border/40 text-[11px] text-muted-foreground/60">
         —
@@ -487,10 +482,11 @@ function Cell(props: {
       <ContextMenuTrigger asChild>
         <div
           role="gridcell"
+          tabIndex={-1}
           aria-selected={isSelected}
           onClick={onClick}
           onDoubleClick={() => { if (onDoubleClickEdit) setEditOpen(true); }}
-          className={`relative cursor-pointer select-none border-b border-r ${todayTint} p-1 min-h-[78px] ${selectionRing} ${clipBorder}`}
+          className={`relative cursor-pointer select-none border-b border-r ${todayTint} p-1 min-h-[78px] outline-none focus:outline-none focus-visible:outline-none ${selectionRing} ${clipBorder}`}
         >
           {inner}
           {/* Hidden edit popover anchor */}
