@@ -109,6 +109,7 @@ export default function CandidatesPanel() {
   const [events, setEvents] = useState<CandidateEvent[]>([]);
   const [eventNote, setEventNote] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
