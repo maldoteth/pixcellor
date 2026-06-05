@@ -71,6 +71,8 @@ const emptyForm = {
   reference: "",
   description: "",
   location: "",
+  latitude: "" as string,
+  longitude: "" as string,
   arrangement: "onsite",
   employment_type: "permanent",
   status: "open",
