@@ -516,6 +516,7 @@ export default function Portal() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSalesEventForm, setShowSalesEventForm] = useState(false);
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
+  const [falloffsDialogOpen, setFalloffsDialogOpen] = useState(false);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [speakingScriptId, setSpeakingScriptId] = useState<string | null>(null);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
