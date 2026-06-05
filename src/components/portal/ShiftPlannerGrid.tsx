@@ -260,14 +260,17 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     await load();
   };
 
-  // Keyboard
+  // Keyboard — attach once, always read latest state via refs
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Ignore when typing in an input/textarea
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
-      if (selected.size === 0 && !(e.key === "Escape")) return;
+      const hasSel = selectedRef.current.size > 0;
       const mod = e.ctrlKey || e.metaKey;
+      if (e.key === "Escape") {
+        clearSelection(); setClipboard(null); return;
+      }
+      if (!hasSel) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault(); void deleteSelection();
       } else if (mod && (e.key === "c" || e.key === "C")) {
@@ -276,14 +279,12 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         e.preventDefault(); collectClip("cut");
       } else if (mod && (e.key === "v" || e.key === "V")) {
         e.preventDefault(); void pasteClip();
-      } else if (e.key === "Escape") {
-        clearSelection(); setClipboard(null);
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, clipboard, vacancies, shifts]);
+  }, []);
 
   // Click outside to clear
   useEffect(() => {
