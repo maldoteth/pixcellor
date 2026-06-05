@@ -1888,6 +1888,7 @@ export type Database = {
           assigned_to_user_id: string | null
           benefits: string | null
           certifications: string[] | null
+          charge_rate: number | null
           client_contact_id: string
           contact_person_id: string | null
           created_at: string
@@ -1912,6 +1913,7 @@ export type Database = {
           pay_max: number | null
           pay_min: number | null
           pay_period: string | null
+          paye_rate_percent: number
           qualifications: string[] | null
           reference: string | null
           required_skills: string[] | null
@@ -1931,6 +1933,7 @@ export type Database = {
           assigned_to_user_id?: string | null
           benefits?: string | null
           certifications?: string[] | null
+          charge_rate?: number | null
           client_contact_id: string
           contact_person_id?: string | null
           created_at?: string
@@ -1955,6 +1958,7 @@ export type Database = {
           pay_max?: number | null
           pay_min?: number | null
           pay_period?: string | null
+          paye_rate_percent?: number
           qualifications?: string[] | null
           reference?: string | null
           required_skills?: string[] | null
@@ -1974,6 +1978,7 @@ export type Database = {
           assigned_to_user_id?: string | null
           benefits?: string | null
           certifications?: string[] | null
+          charge_rate?: number | null
           client_contact_id?: string
           contact_person_id?: string | null
           created_at?: string
@@ -1998,6 +2003,7 @@ export type Database = {
           pay_max?: number | null
           pay_min?: number | null
           pay_period?: string | null
+          paye_rate_percent?: number
           qualifications?: string[] | null
           reference?: string | null
           required_skills?: string[] | null
