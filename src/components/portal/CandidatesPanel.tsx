@@ -428,14 +428,21 @@ export default function CandidatesPanel() {
             <Card key={c.id} className="cursor-pointer p-4 hover:bg-muted/30" onClick={() => setActiveId(c.id)}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex min-w-0 gap-3">
-                  <Avatar className="h-12 w-12 shrink-0">
-                    {c.photo_url ? <AvatarImage src={c.photo_url} alt={c.full_name} /> : null}
-                    <AvatarFallback>{initialsOf(c.full_name)}</AvatarFallback>
-                  </Avatar>
+                  <div className="relative shrink-0">
+                    <Avatar className="h-12 w-12">
+                      {c.photo_url ? <AvatarImage src={c.photo_url} alt={c.full_name} /> : null}
+                      <AvatarFallback>{initialsOf(c.full_name)}</AvatarFallback>
+                    </Avatar>
+                    <Badge
+                      variant="outline"
+                      className={`${STATUS_COLOR[c.status]} absolute -top-2 -right-2 px-1.5 py-0 text-[9px] leading-4 shadow-sm`}
+                    >
+                      {STATUS_LABEL[c.status]}
+                    </Badge>
+                  </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <div className="font-medium">{c.full_name}</div>
-                      <Badge variant="outline" className={STATUS_COLOR[c.status]}>{STATUS_LABEL[c.status]}</Badge>
                       {c.rating ? <span className="flex items-center gap-0.5 text-amber-400 text-xs">{Array.from({length: c.rating}).map((_,i)=><Star key={i} className="h-3 w-3 fill-amber-400" />)}</span> : null}
                       <span className="text-xs text-muted-foreground">via {c.source}</span>
                     </div>

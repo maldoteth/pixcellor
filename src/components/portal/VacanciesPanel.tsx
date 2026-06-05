@@ -111,6 +111,22 @@ export default function VacanciesPanel() {
   const [assignStage, setAssignStage] = useState<string>("shortlisted");
   const [customTimes, setCustomTimes] = useState(false);
   const [perDayTimes, setPerDayTimes] = useState<Record<string, { start: string; finish: string }>>({});
+  const [clientQuery, setClientQuery] = useState("");
+
+  const resetForm = useCallback(() => {
+    setForm({ ...emptyForm });
+    setPerDayTimes({});
+    setCustomTimes(false);
+    setClientQuery("");
+  }, []);
+
+  const filteredClients = useMemo(() => {
+    const q = clientQuery.trim().toLowerCase();
+    if (!q) return clients;
+    return clients.filter((c) =>
+      c.name.toLowerCase().includes(q) || (c.industry ?? "").toLowerCase().includes(q)
+    );
+  }, [clients, clientQuery]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -145,8 +161,10 @@ export default function VacanciesPanel() {
   const toArr = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
   const handleCreate = async () => {
+    const title = form.title.trim();
     if (!form.client_contact_id) { toast({ title: "Select a client", variant: "destructive" }); return; }
-    if (!form.title.trim()) { toast({ title: "Job title is required", variant: "destructive" }); return; }
+    if (!title) { toast({ title: "Job title is required", variant: "destructive" }); return; }
+    if (title.length > 160) { toast({ title: "Job title must be 160 characters or fewer", variant: "destructive" }); return; }
     setSaving(true);
     const extraNotes = customTimes
       ? form.schedule_days
@@ -158,28 +176,44 @@ export default function VacanciesPanel() {
           .filter(Boolean)
           .join(", ")
       : "";
-    const mergedNotes = [form.schedule_notes, extraNotes].filter(Boolean).join(" | ");
-    const payload = {
-      ...form,
-      schedule_notes: mergedNotes,
-      openings: form.openings ? Number(form.openings) : 1,
-      duration_weeks: form.duration_weeks || null,
-      hours_per_week: form.hours_per_week || null,
-      pay_min: form.pay_min || null,
-      pay_max: form.pay_max || null,
+    const mergedNotes = [form.schedule_notes.trim(), extraNotes].filter(Boolean).join(" | ");
+    const numOrNull = (s: string) => (s && !isNaN(Number(s)) ? Number(s) : null);
+    const payload: Record<string, unknown> = {
+      client_contact_id: form.client_contact_id,
+      title,
+      reference: form.reference.trim() || null,
+      description: form.description.trim() || null,
+      location: form.location.trim() || null,
+      arrangement: form.arrangement,
+      employment_type: form.employment_type,
+      status: form.status,
+      openings: numOrNull(form.openings) ?? 1,
+      start_date: form.start_date || null,
+      end_date: form.end_date || null,
+      start_time: form.start_time || null,
+      finish_time: form.finish_time || null,
+      schedule_days: form.schedule_days,
+      schedule_notes: mergedNotes || null,
+      duration_weeks: numOrNull(form.duration_weeks),
+      hours_per_week: numOrNull(form.hours_per_week),
       qualifications: toArr(form.qualifications),
       required_skills: toArr(form.required_skills),
       nice_to_have_skills: toArr(form.nice_to_have_skills),
       certifications: toArr(form.certifications),
+      right_to_work_required: form.right_to_work_required,
+      pay_min: numOrNull(form.pay_min),
+      pay_max: numOrNull(form.pay_max),
+      pay_currency: form.pay_currency.trim() || "GBP",
+      pay_period: form.pay_period,
+      benefits: form.benefits.trim() || null,
+      notes: form.notes.trim() || null,
     };
     const { error } = await supabase.rpc("portal_create_vacancy", { _payload: payload as any });
     setSaving(false);
     if (error) { toast({ title: "Could not create vacancy", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Vacancy created" });
     setOpenDialog(false);
-    setForm({ ...emptyForm });
-    setPerDayTimes({});
-    setCustomTimes(false);
+    resetForm();
     load();
   };
 
@@ -333,18 +367,42 @@ export default function VacanciesPanel() {
         </div>
       )}
 
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+      <Dialog open={openDialog} onOpenChange={(o) => { setOpenDialog(o); if (!o) resetForm(); }}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader><DialogTitle>New vacancy</DialogTitle></DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label>Client *</Label>
-              <Select value={form.client_contact_id} onValueChange={(v) => setForm({ ...form, client_contact_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Select a client…" /></SelectTrigger>
-                <SelectContent>
-                  {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}{c.industry ? ` (${c.industry})` : ""}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              {clients.length === 0 ? (
+                <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+                  No clients yet — add a contact in the Contacts tab first.
+                </div>
+              ) : (
+                <Select value={form.client_contact_id} onValueChange={(v) => setForm({ ...form, client_contact_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select a client…" /></SelectTrigger>
+                  <SelectContent>
+                    <div className="sticky top-0 z-10 bg-popover p-1">
+                      <Input
+                        autoFocus
+                        value={clientQuery}
+                        onChange={(e) => setClientQuery(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        placeholder="Search clients…"
+                        className="h-8"
+                      />
+                    </div>
+                    {filteredClients.length === 0 ? (
+                      <div className="px-3 py-2 text-xs text-muted-foreground">No matches</div>
+                    ) : (
+                      filteredClients.slice(0, 200).map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}{c.industry ? ` (${c.industry})` : ""}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="sm:col-span-2"><Label>Job title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={160} /></div>
             <div><Label>Reference</Label><Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></div>
@@ -442,8 +500,13 @@ export default function VacanciesPanel() {
             <div className="sm:col-span-2"><Label>Internal notes</Label><Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpenDialog(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={saving}>{saving ? "Saving…" : "Create vacancy"}</Button>
+            <Button variant="outline" onClick={() => { setOpenDialog(false); resetForm(); }}>Cancel</Button>
+            <Button
+              onClick={handleCreate}
+              disabled={saving || !form.client_contact_id || !form.title.trim()}
+            >
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : "Create vacancy"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
