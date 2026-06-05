@@ -25,7 +25,10 @@ type Vacancy = {
   pay_max: number | null;
   pay_currency: string | null;
   pay_period: string | null;
+  charge_rate: number | null;
+  paye_rate_percent: number | null;
   client?: { id: string; name: string } | null;
+  assignments?: Array<{ candidate_id: string; stage: string; candidate: { id: string; full_name: string; status: string } }>;
 };
 
 type Shift = {
