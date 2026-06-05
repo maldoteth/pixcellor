@@ -154,10 +154,14 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
 
       {cands.length > 0 && (
         <>
-          <div className="grid gap-2 sm:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-5">
             <div>
               <Label className="text-xs">Min score</Label>
               <Input type="number" min={0} max={100} value={minScore} onChange={(e) => setMinScore(Number(e.target.value) || 0)} className="h-8" />
+            </div>
+            <div>
+              <Label className="text-xs">Max distance (km)</Label>
+              <Input type="number" min={0} value={maxDistance || ""} onChange={(e) => setMaxDistance(Number(e.target.value) || 0)} className="h-8" placeholder="any" />
             </div>
             <div><Label className="text-xs">Location</Label><Input value={locFilter} onChange={(e) => setLocFilter(e.target.value)} className="h-8" placeholder="any" /></div>
             <div><Label className="text-xs">Skill</Label><Input value={skillFilter} onChange={(e) => setSkillFilter(e.target.value)} className="h-8" placeholder="any" /></div>
