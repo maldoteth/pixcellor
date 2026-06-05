@@ -26,6 +26,7 @@ const AuthHandoff = lazy(() => import("./pages/AuthHandoff"));
 const ServicePage = lazy(() => import("./pages/ServicePage"));
 const ServicesIndex = lazy(() => import("./pages/ServicesIndex"));
 const CandidateApply = lazy(() => import("./pages/CandidateApply"));
+const CandidatePortal = lazy(() => import("./pages/CandidatePortal"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
