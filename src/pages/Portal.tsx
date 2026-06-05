@@ -43,6 +43,8 @@ import SentEmails from "@/components/email/SentEmails";
 import { useDomainPrompt } from "@/components/DomainPromptDialog";
 import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
+import CandidatesPanel from "@/components/portal/CandidatesPanel";
+import ContactMatchingCandidates from "@/components/portal/ContactMatchingCandidates";
 import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPanel";
 import FindLeadsButton from "@/components/portal/FindLeadsButton";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
@@ -463,7 +465,7 @@ export default function Portal() {
   const [authError, setAuthError] = useState("");
 
   const [orders, setOrders] = useState<StripeSession[]>([]);
-  const [adminAlerts, setAdminAlerts] = useState<Array<{ id: string; source: string; severity: string; title: string; message: string | null; context: any; resolved_at: string | null; created_at: string }>>([]);
+  // (alerts removed — Candidates tab replaces it)
   const [falloffs, setFalloffs] = useState<VisitorFalloff[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -756,11 +758,6 @@ export default function Portal() {
 
     loadPortalSnapshot();
 
-    const loadAlerts = async () => {
-      const { data } = await (supabase as any).from("admin_alerts").select("*").order("created_at", { ascending: false }).limit(100);
-      setAdminAlerts((data as any) ?? []);
-    };
-    loadAlerts();
 
     const channel = supabase
       .channel("portal-realtime")
@@ -776,7 +773,7 @@ export default function Portal() {
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_inquiries" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contacts" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_events" }, loadPortalSnapshot)
-      .on("postgres_changes", { event: "*", schema: "public", table: "admin_alerts" }, loadAlerts)
+      
       .subscribe();
 
     return () => {
@@ -2431,7 +2428,7 @@ export default function Portal() {
             <TabsTrigger value="chats" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><MessageSquare className="h-3.5 w-3.5 shrink-0" />Chats</TabsTrigger>
             <TabsTrigger value="profiles" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" />Clients</TabsTrigger>
             <TabsTrigger value="studio" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Wand2 className="h-3.5 w-3.5 shrink-0" />Studio</TabsTrigger>
-            <TabsTrigger value="alerts" className="pricing-button col-span-2 md:col-span-1 h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><AlertTriangle className="h-3.5 w-3.5 shrink-0" />Alerts</TabsTrigger>
+            <TabsTrigger value="candidates" className="pricing-button col-span-2 md:col-span-1 h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserPlus className="h-3.5 w-3.5 shrink-0" />Candidates</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sales" className="space-y-4">
@@ -3467,70 +3464,8 @@ export default function Portal() {
             <VisionStudio />
           </TabsContent>
 
-          <TabsContent value="alerts" className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">System alerts</h2>
-                <p className="text-sm text-muted-foreground">Refunds, disputes, payment failures and webhook errors. Newest.</p>
-              </div>
-              {adminAlerts.some(a => !a.resolved_at) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    const ids = adminAlerts.filter(a => !a.resolved_at).map(a => a.id);
-                    await (supabase as any).from("admin_alerts").update({ resolved_at: new Date().toISOString() }).in("id", ids);
-                    setAdminAlerts(prev => prev.map(a => a.resolved_at ? a : { ...a, resolved_at: new Date().toISOString() }));
-                  }}
-                >
-                  Mark all resolved
-                </Button>
-              )}
-            </div>
-            {adminAlerts.length === 0 ? (
-              <Card className="p-6 text-sm text-muted-foreground">No alerts. You're all clear.</Card>
-            ) : (
-              <div className="space-y-2">
-                {adminAlerts.map(alert => {
-                  const sevColor = alert.severity === "critical" ? "border-red-500/60 bg-red-500/5"
-                    : alert.severity === "error" ? "border-red-400/40 bg-red-400/5"
-                    : alert.severity === "warning" ? "border-yellow-500/40 bg-yellow-500/5"
-                    : "border-border";
-                  return (
-                    <Card key={alert.id} className={`p-4 ${sevColor} ${alert.resolved_at ? "opacity-50" : ""}`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 text-muted-foreground text-slate-50 bg-white/0 text-xs">
-                            <span className="uppercase tracking-wide font-semibold">{alert.severity}</span>
-                            <span>•</span>
-                            <span>{alert.source}</span>
-                            <span>•</span>
-                            <span>{new Date(alert.created_at).toLocaleString()}</span>
-                          </div>
-                          <div className="mt-1 font-medium">{alert.title}</div>
-                          {alert.message && <div className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{alert.message}</div>}
-                          {alert.context && Object.keys(alert.context).length > 0 && (
-                            <pre className="mt-2 max-h-40 overflow-auto rounded bg-muted/30 p-2 text-[11px]">{JSON.stringify(alert.context, null, 2)}</pre>
-                          )}
-                        </div>
-                        {!alert.resolved_at && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={async () => {
-                              await (supabase as any).from("admin_alerts").update({ resolved_at: new Date().toISOString() }).eq("id", alert.id);
-                              setAdminAlerts(prev => prev.map(a => a.id === alert.id ? { ...a, resolved_at: new Date().toISOString() } : a));
-                            }}
-                          >
-                            Resolve
-                          </Button>
-                        )}
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
+          <TabsContent value="candidates" className="min-w-0">
+            <CandidatesPanel />
           </TabsContent>
 
         </Tabs>
@@ -3827,6 +3762,7 @@ export default function Portal() {
                   </div>
                 ))}
               </div>
+              <ContactMatchingCandidates contactId={contactDetailDrawerContact.id} />
             </div>
           )}
         </DrawerContent>

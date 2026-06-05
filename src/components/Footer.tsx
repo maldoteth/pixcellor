@@ -1,4 +1,4 @@
-import { Facebook, Linkedin, MessageSquare, Phone, ScrollText, ShoppingCart, User } from "lucide-react";
+import { Briefcase, Facebook, Linkedin, MessageSquare, Phone, ScrollText, ShoppingCart, User } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -64,6 +64,14 @@ const Footer = () => {
             className={itemClass}
           >
             <ScrollText className={iconClass} />
+          </Link>
+          <Link
+            to="/jobs/apply"
+            aria-label="Looking for work"
+            title="Looking for work?"
+            className={itemClass}
+          >
+            <Briefcase className={iconClass} />
           </Link>
           <button
             type="button"

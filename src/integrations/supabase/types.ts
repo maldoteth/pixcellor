@@ -118,6 +118,292 @@ export type Database = {
           },
         ]
       }
+      candidate_applications: {
+        Row: {
+          applied_at: string
+          candidate_id: string
+          client_contact_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          outcome: string | null
+          role_title: string
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string
+          candidate_id: string
+          client_contact_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          role_title: string
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string
+          candidate_id?: string
+          client_contact_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          role_title?: string
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_applications_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidate_applications_client_contact_id_fkey"
+            columns: ["client_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidate_documents: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          file_url: string
+          filename: string | null
+          id: string
+          kind: string
+          mime_type: string | null
+          size_bytes: number | null
+          uploaded_by_email: string | null
+          uploaded_by_user_id: string | null
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          file_url: string
+          filename?: string | null
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          uploaded_by_email?: string | null
+          uploaded_by_user_id?: string | null
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          file_url?: string
+          filename?: string | null
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          uploaded_by_email?: string | null
+          uploaded_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_documents_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidate_events: {
+        Row: {
+          callback_at: string | null
+          candidate_id: string
+          completed_at: string | null
+          created_at: string
+          created_by_email: string | null
+          created_by_user_id: string | null
+          description: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          callback_at?: string | null
+          candidate_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          description?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          callback_at?: string | null
+          candidate_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          description?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_events_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidates: {
+        Row: {
+          assigned_to_user_id: string | null
+          availability_date: string | null
+          created_at: string
+          created_by_email: string | null
+          created_by_user_id: string | null
+          current_employer: string | null
+          current_role_title: string | null
+          cv_url: string | null
+          desired_arrangement:
+            | Database["public"]["Enums"]["candidate_arrangement"]
+            | null
+          desired_salary_max: number | null
+          desired_salary_min: number | null
+          desired_work_type:
+            | Database["public"]["Enums"]["candidate_work_type"]
+            | null
+          email: string | null
+          full_name: string
+          headline: string | null
+          id: string
+          industries: string[] | null
+          linkedin_url: string | null
+          location: string | null
+          notes: string | null
+          notice_period_weeks: number | null
+          phone: string | null
+          portfolio_url: string | null
+          preferred_locations: string[] | null
+          rating: number | null
+          right_to_work:
+            | Database["public"]["Enums"]["candidate_right_to_work"]
+            | null
+          salary_currency: string | null
+          skills: string[] | null
+          source: Database["public"]["Enums"]["candidate_source"]
+          source_detail: string | null
+          status: Database["public"]["Enums"]["candidate_status"]
+          summary: string | null
+          tags: string[] | null
+          updated_at: string
+          years_experience: number | null
+        }
+        Insert: {
+          assigned_to_user_id?: string | null
+          availability_date?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          current_employer?: string | null
+          current_role_title?: string | null
+          cv_url?: string | null
+          desired_arrangement?:
+            | Database["public"]["Enums"]["candidate_arrangement"]
+            | null
+          desired_salary_max?: number | null
+          desired_salary_min?: number | null
+          desired_work_type?:
+            | Database["public"]["Enums"]["candidate_work_type"]
+            | null
+          email?: string | null
+          full_name: string
+          headline?: string | null
+          id?: string
+          industries?: string[] | null
+          linkedin_url?: string | null
+          location?: string | null
+          notes?: string | null
+          notice_period_weeks?: number | null
+          phone?: string | null
+          portfolio_url?: string | null
+          preferred_locations?: string[] | null
+          rating?: number | null
+          right_to_work?:
+            | Database["public"]["Enums"]["candidate_right_to_work"]
+            | null
+          salary_currency?: string | null
+          skills?: string[] | null
+          source?: Database["public"]["Enums"]["candidate_source"]
+          source_detail?: string | null
+          status?: Database["public"]["Enums"]["candidate_status"]
+          summary?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          years_experience?: number | null
+        }
+        Update: {
+          assigned_to_user_id?: string | null
+          availability_date?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          current_employer?: string | null
+          current_role_title?: string | null
+          cv_url?: string | null
+          desired_arrangement?:
+            | Database["public"]["Enums"]["candidate_arrangement"]
+            | null
+          desired_salary_max?: number | null
+          desired_salary_min?: number | null
+          desired_work_type?:
+            | Database["public"]["Enums"]["candidate_work_type"]
+            | null
+          email?: string | null
+          full_name?: string
+          headline?: string | null
+          id?: string
+          industries?: string[] | null
+          linkedin_url?: string | null
+          location?: string | null
+          notes?: string | null
+          notice_period_weeks?: number | null
+          phone?: string | null
+          portfolio_url?: string | null
+          preferred_locations?: string[] | null
+          rating?: number | null
+          right_to_work?:
+            | Database["public"]["Enums"]["candidate_right_to_work"]
+            | null
+          salary_currency?: string | null
+          skills?: string[] | null
+          source?: Database["public"]["Enums"]["candidate_source"]
+          source_detail?: string | null
+          status?: Database["public"]["Enums"]["candidate_status"]
+          summary?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           bot_paused: boolean
@@ -1818,6 +2104,7 @@ export type Database = {
     }
     Functions: {
       claim_login_handoff: { Args: { _sid: string }; Returns: Json }
+      create_candidate_from_intake: { Args: { _payload: Json }; Returns: Json }
       customer_fetch_portal: { Args: never; Returns: Json }
       customer_has_lead_source: {
         Args: { _source: string; _user_id: string }
@@ -1879,6 +2166,17 @@ export type Database = {
         }
         Returns: number
       }
+      portal_add_candidate_document: {
+        Args: {
+          _candidate_id: string
+          _file_url: string
+          _filename?: string
+          _kind: string
+          _mime_type?: string
+          _size_bytes?: number
+        }
+        Returns: Json
+      }
       portal_add_contact_person: {
         Args: {
           _contact_id: string
@@ -1896,6 +2194,52 @@ export type Database = {
       portal_complete_callback: {
         Args: { _event_id: string }
         Returns: undefined
+      }
+      portal_complete_candidate_callback: {
+        Args: { _event_id: string }
+        Returns: undefined
+      }
+      portal_create_candidate: {
+        Args: {
+          _availability_date?: string
+          _current_employer?: string
+          _current_role_title?: string
+          _cv_url?: string
+          _desired_arrangement?: Database["public"]["Enums"]["candidate_arrangement"]
+          _desired_salary_max?: number
+          _desired_salary_min?: number
+          _desired_work_type?: Database["public"]["Enums"]["candidate_work_type"]
+          _email?: string
+          _full_name: string
+          _headline?: string
+          _industries?: string[]
+          _linkedin_url?: string
+          _location?: string
+          _notes?: string
+          _notice_period_weeks?: number
+          _phone?: string
+          _portfolio_url?: string
+          _preferred_locations?: string[]
+          _right_to_work?: Database["public"]["Enums"]["candidate_right_to_work"]
+          _salary_currency?: string
+          _skills?: string[]
+          _source?: Database["public"]["Enums"]["candidate_source"]
+          _source_detail?: string
+          _summary?: string
+          _tags?: string[]
+          _years_experience?: number
+        }
+        Returns: Json
+      }
+      portal_create_candidate_event: {
+        Args: {
+          _callback_at?: string
+          _candidate_id: string
+          _description?: string
+          _event_type?: string
+          _title: string
+        }
+        Returns: Json
       }
       portal_create_contact:
         | {
@@ -2006,10 +2350,26 @@ export type Database = {
         Args: { _sample_id: string }
         Returns: undefined
       }
+      portal_match_candidates_for_contact: {
+        Args: { _contact_id: string; _limit?: number }
+        Returns: Json
+      }
       portal_require_admin: { Args: never; Returns: undefined }
       portal_search_customers: { Args: { _q: string }; Returns: Json }
       portal_send_chat_reply: {
         Args: { _content: string; _conversation_id: string }
+        Returns: undefined
+      }
+      portal_update_candidate: {
+        Args: { _id: string; _patch: Json }
+        Returns: undefined
+      }
+      portal_update_candidate_status: {
+        Args: {
+          _id: string
+          _note?: string
+          _status: Database["public"]["Enums"]["candidate_status"]
+        }
         Returns: undefined
       }
       portal_update_contact:
@@ -2074,6 +2434,38 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      candidate_arrangement: "onsite" | "hybrid" | "remote" | "any"
+      candidate_right_to_work:
+        | "uk_citizen"
+        | "settled"
+        | "visa_required"
+        | "unknown"
+      candidate_source:
+        | "chatbot"
+        | "manual"
+        | "referral"
+        | "website"
+        | "linkedin"
+        | "job_board"
+        | "apply_page"
+        | "other"
+      candidate_status:
+        | "new"
+        | "screening"
+        | "shortlisted"
+        | "submitted"
+        | "interviewing"
+        | "offer"
+        | "placed"
+        | "rejected"
+        | "on_hold"
+        | "archived"
+      candidate_work_type:
+        | "permanent"
+        | "contract"
+        | "temp"
+        | "freelance"
+        | "any"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2202,6 +2594,42 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      candidate_arrangement: ["onsite", "hybrid", "remote", "any"],
+      candidate_right_to_work: [
+        "uk_citizen",
+        "settled",
+        "visa_required",
+        "unknown",
+      ],
+      candidate_source: [
+        "chatbot",
+        "manual",
+        "referral",
+        "website",
+        "linkedin",
+        "job_board",
+        "apply_page",
+        "other",
+      ],
+      candidate_status: [
+        "new",
+        "screening",
+        "shortlisted",
+        "submitted",
+        "interviewing",
+        "offer",
+        "placed",
+        "rejected",
+        "on_hold",
+        "archived",
+      ],
+      candidate_work_type: [
+        "permanent",
+        "contract",
+        "temp",
+        "freelance",
+        "any",
+      ],
     },
   },
 } as const
