@@ -8,13 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Sparkles, Loader2, Send, RefreshCw, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Sparkles, Loader2, Send, RefreshCw, CheckCircle2, XCircle, Clock, MapPin } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 type Cand = {
   id: string; full_name: string; email: string | null; headline: string | null;
   location: string | null; skills: string[] | null; status: string;
   right_to_work: string | null; years_experience: number | null;
+  latitude?: number | null; longitude?: number | null; distance_km?: number | null;
   score: number; ai_score?: number; ai_reason?: string | null;
 };
 
