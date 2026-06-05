@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Archive, BarChart3, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Pencil, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Briefcase, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Pencil, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 import { downloadImage } from "@/lib/download-image";
 
 const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
@@ -44,6 +44,7 @@ import { useDomainPrompt } from "@/components/DomainPromptDialog";
 import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
 import CandidatesPanel from "@/components/portal/CandidatesPanel";
+import VacanciesPanel from "@/components/portal/VacanciesPanel";
 import ContactMatchingCandidates from "@/components/portal/ContactMatchingCandidates";
 import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPanel";
 import FindLeadsButton from "@/components/portal/FindLeadsButton";
@@ -2419,9 +2420,10 @@ export default function Portal() {
           </div>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 xl:grid-cols-9">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 xl:grid-cols-10">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Orders</TabsTrigger>
+            <TabsTrigger value="vacancies" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Briefcase className="h-3.5 w-3.5 shrink-0" />Vacancies</TabsTrigger>
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Delivered</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs</TabsTrigger>
             <TabsTrigger value="campaigns" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Megaphone className="h-3.5 w-3.5 shrink-0" />Email/SMS</TabsTrigger>
@@ -3466,6 +3468,10 @@ export default function Portal() {
 
           <TabsContent value="candidates" className="min-w-0">
             <CandidatesPanel />
+          </TabsContent>
+
+          <TabsContent value="vacancies" className="min-w-0">
+            <VacanciesPanel />
           </TabsContent>
 
         </Tabs>
