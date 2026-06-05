@@ -180,14 +180,18 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
                 <div key={c.id} className="flex items-start gap-2 rounded-md border px-3 py-2 text-sm">
                   <Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggle(c.id)} className="mt-0.5" />
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium truncate">{c.full_name}</span>
-                      <Badge variant="secondary" className="text-[10px]">score {s}</Badge>
+                    <div className="flex flex-wrap items-start gap-2">
+                      <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
+                        <span className="font-medium truncate">{c.full_name}</span>
+                        <Badge variant="secondary" className="text-[10px]">score {s}</Badge>
+                        {statusBadge(c.id)}
+                        {!c.email && <Badge variant="outline" className="text-[10px]">no email</Badge>}
+                      </div>
                       {c.distance_km != null && (
-                        <Badge variant="outline" className="gap-1 text-[10px]"><MapPin className="h-2.5 w-2.5" />{Math.round(c.distance_km)} km</Badge>
+                        <Badge variant="outline" className="gap-1 text-[10px] shrink-0 ml-auto">
+                          <MapPin className="h-2.5 w-2.5" />{Math.round(c.distance_km * 0.621371)} mi
+                        </Badge>
                       )}
-                      {statusBadge(c.id)}
-                      {!c.email && <Badge variant="outline" className="text-[10px]">no email</Badge>}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">{c.headline ?? "—"} {c.location ? `· ${c.location}` : ""}</div>
                     {c.ai_reason && <div className="text-xs text-muted-foreground mt-0.5 italic">"{c.ai_reason}"</div>}
