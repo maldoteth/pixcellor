@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger,
 } from "@/components/ui/context-menu";
@@ -99,6 +101,9 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [lastSelected, setLastSelected] = useState<{ vacancyId: string; dateIdx: number } | null>(null);
   const [clipboard, setClipboard] = useState<{ mode: "copy" | "cut"; items: ClipItem[]; sourceKeys: string[] } | null>(null);
+  const [bulkPaste, setBulkPaste] = useState<{ vacancyId: string; date: string } | null>(null);
+  const [bulkCount, setBulkCount] = useState<string>("4");
+  const [bulkUnit, setBulkUnit] = useState<"days" | "weeks" | "months">("weeks");
   const [sortBy, setSortBy] = useState<"title" | "client">("title");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const sortedVacancies = useMemo(() => {
@@ -307,6 +312,33 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     }
     await load();
   };
+
+  // Bulk paste: repeat clipboard pattern from a target date for N days/weeks/months
+  const runBulkPaste = async () => {
+    const clip = clipboardRef.current;
+    if (!clip || !bulkPaste) return;
+    const n = Math.max(1, parseInt(bulkCount, 10) || 0);
+    const startDate = new Date(bulkPaste.date + "T00:00:00");
+    const end = new Date(startDate);
+    if (bulkUnit === "days") end.setDate(end.getDate() + n);
+    else if (bulkUnit === "weeks") end.setDate(end.getDate() + n * 7);
+    else end.setMonth(end.getMonth() + n);
+    const dates: string[] = [];
+    for (let d = new Date(startDate); d < end; d.setDate(d.getDate() + 1)) {
+      dates.push(ymd(d));
+    }
+    await Promise.all(dates.map(async (dt, i) => {
+      const item = clip.items[i % clip.items.length];
+      if (item.start || item.finish) {
+        await upsert(bulkPaste.vacancyId, dt, item.start, item.finish, false);
+      }
+    }));
+    setBulkPaste(null);
+    await load();
+    toast({ title: `Pasted across ${dates.length} day${dates.length === 1 ? "" : "s"}` });
+  };
+
+
 
   const deleteSelection = async () => {
     const sel = selectedRef.current;
@@ -552,6 +584,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                         onContextCut={() => { if (!isSelected) selectSingle(v.id, dIdx); setTimeout(() => collectClip("cut"), 0); }}
                         onContextPaste={() => { if (!isSelected) selectSingle(v.id, dIdx); setTimeout(() => pasteClip(), 0); }}
                         onContextAdd={async () => { await upsert(v.id, dk, v.start_time?.slice(0, 5) ?? "09:00", v.finish_time?.slice(0, 5) ?? "17:00", false); await load(); }}
+                        onContextBulkPaste={() => setBulkPaste({ vacancyId: v.id, date: dk })}
                         clipboardHasItems={!!clipboard}
                       />
                     );
@@ -562,6 +595,42 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
           )}
         </div>
       </div>
+
+      {/* Bulk paste dialog */}
+      <Dialog open={!!bulkPaste} onOpenChange={(o) => { if (!o) setBulkPaste(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Bulk paste shifts</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p className="text-muted-foreground text-xs">
+              Repeats the {clipboard?.items.length ?? 0}-cell clipboard pattern starting from{" "}
+              {bulkPaste ? new Date(bulkPaste.date + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : ""}.
+            </p>
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <div className="text-xs text-muted-foreground mb-1">How many</div>
+                <Input type="number" min={1} value={bulkCount} onChange={(e) => setBulkCount(e.target.value)} />
+              </div>
+              <div className="flex-1">
+                <div className="text-xs text-muted-foreground mb-1">Unit</div>
+                <Select value={bulkUnit} onValueChange={(v) => setBulkUnit(v as "days" | "weeks" | "months")}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="days">days</SelectItem>
+                    <SelectItem value="weeks">weeks</SelectItem>
+                    <SelectItem value="months">months</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkPaste(null)}>Cancel</Button>
+            <Button onClick={runBulkPaste} disabled={!clipboard}>Paste</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -585,10 +654,11 @@ function Cell(props: {
   onContextCut: () => void;
   onContextPaste: () => void;
   onContextAdd: () => void;
+  onContextBulkPaste: () => void;
   clipboardHasItems: boolean;
 }) {
   const { date, rowBg, isToday, active, cancelled, start, finish, isSelected, isClipSource, clipMode,
-    onClick, onDoubleClickEdit, onSave, onContextDelete, onContextCopy, onContextCut, onContextPaste, onContextAdd, clipboardHasItems } = props;
+    onClick, onDoubleClickEdit, onSave, onContextDelete, onContextCopy, onContextCut, onContextPaste, onContextAdd, onContextBulkPaste, clipboardHasItems } = props;
 
   const [editOpen, setEditOpen] = useState(false);
   const [st, setSt] = useState(start ?? "09:00");
@@ -652,13 +722,14 @@ function Cell(props: {
           </Popover>
         </div>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-44">
+      <ContextMenuContent className="w-48">
         {!active && !cancelled && <ContextMenuItem onSelect={onContextAdd}>Add shift</ContextMenuItem>}
         {active && <ContextMenuItem onSelect={() => setEditOpen(true)}>Edit times</ContextMenuItem>}
         <ContextMenuSeparator />
         <ContextMenuItem onSelect={onContextCopy} disabled={!active}>Copy</ContextMenuItem>
         <ContextMenuItem onSelect={onContextCut} disabled={!active}>Cut</ContextMenuItem>
         <ContextMenuItem onSelect={onContextPaste} disabled={!clipboardHasItems}>Paste</ContextMenuItem>
+        <ContextMenuItem onSelect={onContextBulkPaste} disabled={!clipboardHasItems}>Bulk paste…</ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onSelect={onContextDelete} className="text-destructive" disabled={!active && !cancelled}>Delete</ContextMenuItem>
       </ContextMenuContent>
