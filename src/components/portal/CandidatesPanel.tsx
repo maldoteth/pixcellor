@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import CsvImportDialog from "@/components/portal/CsvImportDialog";
 
 const STATUSES = [
   "new", "screening", "shortlisted", "submitted", "interviewing", "offer", "placed", "rejected", "on_hold", "archived",
