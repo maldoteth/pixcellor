@@ -505,7 +505,7 @@ export default function Portal() {
   const [clientsStatusFilter, setClientsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [clientsRetainerOnly, setClientsRetainerOnly] = useState(false);
   
-  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples" | "custom">("all");
+  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples" | "custom" | "vacancies">("all");
   const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
   const [completedReqsFilter, setCompletedReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
@@ -2425,7 +2425,7 @@ export default function Portal() {
             <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 xl:grid-cols-10">
             <TabsTrigger value="sales" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><TrendingUp className="h-3.5 w-3.5 shrink-0" />Sales</TabsTrigger>
             <TabsTrigger value="orders" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><ShoppingBag className="h-3.5 w-3.5 shrink-0" />Orders</TabsTrigger>
-            <TabsTrigger value="vacancies" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Briefcase className="h-3.5 w-3.5 shrink-0" />Vacancies</TabsTrigger>
+            
             <TabsTrigger value="completed" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><PackageCheck className="h-3.5 w-3.5 shrink-0" />Delivered</TabsTrigger>
             <TabsTrigger value="falloffs" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserSearch className="h-3.5 w-3.5 shrink-0" />Falloffs</TabsTrigger>
             <TabsTrigger value="campaigns" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Megaphone className="h-3.5 w-3.5 shrink-0" />Email/SMS</TabsTrigger>
@@ -2584,6 +2584,7 @@ export default function Portal() {
                 <Button variant={orderReqsFilter === "waiting" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("waiting")}>Waiting</Button>
                 <Button variant={orderReqsFilter === "samples" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("samples")}>Design ({sampleRequests.length})</Button>
                 <Button variant={orderReqsFilter === "custom" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("custom")}>Custom orders</Button>
+                <Button variant={orderReqsFilter === "vacancies" ? "default" : "outline"} size="sm" onClick={() => setOrderReqsFilter("vacancies")}><Briefcase className="h-3.5 w-3.5" />Vacancies</Button>
               </div>
             </div>
 
@@ -2702,16 +2703,17 @@ export default function Portal() {
             {orderReqsFilter === "samples" && sampleRequests.length === 0 && (
               <p className="text-muted-foreground text-sm">No free sample requests yet.</p>
             )}
-            {orderReqsFilter !== "samples" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
-            {orderReqsFilter !== "samples" && (
+            {orderReqsFilter === "vacancies" && (<VacanciesPanel />)}
+            {orderReqsFilter !== "samples" && orderReqsFilter !== "vacancies" && filteredOrders.length === 0 && <p className="text-muted-foreground text-sm">No live orders {ordersQ ? "match your search" : "yet"}.</p>}
+            {orderReqsFilter !== "samples" && orderReqsFilter !== "vacancies" && (
               <p className="text-muted-foreground text-slate-50 bg-white/0 text-xs">
                 {(sectionCounts.orders ?? 0) > orders.length ? "" : "Loaded all."}
               </p>
             )}
             <div
-              className={orderReqsFilter !== "samples" ? "max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2" : ""}
+              className={orderReqsFilter !== "samples" && orderReqsFilter !== "vacancies" ? "max-h-[70vh] overflow-y-auto pr-1 space-y-3 rounded-none border border-border/40 bg-card/20 p-2" : ""}
             >
-            {orderReqsFilter !== "samples" && filteredOrders.map(o => {
+            {orderReqsFilter !== "samples" && orderReqsFilter !== "vacancies" && filteredOrders.map(o => {
               const requirements = requirementsBySession.get(o.session_id);
               const emailStatus = orderEmailStatusBySession.get(o.session_id);
               const canSendReminder = Boolean(o.customer_email && !requirements && emailStatus?.confirmationSent);
@@ -2866,7 +2868,7 @@ export default function Portal() {
               </Card>
             );
             })}
-            {orderReqsFilter !== "samples" && (sectionCounts.orders ?? 0) > orders.length && (
+            {orderReqsFilter !== "samples" && orderReqsFilter !== "vacancies" && (sectionCounts.orders ?? 0) > orders.length && (
               <div className="flex justify-center pt-2">
                 <Button variant="outline" size="sm" disabled={!!loadingMore.orders} onClick={() => loadMoreSection("orders", orders.length, 20)}>
                   {loadingMore.orders ? "Loading…" : "Load more"}
@@ -3475,9 +3477,8 @@ export default function Portal() {
             <CandidatesPanel />
           </TabsContent>
 
-          <TabsContent value="vacancies" className="min-w-0">
-            <VacanciesPanel />
-          </TabsContent>
+
+
 
         </Tabs>
 
