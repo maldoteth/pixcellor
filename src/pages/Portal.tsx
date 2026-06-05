@@ -45,6 +45,7 @@ import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
 import CandidatesPanel from "@/components/portal/CandidatesPanel";
 import VacanciesPanel from "@/components/portal/VacanciesPanel";
+import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import ContactMatchingCandidates from "@/components/portal/ContactMatchingCandidates";
 import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPanel";
 import FindLeadsButton from "@/components/portal/FindLeadsButton";
