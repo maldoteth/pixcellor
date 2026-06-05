@@ -46,6 +46,8 @@ type Vacancy = {
   pay_period: string | null;
   benefits: string | null;
   notes: string | null;
+  charge_rate: number | null;
+  paye_rate_percent: number | null;
   created_at: string;
   client?: { id: string; name: string; industry?: string | null; location?: string | null } | null;
   assignments?: Array<{
