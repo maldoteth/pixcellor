@@ -555,7 +555,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                     </div>
                   </div>
                   {/* Client (frozen) */}
-                  <div className={`sticky left-[260px] z-10 border-b border-r ${rowBg} px-3 py-2`}>
+                  <div className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2`} style={{ left: `${jobColW}px` }}>
                     <div className="text-sm">{v.client?.name ?? "—"}</div>
                     {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
                   </div>
