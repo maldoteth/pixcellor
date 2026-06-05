@@ -370,10 +370,10 @@ function Cell(props: {
           <Button size="sm" className="w-full" onClick={() => { onSave(st, fi); setOpen(false); }}>Save</Button>
         </PopoverContent>
       </Popover>
-      <button onClick={onCancel} className="absolute right-0.5 top-0.5 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive" aria-label="Cancel">
+      <button onClick={onCancel} className="absolute right-0.5 top-0.5 rounded p-0.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Cancel">
         <X className="h-3 w-3" />
       </button>
-      <button onClick={onStartCopy} className="absolute left-0.5 top-0.5 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-muted hover:text-foreground" aria-label="Copy">
+      <button onClick={onStartCopy} className="absolute left-0.5 top-0.5 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Copy">
         <Copy className="h-3 w-3" />
       </button>
     </div>
