@@ -96,6 +96,23 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [lastSelected, setLastSelected] = useState<{ vacancyId: string; dateIdx: number } | null>(null);
   const [clipboard, setClipboard] = useState<{ mode: "copy" | "cut"; items: ClipItem[]; sourceKeys: string[] } | null>(null);
+  const [sortBy, setSortBy] = useState<"title" | "client">("title");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const sortedVacancies = useMemo(() => {
+    const arr = [...vacancies];
+    arr.sort((a, b) => {
+      const av = (sortBy === "title" ? a.title : a.client?.name ?? "") || "";
+      const bv = (sortBy === "title" ? b.title : b.client?.name ?? "") || "";
+      const cmp = av.localeCompare(bv, undefined, { sensitivity: "base" });
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return arr;
+  }, [vacancies, sortBy, sortDir]);
+  const toggleSort = (col: "title" | "client") => {
+    if (sortBy === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortBy(col); setSortDir("asc"); }
+  };
+  const sortArrow = (col: "title" | "client") => sortBy === col ? (sortDir === "asc" ? " ▲" : " ▼") : "";
   const gridRef = useRef<HTMLDivElement>(null);
   // Refs mirror state so the global key handler always sees latest values
   const selectedRef = useRef(selected);
@@ -397,8 +414,8 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         <div className="min-w-[1100px]">
           {/* Header row */}
           <div className="grid sticky top-0 z-20 bg-muted/30" style={{ gridTemplateColumns: "260px 180px repeat(7, minmax(140px, 1fr))" }}>
-            <div className="sticky left-0 z-30 border-b border-r bg-muted/30 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Job</div>
-            <div className="sticky left-[260px] z-30 border-b border-r bg-muted/30 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Client</div>
+            <button type="button" onClick={() => toggleSort("title")} className="sticky left-0 z-30 border-b border-r bg-muted/30 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground">Job{sortArrow("title")}</button>
+            <button type="button" onClick={() => toggleSort("client")} className="sticky left-[260px] z-30 border-b border-r bg-muted/30 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground">Client{sortArrow("client")}</button>
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
               return (
@@ -416,7 +433,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
           {vacancies.length === 0 ? (
             <div className="px-3 py-12 text-center text-sm text-muted-foreground">No vacancies match the current filters.</div>
           ) : (
-            vacancies.map((v, rowIdx) => {
+            sortedVacancies.map((v, rowIdx) => {
               const rowBg = rowIdx % 2 === 0 ? "bg-background" : "bg-muted/10";
               return (
                 <div key={v.id} className="grid" style={{ gridTemplateColumns: "260px 180px repeat(7, minmax(140px, 1fr))" }}>
