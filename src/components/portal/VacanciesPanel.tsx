@@ -273,10 +273,12 @@ export default function VacanciesPanel() {
       benefits: form.benefits.trim() || null,
       notes: form.notes.trim() || null,
     };
-    const { error } = await supabase.rpc("portal_create_vacancy", { _payload: payload as any });
+    const { error } = editingId
+      ? await supabase.rpc("portal_update_vacancy", { _id: editingId, _patch: payload as any })
+      : await supabase.rpc("portal_create_vacancy", { _payload: payload as any });
     setSaving(false);
-    if (error) { toast({ title: "Could not create vacancy", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Vacancy created" });
+    if (error) { toast({ title: editingId ? "Could not update vacancy" : "Could not create vacancy", description: error.message, variant: "destructive" }); return; }
+    toast({ title: editingId ? "Vacancy updated" : "Vacancy created" });
     setOpenDialog(false);
     resetForm();
     load();
