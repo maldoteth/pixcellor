@@ -3249,6 +3249,9 @@ export default function Portal() {
                   <Button onClick={openMobileContactForm} className="h-9 shrink-0">
                     <UserPlus className="w-4 h-4 mr-2" /> Add Client
                   </Button>
+                  <Button variant="outline" onClick={() => setClientsImportOpen(true)} className="h-9 shrink-0">
+                    <Upload className="w-4 h-4 mr-2" /> Import CSV
+                  </Button>
                   <FindLeadsButton onQueued={loadPortalSnapshot} />
                 </div>
               </div>
