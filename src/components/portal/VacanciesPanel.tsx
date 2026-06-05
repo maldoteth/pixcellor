@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import AIRecommendationsPanel from "./AIRecommendationsPanel";
+import PlaceAutocomplete from "@/components/ui/place-autocomplete";
 
 type Vacancy = {
   id: string;
