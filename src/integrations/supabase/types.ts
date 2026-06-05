@@ -292,11 +292,15 @@ export type Database = {
             | null
           email: string | null
           full_name: string
+          geocode_source: string | null
+          geocoded_at: string | null
           headline: string | null
           id: string
           industries: string[] | null
+          latitude: number | null
           linkedin_url: string | null
           location: string | null
+          longitude: number | null
           notes: string | null
           notice_period_weeks: number | null
           phone: string | null
@@ -336,11 +340,15 @@ export type Database = {
             | null
           email?: string | null
           full_name: string
+          geocode_source?: string | null
+          geocoded_at?: string | null
           headline?: string | null
           id?: string
           industries?: string[] | null
+          latitude?: number | null
           linkedin_url?: string | null
           location?: string | null
+          longitude?: number | null
           notes?: string | null
           notice_period_weeks?: number | null
           phone?: string | null
@@ -380,11 +388,15 @@ export type Database = {
             | null
           email?: string | null
           full_name?: string
+          geocode_source?: string | null
+          geocoded_at?: string | null
           headline?: string | null
           id?: string
           industries?: string[] | null
+          latitude?: number | null
           linkedin_url?: string | null
           location?: string | null
+          longitude?: number | null
           notes?: string | null
           notice_period_weeks?: number | null
           phone?: string | null
@@ -1886,9 +1898,13 @@ export type Database = {
           employment_type: Database["public"]["Enums"]["vacancy_employment_type"]
           end_date: string | null
           finish_time: string | null
+          geocode_source: string | null
+          geocoded_at: string | null
           hours_per_week: number | null
           id: string
+          latitude: number | null
           location: string | null
+          longitude: number | null
           nice_to_have_skills: string[] | null
           notes: string | null
           openings: number
@@ -1925,9 +1941,13 @@ export type Database = {
           employment_type?: Database["public"]["Enums"]["vacancy_employment_type"]
           end_date?: string | null
           finish_time?: string | null
+          geocode_source?: string | null
+          geocoded_at?: string | null
           hours_per_week?: number | null
           id?: string
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           nice_to_have_skills?: string[] | null
           notes?: string | null
           openings?: number
@@ -1964,9 +1984,13 @@ export type Database = {
           employment_type?: Database["public"]["Enums"]["vacancy_employment_type"]
           end_date?: string | null
           finish_time?: string | null
+          geocode_source?: string | null
+          geocoded_at?: string | null
           hours_per_week?: number | null
           id?: string
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           nice_to_have_skills?: string[] | null
           notes?: string | null
           openings?: number
@@ -2436,6 +2460,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      haversine_km: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
       }
       match_manual_order_to_stripe: {
         Args: { _real_session_id: string }

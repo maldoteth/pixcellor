@@ -33,8 +33,9 @@ Deno.serve(async (req) => {
       id: c.id, name: c.full_name, headline: c.headline, location: c.location,
       skills: c.skills, status: c.status, rtw: c.right_to_work, exp: c.years_experience,
       work_type: c.desired_work_type, arrangement: c.desired_arrangement, base_score: c.score,
+      distance_km: c.distance_km ?? null,
     }));
-    const prompt = `You are a recruitment matching assistant. Given a vacancy and a list of candidates, rank them by fit (0-100) and give a one-sentence reason each.\n\nVACANCY: ${JSON.stringify(vac)}\n\nCANDIDATES: ${JSON.stringify(compact)}\n\nReturn ONLY a JSON array (no prose) like: [{"id":"uuid","score":92,"reason":"..."}, ...] sorted by score descending. Include all candidates.`;
+    const prompt = `You are a recruitment matching assistant. Given a vacancy and a list of candidates, rank them by fit (0-100) and give a one-sentence reason each. Strongly favour candidates closer to the job site (distance_km, lower is better). Penalise candidates >100km unless remote.\n\nVACANCY: ${JSON.stringify(vac)}\n\nCANDIDATES: ${JSON.stringify(compact)}\n\nReturn ONLY a JSON array (no prose) like: [{"id":"uuid","score":92,"reason":"..."}, ...] sorted by score descending. Include all candidates.`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

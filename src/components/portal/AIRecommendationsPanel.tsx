@@ -8,13 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Sparkles, Loader2, Send, RefreshCw, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Sparkles, Loader2, Send, RefreshCw, CheckCircle2, XCircle, Clock, MapPin } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 type Cand = {
   id: string; full_name: string; email: string | null; headline: string | null;
   location: string | null; skills: string[] | null; status: string;
   right_to_work: string | null; years_experience: number | null;
+  latitude?: number | null; longitude?: number | null; distance_km?: number | null;
   score: number; ai_score?: number; ai_reason?: string | null;
 };
 
@@ -30,6 +31,8 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
   const [locFilter, setLocFilter] = useState("");
   const [skillFilter, setSkillFilter] = useState("");
   const [rtwOnly, setRtwOnly] = useState(false);
+  const [maxDistance, setMaxDistance] = useState<number>(0); // 0 = no limit (km)
+  const [geocoding, setGeocoding] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sendOpen, setSendOpen] = useState(false);
   const [customMessage, setCustomMessage] = useState("");
@@ -68,9 +71,13 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
         if (!(c.skills ?? []).some((x) => x.toLowerCase().includes(sk))) return false;
       }
       if (rtwOnly && !["uk_citizen", "settled"].includes(c.right_to_work ?? "")) return false;
+      if (maxDistance > 0) {
+        if (c.distance_km == null) return false;
+        if (c.distance_km > maxDistance) return false;
+      }
       return true;
     });
-  }, [cands, minScore, locFilter, skillFilter, rtwOnly]);
+  }, [cands, minScore, locFilter, skillFilter, rtwOnly, maxDistance]);
 
   const inviteByCand = useMemo(() => {
     const m = new Map<string, Invite>();
@@ -116,11 +123,24 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
     return <Badge variant="outline">{inv.status}</Badge>;
   };
 
+  const handleGeocode = async () => {
+    setGeocoding(true);
+    const { data, error } = await supabase.functions.invoke("geocode-locations", { body: { batch: true, limit: 200 } });
+    setGeocoding(false);
+    if (error) { toast({ title: "Geocode failed", description: error.message, variant: "destructive" }); return; }
+    const r = (data as any)?.results ?? {};
+    toast({ title: "Geocoding complete", description: `Candidates: +${r.candidate?.ok ?? 0} · Vacancies: +${r.vacancy?.ok ?? 0}` });
+    if (cands.length) runRank();
+  };
+
   return (
     <div className="border-t pt-3 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-sm font-medium flex items-center gap-2"><Sparkles className="h-4 w-4" />AI recommendations</div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="outline" onClick={handleGeocode} disabled={geocoding} className="gap-1" title="Geocode any candidates/vacancies missing coordinates">
+            {geocoding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}Geocode
+          </Button>
           <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
             <SelectTrigger className="h-8 w-[100px] text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>{[10, 25, 50, 100].map((n) => <SelectItem key={n} value={String(n)}>Top {n}</SelectItem>)}</SelectContent>
@@ -134,10 +154,14 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
 
       {cands.length > 0 && (
         <>
-          <div className="grid gap-2 sm:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-5">
             <div>
               <Label className="text-xs">Min score</Label>
               <Input type="number" min={0} max={100} value={minScore} onChange={(e) => setMinScore(Number(e.target.value) || 0)} className="h-8" />
+            </div>
+            <div>
+              <Label className="text-xs">Max distance (km)</Label>
+              <Input type="number" min={0} value={maxDistance || ""} onChange={(e) => setMaxDistance(Number(e.target.value) || 0)} className="h-8" placeholder="any" />
             </div>
             <div><Label className="text-xs">Location</Label><Input value={locFilter} onChange={(e) => setLocFilter(e.target.value)} className="h-8" placeholder="any" /></div>
             <div><Label className="text-xs">Skill</Label><Input value={skillFilter} onChange={(e) => setSkillFilter(e.target.value)} className="h-8" placeholder="any" /></div>
@@ -159,6 +183,9 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium truncate">{c.full_name}</span>
                       <Badge variant="secondary" className="text-[10px]">score {s}</Badge>
+                      {c.distance_km != null && (
+                        <Badge variant="outline" className="gap-1 text-[10px]"><MapPin className="h-2.5 w-2.5" />{Math.round(c.distance_km)} km</Badge>
+                      )}
                       {statusBadge(c.id)}
                       {!c.email && <Badge variant="outline" className="text-[10px]">no email</Badge>}
                     </div>
