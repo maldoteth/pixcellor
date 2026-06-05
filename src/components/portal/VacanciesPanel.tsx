@@ -100,6 +100,8 @@ const emptyForm = {
   pay_period: "hour",
   benefits: "",
   notes: "",
+  charge_rate: "",
+  paye_rate_percent: "17",
 };
 
 export default function VacanciesPanel() {
