@@ -3470,6 +3470,10 @@ export default function Portal() {
             <CandidatesPanel />
           </TabsContent>
 
+          <TabsContent value="vacancies" className="min-w-0">
+            <VacanciesPanel />
+          </TabsContent>
+
         </Tabs>
 
       </div>
