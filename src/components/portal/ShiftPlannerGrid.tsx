@@ -48,6 +48,7 @@ type Props = {
   onAssign: (id: string) => void;
   onDelete: (id: string) => void;
   onOpenAI?: (id: string) => void;
+  onVacancyChanged?: () => void | Promise<void>;
 };
 
 type ClipItem = { start: string | null; finish: string | null };
