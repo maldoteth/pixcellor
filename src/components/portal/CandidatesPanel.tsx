@@ -515,6 +515,35 @@ export default function CandidatesPanel() {
           </DrawerHeader>
           {active && (
             <div className="mx-auto w-full max-w-3xl space-y-4 overflow-y-auto px-4 pb-8">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Avatar className="h-20 w-20">
+                    {active.photo_url ? <AvatarImage src={active.photo_url} alt={active.full_name} /> : null}
+                    <AvatarFallback className="text-lg">{initialsOf(active.full_name)}</AvatarFallback>
+                  </Avatar>
+                  {active.photo_url && (
+                    <button
+                      onClick={() => removePhoto(active.id)}
+                      className="absolute -right-1 -top-1 rounded-full bg-background border border-border p-1 text-muted-foreground hover:text-foreground"
+                      title="Remove photo"
+                    ><X className="h-3 w-3" /></button>
+                  )}
+                </div>
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(active.id, f); e.currentTarget.value = ""; }}
+                  />
+                  <Button asChild size="sm" variant="outline" disabled={photoUploading}>
+                    <span>
+                      {photoUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+                      {active.photo_url ? "Change photo" : "Upload photo"}
+                    </span>
+                  </Button>
+                </label>
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Select value={active.status} onValueChange={(v) => updateStatus(active.id, v as Status)}>
                   <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
