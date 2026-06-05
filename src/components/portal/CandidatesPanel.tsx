@@ -241,6 +241,34 @@ export default function CandidatesPanel() {
     }
   };
 
+  const uploadPhoto = async (id: string, file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Please pick an image"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setPhotoUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("candidate-photos").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("candidate-photos").getPublicUrl(path);
+      const url = pub.publicUrl;
+      const { error } = await (supabase as any).rpc("portal_update_candidate", { _id: id, _patch: { photo_url: url } });
+      if (error) throw error;
+      toast.success("Photo updated");
+      load();
+    } catch (e: any) {
+      toast.error(e.message ?? "Upload failed");
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const removePhoto = async (id: string) => {
+    const { error } = await (supabase as any).rpc("portal_update_candidate", { _id: id, _patch: { photo_url: null } });
+    if (error) toast.error(error.message); else { toast.success("Photo removed"); load(); }
+  };
+  };
+
   const exportCsv = () => {
     const rows = [
       ["Name","Email","Phone","Location","Headline","Current role","Experience","Status","Skills","Source","Created"],
