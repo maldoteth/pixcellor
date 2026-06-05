@@ -183,6 +183,9 @@ export default function AIRecommendationsPanel({ vacancyId }: { vacancyId: strin
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium truncate">{c.full_name}</span>
                       <Badge variant="secondary" className="text-[10px]">score {s}</Badge>
+                      {c.distance_km != null && (
+                        <Badge variant="outline" className="gap-1 text-[10px]"><MapPin className="h-2.5 w-2.5" />{Math.round(c.distance_km)} km</Badge>
+                      )}
                       {statusBadge(c.id)}
                       {!c.email && <Badge variant="outline" className="text-[10px]">no email</Badge>}
                     </div>
