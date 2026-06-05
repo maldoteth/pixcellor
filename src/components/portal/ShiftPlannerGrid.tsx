@@ -18,6 +18,8 @@ type Vacancy = {
   reference: string | null;
   location: string | null;
   status: string;
+  start_date: string | null;
+  end_date: string | null;
   start_time: string | null;
   finish_time: string | null;
   schedule_days: string[] | null;
@@ -170,7 +172,13 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         finish: (shift.finish_time ?? tFinish)?.slice(0, 5) ?? null,
       };
     }
-    if (templateSet.has(dow)) return { active: true, cancelled: false, start: tStart, finish: tFinish, hasExplicit: false };
+    // Template-driven recurring days only count within the vacancy's date window.
+    const inRange = (() => {
+      if (v?.start_date && date < v.start_date) return false;
+      if (v?.end_date && date > v.end_date) return false;
+      return true;
+    })();
+    if (inRange && templateSet.has(dow)) return { active: true, cancelled: false, start: tStart, finish: tFinish, hasExplicit: false };
     return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false };
   }, [vacancies, shifts]);
 
@@ -195,10 +203,12 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   };
 
   // Selection helpers
+  const blurActive = () => { try { (document.activeElement as HTMLElement | null)?.blur(); } catch { /* noop */ } };
   const selectSingle = (vacancyId: string, dateIdx: number) => {
     const date = ymd(weekDates[dateIdx]);
     setSelected(new Set([cellKey(vacancyId, date)]));
     setLastSelected({ vacancyId, dateIdx });
+    blurActive();
   };
   const toggleSelect = (vacancyId: string, dateIdx: number) => {
     const date = ymd(weekDates[dateIdx]);
@@ -284,7 +294,13 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      // Only bail on text-entry fields; time/number/date inputs shouldn't block Delete on the grid
+      const isTextEntry = !!t && (
+        (t.tagName === "INPUT" && !["time","number","date","checkbox","radio","range","button","submit"].includes((t as HTMLInputElement).type)) ||
+        t.tagName === "TEXTAREA" ||
+        t.isContentEditable
+      );
+      if (isTextEntry) return;
       const hasSel = selectedRef.current.size > 0;
       const mod = e.ctrlKey || e.metaKey;
       if (e.key === "Escape") {
@@ -292,7 +308,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       }
       if (!hasSel) return;
       if (e.key === "Delete" || e.key === "Backspace") {
-        e.preventDefault(); void deleteSelection();
+        e.preventDefault(); blurActive(); void deleteSelection();
       } else if (mod && (e.key === "c" || e.key === "C")) {
         e.preventDefault(); collectClip("copy");
       } else if (mod && (e.key === "x" || e.key === "X")) {
