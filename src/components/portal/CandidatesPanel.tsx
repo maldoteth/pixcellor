@@ -10,9 +10,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2 } from "lucide-react";
+import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2, Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import CsvImportDialog from "@/components/portal/CsvImportDialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+function initialsOf(name: string) {
+  return (name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "?";
+}
 
 const STATUSES = [
   "new", "screening", "shortlisted", "submitted", "interviewing", "offer", "placed", "rejected", "on_hold", "archived",
@@ -67,6 +72,7 @@ type Candidate = {
   cv_url: string | null;
   linkedin_url: string | null;
   portfolio_url: string | null;
+  photo_url: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -103,6 +109,7 @@ export default function CandidatesPanel() {
   const [events, setEvents] = useState<CandidateEvent[]>([]);
   const [eventNote, setEventNote] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -234,6 +241,33 @@ export default function CandidatesPanel() {
     }
   };
 
+  const uploadPhoto = async (id: string, file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Please pick an image"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setPhotoUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("candidate-photos").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("candidate-photos").getPublicUrl(path);
+      const url = pub.publicUrl;
+      const { error } = await (supabase as any).rpc("portal_update_candidate", { _id: id, _patch: { photo_url: url } });
+      if (error) throw error;
+      toast.success("Photo updated");
+      load();
+    } catch (e: any) {
+      toast.error(e.message ?? "Upload failed");
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const removePhoto = async (id: string) => {
+    const { error } = await (supabase as any).rpc("portal_update_candidate", { _id: id, _patch: { photo_url: null } });
+    if (error) toast.error(error.message); else { toast.success("Photo removed"); load(); }
+  };
+
   const exportCsv = () => {
     const rows = [
       ["Name","Email","Phone","Location","Headline","Current role","Experience","Status","Skills","Source","Created"],
@@ -352,20 +386,26 @@ export default function CandidatesPanel() {
           {filtered.map(c => (
             <Card key={c.id} className="cursor-pointer p-4 hover:bg-muted/30" onClick={() => setActiveId(c.id)}>
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="font-medium">{c.full_name}</div>
-                    <Badge variant="outline" className={STATUS_COLOR[c.status]}>{STATUS_LABEL[c.status]}</Badge>
-                    {c.rating ? <span className="flex items-center gap-0.5 text-amber-400 text-xs">{Array.from({length: c.rating}).map((_,i)=><Star key={i} className="h-3 w-3 fill-amber-400" />)}</span> : null}
-                    <span className="text-xs text-muted-foreground">via {c.source}</span>
-                  </div>
-                  <div className="mt-1 text-sm text-muted-foreground truncate">
-                    {c.headline ?? c.current_role_title ?? "—"}
-                    {c.location ? ` · ${c.location}` : ""}
-                    {c.years_experience != null ? ` · ${c.years_experience}y exp` : ""}
-                  </div>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {(c.skills ?? []).slice(0, 6).map(s => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>)}
+                <div className="flex min-w-0 gap-3">
+                  <Avatar className="h-12 w-12 shrink-0">
+                    {c.photo_url ? <AvatarImage src={c.photo_url} alt={c.full_name} /> : null}
+                    <AvatarFallback>{initialsOf(c.full_name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-medium">{c.full_name}</div>
+                      <Badge variant="outline" className={STATUS_COLOR[c.status]}>{STATUS_LABEL[c.status]}</Badge>
+                      {c.rating ? <span className="flex items-center gap-0.5 text-amber-400 text-xs">{Array.from({length: c.rating}).map((_,i)=><Star key={i} className="h-3 w-3 fill-amber-400" />)}</span> : null}
+                      <span className="text-xs text-muted-foreground">via {c.source}</span>
+                    </div>
+                    <div className="mt-1 text-sm text-muted-foreground truncate">
+                      {c.headline ?? c.current_role_title ?? "—"}
+                      {c.location ? ` · ${c.location}` : ""}
+                      {c.years_experience != null ? ` · ${c.years_experience}y exp` : ""}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {(c.skills ?? []).slice(0, 6).map(s => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>)}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right text-xs text-muted-foreground">
@@ -391,8 +431,16 @@ export default function CandidatesPanel() {
                   {items.map(c => (
                     <Card key={c.id} className="cursor-pointer p-2 text-sm hover:bg-muted/30" onClick={() => setActiveId(c.id)} draggable
                       onDragStart={(e) => e.dataTransfer.setData("text/plain", c.id)}>
-                      <div className="font-medium truncate">{c.full_name}</div>
-                      <div className="text-xs text-muted-foreground truncate">{c.headline ?? c.current_role_title ?? "—"}</div>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8 shrink-0">
+                          {c.photo_url ? <AvatarImage src={c.photo_url} alt={c.full_name} /> : null}
+                          <AvatarFallback className="text-[10px]">{initialsOf(c.full_name)}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">{c.full_name}</div>
+                          <div className="text-xs text-muted-foreground truncate">{c.headline ?? c.current_role_title ?? "—"}</div>
+                        </div>
+                      </div>
                     </Card>
                   ))}
                 </div>
@@ -467,6 +515,35 @@ export default function CandidatesPanel() {
           </DrawerHeader>
           {active && (
             <div className="mx-auto w-full max-w-3xl space-y-4 overflow-y-auto px-4 pb-8">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Avatar className="h-20 w-20">
+                    {active.photo_url ? <AvatarImage src={active.photo_url} alt={active.full_name} /> : null}
+                    <AvatarFallback className="text-lg">{initialsOf(active.full_name)}</AvatarFallback>
+                  </Avatar>
+                  {active.photo_url && (
+                    <button
+                      onClick={() => removePhoto(active.id)}
+                      className="absolute -right-1 -top-1 rounded-full bg-background border border-border p-1 text-muted-foreground hover:text-foreground"
+                      title="Remove photo"
+                    ><X className="h-3 w-3" /></button>
+                  )}
+                </div>
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(active.id, f); e.currentTarget.value = ""; }}
+                  />
+                  <Button asChild size="sm" variant="outline" disabled={photoUploading}>
+                    <span>
+                      {photoUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+                      {active.photo_url ? "Change photo" : "Upload photo"}
+                    </span>
+                  </Button>
+                </label>
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Select value={active.status} onValueChange={(v) => updateStatus(active.id, v as Status)}>
                   <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
