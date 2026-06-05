@@ -428,10 +428,24 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                       <Badge variant={v.status === "open" ? "default" : "outline"} className="text-[9px] h-4 px-1">{v.status}</Badge>
                       {(v.pay_min || v.pay_max) && (
                         <span className="text-[10px] text-muted-foreground">
-                          {v.pay_currency ?? "GBP"} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
+                          Pay {v.pay_currency ?? "GBP"} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
                         </span>
                       )}
                     </div>
+                    {(() => {
+                      const pay = Number(v.pay_max ?? v.pay_min ?? 0);
+                      const charge = Number(v.charge_rate ?? 0);
+                      const paye = Number(v.paye_rate_percent ?? 17);
+                      if (!pay || !charge) return null;
+                      const cost = pay + pay * (paye / 100);
+                      const m = charge - cost;
+                      const pct = (m / charge) * 100;
+                      return (
+                        <div className={`mt-1 text-[10px] ${m >= 0 ? "text-emerald-600" : "text-destructive"}`}>
+                          Charge {v.pay_currency ?? "GBP"} {charge.toFixed(2)} · Margin {m.toFixed(2)} ({pct.toFixed(0)}%)
+                        </div>
+                      );
+                    })()}
                     <div className="mt-1 flex gap-1">
                       <button onClick={() => onEdit(v)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><Pencil className="h-2.5 w-2.5" />Edit</button>
                       <button onClick={() => onAssign(v.id)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><UserPlus className="h-2.5 w-2.5" />Assign</button>
