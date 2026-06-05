@@ -505,7 +505,7 @@ export default function Portal() {
   const [clientsStatusFilter, setClientsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [clientsRetainerOnly, setClientsRetainerOnly] = useState(false);
   
-  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples" | "custom" | "vacancies">("all");
+  const [orderReqsFilter, setOrderReqsFilter] = useState<"all" | "submitted" | "edits" | "waiting" | "samples" | "custom">("all");
   const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
   const [completedReqsFilter, setCompletedReqsFilter] = useState<"all" | "submitted" | "waiting">("all");
   const [contactsSearch, setContactsSearch] = useState("");
