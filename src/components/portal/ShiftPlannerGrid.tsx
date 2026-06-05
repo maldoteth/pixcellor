@@ -336,6 +336,9 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     setBulkPaste(null);
     await load();
     toast({ title: `Pasted across ${dates.length} day${dates.length === 1 ? "" : "s"}` });
+  };
+
+
 
   const deleteSelection = async () => {
     const sel = selectedRef.current;
