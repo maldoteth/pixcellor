@@ -116,13 +116,72 @@ export default function VacanciesPanel() {
   const [customTimes, setCustomTimes] = useState(false);
   const [perDayTimes, setPerDayTimes] = useState<Record<string, { start: string; finish: string }>>({});
   const [clientQuery, setClientQuery] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const resetForm = useCallback(() => {
     setForm({ ...emptyForm });
     setPerDayTimes({});
     setCustomTimes(false);
     setClientQuery("");
+    setEditingId(null);
   }, []);
+
+  const openEdit = (v: Vacancy) => {
+    // Parse per-day times out of schedule_notes if present
+    const perDay: Record<string, { start: string; finish: string }> = {};
+    let baseNotes = v.schedule_notes ?? "";
+    if (baseNotes.includes("|")) {
+      const parts = baseNotes.split("|");
+      baseNotes = parts[0].trim();
+      const extras = parts.slice(1).join("|");
+      const re = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(\d{1,2}:\d{2}|--:--)\s*[–—-]\s*(\d{1,2}:\d{2}|--:--)/gi;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(extras)) !== null) {
+        const d = m[1][0].toUpperCase() + m[1].slice(1, 3).toLowerCase();
+        perDay[d] = {
+          start: m[2] === "--:--" ? "" : m[2],
+          finish: m[3] === "--:--" ? "" : m[3],
+        };
+      }
+    }
+    setPerDayTimes(perDay);
+    setCustomTimes(Object.keys(perDay).length > 0);
+    setForm({
+      client_contact_id: v.client_contact_id ?? "",
+      title: v.title ?? "",
+      reference: v.reference ?? "",
+      description: v.description ?? "",
+      location: v.location ?? "",
+      latitude: "",
+      longitude: "",
+      arrangement: v.arrangement ?? "onsite",
+      employment_type: v.employment_type ?? "permanent",
+      status: v.status ?? "open",
+      openings: String(v.openings ?? 1),
+      start_date: v.start_date ?? "",
+      end_date: v.end_date ?? "",
+      start_time: v.start_time ? v.start_time.slice(0, 5) : "",
+      finish_time: v.finish_time ? v.finish_time.slice(0, 5) : "",
+      schedule_days: (v.schedule_days ?? []) as string[],
+      schedule_notes: baseNotes,
+      duration_weeks: v.duration_weeks != null ? String(v.duration_weeks) : "",
+      hours_per_week: v.hours_per_week != null ? String(v.hours_per_week) : "",
+      qualifications: (v.qualifications ?? []).join(", "),
+      required_skills: (v.required_skills ?? []).join(", "),
+      nice_to_have_skills: (v.nice_to_have_skills ?? []).join(", "),
+      certifications: (v.certifications ?? []).join(", "),
+      right_to_work_required: v.right_to_work_required ?? true,
+      pay_min: v.pay_min != null ? String(v.pay_min) : "",
+      pay_max: v.pay_max != null ? String(v.pay_max) : "",
+      pay_currency: v.pay_currency ?? "GBP",
+      pay_period: v.pay_period ?? "hour",
+      benefits: v.benefits ?? "",
+      notes: v.notes ?? "",
+    });
+    setEditingId(v.id);
+    setClientQuery("");
+    setOpenDialog(true);
+  };
 
   const filteredClients = useMemo(() => {
     const q = clientQuery.trim().toLowerCase();
