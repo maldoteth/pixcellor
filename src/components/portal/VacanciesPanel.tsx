@@ -440,7 +440,7 @@ export default function VacanciesPanel() {
 
       <Dialog open={openDialog} onOpenChange={(o) => { setOpenDialog(o); if (!o) resetForm(); }}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
-          <DialogHeader><DialogTitle>New vacancy</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingId ? "Edit vacancy" : "New vacancy"}</DialogTitle></DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label>Client *</Label>
