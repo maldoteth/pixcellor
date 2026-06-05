@@ -40,7 +40,7 @@ type Props = {
   onEdit: (v: Vacancy) => void;
   onAssign: (id: string) => void;
   onDelete: (id: string) => void;
-  onOpenDetails?: (id: string) => void;
+  onOpenAI?: (id: string) => void;
 };
 
 const DOW_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
