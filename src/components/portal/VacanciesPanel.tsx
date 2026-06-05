@@ -108,6 +108,8 @@ export default function VacanciesPanel() {
   const [assignTo, setAssignTo] = useState<string | null>(null);
   const [assignCandidateId, setAssignCandidateId] = useState<string>("");
   const [assignStage, setAssignStage] = useState<string>("shortlisted");
+  const [customTimes, setCustomTimes] = useState(false);
+  const [perDayTimes, setPerDayTimes] = useState<Record<string, { start: string; finish: string }>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -145,8 +147,20 @@ export default function VacanciesPanel() {
     if (!form.client_contact_id) { toast({ title: "Select a client", variant: "destructive" }); return; }
     if (!form.title.trim()) { toast({ title: "Job title is required", variant: "destructive" }); return; }
     setSaving(true);
+    const extraNotes = customTimes
+      ? form.schedule_days
+          .map((d) => {
+            const t = perDayTimes[d];
+            if (!t || (!t.start && !t.finish)) return null;
+            return `${d} ${t.start || "--:--"}–${t.finish || "--:--"}`;
+          })
+          .filter(Boolean)
+          .join(", ")
+      : "";
+    const mergedNotes = [form.schedule_notes, extraNotes].filter(Boolean).join(" | ");
     const payload = {
       ...form,
+      schedule_notes: mergedNotes,
       openings: form.openings ? Number(form.openings) : 1,
       duration_weeks: form.duration_weeks || null,
       hours_per_week: form.hours_per_week || null,
@@ -163,6 +177,8 @@ export default function VacanciesPanel() {
     toast({ title: "Vacancy created" });
     setOpenDialog(false);
     setForm({ ...emptyForm });
+    setPerDayTimes({});
+    setCustomTimes(false);
     load();
   };
 
@@ -359,8 +375,17 @@ export default function VacanciesPanel() {
             <div><Label>Duration (weeks)</Label><Input type="number" value={form.duration_weeks} onChange={(e) => setForm({ ...form, duration_weeks: e.target.value })} /></div>
             <div><Label>Hours / week</Label><Input type="number" step="0.5" value={form.hours_per_week} onChange={(e) => setForm({ ...form, hours_per_week: e.target.value })} /></div>
             <div className="sm:col-span-2">
-              <Label>Working days</Label>
-              <div className="flex flex-wrap gap-3 pt-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label>Working days</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  <Button type="button" size="sm" variant="outline" onClick={() => setForm({ ...form, schedule_days: [...DAYS] })}>All</Button>
+                  <Button type="button" size="sm" variant="outline" onClick={() => setForm({ ...form, schedule_days: ["Mon", "Tue", "Wed", "Thu", "Fri"] })}>Weekdays</Button>
+                  <Button type="button" size="sm" variant={customTimes ? "default" : "outline"} onClick={() => setCustomTimes((s) => !s)}>
+                    {customTimes ? "Hide per-day times" : "Customise times per day"}
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-3 pt-2">
                 {DAYS.map((d) => {
                   const checked = form.schedule_days.includes(d);
                   return (
@@ -373,6 +398,20 @@ export default function VacanciesPanel() {
                   );
                 })}
               </div>
+              {customTimes && form.schedule_days.length > 0 && (
+                <div className="mt-3 space-y-2 rounded-md border border-border/50 p-3">
+                  {form.schedule_days.map((d) => {
+                    const t = perDayTimes[d] ?? { start: form.start_time, finish: form.finish_time };
+                    return (
+                      <div key={d} className="grid grid-cols-[60px_1fr_1fr] items-center gap-2">
+                        <span className="text-sm font-medium">{d}</span>
+                        <Input type="time" value={t.start} onChange={(e) => setPerDayTimes({ ...perDayTimes, [d]: { ...t, start: e.target.value } })} />
+                        <Input type="time" value={t.finish} onChange={(e) => setPerDayTimes({ ...perDayTimes, [d]: { ...t, finish: e.target.value } })} />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <div className="sm:col-span-2"><Label>Schedule notes</Label><Input value={form.schedule_notes} onChange={(e) => setForm({ ...form, schedule_notes: e.target.value })} placeholder="e.g. nights, alternating weeks" /></div>
             <div><Label>Pay min</Label><Input type="number" value={form.pay_min} onChange={(e) => setForm({ ...form, pay_min: e.target.value })} /></div>
