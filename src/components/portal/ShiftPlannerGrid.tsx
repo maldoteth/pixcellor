@@ -313,6 +313,30 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     await load();
   };
 
+  // Bulk paste: repeat clipboard pattern from a target date for N days/weeks/months
+  const runBulkPaste = async () => {
+    const clip = clipboardRef.current;
+    if (!clip || !bulkPaste) return;
+    const n = Math.max(1, parseInt(bulkCount, 10) || 0);
+    const startDate = new Date(bulkPaste.date + "T00:00:00");
+    const end = new Date(startDate);
+    if (bulkUnit === "days") end.setDate(end.getDate() + n);
+    else if (bulkUnit === "weeks") end.setDate(end.getDate() + n * 7);
+    else end.setMonth(end.getMonth() + n);
+    const dates: string[] = [];
+    for (let d = new Date(startDate); d < end; d.setDate(d.getDate() + 1)) {
+      dates.push(ymd(d));
+    }
+    await Promise.all(dates.map(async (dt, i) => {
+      const item = clip.items[i % clip.items.length];
+      if (item.start || item.finish) {
+        await upsert(bulkPaste.vacancyId, dt, item.start, item.finish, false);
+      }
+    }));
+    setBulkPaste(null);
+    await load();
+    toast({ title: `Pasted across ${dates.length} day${dates.length === 1 ? "" : "s"}` });
+
   const deleteSelection = async () => {
     const sel = selectedRef.current;
     if (sel.size === 0) return;
