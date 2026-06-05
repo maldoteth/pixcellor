@@ -367,18 +367,42 @@ export default function VacanciesPanel() {
         </div>
       )}
 
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+      <Dialog open={openDialog} onOpenChange={(o) => { setOpenDialog(o); if (!o) resetForm(); }}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader><DialogTitle>New vacancy</DialogTitle></DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label>Client *</Label>
-              <Select value={form.client_contact_id} onValueChange={(v) => setForm({ ...form, client_contact_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Select a client…" /></SelectTrigger>
-                <SelectContent>
-                  {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}{c.industry ? ` (${c.industry})` : ""}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              {clients.length === 0 ? (
+                <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+                  No clients yet — add a contact in the Contacts tab first.
+                </div>
+              ) : (
+                <Select value={form.client_contact_id} onValueChange={(v) => setForm({ ...form, client_contact_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select a client…" /></SelectTrigger>
+                  <SelectContent>
+                    <div className="sticky top-0 z-10 bg-popover p-1">
+                      <Input
+                        autoFocus
+                        value={clientQuery}
+                        onChange={(e) => setClientQuery(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        placeholder="Search clients…"
+                        className="h-8"
+                      />
+                    </div>
+                    {filteredClients.length === 0 ? (
+                      <div className="px-3 py-2 text-xs text-muted-foreground">No matches</div>
+                    ) : (
+                      filteredClients.slice(0, 200).map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}{c.industry ? ` (${c.industry})` : ""}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="sm:col-span-2"><Label>Job title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={160} /></div>
             <div><Label>Reference</Label><Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></div>
