@@ -1867,6 +1867,193 @@ export type Database = {
         }
         Relationships: []
       }
+      vacancies: {
+        Row: {
+          arrangement: Database["public"]["Enums"]["vacancy_arrangement"] | null
+          assigned_to_user_id: string | null
+          benefits: string | null
+          certifications: string[] | null
+          client_contact_id: string
+          contact_person_id: string | null
+          created_at: string
+          created_by_email: string | null
+          created_by_user_id: string | null
+          description: string | null
+          duration_weeks: number | null
+          employment_type: Database["public"]["Enums"]["vacancy_employment_type"]
+          end_date: string | null
+          finish_time: string | null
+          hours_per_week: number | null
+          id: string
+          location: string | null
+          nice_to_have_skills: string[] | null
+          notes: string | null
+          openings: number
+          pay_currency: string | null
+          pay_max: number | null
+          pay_min: number | null
+          pay_period: string | null
+          qualifications: string[] | null
+          reference: string | null
+          required_skills: string[] | null
+          right_to_work_required: boolean | null
+          schedule_days: string[] | null
+          schedule_notes: string | null
+          start_date: string | null
+          start_time: string | null
+          status: Database["public"]["Enums"]["vacancy_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          arrangement?:
+            | Database["public"]["Enums"]["vacancy_arrangement"]
+            | null
+          assigned_to_user_id?: string | null
+          benefits?: string | null
+          certifications?: string[] | null
+          client_contact_id: string
+          contact_person_id?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          description?: string | null
+          duration_weeks?: number | null
+          employment_type?: Database["public"]["Enums"]["vacancy_employment_type"]
+          end_date?: string | null
+          finish_time?: string | null
+          hours_per_week?: number | null
+          id?: string
+          location?: string | null
+          nice_to_have_skills?: string[] | null
+          notes?: string | null
+          openings?: number
+          pay_currency?: string | null
+          pay_max?: number | null
+          pay_min?: number | null
+          pay_period?: string | null
+          qualifications?: string[] | null
+          reference?: string | null
+          required_skills?: string[] | null
+          right_to_work_required?: boolean | null
+          schedule_days?: string[] | null
+          schedule_notes?: string | null
+          start_date?: string | null
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["vacancy_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          arrangement?:
+            | Database["public"]["Enums"]["vacancy_arrangement"]
+            | null
+          assigned_to_user_id?: string | null
+          benefits?: string | null
+          certifications?: string[] | null
+          client_contact_id?: string
+          contact_person_id?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          description?: string | null
+          duration_weeks?: number | null
+          employment_type?: Database["public"]["Enums"]["vacancy_employment_type"]
+          end_date?: string | null
+          finish_time?: string | null
+          hours_per_week?: number | null
+          id?: string
+          location?: string | null
+          nice_to_have_skills?: string[] | null
+          notes?: string | null
+          openings?: number
+          pay_currency?: string | null
+          pay_max?: number | null
+          pay_min?: number | null
+          pay_period?: string | null
+          qualifications?: string[] | null
+          reference?: string | null
+          required_skills?: string[] | null
+          right_to_work_required?: boolean | null
+          schedule_days?: string[] | null
+          schedule_notes?: string | null
+          start_date?: string | null
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["vacancy_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacancies_client_contact_id_fkey"
+            columns: ["client_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vacancies_contact_person_id_fkey"
+            columns: ["contact_person_id"]
+            isOneToOne: false
+            referencedRelation: "contact_persons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vacancy_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by_email: string | null
+          assigned_by_user_id: string | null
+          candidate_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          stage: Database["public"]["Enums"]["vacancy_assignment_stage"]
+          updated_at: string
+          vacancy_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by_email?: string | null
+          assigned_by_user_id?: string | null
+          candidate_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          stage?: Database["public"]["Enums"]["vacancy_assignment_stage"]
+          updated_at?: string
+          vacancy_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by_email?: string | null
+          assigned_by_user_id?: string | null
+          candidate_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          stage?: Database["public"]["Enums"]["vacancy_assignment_stage"]
+          updated_at?: string
+          vacancy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacancy_assignments_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vacancy_assignments_vacancy_id_fkey"
+            columns: ["vacancy_id"]
+            isOneToOne: false
+            referencedRelation: "vacancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vision_previews: {
         Row: {
           brief: string | null
@@ -2187,6 +2374,15 @@ export type Database = {
         }
         Returns: Json
       }
+      portal_assign_candidate_to_vacancy: {
+        Args: {
+          _candidate_id: string
+          _notes?: string
+          _stage?: string
+          _vacancy_id: string
+        }
+        Returns: Json
+      }
       portal_close_chat_case: {
         Args: { _conversation_id: string }
         Returns: undefined
@@ -2310,10 +2506,12 @@ export type Database = {
         }
         Returns: Json
       }
+      portal_create_vacancy: { Args: { _payload: Json }; Returns: Json }
       portal_delete_contact_person: {
         Args: { _person_id: string }
         Returns: undefined
       }
+      portal_delete_vacancy: { Args: { _id: string }; Returns: undefined }
       portal_fetch_messages: {
         Args: { _conversation_id: string }
         Returns: Json
@@ -2323,6 +2521,7 @@ export type Database = {
         Returns: Json
       }
       portal_fetch_snapshot: { Args: { _limit?: number }; Returns: Json }
+      portal_list_vacancies: { Args: never; Returns: Json }
       portal_mark_order_delivered:
         | {
             Args: {
@@ -2358,6 +2557,14 @@ export type Database = {
       portal_search_customers: { Args: { _q: string }; Returns: Json }
       portal_send_chat_reply: {
         Args: { _content: string; _conversation_id: string }
+        Returns: undefined
+      }
+      portal_unassign_candidate: {
+        Args: { _assignment_id: string }
+        Returns: undefined
+      }
+      portal_update_assignment_stage: {
+        Args: { _assignment_id: string; _stage: string }
         Returns: undefined
       }
       portal_update_candidate: {
@@ -2423,6 +2630,10 @@ export type Database = {
         Args: { _request_id: string; _status: string }
         Returns: undefined
       }
+      portal_update_vacancy: {
+        Args: { _id: string; _patch: Json }
+        Returns: undefined
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -2466,6 +2677,28 @@ export type Database = {
         | "temp"
         | "freelance"
         | "any"
+      vacancy_arrangement: "onsite" | "hybrid" | "remote"
+      vacancy_assignment_stage:
+        | "shortlisted"
+        | "submitted"
+        | "interviewing"
+        | "offer"
+        | "placed"
+        | "rejected"
+        | "withdrawn"
+      vacancy_employment_type:
+        | "permanent"
+        | "temporary"
+        | "contract"
+        | "freelance"
+        | "internship"
+      vacancy_status:
+        | "draft"
+        | "open"
+        | "on_hold"
+        | "filled"
+        | "cancelled"
+        | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2629,6 +2862,31 @@ export const Constants = {
         "temp",
         "freelance",
         "any",
+      ],
+      vacancy_arrangement: ["onsite", "hybrid", "remote"],
+      vacancy_assignment_stage: [
+        "shortlisted",
+        "submitted",
+        "interviewing",
+        "offer",
+        "placed",
+        "rejected",
+        "withdrawn",
+      ],
+      vacancy_employment_type: [
+        "permanent",
+        "temporary",
+        "contract",
+        "freelance",
+        "internship",
+      ],
+      vacancy_status: [
+        "draft",
+        "open",
+        "on_hold",
+        "filled",
+        "cancelled",
+        "closed",
       ],
     },
   },
