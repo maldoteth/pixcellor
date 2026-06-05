@@ -433,7 +433,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
           {vacancies.length === 0 ? (
             <div className="px-3 py-12 text-center text-sm text-muted-foreground">No vacancies match the current filters.</div>
           ) : (
-            vacancies.map((v, rowIdx) => {
+            sortedVacancies.map((v, rowIdx) => {
               const rowBg = rowIdx % 2 === 0 ? "bg-background" : "bg-muted/10";
               return (
                 <div key={v.id} className="grid" style={{ gridTemplateColumns: "260px 180px repeat(7, minmax(140px, 1fr))" }}>
