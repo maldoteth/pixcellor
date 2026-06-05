@@ -306,14 +306,17 @@ export default function VacanciesPanel() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3 pt-0 text-sm">
+                <WeekSchedule
+                  scheduleDays={v.schedule_days}
+                  startTime={v.start_time}
+                  finishTime={v.finish_time}
+                  scheduleNotes={v.schedule_notes}
+                />
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 text-muted-foreground">
                   {(v.start_date || v.end_date) && <div><span className="text-foreground">Dates:</span> {v.start_date ?? "?"} → {v.end_date ?? "ongoing"}</div>}
-                  {(v.start_time || v.finish_time) && <div><span className="text-foreground">Hours:</span> {v.start_time ?? "?"}–{v.finish_time ?? "?"}</div>}
-                  {v.schedule_days && v.schedule_days.length > 0 && <div><span className="text-foreground">Days:</span> {v.schedule_days.join(", ")}</div>}
                   {v.duration_weeks && <div><span className="text-foreground">Duration:</span> {v.duration_weeks} weeks</div>}
                   {v.hours_per_week && <div><span className="text-foreground">Hours/week:</span> {v.hours_per_week}</div>}
                   {(v.pay_min || v.pay_max) && <div><span className="text-foreground">Pay:</span> {v.pay_currency} {v.pay_min ?? "?"}–{v.pay_max ?? "?"} / {v.pay_period}</div>}
-                  {v.right_to_work_required && <div className="text-foreground">Right-to-work required</div>}
                 </div>
                 {v.required_skills && v.required_skills.length > 0 && (
                   <div className="flex flex-wrap gap-1.5"><span className="text-muted-foreground text-xs">Skills:</span>{v.required_skills.map((s) => <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>)}</div>
