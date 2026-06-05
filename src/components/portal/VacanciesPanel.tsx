@@ -183,6 +183,8 @@ export default function VacanciesPanel() {
       pay_period: v.pay_period ?? "hour",
       benefits: v.benefits ?? "",
       notes: v.notes ?? "",
+      charge_rate: v.charge_rate != null ? String(v.charge_rate) : "",
+      paye_rate_percent: v.paye_rate_percent != null ? String(v.paye_rate_percent) : "17",
     });
     setEditingId(v.id);
     setClientQuery("");
