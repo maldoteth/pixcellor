@@ -187,6 +187,8 @@ export default function VacanciesPanel() {
       reference: form.reference.trim() || null,
       description: form.description.trim() || null,
       location: form.location.trim() || null,
+      latitude: form.latitude || null,
+      longitude: form.longitude || null,
       arrangement: form.arrangement,
       employment_type: form.employment_type,
       status: form.status,
