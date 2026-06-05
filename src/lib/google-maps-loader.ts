@@ -1,5 +1,5 @@
 // Lazy-loads the Google Maps JS API (Places library) once.
-declare global { interface Window { __gmapsLoader?: Promise<typeof google>; google?: any; __initGMaps?: () => void; } }
+declare global { interface Window { __gmapsLoader?: Promise<any>; google?: any; __initGMaps?: () => void; } }
 
 const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
 const CHANNEL = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
