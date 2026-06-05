@@ -358,6 +358,33 @@ const tools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "save_candidate",
+      description: "Capture a JOB SEEKER (someone looking for work, asking about vacancies, sending their CV) as a recruitment candidate. Use this INSTEAD of save_contact whenever the visitor is asking for a job, not buying a website. Capture as soon as you have a name + email or phone, even partial info — call again later to enrich.",
+      parameters: {
+        type: "object",
+        properties: {
+          full_name: { type: "string", description: "Their full name." },
+          email: { type: "string" },
+          phone: { type: "string" },
+          location: { type: "string", description: "City or area." },
+          headline: { type: "string", description: "Their professional headline (e.g. 'Senior plumber', 'React developer with 5y exp')." },
+          current_role_title: { type: "string" },
+          years_experience: { type: "number" },
+          skills: { type: "array", items: { type: "string" }, description: "Skills / specialities they mentioned." },
+          desired_work_type: { type: "string", enum: ["any","permanent","contract","temp","freelance"] },
+          desired_arrangement: { type: "string", enum: ["any","onsite","hybrid","remote"] },
+          right_to_work: { type: "string", enum: ["unknown","uk_citizen","settled","visa_required"] },
+          linkedin_url: { type: "string" },
+          portfolio_url: { type: "string" },
+          notes: { type: "string", description: "Anything else relevant from the conversation." },
+        },
+        required: ["full_name"],
+      },
+    },
+  },
 ];
 
 
