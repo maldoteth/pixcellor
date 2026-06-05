@@ -111,6 +111,22 @@ export default function VacanciesPanel() {
   const [assignStage, setAssignStage] = useState<string>("shortlisted");
   const [customTimes, setCustomTimes] = useState(false);
   const [perDayTimes, setPerDayTimes] = useState<Record<string, { start: string; finish: string }>>({});
+  const [clientQuery, setClientQuery] = useState("");
+
+  const resetForm = useCallback(() => {
+    setForm({ ...emptyForm });
+    setPerDayTimes({});
+    setCustomTimes(false);
+    setClientQuery("");
+  }, []);
+
+  const filteredClients = useMemo(() => {
+    const q = clientQuery.trim().toLowerCase();
+    if (!q) return clients;
+    return clients.filter((c) =>
+      c.name.toLowerCase().includes(q) || (c.industry ?? "").toLowerCase().includes(q)
+    );
+  }, [clients, clientQuery]);
 
   const load = useCallback(async () => {
     setLoading(true);
