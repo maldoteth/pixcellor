@@ -294,7 +294,13 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      // Only bail on text-entry fields; time/number/date inputs shouldn't block Delete on the grid
+      const isTextEntry = !!t && (
+        (t.tagName === "INPUT" && !["time","number","date","checkbox","radio","range","button","submit"].includes((t as HTMLInputElement).type)) ||
+        t.tagName === "TEXTAREA" ||
+        t.isContentEditable
+      );
+      if (isTextEntry) return;
       const hasSel = selectedRef.current.size > 0;
       const mod = e.ctrlKey || e.metaKey;
       if (e.key === "Escape") {
@@ -302,7 +308,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       }
       if (!hasSel) return;
       if (e.key === "Delete" || e.key === "Backspace") {
-        e.preventDefault(); void deleteSelection();
+        e.preventDefault(); blurActive(); void deleteSelection();
       } else if (mod && (e.key === "c" || e.key === "C")) {
         e.preventDefault(); collectClip("copy");
       } else if (mod && (e.key === "x" || e.key === "X")) {
