@@ -496,6 +496,7 @@ export default function Portal() {
   const [falloffsSearch, setFalloffsSearch] = useState("");
   const [chatsSearch, setChatsSearch] = useState("");
   const [profilesSearch, setProfilesSearch] = useState("");
+  const [clientsImportOpen, setClientsImportOpen] = useState(false);
   const [clientsVisibleCount, setClientsVisibleCount] = useState(10);
   const [callbacksVisibleCount, setCallbacksVisibleCount] = useState(10);
   const [sectionCounts, setSectionCounts] = useState<Record<string, number>>({});
