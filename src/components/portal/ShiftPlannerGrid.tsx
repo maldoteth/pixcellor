@@ -25,7 +25,10 @@ type Vacancy = {
   pay_max: number | null;
   pay_currency: string | null;
   pay_period: string | null;
+  charge_rate: number | null;
+  paye_rate_percent: number | null;
   client?: { id: string; name: string } | null;
+  assignments?: Array<{ candidate_id: string; stage: string; candidate: { id: string; full_name: string; status: string } }>;
 };
 
 type Shift = {
@@ -299,8 +302,68 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const weekLabel = `${weekStart.toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${weekDates[6].toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
   const todayKey = ymd(new Date());
 
+  // ----- Weekly stats: margin, hours, active workers, idle workers -----
+  const stats = useMemo(() => {
+    let totalHours = 0;
+    let totalMargin = 0;
+    let totalCharge = 0;
+    let currency = "GBP";
+    const workersWithShifts = new Set<string>();
+    const allAssignedWorkers = new Set<string>();
+
+    vacancies.forEach((v) => {
+      if (v.pay_currency) currency = v.pay_currency;
+      const pay = Number(v.pay_max ?? v.pay_min ?? 0);
+      const charge = Number(v.charge_rate ?? 0);
+      const paye = Number(v.paye_rate_percent ?? 17);
+      const costPerHour = pay + pay * (paye / 100);
+      const marginPerHour = charge - costPerHour;
+
+      const activeAssignments = (v.assignments ?? []).filter((a) =>
+        ["shortlisted", "submitted", "interviewing", "offer", "placed"].includes(a.stage),
+      );
+      activeAssignments.forEach((a) => allAssignedWorkers.add(a.candidate_id));
+
+      let vacHoursThisWeek = 0;
+      weekDates.forEach((d) => {
+        const dk = ymd(d);
+        const c = resolveCell(v.id, dk);
+        if (!c.active || !c.start || !c.finish) return;
+        const [sh, sm] = c.start.split(":").map(Number);
+        const [fh, fm] = c.finish.split(":").map(Number);
+        let mins = (fh * 60 + fm) - (sh * 60 + sm);
+        if (mins < 0) mins += 24 * 60; // overnight
+        const hours = mins / 60;
+        vacHoursThisWeek += hours;
+      });
+
+      if (vacHoursThisWeek > 0) {
+        activeAssignments.forEach((a) => workersWithShifts.add(a.candidate_id));
+      }
+      totalHours += vacHoursThisWeek;
+      totalCharge += vacHoursThisWeek * charge;
+      totalMargin += vacHoursThisWeek * marginPerHour;
+    });
+
+    const idleWorkers = Array.from(allAssignedWorkers).filter((id) => !workersWithShifts.has(id));
+    return {
+      totalHours, totalMargin, totalCharge, currency,
+      activeWorkers: workersWithShifts.size,
+      idleWorkers: idleWorkers.length,
+    };
+  }, [vacancies, weekDates, shifts, resolveCell]);
+
+  const fmtMoney = (n: number) => `${stats.currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+
   return (
     <div className="rounded-md border bg-card select-none outline-none [&_*]:outline-none" ref={gridRef}>
+      {/* Stats bar */}
+      <div className="grid grid-cols-2 gap-px border-b bg-border md:grid-cols-4">
+        <StatTile label="Total margin (week)" value={fmtMoney(stats.totalMargin)} accent={stats.totalMargin >= 0 ? "good" : "bad"} sub={`Charge: ${fmtMoney(stats.totalCharge)}`} />
+        <StatTile label="Total hours (week)" value={stats.totalHours.toFixed(1)} />
+        <StatTile label="Workers scheduled" value={String(stats.activeWorkers)} />
+        <StatTile label="Idle workers" value={String(stats.idleWorkers)} accent={stats.idleWorkers > 0 ? "warn" : undefined} sub="Assigned but no shifts this week" />
+      </div>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
         <div className="flex items-center gap-2">
@@ -365,10 +428,24 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                       <Badge variant={v.status === "open" ? "default" : "outline"} className="text-[9px] h-4 px-1">{v.status}</Badge>
                       {(v.pay_min || v.pay_max) && (
                         <span className="text-[10px] text-muted-foreground">
-                          {v.pay_currency ?? "GBP"} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
+                          Pay {v.pay_currency ?? "GBP"} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
                         </span>
                       )}
                     </div>
+                    {(() => {
+                      const pay = Number(v.pay_max ?? v.pay_min ?? 0);
+                      const charge = Number(v.charge_rate ?? 0);
+                      const paye = Number(v.paye_rate_percent ?? 17);
+                      if (!pay || !charge) return null;
+                      const cost = pay + pay * (paye / 100);
+                      const m = charge - cost;
+                      const pct = (m / charge) * 100;
+                      return (
+                        <div className={`mt-1 text-[10px] ${m >= 0 ? "text-emerald-600" : "text-destructive"}`}>
+                          Charge {v.pay_currency ?? "GBP"} {charge.toFixed(2)} · Margin {m.toFixed(2)} ({pct.toFixed(0)}%)
+                        </div>
+                      );
+                    })()}
                     <div className="mt-1 flex gap-1">
                       <button onClick={() => onEdit(v)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><Pencil className="h-2.5 w-2.5" />Edit</button>
                       <button onClick={() => onAssign(v.id)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><UserPlus className="h-2.5 w-2.5" />Assign</button>
@@ -524,5 +601,19 @@ function Cell(props: {
         <ContextMenuItem onSelect={onContextDelete} className="text-destructive" disabled={!active && !cancelled}>Delete</ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
+  );
+}
+
+function StatTile({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: "good" | "bad" | "warn" }) {
+  const valueColor =
+    accent === "good" ? "text-emerald-600" :
+    accent === "bad" ? "text-destructive" :
+    accent === "warn" ? "text-amber-600" : "text-foreground";
+  return (
+    <div className="bg-card px-3 py-2">
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={`text-lg font-semibold leading-tight ${valueColor}`}>{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}
+    </div>
   );
 }

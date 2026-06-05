@@ -46,6 +46,8 @@ type Vacancy = {
   pay_period: string | null;
   benefits: string | null;
   notes: string | null;
+  charge_rate: number | null;
+  paye_rate_percent: number | null;
   created_at: string;
   client?: { id: string; name: string; industry?: string | null; location?: string | null } | null;
   assignments?: Array<{
@@ -98,6 +100,8 @@ const emptyForm = {
   pay_period: "hour",
   benefits: "",
   notes: "",
+  charge_rate: "",
+  paye_rate_percent: "17",
 };
 
 export default function VacanciesPanel() {
@@ -179,6 +183,8 @@ export default function VacanciesPanel() {
       pay_period: v.pay_period ?? "hour",
       benefits: v.benefits ?? "",
       notes: v.notes ?? "",
+      charge_rate: v.charge_rate != null ? String(v.charge_rate) : "",
+      paye_rate_percent: v.paye_rate_percent != null ? String(v.paye_rate_percent) : "17",
     });
     setEditingId(v.id);
     setClientQuery("");
@@ -274,6 +280,8 @@ export default function VacanciesPanel() {
       pay_period: form.pay_period,
       benefits: form.benefits.trim() || null,
       notes: form.notes.trim() || null,
+      charge_rate: numOrNull(form.charge_rate),
+      paye_rate_percent: numOrNull(form.paye_rate_percent) ?? 17,
     };
     const { error } = editingId
       ? await supabase.rpc("portal_update_vacancy", { _id: editingId, _patch: payload as any })
@@ -520,6 +528,31 @@ export default function VacanciesPanel() {
                   {["hour", "day", "week", "month", "year"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div><Label>Charge rate (to client, /{form.pay_period})</Label><Input type="number" step="0.01" value={form.charge_rate} onChange={(e) => setForm({ ...form, charge_rate: e.target.value })} placeholder="e.g. 22.50" /></div>
+            <div><Label>PAYE on-cost %</Label><Input type="number" step="0.1" value={form.paye_rate_percent} onChange={(e) => setForm({ ...form, paye_rate_percent: e.target.value })} placeholder="17" /></div>
+            <div className="sm:col-span-2 rounded-md border bg-muted/30 px-3 py-2 text-xs">
+              {(() => {
+                const pay = Number(form.pay_max || form.pay_min || 0);
+                const charge = Number(form.charge_rate || 0);
+                const paye = Number(form.paye_rate_percent || 0);
+                const onCost = pay * (paye / 100);
+                const totalCost = pay + onCost;
+                const margin = charge - totalCost;
+                const marginPct = charge > 0 ? (margin / charge) * 100 : 0;
+                if (!pay && !charge) return <span className="text-muted-foreground">Enter pay rate and charge rate to see margin.</span>;
+                return (
+                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                    <span>Pay: <strong>{form.pay_currency} {pay.toFixed(2)}</strong></span>
+                    <span>PAYE ({paye}%): <strong>{form.pay_currency} {onCost.toFixed(2)}</strong></span>
+                    <span>Total cost: <strong>{form.pay_currency} {totalCost.toFixed(2)}</strong></span>
+                    <span>Charge: <strong>{form.pay_currency} {charge.toFixed(2)}</strong></span>
+                    <span className={margin >= 0 ? "text-emerald-600" : "text-destructive"}>
+                      Margin: <strong>{form.pay_currency} {margin.toFixed(2)} ({marginPct.toFixed(1)}%)</strong>
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
             <div className="sm:col-span-2"><Label>Required skills (comma-separated)</Label><Input value={form.required_skills} onChange={(e) => setForm({ ...form, required_skills: e.target.value })} /></div>
             <div className="sm:col-span-2"><Label>Nice-to-have skills</Label><Input value={form.nice_to_have_skills} onChange={(e) => setForm({ ...form, nice_to_have_skills: e.target.value })} /></div>
