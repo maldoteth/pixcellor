@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Archive, BarChart3, Briefcase, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Pencil, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Briefcase, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Pencil, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Upload, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 import { downloadImage } from "@/lib/download-image";
 
 const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
