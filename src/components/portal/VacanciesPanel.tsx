@@ -349,7 +349,17 @@ export default function VacanciesPanel() {
           onEdit={openEdit}
           onAssign={(id) => setAssignTo(id)}
           onDelete={handleDelete}
+          onOpenAI={(id) => setAiFor(id)}
         />
+      )}
+
+      {aiFor && (
+        <Dialog open={!!aiFor} onOpenChange={(o) => { if (!o) setAiFor(null); }}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader><DialogTitle>AI recommendations</DialogTitle></DialogHeader>
+            <AIRecommendationsPanel vacancyId={aiFor} />
+          </DialogContent>
+        </Dialog>
       )}
 
       {assignTo && (
