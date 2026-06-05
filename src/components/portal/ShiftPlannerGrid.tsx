@@ -94,12 +94,19 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const [lastSelected, setLastSelected] = useState<{ vacancyId: string; dateIdx: number } | null>(null);
   const [clipboard, setClipboard] = useState<{ mode: "copy" | "cut"; items: ClipItem[]; sourceKeys: string[] } | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  // Refs mirror state so the global key handler always sees latest values
+  const selectedRef = useRef(selected);
+  const clipboardRef = useRef(clipboard);
+  const weekDatesRef = useRef<Date[]>([]);
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
+  useEffect(() => { clipboardRef.current = clipboard; }, [clipboard]);
 
   const weekDates = useMemo(() => {
     const arr: Date[] = [];
     for (let i = 0; i < 7; i++) arr.push(addDays(weekStart, i));
     return arr;
   }, [weekStart]);
+  useEffect(() => { weekDatesRef.current = weekDates; }, [weekDates]);
 
   const fromKey = ymd(weekStart);
   const toKey = ymd(weekDates[6]);
@@ -204,10 +211,11 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
 
   const clearSelection = () => { setSelected(new Set()); setLastSelected(null); };
 
-  // Clipboard ops
+  // Clipboard ops (read from refs so they work from key handler with latest state)
   const collectClip = (mode: "copy" | "cut") => {
-    if (selected.size === 0) return;
-    const keys = Array.from(selected);
+    const sel = selectedRef.current;
+    if (sel.size === 0) return;
+    const keys = Array.from(sel);
     const items: ClipItem[] = keys.map((k) => {
       const [vid, dt] = k.split("|");
       const c = resolveCell(vid, dt);
@@ -218,19 +226,21 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   };
 
   const pasteClip = async () => {
-    if (!clipboard || selected.size === 0) return;
-    const targets = Array.from(selected);
+    const clip = clipboardRef.current;
+    const sel = selectedRef.current;
+    if (!clip || sel.size === 0) return;
+    const targets = Array.from(sel);
     await Promise.all(
       targets.map(async (k, i) => {
         const [vid, dt] = k.split("|");
-        const item = clipboard.items[i % clipboard.items.length];
+        const item = clip.items[i % clip.items.length];
         if (item.start || item.finish) {
           await upsert(vid, dt, item.start, item.finish, false);
         }
       }),
     );
-    if (clipboard.mode === "cut") {
-      await Promise.all(clipboard.sourceKeys.map((k) => {
+    if (clip.mode === "cut") {
+      await Promise.all(clip.sourceKeys.map((k) => {
         const [vid, dt] = k.split("|");
         return removeShift(vid, dt);
       }));
@@ -240,8 +250,9 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   };
 
   const deleteSelection = async () => {
-    if (selected.size === 0) return;
-    const keys = Array.from(selected);
+    const sel = selectedRef.current;
+    if (sel.size === 0) return;
+    const keys = Array.from(sel);
     await Promise.all(keys.map((k) => {
       const [vid, dt] = k.split("|");
       return removeShift(vid, dt);
@@ -249,14 +260,17 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     await load();
   };
 
-  // Keyboard
+  // Keyboard — attach once, always read latest state via refs
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Ignore when typing in an input/textarea
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
-      if (selected.size === 0 && !(e.key === "Escape")) return;
+      const hasSel = selectedRef.current.size > 0;
       const mod = e.ctrlKey || e.metaKey;
+      if (e.key === "Escape") {
+        clearSelection(); setClipboard(null); return;
+      }
+      if (!hasSel) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault(); void deleteSelection();
       } else if (mod && (e.key === "c" || e.key === "C")) {
@@ -265,14 +279,12 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         e.preventDefault(); collectClip("cut");
       } else if (mod && (e.key === "v" || e.key === "V")) {
         e.preventDefault(); void pasteClip();
-      } else if (e.key === "Escape") {
-        clearSelection(); setClipboard(null);
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, clipboard, vacancies, shifts]);
+  }, []);
 
   // Click outside to clear
   useEffect(() => {
@@ -288,7 +300,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const todayKey = ymd(new Date());
 
   return (
-    <div className="rounded-md border bg-card" ref={gridRef}>
+    <div className="rounded-md border bg-card select-none outline-none [&_*]:outline-none" ref={gridRef}>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
         <div className="flex items-center gap-2">
@@ -449,13 +461,8 @@ function Cell(props: {
   const clipBorder = isClipSource ? (clipMode === "cut" ? "outline-dashed outline-2 outline-destructive/60" : "outline-dashed outline-2 outline-primary/60") : "";
 
   let inner: React.ReactNode;
-  if (cancelled) {
-    inner = (
-      <div className="flex h-full items-center justify-center rounded border border-dashed border-destructive/40 bg-destructive/5 text-[11px] text-destructive line-through">
-        Cancelled
-      </div>
-    );
-  } else if (!active) {
+  if (!active) {
+    // Empty / cancelled both render as empty so cancelling a day looks like an empty slot
     inner = (
       <div className="flex h-full w-full items-center justify-center rounded border border-dashed border-border/40 text-[11px] text-muted-foreground/60">
         —
@@ -475,10 +482,11 @@ function Cell(props: {
       <ContextMenuTrigger asChild>
         <div
           role="gridcell"
+          tabIndex={-1}
           aria-selected={isSelected}
           onClick={onClick}
           onDoubleClick={() => { if (onDoubleClickEdit) setEditOpen(true); }}
-          className={`relative cursor-pointer select-none border-b border-r ${todayTint} p-1 min-h-[78px] ${selectionRing} ${clipBorder}`}
+          className={`relative cursor-pointer select-none border-b border-r ${todayTint} p-1 min-h-[78px] outline-none focus:outline-none focus-visible:outline-none ${selectionRing} ${clipBorder}`}
         >
           {inner}
           {/* Hidden edit popover anchor */}
