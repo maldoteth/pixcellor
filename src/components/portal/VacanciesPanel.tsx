@@ -108,6 +108,8 @@ export default function VacanciesPanel() {
   const [assignTo, setAssignTo] = useState<string | null>(null);
   const [assignCandidateId, setAssignCandidateId] = useState<string>("");
   const [assignStage, setAssignStage] = useState<string>("shortlisted");
+  const [customTimes, setCustomTimes] = useState(false);
+  const [perDayTimes, setPerDayTimes] = useState<Record<string, { start: string; finish: string }>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
