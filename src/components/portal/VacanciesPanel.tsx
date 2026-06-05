@@ -89,7 +89,7 @@ const emptyForm = {
   required_skills: "",
   nice_to_have_skills: "",
   certifications: "",
-  right_to_work_required: false,
+  right_to_work_required: true,
   pay_min: "",
   pay_max: "",
   pay_currency: "GBP",
