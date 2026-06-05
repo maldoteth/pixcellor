@@ -2470,6 +2470,9 @@ export default function Portal() {
               <Button variant="outline" onClick={() => setStatsDialogOpen(true)}>
                 <BarChart3 className="w-4 h-4 mr-2" /> Stats
               </Button>
+              <Button variant="outline" onClick={() => setFalloffsDialogOpen(true)}>
+                <UserSearch className="w-4 h-4 mr-2" /> Falloffs
+              </Button>
               <Button variant="outline" onClick={() => setHelpDialogOpen(true)}>
                 <HelpCircle className="w-4 h-4 mr-2" /> Help
               </Button>
