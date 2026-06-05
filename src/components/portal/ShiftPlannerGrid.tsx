@@ -211,10 +211,11 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
 
   const clearSelection = () => { setSelected(new Set()); setLastSelected(null); };
 
-  // Clipboard ops
+  // Clipboard ops (read from refs so they work from key handler with latest state)
   const collectClip = (mode: "copy" | "cut") => {
-    if (selected.size === 0) return;
-    const keys = Array.from(selected);
+    const sel = selectedRef.current;
+    if (sel.size === 0) return;
+    const keys = Array.from(sel);
     const items: ClipItem[] = keys.map((k) => {
       const [vid, dt] = k.split("|");
       const c = resolveCell(vid, dt);
@@ -225,19 +226,21 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   };
 
   const pasteClip = async () => {
-    if (!clipboard || selected.size === 0) return;
-    const targets = Array.from(selected);
+    const clip = clipboardRef.current;
+    const sel = selectedRef.current;
+    if (!clip || sel.size === 0) return;
+    const targets = Array.from(sel);
     await Promise.all(
       targets.map(async (k, i) => {
         const [vid, dt] = k.split("|");
-        const item = clipboard.items[i % clipboard.items.length];
+        const item = clip.items[i % clip.items.length];
         if (item.start || item.finish) {
           await upsert(vid, dt, item.start, item.finish, false);
         }
       }),
     );
-    if (clipboard.mode === "cut") {
-      await Promise.all(clipboard.sourceKeys.map((k) => {
+    if (clip.mode === "cut") {
+      await Promise.all(clip.sourceKeys.map((k) => {
         const [vid, dt] = k.split("|");
         return removeShift(vid, dt);
       }));
@@ -247,8 +250,9 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   };
 
   const deleteSelection = async () => {
-    if (selected.size === 0) return;
-    const keys = Array.from(selected);
+    const sel = selectedRef.current;
+    if (sel.size === 0) return;
+    const keys = Array.from(sel);
     await Promise.all(keys.map((k) => {
       const [vid, dt] = k.split("|");
       return removeShift(vid, dt);
