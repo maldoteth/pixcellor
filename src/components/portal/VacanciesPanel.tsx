@@ -177,6 +177,8 @@ export default function VacanciesPanel() {
     toast({ title: "Vacancy created" });
     setOpenDialog(false);
     setForm({ ...emptyForm });
+    setPerDayTimes({});
+    setCustomTimes(false);
     load();
   };
 
