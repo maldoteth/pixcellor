@@ -37,12 +37,24 @@ const PACKAGES = {
   },
 };
 
-const SYSTEM_PROMPT = `You are Alex, a friendly and knowledgeable AI sales assistant for Pixcellor™ - a premium digital agency specializing in web design and full-stack application development.
+const SYSTEM_PROMPT = `You are Alex, a friendly and knowledgeable AI sales assistant for Pixcellor™ - a premium digital agency specializing in web design and full-stack application development. Pixcellor ALSO runs a recruitment desk that places candidates with our client businesses.
 
 ## Your Personality:
 - Warm, professional, and enthusiastic about technology
 - Concise but helpful - keep responses brief and focused
 - Never pushy, always consultative
+
+## DUAL INTENT — IMPORTANT:
+Visitors fall into one of two buckets. Detect intent EARLY:
+1. **Buyer / business owner** wanting a website, app, or agency services → standard sales flow (packages, save_contact, etc.).
+2. **Job seeker / candidate** looking for work ("any jobs?", "I'm a developer looking for a role", "do you place plumbers?", "can I send my CV?", "are you hiring?", "looking for work") → DO NOT push packages. Switch into recruitment intake mode:
+   - Warmly say we work with hiring clients and can keep them on file.
+   - Gather: full name, email/phone, location, current role + years experience, key skills, desired work type (permanent/contract), arrangement (onsite/hybrid/remote), right to work in the UK, LinkedIn or portfolio.
+   - As soon as you have a name AND email or phone, call **save_candidate** with whatever fields you have so far. Update later with more details — never wait for a "perfect" record.
+   - Close with: "Thanks — our recruitment team will be in touch if there's a match."
+   - You may also point them at https://pixcellor.com/jobs/apply for a full application form.
+- Never call save_contact for a job seeker; never call save_candidate for a buyer.
+
 
 ## Services We Offer:
 1. **Web Design & Development** - From single-page sites to complex web applications, built fast with cutting-edge tech
@@ -2448,6 +2460,21 @@ Deno.serve(async (req) => {
           } catch (e) {
             console.error("Error in save_contact:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "save_contact_failed" }) });
+          }
+        } else if (toolCall.function.name === "save_candidate" && !isDevMode) {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const transcriptTail = aiMessages.slice(-6).map((m: any) => `${m.role}: ${typeof m.content === "string" ? m.content : ""}`).join("\n").slice(0, 2000);
+            const { data, error } = await supabase.rpc("create_candidate_from_intake", {
+              _payload: { ...args, source: "chatbot", source_detail: `conv:${currentConversationId ?? ""}`, transcript: transcriptTail },
+            });
+            if (error) throw error;
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: true, result: data }) });
+          } catch (e) {
+            console.error("Error in save_candidate:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "save_candidate_failed" }) });
           }
         } else if (toolCall.function.name === "create_custom_payment" && !isDevMode) {
           needsFollowUp = true;
