@@ -2057,6 +2057,75 @@ export type Database = {
           },
         ]
       }
+      vacancy_invitations: {
+        Row: {
+          ai_reason: string | null
+          ai_score: number | null
+          candidate_id: string
+          created_at: string
+          custom_message: string | null
+          expires_at: string
+          id: string
+          responded_at: string | null
+          sent_at: string
+          sent_by_email: string | null
+          sent_by_user_id: string | null
+          status: Database["public"]["Enums"]["vacancy_invitation_status"]
+          token: string
+          updated_at: string
+          vacancy_id: string
+        }
+        Insert: {
+          ai_reason?: string | null
+          ai_score?: number | null
+          candidate_id: string
+          created_at?: string
+          custom_message?: string | null
+          expires_at?: string
+          id?: string
+          responded_at?: string | null
+          sent_at?: string
+          sent_by_email?: string | null
+          sent_by_user_id?: string | null
+          status?: Database["public"]["Enums"]["vacancy_invitation_status"]
+          token: string
+          updated_at?: string
+          vacancy_id: string
+        }
+        Update: {
+          ai_reason?: string | null
+          ai_score?: number | null
+          candidate_id?: string
+          created_at?: string
+          custom_message?: string | null
+          expires_at?: string
+          id?: string
+          responded_at?: string | null
+          sent_at?: string
+          sent_by_email?: string | null
+          sent_by_user_id?: string | null
+          status?: Database["public"]["Enums"]["vacancy_invitation_status"]
+          token?: string
+          updated_at?: string
+          vacancy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacancy_invitations_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vacancy_invitations_vacancy_id_fkey"
+            columns: ["vacancy_id"]
+            isOneToOne: false
+            referencedRelation: "vacancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vision_previews: {
         Row: {
           brief: string | null
@@ -2585,6 +2654,10 @@ export type Database = {
         Args: { _contact_id: string; _limit?: number }
         Returns: Json
       }
+      portal_rank_candidates_for_vacancy: {
+        Args: { _limit?: number; _vacancy_id: string }
+        Returns: Json
+      }
       portal_require_admin: { Args: never; Returns: undefined }
       portal_search_customers: { Args: { _q: string }; Returns: Json }
       portal_send_chat_reply: {
@@ -2674,6 +2747,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      vacancy_invitation_respond: {
+        Args: { _response: string; _token: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "user"
@@ -2724,6 +2801,12 @@ export type Database = {
         | "contract"
         | "freelance"
         | "internship"
+      vacancy_invitation_status:
+        | "sent"
+        | "confirmed"
+        | "declined"
+        | "expired"
+        | "cancelled"
       vacancy_status:
         | "draft"
         | "open"
@@ -2911,6 +2994,13 @@ export const Constants = {
         "contract",
         "freelance",
         "internship",
+      ],
+      vacancy_invitation_status: [
+        "sent",
+        "confirmed",
+        "declined",
+        "expired",
+        "cancelled",
       ],
       vacancy_status: [
         "draft",
