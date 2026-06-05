@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import AIRecommendationsPanel from "./AIRecommendationsPanel";
+import PlaceAutocomplete from "@/components/ui/place-autocomplete";
 
 type Vacancy = {
   id: string;
@@ -70,6 +71,8 @@ const emptyForm = {
   reference: "",
   description: "",
   location: "",
+  latitude: "" as string,
+  longitude: "" as string,
   arrangement: "onsite",
   employment_type: "permanent",
   status: "open",
@@ -184,6 +187,8 @@ export default function VacanciesPanel() {
       reference: form.reference.trim() || null,
       description: form.description.trim() || null,
       location: form.location.trim() || null,
+      latitude: form.latitude || null,
+      longitude: form.longitude || null,
       arrangement: form.arrangement,
       employment_type: form.employment_type,
       status: form.status,
@@ -406,7 +411,19 @@ export default function VacanciesPanel() {
             </div>
             <div className="sm:col-span-2"><Label>Job title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={160} /></div>
             <div><Label>Reference</Label><Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></div>
-            <div><Label>Location</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
+            <div className="sm:col-span-2">
+              <Label>Site address</Label>
+              <PlaceAutocomplete
+                value={form.location}
+                onChange={(v) => setForm((f) => ({ ...f, location: v, latitude: "", longitude: "" }))}
+                onPick={(p) => setForm((f) => ({ ...f, location: p.address, latitude: String(p.latitude), longitude: String(p.longitude) }))}
+                countries={["gb"]}
+                placeholder="Search for the job site address…"
+              />
+              {form.latitude && form.longitude && (
+                <p className="text-[10px] text-muted-foreground mt-1">Pinned: {Number(form.latitude).toFixed(4)}, {Number(form.longitude).toFixed(4)}</p>
+              )}
+            </div>
             <div>
               <Label>Employment type</Label>
               <Select value={form.employment_type} onValueChange={(v) => setForm({ ...form, employment_type: v })}>
