@@ -522,7 +522,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
               return (
                 <div key={v.id} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
                   {/* Job (frozen) */}
-                  <div className={`sticky left-0 z-10 border-b border-r ${rowBg} px-3 py-2`}>
+                  <div className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2`}>
                     <div className="text-sm font-semibold leading-tight">{v.title}</div>
                     {v.reference && <div className="text-[10px] text-muted-foreground">Ref {v.reference}</div>}
                     <div className="mt-1 flex flex-wrap items-center gap-1">
