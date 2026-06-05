@@ -363,6 +363,7 @@ export default function VacanciesPanel() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(v)} className="gap-1"><Pencil className="h-4 w-4" />Edit</Button>
                   <Button size="sm" variant="outline" onClick={() => setAssignTo(v.id)} className="gap-1"><UserPlus className="h-4 w-4" />Assign</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleDelete(v.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
                 </div>
