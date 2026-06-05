@@ -396,6 +396,20 @@ export default function CandidatesPanel() {
             {STATUSES.map(s => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Select value={titleFilter} onValueChange={setTitleFilter}>
+          <SelectTrigger className="w-[200px]"><SelectValue placeholder="Job title" /></SelectTrigger>
+          <SelectContent className="max-h-72">
+            <SelectItem value="all">All job titles</SelectItem>
+            {titleOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={locationFilter} onValueChange={setLocationFilter}>
+          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Location" /></SelectTrigger>
+          <SelectContent className="max-h-72">
+            <SelectItem value="all">All locations</SelectItem>
+            {locationOptions.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <Tabs value={view} onValueChange={(v) => setView(v as any)}>
           <TabsList>
             <TabsTrigger value="list">List</TabsTrigger>
