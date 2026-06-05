@@ -4,7 +4,7 @@ declare global { interface Window { __gmapsLoader?: Promise<any>; google?: any; 
 const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
 const CHANNEL = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
 
-export function loadGoogleMaps(): Promise<typeof google> {
+export function loadGoogleMaps(): Promise<any> {
   if (typeof window === "undefined") return Promise.reject(new Error("no window"));
   if (window.__gmapsLoader) return window.__gmapsLoader;
   if (!BROWSER_KEY) return Promise.reject(new Error("Google Maps browser key not configured"));
