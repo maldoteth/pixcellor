@@ -386,20 +386,26 @@ export default function CandidatesPanel() {
           {filtered.map(c => (
             <Card key={c.id} className="cursor-pointer p-4 hover:bg-muted/30" onClick={() => setActiveId(c.id)}>
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="font-medium">{c.full_name}</div>
-                    <Badge variant="outline" className={STATUS_COLOR[c.status]}>{STATUS_LABEL[c.status]}</Badge>
-                    {c.rating ? <span className="flex items-center gap-0.5 text-amber-400 text-xs">{Array.from({length: c.rating}).map((_,i)=><Star key={i} className="h-3 w-3 fill-amber-400" />)}</span> : null}
-                    <span className="text-xs text-muted-foreground">via {c.source}</span>
-                  </div>
-                  <div className="mt-1 text-sm text-muted-foreground truncate">
-                    {c.headline ?? c.current_role_title ?? "—"}
-                    {c.location ? ` · ${c.location}` : ""}
-                    {c.years_experience != null ? ` · ${c.years_experience}y exp` : ""}
-                  </div>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {(c.skills ?? []).slice(0, 6).map(s => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>)}
+                <div className="flex min-w-0 gap-3">
+                  <Avatar className="h-12 w-12 shrink-0">
+                    {c.photo_url ? <AvatarImage src={c.photo_url} alt={c.full_name} /> : null}
+                    <AvatarFallback>{initialsOf(c.full_name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-medium">{c.full_name}</div>
+                      <Badge variant="outline" className={STATUS_COLOR[c.status]}>{STATUS_LABEL[c.status]}</Badge>
+                      {c.rating ? <span className="flex items-center gap-0.5 text-amber-400 text-xs">{Array.from({length: c.rating}).map((_,i)=><Star key={i} className="h-3 w-3 fill-amber-400" />)}</span> : null}
+                      <span className="text-xs text-muted-foreground">via {c.source}</span>
+                    </div>
+                    <div className="mt-1 text-sm text-muted-foreground truncate">
+                      {c.headline ?? c.current_role_title ?? "—"}
+                      {c.location ? ` · ${c.location}` : ""}
+                      {c.years_experience != null ? ` · ${c.years_experience}y exp` : ""}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {(c.skills ?? []).slice(0, 6).map(s => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>)}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right text-xs text-muted-foreground">
