@@ -431,8 +431,16 @@ export default function CandidatesPanel() {
                   {items.map(c => (
                     <Card key={c.id} className="cursor-pointer p-2 text-sm hover:bg-muted/30" onClick={() => setActiveId(c.id)} draggable
                       onDragStart={(e) => e.dataTransfer.setData("text/plain", c.id)}>
-                      <div className="font-medium truncate">{c.full_name}</div>
-                      <div className="text-xs text-muted-foreground truncate">{c.headline ?? c.current_role_title ?? "—"}</div>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8 shrink-0">
+                          {c.photo_url ? <AvatarImage src={c.photo_url} alt={c.full_name} /> : null}
+                          <AvatarFallback className="text-[10px]">{initialsOf(c.full_name)}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">{c.full_name}</div>
+                          <div className="text-xs text-muted-foreground truncate">{c.headline ?? c.current_role_title ?? "—"}</div>
+                        </div>
+                      </div>
                     </Card>
                   ))}
                 </div>
