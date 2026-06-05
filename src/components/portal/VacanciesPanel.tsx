@@ -93,7 +93,7 @@ const emptyForm = {
   pay_min: "",
   pay_max: "",
   pay_currency: "GBP",
-  pay_period: "year",
+  pay_period: "hour",
   benefits: "",
   notes: "",
 };
