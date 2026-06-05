@@ -100,6 +100,8 @@ export default function CandidatesPanel() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [titleFilter, setTitleFilter] = useState<string>("all");
+  const [locationFilter, setLocationFilter] = useState<string>("all");
   const [view, setView] = useState<"list" | "kanban">("list");
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -141,10 +143,34 @@ export default function CandidatesPanel() {
 
   useEffect(() => { if (activeId) loadEvents(activeId); }, [activeId, loadEvents]);
 
+  const titleOptions = useMemo(() => {
+    const set = new Set<string>();
+    candidates.forEach(c => {
+      const t = (c.current_role_title || c.headline || "").trim();
+      if (t) set.add(t);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [candidates]);
+
+  const locationOptions = useMemo(() => {
+    const set = new Set<string>();
+    candidates.forEach(c => { if (c.location?.trim()) set.add(c.location.trim()); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [candidates]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const tf = titleFilter.toLowerCase();
+    const lf = locationFilter.toLowerCase();
     return candidates.filter(c => {
       if (statusFilter !== "all" && c.status !== statusFilter) return false;
+      if (titleFilter !== "all") {
+        const t = `${c.current_role_title ?? ""} ${c.headline ?? ""}`.toLowerCase();
+        if (!t.includes(tf)) return false;
+      }
+      if (locationFilter !== "all") {
+        if (!(c.location ?? "").toLowerCase().includes(lf)) return false;
+      }
       if (!q) return true;
       return (
         c.full_name?.toLowerCase().includes(q) ||
@@ -156,7 +182,8 @@ export default function CandidatesPanel() {
         (c.skills ?? []).some(s => s.toLowerCase().includes(q))
       );
     });
-  }, [candidates, query, statusFilter]);
+  }, [candidates, query, statusFilter, titleFilter, locationFilter]);
+
 
   const active = activeId ? candidates.find(c => c.id === activeId) ?? null : null;
 
@@ -367,6 +394,20 @@ export default function CandidatesPanel() {
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             {STATUSES.map(s => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={titleFilter} onValueChange={setTitleFilter}>
+          <SelectTrigger className="w-[200px]"><SelectValue placeholder="Job title" /></SelectTrigger>
+          <SelectContent className="max-h-72">
+            <SelectItem value="all">All job titles</SelectItem>
+            {titleOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={locationFilter} onValueChange={setLocationFilter}>
+          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Location" /></SelectTrigger>
+          <SelectContent className="max-h-72">
+            <SelectItem value="all">All locations</SelectItem>
+            {locationOptions.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
           </SelectContent>
         </Select>
         <Tabs value={view} onValueChange={(v) => setView(v as any)}>
