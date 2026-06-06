@@ -2467,6 +2467,7 @@ Deno.serve(async (req) => {
       mode: string;
     }> = [];
     let actionTaken = false;
+    let candidateSaved = false;
 
     // ---- Process tool calls ----
     // After ANY data tool (lookup_customer / save_brief) we run a 2nd AI pass
