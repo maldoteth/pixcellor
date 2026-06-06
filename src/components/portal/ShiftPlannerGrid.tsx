@@ -69,6 +69,8 @@ type Props = {
   rowMode?: "vacancy" | "candidate";
   /** "admin" (default) shows margin/charge stats. "candidate" shows the worker's own earnings using pay rate and hides client cost lines. */
   viewerMode?: "admin" | "candidate";
+  /** Hide the sticky first column (only valid with rowMode="candidate"). Used in candidate dashboards where only date cells are shown. */
+  hideFirstColumn?: boolean;
 };
 
 type ClipItem = { start: string | null; finish: string | null; candidateId: string | null; sourceVacancyId?: string };
@@ -115,7 +117,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit = () => {}, onDelete = () => {}, onVacancyChanged, candidateFilter, secondColumn = "client", candidateColumnOnlyAssigned = false, onCandidateClick, rowMode = "vacancy", viewerMode = "admin" }: Props) {
+export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit = () => {}, onDelete = () => {}, onVacancyChanged, candidateFilter, secondColumn = "client", candidateColumnOnlyAssigned = false, onCandidateClick, rowMode = "vacancy", viewerMode = "admin", hideFirstColumn = false }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
@@ -124,10 +126,12 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const MAX_DAYS = 28;
   const [daysShown, setDaysShown] = useState<number>(7);
   const candidateFirstColW = jobColW + clientColW;
-  const gridTemplate = rowMode === "candidate"
-    ? `${candidateFirstColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`
-    : `${jobColW}px ${clientColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
-  const minGridW = (rowMode === "candidate" ? candidateFirstColW : jobColW + clientColW) + dayMinW * daysShown;
+  const gridTemplate = hideFirstColumn
+    ? `repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`
+    : rowMode === "candidate"
+      ? `${candidateFirstColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`
+      : `${jobColW}px ${clientColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
+  const minGridW = (hideFirstColumn ? 0 : rowMode === "candidate" ? candidateFirstColW : jobColW + clientColW) + dayMinW * daysShown;
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   // shifts[vacancyId][slotIndex][date]
   const [shifts, setShifts] = useState<Record<string, Record<number, Record<string, Shift>>>>({});
@@ -980,14 +984,16 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
         <div style={{ minWidth: `${minGridW}px` }}>
           {/* Header row */}
           <div className="grid sticky top-0 z-20" style={{ gridTemplateColumns: gridTemplate }}>
-            <button
-              type="button"
-              onClick={() => toggleSort("title")}
-              className="sticky left-0 z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
-            >
-              {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
-            </button>
-            {rowMode !== "candidate" && (
+            {!hideFirstColumn && (
+              <button
+                type="button"
+                onClick={() => toggleSort("title")}
+                className="sticky left-0 z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+              >
+                {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
+              </button>
+            )}
+            {!hideFirstColumn && rowMode !== "candidate" && (
               <button
                 type="button"
                 onClick={() => toggleSort("client")}
@@ -1035,31 +1041,33 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
             return (
               <div key={row.info.id} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
                 {/* Candidate (frozen) */}
-                <div
-                  className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`}
-                >
+                {!hideFirstColumn && (
                   <div
-                    className={onCandidateClick ? "cursor-pointer hover:opacity-80" : ""}
-                    onClick={() => onCandidateClick?.(row.info.id)}
+                    className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`}
                   >
-                    <div className="text-sm font-semibold leading-tight truncate">{row.info.full_name}</div>
-                    {row.info.headline && <div className="text-[10px] text-muted-foreground line-clamp-1">{row.info.headline}</div>}
-                  </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
-                    <span>{row.shifts.filter((x) => weekKeys.has(x.date)).length} shift{row.shifts.filter((x) => weekKeys.has(x.date)).length === 1 ? "" : "s"} · {rowHours.toFixed(1)}h</span>
-                    {row.info.status && <Badge variant="outline" className="text-[9px] h-4 px-1">{row.info.status}</Badge>}
-                  </div>
-                  {(row.info.email || row.info.phone) && (
-                    <div className="mt-1 flex flex-col gap-0.5">
-                      {row.info.email && (
-                        <ContactLink kind="email" value={row.info.email} />
-                      )}
-                      {row.info.phone && (
-                        <ContactLink kind="phone" value={row.info.phone} />
-                      )}
+                    <div
+                      className={onCandidateClick ? "cursor-pointer hover:opacity-80" : ""}
+                      onClick={() => onCandidateClick?.(row.info.id)}
+                    >
+                      <div className="text-sm font-semibold leading-tight truncate">{row.info.full_name}</div>
+                      {row.info.headline && <div className="text-[10px] text-muted-foreground line-clamp-1">{row.info.headline}</div>}
                     </div>
-                  )}
-                </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
+                      <span>{row.shifts.filter((x) => weekKeys.has(x.date)).length} shift{row.shifts.filter((x) => weekKeys.has(x.date)).length === 1 ? "" : "s"} · {rowHours.toFixed(1)}h</span>
+                      {row.info.status && <Badge variant="outline" className="text-[9px] h-4 px-1">{row.info.status}</Badge>}
+                    </div>
+                    {(row.info.email || row.info.phone) && (
+                      <div className="mt-1 flex flex-col gap-0.5">
+                        {row.info.email && (
+                          <ContactLink kind="email" value={row.info.email} />
+                        )}
+                        {row.info.phone && (
+                          <ContactLink kind="phone" value={row.info.phone} />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {/* Day cells: chips per assigned shift on that date */}
                 {weekDates.map((d, dIdx) => {
                   const dk = ymd(d);
