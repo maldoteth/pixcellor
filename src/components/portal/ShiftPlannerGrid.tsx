@@ -300,6 +300,15 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
     return true;
   };
 
+  const clearShiftOverride = async (vacancyId: string, slot: number, date: string) => {
+    const { error } = await supabase.rpc("portal_clear_shift_override" as never, {
+      _vacancy_id: vacancyId, _slot: slot, _date: date,
+    } as never);
+    if (error) { toast({ title: "Clear failed", description: error.message, variant: "destructive" }); return false; }
+    return true;
+  };
+
+
   const removeShift = async (vacancyId: string, slot: number, date: string) => {
     const cell = resolveCell(vacancyId, slot, date);
     if (cell.hasExplicit) {
@@ -741,7 +750,9 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                         onDoubleClickEdit={true}
                         onSave={async (st, fi, candidateChoice) => {
                           await upsert(v.id, slot, dk, st, fi, false);
-                          if (candidateChoice !== undefined) {
+                          if (candidateChoice === "__inherit__") {
+                            await clearShiftOverride(v.id, slot, dk);
+                          } else if (candidateChoice !== undefined) {
                             await setShiftCandidate(v.id, slot, dk, candidateChoice);
                           }
                           await load();
@@ -858,7 +869,9 @@ function Cell(props: {
   clipMode: "copy" | "cut" | null;
   onClick: (e: React.MouseEvent) => void;
   onDoubleClickEdit: boolean;
-  // candidateChoice: undefined = leave assignment alone; null = explicitly unassign; string = candidate id
+  // candidateChoice: undefined = leave assignment alone; null = explicitly unassign;
+  //                  "__inherit__" = clear per-day override, revert to slot default;
+  //                  string id = override with that candidate
   onSave: (start: string, finish: string, candidateChoice?: string | null) => Promise<void> | void;
   onContextDelete: () => void;
   onContextCopy: () => void;
@@ -923,12 +936,15 @@ function Cell(props: {
 
   const handleSave = async () => {
     let choice: string | null | undefined;
-    if (assigneeValue === ASSIGNEE_INHERIT) choice = undefined;
-    else if (assigneeValue === ASSIGNEE_NONE) choice = null;
+    if (assigneeValue === ASSIGNEE_INHERIT) {
+      // If the row was previously overridden, signal parent to clear; otherwise no-op for assignment.
+      choice = overridden ? "__inherit__" : undefined;
+    } else if (assigneeValue === ASSIGNEE_NONE) choice = null;
     else choice = assigneeValue;
     await onSave(st, fi, choice);
     setEditOpen(false);
   };
+
 
   return (
     <ContextMenu>
