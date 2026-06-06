@@ -1378,6 +1378,90 @@ export type Database = {
         }
         Relationships: []
       }
+      shift_timesheets: {
+        Row: {
+          actual_finish: string | null
+          actual_start: string | null
+          admin_notes: string | null
+          approved_at: string | null
+          approved_by_email: string | null
+          approved_by_user_id: string | null
+          break_minutes: number
+          candidate_id: string
+          created_at: string
+          id: string
+          reject_reason: string | null
+          scheduled_finish: string | null
+          scheduled_start: string | null
+          shift_date: string
+          slot_index: number
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          vacancy_id: string
+          worker_notes: string | null
+        }
+        Insert: {
+          actual_finish?: string | null
+          actual_start?: string | null
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by_email?: string | null
+          approved_by_user_id?: string | null
+          break_minutes?: number
+          candidate_id: string
+          created_at?: string
+          id?: string
+          reject_reason?: string | null
+          scheduled_finish?: string | null
+          scheduled_start?: string | null
+          shift_date: string
+          slot_index?: number
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          vacancy_id: string
+          worker_notes?: string | null
+        }
+        Update: {
+          actual_finish?: string | null
+          actual_start?: string | null
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by_email?: string | null
+          approved_by_user_id?: string | null
+          break_minutes?: number
+          candidate_id?: string
+          created_at?: string
+          id?: string
+          reject_reason?: string | null
+          scheduled_finish?: string | null
+          scheduled_start?: string | null
+          shift_date?: string
+          slot_index?: number
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          vacancy_id?: string
+          worker_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_timesheets_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_timesheets_vacancy_id_fkey"
+            columns: ["vacancy_id"]
+            isOneToOne: false
+            referencedRelation: "vacancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sms_broadcasts: {
         Row: {
           body: string
@@ -2455,11 +2539,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _candidate_for_auth_user: { Args: never; Returns: string }
       _times_overlap: {
         Args: { f1: string; f2: string; s1: string; s2: string }
         Returns: boolean
       }
       candidate_link_self: { Args: never; Returns: string }
+      candidate_list_my_timesheets: { Args: never; Returns: Json }
       candidate_my_schedule: {
         Args: never
         Returns: {
@@ -2487,6 +2573,28 @@ export type Database = {
           title: string
           vacancy_id: string
         }[]
+      }
+      candidate_timesheet_clock_in: {
+        Args: { _date: string; _slot: number; _vacancy_id: string }
+        Returns: Json
+      }
+      candidate_timesheet_clock_out: {
+        Args: { _break_minutes?: number; _timesheet_id: string }
+        Returns: Json
+      }
+      candidate_timesheet_submit: {
+        Args: { _timesheet_id: string }
+        Returns: Json
+      }
+      candidate_timesheet_update: {
+        Args: {
+          _actual_finish: string
+          _actual_start: string
+          _break_minutes: number
+          _timesheet_id: string
+          _worker_notes: string
+        }
+        Returns: Json
       }
       claim_login_handoff: { Args: { _sid: string }; Returns: Json }
       create_candidate_from_intake: { Args: { _payload: Json }; Returns: Json }
@@ -2758,6 +2866,10 @@ export type Database = {
         Returns: Json
       }
       portal_fetch_snapshot: { Args: { _limit?: number }; Returns: Json }
+      portal_list_timesheets: {
+        Args: { _limit?: number; _status?: string }
+        Returns: Json
+      }
       portal_list_vacancies: { Args: never; Returns: Json }
       portal_list_vacancy_shifts: {
         Args: { _from: string; _to: string; _vacancy_id: string }
@@ -2824,6 +2936,20 @@ export type Database = {
           _vacancy_id: string
         }
         Returns: undefined
+      }
+      portal_timesheet_approve: {
+        Args: {
+          _actual_finish?: string
+          _actual_start?: string
+          _admin_notes?: string
+          _break_minutes?: number
+          _timesheet_id: string
+        }
+        Returns: Json
+      }
+      portal_timesheet_reject: {
+        Args: { _reason: string; _timesheet_id: string }
+        Returns: Json
       }
       portal_unassign_candidate: {
         Args: { _assignment_id: string }
