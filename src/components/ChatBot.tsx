@@ -552,9 +552,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
-  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work") => {
+  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | "client-order") => {
     if (isDevMode || isLoading) return;
-    if (action !== "find-work") setQuickAction(action);
+    if (action !== "find-work" && action !== "client-order") setQuickAction(action);
     const reply = {
       role: "assistant" as const,
       content: action === "call"
@@ -569,7 +569,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                 ? "No problem — please share your order ID or any details from the invoice you received, and I'll help you verify it right away."
                 : action === "find-work"
                   ? "Hey, I'm Alex 👋 I can match you to live vacancies. Tell me your role/skills, location and availability and I'll check which of our current openings suit you best."
-                  : "Sure — tell me the amount you'd like to pay (in £) and a short reason (e.g. 'Deposit for Acme website' or 'Invoice INV-203'), and I'll generate a secure Stripe link you can pay with right away.",
+                  : action === "client-order"
+                    ? "Hey, I'm Alex 👋 Let's get your staffing order sorted. Tell me:\n\n• What role(s) do you need (e.g. waiter, chef, security)?\n• How many staff?\n• Dates & shift times?\n• Location/venue?\n• Pay rate (or shall I suggest market rate)?\n• Any uniform, skills or experience requirements?\n\nDrop it all in one message or one at a time — I'll put the vacancy together and confirm before posting."
+                    : "Sure — tell me the amount you'd like to pay (in £) and a short reason (e.g. 'Deposit for Acme website' or 'Invoice INV-203'), and I'll generate a secure Stripe link you can pay with right away.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
     // Focus input synchronously so mobile browsers open the keyboard
