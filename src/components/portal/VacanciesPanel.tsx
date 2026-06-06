@@ -607,7 +607,7 @@ export default function VacanciesPanel() {
                   <Button type="button" size="sm" variant="outline" onClick={() => setForm({ ...form, schedule_days: [...DAYS] })}>All</Button>
                   <Button type="button" size="sm" variant="outline" onClick={() => setForm({ ...form, schedule_days: ["Mon", "Tue", "Wed", "Thu", "Fri"] })}>Weekdays</Button>
                   <Button type="button" size="sm" variant={customTimes ? "default" : "outline"} onClick={() => setCustomTimes((s) => !s)}>
-                    {customTimes ? "Hide per-day times" : "Customise times per day"}
+                    {customTimes ? "Standard" : "Variable"}
                   </Button>
                 </div>
               </div>
