@@ -1159,8 +1159,8 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                                           }
                                           blurActive();
                                         }}
-                                        onDoubleClick={() => onEdit(v)}
-                                        title={`${v.title}${v.client?.name ? ` · ${v.client.name}` : ""}\n${to12h(startStr)} – ${to12h(finishStr)}\nDouble-click to open job · Right-click for copy/cut/delete`}
+                                        onDoubleClick={(e) => { e.stopPropagation(); setJobDetails({ vacancy: v, shift: s, date: dk, slot }); }}
+                                        title={`${v.title}${v.client?.name ? ` · ${v.client.name}` : ""}\n${to12h(startStr)} – ${to12h(finishStr)}\nDouble-click for full details · Right-click for copy/cut/delete`}
                                         className={`flex w-full flex-col items-start gap-0.5 rounded border border-primary/30 bg-primary/5 px-1.5 py-1 text-left hover:bg-primary/10 ${isChipSelected ? "ring-2 ring-primary ring-inset" : ""} ${isChipClip ? (clipboard?.mode === "cut" ? "outline-dashed outline-2 outline-destructive/60" : "outline-dashed outline-2 outline-primary/60") : ""}`}
                                       >
                                         <div className="text-[11px] font-semibold leading-tight truncate w-full">{v.title}</div>
