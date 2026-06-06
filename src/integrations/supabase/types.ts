@@ -2877,6 +2877,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      recalc_vacancy_status: {
+        Args: { _vacancy_id: string }
+        Returns: undefined
+      }
       vacancy_invitation_respond: {
         Args: { _response: string; _token: string }
         Returns: Json
