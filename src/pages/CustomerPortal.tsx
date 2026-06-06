@@ -30,7 +30,7 @@ import {
   EyeOff,
   Plus,
 } from "lucide-react";
-import PortalScheduleGrid from "@/components/portal/PortalScheduleGrid";
+import PortalScheduleAdminGrid from "@/components/portal/PortalScheduleAdminGrid";
 import PortalMyJobs from "@/components/portal/PortalMyJobs";
 import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
 
@@ -620,7 +620,7 @@ export default function CustomerPortal() {
                     </Button>
                   </div>
                   <div className="min-w-0 max-w-full overflow-hidden">
-                    <PortalScheduleGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
+                    <PortalScheduleAdminGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
                   </div>
                 </TabsContent>
 
