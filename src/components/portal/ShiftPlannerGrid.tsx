@@ -34,12 +34,13 @@ type Vacancy = {
   charge_rate: number | null;
   paye_rate_percent: number | null;
   client?: { id: string; name: string } | null;
-  assignments?: Array<{ candidate_id: string; stage: string; candidate: { id: string; full_name: string; status: string } }>;
+  assignments?: Array<{ id: string; candidate_id: string; slot_index: number; stage: string; candidate: { id: string; full_name: string; status: string } }>;
 };
 
 type Shift = {
   id: string;
   shift_date: string;
+  slot_index: number;
   start_time: string | null;
   finish_time: string | null;
   cancelled: boolean;
@@ -93,7 +94,11 @@ function startOfWeek(d: Date): Date {
   return addDays(x, offsetToMonday);
 }
 
-const cellKey = (vacancyId: string, date: string) => `${vacancyId}|${date}`;
+const cellKey = (vacancyId: string, slot: number, date: string) => `${vacancyId}|${slot}|${date}`;
+const parseCellKey = (k: string): { vid: string; slot: number; date: string } => {
+  const [vid, slotStr, date] = k.split("|");
+  return { vid, slot: Number(slotStr) || 0, date };
+};
 
 export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
   const { toast } = useToast();
@@ -104,12 +109,13 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const gridTemplate = `${jobColW}px ${clientColW}px repeat(7, minmax(${dayMinW}px, 1fr))`;
   const minGridW = jobColW + clientColW + dayMinW * 7;
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
-  const [shifts, setShifts] = useState<Record<string, Record<string, Shift>>>({});
+  // shifts[vacancyId][slotIndex][date]
+  const [shifts, setShifts] = useState<Record<string, Record<number, Record<string, Shift>>>>({});
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [lastSelected, setLastSelected] = useState<{ vacancyId: string; dateIdx: number } | null>(null);
+  const [lastSelected, setLastSelected] = useState<{ vacancyId: string; slot: number; dateIdx: number } | null>(null);
   const [clipboard, setClipboard] = useState<{ mode: "copy" | "cut"; items: ClipItem[]; sourceKeys: string[] } | null>(null);
-  const [bulkPaste, setBulkPaste] = useState<{ vacancyId: string; date: string } | null>(null);
+  const [bulkPaste, setBulkPaste] = useState<{ vacancyId: string; slot: number; date: string } | null>(null);
   const [bulkCount, setBulkCount] = useState<string>("4");
   const [bulkUnit, setBulkUnit] = useState<"days" | "weeks" | "months">("weeks");
   const [sortBy, setSortBy] = useState<"title" | "client">("title");
@@ -135,11 +141,29 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   }, [sortedVacancies]);
   const [vacancyClip, setVacancyClip] = useState<Vacancy | null>(null);
   const bumpOpenings = async (v: Vacancy, delta: number) => {
-    const next = Math.max(1, (Number(v.openings ?? 1) || 1) + delta);
+    const current = Math.max(1, Number(v.openings ?? 1) || 1);
+    const next = Math.max(1, current + delta);
+    if (next === current) return;
+    if (delta > 0) {
+      // Add an opening: clone slot 0's shifts + assignments into the new slot so it starts pre-filled
+      const newSlot = current; // slot indices are 0..current-1, new one is `current`
+      const { error: cloneErr } = await supabase.rpc("portal_clone_vacancy_slot" as never, {
+        _vacancy_id: v.id, _from_slot: 0, _to_slot: newSlot,
+      } as never);
+      if (cloneErr) { toast({ title: "Clone failed", description: cloneErr.message, variant: "destructive" }); return; }
+    } else {
+      // Remove the highest slot: delete its shifts + assignments
+      const removeSlot = current - 1;
+      const { error: delErr } = await supabase.rpc("portal_delete_vacancy_slot" as never, {
+        _vacancy_id: v.id, _slot: removeSlot,
+      } as never);
+      if (delErr) { toast({ title: "Delete failed", description: delErr.message, variant: "destructive" }); return; }
+    }
     const { error } = await supabase.rpc("portal_update_vacancy" as never, { _id: v.id, _patch: { openings: next } } as never);
     if (error) { toast({ title: "Update failed", description: error.message, variant: "destructive" }); return; }
     toast({ title: delta > 0 ? `Added opening (now ${next})` : `Removed opening (now ${next})` });
     await onVacancyChanged?.();
+    await load();
   };
   const toggleSort = (col: "title" | "client") => {
     if (sortBy === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -174,11 +198,15 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         } as never),
       ),
     );
-    const map: Record<string, Record<string, Shift>> = {};
+    const map: Record<string, Record<number, Record<string, Shift>>> = {};
     vacancies.forEach((v, i) => {
       const rows = ((results[i].data as Shift[]) ?? []);
-      const m: Record<string, Shift> = {};
-      rows.forEach((s) => { m[s.shift_date] = s; });
+      const m: Record<number, Record<string, Shift>> = {};
+      rows.forEach((s) => {
+        const slot = Number(s.slot_index ?? 0);
+        if (!m[slot]) m[slot] = {};
+        m[slot][s.shift_date] = s;
+      });
       map[v.id] = m;
     });
     setShifts(map);
@@ -187,10 +215,10 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
 
   useEffect(() => { load(); }, [load]);
 
-  // Resolve effective shift for a given cell
-  const resolveCell = useCallback((vacancyId: string, date: string) => {
+  // Resolve effective shift for a given cell (per-slot)
+  const resolveCell = useCallback((vacancyId: string, slot: number, date: string) => {
     const v = vacancies.find((x) => x.id === vacancyId);
-    const shift = shifts[vacancyId]?.[date];
+    const shift = shifts[vacancyId]?.[slot]?.[date];
     const tStart = v?.start_time ? v.start_time.slice(0, 5) : null;
     const tFinish = v?.finish_time ? v.finish_time.slice(0, 5) : null;
     const templateSet = new Set((v?.schedule_days ?? []).map((d) => d.slice(0, 3)));
@@ -203,7 +231,8 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         finish: (shift.finish_time ?? tFinish)?.slice(0, 5) ?? null,
       };
     }
-    // Template-driven recurring days only count within the vacancy's date window.
+    // Template-driven recurring days only apply to slot 0 and within the vacancy's date window.
+    if (slot !== 0) return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false };
     const inRange = (() => {
       if (v?.start_date && date < v.start_date) return false;
       if (v?.end_date && date > v.end_date) return false;
@@ -216,7 +245,6 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"] as const;
 
   // Ensure the vacancy's date window and schedule_days cover this shift's date/time.
-  // Keeps the Edit form in sync when shifts are created on the calendar.
   const syncVacancyWindow = async (vacancyId: string, date: string, s: string | null, f: string | null, cancelled: boolean) => {
     if (cancelled) return;
     const v = vacancies.find((x) => x.id === vacancyId);
@@ -232,66 +260,64 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     if (f && !v.finish_time) patch.finish_time = f.length === 5 ? `${f}:00` : f;
     if (Object.keys(patch).length === 0) return;
     const { error } = await supabase.rpc("portal_update_vacancy" as never, { _id: vacancyId, _patch: patch } as never);
-    if (error) {
-      // Non-fatal — the shift was saved; just log
-      console.warn("Vacancy window sync failed", error.message);
-    } else {
-      await onVacancyChanged?.();
-    }
+    if (error) console.warn("Vacancy window sync failed", error.message);
+    else await onVacancyChanged?.();
   };
 
-  const upsert = async (vacancyId: string, date: string, s: string | null, f: string | null, cancelled = false) => {
+  const upsert = async (vacancyId: string, slot: number, date: string, s: string | null, f: string | null, cancelled = false) => {
     const { error } = await supabase.rpc("portal_upsert_vacancy_shift" as never, {
-      _vacancy_id: vacancyId, _date: date, _start: s, _finish: f, _cancelled: cancelled,
+      _vacancy_id: vacancyId, _date: date, _start: s, _finish: f, _cancelled: cancelled, _slot: slot,
     } as never);
     if (error) { toast({ title: "Save failed", description: error.message, variant: "destructive" }); return; }
     await syncVacancyWindow(vacancyId, date, s, f, cancelled);
   };
 
-  const removeShift = async (vacancyId: string, date: string) => {
-    const cell = resolveCell(vacancyId, date);
+  const removeShift = async (vacancyId: string, slot: number, date: string) => {
+    const cell = resolveCell(vacancyId, slot, date);
     if (cell.hasExplicit) {
       const { error } = await supabase.rpc("portal_delete_vacancy_shift" as never, {
-        _vacancy_id: vacancyId, _date: date,
+        _vacancy_id: vacancyId, _date: date, _slot: slot,
       } as never);
       if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
     } else if (cell.active) {
-      // template-only: cancel it explicitly
-      await upsert(vacancyId, date, null, null, true);
+      // template-only: cancel it explicitly for this slot
+      await upsert(vacancyId, slot, date, null, null, true);
     }
   };
 
   // Selection helpers
   const blurActive = () => { try { (document.activeElement as HTMLElement | null)?.blur(); } catch { /* noop */ } };
-  const selectSingle = (vacancyId: string, dateIdx: number) => {
+  const selectSingle = (vacancyId: string, slot: number, dateIdx: number) => {
     const date = ymd(weekDates[dateIdx]);
-    setSelected(new Set([cellKey(vacancyId, date)]));
-    setLastSelected({ vacancyId, dateIdx });
+    setSelected(new Set([cellKey(vacancyId, slot, date)]));
+    setLastSelected({ vacancyId, slot, dateIdx });
     blurActive();
   };
-  const toggleSelect = (vacancyId: string, dateIdx: number) => {
+  const toggleSelect = (vacancyId: string, slot: number, dateIdx: number) => {
     const date = ymd(weekDates[dateIdx]);
-    const k = cellKey(vacancyId, date);
+    const k = cellKey(vacancyId, slot, date);
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(k)) next.delete(k); else next.add(k);
       return next;
     });
-    setLastSelected({ vacancyId, dateIdx });
+    setLastSelected({ vacancyId, slot, dateIdx });
   };
-  const rangeSelect = (vacancyId: string, dateIdx: number) => {
-    if (!lastSelected) { selectSingle(vacancyId, dateIdx); return; }
+  const rangeSelect = (vacancyId: string, slot: number, dateIdx: number) => {
+    if (!lastSelected) { selectSingle(vacancyId, slot, dateIdx); return; }
     setSelected((prev) => {
       const next = new Set(prev);
-      // Build a rectangular range across rows and dates
-      const rowIds = vacancies.map((v) => v.id);
-      const r1 = rowIds.indexOf(lastSelected.vacancyId);
-      const r2 = rowIds.indexOf(vacancyId);
+      // Rectangular range across display rows (vacancy+slot) and dates
+      const rowKeys = displayRows.map((r) => `${r.vacancy.id}#${r.slot}`);
+      const r1 = rowKeys.indexOf(`${lastSelected.vacancyId}#${lastSelected.slot}`);
+      const r2 = rowKeys.indexOf(`${vacancyId}#${slot}`);
+      if (r1 < 0 || r2 < 0) { next.add(cellKey(vacancyId, slot, ymd(weekDates[dateIdx]))); return next; }
       const [rMin, rMax] = [Math.min(r1, r2), Math.max(r1, r2)];
       const [dMin, dMax] = [Math.min(lastSelected.dateIdx, dateIdx), Math.max(lastSelected.dateIdx, dateIdx)];
       for (let r = rMin; r <= rMax; r++) {
+        const row = displayRows[r];
         for (let d = dMin; d <= dMax; d++) {
-          next.add(cellKey(rowIds[r], ymd(weekDates[d])));
+          next.add(cellKey(row.vacancy.id, row.slot, ymd(weekDates[d])));
         }
       }
       return next;
@@ -300,14 +326,14 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
 
   const clearSelection = () => { setSelected(new Set()); setLastSelected(null); };
 
-  // Clipboard ops (read from refs so they work from key handler with latest state)
+  // Clipboard ops
   const collectClip = (mode: "copy" | "cut") => {
     const sel = selectedRef.current;
     if (sel.size === 0) return;
     const keys = Array.from(sel);
     const items: ClipItem[] = keys.map((k) => {
-      const [vid, dt] = k.split("|");
-      const c = resolveCell(vid, dt);
+      const { vid, slot, date } = parseCellKey(k);
+      const c = resolveCell(vid, slot, date);
       return { start: c.start, finish: c.finish };
     });
     setClipboard({ mode, items, sourceKeys: keys });
@@ -321,17 +347,17 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     const targets = Array.from(sel);
     await Promise.all(
       targets.map(async (k, i) => {
-        const [vid, dt] = k.split("|");
+        const { vid, slot, date } = parseCellKey(k);
         const item = clip.items[i % clip.items.length];
         if (item.start || item.finish) {
-          await upsert(vid, dt, item.start, item.finish, false);
+          await upsert(vid, slot, date, item.start, item.finish, false);
         }
       }),
     );
     if (clip.mode === "cut") {
       await Promise.all(clip.sourceKeys.map((k) => {
-        const [vid, dt] = k.split("|");
-        return removeShift(vid, dt);
+        const { vid, slot, date } = parseCellKey(k);
+        return removeShift(vid, slot, date);
       }));
       setClipboard(null);
     }
@@ -355,7 +381,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     await Promise.all(dates.map(async (dt, i) => {
       const item = clip.items[i % clip.items.length];
       if (item.start || item.finish) {
-        await upsert(bulkPaste.vacancyId, dt, item.start, item.finish, false);
+        await upsert(bulkPaste.vacancyId, bulkPaste.slot, dt, item.start, item.finish, false);
       }
     }));
     setBulkPaste(null);
@@ -363,15 +389,13 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     toast({ title: `Pasted across ${dates.length} day${dates.length === 1 ? "" : "s"}` });
   };
 
-
-
   const deleteSelection = async () => {
     const sel = selectedRef.current;
     if (sel.size === 0) return;
     const keys = Array.from(sel);
     await Promise.all(keys.map((k) => {
-      const [vid, dt] = k.split("|");
-      return removeShift(vid, dt);
+      const { vid, slot, date } = parseCellKey(k);
+      return removeShift(vid, slot, date);
     }));
     await load();
   };
@@ -430,7 +454,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     const workersWithShifts = new Set<string>();
     const allAssignedWorkers = new Set<string>();
 
-    vacancies.forEach((v) => {
+    displayRows.forEach(({ vacancy: v, slot }) => {
       if (v.pay_currency) currency = v.pay_currency;
       const pay = Number(v.pay_max ?? v.pay_min ?? 0);
       const charge = Number(v.charge_rate ?? 0);
@@ -438,30 +462,31 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       const costPerHour = pay + pay * (paye / 100);
       const marginPerHour = charge - costPerHour;
 
-      const activeAssignments = (v.assignments ?? []).filter((a) =>
+      const slotAssignments = (v.assignments ?? []).filter((a) =>
+        a.slot_index === slot &&
         ["shortlisted", "submitted", "interviewing", "offer", "placed"].includes(a.stage),
       );
-      activeAssignments.forEach((a) => allAssignedWorkers.add(a.candidate_id));
+      slotAssignments.forEach((a) => allAssignedWorkers.add(a.candidate_id));
 
-      let vacHoursThisWeek = 0;
+      let slotHoursThisWeek = 0;
       weekDates.forEach((d) => {
         const dk = ymd(d);
-        const c = resolveCell(v.id, dk);
+        const c = resolveCell(v.id, slot, dk);
         if (!c.active || !c.start || !c.finish) return;
         const [sh, sm] = c.start.split(":").map(Number);
         const [fh, fm] = c.finish.split(":").map(Number);
         let mins = (fh * 60 + fm) - (sh * 60 + sm);
         if (mins < 0) mins += 24 * 60; // overnight
         const hours = mins / 60;
-        vacHoursThisWeek += hours;
+        slotHoursThisWeek += hours;
       });
 
-      if (vacHoursThisWeek > 0) {
-        activeAssignments.forEach((a) => workersWithShifts.add(a.candidate_id));
+      if (slotHoursThisWeek > 0) {
+        slotAssignments.forEach((a) => workersWithShifts.add(a.candidate_id));
       }
-      totalHours += vacHoursThisWeek;
-      totalCharge += vacHoursThisWeek * charge;
-      totalMargin += vacHoursThisWeek * marginPerHour;
+      totalHours += slotHoursThisWeek;
+      totalCharge += slotHoursThisWeek * charge;
+      totalMargin += slotHoursThisWeek * marginPerHour;
     });
 
     const idleWorkers = Array.from(allAssignedWorkers).filter((id) => !workersWithShifts.has(id));
@@ -470,7 +495,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       activeWorkers: workersWithShifts.size,
       idleWorkers: idleWorkers.length,
     };
-  }, [vacancies, weekDates, shifts, resolveCell]);
+  }, [displayRows, weekDates, shifts, resolveCell]);
 
   const fmtMoney = (n: number) => `${stats.currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
@@ -607,13 +632,17 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                     <div className="text-sm">{v.client?.name ?? "—"}</div>
                     {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
                   </div>
-                  {/* Day cells */}
+                  {/* Day cells (per slot) */}
                   {weekDates.map((d, dIdx) => {
                     const dk = ymd(d);
-                    const cell = resolveCell(v.id, dk);
+                    const cell = resolveCell(v.id, slot, dk);
                     const isToday = dk === todayKey;
-                    const isSelected = selected.has(cellKey(v.id, dk));
-                    const isClipSource = clipboard?.sourceKeys.includes(cellKey(v.id, dk)) ?? false;
+                    const isSelected = selected.has(cellKey(v.id, slot, dk));
+                    const isClipSource = clipboard?.sourceKeys.includes(cellKey(v.id, slot, dk)) ?? false;
+                    const slotAssignee = (v.assignments ?? []).find((a) =>
+                      a.slot_index === slot &&
+                      ["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage),
+                    );
                     return (
                       <Cell
                         key={dk}
@@ -624,22 +653,23 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                         cancelled={cell.cancelled}
                         start={cell.start}
                         finish={cell.finish}
+                        assignee={slotAssignee ? { id: slotAssignee.candidate.id, name: slotAssignee.candidate.full_name } : null}
                         isSelected={isSelected}
                         isClipSource={isClipSource}
                         clipMode={clipboard?.mode ?? null}
                         onClick={(e) => {
-                          if (e.shiftKey) rangeSelect(v.id, dIdx);
-                          else if (e.ctrlKey || e.metaKey) toggleSelect(v.id, dIdx);
-                          else selectSingle(v.id, dIdx);
+                          if (e.shiftKey) rangeSelect(v.id, slot, dIdx);
+                          else if (e.ctrlKey || e.metaKey) toggleSelect(v.id, slot, dIdx);
+                          else selectSingle(v.id, slot, dIdx);
                         }}
                         onDoubleClickEdit={cell.active}
-                        onSave={async (st, fi) => { await upsert(v.id, dk, st, fi, false); await load(); }}
-                        onContextDelete={async () => { await removeShift(v.id, dk); await load(); }}
-                        onContextCopy={() => { if (!isSelected) selectSingle(v.id, dIdx); setTimeout(() => collectClip("copy"), 0); }}
-                        onContextCut={() => { if (!isSelected) selectSingle(v.id, dIdx); setTimeout(() => collectClip("cut"), 0); }}
-                        onContextPaste={() => { if (!isSelected) selectSingle(v.id, dIdx); setTimeout(() => pasteClip(), 0); }}
-                        onContextAdd={async () => { await upsert(v.id, dk, v.start_time?.slice(0, 5) ?? "09:00", v.finish_time?.slice(0, 5) ?? "17:00", false); await load(); }}
-                        onContextBulkPaste={() => setBulkPaste({ vacancyId: v.id, date: dk })}
+                        onSave={async (st, fi) => { await upsert(v.id, slot, dk, st, fi, false); await load(); }}
+                        onContextDelete={async () => { await removeShift(v.id, slot, dk); await load(); }}
+                        onContextCopy={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => collectClip("copy"), 0); }}
+                        onContextCut={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => collectClip("cut"), 0); }}
+                        onContextPaste={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => pasteClip(), 0); }}
+                        onContextAdd={async () => { await upsert(v.id, slot, dk, v.start_time?.slice(0, 5) ?? "09:00", v.finish_time?.slice(0, 5) ?? "17:00", false); await load(); }}
+                        onContextBulkPaste={() => setBulkPaste({ vacancyId: v.id, slot, date: dk })}
                         clipboardHasItems={!!clipboard}
                       />
                     );
@@ -722,6 +752,7 @@ function Cell(props: {
   cancelled: boolean;
   start: string | null;
   finish: string | null;
+  assignee: { id: string; name: string } | null;
   isSelected: boolean;
   isClipSource: boolean;
   clipMode: "copy" | "cut" | null;
@@ -736,7 +767,7 @@ function Cell(props: {
   onContextBulkPaste: () => void;
   clipboardHasItems: boolean;
 }) {
-  const { date, rowBg, isToday, active, cancelled, start, finish, isSelected, isClipSource, clipMode,
+  const { date, rowBg, isToday, active, cancelled, start, finish, assignee, isSelected, isClipSource, clipMode,
     onClick, onDoubleClickEdit, onSave, onContextDelete, onContextCopy, onContextCut, onContextPaste, onContextAdd, onContextBulkPaste, clipboardHasItems } = props;
 
   const [editOpen, setEditOpen] = useState(false);
@@ -748,9 +779,13 @@ function Cell(props: {
   const selectionRing = isSelected ? "ring-2 ring-primary ring-inset" : "";
   const clipBorder = isClipSource ? (clipMode === "cut" ? "outline-dashed outline-2 outline-destructive/60" : "outline-dashed outline-2 outline-primary/60") : "";
 
+  const initials = (name?: string) => {
+    if (!name) return "?";
+    return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
+  };
+
   let inner: React.ReactNode;
   if (!active) {
-    // Empty / cancelled both render as empty so cancelling a day looks like an empty slot
     inner = (
       <div className="flex h-full w-full items-center justify-center rounded border border-dashed border-border/40 text-[11px] text-muted-foreground/60">
         —
@@ -758,9 +793,17 @@ function Cell(props: {
     );
   } else {
     inner = (
-      <div className="flex h-full w-full flex-col items-start justify-center rounded border border-primary/30 bg-primary/5 px-2 py-1.5 text-left">
+      <div className="flex h-full w-full flex-col items-start justify-center rounded border border-primary/30 bg-primary/5 px-2 py-1.5 text-left gap-0.5">
         <div className="text-[11px] font-semibold leading-tight text-foreground">{to12h(start)}</div>
         <div className="text-[11px] leading-tight text-muted-foreground">{to12h(finish)}</div>
+        {assignee && (
+          <div className="mt-0.5 flex items-center gap-1 max-w-full">
+            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[8px] font-semibold text-primary">
+              {initials(assignee.name)}
+            </span>
+            <span className="truncate text-[10px] text-foreground/80">{assignee.name}</span>
+          </div>
+        )}
       </div>
     );
   }
