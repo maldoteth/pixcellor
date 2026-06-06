@@ -59,7 +59,7 @@ type Props = {
   onVacancyChanged?: () => void | Promise<void>;
 };
 
-type ClipItem = { start: string | null; finish: string | null };
+type ClipItem = { start: string | null; finish: string | null; candidateId: string | null };
 
 const DOW_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const DOW_DISPLAY = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
@@ -375,7 +375,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     const items: ClipItem[] = keys.map((k) => {
       const { vid, slot, date } = parseCellKey(k);
       const c = resolveCell(vid, slot, date);
-      return { start: c.start, finish: c.finish };
+      return { start: c.start, finish: c.finish, candidateId: c.assignee?.id ?? null };
     });
     setClipboard({ mode, items, sourceKeys: keys });
     toast({ title: `${mode === "copy" ? "Copied" : "Cut"} ${items.length} cell${items.length === 1 ? "" : "s"}` });
@@ -393,6 +393,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
         const item = clip.items[i % clip.items.length];
         if (item.start || item.finish) {
           await upsert(vid, slot, date, item.start, item.finish, false);
+          await setShiftCandidate(vid, slot, date, item.candidateId);
         }
       }),
     );
@@ -425,6 +426,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
       const item = clip.items[i % clip.items.length];
       if (item.start || item.finish) {
         await upsert(bulkPaste.vacancyId, bulkPaste.slot, dt, item.start, item.finish, false);
+        await setShiftCandidate(bulkPaste.vacancyId, bulkPaste.slot, dt, item.candidateId);
       }
     }));
     setBulkPaste(null);
