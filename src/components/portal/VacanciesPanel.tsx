@@ -108,6 +108,7 @@ const emptyForm = {
 export default function VacanciesPanel() {
   const { toast } = useToast();
   const realtimeTimerRef = useRef<number | null>(null);
+  const loadedRef = useRef(false);
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [clients, setClients] = useState<ClientOpt[]>([]);
   const [candidates, setCandidates] = useState<CandidateOpt[]>([]);
@@ -202,7 +203,7 @@ export default function VacanciesPanel() {
   }, [clients, clientQuery]);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    if (!loadedRef.current) setLoading(true);
     const [{ data: v, error: ve }, { data: c }, { data: cand }] = await Promise.all([
       supabase.rpc("portal_list_vacancies"),
       supabase.from("contacts").select("id,name,industry").order("name", { ascending: true }).limit(2000),
@@ -212,6 +213,7 @@ export default function VacanciesPanel() {
     setVacancies(((v as Vacancy[]) ?? []));
     setClients(((c as ClientOpt[]) ?? []));
     setCandidates(((cand as CandidateOpt[]) ?? []));
+    loadedRef.current = true;
     setLoading(false);
   }, [toast]);
 
