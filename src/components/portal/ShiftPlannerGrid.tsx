@@ -707,10 +707,14 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                     const isToday = dk === todayKey;
                     const isSelected = selected.has(cellKey(v.id, slot, dk));
                     const isClipSource = clipboard?.sourceKeys.includes(cellKey(v.id, slot, dk)) ?? false;
-                    const slotAssignee = (v.assignments ?? []).find((a) =>
-                      a.slot_index === slot &&
-                      ["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage),
-                    );
+                    // Candidate picker options = anyone shortlisted/placed against this vacancy across any slot
+                    const candidateOptionsMap = new Map<string, string>();
+                    (v.assignments ?? []).forEach((a) => {
+                      if (["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage)) {
+                        candidateOptionsMap.set(a.candidate.id, a.candidate.full_name);
+                      }
+                    });
+                    const candidateOptions = Array.from(candidateOptionsMap, ([id, name]) => ({ id, name }));
                     return (
                       <Cell
                         key={dk}
@@ -721,7 +725,11 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                         cancelled={cell.cancelled}
                         start={cell.start}
                         finish={cell.finish}
-                        assignee={slotAssignee ? { id: slotAssignee.candidate.id, name: slotAssignee.candidate.full_name } : null}
+                        assignee={cell.assignee}
+                        overridden={cell.overridden}
+                        candidateOptions={candidateOptions}
+                        defaultStart={v.start_time?.slice(0, 5) ?? "09:00"}
+                        defaultFinish={v.finish_time?.slice(0, 5) ?? "17:00"}
                         isSelected={isSelected}
                         isClipSource={isClipSource}
                         clipMode={clipboard?.mode ?? null}
@@ -730,8 +738,14 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                           else if (e.ctrlKey || e.metaKey) toggleSelect(v.id, slot, dIdx);
                           else selectSingle(v.id, slot, dIdx);
                         }}
-                        onDoubleClickEdit={cell.active}
-                        onSave={async (st, fi) => { await upsert(v.id, slot, dk, st, fi, false); await load(); }}
+                        onDoubleClickEdit={true}
+                        onSave={async (st, fi, candidateChoice) => {
+                          await upsert(v.id, slot, dk, st, fi, false);
+                          if (candidateChoice !== undefined) {
+                            await setShiftCandidate(v.id, slot, dk, candidateChoice);
+                          }
+                          await load();
+                        }}
                         onContextDelete={async () => { await removeShift(v.id, slot, dk); await load(); }}
                         onContextCopy={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => collectClip("copy"), 0); }}
                         onContextCut={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => collectClip("cut"), 0); }}
@@ -739,6 +753,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                         onContextAdd={async () => { await upsert(v.id, slot, dk, v.start_time?.slice(0, 5) ?? "09:00", v.finish_time?.slice(0, 5) ?? "17:00", false); await load(); }}
                         onContextBulkPaste={() => setBulkPaste({ vacancyId: v.id, slot, date: dk })}
                         clipboardHasItems={!!clipboard}
+
                       />
                     );
                   })}
