@@ -718,12 +718,12 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
             <ContextMenu>
               <ContextMenuTrigger asChild>
                 <div className="grid" style={{ gridTemplateColumns: gridTemplate }}>
-                  <div className={`${isMobile ? "" : "sticky left-0 z-10"} border-b border-r bg-muted/5 px-2 py-3 min-h-[78px] flex items-center justify-center text-[11px] text-muted-foreground/70 italic`}>
+                  <div className="sticky left-0 z-10 border-b border-r bg-card px-2 py-3 min-h-[78px] flex items-center justify-center text-[11px] text-muted-foreground/70 italic">
                     {vacancyClip ? `Right-click to paste "${vacancyClip.title}"` : "Right-click → copy a vacancy first"}
                   </div>
-                  <div className={`${isMobile ? "" : "sticky z-10"} border-b border-r bg-muted/5`} style={isMobile ? undefined : { left: `${jobColW}px` }} />
+                  <div className="sticky z-10 border-b border-r bg-card shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]" style={{ left: `${jobColW}px` }} />
                   {weekDates.map((_, i) => (
-                    <div key={i} className="border-b border-r bg-muted/5" />
+                    <div key={i} className="border-b border-r bg-background" />
                   ))}
                 </div>
               </ContextMenuTrigger>
