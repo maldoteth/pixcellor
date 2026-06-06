@@ -125,7 +125,33 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const dayMinW = isMobile ? 84 : 140;
   const MAX_DAYS = 28;
   const [daysShown, setDaysShown] = useState<number>(7);
-  const candidateFirstColW = jobColW + clientColW;
+  const defaultCandidateColW = jobColW + clientColW;
+  const CANDIDATE_COL_MIN = isMobile ? 120 : 160;
+  const CANDIDATE_COL_MAX = 640;
+  const [candidateFirstColW, setCandidateFirstColW] = useState<number>(() => {
+    if (typeof window === "undefined") return defaultCandidateColW;
+    const v = Number(window.localStorage.getItem("pix.shiftGrid.candidateColW"));
+    return Number.isFinite(v) && v >= 80 ? v : defaultCandidateColW;
+  });
+  const resizingRef = useRef<{ startX: number; startW: number } | null>(null);
+  const onResizeStart = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    resizingRef.current = { startX: e.clientX, startW: candidateFirstColW };
+  };
+  const onResizeMove = (e: React.PointerEvent) => {
+    if (!resizingRef.current) return;
+    const delta = e.clientX - resizingRef.current.startX;
+    const next = Math.max(CANDIDATE_COL_MIN, Math.min(CANDIDATE_COL_MAX, resizingRef.current.startW + delta));
+    setCandidateFirstColW(next);
+  };
+  const onResizeEnd = (e: React.PointerEvent) => {
+    if (!resizingRef.current) return;
+    resizingRef.current = null;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+    try { window.localStorage.setItem("pix.shiftGrid.candidateColW", String(candidateFirstColW)); } catch {}
+  };
   const gridTemplate = hideFirstColumn
     ? `repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`
     : rowMode === "candidate"
