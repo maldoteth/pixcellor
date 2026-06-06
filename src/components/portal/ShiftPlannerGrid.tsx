@@ -750,7 +750,9 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                         onDoubleClickEdit={true}
                         onSave={async (st, fi, candidateChoice) => {
                           await upsert(v.id, slot, dk, st, fi, false);
-                          if (candidateChoice !== undefined) {
+                          if (candidateChoice === "__inherit__") {
+                            await clearShiftOverride(v.id, slot, dk);
+                          } else if (candidateChoice !== undefined) {
                             await setShiftCandidate(v.id, slot, dk, candidateChoice);
                           }
                           await load();
