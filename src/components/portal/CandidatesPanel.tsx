@@ -105,7 +105,8 @@ export default function CandidatesPanel() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [titleFilter, setTitleFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
-  const [view, setView] = useState<"list" | "kanban">("list");
+  const [view, setView] = useState<"calendar" | "list" | "kanban">("calendar");
+  const [allVacancies, setAllVacancies] = useState<any[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [timesheetsOpen, setTimesheetsOpen] = useState(false);
