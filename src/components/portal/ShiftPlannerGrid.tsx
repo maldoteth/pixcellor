@@ -1009,9 +1009,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
           </div>
 
           {/* Vacancy rows */}
-          {rowMode === "vacancy" && vacancies.length === 0 && (
-            <div className="px-3 py-12 text-center text-sm text-muted-foreground">No vacancies match the current filters.</div>
-          )}
+
           {rowMode === "candidate" && candidateRowsData.length === 0 && (
             <div className="px-3 py-12 text-center text-sm text-muted-foreground">No candidates have assigned shifts in this range.</div>
           )}
