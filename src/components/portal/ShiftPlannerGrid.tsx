@@ -57,6 +57,8 @@ type Props = {
   onEdit: (v: Vacancy) => void;
   onDelete: (id: string) => void;
   onVacancyChanged?: () => void | Promise<void>;
+  /** When provided, show only rows (vacancy+slot) assigned to this candidate. First column becomes the vacancy. */
+  candidateFilter?: { id: string; name: string };
 };
 
 type ClipItem = { start: string | null; finish: string | null; candidateId: string | null };
@@ -103,7 +105,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit, onDelete, onVacancyChanged }: Props) {
+export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit, onDelete, onVacancyChanged, candidateFilter }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
@@ -138,12 +140,24 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   // Expand each vacancy into N rows (one per opening), keep them individual.
   const displayRows = useMemo(() => {
     const rows: Array<{ vacancy: Vacancy; slot: number; total: number }> = [];
+    const activeStages = ["shortlisted", "submitted", "interviewing", "offer", "placed"];
     sortedVacancies.forEach((v) => {
       const total = Math.max(1, Number(v.openings ?? 1) || 1);
-      for (let i = 0; i < total; i++) rows.push({ vacancy: v, slot: i, total });
+      for (let i = 0; i < total; i++) {
+        if (candidateFilter) {
+          const slotAssigned = (v.assignments ?? []).some(
+            (a) => a.slot_index === i && a.candidate_id === candidateFilter.id && activeStages.includes(a.stage),
+          );
+          const slotOverridden = Object.values(shifts[v.id]?.[i] ?? {}).some(
+            (s) => s.assignment_overridden && s.candidate_id === candidateFilter.id,
+          );
+          if (!slotAssigned && !slotOverridden) continue;
+        }
+        rows.push({ vacancy: v, slot: i, total });
+      }
     });
     return rows;
-  }, [sortedVacancies]);
+  }, [sortedVacancies, candidateFilter, shifts]);
   const [vacancyClip, setVacancyClip] = useState<Vacancy | null>(null);
   const changeOpenings = async (v: Vacancy, next: number, cloneFromSlot?: number, removeSlot?: number) => {
     const current = Math.max(1, Number(v.openings ?? 1) || 1);

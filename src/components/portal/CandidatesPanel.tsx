@@ -14,6 +14,7 @@ import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2, Ca
 import { toast } from "sonner";
 import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ShiftPlannerGrid from "@/components/portal/ShiftPlannerGrid";
 
 function initialsOf(name: string) {
   return (name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "?";
@@ -112,6 +113,31 @@ export default function CandidatesPanel() {
   const [eventNote, setEventNote] = useState("");
   const [uploading, setUploading] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [candidateVacancies, setCandidateVacancies] = useState<any[]>([]);
+  const [allCandidatesLite, setAllCandidatesLite] = useState<Array<{ id: string; full_name: string; status?: string | null }>>([]);
+
+  const loadCandidateVacancies = useCallback(async (candidateId: string) => {
+    const { data } = await (supabase as any).rpc("portal_list_vacancies");
+    const all = (data as any[]) ?? [];
+    const mine = all.filter((v) =>
+      (v.assignments ?? []).some((a: any) =>
+        a.candidate_id === candidateId &&
+        ["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage),
+      ),
+    );
+    setCandidateVacancies(mine);
+  }, []);
+
+  useEffect(() => {
+    if (!activeId) { setCandidateVacancies([]); return; }
+    loadCandidateVacancies(activeId);
+  }, [activeId, loadCandidateVacancies]);
+
+  useEffect(() => {
+    // Light list of all candidates for the cell picker (so user can reassign).
+    (supabase as any).from("candidates").select("id,full_name,status").order("full_name").limit(2000)
+      .then(({ data }: any) => setAllCandidatesLite((data as any[]) ?? []));
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -647,6 +673,27 @@ export default function CandidatesPanel() {
                     </Button>
                   </label>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Shift calendar</div>
+                <p className="text-xs text-muted-foreground">
+                  Edits here update the same shifts shown on the client / vacancies page.
+                </p>
+                {candidateVacancies.length === 0 ? (
+                  <Card className="p-4 text-xs text-muted-foreground">
+                    Not assigned to any vacancies yet. Assign this candidate to a vacancy from the Vacancies page to schedule shifts.
+                  </Card>
+                ) : (
+                  <ShiftPlannerGrid
+                    vacancies={candidateVacancies}
+                    candidates={allCandidatesLite}
+                    candidateFilter={{ id: active.id, name: active.full_name }}
+                    onEdit={() => undefined}
+                    onDelete={() => undefined}
+                    onVacancyChanged={() => loadCandidateVacancies(active.id)}
+                  />
+                )}
               </div>
 
               <div className="space-y-2">
