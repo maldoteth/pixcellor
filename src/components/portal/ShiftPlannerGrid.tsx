@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/context-menu";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  ChevronLeft, ChevronRight, Pencil, UserPlus, Trash2, Loader2, CalendarDays, Clipboard,
+  ChevronLeft, ChevronRight, Pencil, UserPlus, Trash2, Loader2, CalendarDays, Clipboard, Copy, ClipboardPaste, Plus, Minus,
 } from "lucide-react";
 
 type Vacancy = {
