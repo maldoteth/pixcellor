@@ -326,7 +326,8 @@ export default function VacanciesPanel() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this vacancy?")) return;
+    const ok = await confirm({ title: "Delete vacancy?", description: "This will permanently remove the vacancy and its shifts.", confirmLabel: "Delete", destructive: true });
+    if (!ok) return;
     const { error } = await supabase.rpc("portal_delete_vacancy", { _id: id });
     if (error) { toast({ title: "Delete failed", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Vacancy deleted" });
