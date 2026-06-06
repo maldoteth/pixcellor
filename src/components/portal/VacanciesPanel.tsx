@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+import { useConfirmDialog } from "@/components/ui/themed-dialogs";
 import AIRecommendationsPanel from "./AIRecommendationsPanel";
 import PlaceAutocomplete from "@/components/ui/place-autocomplete";
 import ShiftPlannerGrid from "./ShiftPlannerGrid";
