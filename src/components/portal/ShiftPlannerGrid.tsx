@@ -249,14 +249,14 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onDelete
         overridden: shift.assignment_overridden,
       };
     }
-    // Template-driven recurring days only apply to slot 0 and within the vacancy's date window.
-    if (slot !== 0) return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false, assignee: baseAssignee, overridden: false };
+    // Template-driven recurring days apply to every opening/slot within the vacancy's date window.
     const inRange = (() => {
       if (v?.start_date && date < v.start_date) return false;
       if (v?.end_date && date > v.end_date) return false;
       return true;
     })();
-    if (inRange && templateSet.has(dow)) return { active: true, cancelled: false, start: tStart, finish: tFinish, hasExplicit: false, assignee: baseAssignee, overridden: false };
+    const matchesTemplate = templateSet.size === 0 || templateSet.has(dow);
+    if (inRange && matchesTemplate && (tStart || tFinish)) return { active: true, cancelled: false, start: tStart, finish: tFinish, hasExplicit: false, assignee: baseAssignee, overridden: false };
     return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false, assignee: baseAssignee, overridden: false };
   }, [vacancies, shifts]);
 
