@@ -734,7 +734,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
               onClick={() => toggleSort("title")}
               className="sticky left-0 z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
             >
-              Job{sortArrow("title")}
+              {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
             </button>
             <button
               type="button"
@@ -742,7 +742,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
               className="sticky z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]"
               style={{ left: `${jobColW}px` }}
             >
-              {secondColumn === "candidate" ? "Candidate" : "Client"}{sortArrow("client")}
+              {rowMode === "candidate" ? "Details" : secondColumn === "candidate" ? "Candidate" : "Client"}{sortArrow("client")}
             </button>
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
