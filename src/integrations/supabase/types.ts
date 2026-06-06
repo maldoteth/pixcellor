@@ -2698,20 +2698,10 @@ export type Database = {
         Args: { _date: string; _slot: number; _vacancy_id: string }
         Returns: undefined
       }
-      portal_clone_vacancy_slot:
-        | {
-            Args: { _from_slot: number; _to_slot: number; _vacancy_id: string }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              _copy_assignments?: boolean
-              _from_slot: number
-              _to_slot: number
-              _vacancy_id: string
-            }
-            Returns: undefined
-          }
+      portal_clone_vacancy_slot: {
+        Args: { _from_slot: number; _to_slot: number; _vacancy_id: string }
+        Returns: undefined
+      }
       portal_close_chat_case: {
         Args: { _conversation_id: string }
         Returns: undefined
