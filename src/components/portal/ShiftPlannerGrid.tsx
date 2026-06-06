@@ -141,11 +141,29 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   }, [sortedVacancies]);
   const [vacancyClip, setVacancyClip] = useState<Vacancy | null>(null);
   const bumpOpenings = async (v: Vacancy, delta: number) => {
-    const next = Math.max(1, (Number(v.openings ?? 1) || 1) + delta);
+    const current = Math.max(1, Number(v.openings ?? 1) || 1);
+    const next = Math.max(1, current + delta);
+    if (next === current) return;
+    if (delta > 0) {
+      // Add an opening: clone slot 0's shifts + assignments into the new slot so it starts pre-filled
+      const newSlot = current; // slot indices are 0..current-1, new one is `current`
+      const { error: cloneErr } = await supabase.rpc("portal_clone_vacancy_slot" as never, {
+        _vacancy_id: v.id, _from_slot: 0, _to_slot: newSlot,
+      } as never);
+      if (cloneErr) { toast({ title: "Clone failed", description: cloneErr.message, variant: "destructive" }); return; }
+    } else {
+      // Remove the highest slot: delete its shifts + assignments
+      const removeSlot = current - 1;
+      const { error: delErr } = await supabase.rpc("portal_delete_vacancy_slot" as never, {
+        _vacancy_id: v.id, _slot: removeSlot,
+      } as never);
+      if (delErr) { toast({ title: "Delete failed", description: delErr.message, variant: "destructive" }); return; }
+    }
     const { error } = await supabase.rpc("portal_update_vacancy" as never, { _id: v.id, _patch: { openings: next } } as never);
     if (error) { toast({ title: "Update failed", description: error.message, variant: "destructive" }); return; }
     toast({ title: delta > 0 ? `Added opening (now ${next})` : `Removed opening (now ${next})` });
     await onVacancyChanged?.();
+    await load();
   };
   const toggleSort = (col: "title" | "client") => {
     if (sortBy === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
