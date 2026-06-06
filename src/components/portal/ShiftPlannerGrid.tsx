@@ -819,11 +819,12 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const todayKey = ymd(new Date());
   const lastVisibleRow = displayRows[displayRows.length - 1] ?? null;
 
-  // ----- Weekly stats: margin, hours, active workers, idle workers -----
+  // ----- Weekly stats: margin/earnings, hours, active workers, idle workers -----
   const stats = useMemo(() => {
     let totalHours = 0;
     let totalMargin = 0;
     let totalCharge = 0;
+    let totalEarnings = 0;
     let currency = "GBP";
     const workersWithShifts = new Set<string>();
     const allAssignedWorkers = new Set<string>();
@@ -851,6 +852,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
           totalHours += hours;
           totalCharge += hours * charge;
           totalMargin += hours * marginPerHour;
+          totalEarnings += hours * pay;
           workersWithShifts.add(row.info.id);
         });
       });
@@ -888,16 +890,19 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
         totalHours += slotHoursThisWeek;
         totalCharge += slotHoursThisWeek * charge;
         totalMargin += slotHoursThisWeek * marginPerHour;
+        // For candidate viewer: only include slots they're actually assigned to
+        const isMine = !candidateFilter || slotAssignments.some((a) => a.candidate_id === candidateFilter.id);
+        if (isMine) totalEarnings += slotHoursThisWeek * pay;
       });
     }
 
     const idleWorkers = Array.from(allAssignedWorkers).filter((id) => !workersWithShifts.has(id));
     return {
-      totalHours, totalMargin, totalCharge, currency,
+      totalHours, totalMargin, totalCharge, totalEarnings, currency,
       activeWorkers: workersWithShifts.size,
       idleWorkers: idleWorkers.length,
     };
-  }, [rowMode, candidateRowsData, displayRows, weekDates, resolveCell]);
+  }, [rowMode, candidateRowsData, displayRows, weekDates, resolveCell, candidateFilter]);
 
   const fmtMoney = (n: number) => `${stats.currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
@@ -905,10 +910,21 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     <div className="rounded-md border bg-card select-none outline-none [&_*]:outline-none" ref={gridRef}>
       {/* Stats bar */}
       <div className="grid grid-cols-2 gap-px border-b bg-border md:grid-cols-4">
-        <StatTile label="Total margin (week)" value={fmtMoney(stats.totalMargin)} accent={stats.totalMargin >= 0 ? "good" : "bad"} sub={`Charge: ${fmtMoney(stats.totalCharge)}`} />
-        <StatTile label="Total hours (week)" value={stats.totalHours.toFixed(1)} />
-        <StatTile label="Workers scheduled" value={String(stats.activeWorkers)} />
-        <StatTile label="Idle workers" value={String(stats.idleWorkers)} accent={stats.idleWorkers > 0 ? "warn" : undefined} sub="Assigned but no shifts this week" />
+        {viewerMode === "candidate" ? (
+          <>
+            <StatTile label="My earnings (week)" value={fmtMoney(stats.totalEarnings)} accent="good" sub="Based on your assigned shifts" />
+            <StatTile label="My hours (week)" value={stats.totalHours.toFixed(1)} />
+            <StatTile label="Shifts this week" value={String(stats.activeWorkers > 0 ? stats.activeWorkers : "—")} sub="Days you're working" />
+            <StatTile label="Avg / hour" value={stats.totalHours > 0 ? fmtMoney(stats.totalEarnings / stats.totalHours) : "—"} />
+          </>
+        ) : (
+          <>
+            <StatTile label="Total margin (week)" value={fmtMoney(stats.totalMargin)} accent={stats.totalMargin >= 0 ? "good" : "bad"} sub={`Charge: ${fmtMoney(stats.totalCharge)}`} />
+            <StatTile label="Total hours (week)" value={stats.totalHours.toFixed(1)} />
+            <StatTile label="Workers scheduled" value={String(stats.activeWorkers)} />
+            <StatTile label="Idle workers" value={String(stats.idleWorkers)} accent={stats.idleWorkers > 0 ? "warn" : undefined} sub="Assigned but no shifts this week" />
+          </>
+        )}
       </div>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
