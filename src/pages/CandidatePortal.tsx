@@ -19,6 +19,8 @@ import {
   endOfWeek,
 } from "date-fns";
 import { CalendarDays, ChevronLeft, ChevronRight, LogOut, MapPin } from "lucide-react";
+import KycDocuments from "@/components/portal/KycDocuments";
+import { Card as UICard, CardContent as UICardContent } from "@/components/ui/card";
 
 type Shift = {
   assignment_id: string;
