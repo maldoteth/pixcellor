@@ -45,6 +45,9 @@ type Shift = {
   finish_time: string | null;
   cancelled: boolean;
   notes: string | null;
+  candidate_id: string | null;
+  assignment_overridden: boolean;
+  candidate_name: string | null;
 };
 
 type Props = {
