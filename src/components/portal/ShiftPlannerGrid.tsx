@@ -875,38 +875,109 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                   const isToday = dk === todayKey;
                   const dayShifts = row.shifts.filter((x) => x.date === dk);
                   return (
-                    <div
-                      key={dIdx}
-                      className={`relative border-b border-r p-1 min-h-[78px] ${isToday ? "bg-primary/5" : rowBg}`}
-                    >
-                      {dayShifts.length === 0 ? (
-                        <div className="flex h-full w-full items-center justify-center rounded border border-dashed border-border/40 text-[11px] text-muted-foreground/60">—</div>
-                      ) : (
-                        <div className="flex h-full w-full flex-col gap-1">
-                          {dayShifts.map(({ vacancy: v, slot, shift: s }) => {
-                            const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
-                            const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
-                            return (
-                              <button
-                                key={`${v.id}#${slot}`}
-                                type="button"
-                                onDoubleClick={() => onEdit(v)}
-                                title={`${v.title}${v.client?.name ? ` · ${v.client.name}` : ""}\n${to12h(startStr)} – ${to12h(finishStr)}\nDouble-click to open job`}
-                                className="flex w-full flex-col items-start gap-0.5 rounded border border-primary/30 bg-primary/5 px-1.5 py-1 text-left hover:bg-primary/10"
-                              >
-                                <div className="text-[11px] font-semibold leading-tight truncate w-full">{v.title}</div>
-                                <div className="text-[10px] leading-tight text-muted-foreground truncate w-full">
-                                  {to12h(startStr)}{finishStr ? ` – ${to12h(finishStr)}` : ""}
-                                </div>
-                                {v.client?.name && (
-                                  <div className="text-[9px] leading-tight text-muted-foreground/80 truncate w-full">{v.client.name}</div>
-                                )}
-                              </button>
-                            );
-                          })}
+                    <ContextMenu key={dIdx}>
+                      <ContextMenuTrigger asChild>
+                        <div
+                          className={`relative border-b border-r p-1 min-h-[78px] ${isToday ? "bg-primary/5" : rowBg}`}
+                        >
+                          {dayShifts.length === 0 ? (
+                            <div className="flex h-full w-full items-center justify-center rounded border border-dashed border-border/40 text-[11px] text-muted-foreground/60">—</div>
+                          ) : (
+                            <div className="flex h-full w-full flex-col gap-1">
+                              {dayShifts.map(({ vacancy: v, slot, shift: s }) => {
+                                const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
+                                const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
+                                const chipKey = cellKey(v.id, slot, dk);
+                                const isChipSelected = selected.has(chipKey);
+                                const isChipClip = clipboard?.sourceKeys.includes(chipKey) ?? false;
+                                return (
+                                  <ContextMenu key={`${v.id}#${slot}`}>
+                                    <ContextMenuTrigger asChild>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const fakeIdx = dIdx;
+                                          if (e.shiftKey || e.ctrlKey || e.metaKey) {
+                                            // toggle into selection
+                                            setSelected((prev) => {
+                                              const next = new Set(prev);
+                                              if (next.has(chipKey)) next.delete(chipKey); else next.add(chipKey);
+                                              selectedRef.current = next;
+                                              return next;
+                                            });
+                                            setLastSelected({ vacancyId: v.id, slot, dateIdx: fakeIdx });
+                                          } else {
+                                            const next = new Set([chipKey]);
+                                            selectedRef.current = next;
+                                            setSelected(next);
+                                            setLastSelected({ vacancyId: v.id, slot, dateIdx: fakeIdx });
+                                          }
+                                          blurActive();
+                                        }}
+                                        onDoubleClick={() => onEdit(v)}
+                                        title={`${v.title}${v.client?.name ? ` · ${v.client.name}` : ""}\n${to12h(startStr)} – ${to12h(finishStr)}\nDouble-click to open job · Right-click for copy/cut/delete`}
+                                        className={`flex w-full flex-col items-start gap-0.5 rounded border border-primary/30 bg-primary/5 px-1.5 py-1 text-left hover:bg-primary/10 ${isChipSelected ? "ring-2 ring-primary ring-inset" : ""} ${isChipClip ? (clipboard?.mode === "cut" ? "outline-dashed outline-2 outline-destructive/60" : "outline-dashed outline-2 outline-primary/60") : ""}`}
+                                      >
+                                        <div className="text-[11px] font-semibold leading-tight truncate w-full">{v.title}</div>
+                                        <div className="text-[10px] leading-tight text-muted-foreground truncate w-full">
+                                          {to12h(startStr)}{finishStr ? ` – ${to12h(finishStr)}` : ""}
+                                        </div>
+                                        {v.client?.name && (
+                                          <div className="text-[9px] leading-tight text-muted-foreground/80 truncate w-full">{v.client.name}</div>
+                                        )}
+                                      </button>
+                                    </ContextMenuTrigger>
+                                    <ContextMenuContent className="w-48">
+                                      <ContextMenuItem onSelect={() => {
+                                        const next = new Set([chipKey]);
+                                        selectedRef.current = next; setSelected(next);
+                                        setTimeout(() => collectClip("copy"), 0);
+                                      }}>
+                                        <Copy className="h-3.5 w-3.5 mr-2" />Copy shift
+                                      </ContextMenuItem>
+                                      <ContextMenuItem onSelect={() => {
+                                        const next = new Set([chipKey]);
+                                        selectedRef.current = next; setSelected(next);
+                                        setTimeout(() => collectClip("cut"), 0);
+                                      }}>
+                                        <Clipboard className="h-3.5 w-3.5 mr-2" />Cut shift
+                                      </ContextMenuItem>
+                                      <ContextMenuItem onSelect={() => onEdit(v)}>
+                                        Open job
+                                      </ContextMenuItem>
+                                      <ContextMenuSeparator />
+                                      <ContextMenuItem
+                                        onSelect={async () => { await removeShift(v.id, slot, dk); await load(); }}
+                                        className="text-destructive focus:text-destructive"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5 mr-2" />Delete shift
+                                      </ContextMenuItem>
+                                    </ContextMenuContent>
+                                  </ContextMenu>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent className="w-56">
+                        <ContextMenuItem
+                          onSelect={() => void pasteToCandidateCell(row.info.id, dk)}
+                          disabled={!clipboard}
+                        >
+                          <ClipboardPaste className="h-3.5 w-3.5 mr-2" />
+                          Paste shift here{clipboard ? ` (${clipboard.items.length})` : ""}
+                        </ContextMenuItem>
+                        <ContextMenuItem
+                          onSelect={() => setBulkPaste({ vacancyId: `__cand__:${row.info.id}`, slot: 0, date: dk })}
+                          disabled={!clipboard}
+                        >
+                          <ClipboardPaste className="h-3.5 w-3.5 mr-2" />
+                          Bulk paste from here…
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
                   );
                 })}
               </div>
