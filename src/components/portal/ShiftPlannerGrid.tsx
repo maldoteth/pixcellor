@@ -292,6 +292,14 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
     await syncVacancyWindow(vacancyId, date, s, f, cancelled);
   };
 
+  const setShiftCandidate = async (vacancyId: string, slot: number, date: string, candidateId: string | null) => {
+    const { error } = await supabase.rpc("portal_set_shift_candidate" as never, {
+      _vacancy_id: vacancyId, _slot: slot, _date: date, _candidate_id: candidateId,
+    } as never);
+    if (error) { toast({ title: "Assignment failed", description: error.message, variant: "destructive" }); return false; }
+    return true;
+  };
+
   const removeShift = async (vacancyId: string, slot: number, date: string) => {
     const cell = resolveCell(vacancyId, slot, date);
     if (cell.hasExplicit) {
