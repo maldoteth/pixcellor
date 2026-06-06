@@ -991,7 +991,7 @@ function Cell(props: {
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         {!active && !cancelled && <ContextMenuItem onSelect={onContextAdd}>Add shift</ContextMenuItem>}
-        <ContextMenuItem onSelect={() => setEditOpen(true)}>Edit shift…</ContextMenuItem>
+        <ContextMenuItem onSelect={(e) => { e.preventDefault(); setTimeout(() => setEditOpen(true), 50); }}>Edit shift…</ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onSelect={onContextCopy} disabled={!active}>Copy</ContextMenuItem>
         <ContextMenuItem onSelect={onContextCut} disabled={!active}>Cut</ContextMenuItem>
