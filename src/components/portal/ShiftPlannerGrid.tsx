@@ -898,11 +898,12 @@ function Cell(props: {
     ? (assignee ? assignee.id : ASSIGNEE_NONE)
     : ASSIGNEE_INHERIT;
   const [assigneeValue, setAssigneeValue] = useState<string>(initialAssigneeValue);
+  const assigneeId = assignee?.id ?? null;
   const syncEditorValues = useCallback(() => {
     setSt(start ?? defaultStart);
     setFi(finish ?? defaultFinish);
-    setAssigneeValue(!active ? ASSIGNEE_NONE : overridden ? (assignee ? assignee.id : ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
-  }, [start, finish, defaultStart, defaultFinish, active, overridden, assignee?.id]);
+    setAssigneeValue(!active ? ASSIGNEE_NONE : overridden ? (assigneeId ?? ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
+  }, [start, finish, defaultStart, defaultFinish, active, overridden, assigneeId]);
 
   useEffect(() => {
     if (!editOpen) syncEditorValues();
