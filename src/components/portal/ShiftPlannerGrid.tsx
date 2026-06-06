@@ -69,6 +69,8 @@ type Props = {
   rowMode?: "vacancy" | "candidate";
   /** "admin" (default) shows margin/charge stats. "candidate" shows the worker's own earnings using pay rate and hides client cost lines. */
   viewerMode?: "admin" | "candidate";
+  /** Hide the sticky first column (only valid with rowMode="candidate"). Used in candidate dashboards where only date cells are shown. */
+  hideFirstColumn?: boolean;
 };
 
 type ClipItem = { start: string | null; finish: string | null; candidateId: string | null; sourceVacancyId?: string };
