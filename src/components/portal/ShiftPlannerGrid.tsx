@@ -124,6 +124,23 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     });
     return arr;
   }, [vacancies, sortBy, sortDir]);
+  // Expand each vacancy into N rows (one per opening), keep them individual.
+  const displayRows = useMemo(() => {
+    const rows: Array<{ vacancy: Vacancy; slot: number; total: number }> = [];
+    sortedVacancies.forEach((v) => {
+      const total = Math.max(1, Number(v.openings ?? 1) || 1);
+      for (let i = 0; i < total; i++) rows.push({ vacancy: v, slot: i, total });
+    });
+    return rows;
+  }, [sortedVacancies]);
+  const [vacancyClip, setVacancyClip] = useState<Vacancy | null>(null);
+  const bumpOpenings = async (v: Vacancy, delta: number) => {
+    const next = Math.max(1, (Number(v.openings ?? 1) || 1) + delta);
+    const { error } = await supabase.rpc("portal_update_vacancy" as never, { _id: v.id, _patch: { openings: next } } as never);
+    if (error) { toast({ title: "Update failed", description: error.message, variant: "destructive" }); return; }
+    toast({ title: delta > 0 ? `Added opening (now ${next})` : `Removed opening (now ${next})` });
+    await onVacancyChanged?.();
+  };
   const toggleSort = (col: "title" | "client") => {
     if (sortBy === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else { setSortBy(col); setSortDir("asc"); }
