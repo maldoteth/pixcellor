@@ -576,13 +576,21 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     for (let d = new Date(startDate); d < end; d.setDate(d.getDate() + 1)) {
       dates.push(ymd(d));
     }
-    await Promise.all(dates.map(async (dt, i) => {
-      const item = clip.items[i % clip.items.length];
-      if (item.start || item.finish) {
-        await upsert(bulkPaste.vacancyId, bulkPaste.slot, dt, item.start, item.finish, false);
-        await setShiftCandidate(bulkPaste.vacancyId, bulkPaste.slot, dt, item.candidateId);
+    const candidateTarget = bulkPaste.vacancyId.startsWith("__cand__:") ? bulkPaste.vacancyId.slice("__cand__:".length) : null;
+    if (candidateTarget) {
+      // Sequential so each new vacancy create call doesn't race
+      for (const dt of dates) {
+        await pasteToCandidateCell(candidateTarget, dt);
       }
-    }));
+    } else {
+      await Promise.all(dates.map(async (dt, i) => {
+        const item = clip.items[i % clip.items.length];
+        if (item.start || item.finish) {
+          await upsert(bulkPaste.vacancyId, bulkPaste.slot, dt, item.start, item.finish, false);
+          await setShiftCandidate(bulkPaste.vacancyId, bulkPaste.slot, dt, item.candidateId);
+        }
+      }));
+    }
     setBulkPaste(null);
     await load();
     toast({ title: `Pasted across ${dates.length} day${dates.length === 1 ? "" : "s"}` });
