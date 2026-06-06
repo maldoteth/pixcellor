@@ -984,14 +984,16 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
         <div style={{ minWidth: `${minGridW}px` }}>
           {/* Header row */}
           <div className="grid sticky top-0 z-20" style={{ gridTemplateColumns: gridTemplate }}>
-            <button
-              type="button"
-              onClick={() => toggleSort("title")}
-              className="sticky left-0 z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
-            >
-              {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
-            </button>
-            {rowMode !== "candidate" && (
+            {!hideFirstColumn && (
+              <button
+                type="button"
+                onClick={() => toggleSort("title")}
+                className="sticky left-0 z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+              >
+                {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
+              </button>
+            )}
+            {!hideFirstColumn && rowMode !== "candidate" && (
               <button
                 type="button"
                 onClick={() => toggleSort("client")}
