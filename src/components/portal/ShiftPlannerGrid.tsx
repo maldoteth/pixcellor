@@ -299,15 +299,6 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     return true;
   };
 
-  const clearShiftOverride = async (vacancyId: string, slot: number, date: string) => {
-    const { error } = await supabase.rpc("portal_clear_shift_override" as never, {
-      _vacancy_id: vacancyId, _slot: slot, _date: date,
-    } as never);
-    if (error) { toast({ title: "Clear failed", description: error.message, variant: "destructive" }); return false; }
-    return true;
-  };
-
-
   const removeShift = async (vacancyId: string, slot: number, date: string) => {
     const cell = resolveCell(vacancyId, slot, date);
     if (cell.hasExplicit) {
@@ -855,7 +846,6 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
 }
 
 type CandidateOption = { id: string; name: string };
-const ASSIGNEE_INHERIT = "__inherit__";
 const ASSIGNEE_NONE = "__none__";
 
 function Cell(props: {
@@ -876,9 +866,7 @@ function Cell(props: {
   clipMode: "copy" | "cut" | null;
   onClick: (e: React.MouseEvent) => void;
   onDoubleClickEdit: boolean;
-  // candidateChoice: undefined = leave assignment alone; null = explicitly unassign;
-  //                  "__inherit__" = clear per-day override, revert to slot default;
-  //                  string id = override with that candidate
+  // candidateChoice: undefined = leave assignment alone; null = explicitly unassign; string id = assign that candidate
   onSave: (start: string, finish: string, candidateChoice?: string | null) => Promise<void> | void;
   onContextDelete: () => void;
   onContextCopy: () => void;
@@ -895,18 +883,13 @@ function Cell(props: {
   const [editOpen, setEditOpen] = useState(false);
   const [st, setSt] = useState(start ?? defaultStart);
   const [fi, setFi] = useState(finish ?? defaultFinish);
-  // assignee mode: inherit (use slot default), none (explicitly empty), or a candidate id
-  const initialAssigneeValue = !active
-    ? ASSIGNEE_NONE
-    : overridden
-    ? (assignee ? assignee.id : ASSIGNEE_NONE)
-    : ASSIGNEE_INHERIT;
+  const initialAssigneeValue = assignee ? assignee.id : ASSIGNEE_NONE;
   const [assigneeValue, setAssigneeValue] = useState<string>(initialAssigneeValue);
   const assigneeId = assignee?.id ?? null;
   const syncEditorValues = useCallback(() => {
     setSt(start ?? defaultStart);
     setFi(finish ?? defaultFinish);
-    setAssigneeValue(!active ? ASSIGNEE_NONE : overridden ? (assigneeId ?? ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
+    setAssigneeValue(assigneeId ?? ASSIGNEE_NONE);
   }, [start, finish, defaultStart, defaultFinish, active, overridden, assigneeId]);
 
   useEffect(() => {
