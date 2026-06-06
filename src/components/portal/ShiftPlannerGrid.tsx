@@ -836,6 +836,10 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
   );
 }
 
+type CandidateOption = { id: string; name: string };
+const ASSIGNEE_INHERIT = "__inherit__";
+const ASSIGNEE_NONE = "__none__";
+
 function Cell(props: {
   date: Date;
   rowBg: string;
@@ -845,12 +849,17 @@ function Cell(props: {
   start: string | null;
   finish: string | null;
   assignee: { id: string; name: string } | null;
+  overridden: boolean;
+  candidateOptions: CandidateOption[];
+  defaultStart: string;
+  defaultFinish: string;
   isSelected: boolean;
   isClipSource: boolean;
   clipMode: "copy" | "cut" | null;
   onClick: (e: React.MouseEvent) => void;
   onDoubleClickEdit: boolean;
-  onSave: (start: string, finish: string) => Promise<void> | void;
+  // candidateChoice: undefined = leave assignment alone; null = explicitly unassign; string = candidate id
+  onSave: (start: string, finish: string, candidateChoice?: string | null) => Promise<void> | void;
   onContextDelete: () => void;
   onContextCopy: () => void;
   onContextCut: () => void;
@@ -859,13 +868,23 @@ function Cell(props: {
   onContextBulkPaste: () => void;
   clipboardHasItems: boolean;
 }) {
-  const { date, rowBg, isToday, active, cancelled, start, finish, assignee, isSelected, isClipSource, clipMode,
+  const { date, rowBg, isToday, active, cancelled, start, finish, assignee, overridden, candidateOptions,
+    defaultStart, defaultFinish, isSelected, isClipSource, clipMode,
     onClick, onDoubleClickEdit, onSave, onContextDelete, onContextCopy, onContextCut, onContextPaste, onContextAdd, onContextBulkPaste, clipboardHasItems } = props;
 
   const [editOpen, setEditOpen] = useState(false);
-  const [st, setSt] = useState(start ?? "09:00");
-  const [fi, setFi] = useState(finish ?? "17:00");
-  useEffect(() => { setSt(start ?? "09:00"); setFi(finish ?? "17:00"); }, [start, finish]);
+  const [st, setSt] = useState(start ?? defaultStart);
+  const [fi, setFi] = useState(finish ?? defaultFinish);
+  // assignee mode: inherit (use slot default), none (explicitly empty), or a candidate id
+  const initialAssigneeValue = overridden
+    ? (assignee ? assignee.id : ASSIGNEE_NONE)
+    : ASSIGNEE_INHERIT;
+  const [assigneeValue, setAssigneeValue] = useState<string>(initialAssigneeValue);
+  useEffect(() => {
+    setSt(start ?? defaultStart);
+    setFi(finish ?? defaultFinish);
+    setAssigneeValue(overridden ? (assignee ? assignee.id : ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
+  }, [start, finish, defaultStart, defaultFinish, overridden, assignee]);
 
   const todayTint = isToday ? "bg-primary/5" : rowBg;
   const selectionRing = isSelected ? "ring-2 ring-primary ring-inset" : "";
@@ -888,17 +907,28 @@ function Cell(props: {
       <div className="flex h-full w-full flex-col items-start justify-center rounded border border-primary/30 bg-primary/5 px-2 py-1.5 text-left gap-0.5">
         <div className="text-[11px] font-semibold leading-tight text-foreground">{to12h(start)}</div>
         <div className="text-[11px] leading-tight text-muted-foreground">{to12h(finish)}</div>
-        {assignee && (
+        {assignee ? (
           <div className="mt-0.5 flex items-center gap-1 max-w-full">
             <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[8px] font-semibold text-primary">
               {initials(assignee.name)}
             </span>
             <span className="truncate text-[10px] text-foreground/80">{assignee.name}</span>
           </div>
-        )}
+        ) : overridden ? (
+          <div className="mt-0.5 text-[9px] italic text-muted-foreground">unassigned</div>
+        ) : null}
       </div>
     );
   }
+
+  const handleSave = async () => {
+    let choice: string | null | undefined;
+    if (assigneeValue === ASSIGNEE_INHERIT) choice = undefined;
+    else if (assigneeValue === ASSIGNEE_NONE) choice = null;
+    else choice = assigneeValue;
+    await onSave(st, fi, choice);
+    setEditOpen(false);
+  };
 
   return (
     <ContextMenu>
@@ -912,12 +942,11 @@ function Cell(props: {
           className={`relative cursor-pointer select-none border-b border-r ${todayTint} p-1 min-h-[78px] outline-none focus:outline-none focus-visible:outline-none ${selectionRing} ${clipBorder}`}
         >
           {inner}
-          {/* Hidden edit popover anchor */}
           <Popover open={editOpen} onOpenChange={setEditOpen}>
             <PopoverTrigger asChild>
               <span className="absolute inset-0 pointer-events-none" />
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-3 space-y-2" align="center">
+            <PopoverContent className="w-72 p-3 space-y-3" align="center">
               <div className="text-xs font-medium">
                 {date.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short", year: "numeric" })}
               </div>
@@ -931,14 +960,30 @@ function Cell(props: {
                   <Input type="time" value={fi} onChange={(e) => setFi(e.target.value)} className="h-8" />
                 </div>
               </div>
-              <Button size="sm" className="w-full" onClick={async () => { await onSave(st, fi); setEditOpen(false); }}>Save</Button>
+              <div>
+                <div className="text-[10px] text-muted-foreground mb-1">Assigned to (this day only)</div>
+                <Select value={assigneeValue} onValueChange={setAssigneeValue}>
+                  <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ASSIGNEE_INHERIT}>Use slot default</SelectItem>
+                    <SelectItem value={ASSIGNEE_NONE}>— Unassigned —</SelectItem>
+                    {candidateOptions.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {candidateOptions.length === 0 && (
+                  <p className="mt-1 text-[10px] text-muted-foreground">No one shortlisted for this job yet — use "Assign" on the job to add candidates first.</p>
+                )}
+              </div>
+              <Button size="sm" className="w-full" onClick={handleSave}>Save</Button>
             </PopoverContent>
           </Popover>
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         {!active && !cancelled && <ContextMenuItem onSelect={onContextAdd}>Add shift</ContextMenuItem>}
-        {active && <ContextMenuItem onSelect={() => setEditOpen(true)}>Edit times</ContextMenuItem>}
+        <ContextMenuItem onSelect={() => setEditOpen(true)}>Edit shift…</ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onSelect={onContextCopy} disabled={!active}>Copy</ContextMenuItem>
         <ContextMenuItem onSelect={onContextCut} disabled={!active}>Cut</ContextMenuItem>
@@ -948,6 +993,7 @@ function Cell(props: {
         <ContextMenuItem onSelect={onContextDelete} className="text-destructive" disabled={!active && !cancelled}>Delete</ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
+
   );
 }
 
