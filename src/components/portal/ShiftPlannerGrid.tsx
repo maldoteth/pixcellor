@@ -172,7 +172,11 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
           if (!hasShiftForCandidate) continue;
         }
         if (secondColumn === "candidate" && candidateColumnOnlyAssigned) {
-          if (!slotAssignedCandidateId(v, i)) continue;
+          // Only show this slot if there is at least one actual (non-cancelled) shift assigned to a candidate.
+          const hasAssignedShift = Object.values(shifts[v.id]?.[i] ?? {}).some(
+            (s) => !s.cancelled && s.assignment_overridden && s.candidate_id,
+          );
+          if (!hasAssignedShift) continue;
         }
         rows.push({ vacancy: v, slot: i, total });
       }
