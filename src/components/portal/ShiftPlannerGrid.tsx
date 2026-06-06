@@ -1294,6 +1294,7 @@ function ContactLink({ kind, value }: { kind: "email" | "phone"; value: string }
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(value);
+      const { toast } = await import("@/hooks/use-toast");
       toast({ title: "Copied", description: value });
     } catch {
       window.location.href = href;
