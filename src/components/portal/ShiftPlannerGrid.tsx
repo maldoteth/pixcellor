@@ -604,9 +604,9 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
           </div>
 
           {/* Vacancy rows */}
-          {vacancies.length === 0 ? (
+          {vacancies.length === 0 && (
             <div className="px-3 py-12 text-center text-sm text-muted-foreground">No vacancies match the current filters.</div>
-          ) : (
+          )}
             <>
             {displayRows.map(({ vacancy: v, slot, total }, rowIdx) => {
               const rowBg = rowIdx % 2 === 0 ? "bg-card" : "bg-background";
@@ -758,7 +758,6 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
               </ContextMenuContent>
             </ContextMenu>
             </>
-          )}
         </div>
       </div>
 
