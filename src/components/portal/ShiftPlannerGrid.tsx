@@ -65,6 +65,8 @@ type Props = {
   candidateColumnOnlyAssigned?: boolean;
   /** Called when the candidate cell is clicked (candidate-column mode). */
   onCandidateClick?: (candidateId: string) => void;
+  /** "vacancy" (default): one row per vacancy slot. "candidate": one row per candidate with assigned shifts; day cells show job chips. */
+  rowMode?: "vacancy" | "candidate";
 };
 
 type ClipItem = { start: string | null; finish: string | null; candidateId: string | null };
