@@ -262,3 +262,103 @@ export default function CandidatePortal() {
     </main>
   );
 }
+
+function ymd(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+type Timesheet = {
+  id: string;
+  actual_start: string | null;
+  actual_finish: string | null;
+  break_minutes: number;
+  status: "pending" | "submitted" | "approved" | "rejected";
+  reject_reason: string | null;
+  worker_notes: string | null;
+};
+
+function ShiftTimesheet({ vacancyId, date }: { vacancyId: string; date: Date }) {
+  const { toast } = useToast();
+  const [ts, setTs] = useState<Timesheet | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [breakMin, setBreakMin] = useState("0");
+  const [notes, setNotes] = useState("");
+  const dateKey = ymd(date);
+
+  const load = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("shift_timesheets")
+      .select("id, actual_start, actual_finish, break_minutes, status, reject_reason, worker_notes")
+      .eq("vacancy_id", vacancyId)
+      .eq("shift_date", dateKey)
+      .maybeSingle();
+    if (error) return;
+    if (data) {
+      setTs(data as Timesheet);
+      setBreakMin(String(data.break_minutes ?? 0));
+      setNotes(data.worker_notes ?? "");
+    } else {
+      setTs(null);
+    }
+  }, [vacancyId, dateKey]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const call = async (rpc: string, args: Record<string, unknown>) => {
+    setLoading(true);
+    const { error } = await supabase.rpc(rpc as never, args as never);
+    setLoading(false);
+    if (error) { toast({ title: "Action failed", description: error.message, variant: "destructive" }); return false; }
+    await load();
+    return true;
+  };
+
+  const clockIn = () => call("candidate_timesheet_clock_in", { _vacancy_id: vacancyId, _slot: null, _date: dateKey });
+  const clockOut = () => ts && call("candidate_timesheet_clock_out", { _timesheet_id: ts.id, _break_minutes: parseInt(breakMin, 10) || 0 });
+  const saveNotes = () => ts && call("candidate_timesheet_update", { _timesheet_id: ts.id, _actual_start: ts.actual_start, _actual_finish: ts.actual_finish, _break_minutes: parseInt(breakMin, 10) || 0, _worker_notes: notes });
+  const submit = () => ts && call("candidate_timesheet_submit", { _timesheet_id: ts.id });
+
+  const hours = ts?.actual_start && ts?.actual_finish
+    ? Math.max(0, ((new Date(ts.actual_finish).getTime() - new Date(ts.actual_start).getTime()) / 60000 - (ts.break_minutes ?? 0)) / 60)
+    : 0;
+
+  return (
+    <div className="mt-2 rounded-md border border-dashed border-border/60 p-2 space-y-2">
+      <div className="text-[10px] uppercase text-muted-foreground font-semibold">Timesheet</div>
+      {!ts && (
+        <Button size="sm" className="w-full" onClick={clockIn} disabled={loading}>Clock in</Button>
+      )}
+      {ts && (
+        <>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div><div className="text-muted-foreground">In</div><div className="font-medium">{ts.actual_start ? new Date(ts.actual_start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div></div>
+            <div><div className="text-muted-foreground">Out</div><div className="font-medium">{ts.actual_finish ? new Date(ts.actual_finish).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div></div>
+          </div>
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <div className="text-[10px] text-muted-foreground">Break (min)</div>
+              <Input type="number" min={0} value={breakMin} onChange={(e) => setBreakMin(e.target.value)} className="h-8" disabled={ts.status === "approved" || ts.status === "rejected"} />
+            </div>
+            <div className="text-xs"><div className="text-muted-foreground">Hours</div><div className="font-semibold">{hours.toFixed(2)}</div></div>
+          </div>
+          <Input placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="h-8 text-xs" disabled={ts.status === "approved" || ts.status === "rejected"} />
+          <div className="flex flex-wrap gap-1">
+            {(ts.status === "pending" || ts.status === "submitted") && !ts.actual_finish && (
+              <Button size="sm" variant="outline" onClick={clockOut} disabled={loading}>Clock out</Button>
+            )}
+            {(ts.status === "pending" || ts.status === "submitted") && (
+              <>
+                <Button size="sm" variant="ghost" onClick={saveNotes} disabled={loading}>Save</Button>
+                <Button size="sm" onClick={submit} disabled={loading || !ts.actual_start || !ts.actual_finish}>Submit</Button>
+              </>
+            )}
+            <Badge variant="outline" className="text-[10px] ml-auto">{ts.status}</Badge>
+          </div>
+          {ts.status === "rejected" && ts.reject_reason && <div className="text-[11px] text-destructive italic">Rejected: {ts.reject_reason}</div>}
+        </>
+      )}
+    </div>
+  );
+}
+
