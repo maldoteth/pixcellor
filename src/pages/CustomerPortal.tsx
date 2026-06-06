@@ -607,7 +607,17 @@ export default function CustomerPortal() {
                 </TabsContent>
 
                 <TabsContent value="schedule" className="space-y-4">
-                  <SectionHeader title="Schedule" description="Your shifts across every vacancy. Empty days are shown so you can plan ahead." />
+                  <div className="flex flex-wrap items-end justify-between gap-3">
+                    <SectionHeader title="Schedule" description="Your shifts across every vacancy. Empty days are shown so you can plan ahead." />
+                    <Button
+                      variant="pricing"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "find-work" } }))}
+                    >
+                      <Search className="h-4 w-4" /> Find work with Alex
+                    </Button>
+                  </div>
                   <PortalScheduleGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
                 </TabsContent>
 
@@ -625,10 +635,6 @@ export default function CustomerPortal() {
                   </TabsContent>
                 )}
 
-                <TabsContent value="find" className="space-y-4">
-                  <SectionHeader title="Find work" description="Search open vacancies and tell us when you're available." />
-                  <PortalVacancySearch />
-                </TabsContent>
 
                 <TabsContent value="leads" className="space-y-8">
                   {data?.leadSource && (
