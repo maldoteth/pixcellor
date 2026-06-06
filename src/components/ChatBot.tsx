@@ -291,12 +291,12 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     return () => window.removeEventListener("resize", clampWidgetToViewport);
   }, [isMobile, widgetSize.height, widgetSize.width]);
 
-  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | "client-order" | null>(null);
+  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | "client-order" | "candidate-register" | null>(null);
   useEffect(() => {
     const openChat = (e: Event) => {
       setIsOpen(true);
-      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | "client-order" }>).detail;
-      if (detail?.action && ["call","email","trial","services","verify","pay","find-work","client-order"].includes(detail.action)) {
+      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | "client-order" | "candidate-register" }>).detail;
+      if (detail?.action && ["call","email","trial","services","verify","pay","find-work","client-order","candidate-register"].includes(detail.action)) {
         pendingActionRef.current = detail.action;
       }
     };
@@ -552,7 +552,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
-  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | "client-order") => {
+  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | "client-order" | "candidate-register") => {
     if (isDevMode || isLoading) return;
     if (action !== "find-work" && action !== "client-order") setQuickAction(action);
     const reply = {
