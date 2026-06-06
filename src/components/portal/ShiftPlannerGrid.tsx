@@ -741,11 +741,14 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onDelete
                         }}
                         onDoubleClickEdit={true}
                         onSave={async (st, fi, candidateChoice) => {
+                          const isNewManualShift = !cell.active || cell.cancelled;
                           await upsert(v.id, slot, dk, st, fi, false);
                           if (candidateChoice === "__inherit__") {
                             await clearShiftOverride(v.id, slot, dk);
                           } else if (candidateChoice !== undefined) {
                             await setShiftCandidate(v.id, slot, dk, candidateChoice);
+                          } else if (isNewManualShift) {
+                            await setShiftCandidate(v.id, slot, dk, null);
                           }
                           await load();
                         }}
@@ -753,7 +756,11 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onDelete
                         onContextCopy={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => collectClip("copy"), 0); }}
                         onContextCut={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => collectClip("cut"), 0); }}
                         onContextPaste={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => pasteClip(), 0); }}
-                        onContextAdd={async () => { await upsert(v.id, slot, dk, v.start_time?.slice(0, 5) ?? "09:00", v.finish_time?.slice(0, 5) ?? "17:00", false); await load(); }}
+                        onContextAdd={async () => {
+                          await upsert(v.id, slot, dk, v.start_time?.slice(0, 5) ?? "09:00", v.finish_time?.slice(0, 5) ?? "17:00", false);
+                          await setShiftCandidate(v.id, slot, dk, null);
+                          await load();
+                        }}
                         onContextBulkPaste={() => setBulkPaste({ vacancyId: v.id, slot, date: dk })}
                         clipboardHasItems={!!clipboard}
 
@@ -881,15 +888,17 @@ function Cell(props: {
   const [st, setSt] = useState(start ?? defaultStart);
   const [fi, setFi] = useState(finish ?? defaultFinish);
   // assignee mode: inherit (use slot default), none (explicitly empty), or a candidate id
-  const initialAssigneeValue = overridden
+  const initialAssigneeValue = !active
+    ? ASSIGNEE_NONE
+    : overridden
     ? (assignee ? assignee.id : ASSIGNEE_NONE)
     : ASSIGNEE_INHERIT;
   const [assigneeValue, setAssigneeValue] = useState<string>(initialAssigneeValue);
   useEffect(() => {
     setSt(start ?? defaultStart);
     setFi(finish ?? defaultFinish);
-    setAssigneeValue(overridden ? (assignee ? assignee.id : ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
-  }, [start, finish, defaultStart, defaultFinish, overridden, assignee]);
+    setAssigneeValue(!active ? ASSIGNEE_NONE : overridden ? (assignee ? assignee.id : ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
+  }, [start, finish, defaultStart, defaultFinish, active, overridden, assignee]);
 
   const todayTint = isToday ? "bg-primary/5" : rowBg;
   const selectionRing = isSelected ? "ring-2 ring-primary ring-inset" : "";
