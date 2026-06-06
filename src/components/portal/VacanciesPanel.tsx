@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+import { useConfirmDialog } from "@/components/ui/themed-dialogs";
 import AIRecommendationsPanel from "./AIRecommendationsPanel";
 import PlaceAutocomplete from "@/components/ui/place-autocomplete";
 import ShiftPlannerGrid from "./ShiftPlannerGrid";
@@ -105,6 +106,7 @@ const emptyForm = {
 
 export default function VacanciesPanel() {
   const { toast } = useToast();
+  const confirm = useConfirmDialog();
   const realtimeTimerRef = useRef<number | null>(null);
   const loadedRef = useRef(false);
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
@@ -324,7 +326,8 @@ export default function VacanciesPanel() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this vacancy?")) return;
+    const ok = await confirm({ title: "Delete vacancy?", description: "This will permanently remove the vacancy and its shifts.", confirmLabel: "Delete", destructive: true });
+    if (!ok) return;
     const { error } = await supabase.rpc("portal_delete_vacancy", { _id: id });
     if (error) { toast({ title: "Delete failed", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Vacancy deleted" });
