@@ -113,6 +113,31 @@ export default function CandidatesPanel() {
   const [eventNote, setEventNote] = useState("");
   const [uploading, setUploading] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [candidateVacancies, setCandidateVacancies] = useState<any[]>([]);
+  const [allCandidatesLite, setAllCandidatesLite] = useState<Array<{ id: string; full_name: string; status?: string | null }>>([]);
+
+  const loadCandidateVacancies = useCallback(async (candidateId: string) => {
+    const { data } = await (supabase as any).rpc("portal_list_vacancies");
+    const all = (data as any[]) ?? [];
+    const mine = all.filter((v) =>
+      (v.assignments ?? []).some((a: any) =>
+        a.candidate_id === candidateId &&
+        ["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage),
+      ),
+    );
+    setCandidateVacancies(mine);
+  }, []);
+
+  useEffect(() => {
+    if (!activeId) { setCandidateVacancies([]); return; }
+    loadCandidateVacancies(activeId);
+  }, [activeId, loadCandidateVacancies]);
+
+  useEffect(() => {
+    // Light list of all candidates for the cell picker (so user can reassign).
+    (supabase as any).from("candidates").select("id,full_name,status").order("full_name").limit(2000)
+      .then(({ data }: any) => setAllCandidatesLite((data as any[]) ?? []));
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
