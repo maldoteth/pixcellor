@@ -300,6 +300,15 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
     return true;
   };
 
+  const clearShiftOverride = async (vacancyId: string, slot: number, date: string) => {
+    const { error } = await supabase.rpc("portal_clear_shift_override" as never, {
+      _vacancy_id: vacancyId, _slot: slot, _date: date,
+    } as never);
+    if (error) { toast({ title: "Clear failed", description: error.message, variant: "destructive" }); return false; }
+    return true;
+  };
+
+
   const removeShift = async (vacancyId: string, slot: number, date: string) => {
     const cell = resolveCell(vacancyId, slot, date);
     if (cell.hasExplicit) {
