@@ -1222,7 +1222,23 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                               <Badge variant={status === "open" ? "destructive" : status === "filled" ? "secondary" : "outline"} className="text-[9px] h-4 px-1">{status}</Badge>
                             );
                           })()}
-                          <button onClick={() => onDelete(v.id)} title="Delete" className="ml-auto text-[10px] text-destructive hover:underline inline-flex items-center gap-0.5"><Trash2 className="h-3 w-3" /></button>
+                          <button
+                            onClick={() => {
+                              if (total > 1) {
+                                // Multiple openings on this vacancy → remove only THIS opening,
+                                // never the whole vacancy. Other openings (and other vacancies
+                                // for the same client) stay untouched.
+                                void bumpOpenings(v, -1, slot);
+                              } else {
+                                // Last remaining opening → confirm + delete the whole vacancy.
+                                onDelete(v.id);
+                              }
+                            }}
+                            title={total > 1 ? `Remove opening #${slot + 1} (vacancy stays)` : "Delete this vacancy"}
+                            className="ml-auto text-[10px] text-destructive hover:underline inline-flex items-center gap-0.5"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
                         </div>
 
                       </div>
