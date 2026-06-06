@@ -113,7 +113,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit, onDelete, onVacancyChanged, candidateFilter, secondColumn = "client", candidateColumnOnlyAssigned = false, onCandidateClick }: Props) {
+export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit, onDelete, onVacancyChanged, candidateFilter, secondColumn = "client", candidateColumnOnlyAssigned = false, onCandidateClick, rowMode = "vacancy" }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
