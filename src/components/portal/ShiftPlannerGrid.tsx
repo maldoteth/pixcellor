@@ -263,20 +263,35 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
 
   const DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"] as const;
 
-  // Ensure the vacancy's date window and schedule_days cover this shift's date/time.
+  // Ensure the vacancy's date window and schedule_days cover this shift's date/time,
+  // and recompute start_date/end_date to match the actual active (non-cancelled) calendar.
   const syncVacancyWindow = async (vacancyId: string, date: string, s: string | null, f: string | null, cancelled: boolean) => {
-    if (cancelled) return;
     const v = vacancies.find((x) => x.id === vacancyId);
     if (!v) return;
     const patch: Record<string, unknown> = {};
-    if (!v.start_date || date < v.start_date) patch.start_date = date;
-    if (!v.end_date || date > v.end_date) patch.end_date = date;
-    const dowFull = DOW_FULL[new Date(date + "T00:00:00").getDay()];
-    const existing = (v.schedule_days ?? []).map((d) => d);
-    const hasDow = existing.some((d) => d.toLowerCase().startsWith(dowFull.toLowerCase().slice(0, 3)));
-    if (!hasDow) patch.schedule_days = [...existing, dowFull];
-    if (s && !v.start_time) patch.start_time = s.length === 5 ? `${s}:00` : s;
-    if (f && !v.finish_time) patch.finish_time = f.length === 5 ? `${f}:00` : f;
+    if (!cancelled) {
+      const dowFull = DOW_FULL[new Date(date + "T00:00:00").getDay()];
+      const existing = (v.schedule_days ?? []).map((d) => d);
+      const hasDow = existing.some((d) => d.toLowerCase().startsWith(dowFull.toLowerCase().slice(0, 3)));
+      if (!hasDow) patch.schedule_days = [...existing, dowFull];
+      if (s && !v.start_time) patch.start_time = s.length === 5 ? `${s}:00` : s;
+      if (f && !v.finish_time) patch.finish_time = f.length === 5 ? `${f}:00` : f;
+    }
+    // Recompute the active date range from all non-cancelled shifts on this vacancy.
+    const { data: rows } = await supabase
+      .from("vacancy_shifts" as never)
+      .select("shift_date, cancelled")
+      .eq("vacancy_id", vacancyId);
+    const activeDates = ((rows as Array<{ shift_date: string; cancelled: boolean }> | null) ?? [])
+      .filter((r) => !r.cancelled)
+      .map((r) => r.shift_date)
+      .sort();
+    if (!cancelled && (!activeDates.length || date < activeDates[0])) activeDates.unshift(date);
+    if (!cancelled && (!activeDates.length || date > activeDates[activeDates.length - 1])) activeDates.push(date);
+    const newStart = activeDates[0] ?? null;
+    const newEnd = activeDates[activeDates.length - 1] ?? null;
+    if (newStart && newStart !== v.start_date) patch.start_date = newStart;
+    if (newEnd && newEnd !== v.end_date) patch.end_date = newEnd;
     if (Object.keys(patch).length === 0) return;
     const { error } = await supabase.rpc("portal_update_vacancy" as never, { _id: vacancyId, _patch: patch } as never);
     if (error) console.warn("Vacancy window sync failed", error.message);
@@ -305,7 +320,8 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
       const { error } = await supabase.rpc("portal_delete_vacancy_shift" as never, {
         _vacancy_id: vacancyId, _date: date, _slot: slot,
       } as never);
-      if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
+      if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+      await syncVacancyWindow(vacancyId, date, null, null, true);
     } else if (cell.active) {
       // template-only: cancel it explicitly for this slot
       await upsert(vacancyId, slot, date, null, null, true);
