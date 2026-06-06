@@ -399,47 +399,9 @@ export default function VacanciesPanel() {
           vacancies={filtered}
           onCreate={() => { resetForm(); setOpenDialog(true); }}
           onEdit={openEdit}
-          onAssign={(id) => setAssignTo(id)}
           onDelete={handleDelete}
-          onOpenAI={(id) => setAiFor(id)}
           onVacancyChanged={load}
         />
-      )}
-
-      {aiFor && (
-        <Dialog open={!!aiFor} onOpenChange={(o) => { if (!o) setAiFor(null); }}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>AI recommendations</DialogTitle></DialogHeader>
-            <AIRecommendationsPanel vacancyId={aiFor} />
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {assignTo && (
-        <Dialog open={!!assignTo} onOpenChange={(o) => { if (!o) { setAssignTo(null); setAssignCandidateId(""); } }}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>Assign candidate</DialogTitle></DialogHeader>
-            <div className="space-y-3">
-              <Select value={assignCandidateId} onValueChange={setAssignCandidateId}>
-                <SelectTrigger><SelectValue placeholder="Select candidate…" /></SelectTrigger>
-                <SelectContent>
-                  {candidates.map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}{c.headline ? ` — ${c.headline}` : ""}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={assignStage} onValueChange={setAssignStage}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-              </Select>
-              <div className="text-xs text-muted-foreground">
-                Tip: open AI recommendations and assignments by editing the vacancy.
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="ghost" onClick={() => { setAssignTo(null); setAssignCandidateId(""); }}>Cancel</Button>
-              <Button onClick={() => assignTo && handleAssign(assignTo)}>Assign</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       )}
 
       <Dialog open={openDialog} onOpenChange={(o) => { setOpenDialog(o); if (!o) resetForm(); }}>
