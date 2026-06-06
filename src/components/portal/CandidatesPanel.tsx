@@ -486,6 +486,7 @@ export default function CandidatesPanel() {
           }))}
           secondColumn="candidate"
           candidateColumnOnlyAssigned
+          rowMode="candidate"
           onEdit={() => { /* editing vacancies happens on the vacancies page */ }}
           onDelete={() => { /* no-op on candidates view */ }}
           onCandidateClick={(id) => setActiveId(id)}

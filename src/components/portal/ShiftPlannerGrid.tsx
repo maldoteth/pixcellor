@@ -65,6 +65,8 @@ type Props = {
   candidateColumnOnlyAssigned?: boolean;
   /** Called when the candidate cell is clicked (candidate-column mode). */
   onCandidateClick?: (candidateId: string) => void;
+  /** "vacancy" (default): one row per vacancy slot. "candidate": one row per candidate with assigned shifts; day cells show job chips. */
+  rowMode?: "vacancy" | "candidate";
 };
 
 type ClipItem = { start: string | null; finish: string | null; candidateId: string | null };
@@ -111,7 +113,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit, onDelete, onVacancyChanged, candidateFilter, secondColumn = "client", candidateColumnOnlyAssigned = false, onCandidateClick }: Props) {
+export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit, onDelete, onVacancyChanged, candidateFilter, secondColumn = "client", candidateColumnOnlyAssigned = false, onCandidateClick, rowMode = "vacancy" }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
@@ -200,6 +202,37 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     }
     return rows;
   }, [sortedVacancies, candidateFilter, shifts, secondColumn, candidateColumnOnlyAssigned, slotAssignedCandidateId, sortBy, sortDir, candidateLookup]);
+
+  // Candidate-row mode: aggregate every assigned shift across all vacancies grouped by candidate.
+  type CandidateRowShift = { vacancy: Vacancy; slot: number; date: string; shift: Shift };
+  type CandidateRow = {
+    info: { id: string; full_name: string; status?: string | null; email?: string | null; phone?: string | null; headline?: string | null; photo_url?: string | null };
+    shifts: CandidateRowShift[];
+  };
+  const candidateRowsData = useMemo<CandidateRow[]>(() => {
+    if (rowMode !== "candidate") return [];
+    const map = new Map<string, CandidateRow>();
+    vacancies.forEach((v) => {
+      const sBySlot = shifts[v.id] ?? {};
+      Object.entries(sBySlot).forEach(([slotStr, byDate]) => {
+        const slot = Number(slotStr);
+        Object.entries(byDate).forEach(([date, s]) => {
+          if (!s || s.cancelled || !s.assignment_overridden || !s.candidate_id) return;
+          const cid = s.candidate_id;
+          if (!map.has(cid)) {
+            const info = candidateLookup.get(cid) ?? { id: cid, full_name: s.candidate_name ?? "Unknown" };
+            map.set(cid, { info, shifts: [] });
+          }
+          map.get(cid)!.shifts.push({ vacancy: v, slot, date, shift: s });
+        });
+      });
+    });
+    const arr = Array.from(map.values());
+    arr.sort((a, b) => (a.info.full_name || "").localeCompare(b.info.full_name || "", undefined, { sensitivity: "base" }));
+    if (sortDir === "desc") arr.reverse();
+    return arr;
+  }, [rowMode, vacancies, shifts, candidateLookup, sortDir]);
+
   const [vacancyClip, setVacancyClip] = useState<Vacancy | null>(null);
   const changeOpenings = async (v: Vacancy, next: number, cloneFromSlot?: number, removeSlot?: number) => {
     const current = Math.max(1, Number(v.openings ?? 1) || 1);
@@ -562,41 +595,69 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     let currency = "GBP";
     const workersWithShifts = new Set<string>();
     const allAssignedWorkers = new Set<string>();
+    const weekKeys = new Set(weekDates.map(ymd));
 
-    displayRows.forEach(({ vacancy: v, slot }) => {
-      if (v.pay_currency) currency = v.pay_currency;
-      const pay = Number(v.pay_max ?? v.pay_min ?? 0);
-      const charge = Number(v.charge_rate ?? 0);
-      const paye = Number(v.paye_rate_percent ?? 21);
-      const costPerHour = pay + pay * (paye / 100);
-      const marginPerHour = charge - costPerHour;
-
-      const slotAssignments = (v.assignments ?? []).filter((a) =>
-        a.slot_index === slot &&
-        ["shortlisted", "submitted", "interviewing", "offer", "placed"].includes(a.stage),
-      );
-      slotAssignments.forEach((a) => allAssignedWorkers.add(a.candidate_id));
-
-      let slotHoursThisWeek = 0;
-      weekDates.forEach((d) => {
-        const dk = ymd(d);
-        const c = resolveCell(v.id, slot, dk);
-        if (!c.active || !c.start || !c.finish) return;
-        const [sh, sm] = c.start.split(":").map(Number);
-        const [fh, fm] = c.finish.split(":").map(Number);
-        let mins = (fh * 60 + fm) - (sh * 60 + sm);
-        if (mins < 0) mins += 24 * 60; // overnight
-        const hours = mins / 60;
-        slotHoursThisWeek += hours;
+    if (rowMode === "candidate") {
+      candidateRowsData.forEach((row) => {
+        allAssignedWorkers.add(row.info.id);
+        row.shifts.forEach(({ vacancy: v, shift: s, date }) => {
+          if (!weekKeys.has(date)) return;
+          if (v.pay_currency) currency = v.pay_currency;
+          const pay = Number(v.pay_max ?? v.pay_min ?? 0);
+          const charge = Number(v.charge_rate ?? 0);
+          const paye = Number(v.paye_rate_percent ?? 21);
+          const costPerHour = pay + pay * (paye / 100);
+          const marginPerHour = charge - costPerHour;
+          const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
+          const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
+          if (!startStr || !finishStr) return;
+          const [sh, sm] = startStr.split(":").map(Number);
+          const [fh, fm] = finishStr.split(":").map(Number);
+          let mins = (fh * 60 + fm) - (sh * 60 + sm);
+          if (mins < 0) mins += 24 * 60;
+          const hours = mins / 60;
+          totalHours += hours;
+          totalCharge += hours * charge;
+          totalMargin += hours * marginPerHour;
+          workersWithShifts.add(row.info.id);
+        });
       });
+    } else {
+      displayRows.forEach(({ vacancy: v, slot }) => {
+        if (v.pay_currency) currency = v.pay_currency;
+        const pay = Number(v.pay_max ?? v.pay_min ?? 0);
+        const charge = Number(v.charge_rate ?? 0);
+        const paye = Number(v.paye_rate_percent ?? 21);
+        const costPerHour = pay + pay * (paye / 100);
+        const marginPerHour = charge - costPerHour;
 
-      if (slotHoursThisWeek > 0) {
-        slotAssignments.forEach((a) => workersWithShifts.add(a.candidate_id));
-      }
-      totalHours += slotHoursThisWeek;
-      totalCharge += slotHoursThisWeek * charge;
-      totalMargin += slotHoursThisWeek * marginPerHour;
-    });
+        const slotAssignments = (v.assignments ?? []).filter((a) =>
+          a.slot_index === slot &&
+          ["shortlisted", "submitted", "interviewing", "offer", "placed"].includes(a.stage),
+        );
+        slotAssignments.forEach((a) => allAssignedWorkers.add(a.candidate_id));
+
+        let slotHoursThisWeek = 0;
+        weekDates.forEach((d) => {
+          const dk = ymd(d);
+          const c = resolveCell(v.id, slot, dk);
+          if (!c.active || !c.start || !c.finish) return;
+          const [sh, sm] = c.start.split(":").map(Number);
+          const [fh, fm] = c.finish.split(":").map(Number);
+          let mins = (fh * 60 + fm) - (sh * 60 + sm);
+          if (mins < 0) mins += 24 * 60;
+          const hours = mins / 60;
+          slotHoursThisWeek += hours;
+        });
+
+        if (slotHoursThisWeek > 0) {
+          slotAssignments.forEach((a) => workersWithShifts.add(a.candidate_id));
+        }
+        totalHours += slotHoursThisWeek;
+        totalCharge += slotHoursThisWeek * charge;
+        totalMargin += slotHoursThisWeek * marginPerHour;
+      });
+    }
 
     const idleWorkers = Array.from(allAssignedWorkers).filter((id) => !workersWithShifts.has(id));
     return {
@@ -604,7 +665,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
       activeWorkers: workersWithShifts.size,
       idleWorkers: idleWorkers.length,
     };
-  }, [displayRows, weekDates, resolveCell]);
+  }, [rowMode, candidateRowsData, displayRows, weekDates, resolveCell]);
 
   const fmtMoney = (n: number) => `${stats.currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
@@ -673,7 +734,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
               onClick={() => toggleSort("title")}
               className="sticky left-0 z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
             >
-              Job{sortArrow("title")}
+              {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
             </button>
             <button
               type="button"
@@ -681,7 +742,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
               className="sticky z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]"
               style={{ left: `${jobColW}px` }}
             >
-              {secondColumn === "candidate" ? "Candidate" : "Client"}{sortArrow("client")}
+              {rowMode === "candidate" ? "Details" : secondColumn === "candidate" ? "Candidate" : "Client"}{sortArrow("client")}
             </button>
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
@@ -698,9 +759,94 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
           </div>
 
           {/* Vacancy rows */}
-          {vacancies.length === 0 && (
+          {rowMode === "vacancy" && vacancies.length === 0 && (
             <div className="px-3 py-12 text-center text-sm text-muted-foreground">No vacancies match the current filters.</div>
           )}
+          {rowMode === "candidate" && candidateRowsData.length === 0 && (
+            <div className="px-3 py-12 text-center text-sm text-muted-foreground">No candidates have assigned shifts in this range.</div>
+          )}
+          {rowMode === "candidate" && candidateRowsData.map((row, rowIdx) => {
+            const rowBg = rowIdx % 2 === 0 ? "bg-card" : "bg-background";
+            // hours total for this candidate this week (display only)
+            const weekKeys = new Set(weekDates.map(ymd));
+            let rowHours = 0;
+            row.shifts.forEach(({ vacancy: v, shift: s, date }) => {
+              if (!weekKeys.has(date)) return;
+              const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
+              const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
+              if (!startStr || !finishStr) return;
+              const [sh, sm] = startStr.split(":").map(Number);
+              const [fh, fm] = finishStr.split(":").map(Number);
+              let mins = (fh * 60 + fm) - (sh * 60 + sm);
+              if (mins < 0) mins += 24 * 60;
+              rowHours += mins / 60;
+            });
+            return (
+              <div key={row.info.id} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
+                {/* Candidate (frozen) */}
+                <div
+                  className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2 ${onCandidateClick ? "cursor-pointer hover:bg-muted/40" : ""}`}
+                  onClick={() => onCandidateClick?.(row.info.id)}
+                >
+                  <div className="text-sm font-semibold leading-tight truncate">{row.info.full_name}</div>
+                  {row.info.headline && <div className="text-[10px] text-muted-foreground line-clamp-1">{row.info.headline}</div>}
+                  <div className="mt-1 text-[10px] text-muted-foreground">
+                    {row.shifts.filter((x) => weekKeys.has(x.date)).length} shift{row.shifts.filter((x) => weekKeys.has(x.date)).length === 1 ? "" : "s"} · {rowHours.toFixed(1)}h
+                  </div>
+                </div>
+                {/* Details column */}
+                <div
+                  className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`}
+                  style={{ left: `${jobColW}px` }}
+                >
+                  {row.info.email && <div className="text-[10px] text-muted-foreground truncate">{row.info.email}</div>}
+                  {row.info.phone && <div className="text-[10px] text-muted-foreground truncate">{row.info.phone}</div>}
+                  {row.info.status && <Badge variant="outline" className="text-[9px] h-4 px-1 mt-1">{row.info.status}</Badge>}
+                </div>
+                {/* Day cells: chips per assigned shift on that date */}
+                {weekDates.map((d, dIdx) => {
+                  const dk = ymd(d);
+                  const isToday = dk === todayKey;
+                  const dayShifts = row.shifts.filter((x) => x.date === dk);
+                  return (
+                    <div
+                      key={dIdx}
+                      className={`relative border-b border-r p-1 min-h-[78px] ${isToday ? "bg-primary/5" : rowBg}`}
+                    >
+                      {dayShifts.length === 0 ? (
+                        <div className="flex h-full w-full items-center justify-center rounded border border-dashed border-border/40 text-[11px] text-muted-foreground/60">—</div>
+                      ) : (
+                        <div className="flex h-full w-full flex-col gap-1">
+                          {dayShifts.map(({ vacancy: v, slot, shift: s }) => {
+                            const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
+                            const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
+                            return (
+                              <button
+                                key={`${v.id}#${slot}`}
+                                type="button"
+                                onDoubleClick={() => onEdit(v)}
+                                title={`${v.title}${v.client?.name ? ` · ${v.client.name}` : ""}\n${to12h(startStr)} – ${to12h(finishStr)}\nDouble-click to open job`}
+                                className="flex w-full flex-col items-start gap-0.5 rounded border border-primary/30 bg-primary/5 px-1.5 py-1 text-left hover:bg-primary/10"
+                              >
+                                <div className="text-[11px] font-semibold leading-tight truncate w-full">{v.title}</div>
+                                <div className="text-[10px] leading-tight text-muted-foreground truncate w-full">
+                                  {to12h(startStr)}{finishStr ? ` – ${to12h(finishStr)}` : ""}
+                                </div>
+                                {v.client?.name && (
+                                  <div className="text-[9px] leading-tight text-muted-foreground/80 truncate w-full">{v.client.name}</div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+          {rowMode === "vacancy" && (
             <>
             {displayRows.map(({ vacancy: v, slot, total }, rowIdx) => {
               const rowBg = rowIdx % 2 === 0 ? "bg-card" : "bg-background";
@@ -901,6 +1047,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
               </ContextMenuContent>
             </ContextMenu>
             </>
+          )}
         </div>
       </div>
 
