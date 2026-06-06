@@ -260,6 +260,12 @@ export default function CandidatePortal() {
           </div>
         </div>
       )}
+
+      <Card>
+        <CardContent className="p-4">
+          <KycDocuments mode="candidate" />
+        </CardContent>
+      </Card>
     </main>
   );
 }
