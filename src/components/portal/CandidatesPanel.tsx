@@ -10,11 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2, Camera, X } from "lucide-react";
+import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2, Camera, X, Clock } from "lucide-react";
 import { toast } from "sonner";
 import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ShiftPlannerGrid from "@/components/portal/ShiftPlannerGrid";
+import TimesheetsPanel from "@/components/portal/TimesheetsPanel";
 
 function initialsOf(name: string) {
   return (name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "?";
