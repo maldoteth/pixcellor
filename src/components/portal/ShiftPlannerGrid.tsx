@@ -54,8 +54,8 @@ type Props = {
   vacancies: Vacancy[];
   candidates?: Array<{ id: string; full_name: string; status?: string | null; email?: string | null; phone?: string | null; headline?: string | null; photo_url?: string | null }>;
   onCreate?: () => void;
-  onEdit: (v: Vacancy) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (v: Vacancy) => void;
+  onDelete?: (id: string) => void;
   onVacancyChanged?: () => void | Promise<void>;
   /** When provided, show only rows (vacancy+slot) assigned to this candidate. First column becomes the vacancy. */
   candidateFilter?: { id: string; name: string };
@@ -67,6 +67,8 @@ type Props = {
   onCandidateClick?: (candidateId: string) => void;
   /** "vacancy" (default): one row per vacancy slot. "candidate": one row per candidate with assigned shifts; day cells show job chips. */
   rowMode?: "vacancy" | "candidate";
+  /** "admin" (default) shows margin/charge stats. "candidate" shows the worker's own earnings using pay rate and hides client cost lines. */
+  viewerMode?: "admin" | "candidate";
 };
 
 type ClipItem = { start: string | null; finish: string | null; candidateId: string | null; sourceVacancyId?: string };
