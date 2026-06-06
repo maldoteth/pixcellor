@@ -53,6 +53,7 @@ type Vacancy = {
   assignments?: Array<{
     id: string;
     candidate_id: string;
+    slot_index: number;
     stage: string;
     notes: string | null;
     assigned_at: string;
