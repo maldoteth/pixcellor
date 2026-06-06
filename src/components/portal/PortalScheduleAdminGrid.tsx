@@ -204,6 +204,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister 
 
   const pasteAvailability = async (date: string) => {
     if (!clip) return;
+    if (!myCandidateId) { onNeedRegister?.(); return; }
     const { error } = await supabase.rpc("portal_set_availability" as never, {
       _date: date,
       _status: clip.status,
