@@ -566,7 +566,7 @@ export default function CustomerPortal() {
               </div>
 
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PortalTab)} className="space-y-5">
-                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 lg:grid-cols-7">
+                <TabsList className="flex h-auto w-full flex-wrap gap-2 bg-transparent p-0">
                   {navItems.map((item) => (
                     <TabsTrigger
                       key={item.value}
