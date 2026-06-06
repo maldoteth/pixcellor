@@ -606,7 +606,30 @@ export default function CustomerPortal() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="leads" className="space-y-8">
+                <TabsContent value="schedule" className="space-y-4">
+                  <SectionHeader title="Schedule" description="Your shifts across every vacancy. Empty days are shown so you can plan ahead." />
+                  <PortalScheduleGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
+                </TabsContent>
+
+                {isCandidate && (
+                  <TabsContent value="myjobs" className="space-y-4">
+                    <SectionHeader title="My jobs" description="Invitations and confirmed assignments. Accept the first one to lock the role." />
+                    <PortalMyJobs onChange={() => setScheduleRefresh((t) => t + 1)} />
+                  </TabsContent>
+                )}
+
+                {isClient && (
+                  <TabsContent value="vacancies" className="space-y-4">
+                    <SectionHeader title="Your vacancies" description="Open roles for your company and the candidates assigned to them." />
+                    <PortalClientVacancies />
+                  </TabsContent>
+                )}
+
+                <TabsContent value="find" className="space-y-4">
+                  <SectionHeader title="Find work" description="Search open vacancies and tell us when you're available." />
+                  <PortalVacancySearch />
+                </TabsContent>
+
                   {data?.leadSource && (
                     <div className="space-y-4">
                       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
