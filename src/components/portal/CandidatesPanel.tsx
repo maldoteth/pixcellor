@@ -152,6 +152,23 @@ export default function CandidatesPanel() {
     setLoading(false);
   }, []);
 
+  const loadAllVacancies = useCallback(async () => {
+    const { data } = await (supabase as any).rpc("portal_list_vacancies");
+    setAllVacancies((data as any[]) ?? []);
+  }, []);
+
+  useEffect(() => { loadAllVacancies(); }, [loadAllVacancies]);
+
+  useEffect(() => {
+    const ch = supabase
+      .channel("candidates-vacancies-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "vacancies" }, loadAllVacancies)
+      .on("postgres_changes", { event: "*", schema: "public", table: "vacancy_assignments" }, loadAllVacancies)
+      .on("postgres_changes", { event: "*", schema: "public", table: "vacancy_shifts" }, loadAllVacancies)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [loadAllVacancies]);
+
   useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
