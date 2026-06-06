@@ -612,19 +612,34 @@ export default function CustomerPortal() {
                 <TabsContent value="schedule" className="min-w-0 space-y-4">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <SectionHeader title="Schedule" description="Your shifts across every vacancy. Empty days are shown so you can plan ahead." />
-                    <Button
-                      variant="pricing"
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: isClient ? "client-order" : "find-work" } }))}
-                    >
-                      <Search className="h-4 w-4" /> Find
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        variant="pricing"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: isClient ? "client-order" : "find-work" } }))}
+                      >
+                        <Search className="h-4 w-4" /> Find
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => navigate("/me")}
+                      >
+                        <ShieldCheck className="h-4 w-4" /> Verify
+                      </Button>
+                    </div>
                   </div>
                   <div className="min-w-0 max-w-full overflow-hidden">
-                    <PortalScheduleAdminGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
+                    <PortalScheduleAdminGrid
+                      key={scheduleRefresh}
+                      myCandidateId={myCandidateId}
+                      onNeedRegister={() => window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "candidate-register" } }))}
+                    />
                   </div>
                 </TabsContent>
+
 
 
                 {isCandidate && (
