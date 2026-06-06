@@ -3104,6 +3104,7 @@ export type Database = {
         }[]
       }
       portal_my_vacancies: { Args: never; Returns: Json }
+      portal_my_vacancies_full: { Args: never; Returns: Json }
       portal_my_vacancy_ids: { Args: never; Returns: Json }
       portal_open_vacancies: {
         Args: { _search?: string }
