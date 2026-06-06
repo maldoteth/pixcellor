@@ -325,7 +325,9 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const blurActive = () => { try { (document.activeElement as HTMLElement | null)?.blur(); } catch { /* noop */ } };
   const selectSingle = (vacancyId: string, slot: number, dateIdx: number) => {
     const date = ymd(weekDates[dateIdx]);
-    setSelected(new Set([cellKey(vacancyId, slot, date)]));
+    const next = new Set([cellKey(vacancyId, slot, date)]);
+    selectedRef.current = next; // sync immediately so keyboard handler sees it on first click
+    setSelected(next);
     setLastSelected({ vacancyId, slot, dateIdx });
     blurActive();
   };
@@ -335,6 +337,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(k)) next.delete(k); else next.add(k);
+      selectedRef.current = next;
       return next;
     });
     setLastSelected({ vacancyId, slot, dateIdx });
@@ -347,7 +350,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
       const rowKeys = displayRows.map((r) => `${r.vacancy.id}#${r.slot}`);
       const r1 = rowKeys.indexOf(`${lastSelected.vacancyId}#${lastSelected.slot}`);
       const r2 = rowKeys.indexOf(`${vacancyId}#${slot}`);
-      if (r1 < 0 || r2 < 0) { next.add(cellKey(vacancyId, slot, ymd(weekDates[dateIdx]))); return next; }
+      if (r1 < 0 || r2 < 0) { next.add(cellKey(vacancyId, slot, ymd(weekDates[dateIdx]))); selectedRef.current = next; return next; }
       const [rMin, rMax] = [Math.min(r1, r2), Math.max(r1, r2)];
       const [dMin, dMax] = [Math.min(lastSelected.dateIdx, dateIdx), Math.max(lastSelected.dateIdx, dateIdx)];
       for (let r = rMin; r <= rMax; r++) {
@@ -356,6 +359,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
           next.add(cellKey(row.vacancy.id, row.slot, ymd(weekDates[d])));
         }
       }
+      selectedRef.current = next;
       return next;
     });
   };
