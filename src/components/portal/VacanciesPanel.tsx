@@ -330,14 +330,26 @@ export default function VacanciesPanel() {
 
   const handleAssign = async (vacancyId: string) => {
     if (!assignCandidateId) { toast({ title: "Pick a candidate", variant: "destructive" }); return; }
+    // Find the first empty slot so the candidate fills one opening, not all of them.
+    const vac = vacancies.find((v) => v.id === vacancyId);
+    const openings = Math.max(1, Number(vac?.openings ?? 1) || 1);
+    const activeStages = ["shortlisted","submitted","interviewing","offer","placed"];
+    const takenSlots = new Set(
+      (vac?.assignments ?? [])
+        .filter((a) => activeStages.includes(a.stage))
+        .map((a) => Number(a.slot_index ?? 0))
+    );
+    let targetSlot = 0;
+    for (let i = 0; i < openings; i++) { if (!takenSlots.has(i)) { targetSlot = i; break; } if (i === openings - 1) targetSlot = openings - 1; }
     const { error } = await supabase.rpc("portal_assign_candidate_to_vacancy", {
-      _vacancy_id: vacancyId, _candidate_id: assignCandidateId, _stage: assignStage,
-    });
+      _vacancy_id: vacancyId, _candidate_id: assignCandidateId, _stage: assignStage, _slot: targetSlot,
+    } as never);
     if (error) { toast({ title: "Assign failed", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Candidate assigned" });
     setAssignTo(null); setAssignCandidateId(""); setAssignStage("shortlisted");
     load();
   };
+
 
   const handleUnassign = async (assignmentId: string) => {
     const { error } = await supabase.rpc("portal_unassign_candidate", { _assignment_id: assignmentId });
