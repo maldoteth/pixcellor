@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
+  Briefcase,
+  Building2,
   CalendarClock,
+  CalendarDays,
   CheckCircle2,
   Check,
   ClipboardList,
@@ -27,6 +30,10 @@ import {
   EyeOff,
   Plus,
 } from "lucide-react";
+import PortalScheduleGrid from "@/components/portal/PortalScheduleGrid";
+import PortalMyJobs from "@/components/portal/PortalMyJobs";
+import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
+import PortalVacancySearch from "@/components/portal/PortalVacancySearch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
