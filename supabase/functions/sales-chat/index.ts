@@ -2841,7 +2841,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ reply, conversationId: currentConversationId, packageCards, actionTaken }),
+      JSON.stringify({ reply, conversationId: currentConversationId, packageCards, actionTaken, candidateSaved }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
