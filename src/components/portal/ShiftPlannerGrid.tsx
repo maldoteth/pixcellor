@@ -1011,13 +1011,28 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
           {/* Header row */}
           <div className="grid sticky top-0 z-20" style={{ gridTemplateColumns: gridTemplate }}>
             {!hideFirstColumn && (
-              <button
-                type="button"
-                onClick={() => toggleSort("title")}
-                className="sticky left-0 z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
-              >
-                {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
-              </button>
+              <div className="sticky left-0 z-30 border-b border-r bg-muted flex items-stretch relative">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("title")}
+                  className="flex-1 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                >
+                  {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
+                </button>
+                {rowMode === "candidate" && (
+                  <div
+                    role="separator"
+                    aria-orientation="vertical"
+                    title="Drag to resize column"
+                    onPointerDown={onResizeStart}
+                    onPointerMove={onResizeMove}
+                    onPointerUp={onResizeEnd}
+                    onPointerCancel={onResizeEnd}
+                    onDoubleClick={() => { setCandidateFirstColW(defaultCandidateColW); try { window.localStorage.removeItem("pix.shiftGrid.candidateColW"); } catch {} }}
+                    className="absolute right-0 top-0 h-full w-2 cursor-col-resize select-none touch-none hover:bg-primary/30 active:bg-primary/50"
+                  />
+                )}
+              </div>
             )}
             {!hideFirstColumn && rowMode !== "candidate" && (
               <button
