@@ -3491,9 +3491,6 @@ export default function Portal() {
             <VacanciesPanel />
           </TabsContent>
 
-          <TabsContent value="timesheets" className="min-w-0">
-            <TimesheetsPanel />
-          </TabsContent>
 
 
 
