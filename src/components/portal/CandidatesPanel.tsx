@@ -353,6 +353,13 @@ export default function CandidatesPanel() {
         </div>
       </div>
 
+      <Dialog open={timesheetsOpen} onOpenChange={setTimesheetsOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Timesheets</DialogTitle></DialogHeader>
+          <TimesheetsPanel />
+        </DialogContent>
+      </Dialog>
+
       <CsvImportDialog
         open={importOpen}
         onOpenChange={setImportOpen}
