@@ -109,12 +109,13 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const gridTemplate = `${jobColW}px ${clientColW}px repeat(7, minmax(${dayMinW}px, 1fr))`;
   const minGridW = jobColW + clientColW + dayMinW * 7;
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
-  const [shifts, setShifts] = useState<Record<string, Record<string, Shift>>>({});
+  // shifts[vacancyId][slotIndex][date]
+  const [shifts, setShifts] = useState<Record<string, Record<number, Record<string, Shift>>>>({});
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [lastSelected, setLastSelected] = useState<{ vacancyId: string; dateIdx: number } | null>(null);
+  const [lastSelected, setLastSelected] = useState<{ vacancyId: string; slot: number; dateIdx: number } | null>(null);
   const [clipboard, setClipboard] = useState<{ mode: "copy" | "cut"; items: ClipItem[]; sourceKeys: string[] } | null>(null);
-  const [bulkPaste, setBulkPaste] = useState<{ vacancyId: string; date: string } | null>(null);
+  const [bulkPaste, setBulkPaste] = useState<{ vacancyId: string; slot: number; date: string } | null>(null);
   const [bulkCount, setBulkCount] = useState<string>("4");
   const [bulkUnit, setBulkUnit] = useState<"days" | "weeks" | "months">("weeks");
   const [sortBy, setSortBy] = useState<"title" | "client">("title");
