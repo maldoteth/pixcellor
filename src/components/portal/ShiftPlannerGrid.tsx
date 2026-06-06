@@ -606,7 +606,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                   {/* Job (frozen) — right-click for vacancy copy/paste */}
                   <ContextMenu>
                     <ContextMenuTrigger asChild>
-                      <div className={`${isMobile ? "" : "sticky left-0 z-10"} border-b border-r ${rowBg} px-2 py-2`}>
+                      <div className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2`}>
                         <div className="flex items-center gap-1">
                           <div className="text-sm font-semibold leading-tight flex-1">{v.title}</div>
                           {total > 1 && (
