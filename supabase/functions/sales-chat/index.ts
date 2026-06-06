@@ -2785,6 +2785,26 @@ Deno.serve(async (req) => {
               content: JSON.stringify({ ok: false, error: "save_failed" }),
             });
           }
+        } else if (toolCall.function.name === "save_candidate") {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await saveCandidate(supabase, args);
+            if (result.ok) candidateSaved = true;
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(result),
+            });
+          } catch (e) {
+            console.error("Error in save_candidate:", e);
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ ok: false, error: "save_failed" }),
+            });
+          }
         }
       }
 
