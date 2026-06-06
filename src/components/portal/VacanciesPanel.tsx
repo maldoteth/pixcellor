@@ -221,6 +221,82 @@ export default function VacanciesPanel() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Load saved templates (snapshots of deleted vacancies) when dialog opens
+  useEffect(() => {
+    if (!openDialog) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("vacancy_templates")
+        .select("id,client_contact_id,title,snapshot,created_at")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (!cancelled) setTemplates((data as never) ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [openDialog]);
+
+  const matchingTemplates = useMemo(() => {
+    if (!form.client_contact_id) return [];
+    const q = form.title.trim().toLowerCase();
+    const list = templates.filter((t) => t.client_contact_id === form.client_contact_id);
+    // Deduplicate by title (keep newest)
+    const seen = new Set<string>();
+    const deduped = list.filter((t) => {
+      const k = t.title.trim().toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    if (!q) return deduped.slice(0, 8);
+    return deduped.filter((t) => t.title.toLowerCase().includes(q)).slice(0, 8);
+  }, [templates, form.client_contact_id, form.title]);
+
+  const applyTemplate = (snap: Record<string, unknown>) => {
+    const s = snap as Record<string, unknown>;
+    const str = (k: string) => (s[k] == null ? "" : String(s[k]));
+    const arrJoin = (k: string) => Array.isArray(s[k]) ? (s[k] as string[]).join(", ") : "";
+    const time = (k: string) => {
+      const v = s[k];
+      return typeof v === "string" && v.length >= 5 ? v.slice(0, 5) : "";
+    };
+    setForm((f) => ({
+      ...f,
+      title: str("title"),
+      reference: str("reference"),
+      description: str("description"),
+      location: str("location"),
+      latitude: s.latitude != null ? String(s.latitude) : "",
+      longitude: s.longitude != null ? String(s.longitude) : "",
+      arrangement: str("arrangement") || "onsite",
+      employment_type: str("employment_type") || "permanent",
+      // keep current status (don't restore "closed")
+      openings: s.openings != null ? String(s.openings) : "1",
+      // Intentionally NOT restoring start_date/end_date — those are template-specific
+      start_time: time("start_time"),
+      finish_time: time("finish_time"),
+      schedule_days: Array.isArray(s.schedule_days) ? (s.schedule_days as string[]) : [],
+      schedule_notes: str("schedule_notes"),
+      duration_weeks: s.duration_weeks != null ? String(s.duration_weeks) : "",
+      hours_per_week: s.hours_per_week != null ? String(s.hours_per_week) : "",
+      qualifications: arrJoin("qualifications"),
+      required_skills: arrJoin("required_skills"),
+      nice_to_have_skills: arrJoin("nice_to_have_skills"),
+      certifications: arrJoin("certifications"),
+      right_to_work_required: !!s.right_to_work_required,
+      pay_min: s.pay_min != null ? String(s.pay_min) : "",
+      pay_max: s.pay_max != null ? String(s.pay_max) : "",
+      pay_currency: str("pay_currency") || "GBP",
+      pay_period: str("pay_period") || "hour",
+      benefits: str("benefits"),
+      notes: str("notes"),
+      charge_rate: s.charge_rate != null ? String(s.charge_rate) : "",
+      paye_rate_percent: s.paye_rate_percent != null ? String(s.paye_rate_percent) : "21",
+    }));
+    setTitleFocused(false);
+    toast({ title: "Template applied", description: "Fields filled from saved vacancy." });
+  };
+
   useEffect(() => {
     const refreshVacancies = () => {
       if (realtimeTimerRef.current) window.clearTimeout(realtimeTimerRef.current);
