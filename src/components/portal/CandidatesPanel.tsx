@@ -10,11 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2, Camera, X } from "lucide-react";
+import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2, Camera, X, Clock } from "lucide-react";
 import { toast } from "sonner";
 import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ShiftPlannerGrid from "@/components/portal/ShiftPlannerGrid";
+import TimesheetsPanel from "@/components/portal/TimesheetsPanel";
 
 function initialsOf(name: string) {
   return (name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "?";
@@ -106,6 +107,7 @@ export default function CandidatesPanel() {
   const [view, setView] = useState<"list" | "kanban">("list");
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [timesheetsOpen, setTimesheetsOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -345,10 +347,18 @@ export default function CandidatesPanel() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => setCreateOpen(true)}><Plus className="mr-2 h-4 w-4" /> New candidate</Button>
+          <Button variant="outline" onClick={() => setTimesheetsOpen(true)}><Clock className="mr-2 h-4 w-4" /> Timesheets</Button>
           <Button variant="outline" onClick={() => setImportOpen(true)}><Upload className="mr-2 h-4 w-4" /> Import CSV</Button>
           <Button variant="outline" onClick={exportCsv}>Export CSV</Button>
         </div>
       </div>
+
+      <Dialog open={timesheetsOpen} onOpenChange={setTimesheetsOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Timesheets</DialogTitle></DialogHeader>
+          <TimesheetsPanel />
+        </DialogContent>
+      </Dialog>
 
       <CsvImportDialog
         open={importOpen}
