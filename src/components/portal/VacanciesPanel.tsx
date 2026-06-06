@@ -415,12 +415,7 @@ export default function VacanciesPanel() {
     ).length;
     const ok = await confirm({
       title: `Delete "${v?.title ?? "vacancy"}"?`,
-      description:
-        `This removes ONLY this vacancy for ${clientName}. Other vacancies for the same client are not affected.\n\n` +
-        `• Openings: ${openings}\n` +
-        `• Dates: ${dateRange}\n` +
-        `• Active candidate assignments: ${assignCount}\n\n` +
-        `All shifts and timesheets attached to this vacancy will also be deleted. This cannot be undone (a template snapshot will be saved so you can recreate it later).`,
+      description: "Are you sure?",
       confirmLabel: "Delete vacancy",
       destructive: true,
     });
