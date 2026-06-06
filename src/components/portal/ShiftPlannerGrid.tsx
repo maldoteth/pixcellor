@@ -52,13 +52,19 @@ type Shift = {
 
 type Props = {
   vacancies: Vacancy[];
-  candidates?: Array<{ id: string; full_name: string; status?: string | null }>;
+  candidates?: Array<{ id: string; full_name: string; status?: string | null; email?: string | null; phone?: string | null; headline?: string | null; photo_url?: string | null }>;
   onCreate?: () => void;
   onEdit: (v: Vacancy) => void;
   onDelete: (id: string) => void;
   onVacancyChanged?: () => void | Promise<void>;
   /** When provided, show only rows (vacancy+slot) assigned to this candidate. First column becomes the vacancy. */
   candidateFilter?: { id: string; name: string };
+  /** Second sticky column. Defaults to "client". When "candidate", shows the assigned candidate's name and details instead. */
+  secondColumn?: "client" | "candidate";
+  /** When in candidate-column mode, hide rows whose slot has no assigned candidate. */
+  candidateColumnOnlyAssigned?: boolean;
+  /** Called when the candidate cell is clicked (candidate-column mode). */
+  onCandidateClick?: (candidateId: string) => void;
 };
 
 type ClipItem = { start: string | null; finish: string | null; candidateId: string | null };
