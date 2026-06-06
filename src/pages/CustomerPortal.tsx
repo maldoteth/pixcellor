@@ -269,20 +269,22 @@ export default function CustomerPortal() {
   const [myCandidateId, setMyCandidateId] = useState<string | null>(null);
   const [scheduleRefresh, setScheduleRefresh] = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const [cid, ids] = await Promise.all([
-        supabase.rpc("candidate_link_self" as never),
-        supabase.rpc("portal_my_vacancy_ids" as never),
-      ]);
-      if (cancelled) return;
-      setMyCandidateId((cid.data as string) ?? null);
-      const a = ids.data as { as_candidate?: string[]; as_client?: string[] } | null;
-      setAccess({ as_candidate: a?.as_candidate ?? [], as_client: a?.as_client ?? [] });
-    })();
-    return () => { cancelled = true; };
+  const loadCandidateAccess = useCallback(async () => {
+    const [cid, ids] = await Promise.all([
+      supabase.rpc("candidate_link_self" as never),
+      supabase.rpc("portal_my_vacancy_ids" as never),
+    ]);
+    setMyCandidateId((cid.data as string) ?? null);
+    const a = ids.data as { as_candidate?: string[]; as_client?: string[] } | null;
+    setAccess({ as_candidate: a?.as_candidate ?? [], as_client: a?.as_client ?? [] });
   }, []);
+
+  useEffect(() => {
+    void loadCandidateAccess();
+    const handler = () => { void loadCandidateAccess(); setScheduleRefresh((t) => t + 1); };
+    window.addEventListener("pixcellor:candidate-registered", handler);
+    return () => window.removeEventListener("pixcellor:candidate-registered", handler);
+  }, [loadCandidateAccess]);
 
   const refreshHiddenCount = useCallback(async () => {
     const { count } = await supabase
@@ -610,19 +612,34 @@ export default function CustomerPortal() {
                 <TabsContent value="schedule" className="min-w-0 space-y-4">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <SectionHeader title="Schedule" description="Your shifts across every vacancy. Empty days are shown so you can plan ahead." />
-                    <Button
-                      variant="pricing"
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: isClient ? "client-order" : "find-work" } }))}
-                    >
-                      <Search className="h-4 w-4" /> Find
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        variant="pricing"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: isClient ? "client-order" : "find-work" } }))}
+                      >
+                        <Search className="h-4 w-4" /> Find
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => navigate("/me")}
+                      >
+                        <ShieldCheck className="h-4 w-4" /> Verify
+                      </Button>
+                    </div>
                   </div>
                   <div className="min-w-0 max-w-full overflow-hidden">
-                    <PortalScheduleAdminGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
+                    <PortalScheduleAdminGrid
+                      key={scheduleRefresh}
+                      myCandidateId={myCandidateId}
+                      onNeedRegister={() => window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "candidate-register" } }))}
+                    />
                   </div>
                 </TabsContent>
+
 
 
                 {isCandidate && (

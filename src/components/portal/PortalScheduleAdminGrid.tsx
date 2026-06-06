@@ -84,7 +84,7 @@ const STATUS_STYLE: Record<Availability["status"], string> = {
 
 type ClipAvail = { status: Availability["status"]; start_time: string | null; finish_time: string | null; note: string | null };
 
-export default function PortalScheduleAdminGrid({ myCandidateId }: { myCandidateId?: string | null }) {
+export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister }: { myCandidateId?: string | null; onNeedRegister?: () => void }) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
@@ -170,6 +170,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId }: { myCandidate
   const [editor, setEditor] = useState<{ date: string; status: Availability["status"]; start: string; finish: string; note: string } | null>(null);
 
   const openEditor = (date: string) => {
+    if (!myCandidateId) { onNeedRegister?.(); return; }
     const a = availability[date];
     setEditor({
       date,
@@ -203,6 +204,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId }: { myCandidate
 
   const pasteAvailability = async (date: string) => {
     if (!clip) return;
+    if (!myCandidateId) { onNeedRegister?.(); return; }
     const { error } = await supabase.rpc("portal_set_availability" as never, {
       _date: date,
       _status: clip.status,

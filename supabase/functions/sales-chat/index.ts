@@ -170,6 +170,7 @@ Privacy rules:
 - When an email is detected in the conversation, the system automatically loads that client's full record (profile, project status, orders, past chats) and gives it to you as a "Known client context" system message.
 - ALWAYS read that context before replying. Treat it as ground truth.
 - If a client tells you ANY brief details — brand colours, page count, content they want, requirements, their name, company — IMMEDIATELY call **save_brief** with the email and the new fields. Even partial info. This builds their record so you remember next time.
+- If a CANDIDATE (worker looking for shifts) tells you their details — name, email, phone, location/postcode, role/skills, availability — IMMEDIATELY call **save_candidate** with the email and any other new fields. Even partial info. This registers them on our books so they can set availability and pick up shifts. After saving, confirm warmly ("You're on our books, Sam — go ahead and tap any day in the calendar to set when you're free") and tell them they can now set availability in the schedule.
 - If "Project status" shows a stage (e.g. designing / developing / live), use that exact stage when they ask for an update — don't make one up.
 - If a returning client comes back, greet them by name from the profile and reference what they shared previously ("Welcome back, Sarah — last time you mentioned you wanted navy and gold across 5 pages, still on track?").
 - NEVER invent project status or brief details. If the context says "no project status set" or "no brief saved", say so honestly.
@@ -312,6 +313,30 @@ const tools = [
           content_notes: { type: "string", description: "Content / copy notes, sections they want, things to feature." },
           requirements: { type: "string", description: "Functional requirements — e.g. booking system, blog, e-commerce." },
           notes: { type: "string", description: "Any other free-form notes worth remembering." },
+        },
+        required: ["email"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "save_candidate",
+      description: "Register or update a candidate (worker looking for shifts). Call this AS SOON AS the candidate gives you their name and an email — even with partial info. Always include their email so we can key the record. Use this for the candidate sign-up / availability registration flow.",
+      parameters: {
+        type: "object",
+        properties: {
+          email: { type: "string", description: "Candidate's email address (required)." },
+          full_name: { type: "string", description: "Candidate's full name." },
+          phone: { type: "string", description: "Phone number if provided." },
+          location: { type: "string", description: "City / area / postcode they're based in." },
+          headline: { type: "string", description: "Short summary of who they are (e.g. 'Experienced bartender, 5 yrs')." },
+          current_role_title: { type: "string", description: "Their current or most recent job title." },
+          years_experience: { type: "number", description: "Years of experience in their field." },
+          skills: { type: "array", items: { type: "string" }, description: "Skills / role tags (e.g. ['waiter','barista','security'])." },
+          preferred_locations: { type: "array", items: { type: "string" }, description: "Areas they're willing to work in." },
+          availability_date: { type: "string", description: "ISO date (YYYY-MM-DD) of when they can start." },
+          notes: { type: "string", description: "Any other context worth remembering." },
         },
         required: ["email"],
       },
@@ -1208,6 +1233,73 @@ async function saveBrief(
     return { ok: false, error: error.message };
   }
   return { ok: true, profile: data };
+}
+
+// Upsert a candidate (worker) — only writes fields the AI provided. Mirrors saveBrief.
+async function saveCandidate(
+  supabase: DbClient,
+  args: Record<string, unknown>
+) {
+  const email = typeof args.email === "string" ? args.email.trim().toLowerCase() : "";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { ok: false, error: "invalid_email" };
+  }
+
+  // Look up existing candidate by email
+  const { data: existing } = await supabase
+    .from("candidates")
+    .select("id, full_name")
+    .ilike("email", email)
+    .maybeSingle();
+
+  const payload: Record<string, unknown> = { email };
+  if (typeof args.full_name === "string" && args.full_name.trim()) {
+    payload.full_name = args.full_name.trim();
+  } else if (!existing) {
+    // full_name is NOT NULL — fall back to email local-part if AI didn't pass one
+    payload.full_name = email.split("@")[0];
+  }
+  for (const key of ["phone", "location", "headline", "current_role_title", "notes"] as const) {
+    if (typeof args[key] === "string" && (args[key] as string).trim()) {
+      payload[key] = (args[key] as string).trim();
+    }
+  }
+  if (typeof args.years_experience === "number" && Number.isFinite(args.years_experience)) {
+    payload.years_experience = Math.max(0, Math.round(args.years_experience));
+  }
+  if (Array.isArray(args.skills)) {
+    payload.skills = (args.skills as unknown[]).filter((v) => typeof v === "string" && v.trim()).map((v) => (v as string).trim());
+  }
+  if (Array.isArray(args.preferred_locations)) {
+    payload.preferred_locations = (args.preferred_locations as unknown[]).filter((v) => typeof v === "string" && v.trim()).map((v) => (v as string).trim());
+  }
+  if (typeof args.availability_date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(args.availability_date)) {
+    payload.availability_date = args.availability_date;
+  }
+  payload.source = "chat";
+  payload.is_open_to_work = true;
+
+  let result;
+  if (existing?.id) {
+    result = await supabase
+      .from("candidates")
+      .update(payload)
+      .eq("id", existing.id)
+      .select()
+      .maybeSingle();
+  } else {
+    result = await supabase
+      .from("candidates")
+      .insert(payload)
+      .select()
+      .maybeSingle();
+  }
+
+  if (result.error) {
+    console.error("saveCandidate error:", result.error);
+    return { ok: false, error: result.error.message };
+  }
+  return { ok: true, candidate: result.data, created: !existing };
 }
 
 const cleanText = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -2376,6 +2468,7 @@ Deno.serve(async (req) => {
       mode: string;
     }> = [];
     let actionTaken = false;
+    let candidateSaved = false;
 
     // ---- Process tool calls ----
     // After ANY data tool (lookup_customer / save_brief) we run a 2nd AI pass
@@ -2693,6 +2786,26 @@ Deno.serve(async (req) => {
               content: JSON.stringify({ ok: false, error: "save_failed" }),
             });
           }
+        } else if (toolCall.function.name === "save_candidate") {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await saveCandidate(supabase, args);
+            if (result.ok) candidateSaved = true;
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(result),
+            });
+          } catch (e) {
+            console.error("Error in save_candidate:", e);
+            aiMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ ok: false, error: "save_failed" }),
+            });
+          }
         }
       }
 
@@ -2729,7 +2842,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ reply, conversationId: currentConversationId, packageCards, actionTaken }),
+      JSON.stringify({ reply, conversationId: currentConversationId, packageCards, actionTaken, candidateSaved }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
