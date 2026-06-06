@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/context-menu";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  ChevronLeft, ChevronRight, Pencil, UserPlus, Trash2, Loader2, CalendarDays, Clipboard, Copy, ClipboardPaste, Plus, Minus,
+  ChevronRight, Trash2, Loader2, CalendarDays, Clipboard, Copy, ClipboardPaste, Plus, Minus,
 } from "lucide-react";
 
 type Vacancy = {
@@ -54,9 +54,7 @@ type Props = {
   vacancies: Vacancy[];
   onCreate?: () => void;
   onEdit: (v: Vacancy) => void;
-  onAssign: (id: string) => void;
   onDelete: (id: string) => void;
-  onOpenAI?: (id: string) => void;
   onVacancyChanged?: () => void | Promise<void>;
 };
 
