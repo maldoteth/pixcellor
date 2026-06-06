@@ -73,7 +73,7 @@ export default function PortalVacancySearch() {
 
   const fmtPay = (v: Vac) => {
     if (v.pay_min == null && v.pay_max == null) return null;
-    const cur = v.pay_currency || "GBP";
+    const cur = (v.pay_currency || "GBP") === "GBP" ? "£" : (v.pay_currency || "GBP");
     const lo = v.pay_min != null ? `${cur} ${v.pay_min}` : "";
     const hi = v.pay_max != null ? `${v.pay_max}` : "";
     return `${lo}${hi ? ` – ${hi}` : ""} / ${v.pay_period ?? "year"}`;

@@ -904,7 +904,10 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     };
   }, [rowMode, candidateRowsData, displayRows, weekDates, resolveCell, candidateFilter]);
 
-  const fmtMoney = (n: number) => `${stats.currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  const fmtMoney = (n: number) => {
+    const symbol = stats.currency === "GBP" ? "£" : stats.currency;
+    return `${symbol} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  };
 
   return (
     <div className="rounded-md border bg-card select-none outline-none [&_*]:outline-none" ref={gridRef}>
@@ -1193,7 +1196,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                         <div className="mt-1">
                           {(v.pay_min || v.pay_max) && (
                             <span className="text-[10px] text-muted-foreground">
-                              Pay {v.pay_currency ?? "GBP"} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
+                              Pay {(v.pay_currency ?? "GBP") === "GBP" ? "£" : (v.pay_currency ?? "GBP")} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
                             </span>
                           )}
                         </div>
@@ -1207,7 +1210,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                           const pct = (m / charge) * 100;
                           return (
                             <div className={`mt-1 text-[10px] ${m >= 0 ? "text-emerald-600" : "text-destructive"}`}>
-                              Charge {v.pay_currency ?? "GBP"} {charge.toFixed(2)} · Margin {m.toFixed(2)} ({pct.toFixed(0)}%)
+                              Charge {(v.pay_currency ?? "GBP") === "GBP" ? "£" : (v.pay_currency ?? "GBP")} {charge.toFixed(2)} · Margin {m.toFixed(2)} ({pct.toFixed(0)}%)
                             </div>
                           );
                         })()}

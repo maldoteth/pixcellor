@@ -60,7 +60,8 @@ function hoursOf(row: Row): number {
   return Math.max(0, mins / 60);
 }
 function money(n: number, ccy: string | null) {
-  return `${ccy ?? "GBP"} ${n.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  const symbol = (ccy ?? "GBP") === "GBP" ? "£" : (ccy ?? "GBP");
+  return `${symbol} ${n.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
 
 export default function TimesheetsPanel() {
