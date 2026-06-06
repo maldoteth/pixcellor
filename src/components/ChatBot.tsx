@@ -291,12 +291,12 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     return () => window.removeEventListener("resize", clampWidgetToViewport);
   }, [isMobile, widgetSize.height, widgetSize.width]);
 
-  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | "verify" | "pay" | null>(null);
+  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | null>(null);
   useEffect(() => {
     const openChat = (e: Event) => {
       setIsOpen(true);
-      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" | "pay" }>).detail;
-      if (detail?.action === "call" || detail?.action === "email" || detail?.action === "trial" || detail?.action === "services" || detail?.action === "verify" || detail?.action === "pay") {
+      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" }>).detail;
+      if (detail?.action && ["call","email","trial","services","verify","pay","find-work"].includes(detail.action)) {
         pendingActionRef.current = detail.action;
       }
     };
@@ -552,9 +552,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     }
   };
 
-  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify" | "pay") => {
+  const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work") => {
     if (isDevMode || isLoading) return;
-    setQuickAction(action);
+    if (action !== "find-work") setQuickAction(action);
     const reply = {
       role: "assistant" as const,
       content: action === "call"
@@ -567,7 +567,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
               ? "Happy to help! Tell me which services you're interested in (marketing, business solutions, automation, etc.) and a bit about your goals. Drop your name, email and phone number too and I'll get the right person to put together a tailored quote for you."
               : action === "verify"
                 ? "No problem — please share your order ID or any details from the invoice you received, and I'll help you verify it right away."
-                : "Sure — tell me the amount you'd like to pay (in £) and a short reason (e.g. 'Deposit for Acme website' or 'Invoice INV-203'), and I'll generate a secure Stripe link you can pay with right away.",
+                : action === "find-work"
+                  ? "Hey, I'm Alex 👋 I can match you to live vacancies. Tell me your role/skills, location and availability and I'll check which of our current openings suit you best."
+                  : "Sure — tell me the amount you'd like to pay (in £) and a short reason (e.g. 'Deposit for Acme website' or 'Invoice INV-203'), and I'll generate a secure Stripe link you can pay with right away.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
     // Focus input synchronously so mobile browsers open the keyboard
