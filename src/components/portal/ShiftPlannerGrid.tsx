@@ -308,14 +308,14 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
 
   const clearSelection = () => { setSelected(new Set()); setLastSelected(null); };
 
-  // Clipboard ops (read from refs so they work from key handler with latest state)
+  // Clipboard ops
   const collectClip = (mode: "copy" | "cut") => {
     const sel = selectedRef.current;
     if (sel.size === 0) return;
     const keys = Array.from(sel);
     const items: ClipItem[] = keys.map((k) => {
-      const [vid, dt] = k.split("|");
-      const c = resolveCell(vid, dt);
+      const { vid, slot, date } = parseCellKey(k);
+      const c = resolveCell(vid, slot, date);
       return { start: c.start, finish: c.finish };
     });
     setClipboard({ mode, items, sourceKeys: keys });
@@ -329,17 +329,17 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     const targets = Array.from(sel);
     await Promise.all(
       targets.map(async (k, i) => {
-        const [vid, dt] = k.split("|");
+        const { vid, slot, date } = parseCellKey(k);
         const item = clip.items[i % clip.items.length];
         if (item.start || item.finish) {
-          await upsert(vid, dt, item.start, item.finish, false);
+          await upsert(vid, slot, date, item.start, item.finish, false);
         }
       }),
     );
     if (clip.mode === "cut") {
       await Promise.all(clip.sourceKeys.map((k) => {
-        const [vid, dt] = k.split("|");
-        return removeShift(vid, dt);
+        const { vid, slot, date } = parseCellKey(k);
+        return removeShift(vid, slot, date);
       }));
       setClipboard(null);
     }
@@ -363,7 +363,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     await Promise.all(dates.map(async (dt, i) => {
       const item = clip.items[i % clip.items.length];
       if (item.start || item.finish) {
-        await upsert(bulkPaste.vacancyId, dt, item.start, item.finish, false);
+        await upsert(bulkPaste.vacancyId, bulkPaste.slot, dt, item.start, item.finish, false);
       }
     }));
     setBulkPaste(null);
@@ -371,15 +371,13 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     toast({ title: `Pasted across ${dates.length} day${dates.length === 1 ? "" : "s"}` });
   };
 
-
-
   const deleteSelection = async () => {
     const sel = selectedRef.current;
     if (sel.size === 0) return;
     const keys = Array.from(sel);
     await Promise.all(keys.map((k) => {
-      const [vid, dt] = k.split("|");
-      return removeShift(vid, dt);
+      const { vid, slot, date } = parseCellKey(k);
+      return removeShift(vid, slot, date);
     }));
     await load();
   };
