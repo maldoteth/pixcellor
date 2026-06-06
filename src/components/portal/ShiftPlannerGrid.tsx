@@ -117,7 +117,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit = () => {}, onDelete = () => {}, onVacancyChanged, candidateFilter, secondColumn = "client", candidateColumnOnlyAssigned = false, onCandidateClick, rowMode = "vacancy", viewerMode = "admin" }: Props) {
+export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit = () => {}, onDelete = () => {}, onVacancyChanged, candidateFilter, secondColumn = "client", candidateColumnOnlyAssigned = false, onCandidateClick, rowMode = "vacancy", viewerMode = "admin", hideFirstColumn = false }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
@@ -126,10 +126,12 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const MAX_DAYS = 28;
   const [daysShown, setDaysShown] = useState<number>(7);
   const candidateFirstColW = jobColW + clientColW;
-  const gridTemplate = rowMode === "candidate"
-    ? `${candidateFirstColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`
-    : `${jobColW}px ${clientColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
-  const minGridW = (rowMode === "candidate" ? candidateFirstColW : jobColW + clientColW) + dayMinW * daysShown;
+  const gridTemplate = hideFirstColumn
+    ? `repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`
+    : rowMode === "candidate"
+      ? `${candidateFirstColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`
+      : `${jobColW}px ${clientColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
+  const minGridW = (hideFirstColumn ? 0 : rowMode === "candidate" ? candidateFirstColW : jobColW + clientColW) + dayMinW * daysShown;
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   // shifts[vacancyId][slotIndex][date]
   const [shifts, setShifts] = useState<Record<string, Record<number, Record<string, Shift>>>>({});
