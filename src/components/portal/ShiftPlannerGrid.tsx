@@ -202,6 +202,37 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     }
     return rows;
   }, [sortedVacancies, candidateFilter, shifts, secondColumn, candidateColumnOnlyAssigned, slotAssignedCandidateId, sortBy, sortDir, candidateLookup]);
+
+  // Candidate-row mode: aggregate every assigned shift across all vacancies grouped by candidate.
+  type CandidateRowShift = { vacancy: Vacancy; slot: number; date: string; shift: Shift };
+  type CandidateRow = {
+    info: { id: string; full_name: string; status?: string | null; email?: string | null; phone?: string | null; headline?: string | null; photo_url?: string | null };
+    shifts: CandidateRowShift[];
+  };
+  const candidateRowsData = useMemo<CandidateRow[]>(() => {
+    if (rowMode !== "candidate") return [];
+    const map = new Map<string, CandidateRow>();
+    vacancies.forEach((v) => {
+      const sBySlot = shifts[v.id] ?? {};
+      Object.entries(sBySlot).forEach(([slotStr, byDate]) => {
+        const slot = Number(slotStr);
+        Object.entries(byDate).forEach(([date, s]) => {
+          if (!s || s.cancelled || !s.assignment_overridden || !s.candidate_id) return;
+          const cid = s.candidate_id;
+          if (!map.has(cid)) {
+            const info = candidateLookup.get(cid) ?? { id: cid, full_name: s.candidate_name ?? "Unknown" };
+            map.set(cid, { info, shifts: [] });
+          }
+          map.get(cid)!.shifts.push({ vacancy: v, slot, date, shift: s });
+        });
+      });
+    });
+    const arr = Array.from(map.values());
+    arr.sort((a, b) => (a.info.full_name || "").localeCompare(b.info.full_name || "", undefined, { sensitivity: "base" }));
+    if (sortDir === "desc") arr.reverse();
+    return arr;
+  }, [rowMode, vacancies, shifts, candidateLookup, sortDir]);
+
   const [vacancyClip, setVacancyClip] = useState<Vacancy | null>(null);
   const changeOpenings = async (v: Vacancy, next: number, cloneFromSlot?: number, removeSlot?: number) => {
     const current = Math.max(1, Number(v.openings ?? 1) || 1);
