@@ -320,6 +320,30 @@ const tools = [
   {
     type: "function" as const,
     function: {
+      name: "save_candidate",
+      description: "Register or update a candidate (worker looking for shifts). Call this AS SOON AS the candidate gives you their name and an email — even with partial info. Always include their email so we can key the record. Use this for the candidate sign-up / availability registration flow.",
+      parameters: {
+        type: "object",
+        properties: {
+          email: { type: "string", description: "Candidate's email address (required)." },
+          full_name: { type: "string", description: "Candidate's full name." },
+          phone: { type: "string", description: "Phone number if provided." },
+          location: { type: "string", description: "City / area / postcode they're based in." },
+          headline: { type: "string", description: "Short summary of who they are (e.g. 'Experienced bartender, 5 yrs')." },
+          current_role_title: { type: "string", description: "Their current or most recent job title." },
+          years_experience: { type: "number", description: "Years of experience in their field." },
+          skills: { type: "array", items: { type: "string" }, description: "Skills / role tags (e.g. ['waiter','barista','security'])." },
+          preferred_locations: { type: "array", items: { type: "string" }, description: "Areas they're willing to work in." },
+          availability_date: { type: "string", description: "ISO date (YYYY-MM-DD) of when they can start." },
+          notes: { type: "string", description: "Any other context worth remembering." },
+        },
+        required: ["email"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "save_contact",
       description: "Create or update a sales contact. Call this AS SOON AS you have ANY contact info (email OR phone), even without a real name. If no name yet, pass the email (or phone) as the name placeholder. Call again later with the real name to update the same record. Never wait — capture leads immediately so we don't lose them.",
       parameters: {
