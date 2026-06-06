@@ -404,7 +404,26 @@ export default function VacanciesPanel() {
   };
 
   const handleDelete = async (id: string) => {
-    const ok = await confirm({ title: "Delete vacancy?", description: "This will permanently remove the vacancy and its shifts.", confirmLabel: "Delete", destructive: true });
+    const v = vacancies.find((x) => x.id === id);
+    const clientName = v?.client?.name ?? "this client";
+    const openings = Math.max(1, Number(v?.openings ?? 1) || 1);
+    const dateRange = v?.start_date
+      ? `${v.start_date}${v.end_date && v.end_date !== v.start_date ? ` → ${v.end_date}` : ""}`
+      : "no date window";
+    const assignCount = (v?.assignments ?? []).filter((a) =>
+      ["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage),
+    ).length;
+    const ok = await confirm({
+      title: `Delete "${v?.title ?? "vacancy"}"?`,
+      description:
+        `This removes ONLY this vacancy for ${clientName}. Other vacancies for the same client are not affected.\n\n` +
+        `• Openings: ${openings}\n` +
+        `• Dates: ${dateRange}\n` +
+        `• Active candidate assignments: ${assignCount}\n\n` +
+        `All shifts and timesheets attached to this vacancy will also be deleted. This cannot be undone (a template snapshot will be saved so you can recreate it later).`,
+      confirmLabel: "Delete vacancy",
+      destructive: true,
+    });
     if (!ok) return;
     const { error } = await supabase.rpc("portal_delete_vacancy", { _id: id });
     if (error) { toast({ title: "Delete failed", description: error.message, variant: "destructive" }); return; }
