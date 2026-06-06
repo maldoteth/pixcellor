@@ -1,75 +1,28 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import {
-  addDays,
-  addMonths,
-  eachDayOfInterval,
-  endOfMonth,
-  format,
-  isSameDay,
-  isWithinInterval,
-  startOfMonth,
-  startOfWeek,
-  endOfWeek,
-} from "date-fns";
-import { CalendarDays, ChevronLeft, ChevronRight, LogOut, MapPin } from "lucide-react";
+import { CalendarDays, LogOut } from "lucide-react";
 import KycDocuments from "@/components/portal/KycDocuments";
+import PortalScheduleGrid from "@/components/portal/PortalScheduleGrid";
+import PortalMyJobs from "@/components/portal/PortalMyJobs";
+import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
 
-type Shift = {
-  assignment_id: string;
-  stage: string;
-  vacancy_id: string;
-  title: string;
-  reference: string | null;
-  description: string | null;
-  location: string | null;
-  arrangement: string | null;
-  employment_type: string;
-  status: string;
-  start_date: string | null;
-  end_date: string | null;
-  start_time: string | null;
-  finish_time: string | null;
-  schedule_days: string[] | null;
-  schedule_notes: string | null;
-  hours_per_week: number | null;
-  pay_min: number | null;
-  pay_max: number | null;
-  pay_currency: string | null;
-  pay_period: string | null;
-  benefits: string | null;
-  client_name: string | null;
-};
-
-const DAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-function shiftsOnDate(shifts: Shift[], date: Date): Shift[] {
-  return shifts.filter((s) => {
-    if (!s.start_date) return false;
-    const start = new Date(s.start_date + "T00:00:00");
-    const end = s.end_date ? new Date(s.end_date + "T23:59:59") : addDays(start, 365);
-    if (!isWithinInterval(date, { start, end })) return false;
-    const days = (s.schedule_days ?? []).map((d) => d.slice(0, 3));
-    if (days.length === 0) return true;
-    return days.includes(DAY_KEYS[date.getDay()]);
-  });
-}
+type AccessIds = { as_candidate: string[]; as_client: string[]; email: string | null };
 
 export default function CandidatePortal() {
   const { toast } = useToast();
   const [session, setSession] = useState<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] | null>(null);
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
-  const [shifts, setShifts] = useState<Shift[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [cursor, setCursor] = useState<Date>(startOfMonth(new Date()));
-  const [selected, setSelected] = useState<Date>(new Date());
+  const [access, setAccess] = useState<AccessIds>({ as_candidate: [], as_client: [], email: null });
+  const [myCandidateId, setMyCandidateId] = useState<string | null>(null);
+  const [tab, setTab] = useState("schedule");
+  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -77,22 +30,15 @@ export default function CandidatePortal() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const loadSchedule = useCallback(async () => {
-    setLoading(true);
-    await supabase.rpc("candidate_link_self");
-    const { data, error } = await supabase.rpc("candidate_my_schedule");
-    setLoading(false);
-    if (error) {
-      toast({ title: "Could not load your schedule", description: error.message, variant: "destructive" });
-      return;
-    }
-    setShifts((data as Shift[]) ?? []);
+  const loadAccess = useCallback(async () => {
+    const cid = await supabase.rpc("candidate_link_self" as never);
+    setMyCandidateId((cid.data as string) ?? null);
+    const { data, error } = await supabase.rpc("portal_my_vacancy_ids" as never);
+    if (error) { toast({ title: "Could not load access", description: error.message, variant: "destructive" }); return; }
+    setAccess(data as AccessIds);
   }, [toast]);
 
-  useEffect(() => {
-    if (session) void loadSchedule();
-    else setShifts([]);
-  }, [session, loadSchedule]);
+  useEffect(() => { if (session) void loadAccess(); }, [session, loadAccess, refreshTick]);
 
   const sendMagicLink = async () => {
     if (!email.trim()) return;
@@ -102,38 +48,17 @@ export default function CandidatePortal() {
       options: { emailRedirectTo: `${window.location.origin}/me` },
     });
     setSending(false);
-    if (error) {
-      toast({ title: "Could not send link", description: error.message, variant: "destructive" });
-      return;
-    }
+    if (error) { toast({ title: "Could not send link", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Check your email", description: "We sent you a sign-in link." });
   };
-
-  const monthDays = useMemo(() => {
-    const start = startOfWeek(startOfMonth(cursor), { weekStartsOn: 1 });
-    const end = endOfWeek(endOfMonth(cursor), { weekStartsOn: 1 });
-    return eachDayOfInterval({ start, end });
-  }, [cursor]);
-
-  const selectedShifts = useMemo(() => shiftsOnDate(shifts, selected), [shifts, selected]);
-
-  const upcoming = useMemo(() => {
-    const today = new Date();
-    const out: { date: Date; shift: Shift }[] = [];
-    for (let i = 0; i < 60 && out.length < 20; i++) {
-      const d = addDays(today, i);
-      for (const s of shiftsOnDate(shifts, d)) out.push({ date: d, shift: s });
-    }
-    return out;
-  }, [shifts]);
 
   if (!session) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 p-6">
         <CalendarDays className="h-10 w-10 text-primary" />
-        <h1 className="text-2xl font-semibold">Candidate portal</h1>
+        <h1 className="text-2xl font-semibold">Sign in</h1>
         <p className="text-center text-sm text-muted-foreground">
-          Sign in with the email you used when you applied. We'll send a one-time link to access your schedule.
+          Use the email you applied with (candidates) or the company email on file (clients). We'll send a one-time link.
         </p>
         <div className="w-full space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -146,11 +71,15 @@ export default function CandidatePortal() {
     );
   }
 
+  const isCandidate = access.as_candidate.length > 0 || !!myCandidateId;
+  const isClient = access.as_client.length > 0;
+  const hasAnyAccess = isCandidate || isClient;
+
   return (
-    <main className="mx-auto max-w-6xl space-y-4 p-4">
+    <main className="mx-auto max-w-7xl space-y-4 p-4">
       <header className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">My schedule</h1>
+          <h1 className="text-xl font-semibold">My dashboard</h1>
           <p className="text-xs text-muted-foreground">Signed in as {session.user.email}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()} className="gap-2">
@@ -158,214 +87,46 @@ export default function CandidatePortal() {
         </Button>
       </header>
 
-      {loading && <p className="text-sm text-muted-foreground">Loading your shifts…</p>}
-      {!loading && shifts.length === 0 && (
+      {!hasAnyAccess && (
         <Card>
           <CardContent className="p-6 text-center text-sm text-muted-foreground">
-            You don't have any assigned vacancies yet. Once a recruiter assigns you to a role, your shifts will appear here.
+            We couldn't find any vacancies linked to <strong>{session.user.email}</strong>. If you're a candidate, ask your recruiter to add you with this email. If you're a client, ask us to add this email to your company contacts.
           </CardContent>
         </Card>
       )}
 
-      {shifts.length > 0 && (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <Card>
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <Button variant="outline" size="icon" onClick={() => setCursor((c) => addMonths(c, -1))}><ChevronLeft className="h-4 w-4" /></Button>
-                <div className="font-medium">{format(cursor, "MMMM yyyy")}</div>
-                <Button variant="outline" size="icon" onClick={() => setCursor((c) => addMonths(c, 1))}><ChevronRight className="h-4 w-4" /></Button>
-              </div>
-              <div className="grid grid-cols-7 gap-1 text-center text-[11px] uppercase text-muted-foreground">
-                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => <div key={d}>{d}</div>)}
-              </div>
-              <div className="grid grid-cols-7 gap-1">
-                {monthDays.map((d) => {
-                  const inMonth = d.getMonth() === cursor.getMonth();
-                  const sList = shiftsOnDate(shifts, d);
-                  const isSel = isSameDay(d, selected);
-                  const isToday = isSameDay(d, new Date());
-                  return (
-                    <button
-                      key={d.toISOString()}
-                      onClick={() => setSelected(d)}
-                      className={`relative aspect-square rounded-md border p-1 text-left text-xs transition-colors ${
-                        isSel ? "border-primary bg-primary/10" : "border-border/40 hover:bg-muted/40"
-                      } ${inMonth ? "" : "opacity-40"}`}
-                    >
-                      <div className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] ${isToday ? "bg-primary text-primary-foreground" : ""}`}>
-                        {d.getDate()}
-                      </div>
-                      <div className="mt-1 space-y-0.5">
-                        {sList.slice(0, 2).map((s) => (
-                          <div key={s.assignment_id} className="truncate rounded bg-primary/20 px-1 text-[10px] text-foreground">
-                            {s.start_time ? s.start_time.slice(0, 5) : "•"} {s.title}
-                          </div>
-                        ))}
-                        {sList.length > 2 && <div className="text-[10px] text-muted-foreground">+{sList.length - 2} more</div>}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+      {hasAnyAccess && (
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList>
+            <TabsTrigger value="schedule">Schedule</TabsTrigger>
+            {isCandidate && <TabsTrigger value="jobs">My Jobs</TabsTrigger>}
+            {isClient && <TabsTrigger value="vacancies">Vacancies</TabsTrigger>}
+            {isCandidate && <TabsTrigger value="documents">Documents</TabsTrigger>}
+          </TabsList>
 
-          <div className="space-y-3">
-            <Card>
-              <CardContent className="p-4 space-y-2">
-                <div className="font-medium">{format(selected, "EEEE, d MMM yyyy")}</div>
-                {selectedShifts.length === 0 && <p className="text-sm text-muted-foreground">No shifts scheduled.</p>}
-                {selectedShifts.map((s) => (
-                  <div key={s.assignment_id} className="rounded-md border border-border/50 p-3 text-sm space-y-1">
-                    <div className="font-medium">{s.title}</div>
-                    <div className="text-xs text-muted-foreground">{s.client_name ?? "Client"}{s.reference ? ` · ${s.reference}` : ""}</div>
-                    <div className="text-xs">
-                      {s.start_time?.slice(0, 5) ?? "—"} – {s.finish_time?.slice(0, 5) ?? "—"}
-                      {s.hours_per_week ? ` · ${s.hours_per_week}h/wk` : ""}
-                    </div>
-                    {s.location && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <MapPin className="h-3 w-3" /> {s.location} {s.arrangement ? `(${s.arrangement})` : ""}
-                      </div>
-                    )}
-                    <Badge variant="outline" className="text-[10px]">{s.stage}</Badge>
-                    <ShiftTimesheet vacancyId={s.vacancy_id} date={selected} />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+          <TabsContent value="schedule" className="mt-4">
+            <PortalScheduleGrid key={refreshTick} myCandidateId={myCandidateId} />
+          </TabsContent>
 
-            <Card>
-              <CardContent className="p-4 space-y-2">
-                <div className="font-medium">Upcoming shifts</div>
-                {upcoming.length === 0 && <p className="text-sm text-muted-foreground">No upcoming shifts in the next 60 days.</p>}
-                {upcoming.map(({ date, shift }) => (
-                  <button
-                    key={date.toISOString() + shift.assignment_id}
-                    onClick={() => { setSelected(date); setCursor(startOfMonth(date)); }}
-                    className="flex w-full items-center justify-between gap-2 rounded-md border border-border/40 px-2 py-1.5 text-left text-xs hover:bg-muted/40"
-                  >
-                    <div>
-                      <div className="font-medium">{format(date, "EEE d MMM")}</div>
-                      <div className="text-muted-foreground">{shift.title} · {shift.client_name ?? ""}</div>
-                    </div>
-                    <div className="text-muted-foreground">
-                      {shift.start_time?.slice(0, 5) ?? ""}–{shift.finish_time?.slice(0, 5) ?? ""}
-                    </div>
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+          {isCandidate && (
+            <TabsContent value="jobs" className="mt-4">
+              <PortalMyJobs onChange={() => setRefreshTick((t) => t + 1)} />
+            </TabsContent>
+          )}
+
+          {isClient && (
+            <TabsContent value="vacancies" className="mt-4">
+              <PortalClientVacancies />
+            </TabsContent>
+          )}
+
+          {isCandidate && (
+            <TabsContent value="documents" className="mt-4">
+              <Card><CardContent className="p-4"><KycDocuments mode="candidate" /></CardContent></Card>
+            </TabsContent>
+          )}
+        </Tabs>
       )}
-
-      <Card>
-        <CardContent className="p-4">
-          <KycDocuments mode="candidate" />
-        </CardContent>
-      </Card>
     </main>
   );
 }
-
-function ymd(d: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-type Timesheet = {
-  id: string;
-  actual_start: string | null;
-  actual_finish: string | null;
-  break_minutes: number;
-  status: "pending" | "submitted" | "approved" | "rejected";
-  reject_reason: string | null;
-  worker_notes: string | null;
-};
-
-function ShiftTimesheet({ vacancyId, date }: { vacancyId: string; date: Date }) {
-  const { toast } = useToast();
-  const [ts, setTs] = useState<Timesheet | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [breakMin, setBreakMin] = useState("0");
-  const [notes, setNotes] = useState("");
-  const dateKey = ymd(date);
-
-  const load = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("shift_timesheets")
-      .select("id, actual_start, actual_finish, break_minutes, status, reject_reason, worker_notes")
-      .eq("vacancy_id", vacancyId)
-      .eq("shift_date", dateKey)
-      .maybeSingle();
-    if (error) return;
-    if (data) {
-      setTs(data as Timesheet);
-      setBreakMin(String(data.break_minutes ?? 0));
-      setNotes(data.worker_notes ?? "");
-    } else {
-      setTs(null);
-    }
-  }, [vacancyId, dateKey]);
-
-  useEffect(() => { void load(); }, [load]);
-
-  const call = async (rpc: string, args: Record<string, unknown>) => {
-    setLoading(true);
-    const { error } = await supabase.rpc(rpc as never, args as never);
-    setLoading(false);
-    if (error) { toast({ title: "Action failed", description: error.message, variant: "destructive" }); return false; }
-    await load();
-    return true;
-  };
-
-  const clockIn = () => call("candidate_timesheet_clock_in", { _vacancy_id: vacancyId, _slot: null, _date: dateKey });
-  const clockOut = () => ts && call("candidate_timesheet_clock_out", { _timesheet_id: ts.id, _break_minutes: parseInt(breakMin, 10) || 0 });
-  const saveNotes = () => ts && call("candidate_timesheet_update", { _timesheet_id: ts.id, _actual_start: ts.actual_start, _actual_finish: ts.actual_finish, _break_minutes: parseInt(breakMin, 10) || 0, _worker_notes: notes });
-  const submit = () => ts && call("candidate_timesheet_submit", { _timesheet_id: ts.id });
-
-  const hours = ts?.actual_start && ts?.actual_finish
-    ? Math.max(0, ((new Date(ts.actual_finish).getTime() - new Date(ts.actual_start).getTime()) / 60000 - (ts.break_minutes ?? 0)) / 60)
-    : 0;
-
-  return (
-    <div className="mt-2 rounded-md border border-dashed border-border/60 p-2 space-y-2">
-      <div className="text-[10px] uppercase text-muted-foreground font-semibold">Timesheet</div>
-      {!ts && (
-        <Button size="sm" className="w-full" onClick={clockIn} disabled={loading}>Clock in</Button>
-      )}
-      {ts && (
-        <>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div><div className="text-muted-foreground">In</div><div className="font-medium">{ts.actual_start ? new Date(ts.actual_start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div></div>
-            <div><div className="text-muted-foreground">Out</div><div className="font-medium">{ts.actual_finish ? new Date(ts.actual_finish).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div></div>
-          </div>
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <div className="text-[10px] text-muted-foreground">Break (min)</div>
-              <Input type="number" min={0} value={breakMin} onChange={(e) => setBreakMin(e.target.value)} className="h-8" disabled={ts.status === "approved" || ts.status === "rejected"} />
-            </div>
-            <div className="text-xs"><div className="text-muted-foreground">Hours</div><div className="font-semibold">{hours.toFixed(2)}</div></div>
-          </div>
-          <Input placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="h-8 text-xs" disabled={ts.status === "approved" || ts.status === "rejected"} />
-          <div className="flex flex-wrap gap-1">
-            {(ts.status === "pending" || ts.status === "submitted") && !ts.actual_finish && (
-              <Button size="sm" variant="outline" onClick={clockOut} disabled={loading}>Clock out</Button>
-            )}
-            {(ts.status === "pending" || ts.status === "submitted") && (
-              <>
-                <Button size="sm" variant="ghost" onClick={saveNotes} disabled={loading}>Save</Button>
-                <Button size="sm" onClick={submit} disabled={loading || !ts.actual_start || !ts.actual_finish}>Submit</Button>
-              </>
-            )}
-            <Badge variant="outline" className="text-[10px] ml-auto">{ts.status}</Badge>
-          </div>
-          {ts.status === "rejected" && ts.reject_reason && <div className="text-[11px] text-destructive italic">Rejected: {ts.reject_reason}</div>}
-        </>
-      )}
-    </div>
-  );
-}
-

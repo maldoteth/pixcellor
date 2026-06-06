@@ -3062,11 +3062,37 @@ export type Database = {
         Args: { _vacancy_id: string }
         Returns: undefined
       }
+      portal_my_invitations: { Args: never; Returns: Json }
+      portal_my_shifts: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          assignment_overridden: boolean
+          cancelled: boolean
+          candidate_id: string
+          candidate_name: string
+          client_name: string
+          finish_time: string
+          id: string
+          notes: string
+          shift_date: string
+          slot_index: number
+          start_time: string
+          vacancy_id: string
+          vacancy_title: string
+          viewer_role: string
+        }[]
+      }
+      portal_my_vacancies: { Args: never; Returns: Json }
+      portal_my_vacancy_ids: { Args: never; Returns: Json }
       portal_rank_candidates_for_vacancy: {
         Args: { _limit?: number; _vacancy_id: string }
         Returns: Json
       }
       portal_require_admin: { Args: never; Returns: undefined }
+      portal_respond_invitation: {
+        Args: { _invitation_id: string; _response: string }
+        Returns: Json
+      }
       portal_search_customers: { Args: { _q: string }; Returns: Json }
       portal_send_chat_reply: {
         Args: { _content: string; _conversation_id: string }

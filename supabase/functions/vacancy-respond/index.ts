@@ -19,8 +19,10 @@ Deno.serve(async (req) => {
     if (result?.already_responded) {
       return new Response(JSON.stringify({ ok: true, alreadyResponded: true, status: result.status }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    if (result?.already_filled) {
+      return new Response(JSON.stringify({ ok: true, alreadyFilled: true, status: result.status }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
-    // Fetch vacancy + candidate for emails
     const { data: vac } = await service.from("vacancies").select("title,location,start_date,end_date,start_time,finish_time,schedule_days,client_contact_id").eq("id", result.vacancy_id).single();
     const { data: cand } = await service.from("candidates").select("full_name,email").eq("id", result.candidate_id).single();
     const { data: client } = vac?.client_contact_id ? await service.from("contacts").select("name").eq("id", vac.client_contact_id).maybeSingle() : { data: null } as any;
@@ -44,6 +46,24 @@ Deno.serve(async (req) => {
           },
         },
       });
+
+      // Notify losers
+      const losers = Array.isArray(result?.losers) ? result.losers : [];
+      for (const loser of losers) {
+        if (!loser?.email) continue;
+        await service.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "vacancy-position-filled",
+            recipientEmail: loser.email,
+            idempotencyKey: `vacancy-filled-${result.vacancy_id}-${loser.candidate_id}`,
+            templateData: {
+              candidateName: loser.name,
+              vacancyTitle: vac?.title,
+              clientName: client?.name ?? "the client",
+            },
+          },
+        });
+      }
     }
 
     return new Response(JSON.stringify({ ok: true, status: result.status, vacancyTitle: vac?.title, clientName: client?.name }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });

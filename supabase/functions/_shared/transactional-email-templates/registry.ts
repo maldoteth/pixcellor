@@ -34,6 +34,7 @@ import { template as subscriptionReactivated } from './subscription-reactivated.
 import { template as websiteUpdate } from './website-update.tsx'
 import { template as vacancyInvitation } from './vacancy-invitation.tsx'
 import { template as vacancyConfirmed } from './vacancy-confirmed.tsx'
+import { template as vacancyPositionFilled } from './vacancy-position-filled.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'full-works-order-confirmation': fullWorksOrderConfirmation,
@@ -59,4 +60,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'website-update': websiteUpdate,
   'vacancy-invitation': vacancyInvitation,
   'vacancy-confirmed': vacancyConfirmed,
+  'vacancy-position-filled': vacancyPositionFilled,
 }
