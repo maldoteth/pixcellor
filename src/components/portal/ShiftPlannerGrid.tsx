@@ -320,7 +320,8 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
       const { error } = await supabase.rpc("portal_delete_vacancy_shift" as never, {
         _vacancy_id: vacancyId, _date: date, _slot: slot,
       } as never);
-      if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
+      if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+      await syncVacancyWindow(vacancyId, date, null, null, true);
     } else if (cell.active) {
       // template-only: cancel it explicitly for this slot
       await upsert(vacancyId, slot, date, null, null, true);
