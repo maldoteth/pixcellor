@@ -440,6 +440,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       setMessages(data.manualHandoff || !data.reply ? newMessages : [...newMessages, assistantMsg]);
       if (data.conversationId && !conversationId) setConversationId(data.conversationId);
       if (isDevMode && data.actionTaken) onDevAction?.();
+      if (data.candidateSaved) window.dispatchEvent(new CustomEvent("pixcellor:candidate-registered"));
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages([...newMessages, { role: "assistant", content: "Sorry, I had a hiccup! Could you try that again?" }]);
