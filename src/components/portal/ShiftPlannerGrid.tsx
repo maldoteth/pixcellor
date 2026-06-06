@@ -869,7 +869,9 @@ function Cell(props: {
   clipMode: "copy" | "cut" | null;
   onClick: (e: React.MouseEvent) => void;
   onDoubleClickEdit: boolean;
-  // candidateChoice: undefined = leave assignment alone; null = explicitly unassign; string = candidate id
+  // candidateChoice: undefined = leave assignment alone; null = explicitly unassign;
+  //                  "__inherit__" = clear per-day override, revert to slot default;
+  //                  string id = override with that candidate
   onSave: (start: string, finish: string, candidateChoice?: string | null) => Promise<void> | void;
   onContextDelete: () => void;
   onContextCopy: () => void;
