@@ -436,7 +436,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     const workersWithShifts = new Set<string>();
     const allAssignedWorkers = new Set<string>();
 
-    vacancies.forEach((v) => {
+    displayRows.forEach(({ vacancy: v, slot }) => {
       if (v.pay_currency) currency = v.pay_currency;
       const pay = Number(v.pay_max ?? v.pay_min ?? 0);
       const charge = Number(v.charge_rate ?? 0);
@@ -444,30 +444,31 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       const costPerHour = pay + pay * (paye / 100);
       const marginPerHour = charge - costPerHour;
 
-      const activeAssignments = (v.assignments ?? []).filter((a) =>
+      const slotAssignments = (v.assignments ?? []).filter((a) =>
+        a.slot_index === slot &&
         ["shortlisted", "submitted", "interviewing", "offer", "placed"].includes(a.stage),
       );
-      activeAssignments.forEach((a) => allAssignedWorkers.add(a.candidate_id));
+      slotAssignments.forEach((a) => allAssignedWorkers.add(a.candidate_id));
 
-      let vacHoursThisWeek = 0;
+      let slotHoursThisWeek = 0;
       weekDates.forEach((d) => {
         const dk = ymd(d);
-        const c = resolveCell(v.id, dk);
+        const c = resolveCell(v.id, slot, dk);
         if (!c.active || !c.start || !c.finish) return;
         const [sh, sm] = c.start.split(":").map(Number);
         const [fh, fm] = c.finish.split(":").map(Number);
         let mins = (fh * 60 + fm) - (sh * 60 + sm);
         if (mins < 0) mins += 24 * 60; // overnight
         const hours = mins / 60;
-        vacHoursThisWeek += hours;
+        slotHoursThisWeek += hours;
       });
 
-      if (vacHoursThisWeek > 0) {
-        activeAssignments.forEach((a) => workersWithShifts.add(a.candidate_id));
+      if (slotHoursThisWeek > 0) {
+        slotAssignments.forEach((a) => workersWithShifts.add(a.candidate_id));
       }
-      totalHours += vacHoursThisWeek;
-      totalCharge += vacHoursThisWeek * charge;
-      totalMargin += vacHoursThisWeek * marginPerHour;
+      totalHours += slotHoursThisWeek;
+      totalCharge += slotHoursThisWeek * charge;
+      totalMargin += slotHoursThisWeek * marginPerHour;
     });
 
     const idleWorkers = Array.from(allAssignedWorkers).filter((id) => !workersWithShifts.has(id));
@@ -476,7 +477,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       activeWorkers: workersWithShifts.size,
       idleWorkers: idleWorkers.length,
     };
-  }, [vacancies, weekDates, shifts, resolveCell]);
+  }, [displayRows, weekDates, shifts, resolveCell]);
 
   const fmtMoney = (n: number) => `${stats.currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
