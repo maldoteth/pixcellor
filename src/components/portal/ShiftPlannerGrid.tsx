@@ -102,7 +102,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
+export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onDelete, onVacancyChanged }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
@@ -640,7 +640,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                   {/* Job (frozen) — right-click for vacancy copy/paste */}
                   <ContextMenu>
                     <ContextMenuTrigger asChild>
-                      <div className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2`}>
+                      <div className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2`} onDoubleClick={() => onEdit(v)}>
                         <div className="flex items-center gap-1">
                           <div className="text-sm font-semibold leading-tight flex-1">{v.title}</div>
                           {total > 1 && (
@@ -670,11 +670,8 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                           );
                         })()}
                         <div className="mt-2 flex items-center justify-between gap-1 flex-wrap">
-                          <button onClick={() => onEdit(v)} title="Edit" className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><Pencil className="h-3 w-3" />Edit</button>
-                          <button onClick={() => onAssign(v.id)} title="Assign" className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><UserPlus className="h-3 w-3" />Assign</button>
-                          {onOpenAI && <button onClick={() => onOpenAI(v.id)} title="AI" className="text-[10px] font-semibold text-primary hover:underline">AI</button>}
-                          <button onClick={() => onDelete(v.id)} title="Delete" className="text-[10px] text-destructive hover:underline inline-flex items-center gap-0.5"><Trash2 className="h-3 w-3" /></button>
-                          <Badge variant={v.status === "open" ? "destructive" : v.status === "filled" ? "secondary" : "outline"} className="text-[9px] h-4 px-1 ml-auto">{v.status}</Badge>
+                          <Badge variant={v.status === "open" ? "destructive" : v.status === "filled" ? "secondary" : "outline"} className="text-[9px] h-4 px-1">{v.status}</Badge>
+                          <button onClick={() => onDelete(v.id)} title="Delete" className="ml-auto text-[10px] text-destructive hover:underline inline-flex items-center gap-0.5"><Trash2 className="h-3 w-3" /></button>
                         </div>
 
                       </div>
