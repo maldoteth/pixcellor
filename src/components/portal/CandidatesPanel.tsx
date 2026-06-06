@@ -476,6 +476,21 @@ export default function CandidatesPanel() {
 
       {loading ? (
         <Card className="p-6 text-sm text-muted-foreground">Loading…</Card>
+      ) : view === "calendar" ? (
+        <ShiftPlannerGrid
+          vacancies={allVacancies}
+          candidates={candidates.map(c => ({
+            id: c.id, full_name: c.full_name, status: c.status,
+            email: c.email, phone: c.phone, headline: c.headline ?? c.current_role_title,
+            photo_url: c.photo_url,
+          }))}
+          secondColumn="candidate"
+          candidateColumnOnlyAssigned
+          onEdit={() => { /* editing vacancies happens on the vacancies page */ }}
+          onDelete={() => { /* no-op on candidates view */ }}
+          onCandidateClick={(id) => setActiveId(id)}
+          onVacancyChanged={loadAllVacancies}
+        />
       ) : filtered.length === 0 ? (
         <Card className="p-6 text-sm text-muted-foreground">No candidates yet. Add one or wait for an applicant.</Card>
       ) : view === "list" ? (
