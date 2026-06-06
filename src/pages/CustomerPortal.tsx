@@ -620,7 +620,7 @@ export default function CustomerPortal() {
                     </Button>
                   </div>
                   <div className="min-w-0 max-w-full overflow-hidden">
-                    <PortalScheduleGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
+                    <PortalScheduleAdminGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
                   </div>
                 </TabsContent>
 
