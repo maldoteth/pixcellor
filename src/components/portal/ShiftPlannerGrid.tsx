@@ -1287,6 +1287,33 @@ function Cell(props: {
   );
 }
 
+function ContactLink({ kind, value }: { kind: "email" | "phone"; value: string }) {
+  const href = kind === "email" ? `mailto:${value}` : `tel:${value.replace(/\s+/g, "")}`;
+  const copy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(value);
+      toast({ title: "Copied", description: value });
+    } catch {
+      window.location.href = href;
+    }
+  };
+  return (
+    <a
+      href={href}
+      onClick={(e) => { e.stopPropagation(); }}
+      onContextMenu={copy}
+      onDoubleClick={copy}
+      title={`${value} — click to ${kind === "email" ? "email" : "call"}, double-click or right-click to copy`}
+      className="text-[10px] text-muted-foreground hover:text-foreground hover:underline truncate"
+    >
+      {value}
+    </a>
+  );
+}
+
+
 function StatTile({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: "good" | "bad" | "warn" }) {
   const valueColor =
     accent === "good" ? "text-emerald-600" :
