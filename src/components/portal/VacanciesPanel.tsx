@@ -124,6 +124,8 @@ export default function VacanciesPanel() {
   const [perDayTimes, setPerDayTimes] = useState<Record<string, { start: string; finish: string }>>({});
   const [clientQuery, setClientQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<Array<{ id: string; client_contact_id: string; title: string; snapshot: Record<string, unknown>; created_at: string }>>([]);
+  const [titleFocused, setTitleFocused] = useState(false);
 
   const resetForm = useCallback(() => {
     setForm({ ...emptyForm });
