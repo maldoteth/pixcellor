@@ -124,6 +124,8 @@ export default function VacanciesPanel() {
   const [perDayTimes, setPerDayTimes] = useState<Record<string, { start: string; finish: string }>>({});
   const [clientQuery, setClientQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<Array<{ id: string; client_contact_id: string; title: string; snapshot: Record<string, unknown>; created_at: string }>>([]);
+  const [titleFocused, setTitleFocused] = useState(false);
 
   const resetForm = useCallback(() => {
     setForm({ ...emptyForm });
@@ -218,6 +220,82 @@ export default function VacanciesPanel() {
   }, [toast]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Load saved templates (snapshots of deleted vacancies) when dialog opens
+  useEffect(() => {
+    if (!openDialog) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("vacancy_templates")
+        .select("id,client_contact_id,title,snapshot,created_at")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (!cancelled) setTemplates((data as never) ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [openDialog]);
+
+  const matchingTemplates = useMemo(() => {
+    if (!form.client_contact_id) return [];
+    const q = form.title.trim().toLowerCase();
+    const list = templates.filter((t) => t.client_contact_id === form.client_contact_id);
+    // Deduplicate by title (keep newest)
+    const seen = new Set<string>();
+    const deduped = list.filter((t) => {
+      const k = t.title.trim().toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    if (!q) return deduped.slice(0, 8);
+    return deduped.filter((t) => t.title.toLowerCase().includes(q)).slice(0, 8);
+  }, [templates, form.client_contact_id, form.title]);
+
+  const applyTemplate = (snap: Record<string, unknown>) => {
+    const s = snap as Record<string, unknown>;
+    const str = (k: string) => (s[k] == null ? "" : String(s[k]));
+    const arrJoin = (k: string) => Array.isArray(s[k]) ? (s[k] as string[]).join(", ") : "";
+    const time = (k: string) => {
+      const v = s[k];
+      return typeof v === "string" && v.length >= 5 ? v.slice(0, 5) : "";
+    };
+    setForm((f) => ({
+      ...f,
+      title: str("title"),
+      reference: str("reference"),
+      description: str("description"),
+      location: str("location"),
+      latitude: s.latitude != null ? String(s.latitude) : "",
+      longitude: s.longitude != null ? String(s.longitude) : "",
+      arrangement: str("arrangement") || "onsite",
+      employment_type: str("employment_type") || "permanent",
+      // keep current status (don't restore "closed")
+      openings: s.openings != null ? String(s.openings) : "1",
+      // Intentionally NOT restoring start_date/end_date — those are template-specific
+      start_time: time("start_time"),
+      finish_time: time("finish_time"),
+      schedule_days: Array.isArray(s.schedule_days) ? (s.schedule_days as string[]) : [],
+      schedule_notes: str("schedule_notes"),
+      duration_weeks: s.duration_weeks != null ? String(s.duration_weeks) : "",
+      hours_per_week: s.hours_per_week != null ? String(s.hours_per_week) : "",
+      qualifications: arrJoin("qualifications"),
+      required_skills: arrJoin("required_skills"),
+      nice_to_have_skills: arrJoin("nice_to_have_skills"),
+      certifications: arrJoin("certifications"),
+      right_to_work_required: !!s.right_to_work_required,
+      pay_min: s.pay_min != null ? String(s.pay_min) : "",
+      pay_max: s.pay_max != null ? String(s.pay_max) : "",
+      pay_currency: str("pay_currency") || "GBP",
+      pay_period: str("pay_period") || "hour",
+      benefits: str("benefits"),
+      notes: str("notes"),
+      charge_rate: s.charge_rate != null ? String(s.charge_rate) : "",
+      paye_rate_percent: s.paye_rate_percent != null ? String(s.paye_rate_percent) : "21",
+    }));
+    setTitleFocused(false);
+    toast({ title: "Template applied", description: "Fields filled from saved vacancy." });
+  };
 
   useEffect(() => {
     const refreshVacancies = () => {
@@ -443,7 +521,43 @@ export default function VacanciesPanel() {
                 </Select>
               )}
             </div>
-            <div className="sm:col-span-2"><Label>Job title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={160} /></div>
+            <div className="sm:col-span-2">
+              <Label>Job title *</Label>
+              <div className="relative">
+                <Input
+                  value={form.title}
+                  onChange={(e) => { setForm({ ...form, title: e.target.value }); setTitleFocused(true); }}
+                  onFocus={() => setTitleFocused(true)}
+                  onBlur={() => window.setTimeout(() => setTitleFocused(false), 150)}
+                  maxLength={160}
+                  placeholder={form.client_contact_id ? "Start typing — past vacancies for this client appear below" : "Select a client first to see saved templates"}
+                />
+                {titleFocused && matchingTemplates.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-md border bg-popover p-1 shadow-md">
+                    <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">Saved templates from deleted vacancies</div>
+                    {matchingTemplates.map((t) => {
+                      const s = t.snapshot as Record<string, unknown>;
+                      const bits = [
+                        s.employment_type as string,
+                        s.location as string,
+                        s.pay_min || s.pay_max ? `${s.pay_currency ?? "GBP"} ${s.pay_min ?? "?"}–${s.pay_max ?? "?"}/${s.pay_period ?? ""}` : null,
+                      ].filter(Boolean);
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onMouseDown={(e) => { e.preventDefault(); applyTemplate(t.snapshot); }}
+                          className="flex w-full flex-col items-start gap-0.5 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
+                        >
+                          <span className="font-medium">{t.title}</span>
+                          {bits.length > 0 && <span className="truncate text-xs text-muted-foreground">{bits.join(" · ")}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
             <div><Label>Reference</Label><Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></div>
             <div className="sm:col-span-2">
               <Label>Site address</Label>
