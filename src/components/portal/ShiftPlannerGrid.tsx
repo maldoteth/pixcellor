@@ -69,7 +69,7 @@ type Props = {
   rowMode?: "vacancy" | "candidate";
 };
 
-type ClipItem = { start: string | null; finish: string | null; candidateId: string | null };
+type ClipItem = { start: string | null; finish: string | null; candidateId: string | null; sourceVacancyId?: string };
 
 const DOW_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const DOW_DISPLAY = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
@@ -474,7 +474,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     const items: ClipItem[] = keys.map((k) => {
       const { vid, slot, date } = parseCellKey(k);
       const c = resolveCell(vid, slot, date);
-      return { start: c.start, finish: c.finish, candidateId: c.assignee?.id ?? null };
+      return { start: c.start, finish: c.finish, candidateId: c.assignee?.id ?? null, sourceVacancyId: vid };
     });
     setClipboard({ mode, items, sourceKeys: keys });
     toast({ title: `${mode === "copy" ? "Copied" : "Cut"} ${items.length} cell${items.length === 1 ? "" : "s"}` });
@@ -507,7 +507,62 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   };
   useEffect(() => { pasteClipRef.current = pasteClip; });
 
-  // Bulk paste: repeat clipboard pattern from a target date for N days/weeks/months
+  // Paste clipboard items onto a candidate's day cell. Each item is materialised as a
+  // brand-new single-day vacancy cloned from the source vacancy, with the target candidate assigned.
+  const pasteToCandidateCell = async (targetCandidateId: string, targetDate: string) => {
+    const clip = clipboardRef.current;
+    if (!clip || clip.items.length === 0) return;
+    let created = 0;
+    for (const item of clip.items) {
+      const sourceVacancy = item.sourceVacancyId ? vacancies.find((v) => v.id === item.sourceVacancyId) : null;
+      if (!sourceVacancy?.client?.id) continue;
+      const startTime = item.start ? (item.start.length === 5 ? `${item.start}:00` : item.start) : sourceVacancy.start_time;
+      const finishTime = item.finish ? (item.finish.length === 5 ? `${item.finish}:00` : item.finish) : sourceVacancy.finish_time;
+      const payload: Record<string, unknown> = {
+        client_contact_id: sourceVacancy.client.id,
+        title: sourceVacancy.title,
+        reference: sourceVacancy.reference,
+        location: sourceVacancy.location,
+        status: "open",
+        openings: 1,
+        start_date: targetDate,
+        end_date: targetDate,
+        start_time: startTime,
+        finish_time: finishTime,
+        schedule_days: [],
+        pay_min: sourceVacancy.pay_min,
+        pay_max: sourceVacancy.pay_max,
+        pay_currency: sourceVacancy.pay_currency ?? "GBP",
+        pay_period: sourceVacancy.pay_period ?? "hour",
+        charge_rate: sourceVacancy.charge_rate,
+        paye_rate_percent: sourceVacancy.paye_rate_percent,
+      };
+      const { data, error } = await supabase.rpc("portal_create_vacancy" as never, { _payload: payload } as never);
+      if (error || !data) { toast({ title: "Paste failed", description: error?.message ?? "Could not create vacancy", variant: "destructive" }); continue; }
+      const newVacancyId = (data as { id?: string })?.id;
+      if (!newVacancyId) continue;
+      await supabase.rpc("portal_upsert_vacancy_shift" as never, {
+        _vacancy_id: newVacancyId, _date: targetDate,
+        _start: item.start, _finish: item.finish, _cancelled: false, _slot: 0,
+      } as never);
+      await supabase.rpc("portal_set_shift_candidate" as never, {
+        _vacancy_id: newVacancyId, _slot: 0, _date: targetDate, _candidate_id: targetCandidateId,
+      } as never);
+      created++;
+    }
+    if (clip.mode === "cut") {
+      await Promise.all(clip.sourceKeys.map((k) => {
+        const { vid, slot, date } = parseCellKey(k);
+        return removeShift(vid, slot, date);
+      }));
+      setClipboard(null);
+    }
+    await onVacancyChanged?.();
+    await load();
+    if (created > 0) toast({ title: `Pasted ${created} shift${created === 1 ? "" : "s"} as new vacanc${created === 1 ? "y" : "ies"}` });
+  };
+
+
   const runBulkPaste = async () => {
     const clip = clipboardRef.current;
     if (!clip || !bulkPaste) return;
@@ -521,13 +576,21 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     for (let d = new Date(startDate); d < end; d.setDate(d.getDate() + 1)) {
       dates.push(ymd(d));
     }
-    await Promise.all(dates.map(async (dt, i) => {
-      const item = clip.items[i % clip.items.length];
-      if (item.start || item.finish) {
-        await upsert(bulkPaste.vacancyId, bulkPaste.slot, dt, item.start, item.finish, false);
-        await setShiftCandidate(bulkPaste.vacancyId, bulkPaste.slot, dt, item.candidateId);
+    const candidateTarget = bulkPaste.vacancyId.startsWith("__cand__:") ? bulkPaste.vacancyId.slice("__cand__:".length) : null;
+    if (candidateTarget) {
+      // Sequential so each new vacancy create call doesn't race
+      for (const dt of dates) {
+        await pasteToCandidateCell(candidateTarget, dt);
       }
-    }));
+    } else {
+      await Promise.all(dates.map(async (dt, i) => {
+        const item = clip.items[i % clip.items.length];
+        if (item.start || item.finish) {
+          await upsert(bulkPaste.vacancyId, bulkPaste.slot, dt, item.start, item.finish, false);
+          await setShiftCandidate(bulkPaste.vacancyId, bulkPaste.slot, dt, item.candidateId);
+        }
+      }));
+    }
     setBulkPaste(null);
     await load();
     toast({ title: `Pasted across ${dates.length} day${dates.length === 1 ? "" : "s"}` });
@@ -820,38 +883,109 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                   const isToday = dk === todayKey;
                   const dayShifts = row.shifts.filter((x) => x.date === dk);
                   return (
-                    <div
-                      key={dIdx}
-                      className={`relative border-b border-r p-1 min-h-[78px] ${isToday ? "bg-primary/5" : rowBg}`}
-                    >
-                      {dayShifts.length === 0 ? (
-                        <div className="flex h-full w-full items-center justify-center rounded border border-dashed border-border/40 text-[11px] text-muted-foreground/60">—</div>
-                      ) : (
-                        <div className="flex h-full w-full flex-col gap-1">
-                          {dayShifts.map(({ vacancy: v, slot, shift: s }) => {
-                            const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
-                            const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
-                            return (
-                              <button
-                                key={`${v.id}#${slot}`}
-                                type="button"
-                                onDoubleClick={() => onEdit(v)}
-                                title={`${v.title}${v.client?.name ? ` · ${v.client.name}` : ""}\n${to12h(startStr)} – ${to12h(finishStr)}\nDouble-click to open job`}
-                                className="flex w-full flex-col items-start gap-0.5 rounded border border-primary/30 bg-primary/5 px-1.5 py-1 text-left hover:bg-primary/10"
-                              >
-                                <div className="text-[11px] font-semibold leading-tight truncate w-full">{v.title}</div>
-                                <div className="text-[10px] leading-tight text-muted-foreground truncate w-full">
-                                  {to12h(startStr)}{finishStr ? ` – ${to12h(finishStr)}` : ""}
-                                </div>
-                                {v.client?.name && (
-                                  <div className="text-[9px] leading-tight text-muted-foreground/80 truncate w-full">{v.client.name}</div>
-                                )}
-                              </button>
-                            );
-                          })}
+                    <ContextMenu key={dIdx}>
+                      <ContextMenuTrigger asChild>
+                        <div
+                          className={`relative border-b border-r p-1 min-h-[78px] ${isToday ? "bg-primary/5" : rowBg}`}
+                        >
+                          {dayShifts.length === 0 ? (
+                            <div className="flex h-full w-full items-center justify-center rounded border border-dashed border-border/40 text-[11px] text-muted-foreground/60">—</div>
+                          ) : (
+                            <div className="flex h-full w-full flex-col gap-1">
+                              {dayShifts.map(({ vacancy: v, slot, shift: s }) => {
+                                const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
+                                const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
+                                const chipKey = cellKey(v.id, slot, dk);
+                                const isChipSelected = selected.has(chipKey);
+                                const isChipClip = clipboard?.sourceKeys.includes(chipKey) ?? false;
+                                return (
+                                  <ContextMenu key={`${v.id}#${slot}`}>
+                                    <ContextMenuTrigger asChild>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const fakeIdx = dIdx;
+                                          if (e.shiftKey || e.ctrlKey || e.metaKey) {
+                                            // toggle into selection
+                                            setSelected((prev) => {
+                                              const next = new Set(prev);
+                                              if (next.has(chipKey)) next.delete(chipKey); else next.add(chipKey);
+                                              selectedRef.current = next;
+                                              return next;
+                                            });
+                                            setLastSelected({ vacancyId: v.id, slot, dateIdx: fakeIdx });
+                                          } else {
+                                            const next = new Set([chipKey]);
+                                            selectedRef.current = next;
+                                            setSelected(next);
+                                            setLastSelected({ vacancyId: v.id, slot, dateIdx: fakeIdx });
+                                          }
+                                          blurActive();
+                                        }}
+                                        onDoubleClick={() => onEdit(v)}
+                                        title={`${v.title}${v.client?.name ? ` · ${v.client.name}` : ""}\n${to12h(startStr)} – ${to12h(finishStr)}\nDouble-click to open job · Right-click for copy/cut/delete`}
+                                        className={`flex w-full flex-col items-start gap-0.5 rounded border border-primary/30 bg-primary/5 px-1.5 py-1 text-left hover:bg-primary/10 ${isChipSelected ? "ring-2 ring-primary ring-inset" : ""} ${isChipClip ? (clipboard?.mode === "cut" ? "outline-dashed outline-2 outline-destructive/60" : "outline-dashed outline-2 outline-primary/60") : ""}`}
+                                      >
+                                        <div className="text-[11px] font-semibold leading-tight truncate w-full">{v.title}</div>
+                                        <div className="text-[10px] leading-tight text-muted-foreground truncate w-full">
+                                          {to12h(startStr)}{finishStr ? ` – ${to12h(finishStr)}` : ""}
+                                        </div>
+                                        {v.client?.name && (
+                                          <div className="text-[9px] leading-tight text-muted-foreground/80 truncate w-full">{v.client.name}</div>
+                                        )}
+                                      </button>
+                                    </ContextMenuTrigger>
+                                    <ContextMenuContent className="w-48">
+                                      <ContextMenuItem onSelect={() => {
+                                        const next = new Set([chipKey]);
+                                        selectedRef.current = next; setSelected(next);
+                                        setTimeout(() => collectClip("copy"), 0);
+                                      }}>
+                                        <Copy className="h-3.5 w-3.5 mr-2" />Copy shift
+                                      </ContextMenuItem>
+                                      <ContextMenuItem onSelect={() => {
+                                        const next = new Set([chipKey]);
+                                        selectedRef.current = next; setSelected(next);
+                                        setTimeout(() => collectClip("cut"), 0);
+                                      }}>
+                                        <Clipboard className="h-3.5 w-3.5 mr-2" />Cut shift
+                                      </ContextMenuItem>
+                                      <ContextMenuItem onSelect={() => onEdit(v)}>
+                                        Open job
+                                      </ContextMenuItem>
+                                      <ContextMenuSeparator />
+                                      <ContextMenuItem
+                                        onSelect={async () => { await removeShift(v.id, slot, dk); await load(); }}
+                                        className="text-destructive focus:text-destructive"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5 mr-2" />Delete shift
+                                      </ContextMenuItem>
+                                    </ContextMenuContent>
+                                  </ContextMenu>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent className="w-56">
+                        <ContextMenuItem
+                          onSelect={() => void pasteToCandidateCell(row.info.id, dk)}
+                          disabled={!clipboard}
+                        >
+                          <ClipboardPaste className="h-3.5 w-3.5 mr-2" />
+                          Paste shift here{clipboard ? ` (${clipboard.items.length})` : ""}
+                        </ContextMenuItem>
+                        <ContextMenuItem
+                          onSelect={() => setBulkPaste({ vacancyId: `__cand__:${row.info.id}`, slot: 0, date: dk })}
+                          disabled={!clipboard}
+                        >
+                          <ClipboardPaste className="h-3.5 w-3.5 mr-2" />
+                          Bulk paste from here…
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
                   );
                 })}
               </div>
