@@ -595,41 +595,69 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     let currency = "GBP";
     const workersWithShifts = new Set<string>();
     const allAssignedWorkers = new Set<string>();
+    const weekKeys = new Set(weekDates.map(ymd));
 
-    displayRows.forEach(({ vacancy: v, slot }) => {
-      if (v.pay_currency) currency = v.pay_currency;
-      const pay = Number(v.pay_max ?? v.pay_min ?? 0);
-      const charge = Number(v.charge_rate ?? 0);
-      const paye = Number(v.paye_rate_percent ?? 21);
-      const costPerHour = pay + pay * (paye / 100);
-      const marginPerHour = charge - costPerHour;
-
-      const slotAssignments = (v.assignments ?? []).filter((a) =>
-        a.slot_index === slot &&
-        ["shortlisted", "submitted", "interviewing", "offer", "placed"].includes(a.stage),
-      );
-      slotAssignments.forEach((a) => allAssignedWorkers.add(a.candidate_id));
-
-      let slotHoursThisWeek = 0;
-      weekDates.forEach((d) => {
-        const dk = ymd(d);
-        const c = resolveCell(v.id, slot, dk);
-        if (!c.active || !c.start || !c.finish) return;
-        const [sh, sm] = c.start.split(":").map(Number);
-        const [fh, fm] = c.finish.split(":").map(Number);
-        let mins = (fh * 60 + fm) - (sh * 60 + sm);
-        if (mins < 0) mins += 24 * 60; // overnight
-        const hours = mins / 60;
-        slotHoursThisWeek += hours;
+    if (rowMode === "candidate") {
+      candidateRowsData.forEach((row) => {
+        allAssignedWorkers.add(row.info.id);
+        row.shifts.forEach(({ vacancy: v, shift: s, date }) => {
+          if (!weekKeys.has(date)) return;
+          if (v.pay_currency) currency = v.pay_currency;
+          const pay = Number(v.pay_max ?? v.pay_min ?? 0);
+          const charge = Number(v.charge_rate ?? 0);
+          const paye = Number(v.paye_rate_percent ?? 21);
+          const costPerHour = pay + pay * (paye / 100);
+          const marginPerHour = charge - costPerHour;
+          const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
+          const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
+          if (!startStr || !finishStr) return;
+          const [sh, sm] = startStr.split(":").map(Number);
+          const [fh, fm] = finishStr.split(":").map(Number);
+          let mins = (fh * 60 + fm) - (sh * 60 + sm);
+          if (mins < 0) mins += 24 * 60;
+          const hours = mins / 60;
+          totalHours += hours;
+          totalCharge += hours * charge;
+          totalMargin += hours * marginPerHour;
+          workersWithShifts.add(row.info.id);
+        });
       });
+    } else {
+      displayRows.forEach(({ vacancy: v, slot }) => {
+        if (v.pay_currency) currency = v.pay_currency;
+        const pay = Number(v.pay_max ?? v.pay_min ?? 0);
+        const charge = Number(v.charge_rate ?? 0);
+        const paye = Number(v.paye_rate_percent ?? 21);
+        const costPerHour = pay + pay * (paye / 100);
+        const marginPerHour = charge - costPerHour;
 
-      if (slotHoursThisWeek > 0) {
-        slotAssignments.forEach((a) => workersWithShifts.add(a.candidate_id));
-      }
-      totalHours += slotHoursThisWeek;
-      totalCharge += slotHoursThisWeek * charge;
-      totalMargin += slotHoursThisWeek * marginPerHour;
-    });
+        const slotAssignments = (v.assignments ?? []).filter((a) =>
+          a.slot_index === slot &&
+          ["shortlisted", "submitted", "interviewing", "offer", "placed"].includes(a.stage),
+        );
+        slotAssignments.forEach((a) => allAssignedWorkers.add(a.candidate_id));
+
+        let slotHoursThisWeek = 0;
+        weekDates.forEach((d) => {
+          const dk = ymd(d);
+          const c = resolveCell(v.id, slot, dk);
+          if (!c.active || !c.start || !c.finish) return;
+          const [sh, sm] = c.start.split(":").map(Number);
+          const [fh, fm] = c.finish.split(":").map(Number);
+          let mins = (fh * 60 + fm) - (sh * 60 + sm);
+          if (mins < 0) mins += 24 * 60;
+          const hours = mins / 60;
+          slotHoursThisWeek += hours;
+        });
+
+        if (slotHoursThisWeek > 0) {
+          slotAssignments.forEach((a) => workersWithShifts.add(a.candidate_id));
+        }
+        totalHours += slotHoursThisWeek;
+        totalCharge += slotHoursThisWeek * charge;
+        totalMargin += slotHoursThisWeek * marginPerHour;
+      });
+    }
 
     const idleWorkers = Array.from(allAssignedWorkers).filter((id) => !workersWithShifts.has(id));
     return {
@@ -637,7 +665,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
       activeWorkers: workersWithShifts.size,
       idleWorkers: idleWorkers.length,
     };
-  }, [displayRows, weekDates, resolveCell]);
+  }, [rowMode, candidateRowsData, displayRows, weekDates, resolveCell]);
 
   const fmtMoney = (n: number) => `${stats.currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
