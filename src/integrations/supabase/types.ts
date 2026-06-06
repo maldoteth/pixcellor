@@ -2042,6 +2042,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          slot_index: number
           stage: Database["public"]["Enums"]["vacancy_assignment_stage"]
           updated_at: string
           vacancy_id: string
@@ -2054,6 +2055,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          slot_index?: number
           stage?: Database["public"]["Enums"]["vacancy_assignment_stage"]
           updated_at?: string
           vacancy_id: string
@@ -2066,6 +2068,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          slot_index?: number
           stage?: Database["public"]["Enums"]["vacancy_assignment_stage"]
           updated_at?: string
           vacancy_id?: string
@@ -2164,6 +2167,7 @@ export type Database = {
           id: string
           notes: string | null
           shift_date: string
+          slot_index: number
           start_time: string | null
           updated_at: string
           vacancy_id: string
@@ -2175,6 +2179,7 @@ export type Database = {
           id?: string
           notes?: string | null
           shift_date: string
+          slot_index?: number
           start_time?: string | null
           updated_at?: string
           vacancy_id: string
@@ -2186,6 +2191,7 @@ export type Database = {
           id?: string
           notes?: string | null
           shift_date?: string
+          slot_index?: number
           start_time?: string | null
           updated_at?: string
           vacancy_id?: string
@@ -2557,10 +2563,15 @@ export type Database = {
         Args: {
           _candidate_id: string
           _notes?: string
+          _slot?: number
           _stage?: string
           _vacancy_id: string
         }
         Returns: Json
+      }
+      portal_clone_vacancy_slot: {
+        Args: { _from_slot: number; _to_slot: number; _vacancy_id: string }
+        Returns: undefined
       }
       portal_close_chat_case: {
         Args: { _conversation_id: string }
@@ -2700,7 +2711,11 @@ export type Database = {
       }
       portal_delete_vacancy: { Args: { _id: string }; Returns: undefined }
       portal_delete_vacancy_shift: {
-        Args: { _date: string; _vacancy_id: string }
+        Args: { _date: string; _slot?: number; _vacancy_id: string }
+        Returns: undefined
+      }
+      portal_delete_vacancy_slot: {
+        Args: { _slot: number; _vacancy_id: string }
         Returns: undefined
       }
       portal_fetch_messages: {
@@ -2721,6 +2736,7 @@ export type Database = {
           id: string
           notes: string
           shift_date: string
+          slot_index: number
           start_time: string
           vacancy_id: string
         }[]
@@ -2847,10 +2863,11 @@ export type Database = {
           _date: string
           _finish: string
           _notes?: string
+          _slot?: number
           _start: string
           _vacancy_id: string
         }
-        Returns: string
+        Returns: undefined
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
