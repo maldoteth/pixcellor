@@ -347,6 +347,7 @@ export default function CandidatesPanel() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => setCreateOpen(true)}><Plus className="mr-2 h-4 w-4" /> New candidate</Button>
+          <Button variant="outline" onClick={() => setTimesheetsOpen(true)}><Clock className="mr-2 h-4 w-4" /> Timesheets</Button>
           <Button variant="outline" onClick={() => setImportOpen(true)}><Upload className="mr-2 h-4 w-4" /> Import CSV</Button>
           <Button variant="outline" onClick={exportCsv}>Export CSV</Button>
         </div>
