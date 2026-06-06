@@ -521,7 +521,43 @@ export default function VacanciesPanel() {
                 </Select>
               )}
             </div>
-            <div className="sm:col-span-2"><Label>Job title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={160} /></div>
+            <div className="sm:col-span-2">
+              <Label>Job title *</Label>
+              <div className="relative">
+                <Input
+                  value={form.title}
+                  onChange={(e) => { setForm({ ...form, title: e.target.value }); setTitleFocused(true); }}
+                  onFocus={() => setTitleFocused(true)}
+                  onBlur={() => window.setTimeout(() => setTitleFocused(false), 150)}
+                  maxLength={160}
+                  placeholder={form.client_contact_id ? "Start typing — past vacancies for this client appear below" : "Select a client first to see saved templates"}
+                />
+                {titleFocused && matchingTemplates.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-md border bg-popover p-1 shadow-md">
+                    <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">Saved templates from deleted vacancies</div>
+                    {matchingTemplates.map((t) => {
+                      const s = t.snapshot as Record<string, unknown>;
+                      const bits = [
+                        s.employment_type as string,
+                        s.location as string,
+                        s.pay_min || s.pay_max ? `${s.pay_currency ?? "GBP"} ${s.pay_min ?? "?"}–${s.pay_max ?? "?"}/${s.pay_period ?? ""}` : null,
+                      ].filter(Boolean);
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onMouseDown={(e) => { e.preventDefault(); applyTemplate(t.snapshot); }}
+                          className="flex w-full flex-col items-start gap-0.5 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
+                        >
+                          <span className="font-medium">{t.title}</span>
+                          {bits.length > 0 && <span className="truncate text-xs text-muted-foreground">{bits.join(" · ")}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
             <div><Label>Reference</Label><Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></div>
             <div className="sm:col-span-2">
               <Label>Site address</Label>
