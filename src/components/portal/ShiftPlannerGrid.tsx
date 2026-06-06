@@ -507,7 +507,62 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   };
   useEffect(() => { pasteClipRef.current = pasteClip; });
 
-  // Bulk paste: repeat clipboard pattern from a target date for N days/weeks/months
+  // Paste clipboard items onto a candidate's day cell. Each item is materialised as a
+  // brand-new single-day vacancy cloned from the source vacancy, with the target candidate assigned.
+  const pasteToCandidateCell = async (targetCandidateId: string, targetDate: string) => {
+    const clip = clipboardRef.current;
+    if (!clip || clip.items.length === 0) return;
+    let created = 0;
+    for (const item of clip.items) {
+      const sourceVacancy = item.sourceVacancyId ? vacancies.find((v) => v.id === item.sourceVacancyId) : null;
+      if (!sourceVacancy?.client?.id) continue;
+      const startTime = item.start ? (item.start.length === 5 ? `${item.start}:00` : item.start) : sourceVacancy.start_time;
+      const finishTime = item.finish ? (item.finish.length === 5 ? `${item.finish}:00` : item.finish) : sourceVacancy.finish_time;
+      const payload: Record<string, unknown> = {
+        client_contact_id: sourceVacancy.client.id,
+        title: sourceVacancy.title,
+        reference: sourceVacancy.reference,
+        location: sourceVacancy.location,
+        status: "open",
+        openings: 1,
+        start_date: targetDate,
+        end_date: targetDate,
+        start_time: startTime,
+        finish_time: finishTime,
+        schedule_days: [],
+        pay_min: sourceVacancy.pay_min,
+        pay_max: sourceVacancy.pay_max,
+        pay_currency: sourceVacancy.pay_currency ?? "GBP",
+        pay_period: sourceVacancy.pay_period ?? "hour",
+        charge_rate: sourceVacancy.charge_rate,
+        paye_rate_percent: sourceVacancy.paye_rate_percent,
+      };
+      const { data, error } = await supabase.rpc("portal_create_vacancy" as never, { _payload: payload } as never);
+      if (error || !data) { toast({ title: "Paste failed", description: error?.message ?? "Could not create vacancy", variant: "destructive" }); continue; }
+      const newVacancyId = (data as { id?: string })?.id;
+      if (!newVacancyId) continue;
+      await supabase.rpc("portal_upsert_vacancy_shift" as never, {
+        _vacancy_id: newVacancyId, _date: targetDate,
+        _start: item.start, _finish: item.finish, _cancelled: false, _slot: 0,
+      } as never);
+      await supabase.rpc("portal_set_shift_candidate" as never, {
+        _vacancy_id: newVacancyId, _slot: 0, _date: targetDate, _candidate_id: targetCandidateId,
+      } as never);
+      created++;
+    }
+    if (clip.mode === "cut") {
+      await Promise.all(clip.sourceKeys.map((k) => {
+        const { vid, slot, date } = parseCellKey(k);
+        return removeShift(vid, slot, date);
+      }));
+      setClipboard(null);
+    }
+    await onVacancyChanged?.();
+    await load();
+    if (created > 0) toast({ title: `Pasted ${created} shift${created === 1 ? "" : "s"} as new vacanc${created === 1 ? "y" : "ies"}` });
+  };
+
+
   const runBulkPaste = async () => {
     const clip = clipboardRef.current;
     if (!clip || !bulkPaste) return;
