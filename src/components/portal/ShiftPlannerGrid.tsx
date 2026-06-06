@@ -898,11 +898,15 @@ function Cell(props: {
     ? (assignee ? assignee.id : ASSIGNEE_NONE)
     : ASSIGNEE_INHERIT;
   const [assigneeValue, setAssigneeValue] = useState<string>(initialAssigneeValue);
-  useEffect(() => {
+  const syncEditorValues = useCallback(() => {
     setSt(start ?? defaultStart);
     setFi(finish ?? defaultFinish);
     setAssigneeValue(!active ? ASSIGNEE_NONE : overridden ? (assignee ? assignee.id : ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
-  }, [start, finish, defaultStart, defaultFinish, active, overridden, assignee]);
+  }, [start, finish, defaultStart, defaultFinish, active, overridden, assignee?.id]);
+
+  useEffect(() => {
+    if (!editOpen) syncEditorValues();
+  }, [syncEditorValues, editOpen]);
 
   const todayTint = isToday ? "bg-primary/5" : rowBg;
   const selectionRing = isSelected ? "ring-2 ring-primary ring-inset" : "";
@@ -959,11 +963,11 @@ function Cell(props: {
           tabIndex={-1}
           aria-selected={isSelected}
           onClick={onClick}
-          onDoubleClick={() => { if (onDoubleClickEdit) setEditOpen(true); }}
+          onDoubleClick={() => { if (onDoubleClickEdit) { syncEditorValues(); setEditOpen(true); } }}
           className={`relative cursor-pointer select-none border-b border-r ${todayTint} p-1 min-h-[78px] outline-none focus:outline-none focus-visible:outline-none ${selectionRing} ${clipBorder}`}
         >
           {inner}
-          <Popover open={editOpen} onOpenChange={setEditOpen}>
+          <Popover open={editOpen} onOpenChange={(open) => { if (open) syncEditorValues(); setEditOpen(open); }}>
             <PopoverTrigger asChild>
               <span className="absolute inset-0 pointer-events-none" />
             </PopoverTrigger>
@@ -1004,7 +1008,7 @@ function Cell(props: {
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         {!active && !cancelled && <ContextMenuItem onSelect={onContextAdd}>Add shift</ContextMenuItem>}
-        <ContextMenuItem onSelect={(e) => { e.preventDefault(); setTimeout(() => setEditOpen(true), 50); }}>Edit shift…</ContextMenuItem>
+        <ContextMenuItem onSelect={(e) => { e.preventDefault(); setTimeout(() => { syncEditorValues(); setEditOpen(true); }, 50); }}>Edit shift…</ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onSelect={onContextCopy} disabled={!active}>Copy</ContextMenuItem>
         <ContextMenuItem onSelect={onContextCut} disabled={!active}>Cut</ContextMenuItem>
