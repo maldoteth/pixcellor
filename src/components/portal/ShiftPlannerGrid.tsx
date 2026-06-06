@@ -734,6 +734,7 @@ function Cell(props: {
   cancelled: boolean;
   start: string | null;
   finish: string | null;
+  assignee: { id: string; name: string } | null;
   isSelected: boolean;
   isClipSource: boolean;
   clipMode: "copy" | "cut" | null;
@@ -748,7 +749,7 @@ function Cell(props: {
   onContextBulkPaste: () => void;
   clipboardHasItems: boolean;
 }) {
-  const { date, rowBg, isToday, active, cancelled, start, finish, isSelected, isClipSource, clipMode,
+  const { date, rowBg, isToday, active, cancelled, start, finish, assignee, isSelected, isClipSource, clipMode,
     onClick, onDoubleClickEdit, onSave, onContextDelete, onContextCopy, onContextCut, onContextPaste, onContextAdd, onContextBulkPaste, clipboardHasItems } = props;
 
   const [editOpen, setEditOpen] = useState(false);
@@ -760,9 +761,13 @@ function Cell(props: {
   const selectionRing = isSelected ? "ring-2 ring-primary ring-inset" : "";
   const clipBorder = isClipSource ? (clipMode === "cut" ? "outline-dashed outline-2 outline-destructive/60" : "outline-dashed outline-2 outline-primary/60") : "";
 
+  const initials = (name?: string) => {
+    if (!name) return "?";
+    return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
+  };
+
   let inner: React.ReactNode;
   if (!active) {
-    // Empty / cancelled both render as empty so cancelling a day looks like an empty slot
     inner = (
       <div className="flex h-full w-full items-center justify-center rounded border border-dashed border-border/40 text-[11px] text-muted-foreground/60">
         —
@@ -770,9 +775,17 @@ function Cell(props: {
     );
   } else {
     inner = (
-      <div className="flex h-full w-full flex-col items-start justify-center rounded border border-primary/30 bg-primary/5 px-2 py-1.5 text-left">
+      <div className="flex h-full w-full flex-col items-start justify-center rounded border border-primary/30 bg-primary/5 px-2 py-1.5 text-left gap-0.5">
         <div className="text-[11px] font-semibold leading-tight text-foreground">{to12h(start)}</div>
         <div className="text-[11px] leading-tight text-muted-foreground">{to12h(finish)}</div>
+        {assignee && (
+          <div className="mt-0.5 flex items-center gap-1 max-w-full">
+            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[8px] font-semibold text-primary">
+              {initials(assignee.name)}
+            </span>
+            <span className="truncate text-[10px] text-foreground/80">{assignee.name}</span>
+          </div>
+        )}
       </div>
     );
   }
