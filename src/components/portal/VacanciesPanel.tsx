@@ -255,6 +255,11 @@ export default function VacanciesPanel() {
     });
   }, [vacancies, query, statusFilter]);
 
+  const editingVacancy = useMemo(
+    () => editingId ? vacancies.find((v) => v.id === editingId) ?? null : null,
+    [editingId, vacancies],
+  );
+
   const toArr = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
   const handleCreate = async () => {
@@ -346,7 +351,7 @@ export default function VacanciesPanel() {
     } as never);
     if (error) { toast({ title: "Assign failed", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Candidate assigned" });
-    setAssignTo(null); setAssignCandidateId(""); setAssignStage("shortlisted");
+    setAssignCandidateId(""); setAssignStage("shortlisted");
     load();
   };
 
