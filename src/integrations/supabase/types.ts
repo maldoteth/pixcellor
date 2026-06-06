@@ -2324,6 +2324,44 @@ export type Database = {
           },
         ]
       }
+      vacancy_templates: {
+        Row: {
+          client_contact_id: string
+          created_at: string
+          deleted_by: string | null
+          id: string
+          snapshot: Json
+          source_vacancy_id: string | null
+          title: string
+        }
+        Insert: {
+          client_contact_id: string
+          created_at?: string
+          deleted_by?: string | null
+          id?: string
+          snapshot: Json
+          source_vacancy_id?: string | null
+          title: string
+        }
+        Update: {
+          client_contact_id?: string
+          created_at?: string
+          deleted_by?: string | null
+          id?: string
+          snapshot?: Json
+          source_vacancy_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacancy_templates_client_contact_id_fkey"
+            columns: ["client_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vision_previews: {
         Row: {
           brief: string | null
