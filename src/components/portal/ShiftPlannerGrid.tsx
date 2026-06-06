@@ -121,8 +121,11 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const dayMinW = isMobile ? 84 : 140;
   const MAX_DAYS = 28;
   const [daysShown, setDaysShown] = useState<number>(7);
-  const gridTemplate = `${jobColW}px ${clientColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
-  const minGridW = jobColW + clientColW + dayMinW * daysShown;
+  const candidateFirstColW = jobColW + clientColW;
+  const gridTemplate = rowMode === "candidate"
+    ? `${candidateFirstColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`
+    : `${jobColW}px ${clientColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
+  const minGridW = (rowMode === "candidate" ? candidateFirstColW : jobColW + clientColW) + dayMinW * daysShown;
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   // shifts[vacancyId][slotIndex][date]
   const [shifts, setShifts] = useState<Record<string, Record<number, Record<string, Shift>>>>({});
@@ -736,14 +739,16 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
             >
               {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
             </button>
-            <button
-              type="button"
-              onClick={() => toggleSort("client")}
-              className="sticky z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]"
-              style={{ left: `${jobColW}px` }}
-            >
-              {rowMode === "candidate" ? "Details" : secondColumn === "candidate" ? "Candidate" : "Client"}{sortArrow("client")}
-            </button>
+            {rowMode !== "candidate" && (
+              <button
+                type="button"
+                onClick={() => toggleSort("client")}
+                className="sticky z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]"
+                style={{ left: `${jobColW}px` }}
+              >
+                {secondColumn === "candidate" ? "Candidate" : "Client"}{sortArrow("client")}
+              </button>
+            )}
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
               const dow = DOW_DISPLAY[(new Date(ymd(d) + "T00:00:00").getDay() + 6) % 7];
@@ -785,23 +790,29 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
               <div key={row.info.id} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
                 {/* Candidate (frozen) */}
                 <div
-                  className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2 ${onCandidateClick ? "cursor-pointer hover:bg-muted/40" : ""}`}
-                  onClick={() => onCandidateClick?.(row.info.id)}
+                  className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`}
                 >
-                  <div className="text-sm font-semibold leading-tight truncate">{row.info.full_name}</div>
-                  {row.info.headline && <div className="text-[10px] text-muted-foreground line-clamp-1">{row.info.headline}</div>}
-                  <div className="mt-1 text-[10px] text-muted-foreground">
-                    {row.shifts.filter((x) => weekKeys.has(x.date)).length} shift{row.shifts.filter((x) => weekKeys.has(x.date)).length === 1 ? "" : "s"} · {rowHours.toFixed(1)}h
+                  <div
+                    className={onCandidateClick ? "cursor-pointer hover:opacity-80" : ""}
+                    onClick={() => onCandidateClick?.(row.info.id)}
+                  >
+                    <div className="text-sm font-semibold leading-tight truncate">{row.info.full_name}</div>
+                    {row.info.headline && <div className="text-[10px] text-muted-foreground line-clamp-1">{row.info.headline}</div>}
                   </div>
-                </div>
-                {/* Details column */}
-                <div
-                  className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`}
-                  style={{ left: `${jobColW}px` }}
-                >
-                  {row.info.email && <div className="text-[10px] text-muted-foreground truncate">{row.info.email}</div>}
-                  {row.info.phone && <div className="text-[10px] text-muted-foreground truncate">{row.info.phone}</div>}
-                  {row.info.status && <Badge variant="outline" className="text-[9px] h-4 px-1 mt-1">{row.info.status}</Badge>}
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
+                    <span>{row.shifts.filter((x) => weekKeys.has(x.date)).length} shift{row.shifts.filter((x) => weekKeys.has(x.date)).length === 1 ? "" : "s"} · {rowHours.toFixed(1)}h</span>
+                    {row.info.status && <Badge variant="outline" className="text-[9px] h-4 px-1">{row.info.status}</Badge>}
+                  </div>
+                  {(row.info.email || row.info.phone) && (
+                    <div className="mt-1 flex flex-col gap-0.5">
+                      {row.info.email && (
+                        <ContactLink kind="email" value={row.info.email} />
+                      )}
+                      {row.info.phone && (
+                        <ContactLink kind="phone" value={row.info.phone} />
+                      )}
+                    </div>
+                  )}
                 </div>
                 {/* Day cells: chips per assigned shift on that date */}
                 {weekDates.map((d, dIdx) => {
@@ -1275,6 +1286,34 @@ function Cell(props: {
 
   );
 }
+
+function ContactLink({ kind, value }: { kind: "email" | "phone"; value: string }) {
+  const href = kind === "email" ? `mailto:${value}` : `tel:${value.replace(/\s+/g, "")}`;
+  const copy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(value);
+      const { toast } = await import("@/hooks/use-toast");
+      toast({ title: "Copied", description: value });
+    } catch {
+      window.location.href = href;
+    }
+  };
+  return (
+    <a
+      href={href}
+      onClick={(e) => { e.stopPropagation(); }}
+      onContextMenu={copy}
+      onDoubleClick={copy}
+      title={`${value} — click to ${kind === "email" ? "email" : "call"}, double-click or right-click to copy`}
+      className="text-[10px] text-muted-foreground hover:text-foreground hover:underline truncate"
+    >
+      {value}
+    </a>
+  );
+}
+
 
 function StatTile({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: "good" | "bad" | "warn" }) {
   const valueColor =
