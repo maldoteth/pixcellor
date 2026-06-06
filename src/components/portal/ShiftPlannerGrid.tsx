@@ -69,7 +69,7 @@ type Props = {
   rowMode?: "vacancy" | "candidate";
 };
 
-type ClipItem = { start: string | null; finish: string | null; candidateId: string | null };
+type ClipItem = { start: string | null; finish: string | null; candidateId: string | null; sourceVacancyId?: string };
 
 const DOW_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const DOW_DISPLAY = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
