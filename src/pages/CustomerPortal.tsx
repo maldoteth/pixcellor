@@ -607,7 +607,7 @@ export default function CustomerPortal() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="schedule" className="space-y-4">
+                <TabsContent value="schedule" className="min-w-0 space-y-4">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <SectionHeader title="Schedule" description="Your shifts across every vacancy. Empty days are shown so you can plan ahead." />
                     <Button
@@ -619,8 +619,11 @@ export default function CustomerPortal() {
                       <Search className="h-4 w-4" /> Find work with Alex
                     </Button>
                   </div>
-                  <PortalScheduleGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
+                  <div className="min-w-0 max-w-full overflow-hidden">
+                    <PortalScheduleGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
+                  </div>
                 </TabsContent>
+
 
                 {isCandidate && (
                   <TabsContent value="myjobs" className="space-y-4">
