@@ -552,9 +552,6 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
         <div className="flex items-center gap-2">
-          <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setWeekStart((d) => addDays(d, -7))}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
           <div className="flex items-center gap-2 rounded-md border px-3 py-1 text-sm">
             <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="font-medium">{weekLabel}</span>
