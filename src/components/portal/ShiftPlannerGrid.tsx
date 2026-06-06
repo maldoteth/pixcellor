@@ -103,11 +103,13 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
 export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const jobColW = isMobile ? 120 : 260;
-  const clientColW = isMobile ? 90 : 180;
+  const jobColW = isMobile ? 110 : 240;
+  const clientColW = isMobile ? 80 : 170;
   const dayMinW = isMobile ? 84 : 140;
-  const gridTemplate = `${jobColW}px ${clientColW}px repeat(7, minmax(${dayMinW}px, 1fr))`;
-  const minGridW = jobColW + clientColW + dayMinW * 7;
+  const MAX_DAYS = 28;
+  const [daysShown, setDaysShown] = useState<number>(7);
+  const gridTemplate = `${jobColW}px ${clientColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
+  const minGridW = jobColW + clientColW + dayMinW * daysShown;
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   // shifts[vacancyId][slotIndex][date]
   const [shifts, setShifts] = useState<Record<string, Record<number, Record<string, Shift>>>>({});
@@ -180,13 +182,13 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
 
   const weekDates = useMemo(() => {
     const arr: Date[] = [];
-    for (let i = 0; i < 7; i++) arr.push(addDays(weekStart, i));
+    for (let i = 0; i < daysShown; i++) arr.push(addDays(weekStart, i));
     return arr;
-  }, [weekStart]);
+  }, [weekStart, daysShown]);
   useEffect(() => { weekDatesRef.current = weekDates; }, [weekDates]);
 
   const fromKey = ymd(weekStart);
-  const toKey = ymd(weekDates[6]);
+  const toKey = ymd(weekDates[weekDates.length - 1]);
 
   const load = useCallback(async () => {
     if (vacancies.length === 0) return;
@@ -442,7 +444,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     return () => document.removeEventListener("mousedown", onDocDown);
   }, []);
 
-  const weekLabel = `${weekStart.toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${weekDates[6].toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
+  const weekLabel = `${weekStart.toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${weekDates[weekDates.length - 1].toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
   const todayKey = ymd(new Date());
 
   // ----- Weekly stats: margin, hours, active workers, idle workers -----
@@ -521,7 +523,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
           <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setWeekStart((d) => addDays(d, 7))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => setWeekStart(startOfWeek(new Date()))}>Today</Button>
+          <Button size="sm" variant="ghost" onClick={() => { setWeekStart(startOfWeek(new Date())); setDaysShown(7); }}>Today</Button>
           {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -532,22 +534,57 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
               {clipboard.mode === "cut" ? "Cut" : "Copied"} {clipboard.items.length}
             </span>
           )}
-          <span className="hidden md:inline">{"\n"}</span>
+          <span className="hidden md:inline">·</span>
+          <span>{daysShown}d</span>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 px-2 text-xs"
+            disabled={daysShown >= MAX_DAYS}
+            onClick={() => setDaysShown((n) => Math.min(MAX_DAYS, n + 7))}
+          >
+            +1 week
+          </Button>
+          {daysShown > 7 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2 text-xs"
+              onClick={() => setDaysShown(7)}
+            >
+              Reset
+            </Button>
+          )}
         </div>
       </div>
+
 
       {/* Grid */}
       <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:thin]" style={{ touchAction: "pan-x pan-y" }}>
         <div style={{ minWidth: `${minGridW}px` }}>
           {/* Header row */}
-          <div className="grid sticky top-0 z-20 bg-muted/30" style={{ gridTemplateColumns: gridTemplate }}>
-            <button type="button" onClick={() => toggleSort("title")} className={`${isMobile ? "" : "sticky left-0 z-30"} border-b border-r bg-muted/30 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground`}>Job{sortArrow("title")}</button>
-            <button type="button" onClick={() => toggleSort("client")} className={`${isMobile ? "" : "sticky z-30"} border-b border-r bg-muted/30 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground`} style={isMobile ? undefined : { left: `${jobColW}px` }}>Client{sortArrow("client")}</button>
+          <div className="grid sticky top-0 z-20" style={{ gridTemplateColumns: gridTemplate }}>
+            <button
+              type="button"
+              onClick={() => toggleSort("title")}
+              className="sticky left-0 z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+            >
+              Job{sortArrow("title")}
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleSort("client")}
+              className="sticky z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]"
+              style={{ left: `${jobColW}px` }}
+            >
+              Client{sortArrow("client")}
+            </button>
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
+              const dow = DOW_DISPLAY[(new Date(ymd(d) + "T00:00:00").getDay() + 6) % 7];
               return (
-                <div key={i} className={`border-b border-r px-2 py-2 text-center ${isToday ? "bg-primary/10" : ""}`}>
-                  <div className="text-[10px] font-semibold uppercase text-muted-foreground">{DOW_DISPLAY[i]}</div>
+                <div key={i} className={`border-b border-r px-2 py-2 text-center bg-muted ${isToday ? "bg-primary/10" : ""}`}>
+                  <div className="text-[10px] font-semibold uppercase text-muted-foreground">{dow}</div>
                   <div className={`text-xs ${isToday ? "font-bold text-primary" : "text-foreground"}`}>
                     {d.toLocaleDateString(undefined, { day: "numeric", month: "short" })}
                   </div>
@@ -562,14 +599,14 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
           ) : (
             <>
             {displayRows.map(({ vacancy: v, slot, total }, rowIdx) => {
-              const rowBg = rowIdx % 2 === 0 ? "bg-background" : "bg-muted/10";
+              const rowBg = rowIdx % 2 === 0 ? "bg-card" : "bg-background";
               const rowKey = `${v.id}#${slot}`;
               return (
                 <div key={rowKey} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
                   {/* Job (frozen) — right-click for vacancy copy/paste */}
                   <ContextMenu>
                     <ContextMenuTrigger asChild>
-                      <div className={`${isMobile ? "" : "sticky left-0 z-10"} border-b border-r ${rowBg} px-2 py-2`}>
+                      <div className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2`}>
                         <div className="flex items-center gap-1">
                           <div className="text-sm font-semibold leading-tight flex-1">{v.title}</div>
                           {total > 1 && (
@@ -628,7 +665,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                     </ContextMenuContent>
                   </ContextMenu>
                   {/* Client (frozen) */}
-                  <div className={`${isMobile ? "" : "sticky z-10"} border-b border-r ${rowBg} px-2 py-2`} style={isMobile ? undefined : { left: `${jobColW}px` }}>
+                  <div className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`} style={{ left: `${jobColW}px` }}>
                     <div className="text-sm">{v.client?.name ?? "—"}</div>
                     {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
                   </div>
@@ -681,12 +718,12 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
             <ContextMenu>
               <ContextMenuTrigger asChild>
                 <div className="grid" style={{ gridTemplateColumns: gridTemplate }}>
-                  <div className={`${isMobile ? "" : "sticky left-0 z-10"} border-b border-r bg-muted/5 px-2 py-3 min-h-[78px] flex items-center justify-center text-[11px] text-muted-foreground/70 italic`}>
+                  <div className="sticky left-0 z-10 border-b border-r bg-card px-2 py-3 min-h-[78px] flex items-center justify-center text-[11px] text-muted-foreground/70 italic">
                     {vacancyClip ? `Right-click to paste "${vacancyClip.title}"` : "Right-click → copy a vacancy first"}
                   </div>
-                  <div className={`${isMobile ? "" : "sticky z-10"} border-b border-r bg-muted/5`} style={isMobile ? undefined : { left: `${jobColW}px` }} />
+                  <div className="sticky z-10 border-b border-r bg-card shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]" style={{ left: `${jobColW}px` }} />
                   {weekDates.map((_, i) => (
-                    <div key={i} className="border-b border-r bg-muted/5" />
+                    <div key={i} className="border-b border-r bg-background" />
                   ))}
                 </div>
               </ContextMenuTrigger>
