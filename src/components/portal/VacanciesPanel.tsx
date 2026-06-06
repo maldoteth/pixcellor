@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Briefcase, Plus, Trash2, UserPlus, X, Search, Loader2, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -107,6 +107,7 @@ const emptyForm = {
 
 export default function VacanciesPanel() {
   const { toast } = useToast();
+  const realtimeTimerRef = useRef<number | null>(null);
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [clients, setClients] = useState<ClientOpt[]>([]);
   const [candidates, setCandidates] = useState<CandidateOpt[]>([]);
@@ -215,6 +216,28 @@ export default function VacanciesPanel() {
   }, [toast]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const refreshVacancies = () => {
+      if (realtimeTimerRef.current) window.clearTimeout(realtimeTimerRef.current);
+      realtimeTimerRef.current = window.setTimeout(() => {
+        realtimeTimerRef.current = null;
+        void load();
+      }, 150);
+    };
+
+    const channel = supabase
+      .channel("vacancies-panel-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "vacancies" }, refreshVacancies)
+      .on("postgres_changes", { event: "*", schema: "public", table: "vacancy_assignments" }, refreshVacancies)
+      .on("postgres_changes", { event: "*", schema: "public", table: "vacancy_shifts" }, refreshVacancies)
+      .subscribe();
+
+    return () => {
+      if (realtimeTimerRef.current) window.clearTimeout(realtimeTimerRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [load]);
 
   const filtered = useMemo(() => {
     return vacancies.filter((v) => {
