@@ -463,6 +463,70 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     });
   };
 
+  // Range select for candidate mode: rectangle across candidate rows × dates,
+  // picking every chip on each (row, date) cell in the rectangle.
+  const rangeSelectCandidate = (candidateId: string, dateIdx: number) => {
+    if (!lastSelected) {
+      // No anchor yet — select every chip on this single cell
+      const dk = ymd(weekDates[dateIdx]);
+      const row = candidateRowsData.find((r) => r.info.id === candidateId);
+      const keys = (row?.shifts ?? []).filter((x) => x.date === dk).map((x) => cellKey(x.vacancy.id, x.slot, dk));
+      const next = new Set(keys);
+      selectedRef.current = next;
+      setSelected(next);
+      setLastSelected({ vacancyId: candidateId, slot: -1, dateIdx });
+      blurActive();
+      return;
+    }
+    setSelected((prev) => {
+      const next = new Set(prev);
+      const rowIds = candidateRowsData.map((r) => r.info.id);
+      const r1 = rowIds.indexOf(lastSelected.vacancyId);
+      const r2 = rowIds.indexOf(candidateId);
+      if (r1 < 0 || r2 < 0) { selectedRef.current = next; return next; }
+      const [rMin, rMax] = [Math.min(r1, r2), Math.max(r1, r2)];
+      const [dMin, dMax] = [Math.min(lastSelected.dateIdx, dateIdx), Math.max(lastSelected.dateIdx, dateIdx)];
+      for (let r = rMin; r <= rMax; r++) {
+        const row = candidateRowsData[r];
+        for (let d = dMin; d <= dMax; d++) {
+          const dk = ymd(weekDates[d]);
+          row.shifts.filter((x) => x.date === dk).forEach((x) => {
+            next.add(cellKey(x.vacancy.id, x.slot, dk));
+          });
+        }
+      }
+      selectedRef.current = next;
+      return next;
+    });
+  };
+
+  // Ctrl/Cmd+A — select every visible shift cell (vacancy mode) or every chip (candidate mode).
+  const selectAll = () => {
+    const keys: string[] = [];
+    if (rowMode === "candidate") {
+      const weekKeys = new Set(weekDates.map(ymd));
+      candidateRowsData.forEach((row) => {
+        row.shifts.forEach((x) => {
+          if (weekKeys.has(x.date)) keys.push(cellKey(x.vacancy.id, x.slot, x.date));
+        });
+      });
+    } else {
+      displayRows.forEach(({ vacancy: v, slot }) => {
+        weekDates.forEach((d) => {
+          const dk = ymd(d);
+          const c = resolveCell(v.id, slot, dk);
+          if (c.active && !c.cancelled) keys.push(cellKey(v.id, slot, dk));
+        });
+      });
+    }
+    const next = new Set(keys);
+    selectedRef.current = next;
+    setSelected(next);
+    if (keys.length > 0) toast({ title: `Selected ${keys.length} shift${keys.length === 1 ? "" : "s"}` });
+  };
+  const selectAllRef = useRef<() => void>(() => undefined);
+  useEffect(() => { selectAllRef.current = selectAll; });
+
   const clearSelection = () => { setSelected(new Set()); setLastSelected(null); };
   useEffect(() => { clearSelectionRef.current = clearSelection; });
 
