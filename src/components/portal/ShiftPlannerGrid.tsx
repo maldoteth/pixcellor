@@ -1196,7 +1196,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                         <div className="mt-1">
                           {(v.pay_min || v.pay_max) && (
                             <span className="text-[10px] text-muted-foreground">
-                              Pay {v.pay_currency ?? "GBP"} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
+                              Pay {(v.pay_currency ?? "GBP") === "GBP" ? "£" : (v.pay_currency ?? "GBP")} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
                             </span>
                           )}
                         </div>
