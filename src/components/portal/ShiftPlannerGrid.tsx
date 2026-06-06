@@ -1008,20 +1008,21 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           const fakeIdx = dIdx;
-                                          if (e.shiftKey || e.ctrlKey || e.metaKey) {
-                                            // toggle into selection
+                                          if (e.shiftKey) {
+                                            rangeSelectCandidate(row.info.id, fakeIdx);
+                                          } else if (e.ctrlKey || e.metaKey) {
                                             setSelected((prev) => {
                                               const next = new Set(prev);
                                               if (next.has(chipKey)) next.delete(chipKey); else next.add(chipKey);
                                               selectedRef.current = next;
                                               return next;
                                             });
-                                            setLastSelected({ vacancyId: v.id, slot, dateIdx: fakeIdx });
+                                            setLastSelected({ vacancyId: row.info.id, slot: -1, dateIdx: fakeIdx });
                                           } else {
                                             const next = new Set([chipKey]);
                                             selectedRef.current = next;
                                             setSelected(next);
-                                            setLastSelected({ vacancyId: v.id, slot, dateIdx: fakeIdx });
+                                            setLastSelected({ vacancyId: row.info.id, slot: -1, dateIdx: fakeIdx });
                                           }
                                           blurActive();
                                         }}
