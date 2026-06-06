@@ -1210,7 +1210,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                           const pct = (m / charge) * 100;
                           return (
                             <div className={`mt-1 text-[10px] ${m >= 0 ? "text-emerald-600" : "text-destructive"}`}>
-                              Charge {v.pay_currency ?? "GBP"} {charge.toFixed(2)} · Margin {m.toFixed(2)} ({pct.toFixed(0)}%)
+                              Charge {(v.pay_currency ?? "GBP") === "GBP" ? "£" : (v.pay_currency ?? "GBP")} {charge.toFixed(2)} · Margin {m.toFixed(2)} ({pct.toFixed(0)}%)
                             </div>
                           );
                         })()}
