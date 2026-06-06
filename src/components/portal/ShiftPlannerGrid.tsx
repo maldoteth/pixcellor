@@ -125,7 +125,33 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const dayMinW = isMobile ? 84 : 140;
   const MAX_DAYS = 28;
   const [daysShown, setDaysShown] = useState<number>(7);
-  const candidateFirstColW = jobColW + clientColW;
+  const defaultCandidateColW = jobColW + clientColW;
+  const CANDIDATE_COL_MIN = isMobile ? 120 : 160;
+  const CANDIDATE_COL_MAX = 640;
+  const [candidateFirstColW, setCandidateFirstColW] = useState<number>(() => {
+    if (typeof window === "undefined") return defaultCandidateColW;
+    const v = Number(window.localStorage.getItem("pix.shiftGrid.candidateColW"));
+    return Number.isFinite(v) && v >= 80 ? v : defaultCandidateColW;
+  });
+  const resizingRef = useRef<{ startX: number; startW: number } | null>(null);
+  const onResizeStart = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    resizingRef.current = { startX: e.clientX, startW: candidateFirstColW };
+  };
+  const onResizeMove = (e: React.PointerEvent) => {
+    if (!resizingRef.current) return;
+    const delta = e.clientX - resizingRef.current.startX;
+    const next = Math.max(CANDIDATE_COL_MIN, Math.min(CANDIDATE_COL_MAX, resizingRef.current.startW + delta));
+    setCandidateFirstColW(next);
+  };
+  const onResizeEnd = (e: React.PointerEvent) => {
+    if (!resizingRef.current) return;
+    resizingRef.current = null;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+    try { window.localStorage.setItem("pix.shiftGrid.candidateColW", String(candidateFirstColW)); } catch {}
+  };
   const gridTemplate = hideFirstColumn
     ? `repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`
     : rowMode === "candidate"
@@ -985,13 +1011,28 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
           {/* Header row */}
           <div className="grid sticky top-0 z-20" style={{ gridTemplateColumns: gridTemplate }}>
             {!hideFirstColumn && (
-              <button
-                type="button"
-                onClick={() => toggleSort("title")}
-                className="sticky left-0 z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
-              >
-                {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
-              </button>
+              <div className="sticky left-0 z-30 border-b border-r bg-muted flex items-stretch relative">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("title")}
+                  className="flex-1 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                >
+                  {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
+                </button>
+                {rowMode === "candidate" && (
+                  <div
+                    role="separator"
+                    aria-orientation="vertical"
+                    title="Drag to resize column"
+                    onPointerDown={onResizeStart}
+                    onPointerMove={onResizeMove}
+                    onPointerUp={onResizeEnd}
+                    onPointerCancel={onResizeEnd}
+                    onDoubleClick={() => { setCandidateFirstColW(defaultCandidateColW); try { window.localStorage.removeItem("pix.shiftGrid.candidateColW"); } catch {} }}
+                    className="absolute right-0 top-0 h-full w-2 cursor-col-resize select-none touch-none hover:bg-primary/30 active:bg-primary/50"
+                  />
+                )}
+              </div>
             )}
             {!hideFirstColumn && rowMode !== "candidate" && (
               <button
