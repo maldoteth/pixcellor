@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Briefcase, Plus, Trash2, UserPlus, X, Search, Loader2, Pencil } from "lucide-react";
+import { Briefcase, Plus, Trash2, UserPlus, Search, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,7 +12,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import AIRecommendationsPanel from "./AIRecommendationsPanel";
 import PlaceAutocomplete from "@/components/ui/place-autocomplete";
-import VacancyCalendarStrip from "./VacancyCalendarStrip";
 import ShiftPlannerGrid from "./ShiftPlannerGrid";
 
 type Vacancy = {
@@ -118,14 +116,12 @@ export default function VacanciesPanel() {
   const [openDialog, setOpenDialog] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
-  const [assignTo, setAssignTo] = useState<string | null>(null);
   const [assignCandidateId, setAssignCandidateId] = useState<string>("");
   const [assignStage, setAssignStage] = useState<string>("shortlisted");
   const [customTimes, setCustomTimes] = useState(false);
   const [perDayTimes, setPerDayTimes] = useState<Record<string, { start: string; finish: string }>>({});
   const [clientQuery, setClientQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [aiFor, setAiFor] = useState<string | null>(null);
 
   const resetForm = useCallback(() => {
     setForm({ ...emptyForm });
@@ -133,6 +129,8 @@ export default function VacanciesPanel() {
     setCustomTimes(false);
     setClientQuery("");
     setEditingId(null);
+    setAssignCandidateId("");
+    setAssignStage("shortlisted");
   }, []);
 
   const openEdit = (v: Vacancy) => {
@@ -255,6 +253,11 @@ export default function VacanciesPanel() {
     });
   }, [vacancies, query, statusFilter]);
 
+  const editingVacancy = useMemo(
+    () => editingId ? vacancies.find((v) => v.id === editingId) ?? null : null,
+    [editingId, vacancies],
+  );
+
   const toArr = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
   const handleCreate = async () => {
@@ -346,7 +349,7 @@ export default function VacanciesPanel() {
     } as never);
     if (error) { toast({ title: "Assign failed", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Candidate assigned" });
-    setAssignTo(null); setAssignCandidateId(""); setAssignStage("shortlisted");
+    setAssignCandidateId(""); setAssignStage("shortlisted");
     load();
   };
 
@@ -394,47 +397,9 @@ export default function VacanciesPanel() {
           vacancies={filtered}
           onCreate={() => { resetForm(); setOpenDialog(true); }}
           onEdit={openEdit}
-          onAssign={(id) => setAssignTo(id)}
           onDelete={handleDelete}
-          onOpenAI={(id) => setAiFor(id)}
           onVacancyChanged={load}
         />
-      )}
-
-      {aiFor && (
-        <Dialog open={!!aiFor} onOpenChange={(o) => { if (!o) setAiFor(null); }}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>AI recommendations</DialogTitle></DialogHeader>
-            <AIRecommendationsPanel vacancyId={aiFor} />
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {assignTo && (
-        <Dialog open={!!assignTo} onOpenChange={(o) => { if (!o) { setAssignTo(null); setAssignCandidateId(""); } }}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>Assign candidate</DialogTitle></DialogHeader>
-            <div className="space-y-3">
-              <Select value={assignCandidateId} onValueChange={setAssignCandidateId}>
-                <SelectTrigger><SelectValue placeholder="Select candidate…" /></SelectTrigger>
-                <SelectContent>
-                  {candidates.map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}{c.headline ? ` — ${c.headline}` : ""}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={assignStage} onValueChange={setAssignStage}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-              </Select>
-              <div className="text-xs text-muted-foreground">
-                Tip: open AI recommendations and assignments by editing the vacancy.
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="ghost" onClick={() => { setAssignTo(null); setAssignCandidateId(""); }}>Cancel</Button>
-              <Button onClick={() => assignTo && handleAssign(assignTo)}>Assign</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       )}
 
       <Dialog open={openDialog} onOpenChange={(o) => { setOpenDialog(o); if (!o) resetForm(); }}>
@@ -601,6 +566,53 @@ export default function VacanciesPanel() {
             <div className="sm:col-span-2"><Label>Benefits</Label><Textarea rows={2} value={form.benefits} onChange={(e) => setForm({ ...form, benefits: e.target.value })} /></div>
             <div className="sm:col-span-2"><Label>Description</Label><Textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="sm:col-span-2"><Label>Internal notes</Label><Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+            {editingVacancy && (
+              <div className="sm:col-span-2 space-y-3 border-t pt-3">
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <Card>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><UserPlus className="h-4 w-4" />Assignments</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid gap-2 sm:grid-cols-[1fr_140px_auto]">
+                        <Select value={assignCandidateId} onValueChange={setAssignCandidateId}>
+                          <SelectTrigger><SelectValue placeholder="Select candidate…" /></SelectTrigger>
+                          <SelectContent>
+                            {candidates.map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}{c.headline ? ` — ${c.headline}` : ""}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Select value={assignStage} onValueChange={setAssignStage}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <Button type="button" onClick={() => handleAssign(editingVacancy.id)} disabled={!assignCandidateId}>Assign</Button>
+                      </div>
+                      <div className="space-y-2">
+                        {(editingVacancy.assignments ?? []).length === 0 ? (
+                          <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">No candidates assigned yet.</div>
+                        ) : (editingVacancy.assignments ?? []).map((a) => (
+                          <div key={a.id} className="flex flex-wrap items-center gap-2 rounded-md border p-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-sm font-medium">#{Number(a.slot_index ?? 0) + 1} · {a.candidate.full_name}</div>
+                              <div className="truncate text-xs text-muted-foreground">{a.candidate.email || a.candidate.phone || a.candidate.headline || "Candidate"}</div>
+                            </div>
+                            <Select value={a.stage} onValueChange={(stage) => handleStageChange(a.id, stage)}>
+                              <SelectTrigger className="h-8 w-[138px]"><SelectValue /></SelectTrigger>
+                              <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <Button type="button" size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => handleUnassign(a.id)} title="Unassign candidate">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm">AI recommendations</CardTitle></CardHeader>
+                    <CardContent><AIRecommendationsPanel vacancyId={editingVacancy.id} /></CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setOpenDialog(false); resetForm(); }}>Cancel</Button>
