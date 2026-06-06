@@ -676,6 +676,27 @@ export default function CandidatesPanel() {
               </div>
 
               <div className="space-y-2">
+                <div className="text-sm font-medium">Shift calendar</div>
+                <p className="text-xs text-muted-foreground">
+                  Edits here update the same shifts shown on the client / vacancies page.
+                </p>
+                {candidateVacancies.length === 0 ? (
+                  <Card className="p-4 text-xs text-muted-foreground">
+                    Not assigned to any vacancies yet. Assign this candidate to a vacancy from the Vacancies page to schedule shifts.
+                  </Card>
+                ) : (
+                  <ShiftPlannerGrid
+                    vacancies={candidateVacancies}
+                    candidates={allCandidatesLite}
+                    candidateFilter={{ id: active.id, name: active.full_name }}
+                    onEdit={() => undefined}
+                    onDelete={() => undefined}
+                    onVacancyChanged={() => loadCandidateVacancies(active.id)}
+                  />
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <div className="text-sm font-medium">Timeline</div>
                 <div className="flex gap-2">
                   <Textarea rows={2} value={eventNote} onChange={e => setEventNote(e.target.value)} placeholder="Log a note, call summary, screening result…" />
