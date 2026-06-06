@@ -170,6 +170,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const [bulkUnit, setBulkUnit] = useState<"days" | "weeks" | "months">("weeks");
   const [sortBy, setSortBy] = useState<"title" | "client">("title");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [jobDetails, setJobDetails] = useState<{ vacancy: Vacancy; shift: Shift; date: string; slot: number } | null>(null);
   const ACTIVE_STAGES = ["shortlisted", "submitted", "interviewing", "offer", "placed"] as const;
   const candidateLookup = useMemo(() => {
     const m = new Map<string, NonNullable<Props["candidates"]>[number]>();
@@ -1158,8 +1159,8 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                                           }
                                           blurActive();
                                         }}
-                                        onDoubleClick={() => onEdit(v)}
-                                        title={`${v.title}${v.client?.name ? ` · ${v.client.name}` : ""}\n${to12h(startStr)} – ${to12h(finishStr)}\nDouble-click to open job · Right-click for copy/cut/delete`}
+                                        onDoubleClick={(e) => { e.stopPropagation(); setJobDetails({ vacancy: v, shift: s, date: dk, slot }); }}
+                                        title={`${v.title}${v.client?.name ? ` · ${v.client.name}` : ""}\n${to12h(startStr)} – ${to12h(finishStr)}\nDouble-click for full details · Right-click for copy/cut/delete`}
                                         className={`flex w-full flex-col items-start gap-0.5 rounded border border-primary/30 bg-primary/5 px-1.5 py-1 text-left hover:bg-primary/10 ${isChipSelected ? "ring-2 ring-primary ring-inset" : ""} ${isChipClip ? (clipboard?.mode === "cut" ? "outline-dashed outline-2 outline-destructive/60" : "outline-dashed outline-2 outline-primary/60") : ""}`}
                                       >
                                         <div className="text-[11px] font-semibold leading-tight truncate w-full">{v.title}</div>
@@ -1505,6 +1506,97 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
             <Button variant="outline" onClick={() => setBulkPaste(null)}>Cancel</Button>
             <Button onClick={runBulkPaste} disabled={!clipboard}>Paste</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Job details dialog (opened from chip double-click in candidate-row mode) */}
+      <Dialog open={!!jobDetails} onOpenChange={(o) => { if (!o) setJobDetails(null); }}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          {jobDetails && (() => {
+            const v = jobDetails.vacancy;
+            const s = jobDetails.shift;
+            const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
+            const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
+            const dateLabel = new Date(jobDetails.date + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+            const payRate = v.pay_min ?? v.pay_max ?? null;
+            const currency = v.pay_currency ?? "GBP";
+            const symbol = currency === "GBP" ? "£" : currency === "EUR" ? "€" : currency === "USD" ? "$" : `${currency} `;
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="text-base">{v.title}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 text-sm">
+                  <div className="rounded border border-primary/30 bg-primary/5 px-3 py-2">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Shift</div>
+                    <div className="font-medium">{dateLabel}</div>
+                    <div className="text-muted-foreground">{to12h(startStr)}{finishStr ? ` – ${to12h(finishStr)}` : ""}</div>
+                    {s.cancelled && <Badge variant="destructive" className="mt-1">Cancelled</Badge>}
+                  </div>
+
+                  {v.client?.name && (
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Client</div>
+                      <div>{v.client.name}</div>
+                    </div>
+                  )}
+
+                  {v.location && (
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Job site / Location</div>
+                      <div className="whitespace-pre-wrap">{v.location}</div>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v.location)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Open in Google Maps ↗
+                      </a>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {v.reference && (
+                      <div>
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">Reference</div>
+                        <div>{v.reference}</div>
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Status</div>
+                      <Badge variant="outline">{v.status}</Badge>
+                    </div>
+                    {payRate != null && viewerMode === "candidate" && (
+                      <div>
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">Pay</div>
+                        <div>{symbol}{payRate}{v.pay_period ? ` / ${v.pay_period}` : ""}</div>
+                      </div>
+                    )}
+                    {(v.start_date || v.end_date) && (
+                      <div>
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">Assignment dates</div>
+                        <div>{v.start_date ?? "—"}{v.end_date ? ` → ${v.end_date}` : ""}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {s.notes && (
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Shift notes</div>
+                      <div className="whitespace-pre-wrap">{s.notes}</div>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setJobDetails(null)}>Close</Button>
+                  {viewerMode === "admin" && (
+                    <Button onClick={() => { const vv = jobDetails.vacancy; setJobDetails(null); onEdit(vv); }}>Open / Edit job</Button>
+                  )}
+                </DialogFooter>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
