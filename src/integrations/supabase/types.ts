@@ -175,37 +175,58 @@ export type Database = {
       candidate_documents: {
         Row: {
           candidate_id: string
+          category: string
           created_at: string
+          expires_at: string | null
           file_url: string
           filename: string | null
           id: string
           kind: string
+          label: string | null
           mime_type: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by_user_id: string | null
           size_bytes: number | null
+          status: string
           uploaded_by_email: string | null
           uploaded_by_user_id: string | null
         }
         Insert: {
           candidate_id: string
+          category?: string
           created_at?: string
+          expires_at?: string | null
           file_url: string
           filename?: string | null
           id?: string
           kind?: string
+          label?: string | null
           mime_type?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by_user_id?: string | null
           size_bytes?: number | null
+          status?: string
           uploaded_by_email?: string | null
           uploaded_by_user_id?: string | null
         }
         Update: {
           candidate_id?: string
+          category?: string
           created_at?: string
+          expires_at?: string | null
           file_url?: string
           filename?: string | null
           id?: string
           kind?: string
+          label?: string | null
           mime_type?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by_user_id?: string | null
           size_bytes?: number | null
+          status?: string
           uploaded_by_email?: string | null
           uploaded_by_user_id?: string | null
         }
@@ -2544,7 +2565,39 @@ export type Database = {
         Args: { f1: string; f2: string; s1: string; s2: string }
         Returns: boolean
       }
+      candidate_delete_my_document: {
+        Args: { _id: string }
+        Returns: undefined
+      }
       candidate_link_self: { Args: never; Returns: string }
+      candidate_list_my_documents: {
+        Args: never
+        Returns: {
+          candidate_id: string
+          category: string
+          created_at: string
+          expires_at: string | null
+          file_url: string
+          filename: string | null
+          id: string
+          kind: string
+          label: string | null
+          mime_type: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by_user_id: string | null
+          size_bytes: number | null
+          status: string
+          uploaded_by_email: string | null
+          uploaded_by_user_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "candidate_documents"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       candidate_list_my_timesheets: { Args: never; Returns: Json }
       candidate_my_schedule: {
         Args: never
@@ -2573,6 +2626,18 @@ export type Database = {
           title: string
           vacancy_id: string
         }[]
+      }
+      candidate_self_add_document: {
+        Args: {
+          _category: string
+          _expires_at: string
+          _file_url: string
+          _filename: string
+          _label: string
+          _mime_type: string
+          _size_bytes: number
+        }
+        Returns: string
       }
       candidate_timesheet_clock_in: {
         Args: { _date: string; _slot: number; _vacancy_id: string }
@@ -2663,17 +2728,32 @@ export type Database = {
         }
         Returns: number
       }
-      portal_add_candidate_document: {
-        Args: {
-          _candidate_id: string
-          _file_url: string
-          _filename?: string
-          _kind: string
-          _mime_type?: string
-          _size_bytes?: number
-        }
-        Returns: Json
-      }
+      portal_add_candidate_document:
+        | {
+            Args: {
+              _candidate_id: string
+              _file_url: string
+              _filename?: string
+              _kind: string
+              _mime_type?: string
+              _size_bytes?: number
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _candidate_id: string
+              _category?: string
+              _expires_at?: string
+              _file_url: string
+              _filename?: string
+              _kind: string
+              _label?: string
+              _mime_type?: string
+              _size_bytes?: number
+            }
+            Returns: Json
+          }
       portal_add_contact_person: {
         Args: {
           _contact_id: string
@@ -2834,6 +2914,10 @@ export type Database = {
         Returns: Json
       }
       portal_create_vacancy: { Args: { _payload: Json }; Returns: Json }
+      portal_delete_candidate_document: {
+        Args: { _id: string }
+        Returns: undefined
+      }
       portal_delete_contact_person: {
         Args: { _person_id: string }
         Returns: undefined
@@ -2856,6 +2940,34 @@ export type Database = {
         Returns: Json
       }
       portal_fetch_snapshot: { Args: { _limit?: number }; Returns: Json }
+      portal_list_candidate_documents: {
+        Args: { _candidate_id: string }
+        Returns: {
+          candidate_id: string
+          category: string
+          created_at: string
+          expires_at: string | null
+          file_url: string
+          filename: string | null
+          id: string
+          kind: string
+          label: string | null
+          mime_type: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by_user_id: string | null
+          size_bytes: number | null
+          status: string
+          uploaded_by_email: string | null
+          uploaded_by_user_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "candidate_documents"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       portal_list_timesheets: {
         Args: { _limit?: number; _status?: string }
         Returns: Json
@@ -2920,6 +3032,10 @@ export type Database = {
       portal_search_customers: { Args: { _q: string }; Returns: Json }
       portal_send_chat_reply: {
         Args: { _content: string; _conversation_id: string }
+        Returns: undefined
+      }
+      portal_set_document_status: {
+        Args: { _id: string; _note: string; _status: string }
         Returns: undefined
       }
       portal_set_shift_candidate: {

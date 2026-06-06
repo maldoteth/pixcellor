@@ -19,6 +19,7 @@ import {
   endOfWeek,
 } from "date-fns";
 import { CalendarDays, ChevronLeft, ChevronRight, LogOut, MapPin } from "lucide-react";
+import KycDocuments from "@/components/portal/KycDocuments";
 
 type Shift = {
   assignment_id: string;
@@ -259,6 +260,12 @@ export default function CandidatePortal() {
           </div>
         </div>
       )}
+
+      <Card>
+        <CardContent className="p-4">
+          <KycDocuments mode="candidate" />
+        </CardContent>
+      </Card>
     </main>
   );
 }

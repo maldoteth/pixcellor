@@ -16,6 +16,7 @@ import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ShiftPlannerGrid from "@/components/portal/ShiftPlannerGrid";
 import TimesheetsPanel from "@/components/portal/TimesheetsPanel";
+import KycDocuments from "@/components/portal/KycDocuments";
 
 function initialsOf(name: string) {
   return (name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "?";
@@ -675,7 +676,7 @@ export default function CandidatesPanel() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium">Documents</div>
+                  <div className="text-sm font-medium">CV</div>
                   <label className="cursor-pointer">
                     <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadCv(f); }} />
                     <Button asChild size="sm" variant="outline" disabled={uploading}>
@@ -684,6 +685,8 @@ export default function CandidatesPanel() {
                   </label>
                 </div>
               </div>
+
+              <KycDocuments mode="staff" candidateId={active.id} />
 
               <div className="space-y-2">
                 <div className="text-sm font-medium">Shift calendar</div>
