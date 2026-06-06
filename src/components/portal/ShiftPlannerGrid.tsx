@@ -182,13 +182,13 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
 
   const weekDates = useMemo(() => {
     const arr: Date[] = [];
-    for (let i = 0; i < 7; i++) arr.push(addDays(weekStart, i));
+    for (let i = 0; i < daysShown; i++) arr.push(addDays(weekStart, i));
     return arr;
-  }, [weekStart]);
+  }, [weekStart, daysShown]);
   useEffect(() => { weekDatesRef.current = weekDates; }, [weekDates]);
 
   const fromKey = ymd(weekStart);
-  const toKey = ymd(weekDates[6]);
+  const toKey = ymd(weekDates[weekDates.length - 1]);
 
   const load = useCallback(async () => {
     if (vacancies.length === 0) return;
