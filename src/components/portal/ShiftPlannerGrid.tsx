@@ -571,82 +571,160 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   };
   useEffect(() => { pasteClipRef.current = pasteClip; });
 
-  // Paste clipboard items onto a candidate's day cell. Each item is materialised as a
-  // brand-new single-day vacancy cloned from the source vacancy, with the target candidate assigned.
-  // When `skipReload` is true the caller is responsible for the final load()/onVacancyChanged() —
-  // this avoids the "spasm" of re-renders during bulk paste.
-  const pasteToCandidateCellInternal = async (
+  /**
+   * Candidate-mode paste model
+   * --------------------------
+   * A *vacancy* represents one job at one client. It can have many shifts (dates) and
+   * an assigned candidate (via shift-level overrides). Pasting shifts onto a candidate
+   * should NEVER spawn a brand-new vacancy per date — that pollutes the list.
+   *
+   * Rules:
+   *  1. Group clip items by their source vacancy. Each group becomes AT MOST one
+   *     destination vacancy.
+   *  2. If the target candidate is the same as the source candidate, just upsert the
+   *     extra shifts onto the EXISTING source vacancy (no new vacancy at all).
+   *  3. Otherwise, create exactly ONE new vacancy cloned from the source (no auto-
+   *     materialised shifts), then upsert every target date into it and assign the
+   *     target candidate. Finally update start_date/end_date/schedule_days to match
+   *     the actual set of dates.
+   *  4. Skip the no-op where the target equals the source (same vacancy + date +
+   *     candidate) so bulk-pasting from the source's own date doesn't duplicate it.
+   */
+  const pasteShiftsToCandidate = async (
     targetCandidateId: string,
-    targetDate: string,
-    opts?: { skipReload?: boolean; skipCutCleanup?: boolean; allowSourceDate?: boolean },
-  ): Promise<number> => {
+    targetDates: string[],
+    opts?: { showToast?: boolean; skipReload?: boolean; skipCutCleanup?: boolean },
+  ): Promise<{ newVacancies: number; shifts: number }> => {
     const clip = clipboardRef.current;
-    if (!clip || clip.items.length === 0) return 0;
-    let created = 0;
-    for (let idx = 0; idx < clip.items.length; idx++) {
-      const item = clip.items[idx];
-      const sourceVacancy = item.sourceVacancyId ? vacancies.find((v) => v.id === item.sourceVacancyId) : null;
-      if (!sourceVacancy?.client?.id) continue;
-      // Skip a no-op: pasting an item onto its own (vacancy, slot, date) for the same candidate.
-      // Without this, bulk paste starting on the source's own date would create a duplicate clone.
-      if (!opts?.allowSourceDate) {
-        const sourceKey = clip.sourceKeys[idx];
-        if (sourceKey) {
-          const { vid, date: srcDate } = parseCellKey(sourceKey);
-          if (vid === sourceVacancy.id && srcDate === targetDate && item.candidateId === targetCandidateId) {
-            continue;
-          }
-        }
+    if (!clip || clip.items.length === 0 || targetDates.length === 0) return { newVacancies: 0, shifts: 0 };
+
+    // Group by sourceVacancyId. Carry the source key alongside so we can detect no-ops.
+    type Group = { source: Vacancy; items: Array<{ item: ClipItem; sourceKey: string }> };
+    const groups = new Map<string, Group>();
+    for (let i = 0; i < clip.items.length; i++) {
+      const item = clip.items[i];
+      const sv = item.sourceVacancyId ? vacancies.find((v) => v.id === item.sourceVacancyId) : null;
+      if (!sv?.client?.id) continue;
+      if (!groups.has(sv.id)) groups.set(sv.id, { source: sv, items: [] });
+      groups.get(sv.id)!.items.push({ item, sourceKey: clip.sourceKeys[i] ?? "" });
+    }
+
+    let newVacancies = 0;
+    let shiftsCreated = 0;
+
+    for (const { source, items } of groups.values()) {
+      // Build the (date, item) plan for this group. Repeat the group's items across
+      // target dates round-robin so a 1-item clip fills every date.
+      const plan: Array<{ date: string; item: ClipItem; sourceKey: string }> = [];
+      for (let i = 0; i < targetDates.length; i++) {
+        const slot = items[i % items.length];
+        plan.push({ date: targetDates[i], item: slot.item, sourceKey: slot.sourceKey });
       }
-      const startTime = item.start ? (item.start.length === 5 ? `${item.start}:00` : item.start) : sourceVacancy.start_time;
-      const finishTime = item.finish ? (item.finish.length === 5 ? `${item.finish}:00` : item.finish) : sourceVacancy.finish_time;
+
+      // Same candidate as the source → just extend the existing vacancy.
+      const allSameCandidate = items.every((s) => s.item.candidateId === targetCandidateId);
+      if (allSameCandidate) {
+        for (const p of plan) {
+          // Skip pasting onto the exact source cell
+          if (p.sourceKey) {
+            const { vid, date: srcDate } = parseCellKey(p.sourceKey);
+            if (vid === source.id && srcDate === p.date) continue;
+          }
+          await upsert(source.id, 0, p.date, p.item.start, p.item.finish, false);
+          await setShiftCandidate(source.id, 0, p.date, targetCandidateId);
+          shiftsCreated++;
+        }
+        continue;
+      }
+
+      // Different candidate → make ONE cloned vacancy with no date window, then
+      // upsert every shift, then snap the window to the actual dates.
       const payload: Record<string, unknown> = {
-        client_contact_id: sourceVacancy.client.id,
-        title: sourceVacancy.title,
-        reference: sourceVacancy.reference,
-        location: sourceVacancy.location,
+        client_contact_id: source.client!.id,
+        title: source.title,
+        reference: source.reference,
+        location: source.location,
         status: "open",
         openings: 1,
-        start_date: targetDate,
-        end_date: targetDate,
-        start_time: startTime,
-        finish_time: finishTime,
+        // No date window → portal_materialize_vacancy_shifts will early-return, so
+        // no auto-shifts get created and we have full control below.
+        start_date: "",
+        end_date: "",
+        start_time: source.start_time ?? "",
+        finish_time: source.finish_time ?? "",
         schedule_days: [],
-        pay_min: sourceVacancy.pay_min,
-        pay_max: sourceVacancy.pay_max,
-        pay_currency: sourceVacancy.pay_currency ?? "GBP",
-        pay_period: sourceVacancy.pay_period ?? "hour",
-        charge_rate: sourceVacancy.charge_rate,
-        paye_rate_percent: sourceVacancy.paye_rate_percent,
+        pay_min: source.pay_min,
+        pay_max: source.pay_max,
+        pay_currency: source.pay_currency ?? "GBP",
+        pay_period: source.pay_period ?? "hour",
+        charge_rate: source.charge_rate,
+        paye_rate_percent: source.paye_rate_percent,
       };
       const { data, error } = await supabase.rpc("portal_create_vacancy" as never, { _payload: payload } as never);
-      if (error || !data) { toast({ title: "Paste failed", description: error?.message ?? "Could not create vacancy", variant: "destructive" }); continue; }
+      if (error || !data) {
+        toast({ title: "Paste failed", description: error?.message ?? "Could not create vacancy", variant: "destructive" });
+        continue;
+      }
       const newVacancyId = (data as { id?: string })?.id;
       if (!newVacancyId) continue;
-      // portal_create_vacancy already materialised one shift for [start_date, end_date]; just assign the candidate.
-      await supabase.rpc("portal_set_shift_candidate" as never, {
-        _vacancy_id: newVacancyId, _slot: 0, _date: targetDate, _candidate_id: targetCandidateId,
-      } as never);
-      created++;
+      newVacancies++;
+
+      const addedDates: string[] = [];
+      for (const p of plan) {
+        const { error: upErr } = await supabase.rpc("portal_upsert_vacancy_shift" as never, {
+          _vacancy_id: newVacancyId, _date: p.date, _slot: 0,
+          _start: p.item.start, _finish: p.item.finish, _cancelled: false,
+        } as never);
+        if (upErr) continue;
+        await supabase.rpc("portal_set_shift_candidate" as never, {
+          _vacancy_id: newVacancyId, _slot: 0, _date: p.date, _candidate_id: targetCandidateId,
+        } as never);
+        addedDates.push(p.date);
+        shiftsCreated++;
+      }
+
+      if (addedDates.length > 0) {
+        addedDates.sort();
+        const dows = Array.from(new Set(addedDates.map((d) => {
+          const day = new Date(d + "T00:00:00").getDay();
+          return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][day];
+        })));
+        await supabase.rpc("portal_update_vacancy" as never, {
+          _id: newVacancyId,
+          _patch: {
+            start_date: addedDates[0],
+            end_date: addedDates[addedDates.length - 1],
+            schedule_days: dows,
+          },
+        } as never);
+      }
     }
-    if (!opts?.skipCutCleanup && clip.mode === "cut" && created > 0) {
+
+    if (!opts?.skipCutCleanup && clip.mode === "cut" && shiftsCreated > 0) {
       await Promise.all(clip.sourceKeys.map((k) => {
         const { vid, slot, date } = parseCellKey(k);
         return removeShift(vid, slot, date);
       }));
       setClipboard(null);
     }
+
     if (!opts?.skipReload) {
       await onVacancyChanged?.();
       await load();
-      if (created > 0) toast({ title: `Pasted ${created} shift${created === 1 ? "" : "s"} as new vacanc${created === 1 ? "y" : "ies"}` });
     }
-    return created;
+    if (opts?.showToast !== false && shiftsCreated > 0) {
+      const parts: string[] = [];
+      parts.push(`${shiftsCreated} shift${shiftsCreated === 1 ? "" : "s"}`);
+      if (newVacancies > 0) parts.push(`${newVacancies} new vacanc${newVacancies === 1 ? "y" : "ies"}`);
+      else parts.push("(added to existing vacancy)");
+      toast({ title: `Pasted ${parts.join(" · ")}` });
+    }
+    return { newVacancies, shifts: shiftsCreated };
   };
 
+  // Right-click → "Paste here" on a single candidate cell.
   const pasteToCandidateCell = (targetCandidateId: string, targetDate: string) =>
-    pasteToCandidateCellInternal(targetCandidateId, targetDate);
-
+    pasteShiftsToCandidate(targetCandidateId, [targetDate]);
 
   const runBulkPaste = async () => {
     const clip = clipboardRef.current;
@@ -662,21 +740,9 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
       dates.push(ymd(d));
     }
     const candidateTarget = bulkPaste.vacancyId.startsWith("__cand__:") ? bulkPaste.vacancyId.slice("__cand__:".length) : null;
-    let totalCreated = 0;
     if (candidateTarget) {
-      // Sequential so portal_create_vacancy calls don't stampede the DB,
-      // and we suppress per-date reloads to keep the UI from spasming.
-      for (const dt of dates) {
-        totalCreated += await pasteToCandidateCellInternal(candidateTarget, dt, { skipReload: true, skipCutCleanup: true });
-      }
-      if (clip.mode === "cut" && totalCreated > 0) {
-        await Promise.all(clip.sourceKeys.map((k) => {
-          const { vid, slot, date } = parseCellKey(k);
-          return removeShift(vid, slot, date);
-        }));
-        setClipboard(null);
-      }
-      await onVacancyChanged?.();
+      // One call → one vacancy (or extends source); no per-date spam.
+      await pasteShiftsToCandidate(candidateTarget, dates);
     } else {
       await Promise.all(dates.map(async (dt, i) => {
         const item = clip.items[i % clip.items.length];
@@ -685,14 +751,10 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
           await setShiftCandidate(bulkPaste.vacancyId, bulkPaste.slot, dt, item.candidateId);
         }
       }));
+      await load();
+      toast({ title: `Pasted across ${dates.length} day${dates.length === 1 ? "" : "s"}` });
     }
     setBulkPaste(null);
-    await load();
-    toast({
-      title: candidateTarget
-        ? `Pasted ${totalCreated} new shift${totalCreated === 1 ? "" : "s"} across ${dates.length} day${dates.length === 1 ? "" : "s"}`
-        : `Pasted across ${dates.length} day${dates.length === 1 ? "" : "s"}`,
-    });
   };
 
   const deleteSelection = async () => {
