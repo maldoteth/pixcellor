@@ -265,6 +265,24 @@ export default function CustomerPortal() {
   const [chatOpen, setChatOpen] = useState(false);
   const [hiddenCount, setHiddenCount] = useState(0);
   const [leadQuery, setLeadQuery] = useState("");
+  const [access, setAccess] = useState<{ as_candidate: string[]; as_client: string[] }>({ as_candidate: [], as_client: [] });
+  const [myCandidateId, setMyCandidateId] = useState<string | null>(null);
+  const [scheduleRefresh, setScheduleRefresh] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [cid, ids] = await Promise.all([
+        supabase.rpc("candidate_link_self" as never),
+        supabase.rpc("portal_my_vacancy_ids" as never),
+      ]);
+      if (cancelled) return;
+      setMyCandidateId((cid.data as string) ?? null);
+      const a = ids.data as { as_candidate?: string[]; as_client?: string[] } | null;
+      setAccess({ as_candidate: a?.as_candidate ?? [], as_client: a?.as_client ?? [] });
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const refreshHiddenCount = useCallback(async () => {
     const { count } = await supabase
