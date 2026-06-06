@@ -172,6 +172,50 @@ export type Database = {
           },
         ]
       }
+      candidate_availability: {
+        Row: {
+          avail_date: string
+          candidate_id: string
+          created_at: string
+          finish_time: string | null
+          id: string
+          note: string | null
+          start_time: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          avail_date: string
+          candidate_id: string
+          created_at?: string
+          finish_time?: string | null
+          id?: string
+          note?: string | null
+          start_time?: string | null
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          avail_date?: string
+          candidate_id?: string
+          created_at?: string
+          finish_time?: string | null
+          id?: string
+          note?: string | null
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_availability_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_documents: {
         Row: {
           candidate_id: string
@@ -2973,6 +3017,10 @@ export type Database = {
         Returns: Json
       }
       portal_create_vacancy: { Args: { _payload: Json }; Returns: Json }
+      portal_delete_availability: {
+        Args: { _date: string }
+        Returns: undefined
+      }
       portal_delete_candidate_document: {
         Args: { _id: string }
         Returns: undefined
@@ -3083,6 +3131,18 @@ export type Database = {
         Args: { _vacancy_id: string }
         Returns: undefined
       }
+      portal_my_availability: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          avail_date: string
+          candidate_id: string
+          finish_time: string
+          id: string
+          note: string
+          start_time: string
+          status: string
+        }[]
+      }
       portal_my_invitations: { Args: never; Returns: Json }
       portal_my_shifts: {
         Args: { _from: string; _to: string }
@@ -3140,6 +3200,16 @@ export type Database = {
       portal_send_chat_reply: {
         Args: { _content: string; _conversation_id: string }
         Returns: undefined
+      }
+      portal_set_availability: {
+        Args: {
+          _date: string
+          _finish?: string
+          _note?: string
+          _start?: string
+          _status: string
+        }
+        Returns: string
       }
       portal_set_document_status: {
         Args: { _id: string; _note: string; _status: string }
