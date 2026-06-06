@@ -790,23 +790,29 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
               <div key={row.info.id} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
                 {/* Candidate (frozen) */}
                 <div
-                  className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2 ${onCandidateClick ? "cursor-pointer hover:bg-muted/40" : ""}`}
-                  onClick={() => onCandidateClick?.(row.info.id)}
+                  className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`}
                 >
-                  <div className="text-sm font-semibold leading-tight truncate">{row.info.full_name}</div>
-                  {row.info.headline && <div className="text-[10px] text-muted-foreground line-clamp-1">{row.info.headline}</div>}
-                  <div className="mt-1 text-[10px] text-muted-foreground">
-                    {row.shifts.filter((x) => weekKeys.has(x.date)).length} shift{row.shifts.filter((x) => weekKeys.has(x.date)).length === 1 ? "" : "s"} · {rowHours.toFixed(1)}h
+                  <div
+                    className={onCandidateClick ? "cursor-pointer hover:opacity-80" : ""}
+                    onClick={() => onCandidateClick?.(row.info.id)}
+                  >
+                    <div className="text-sm font-semibold leading-tight truncate">{row.info.full_name}</div>
+                    {row.info.headline && <div className="text-[10px] text-muted-foreground line-clamp-1">{row.info.headline}</div>}
                   </div>
-                </div>
-                {/* Details column */}
-                <div
-                  className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`}
-                  style={{ left: `${jobColW}px` }}
-                >
-                  {row.info.email && <div className="text-[10px] text-muted-foreground truncate">{row.info.email}</div>}
-                  {row.info.phone && <div className="text-[10px] text-muted-foreground truncate">{row.info.phone}</div>}
-                  {row.info.status && <Badge variant="outline" className="text-[9px] h-4 px-1 mt-1">{row.info.status}</Badge>}
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
+                    <span>{row.shifts.filter((x) => weekKeys.has(x.date)).length} shift{row.shifts.filter((x) => weekKeys.has(x.date)).length === 1 ? "" : "s"} · {rowHours.toFixed(1)}h</span>
+                    {row.info.status && <Badge variant="outline" className="text-[9px] h-4 px-1">{row.info.status}</Badge>}
+                  </div>
+                  {(row.info.email || row.info.phone) && (
+                    <div className="mt-1 flex flex-col gap-0.5">
+                      {row.info.email && (
+                        <ContactLink kind="email" value={row.info.email} />
+                      )}
+                      {row.info.phone && (
+                        <ContactLink kind="phone" value={row.info.phone} />
+                      )}
+                    </div>
+                  )}
                 </div>
                 {/* Day cells: chips per assigned shift on that date */}
                 {weekDates.map((d, dIdx) => {
