@@ -21,6 +21,7 @@ type Vacancy = {
   reference: string | null;
   location: string | null;
   status: string;
+  openings: number;
   start_date: string | null;
   end_date: string | null;
   start_time: string | null;
