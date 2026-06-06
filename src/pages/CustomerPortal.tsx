@@ -630,6 +630,7 @@ export default function CustomerPortal() {
                   <PortalVacancySearch />
                 </TabsContent>
 
+                <TabsContent value="leads" className="space-y-8">
                   {data?.leadSource && (
                     <div className="space-y-4">
                       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
