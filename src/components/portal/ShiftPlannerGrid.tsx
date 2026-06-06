@@ -170,6 +170,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const [bulkUnit, setBulkUnit] = useState<"days" | "weeks" | "months">("weeks");
   const [sortBy, setSortBy] = useState<"title" | "client">("title");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [jobDetails, setJobDetails] = useState<{ vacancy: Vacancy; shift: Shift; date: string; slot: number } | null>(null);
   const ACTIVE_STAGES = ["shortlisted", "submitted", "interviewing", "offer", "placed"] as const;
   const candidateLookup = useMemo(() => {
     const m = new Map<string, NonNullable<Props["candidates"]>[number]>();
