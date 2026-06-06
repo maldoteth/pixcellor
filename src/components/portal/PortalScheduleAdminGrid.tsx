@@ -28,6 +28,8 @@ export default function PortalScheduleAdminGrid({ myCandidateId }: { myCandidate
     <ShiftPlannerGrid
       vacancies={vacancies}
       viewerMode="candidate"
+      rowMode="candidate"
+      hideFirstColumn
       candidateFilter={candidateFilter}
       secondColumn="client"
       onVacancyChanged={load}
