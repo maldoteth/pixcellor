@@ -904,7 +904,10 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     };
   }, [rowMode, candidateRowsData, displayRows, weekDates, resolveCell, candidateFilter]);
 
-  const fmtMoney = (n: number) => `${stats.currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  const fmtMoney = (n: number) => {
+    const symbol = stats.currency === "GBP" ? "£" : stats.currency;
+    return `${symbol} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  };
 
   return (
     <div className="rounded-md border bg-card select-none outline-none [&_*]:outline-none" ref={gridRef}>
