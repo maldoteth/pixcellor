@@ -665,7 +665,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                     </ContextMenuContent>
                   </ContextMenu>
                   {/* Client (frozen) */}
-                  <div className={`${isMobile ? "" : "sticky z-10"} border-b border-r ${rowBg} px-2 py-2`} style={isMobile ? undefined : { left: `${jobColW}px` }}>
+                  <div className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`} style={{ left: `${jobColW}px` }}>
                     <div className="text-sm">{v.client?.name ?? "—"}</div>
                     {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
                   </div>
