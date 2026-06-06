@@ -640,7 +640,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                         <div className="flex items-center gap-1">
                           <div className="text-sm font-semibold leading-tight flex-1">{v.title}</div>
                           {total > 1 && (
-                            <Badge variant="outline" className="text-[9px] h-4 px-1 shrink-0">#{slot + 1}/{total}</Badge>
+                            <Badge variant="outline" className="text-[9px] h-4 px-1 shrink-0">#{slot + 1}</Badge>
                           )}
                         </div>
                         {v.reference && <div className="text-[10px] text-muted-foreground">Ref {v.reference}</div>}
