@@ -285,8 +285,8 @@ export default function VacanciesPanel() {
       paye_rate_percent: numOrNull(form.paye_rate_percent) ?? 21,
     };
     const { error } = editingId
-      ? await supabase.rpc("portal_update_vacancy", { _id: editingId, _patch: payload as any })
-      : await supabase.rpc("portal_create_vacancy", { _payload: payload as any });
+      ? await supabase.rpc("portal_update_vacancy" as never, { _id: editingId, _patch: payload } as never)
+      : await supabase.rpc("portal_create_vacancy" as never, { _payload: payload } as never);
     setSaving(false);
     if (error) { toast({ title: editingId ? "Could not update vacancy" : "Could not create vacancy", description: error.message, variant: "destructive" }); return; }
     toast({ title: editingId ? "Vacancy updated" : "Vacancy created" });
