@@ -34,12 +34,13 @@ type Vacancy = {
   charge_rate: number | null;
   paye_rate_percent: number | null;
   client?: { id: string; name: string } | null;
-  assignments?: Array<{ candidate_id: string; stage: string; candidate: { id: string; full_name: string; status: string } }>;
+  assignments?: Array<{ id: string; candidate_id: string; slot_index: number; stage: string; candidate: { id: string; full_name: string; status: string } }>;
 };
 
 type Shift = {
   id: string;
   shift_date: string;
+  slot_index: number;
   start_time: string | null;
   finish_time: string | null;
   cancelled: boolean;
