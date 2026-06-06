@@ -57,6 +57,8 @@ type Props = {
   onEdit: (v: Vacancy) => void;
   onDelete: (id: string) => void;
   onVacancyChanged?: () => void | Promise<void>;
+  /** When provided, show only rows (vacancy+slot) assigned to this candidate. First column becomes the vacancy. */
+  candidateFilter?: { id: string; name: string };
 };
 
 type ClipItem = { start: string | null; finish: string | null; candidateId: string | null };
