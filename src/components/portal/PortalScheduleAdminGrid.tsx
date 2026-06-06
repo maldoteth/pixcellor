@@ -170,6 +170,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister 
   const [editor, setEditor] = useState<{ date: string; status: Availability["status"]; start: string; finish: string; note: string } | null>(null);
 
   const openEditor = (date: string) => {
+    if (!myCandidateId) { onNeedRegister?.(); return; }
     const a = availability[date];
     setEditor({
       date,
