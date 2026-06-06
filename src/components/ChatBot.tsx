@@ -291,12 +291,12 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
     return () => window.removeEventListener("resize", clampWidgetToViewport);
   }, [isMobile, widgetSize.height, widgetSize.width]);
 
-  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | null>(null);
+  const pendingActionRef = useRef<"call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | "client-order" | null>(null);
   useEffect(() => {
     const openChat = (e: Event) => {
       setIsOpen(true);
-      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" }>).detail;
-      if (detail?.action && ["call","email","trial","services","verify","pay","find-work"].includes(detail.action)) {
+      const detail = (e as CustomEvent<{ action?: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | "client-order" }>).detail;
+      if (detail?.action && ["call","email","trial","services","verify","pay","find-work","client-order"].includes(detail.action)) {
         pendingActionRef.current = detail.action;
       }
     };
