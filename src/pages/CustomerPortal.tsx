@@ -476,7 +476,7 @@ export default function CustomerPortal() {
           </SidebarContent>
         </Sidebar>
 
-        <SidebarInset className="min-h-screen bg-background">
+        <SidebarInset className="min-h-screen min-w-0 bg-background">
           <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-xl md:px-6">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="h-9 w-9">
@@ -509,8 +509,9 @@ export default function CustomerPortal() {
             </div>
           </header>
 
-          <main className="px-4 py-6 md:px-8 md:py-8">
-            <section className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+          <main className="min-w-0 overflow-x-hidden px-4 py-6 md:px-8 md:py-8">
+            <section className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-6">
+
               <div className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
                 <div className="rounded-lg border border-border bg-card/70 p-5 backdrop-blur-xl md:p-7">
                   <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
@@ -606,7 +607,7 @@ export default function CustomerPortal() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="schedule" className="space-y-4">
+                <TabsContent value="schedule" className="min-w-0 space-y-4">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <SectionHeader title="Schedule" description="Your shifts across every vacancy. Empty days are shown so you can plan ahead." />
                     <Button
@@ -618,8 +619,11 @@ export default function CustomerPortal() {
                       <Search className="h-4 w-4" /> Find work with Alex
                     </Button>
                   </div>
-                  <PortalScheduleGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
+                  <div className="min-w-0 max-w-full overflow-hidden">
+                    <PortalScheduleGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
+                  </div>
                 </TabsContent>
+
 
                 {isCandidate && (
                   <TabsContent value="myjobs" className="space-y-4">
