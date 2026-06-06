@@ -382,7 +382,7 @@ export default function CustomerPortal() {
     { title: "Schedule", value: "schedule", icon: CalendarDays },
     ...(isCandidate ? [{ title: "My Jobs", value: "myjobs" as const, icon: Briefcase }] : []),
     ...(isClient ? [{ title: "Vacancies", value: "vacancies" as const, icon: Building2 }] : []),
-    { title: "Find work", value: "find", icon: Search },
+    
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
     { title: "Domains", value: "delivered", icon: Globe2 },
