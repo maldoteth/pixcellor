@@ -14,6 +14,7 @@ import { Plus, Search, Star, Upload, ExternalLink, FileText, Trash2, Loader2, Ca
 import { toast } from "sonner";
 import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ShiftPlannerGrid from "@/components/portal/ShiftPlannerGrid";
 
 function initialsOf(name: string) {
   return (name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "?";
