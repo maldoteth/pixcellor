@@ -886,7 +886,32 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                           );
                         })()}
                         <div className="mt-2 flex items-center justify-between gap-1 flex-wrap">
-                          <Badge variant={v.status === "open" ? "destructive" : v.status === "filled" ? "secondary" : "outline"} className="text-[9px] h-4 px-1">{v.status}</Badge>
+                          {(() => {
+                            // Per-slot status: a slot is "filled" only if every active day in the vacancy's
+                            // date window has an assignee. Any unassigned active day => "open".
+                            let status: string = v.status;
+                            if (v.start_date && v.end_date) {
+                              const start = new Date(v.start_date + "T00:00:00");
+                              const end = new Date(v.end_date + "T00:00:00");
+                              let anyActive = false;
+                              let allAssigned = true;
+                              const MAX_DAYS_CHECK = 400;
+                              let n = 0;
+                              for (let d = new Date(start); d <= end && n < MAX_DAYS_CHECK; d.setDate(d.getDate() + 1), n++) {
+                                const dk = ymd(d);
+                                const cell = resolveCell(v.id, slot, dk);
+                                if (!cell.active) continue;
+                                anyActive = true;
+                                if (!cell.assignee) { allAssigned = false; break; }
+                              }
+                              if (v.status !== "closed" && v.status !== "draft") {
+                                status = anyActive && allAssigned ? "filled" : "open";
+                              }
+                            }
+                            return (
+                              <Badge variant={status === "open" ? "destructive" : status === "filled" ? "secondary" : "outline"} className="text-[9px] h-4 px-1">{status}</Badge>
+                            );
+                          })()}
                           <button onClick={() => onDelete(v.id)} title="Delete" className="ml-auto text-[10px] text-destructive hover:underline inline-flex items-center gap-0.5"><Trash2 className="h-3 w-3" /></button>
                         </div>
 
