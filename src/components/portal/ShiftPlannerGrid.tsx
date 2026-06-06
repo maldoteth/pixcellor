@@ -440,7 +440,6 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Click outside to clear
@@ -507,7 +506,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
       activeWorkers: workersWithShifts.size,
       idleWorkers: idleWorkers.length,
     };
-  }, [displayRows, weekDates, shifts, resolveCell]);
+  }, [displayRows, weekDates, resolveCell]);
 
   const fmtMoney = (n: number) => `${stats.currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
