@@ -563,14 +563,28 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:thin]" style={{ touchAction: "pan-x pan-y" }}>
         <div style={{ minWidth: `${minGridW}px` }}>
           {/* Header row */}
-          <div className="grid sticky top-0 z-20 bg-muted/30" style={{ gridTemplateColumns: gridTemplate }}>
-            <button type="button" onClick={() => toggleSort("title")} className={`${isMobile ? "" : "sticky left-0 z-30"} border-b border-r bg-muted/30 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground`}>Job{sortArrow("title")}</button>
-            <button type="button" onClick={() => toggleSort("client")} className={`${isMobile ? "" : "sticky z-30"} border-b border-r bg-muted/30 px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground`} style={isMobile ? undefined : { left: `${jobColW}px` }}>Client{sortArrow("client")}</button>
+          <div className="grid sticky top-0 z-20" style={{ gridTemplateColumns: gridTemplate }}>
+            <button
+              type="button"
+              onClick={() => toggleSort("title")}
+              className="sticky left-0 z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+            >
+              Job{sortArrow("title")}
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleSort("client")}
+              className="sticky z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]"
+              style={{ left: `${jobColW}px` }}
+            >
+              Client{sortArrow("client")}
+            </button>
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
+              const dow = DOW_DISPLAY[(new Date(ymd(d) + "T00:00:00").getDay() + 6) % 7];
               return (
-                <div key={i} className={`border-b border-r px-2 py-2 text-center ${isToday ? "bg-primary/10" : ""}`}>
-                  <div className="text-[10px] font-semibold uppercase text-muted-foreground">{DOW_DISPLAY[i]}</div>
+                <div key={i} className={`border-b border-r px-2 py-2 text-center bg-muted ${isToday ? "bg-primary/10" : ""}`}>
+                  <div className="text-[10px] font-semibold uppercase text-muted-foreground">{dow}</div>
                   <div className={`text-xs ${isToday ? "font-bold text-primary" : "text-foreground"}`}>
                     {d.toLocaleDateString(undefined, { day: "numeric", month: "short" })}
                   </div>
