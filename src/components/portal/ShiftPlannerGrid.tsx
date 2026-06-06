@@ -523,7 +523,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
           <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setWeekStart((d) => addDays(d, 7))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => setWeekStart(startOfWeek(new Date()))}>Today</Button>
+          <Button size="sm" variant="ghost" onClick={() => { setWeekStart(startOfWeek(new Date())); setDaysShown(7); }}>Today</Button>
           {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -534,9 +534,30 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
               {clipboard.mode === "cut" ? "Cut" : "Copied"} {clipboard.items.length}
             </span>
           )}
-          <span className="hidden md:inline">{"\n"}</span>
+          <span className="hidden md:inline">·</span>
+          <span>{daysShown}d</span>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 px-2 text-xs"
+            disabled={daysShown >= MAX_DAYS}
+            onClick={() => setDaysShown((n) => Math.min(MAX_DAYS, n + 7))}
+          >
+            +1 week
+          </Button>
+          {daysShown > 7 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2 text-xs"
+              onClick={() => setDaysShown(7)}
+            >
+              Reset
+            </Button>
+          )}
         </div>
       </div>
+
 
       {/* Grid */}
       <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:thin]" style={{ touchAction: "pan-x pan-y" }}>
