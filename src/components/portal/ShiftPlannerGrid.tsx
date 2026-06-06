@@ -233,23 +233,33 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
     const tFinish = v?.finish_time ? v.finish_time.slice(0, 5) : null;
     const templateSet = new Set((v?.schedule_days ?? []).map((d) => d.slice(0, 3)));
     const dow = DOW_SHORT[new Date(date + "T00:00:00").getDay()];
+    const slotAssignee = (v?.assignments ?? []).find((a) =>
+      a.slot_index === slot &&
+      ["shortlisted", "submitted", "interviewing", "offer", "placed"].includes(a.stage),
+    );
+    const baseAssignee = slotAssignee ? { id: slotAssignee.candidate.id, name: slotAssignee.candidate.full_name } : null;
+    const overrideAssignee = shift?.assignment_overridden
+      ? (shift.candidate_id ? { id: shift.candidate_id, name: shift.candidate_name ?? "Unknown" } : null)
+      : baseAssignee;
     if (shift) {
-      if (shift.cancelled) return { active: false, cancelled: true, start: null, finish: null, hasExplicit: true };
+      if (shift.cancelled) return { active: false, cancelled: true, start: null, finish: null, hasExplicit: true, assignee: null, overridden: shift.assignment_overridden };
       return {
         active: true, cancelled: false, hasExplicit: true,
         start: (shift.start_time ?? tStart)?.slice(0, 5) ?? null,
         finish: (shift.finish_time ?? tFinish)?.slice(0, 5) ?? null,
+        assignee: overrideAssignee,
+        overridden: shift.assignment_overridden,
       };
     }
     // Template-driven recurring days only apply to slot 0 and within the vacancy's date window.
-    if (slot !== 0) return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false };
+    if (slot !== 0) return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false, assignee: baseAssignee, overridden: false };
     const inRange = (() => {
       if (v?.start_date && date < v.start_date) return false;
       if (v?.end_date && date > v.end_date) return false;
       return true;
     })();
-    if (inRange && templateSet.has(dow)) return { active: true, cancelled: false, start: tStart, finish: tFinish, hasExplicit: false };
-    return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false };
+    if (inRange && templateSet.has(dow)) return { active: true, cancelled: false, start: tStart, finish: tFinish, hasExplicit: false, assignee: baseAssignee, overridden: false };
+    return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false, assignee: baseAssignee, overridden: false };
   }, [vacancies, shifts]);
 
   const DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"] as const;
