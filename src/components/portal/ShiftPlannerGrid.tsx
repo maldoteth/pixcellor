@@ -762,11 +762,37 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                       </ContextMenuItem>
                     </ContextMenuContent>
                   </ContextMenu>
-                  {/* Client (frozen) */}
-                  <div className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`} style={{ left: `${jobColW}px` }}>
-                    <div className="text-sm">{v.client?.name ?? "—"}</div>
-                    {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
-                  </div>
+                  {/* Second sticky column: Client OR Candidate */}
+                  {secondColumn === "candidate" ? (() => {
+                    const cid = slotAssignedCandidateId(v, slot);
+                    const cinfo = cid ? candidateLookup.get(cid) : null;
+                    const name = cinfo?.full_name
+                      ?? (v.assignments ?? []).find((a) => Number(a.slot_index ?? 0) === slot)?.candidate?.full_name
+                      ?? null;
+                    return (
+                      <div
+                        className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] ${cid && onCandidateClick ? "cursor-pointer hover:bg-muted/40" : ""}`}
+                        style={{ left: `${jobColW}px` }}
+                        onClick={() => { if (cid && onCandidateClick) onCandidateClick(cid); }}
+                      >
+                        {name ? (
+                          <>
+                            <div className="text-sm font-medium truncate">{name}</div>
+                            {cinfo?.headline && <div className="text-[10px] text-muted-foreground line-clamp-1">{cinfo.headline}</div>}
+                            {cinfo?.email && <div className="text-[10px] text-muted-foreground truncate">{cinfo.email}</div>}
+                            {cinfo?.phone && <div className="text-[10px] text-muted-foreground truncate">{cinfo.phone}</div>}
+                          </>
+                        ) : (
+                          <div className="text-xs text-muted-foreground italic">Unassigned</div>
+                        )}
+                      </div>
+                    );
+                  })() : (
+                    <div className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`} style={{ left: `${jobColW}px` }}>
+                      <div className="text-sm">{v.client?.name ?? "—"}</div>
+                      {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
+                    </div>
+                  )}
                   {/* Day cells (per slot) */}
                   {weekDates.map((d, dIdx) => {
                     const dk = ymd(d);
