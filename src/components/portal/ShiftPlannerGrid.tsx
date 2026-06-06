@@ -52,6 +52,7 @@ type Shift = {
 
 type Props = {
   vacancies: Vacancy[];
+  candidates?: Array<{ id: string; full_name: string; status?: string | null }>;
   onCreate?: () => void;
   onEdit: (v: Vacancy) => void;
   onDelete: (id: string) => void;
@@ -102,7 +103,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onDelete, onVacancyChanged }: Props) {
+export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit, onDelete, onVacancyChanged }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
@@ -708,12 +709,15 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onDelete
                     const isToday = dk === todayKey;
                     const isSelected = selected.has(cellKey(v.id, slot, dk));
                     const isClipSource = clipboard?.sourceKeys.includes(cellKey(v.id, slot, dk)) ?? false;
-                    // Candidate picker options = anyone shortlisted/placed against this vacancy across any slot
+                    // Candidate picker options = everyone, with already-attached vacancy candidates first.
                     const candidateOptionsMap = new Map<string, string>();
                     (v.assignments ?? []).forEach((a) => {
                       if (["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage)) {
                         candidateOptionsMap.set(a.candidate.id, a.candidate.full_name);
                       }
+                    });
+                    candidates.forEach((c) => {
+                      if (!candidateOptionsMap.has(c.id)) candidateOptionsMap.set(c.id, c.full_name);
                     });
                     const candidateOptions = Array.from(candidateOptionsMap, ([id, name]) => ({ id, name }));
                     return (
@@ -894,11 +898,16 @@ function Cell(props: {
     ? (assignee ? assignee.id : ASSIGNEE_NONE)
     : ASSIGNEE_INHERIT;
   const [assigneeValue, setAssigneeValue] = useState<string>(initialAssigneeValue);
-  useEffect(() => {
+  const assigneeId = assignee?.id ?? null;
+  const syncEditorValues = useCallback(() => {
     setSt(start ?? defaultStart);
     setFi(finish ?? defaultFinish);
-    setAssigneeValue(!active ? ASSIGNEE_NONE : overridden ? (assignee ? assignee.id : ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
-  }, [start, finish, defaultStart, defaultFinish, active, overridden, assignee]);
+    setAssigneeValue(!active ? ASSIGNEE_NONE : overridden ? (assigneeId ?? ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
+  }, [start, finish, defaultStart, defaultFinish, active, overridden, assigneeId]);
+
+  useEffect(() => {
+    if (!editOpen) syncEditorValues();
+  }, [syncEditorValues, editOpen]);
 
   const todayTint = isToday ? "bg-primary/5" : rowBg;
   const selectionRing = isSelected ? "ring-2 ring-primary ring-inset" : "";
@@ -955,11 +964,11 @@ function Cell(props: {
           tabIndex={-1}
           aria-selected={isSelected}
           onClick={onClick}
-          onDoubleClick={() => { if (onDoubleClickEdit) setEditOpen(true); }}
+          onDoubleClick={() => { if (onDoubleClickEdit) { syncEditorValues(); setEditOpen(true); } }}
           className={`relative cursor-pointer select-none border-b border-r ${todayTint} p-1 min-h-[78px] outline-none focus:outline-none focus-visible:outline-none ${selectionRing} ${clipBorder}`}
         >
           {inner}
-          <Popover open={editOpen} onOpenChange={setEditOpen}>
+          <Popover open={editOpen} onOpenChange={(open) => { if (open) syncEditorValues(); setEditOpen(open); }}>
             <PopoverTrigger asChild>
               <span className="absolute inset-0 pointer-events-none" />
             </PopoverTrigger>
@@ -1000,7 +1009,7 @@ function Cell(props: {
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         {!active && !cancelled && <ContextMenuItem onSelect={onContextAdd}>Add shift</ContextMenuItem>}
-        <ContextMenuItem onSelect={(e) => { e.preventDefault(); setTimeout(() => setEditOpen(true), 50); }}>Edit shift…</ContextMenuItem>
+        <ContextMenuItem onSelect={(e) => { e.preventDefault(); setTimeout(() => { syncEditorValues(); setEditOpen(true); }, 50); }}>Edit shift…</ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onSelect={onContextCopy} disabled={!active}>Copy</ContextMenuItem>
         <ContextMenuItem onSelect={onContextCut} disabled={!active}>Cut</ContextMenuItem>

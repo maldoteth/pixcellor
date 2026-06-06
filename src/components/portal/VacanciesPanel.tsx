@@ -395,6 +395,7 @@ export default function VacanciesPanel() {
       ) : (
         <ShiftPlannerGrid
           vacancies={filtered}
+          candidates={candidates}
           onCreate={() => { resetForm(); setOpenDialog(true); }}
           onEdit={openEdit}
           onDelete={handleDelete}
