@@ -425,17 +425,17 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
       const hasSel = selectedRef.current.size > 0;
       const mod = e.ctrlKey || e.metaKey;
       if (e.key === "Escape") {
-        clearSelection(); setClipboard(null); return;
+        clearSelectionRef.current(); setClipboard(null); return;
       }
       if (!hasSel) return;
       if (e.key === "Delete" || e.key === "Backspace") {
-        e.preventDefault(); blurActive(); void deleteSelection();
+        e.preventDefault(); blurActive(); void deleteSelectionRef.current();
       } else if (mod && (e.key === "c" || e.key === "C")) {
-        e.preventDefault(); collectClip("copy");
+        e.preventDefault(); collectClipRef.current("copy");
       } else if (mod && (e.key === "x" || e.key === "X")) {
-        e.preventDefault(); collectClip("cut");
+        e.preventDefault(); collectClipRef.current("cut");
       } else if (mod && (e.key === "v" || e.key === "V")) {
-        e.preventDefault(); void pasteClip();
+        e.preventDefault(); void pasteClipRef.current();
       }
     };
     window.addEventListener("keydown", handler);
