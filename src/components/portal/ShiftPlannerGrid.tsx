@@ -52,6 +52,7 @@ type Shift = {
 
 type Props = {
   vacancies: Vacancy[];
+  candidates?: Array<{ id: string; full_name: string; status?: string | null }>;
   onCreate?: () => void;
   onEdit: (v: Vacancy) => void;
   onDelete: (id: string) => void;
@@ -102,7 +103,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onDelete, onVacancyChanged }: Props) {
+export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit, onDelete, onVacancyChanged }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
@@ -708,12 +709,15 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onDelete
                     const isToday = dk === todayKey;
                     const isSelected = selected.has(cellKey(v.id, slot, dk));
                     const isClipSource = clipboard?.sourceKeys.includes(cellKey(v.id, slot, dk)) ?? false;
-                    // Candidate picker options = anyone shortlisted/placed against this vacancy across any slot
+                    // Candidate picker options = everyone, with already-attached vacancy candidates first.
                     const candidateOptionsMap = new Map<string, string>();
                     (v.assignments ?? []).forEach((a) => {
                       if (["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage)) {
                         candidateOptionsMap.set(a.candidate.id, a.candidate.full_name);
                       }
+                    });
+                    candidates.forEach((c) => {
+                      if (!candidateOptionsMap.has(c.id)) candidateOptionsMap.set(c.id, c.full_name);
                     });
                     const candidateOptions = Array.from(candidateOptionsMap, ([id, name]) => ({ id, name }));
                     return (
