@@ -33,7 +33,7 @@ import {
 import PortalScheduleGrid from "@/components/portal/PortalScheduleGrid";
 import PortalMyJobs from "@/components/portal/PortalMyJobs";
 import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
-import PortalVacancySearch from "@/components/portal/PortalVacancySearch";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
