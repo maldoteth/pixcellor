@@ -16,6 +16,7 @@ import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ShiftPlannerGrid from "@/components/portal/ShiftPlannerGrid";
 import TimesheetsPanel from "@/components/portal/TimesheetsPanel";
+import KycDocuments from "@/components/portal/KycDocuments";
 
 function initialsOf(name: string) {
   return (name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "?";
