@@ -568,6 +568,53 @@ export default function VacanciesPanel() {
             <div className="sm:col-span-2"><Label>Benefits</Label><Textarea rows={2} value={form.benefits} onChange={(e) => setForm({ ...form, benefits: e.target.value })} /></div>
             <div className="sm:col-span-2"><Label>Description</Label><Textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="sm:col-span-2"><Label>Internal notes</Label><Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+            {editingVacancy && (
+              <div className="sm:col-span-2 space-y-3 border-t pt-3">
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <Card>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><UserPlus className="h-4 w-4" />Assignments</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid gap-2 sm:grid-cols-[1fr_140px_auto]">
+                        <Select value={assignCandidateId} onValueChange={setAssignCandidateId}>
+                          <SelectTrigger><SelectValue placeholder="Select candidate…" /></SelectTrigger>
+                          <SelectContent>
+                            {candidates.map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}{c.headline ? ` — ${c.headline}` : ""}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Select value={assignStage} onValueChange={setAssignStage}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <Button type="button" onClick={() => handleAssign(editingVacancy.id)} disabled={!assignCandidateId}>Assign</Button>
+                      </div>
+                      <div className="space-y-2">
+                        {(editingVacancy.assignments ?? []).length === 0 ? (
+                          <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">No candidates assigned yet.</div>
+                        ) : (editingVacancy.assignments ?? []).map((a) => (
+                          <div key={a.id} className="flex flex-wrap items-center gap-2 rounded-md border p-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-sm font-medium">#{Number(a.slot_index ?? 0) + 1} · {a.candidate.full_name}</div>
+                              <div className="truncate text-xs text-muted-foreground">{a.candidate.email || a.candidate.phone || a.candidate.headline || "Candidate"}</div>
+                            </div>
+                            <Select value={a.stage} onValueChange={(stage) => handleStageChange(a.id, stage)}>
+                              <SelectTrigger className="h-8 w-[138px]"><SelectValue /></SelectTrigger>
+                              <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <Button type="button" size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => handleUnassign(a.id)} title="Unassign candidate">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm">AI recommendations</CardTitle></CardHeader>
+                    <CardContent><AIRecommendationsPanel vacancyId={editingVacancy.id} /></CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setOpenDialog(false); resetForm(); }}>Cancel</Button>
