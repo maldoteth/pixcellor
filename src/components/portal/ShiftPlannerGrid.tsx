@@ -753,9 +753,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                         onSave={async (st, fi, candidateChoice) => {
                           const isNewManualShift = !cell.active || cell.cancelled;
                           await upsert(v.id, slot, dk, st, fi, false);
-                          if (candidateChoice === "__inherit__") {
-                            await clearShiftOverride(v.id, slot, dk);
-                          } else if (candidateChoice !== undefined) {
+                          if (candidateChoice !== undefined) {
                             await setShiftCandidate(v.id, slot, dk, candidateChoice);
                           } else if (isNewManualShift) {
                             await setShiftCandidate(v.id, slot, dk, null);
