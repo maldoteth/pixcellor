@@ -318,6 +318,7 @@ export type Database = {
           headline: string | null
           id: string
           industries: string[] | null
+          is_open_to_work: boolean
           latitude: number | null
           linkedin_url: string | null
           location: string | null
@@ -366,6 +367,7 @@ export type Database = {
           headline?: string | null
           id?: string
           industries?: string[] | null
+          is_open_to_work?: boolean
           latitude?: number | null
           linkedin_url?: string | null
           location?: string | null
@@ -414,6 +416,7 @@ export type Database = {
           headline?: string | null
           id?: string
           industries?: string[] | null
+          is_open_to_work?: boolean
           latitude?: number | null
           linkedin_url?: string | null
           location?: string | null
@@ -2607,6 +2610,20 @@ export type Database = {
         Args: { _id: string }
         Returns: undefined
       }
+      candidate_express_interest: {
+        Args: { _vacancy_id: string }
+        Returns: Json
+      }
+      candidate_get_self: {
+        Args: never
+        Returns: {
+          availability_date: string
+          email: string
+          full_name: string
+          id: string
+          is_open_to_work: boolean
+        }[]
+      }
       candidate_link_self: { Args: never; Returns: string }
       candidate_list_my_documents: {
         Args: never
@@ -2676,6 +2693,10 @@ export type Database = {
           _size_bytes: number
         }
         Returns: string
+      }
+      candidate_set_availability: {
+        Args: { _date: string; _open: boolean }
+        Returns: Json
       }
       candidate_timesheet_clock_in: {
         Args: { _date: string; _slot: number; _vacancy_id: string }
@@ -3084,6 +3105,27 @@ export type Database = {
       }
       portal_my_vacancies: { Args: never; Returns: Json }
       portal_my_vacancy_ids: { Args: never; Returns: Json }
+      portal_open_vacancies: {
+        Args: { _search?: string }
+        Returns: {
+          already_applied: boolean
+          arrangement: Database["public"]["Enums"]["vacancy_arrangement"]
+          client_name: string
+          description: string
+          employment_type: Database["public"]["Enums"]["vacancy_employment_type"]
+          end_date: string
+          id: string
+          location: string
+          openings: number
+          pay_currency: string
+          pay_max: number
+          pay_min: number
+          pay_period: string
+          required_skills: string[]
+          start_date: string
+          title: string
+        }[]
+      }
       portal_rank_candidates_for_vacancy: {
         Args: { _limit?: number; _vacancy_id: string }
         Returns: Json

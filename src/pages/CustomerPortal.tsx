@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
+  Briefcase,
+  Building2,
   CalendarClock,
+  CalendarDays,
   CheckCircle2,
   Check,
   ClipboardList,
@@ -27,6 +30,10 @@ import {
   EyeOff,
   Plus,
 } from "lucide-react";
+import PortalScheduleGrid from "@/components/portal/PortalScheduleGrid";
+import PortalMyJobs from "@/components/portal/PortalMyJobs";
+import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
+import PortalVacancySearch from "@/components/portal/PortalVacancySearch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -99,7 +106,7 @@ const BUY_AGAIN_PACKAGES = [
   },
 ] as const;
 
-type PortalTab = "overview" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads";
+type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "find" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads";
 
 type CustomerOrder = {
   id: string;
@@ -258,6 +265,24 @@ export default function CustomerPortal() {
   const [chatOpen, setChatOpen] = useState(false);
   const [hiddenCount, setHiddenCount] = useState(0);
   const [leadQuery, setLeadQuery] = useState("");
+  const [access, setAccess] = useState<{ as_candidate: string[]; as_client: string[] }>({ as_candidate: [], as_client: [] });
+  const [myCandidateId, setMyCandidateId] = useState<string | null>(null);
+  const [scheduleRefresh, setScheduleRefresh] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [cid, ids] = await Promise.all([
+        supabase.rpc("candidate_link_self" as never),
+        supabase.rpc("portal_my_vacancy_ids" as never),
+      ]);
+      if (cancelled) return;
+      setMyCandidateId((cid.data as string) ?? null);
+      const a = ids.data as { as_candidate?: string[]; as_client?: string[] } | null;
+      setAccess({ as_candidate: a?.as_candidate ?? [], as_client: a?.as_client ?? [] });
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const refreshHiddenCount = useCallback(async () => {
     const { count } = await supabase
@@ -349,8 +374,15 @@ export default function CustomerPortal() {
     return { max: 10, label: "Free tier" };
   }, [subscription, orders]);
 
+  const isCandidate = access.as_candidate.length > 0 || !!myCandidateId;
+  const isClient = access.as_client.length > 0;
+
   const navItems: { title: string; value: PortalTab; icon: typeof Home }[] = [
     { title: "Overview", value: "overview", icon: Home },
+    { title: "Schedule", value: "schedule", icon: CalendarDays },
+    ...(isCandidate ? [{ title: "My Jobs", value: "myjobs" as const, icon: Briefcase }] : []),
+    ...(isClient ? [{ title: "Vacancies", value: "vacancies" as const, icon: Building2 }] : []),
+    { title: "Find work", value: "find", icon: Search },
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
     { title: "Domains", value: "delivered", icon: Globe2 },
@@ -534,7 +566,7 @@ export default function CustomerPortal() {
               </div>
 
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PortalTab)} className="space-y-5">
-                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 md:grid-cols-3 lg:grid-cols-7">
+                <TabsList className="flex h-auto w-full flex-wrap gap-2 bg-transparent p-0">
                   {navItems.map((item) => (
                     <TabsTrigger
                       key={item.value}
@@ -572,6 +604,30 @@ export default function CustomerPortal() {
                     <SectionHeader title="Recent orders" description="Your latest purchases and project status." count={orders.length} />
                     {orders.length === 0 ? <EmptyState icon={PackageCheck} title="No order history yet" text="Orders will appear here after checkout." /> : orders.slice(0, 3).map((order) => <OrderCard key={order.id} order={order} requirement={requirementsBySession.get(order.session_id)} />)}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="schedule" className="space-y-4">
+                  <SectionHeader title="Schedule" description="Your shifts across every vacancy. Empty days are shown so you can plan ahead." />
+                  <PortalScheduleGrid key={scheduleRefresh} myCandidateId={myCandidateId} />
+                </TabsContent>
+
+                {isCandidate && (
+                  <TabsContent value="myjobs" className="space-y-4">
+                    <SectionHeader title="My jobs" description="Invitations and confirmed assignments. Accept the first one to lock the role." />
+                    <PortalMyJobs onChange={() => setScheduleRefresh((t) => t + 1)} />
+                  </TabsContent>
+                )}
+
+                {isClient && (
+                  <TabsContent value="vacancies" className="space-y-4">
+                    <SectionHeader title="Your vacancies" description="Open roles for your company and the candidates assigned to them." />
+                    <PortalClientVacancies />
+                  </TabsContent>
+                )}
+
+                <TabsContent value="find" className="space-y-4">
+                  <SectionHeader title="Find work" description="Search open vacancies and tell us when you're available." />
+                  <PortalVacancySearch />
                 </TabsContent>
 
                 <TabsContent value="leads" className="space-y-8">
