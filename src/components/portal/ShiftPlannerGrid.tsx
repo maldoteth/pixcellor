@@ -332,6 +332,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
   };
 
   const clearSelection = () => { setSelected(new Set()); setLastSelected(null); };
+  useEffect(() => { clearSelectionRef.current = clearSelection; });
 
   // Clipboard ops
   const collectClip = (mode: "copy" | "cut") => {
@@ -346,6 +347,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
     setClipboard({ mode, items, sourceKeys: keys });
     toast({ title: `${mode === "copy" ? "Copied" : "Cut"} ${items.length} cell${items.length === 1 ? "" : "s"}` });
   };
+  useEffect(() => { collectClipRef.current = collectClip; });
 
   const pasteClip = async () => {
     const clip = clipboardRef.current;
@@ -370,6 +372,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
     }
     await load();
   };
+  useEffect(() => { pasteClipRef.current = pasteClip; });
 
   // Bulk paste: repeat clipboard pattern from a target date for N days/weeks/months
   const runBulkPaste = async () => {
@@ -406,6 +409,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
     }));
     await load();
   };
+  useEffect(() => { deleteSelectionRef.current = deleteSelection; });
 
   // Keyboard — attach once, always read latest state via refs
   useEffect(() => {
