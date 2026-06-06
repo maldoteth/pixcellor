@@ -106,6 +106,7 @@ const emptyForm = {
 
 export default function VacanciesPanel() {
   const { toast } = useToast();
+  const confirm = useConfirmDialog();
   const realtimeTimerRef = useRef<number | null>(null);
   const loadedRef = useRef(false);
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
