@@ -2918,6 +2918,10 @@ export type Database = {
         Args: { _contact_id: string; _limit?: number }
         Returns: Json
       }
+      portal_materialize_vacancy_shifts: {
+        Args: { _vacancy_id: string }
+        Returns: undefined
+      }
       portal_rank_candidates_for_vacancy: {
         Args: { _limit?: number; _vacancy_id: string }
         Returns: Json
