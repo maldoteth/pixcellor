@@ -614,13 +614,17 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                     <div className="text-sm">{v.client?.name ?? "—"}</div>
                     {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
                   </div>
-                  {/* Day cells */}
+                  {/* Day cells (per slot) */}
                   {weekDates.map((d, dIdx) => {
                     const dk = ymd(d);
-                    const cell = resolveCell(v.id, dk);
+                    const cell = resolveCell(v.id, slot, dk);
                     const isToday = dk === todayKey;
-                    const isSelected = selected.has(cellKey(v.id, dk));
-                    const isClipSource = clipboard?.sourceKeys.includes(cellKey(v.id, dk)) ?? false;
+                    const isSelected = selected.has(cellKey(v.id, slot, dk));
+                    const isClipSource = clipboard?.sourceKeys.includes(cellKey(v.id, slot, dk)) ?? false;
+                    const slotAssignee = (v.assignments ?? []).find((a) =>
+                      a.slot_index === slot &&
+                      ["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage),
+                    );
                     return (
                       <Cell
                         key={dk}
@@ -631,22 +635,23 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                         cancelled={cell.cancelled}
                         start={cell.start}
                         finish={cell.finish}
+                        assignee={slotAssignee ? { id: slotAssignee.candidate.id, name: slotAssignee.candidate.full_name } : null}
                         isSelected={isSelected}
                         isClipSource={isClipSource}
                         clipMode={clipboard?.mode ?? null}
                         onClick={(e) => {
-                          if (e.shiftKey) rangeSelect(v.id, dIdx);
-                          else if (e.ctrlKey || e.metaKey) toggleSelect(v.id, dIdx);
-                          else selectSingle(v.id, dIdx);
+                          if (e.shiftKey) rangeSelect(v.id, slot, dIdx);
+                          else if (e.ctrlKey || e.metaKey) toggleSelect(v.id, slot, dIdx);
+                          else selectSingle(v.id, slot, dIdx);
                         }}
                         onDoubleClickEdit={cell.active}
-                        onSave={async (st, fi) => { await upsert(v.id, dk, st, fi, false); await load(); }}
-                        onContextDelete={async () => { await removeShift(v.id, dk); await load(); }}
-                        onContextCopy={() => { if (!isSelected) selectSingle(v.id, dIdx); setTimeout(() => collectClip("copy"), 0); }}
-                        onContextCut={() => { if (!isSelected) selectSingle(v.id, dIdx); setTimeout(() => collectClip("cut"), 0); }}
-                        onContextPaste={() => { if (!isSelected) selectSingle(v.id, dIdx); setTimeout(() => pasteClip(), 0); }}
-                        onContextAdd={async () => { await upsert(v.id, dk, v.start_time?.slice(0, 5) ?? "09:00", v.finish_time?.slice(0, 5) ?? "17:00", false); await load(); }}
-                        onContextBulkPaste={() => setBulkPaste({ vacancyId: v.id, date: dk })}
+                        onSave={async (st, fi) => { await upsert(v.id, slot, dk, st, fi, false); await load(); }}
+                        onContextDelete={async () => { await removeShift(v.id, slot, dk); await load(); }}
+                        onContextCopy={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => collectClip("copy"), 0); }}
+                        onContextCut={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => collectClip("cut"), 0); }}
+                        onContextPaste={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => pasteClip(), 0); }}
+                        onContextAdd={async () => { await upsert(v.id, slot, dk, v.start_time?.slice(0, 5) ?? "09:00", v.finish_time?.slice(0, 5) ?? "17:00", false); await load(); }}
+                        onContextBulkPaste={() => setBulkPaste({ vacancyId: v.id, slot, date: dk })}
                         clipboardHasItems={!!clipboard}
                       />
                     );
