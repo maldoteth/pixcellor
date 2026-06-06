@@ -599,7 +599,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
           ) : (
             <>
             {displayRows.map(({ vacancy: v, slot, total }, rowIdx) => {
-              const rowBg = rowIdx % 2 === 0 ? "bg-background" : "bg-muted/10";
+              const rowBg = rowIdx % 2 === 0 ? "bg-card" : "bg-background";
               const rowKey = `${v.id}#${slot}`;
               return (
                 <div key={rowKey} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
