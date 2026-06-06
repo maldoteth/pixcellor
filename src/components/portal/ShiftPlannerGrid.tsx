@@ -535,43 +535,73 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
           {vacancies.length === 0 ? (
             <div className="px-3 py-12 text-center text-sm text-muted-foreground">No vacancies match the current filters.</div>
           ) : (
-            sortedVacancies.map((v, rowIdx) => {
+            <>
+            {displayRows.map(({ vacancy: v, slot, total }, rowIdx) => {
               const rowBg = rowIdx % 2 === 0 ? "bg-background" : "bg-muted/10";
+              const rowKey = `${v.id}#${slot}`;
               return (
-                <div key={v.id} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
-                  {/* Job (frozen) */}
-                  <div className={`${isMobile ? "" : "sticky left-0 z-10"} border-b border-r ${rowBg} px-2 py-2`}>
-                    <div className="text-sm font-semibold leading-tight">{v.title}</div>
-                    {v.reference && <div className="text-[10px] text-muted-foreground">Ref {v.reference}</div>}
-                    <div className="mt-1 flex flex-wrap items-center gap-1">
-                      <Badge variant={v.status === "open" ? "default" : "outline"} className="text-[9px] h-4 px-1">{v.status}</Badge>
-                      {(v.pay_min || v.pay_max) && (
-                        <span className="text-[10px] text-muted-foreground">
-                          Pay {v.pay_currency ?? "GBP"} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
-                        </span>
-                      )}
-                    </div>
-                    {(() => {
-                      const pay = Number(v.pay_max ?? v.pay_min ?? 0);
-                      const charge = Number(v.charge_rate ?? 0);
-                      const paye = Number(v.paye_rate_percent ?? 21);
-                      if (!pay || !charge) return null;
-                      const cost = pay + pay * (paye / 100);
-                      const m = charge - cost;
-                      const pct = (m / charge) * 100;
-                      return (
-                        <div className={`mt-1 text-[10px] ${m >= 0 ? "text-emerald-600" : "text-destructive"}`}>
-                          Charge {v.pay_currency ?? "GBP"} {charge.toFixed(2)} · Margin {m.toFixed(2)} ({pct.toFixed(0)}%)
+                <div key={rowKey} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
+                  {/* Job (frozen) — right-click for vacancy copy/paste */}
+                  <ContextMenu>
+                    <ContextMenuTrigger asChild>
+                      <div className={`${isMobile ? "" : "sticky left-0 z-10"} border-b border-r ${rowBg} px-2 py-2`}>
+                        <div className="flex items-center gap-1">
+                          <div className="text-sm font-semibold leading-tight flex-1">{v.title}</div>
+                          {total > 1 && (
+                            <Badge variant="outline" className="text-[9px] h-4 px-1 shrink-0">#{slot + 1}/{total}</Badge>
+                          )}
                         </div>
-                      );
-                    })()}
-                    <div className="mt-1 flex gap-1">
-                      <button onClick={() => onEdit(v)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><Pencil className="h-2.5 w-2.5" />Edit</button>
-                      <button onClick={() => onAssign(v.id)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><UserPlus className="h-2.5 w-2.5" />Assign</button>
-                      {onOpenAI && <button onClick={() => onOpenAI(v.id)} className="text-[10px] text-primary hover:underline">AI</button>}
-                      <button onClick={() => onDelete(v.id)} className="text-[10px] text-destructive hover:underline inline-flex items-center gap-0.5"><Trash2 className="h-2.5 w-2.5" /></button>
-                    </div>
-                  </div>
+                        {v.reference && <div className="text-[10px] text-muted-foreground">Ref {v.reference}</div>}
+                        <div className="mt-1 flex flex-wrap items-center gap-1">
+                          <Badge variant={v.status === "open" ? "default" : "outline"} className="text-[9px] h-4 px-1">{v.status}</Badge>
+                          {(v.pay_min || v.pay_max) && (
+                            <span className="text-[10px] text-muted-foreground">
+                              Pay {v.pay_currency ?? "GBP"} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
+                            </span>
+                          )}
+                        </div>
+                        {(() => {
+                          const pay = Number(v.pay_max ?? v.pay_min ?? 0);
+                          const charge = Number(v.charge_rate ?? 0);
+                          const paye = Number(v.paye_rate_percent ?? 21);
+                          if (!pay || !charge) return null;
+                          const cost = pay + pay * (paye / 100);
+                          const m = charge - cost;
+                          const pct = (m / charge) * 100;
+                          return (
+                            <div className={`mt-1 text-[10px] ${m >= 0 ? "text-emerald-600" : "text-destructive"}`}>
+                              Charge {v.pay_currency ?? "GBP"} {charge.toFixed(2)} · Margin {m.toFixed(2)} ({pct.toFixed(0)}%)
+                            </div>
+                          );
+                        })()}
+                        <div className="mt-1 flex gap-1 flex-wrap">
+                          <button onClick={() => onEdit(v)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><Pencil className="h-2.5 w-2.5" />Edit</button>
+                          <button onClick={() => onAssign(v.id)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><UserPlus className="h-2.5 w-2.5" />Assign</button>
+                          {onOpenAI && <button onClick={() => onOpenAI(v.id)} className="text-[10px] text-primary hover:underline">AI</button>}
+                          <button onClick={() => onDelete(v.id)} className="text-[10px] text-destructive hover:underline inline-flex items-center gap-0.5"><Trash2 className="h-2.5 w-2.5" /></button>
+                        </div>
+                      </div>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent className="w-56">
+                      <ContextMenuItem onSelect={() => { setVacancyClip(v); toast({ title: `Copied vacancy "${v.title}"` }); }}>
+                        <Copy className="h-3.5 w-3.5 mr-2" />Copy vacancy
+                      </ContextMenuItem>
+                      <ContextMenuItem onSelect={() => bumpOpenings(v, 1)}>
+                        <Plus className="h-3.5 w-3.5 mr-2" />Add another opening
+                      </ContextMenuItem>
+                      <ContextMenuItem onSelect={() => bumpOpenings(v, -1)} disabled={total <= 1}>
+                        <Minus className="h-3.5 w-3.5 mr-2" />Remove an opening
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem
+                        onSelect={() => vacancyClip && bumpOpenings(vacancyClip, 1)}
+                        disabled={!vacancyClip}
+                      >
+                        <ClipboardPaste className="h-3.5 w-3.5 mr-2" />
+                        Paste vacancy{vacancyClip ? ` ("${vacancyClip.title}")` : ""}
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
                   {/* Client (frozen) */}
                   <div className={`${isMobile ? "" : "sticky z-10"} border-b border-r ${rowBg} px-2 py-2`} style={isMobile ? undefined : { left: `${jobColW}px` }}>
                     <div className="text-sm">{v.client?.name ?? "—"}</div>
@@ -616,7 +646,31 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                   })}
                 </div>
               );
-            })
+            })}
+            {/* Trailing empty placeholder row — right-click to paste a copied vacancy as a new opening */}
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <div className="grid" style={{ gridTemplateColumns: gridTemplate }}>
+                  <div className={`${isMobile ? "" : "sticky left-0 z-10"} border-b border-r bg-muted/5 px-2 py-3 min-h-[78px] flex items-center justify-center text-[11px] text-muted-foreground/70 italic`}>
+                    {vacancyClip ? `Right-click to paste "${vacancyClip.title}"` : "Right-click → copy a vacancy first"}
+                  </div>
+                  <div className={`${isMobile ? "" : "sticky z-10"} border-b border-r bg-muted/5`} style={isMobile ? undefined : { left: `${jobColW}px` }} />
+                  {weekDates.map((_, i) => (
+                    <div key={i} className="border-b border-r bg-muted/5" />
+                  ))}
+                </div>
+              </ContextMenuTrigger>
+              <ContextMenuContent className="w-56">
+                <ContextMenuItem
+                  onSelect={() => vacancyClip && bumpOpenings(vacancyClip, 1)}
+                  disabled={!vacancyClip}
+                >
+                  <ClipboardPaste className="h-3.5 w-3.5 mr-2" />
+                  Paste vacancy{vacancyClip ? ` ("${vacancyClip.title}")` : ""}
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
+            </>
           )}
         </div>
       </div>
