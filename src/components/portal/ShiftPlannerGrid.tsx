@@ -759,9 +759,94 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
           </div>
 
           {/* Vacancy rows */}
-          {vacancies.length === 0 && (
+          {rowMode === "vacancy" && vacancies.length === 0 && (
             <div className="px-3 py-12 text-center text-sm text-muted-foreground">No vacancies match the current filters.</div>
           )}
+          {rowMode === "candidate" && candidateRowsData.length === 0 && (
+            <div className="px-3 py-12 text-center text-sm text-muted-foreground">No candidates have assigned shifts in this range.</div>
+          )}
+          {rowMode === "candidate" && candidateRowsData.map((row, rowIdx) => {
+            const rowBg = rowIdx % 2 === 0 ? "bg-card" : "bg-background";
+            // hours total for this candidate this week (display only)
+            const weekKeys = new Set(weekDates.map(ymd));
+            let rowHours = 0;
+            row.shifts.forEach(({ vacancy: v, shift: s, date }) => {
+              if (!weekKeys.has(date)) return;
+              const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
+              const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
+              if (!startStr || !finishStr) return;
+              const [sh, sm] = startStr.split(":").map(Number);
+              const [fh, fm] = finishStr.split(":").map(Number);
+              let mins = (fh * 60 + fm) - (sh * 60 + sm);
+              if (mins < 0) mins += 24 * 60;
+              rowHours += mins / 60;
+            });
+            return (
+              <div key={row.info.id} className="grid" style={{ gridTemplateColumns: gridTemplate }}>
+                {/* Candidate (frozen) */}
+                <div
+                  className={`sticky left-0 z-10 border-b border-r ${rowBg} px-2 py-2 ${onCandidateClick ? "cursor-pointer hover:bg-muted/40" : ""}`}
+                  onClick={() => onCandidateClick?.(row.info.id)}
+                >
+                  <div className="text-sm font-semibold leading-tight truncate">{row.info.full_name}</div>
+                  {row.info.headline && <div className="text-[10px] text-muted-foreground line-clamp-1">{row.info.headline}</div>}
+                  <div className="mt-1 text-[10px] text-muted-foreground">
+                    {row.shifts.filter((x) => weekKeys.has(x.date)).length} shift{row.shifts.filter((x) => weekKeys.has(x.date)).length === 1 ? "" : "s"} · {rowHours.toFixed(1)}h
+                  </div>
+                </div>
+                {/* Details column */}
+                <div
+                  className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`}
+                  style={{ left: `${jobColW}px` }}
+                >
+                  {row.info.email && <div className="text-[10px] text-muted-foreground truncate">{row.info.email}</div>}
+                  {row.info.phone && <div className="text-[10px] text-muted-foreground truncate">{row.info.phone}</div>}
+                  {row.info.status && <Badge variant="outline" className="text-[9px] h-4 px-1 mt-1">{row.info.status}</Badge>}
+                </div>
+                {/* Day cells: chips per assigned shift on that date */}
+                {weekDates.map((d, dIdx) => {
+                  const dk = ymd(d);
+                  const isToday = dk === todayKey;
+                  const dayShifts = row.shifts.filter((x) => x.date === dk);
+                  return (
+                    <div
+                      key={dIdx}
+                      className={`relative border-b border-r p-1 min-h-[78px] ${isToday ? "bg-primary/5" : rowBg}`}
+                    >
+                      {dayShifts.length === 0 ? (
+                        <div className="flex h-full w-full items-center justify-center rounded border border-dashed border-border/40 text-[11px] text-muted-foreground/60">—</div>
+                      ) : (
+                        <div className="flex h-full w-full flex-col gap-1">
+                          {dayShifts.map(({ vacancy: v, slot, shift: s }) => {
+                            const startStr = (s.start_time ?? v.start_time ?? "").slice(0, 5);
+                            const finishStr = (s.finish_time ?? v.finish_time ?? "").slice(0, 5);
+                            return (
+                              <button
+                                key={`${v.id}#${slot}`}
+                                type="button"
+                                onDoubleClick={() => onEdit(v)}
+                                title={`${v.title}${v.client?.name ? ` · ${v.client.name}` : ""}\n${to12h(startStr)} – ${to12h(finishStr)}\nDouble-click to open job`}
+                                className="flex w-full flex-col items-start gap-0.5 rounded border border-primary/30 bg-primary/5 px-1.5 py-1 text-left hover:bg-primary/10"
+                              >
+                                <div className="text-[11px] font-semibold leading-tight truncate w-full">{v.title}</div>
+                                <div className="text-[10px] leading-tight text-muted-foreground truncate w-full">
+                                  {to12h(startStr)}{finishStr ? ` – ${to12h(finishStr)}` : ""}
+                                </div>
+                                {v.client?.name && (
+                                  <div className="text-[9px] leading-tight text-muted-foreground/80 truncate w-full">{v.client.name}</div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+          {rowMode === "vacancy" && (
             <>
             {displayRows.map(({ vacancy: v, slot, total }, rowIdx) => {
               const rowBg = rowIdx % 2 === 0 ? "bg-card" : "bg-background";
