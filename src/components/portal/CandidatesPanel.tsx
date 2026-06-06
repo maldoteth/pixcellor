@@ -467,6 +467,7 @@ export default function CandidatesPanel() {
         </Select>
         <Tabs value={view} onValueChange={(v) => setView(v as any)}>
           <TabsList>
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="list">List</TabsTrigger>
             <TabsTrigger value="kanban">Pipeline</TabsTrigger>
           </TabsList>
