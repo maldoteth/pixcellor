@@ -94,7 +94,11 @@ function startOfWeek(d: Date): Date {
   return addDays(x, offsetToMonday);
 }
 
-const cellKey = (vacancyId: string, date: string) => `${vacancyId}|${date}`;
+const cellKey = (vacancyId: string, slot: number, date: string) => `${vacancyId}|${slot}|${date}`;
+const parseCellKey = (k: string): { vid: string; slot: number; date: string } => {
+  const [vid, slotStr, date] = k.split("|");
+  return { vid, slot: Number(slotStr) || 0, date };
+};
 
 export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
   const { toast } = useToast();
