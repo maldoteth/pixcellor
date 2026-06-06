@@ -49,6 +49,7 @@ type Shift = {
 
 type Props = {
   vacancies: Vacancy[];
+  onCreate?: () => void;
   onEdit: (v: Vacancy) => void;
   onAssign: (id: string) => void;
   onDelete: (id: string) => void;
@@ -100,7 +101,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
+export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
@@ -142,30 +143,30 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     return rows;
   }, [sortedVacancies]);
   const [vacancyClip, setVacancyClip] = useState<Vacancy | null>(null);
-  const bumpOpenings = async (v: Vacancy, delta: number) => {
+  const changeOpenings = async (v: Vacancy, next: number, cloneFromSlot?: number, removeSlot?: number) => {
     const current = Math.max(1, Number(v.openings ?? 1) || 1);
-    const next = Math.max(1, current + delta);
     if (next === current) return;
-    if (delta > 0) {
-      // Add an opening: clone slot 0's shifts + assignments into the new slot so it starts pre-filled
-      const newSlot = current; // slot indices are 0..current-1, new one is `current`
+    if (next > current) {
+      const newSlot = current;
       const { error: cloneErr } = await supabase.rpc("portal_clone_vacancy_slot" as never, {
-        _vacancy_id: v.id, _from_slot: 0, _to_slot: newSlot,
+        _vacancy_id: v.id, _from_slot: cloneFromSlot ?? 0, _to_slot: newSlot,
       } as never);
       if (cloneErr) { toast({ title: "Clone failed", description: cloneErr.message, variant: "destructive" }); return; }
     } else {
-      // Remove the highest slot: delete its shifts + assignments
-      const removeSlot = current - 1;
       const { error: delErr } = await supabase.rpc("portal_delete_vacancy_slot" as never, {
-        _vacancy_id: v.id, _slot: removeSlot,
+        _vacancy_id: v.id, _slot: removeSlot ?? current - 1,
       } as never);
       if (delErr) { toast({ title: "Delete failed", description: delErr.message, variant: "destructive" }); return; }
     }
     const { error } = await supabase.rpc("portal_update_vacancy" as never, { _id: v.id, _patch: { openings: next } } as never);
     if (error) { toast({ title: "Update failed", description: error.message, variant: "destructive" }); return; }
-    toast({ title: delta > 0 ? `Added opening (now ${next})` : `Removed opening (now ${next})` });
+    toast({ title: next > current ? `Added opening (now ${next})` : `Removed opening (now ${next})` });
     await onVacancyChanged?.();
     await load();
+  };
+  const bumpOpenings = async (v: Vacancy, delta: number, cloneFromSlot = 0) => {
+    const current = Math.max(1, Number(v.openings ?? 1) || 1);
+    await changeOpenings(v, Math.max(1, current + delta), cloneFromSlot);
   };
   const toggleSort = (col: "title" | "client") => {
     if (sortBy === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -177,6 +178,10 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const selectedRef = useRef(selected);
   const clipboardRef = useRef(clipboard);
   const weekDatesRef = useRef<Date[]>([]);
+  const collectClipRef = useRef<(mode: "copy" | "cut") => void>(() => undefined);
+  const pasteClipRef = useRef<() => void | Promise<void>>(() => undefined);
+  const deleteSelectionRef = useRef<() => void | Promise<void>>(() => undefined);
+  const clearSelectionRef = useRef<() => void>(() => undefined);
   useEffect(() => { selectedRef.current = selected; }, [selected]);
   useEffect(() => { clipboardRef.current = clipboard; }, [clipboard]);
 
@@ -327,6 +332,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   };
 
   const clearSelection = () => { setSelected(new Set()); setLastSelected(null); };
+  useEffect(() => { clearSelectionRef.current = clearSelection; });
 
   // Clipboard ops
   const collectClip = (mode: "copy" | "cut") => {
@@ -341,6 +347,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     setClipboard({ mode, items, sourceKeys: keys });
     toast({ title: `${mode === "copy" ? "Copied" : "Cut"} ${items.length} cell${items.length === 1 ? "" : "s"}` });
   };
+  useEffect(() => { collectClipRef.current = collectClip; });
 
   const pasteClip = async () => {
     const clip = clipboardRef.current;
@@ -365,6 +372,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     }
     await load();
   };
+  useEffect(() => { pasteClipRef.current = pasteClip; });
 
   // Bulk paste: repeat clipboard pattern from a target date for N days/weeks/months
   const runBulkPaste = async () => {
@@ -401,6 +409,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     }));
     await load();
   };
+  useEffect(() => { deleteSelectionRef.current = deleteSelection; });
 
   // Keyboard — attach once, always read latest state via refs
   useEffect(() => {
@@ -416,22 +425,21 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       const hasSel = selectedRef.current.size > 0;
       const mod = e.ctrlKey || e.metaKey;
       if (e.key === "Escape") {
-        clearSelection(); setClipboard(null); return;
+        clearSelectionRef.current(); setClipboard(null); return;
       }
       if (!hasSel) return;
       if (e.key === "Delete" || e.key === "Backspace") {
-        e.preventDefault(); blurActive(); void deleteSelection();
+        e.preventDefault(); blurActive(); void deleteSelectionRef.current();
       } else if (mod && (e.key === "c" || e.key === "C")) {
-        e.preventDefault(); collectClip("copy");
+        e.preventDefault(); collectClipRef.current("copy");
       } else if (mod && (e.key === "x" || e.key === "X")) {
-        e.preventDefault(); collectClip("cut");
+        e.preventDefault(); collectClipRef.current("cut");
       } else if (mod && (e.key === "v" || e.key === "V")) {
-        e.preventDefault(); void pasteClip();
+        e.preventDefault(); void pasteClipRef.current();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Click outside to clear
@@ -446,6 +454,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
 
   const weekLabel = `${weekStart.toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${weekDates[weekDates.length - 1].toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
   const todayKey = ymd(new Date());
+  const lastVisibleRow = displayRows[displayRows.length - 1] ?? null;
 
   // ----- Weekly stats: margin, hours, active workers, idle workers -----
   const stats = useMemo(() => {
@@ -497,7 +506,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
       activeWorkers: workersWithShifts.size,
       idleWorkers: idleWorkers.length,
     };
-  }, [displayRows, weekDates, shifts, resolveCell]);
+  }, [displayRows, weekDates, resolveCell]);
 
   const fmtMoney = (n: number) => `${stats.currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
@@ -594,9 +603,9 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
           </div>
 
           {/* Vacancy rows */}
-          {vacancies.length === 0 ? (
+          {vacancies.length === 0 && (
             <div className="px-3 py-12 text-center text-sm text-muted-foreground">No vacancies match the current filters.</div>
-          ) : (
+          )}
             <>
             {displayRows.map(({ vacancy: v, slot, total }, rowIdx) => {
               const rowBg = rowIdx % 2 === 0 ? "bg-card" : "bg-background";
@@ -714,12 +723,12 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                 </div>
               );
             })}
-            {/* Trailing empty placeholder row — right-click to paste a copied vacancy as a new opening */}
+            {/* Trailing empty placeholder row — always available for quick vacancy actions */}
             <ContextMenu>
               <ContextMenuTrigger asChild>
                 <div className="grid" style={{ gridTemplateColumns: gridTemplate }}>
                   <div className="sticky left-0 z-10 border-b border-r bg-card px-2 py-3 min-h-[78px] flex items-center justify-center text-[11px] text-muted-foreground/70 italic">
-                    {vacancyClip ? `Right-click to paste "${vacancyClip.title}"` : "Right-click → copy a vacancy first"}
+                    Right-click for vacancy actions
                   </div>
                   <div className="sticky z-10 border-b border-r bg-card shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]" style={{ left: `${jobColW}px` }} />
                   {weekDates.map((_, i) => (
@@ -728,6 +737,16 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
                 </div>
               </ContextMenuTrigger>
               <ContextMenuContent className="w-56">
+                <ContextMenuItem onSelect={() => onCreate?.()} disabled={!onCreate}>
+                  <Plus className="h-3.5 w-3.5 mr-2" />Create vacancy
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onSelect={() => lastVisibleRow && bumpOpenings(lastVisibleRow.vacancy, 1, lastVisibleRow.slot)}
+                  disabled={!lastVisibleRow}
+                >
+                  <Copy className="h-3.5 w-3.5 mr-2" />Repeat vacancy above
+                </ContextMenuItem>
+                <ContextMenuSeparator />
                 <ContextMenuItem
                   onSelect={() => vacancyClip && bumpOpenings(vacancyClip, 1)}
                   disabled={!vacancyClip}
@@ -738,7 +757,6 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
               </ContextMenuContent>
             </ContextMenu>
             </>
-          )}
         </div>
       </div>
 
