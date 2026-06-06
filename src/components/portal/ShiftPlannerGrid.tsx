@@ -133,37 +133,69 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const [bulkUnit, setBulkUnit] = useState<"days" | "weeks" | "months">("weeks");
   const [sortBy, setSortBy] = useState<"title" | "client">("title");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const ACTIVE_STAGES = ["shortlisted", "submitted", "interviewing", "offer", "placed"] as const;
+  const candidateLookup = useMemo(() => {
+    const m = new Map<string, NonNullable<Props["candidates"]>[number]>();
+    candidates.forEach((c) => m.set(c.id, c));
+    return m;
+  }, [candidates]);
+  const slotAssignedCandidateId = useCallback((v: Vacancy, slot: number): string | null => {
+    const fromShifts = Object.values(shifts[v.id]?.[slot] ?? {}).find(
+      (s) => !s.cancelled && s.assignment_overridden && s.candidate_id,
+    );
+    if (fromShifts?.candidate_id) return fromShifts.candidate_id;
+    const a = (v.assignments ?? []).find(
+      (a) => Number(a.slot_index ?? 0) === slot && (ACTIVE_STAGES as readonly string[]).includes(a.stage),
+    );
+    return a?.candidate?.id ?? null;
+  }, [shifts]);
   const sortedVacancies = useMemo(() => {
     const arr = [...vacancies];
     arr.sort((a, b) => {
-      const av = (sortBy === "title" ? a.title : a.client?.name ?? "") || "";
-      const bv = (sortBy === "title" ? b.title : b.client?.name ?? "") || "";
-      const cmp = av.localeCompare(bv, undefined, { sensitivity: "base" });
+      const cmp = (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: "base" });
       return sortDir === "asc" ? cmp : -cmp;
     });
+    if (sortBy === "title") return arr;
+    // Secondary-column sort: build rows then sort by column value, but keep as vacancies array (rows handled below).
     return arr;
   }, [vacancies, sortBy, sortDir]);
   // Expand each vacancy into N rows (one per opening), keep them individual.
   const displayRows = useMemo(() => {
     const rows: Array<{ vacancy: Vacancy; slot: number; total: number }> = [];
-    const activeStages = ["shortlisted", "submitted", "interviewing", "offer", "placed"];
     sortedVacancies.forEach((v) => {
       const total = Math.max(1, Number(v.openings ?? 1) || 1);
       for (let i = 0; i < total; i++) {
         if (candidateFilter) {
-          // Only show the row if the candidate has at least one non-cancelled shift
-          // explicitly assigning them on this slot. Vacancy-level assignments without
-          // any actual shifts shouldn't surface a job on the candidate's calendar.
           const hasShiftForCandidate = Object.values(shifts[v.id]?.[i] ?? {}).some(
             (s) => !s.cancelled && s.assignment_overridden && s.candidate_id === candidateFilter.id,
           );
           if (!hasShiftForCandidate) continue;
         }
+        if (secondColumn === "candidate" && candidateColumnOnlyAssigned) {
+          if (!slotAssignedCandidateId(v, i)) continue;
+        }
         rows.push({ vacancy: v, slot: i, total });
       }
     });
+    if (sortBy === "client") {
+      rows.sort((a, b) => {
+        let av = "";
+        let bv = "";
+        if (secondColumn === "candidate") {
+          const ai = slotAssignedCandidateId(a.vacancy, a.slot);
+          const bi = slotAssignedCandidateId(b.vacancy, b.slot);
+          av = (ai ? candidateLookup.get(ai)?.full_name ?? "" : "");
+          bv = (bi ? candidateLookup.get(bi)?.full_name ?? "" : "");
+        } else {
+          av = a.vacancy.client?.name ?? "";
+          bv = b.vacancy.client?.name ?? "";
+        }
+        const cmp = av.localeCompare(bv, undefined, { sensitivity: "base" });
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
     return rows;
-  }, [sortedVacancies, candidateFilter, shifts]);
+  }, [sortedVacancies, candidateFilter, shifts, secondColumn, candidateColumnOnlyAssigned, slotAssignedCandidateId, sortBy, sortDir, candidateLookup]);
   const [vacancyClip, setVacancyClip] = useState<Vacancy | null>(null);
   const changeOpenings = async (v: Vacancy, next: number, cloneFromSlot?: number, removeSlot?: number) => {
     const current = Math.max(1, Number(v.openings ?? 1) || 1);
