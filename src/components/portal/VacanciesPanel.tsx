@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Briefcase, Plus, Search, Loader2 } from "lucide-react";
+import { Briefcase, Plus, Trash2, UserPlus, Search, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+import AIRecommendationsPanel from "./AIRecommendationsPanel";
 import PlaceAutocomplete from "@/components/ui/place-autocomplete";
 import VacancyCalendarStrip from "./VacancyCalendarStrip";
 import ShiftPlannerGrid from "./ShiftPlannerGrid";
@@ -117,11 +118,12 @@ export default function VacanciesPanel() {
   const [openDialog, setOpenDialog] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
+  const [assignCandidateId, setAssignCandidateId] = useState<string>("");
+  const [assignStage, setAssignStage] = useState<string>("shortlisted");
   const [customTimes, setCustomTimes] = useState(false);
   const [perDayTimes, setPerDayTimes] = useState<Record<string, { start: string; finish: string }>>({});
   const [clientQuery, setClientQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [aiFor, setAiFor] = useState<string | null>(null);
 
   const resetForm = useCallback(() => {
     setForm({ ...emptyForm });
@@ -129,6 +131,8 @@ export default function VacanciesPanel() {
     setCustomTimes(false);
     setClientQuery("");
     setEditingId(null);
+    setAssignCandidateId("");
+    setAssignStage("shortlisted");
   }, []);
 
   const openEdit = (v: Vacancy) => {
