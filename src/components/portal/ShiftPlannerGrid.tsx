@@ -121,8 +121,11 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const dayMinW = isMobile ? 84 : 140;
   const MAX_DAYS = 28;
   const [daysShown, setDaysShown] = useState<number>(7);
-  const gridTemplate = `${jobColW}px ${clientColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
-  const minGridW = jobColW + clientColW + dayMinW * daysShown;
+  const candidateFirstColW = jobColW + clientColW;
+  const gridTemplate = rowMode === "candidate"
+    ? `${candidateFirstColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`
+    : `${jobColW}px ${clientColW}px repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
+  const minGridW = (rowMode === "candidate" ? candidateFirstColW : jobColW + clientColW) + dayMinW * daysShown;
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   // shifts[vacancyId][slotIndex][date]
   const [shifts, setShifts] = useState<Record<string, Record<number, Record<string, Shift>>>>({});
