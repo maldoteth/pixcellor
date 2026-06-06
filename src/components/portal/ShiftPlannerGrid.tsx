@@ -49,6 +49,7 @@ type Shift = {
 
 type Props = {
   vacancies: Vacancy[];
+  onCreate?: () => void;
   onEdit: (v: Vacancy) => void;
   onAssign: (id: string) => void;
   onDelete: (id: string) => void;
@@ -100,7 +101,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
+export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign, onDelete, onOpenAI, onVacancyChanged }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
@@ -177,6 +178,10 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const selectedRef = useRef(selected);
   const clipboardRef = useRef(clipboard);
   const weekDatesRef = useRef<Date[]>([]);
+  const collectClipRef = useRef<(mode: "copy" | "cut") => void>(() => undefined);
+  const pasteClipRef = useRef<() => void | Promise<void>>(() => undefined);
+  const deleteSelectionRef = useRef<() => void | Promise<void>>(() => undefined);
+  const clearSelectionRef = useRef<() => void>(() => undefined);
   useEffect(() => { selectedRef.current = selected; }, [selected]);
   useEffect(() => { clipboardRef.current = clipboard; }, [clipboard]);
 
