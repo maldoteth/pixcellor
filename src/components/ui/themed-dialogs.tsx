@@ -148,7 +148,7 @@ export const ThemedDialogsProvider: React.FC<{ children: React.ReactNode }> = ({
                   <DialogDescription>{confirmState.opts.description}</DialogDescription>
                 )}
               </DialogHeader>
-              <DialogFooter>
+              <DialogFooter className="sm:justify-center justify-center gap-2">
                 <Button variant="outline" onClick={() => closeConfirm(false)}>
                   {confirmState.opts.cancelLabel ?? "Cancel"}
                 </Button>
