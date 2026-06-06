@@ -229,6 +229,7 @@ export default function CandidatePortal() {
                       </div>
                     )}
                     <Badge variant="outline" className="text-[10px]">{s.stage}</Badge>
+                    <ShiftTimesheet vacancyId={s.vacancy_id} date={selected} />
                   </div>
                 ))}
               </CardContent>
