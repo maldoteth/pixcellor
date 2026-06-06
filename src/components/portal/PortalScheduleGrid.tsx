@@ -56,7 +56,7 @@ export default function PortalScheduleGrid({
   const [daysShown, setDaysShown] = useState(isMobile ? 5 : 7);
   const [rows, setRows] = useState<ShiftRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [busyId, setBusyId] = useState<string | null>(null);
+
 
   const weekDates = useMemo(() => Array.from({ length: daysShown }, (_, i) => addDays(weekStart, i)), [weekStart, daysShown]);
   const fromKey = ymd(weekStart);
@@ -89,20 +89,9 @@ export default function PortalScheduleGrid({
     );
   }, [rows]);
 
-  const respondShift = async (shift: ShiftRow, mode: "confirm" | "cancel") => {
-    if (!myCandidateId) return;
-    setBusyId(shift.id);
-    // Confirm = mark assignment_overridden true with my candidate id. Cancel = mark cancelled true on shift.
-    const patch = mode === "confirm"
-      ? { _id: shift.id, _patch: { candidate_id: myCandidateId, assignment_overridden: true, cancelled: false } }
-      : { _id: shift.id, _patch: { cancelled: true } };
-    const { error } = await supabase.rpc("portal_update_shift_self" as never, patch as never);
-    setBusyId(null);
-    if (error) { toast({ title: "Action failed", description: error.message, variant: "destructive" }); return; }
-    toast({ title: mode === "confirm" ? "Shift confirmed" : "Shift cancelled" });
-    await load();
-    onShiftAction?.();
-  };
+  // Cancel/confirm happens per-invitation in My Jobs tab, not per-shift.
+
+
 
   const jobColW = isMobile ? 110 : 220;
   const clientColW = isMobile ? 80 : 150;
@@ -178,21 +167,8 @@ export default function PortalScheduleGrid({
                         {s.candidate_name && (
                           <div className="truncate text-[10px] text-muted-foreground">{s.candidate_name}</div>
                         )}
-                        {meta.viewer_role === "candidate" && myCandidateId && !cancelled && (
-                          <div className="flex gap-1">
-                            {!isMine && (
-                              <Button size="sm" variant="default" className="h-5 px-1.5 text-[10px]" disabled={busyId === s.id} onClick={() => respondShift(s, "confirm")}>
-                                Confirm
-                              </Button>
-                            )}
-                            {isMine && (
-                              <Button size="sm" variant="outline" className="h-5 px-1.5 text-[10px]" disabled={busyId === s.id} onClick={() => respondShift(s, "cancel")}>
-                                Cancel
-                              </Button>
-                            )}
-                          </div>
-                        )}
                         {cancelled && <div className="text-[10px] text-destructive">Cancelled</div>}
+
                       </div>
                     )}
                   </div>
