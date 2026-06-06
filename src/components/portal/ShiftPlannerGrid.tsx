@@ -474,7 +474,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     const items: ClipItem[] = keys.map((k) => {
       const { vid, slot, date } = parseCellKey(k);
       const c = resolveCell(vid, slot, date);
-      return { start: c.start, finish: c.finish, candidateId: c.assignee?.id ?? null };
+      return { start: c.start, finish: c.finish, candidateId: c.assignee?.id ?? null, sourceVacancyId: vid };
     });
     setClipboard({ mode, items, sourceKeys: keys });
     toast({ title: `${mode === "copy" ? "Copied" : "Cut"} ${items.length} cell${items.length === 1 ? "" : "s"}` });
