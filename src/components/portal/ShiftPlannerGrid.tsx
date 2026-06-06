@@ -955,7 +955,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
 
 
       {/* Grid */}
-      <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:thin]" style={{ touchAction: "pan-x pan-y" }}>
+      <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ touchAction: "pan-x pan-y" }}>
         <div style={{ minWidth: `${minGridW}px` }}>
           {/* Header row */}
           <div className="grid sticky top-0 z-20" style={{ gridTemplateColumns: gridTemplate }}>
