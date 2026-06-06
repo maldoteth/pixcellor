@@ -455,6 +455,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
 
   const weekLabel = `${weekStart.toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${weekDates[weekDates.length - 1].toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
   const todayKey = ymd(new Date());
+  const lastVisibleRow = displayRows[displayRows.length - 1] ?? null;
 
   // ----- Weekly stats: margin, hours, active workers, idle workers -----
   const stats = useMemo(() => {
@@ -723,12 +724,12 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                 </div>
               );
             })}
-            {/* Trailing empty placeholder row — right-click to paste a copied vacancy as a new opening */}
+            {/* Trailing empty placeholder row — always available for quick vacancy actions */}
             <ContextMenu>
               <ContextMenuTrigger asChild>
                 <div className="grid" style={{ gridTemplateColumns: gridTemplate }}>
                   <div className="sticky left-0 z-10 border-b border-r bg-card px-2 py-3 min-h-[78px] flex items-center justify-center text-[11px] text-muted-foreground/70 italic">
-                    {vacancyClip ? `Right-click to paste "${vacancyClip.title}"` : "Right-click → copy a vacancy first"}
+                    Right-click for vacancy actions
                   </div>
                   <div className="sticky z-10 border-b border-r bg-card shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]" style={{ left: `${jobColW}px` }} />
                   {weekDates.map((_, i) => (
@@ -737,6 +738,16 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                 </div>
               </ContextMenuTrigger>
               <ContextMenuContent className="w-56">
+                <ContextMenuItem onSelect={() => onCreate?.()} disabled={!onCreate}>
+                  <Plus className="h-3.5 w-3.5 mr-2" />Create vacancy
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onSelect={() => lastVisibleRow && bumpOpenings(lastVisibleRow.vacancy, 1, lastVisibleRow.slot)}
+                  disabled={!lastVisibleRow}
+                >
+                  <Copy className="h-3.5 w-3.5 mr-2" />Repeat vacancy above
+                </ContextMenuItem>
+                <ContextMenuSeparator />
                 <ContextMenuItem
                   onSelect={() => vacancyClip && bumpOpenings(vacancyClip, 1)}
                   disabled={!vacancyClip}
