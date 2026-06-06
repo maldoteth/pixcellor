@@ -554,7 +554,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
 
   const startQuickAction = (action: "call" | "email" | "trial" | "services" | "verify" | "pay" | "find-work" | "client-order" | "candidate-register") => {
     if (isDevMode || isLoading) return;
-    if (action !== "find-work" && action !== "client-order") setQuickAction(action);
+    if (action !== "find-work" && action !== "client-order" && action !== "candidate-register") setQuickAction(action);
     const reply = {
       role: "assistant" as const,
       content: action === "call"
@@ -571,7 +571,9 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
                   ? "Hey, I'm Alex 👋 I can match you to live vacancies. Tell me your role/skills, location and availability and I'll check which of our current openings suit you best."
                   : action === "client-order"
                     ? "Hey, I'm Alex 👋 Let's get your staffing order sorted. Tell me:\n\n• What role(s) do you need (e.g. waiter, chef, security)?\n• How many staff?\n• Dates & shift times?\n• Location/venue?\n• Pay rate (or shall I suggest market rate)?\n• Any uniform, skills or experience requirements?\n\nDrop it all in one message or one at a time — I'll put the vacancy together and confirm before posting."
-                    : "Sure — tell me the amount you'd like to pay (in £) and a short reason (e.g. 'Deposit for Acme website' or 'Invoice INV-203'), and I'll generate a secure Stripe link you can pay with right away.",
+                    : action === "candidate-register"
+                      ? "Hey, I'm Alex 👋 Let's get you on our books so you can set availability and pick up shifts. I just need a few quick details:\n\n• Full name\n• Email\n• Phone\n• Location / postcode\n• Your role(s) or skills (e.g. waiter, chef, barista, security)\n• When you can start\n\nDrop it all in one message or step-by-step — I'll register you and you can start ticking off the dates you're free."
+                      : "Sure — tell me the amount you'd like to pay (in £) and a short reason (e.g. 'Deposit for Acme website' or 'Invoice INV-203'), and I'll generate a secure Stripe link you can pay with right away.",
     };
     setMessages((current) => action === "call" ? [reply] : [...current, reply]);
     // Focus input synchronously so mobile browsers open the keyboard
