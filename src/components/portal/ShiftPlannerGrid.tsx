@@ -444,7 +444,7 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     return () => document.removeEventListener("mousedown", onDocDown);
   }, []);
 
-  const weekLabel = `${weekStart.toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${weekDates[6].toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
+  const weekLabel = `${weekStart.toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${weekDates[weekDates.length - 1].toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
   const todayKey = ymd(new Date());
 
   // ----- Weekly stats: margin, hours, active workers, idle workers -----
