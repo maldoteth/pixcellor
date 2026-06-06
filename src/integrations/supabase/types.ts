@@ -2161,7 +2161,9 @@ export type Database = {
       }
       vacancy_shifts: {
         Row: {
+          assignment_overridden: boolean
           cancelled: boolean
+          candidate_id: string | null
           created_at: string
           finish_time: string | null
           id: string
@@ -2173,7 +2175,9 @@ export type Database = {
           vacancy_id: string
         }
         Insert: {
+          assignment_overridden?: boolean
           cancelled?: boolean
+          candidate_id?: string | null
           created_at?: string
           finish_time?: string | null
           id?: string
@@ -2185,7 +2189,9 @@ export type Database = {
           vacancy_id: string
         }
         Update: {
+          assignment_overridden?: boolean
           cancelled?: boolean
+          candidate_id?: string | null
           created_at?: string
           finish_time?: string | null
           id?: string
@@ -2197,6 +2203,13 @@ export type Database = {
           vacancy_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "vacancy_shifts_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vacancy_shifts_vacancy_id_fkey"
             columns: ["vacancy_id"]
@@ -2442,6 +2455,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _times_overlap: {
+        Args: { f1: string; f2: string; s1: string; s2: string }
+        Returns: boolean
+      }
       candidate_link_self: { Args: never; Returns: string }
       candidate_my_schedule: {
         Args: never
@@ -2731,7 +2748,10 @@ export type Database = {
       portal_list_vacancy_shifts: {
         Args: { _from: string; _to: string; _vacancy_id: string }
         Returns: {
+          assignment_overridden: boolean
           cancelled: boolean
+          candidate_id: string
+          candidate_name: string
           finish_time: string
           id: string
           notes: string
@@ -2780,6 +2800,15 @@ export type Database = {
       portal_search_customers: { Args: { _q: string }; Returns: Json }
       portal_send_chat_reply: {
         Args: { _content: string; _conversation_id: string }
+        Returns: undefined
+      }
+      portal_set_shift_candidate: {
+        Args: {
+          _candidate_id: string
+          _date: string
+          _slot: number
+          _vacancy_id: string
+        }
         Returns: undefined
       }
       portal_unassign_candidate: {

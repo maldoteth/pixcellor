@@ -45,6 +45,9 @@ type Shift = {
   finish_time: string | null;
   cancelled: boolean;
   notes: string | null;
+  candidate_id: string | null;
+  assignment_overridden: boolean;
+  candidate_name: string | null;
 };
 
 type Props = {
@@ -230,23 +233,33 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
     const tFinish = v?.finish_time ? v.finish_time.slice(0, 5) : null;
     const templateSet = new Set((v?.schedule_days ?? []).map((d) => d.slice(0, 3)));
     const dow = DOW_SHORT[new Date(date + "T00:00:00").getDay()];
+    const slotAssignee = (v?.assignments ?? []).find((a) =>
+      a.slot_index === slot &&
+      ["shortlisted", "submitted", "interviewing", "offer", "placed"].includes(a.stage),
+    );
+    const baseAssignee = slotAssignee ? { id: slotAssignee.candidate.id, name: slotAssignee.candidate.full_name } : null;
+    const overrideAssignee = shift?.assignment_overridden
+      ? (shift.candidate_id ? { id: shift.candidate_id, name: shift.candidate_name ?? "Unknown" } : null)
+      : baseAssignee;
     if (shift) {
-      if (shift.cancelled) return { active: false, cancelled: true, start: null, finish: null, hasExplicit: true };
+      if (shift.cancelled) return { active: false, cancelled: true, start: null, finish: null, hasExplicit: true, assignee: null, overridden: shift.assignment_overridden };
       return {
         active: true, cancelled: false, hasExplicit: true,
         start: (shift.start_time ?? tStart)?.slice(0, 5) ?? null,
         finish: (shift.finish_time ?? tFinish)?.slice(0, 5) ?? null,
+        assignee: overrideAssignee,
+        overridden: shift.assignment_overridden,
       };
     }
     // Template-driven recurring days only apply to slot 0 and within the vacancy's date window.
-    if (slot !== 0) return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false };
+    if (slot !== 0) return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false, assignee: baseAssignee, overridden: false };
     const inRange = (() => {
       if (v?.start_date && date < v.start_date) return false;
       if (v?.end_date && date > v.end_date) return false;
       return true;
     })();
-    if (inRange && templateSet.has(dow)) return { active: true, cancelled: false, start: tStart, finish: tFinish, hasExplicit: false };
-    return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false };
+    if (inRange && templateSet.has(dow)) return { active: true, cancelled: false, start: tStart, finish: tFinish, hasExplicit: false, assignee: baseAssignee, overridden: false };
+    return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false, assignee: baseAssignee, overridden: false };
   }, [vacancies, shifts]);
 
   const DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"] as const;
@@ -277,6 +290,14 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
     } as never);
     if (error) { toast({ title: "Save failed", description: error.message, variant: "destructive" }); return; }
     await syncVacancyWindow(vacancyId, date, s, f, cancelled);
+  };
+
+  const setShiftCandidate = async (vacancyId: string, slot: number, date: string, candidateId: string | null) => {
+    const { error } = await supabase.rpc("portal_set_shift_candidate" as never, {
+      _vacancy_id: vacancyId, _slot: slot, _date: date, _candidate_id: candidateId,
+    } as never);
+    if (error) { toast({ title: "Assignment failed", description: error.message, variant: "destructive" }); return false; }
+    return true;
   };
 
   const removeShift = async (vacancyId: string, slot: number, date: string) => {
@@ -623,8 +644,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                           )}
                         </div>
                         {v.reference && <div className="text-[10px] text-muted-foreground">Ref {v.reference}</div>}
-                        <div className="mt-1 flex flex-wrap items-center gap-1">
-                          <Badge variant={v.status === "open" ? "default" : "outline"} className="text-[9px] h-4 px-1">{v.status}</Badge>
+                        <div className="mt-1">
                           {(v.pay_min || v.pay_max) && (
                             <span className="text-[10px] text-muted-foreground">
                               Pay {v.pay_currency ?? "GBP"} {v.pay_min ?? "?"}–{v.pay_max ?? "?"}/{v.pay_period ?? "hr"}
@@ -645,12 +665,14 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                             </div>
                           );
                         })()}
-                        <div className="mt-1 flex gap-1 flex-wrap">
-                          <button onClick={() => onEdit(v)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><Pencil className="h-2.5 w-2.5" />Edit</button>
-                          <button onClick={() => onAssign(v.id)} className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><UserPlus className="h-2.5 w-2.5" />Assign</button>
-                          {onOpenAI && <button onClick={() => onOpenAI(v.id)} className="text-[10px] text-primary hover:underline">AI</button>}
-                          <button onClick={() => onDelete(v.id)} className="text-[10px] text-destructive hover:underline inline-flex items-center gap-0.5"><Trash2 className="h-2.5 w-2.5" /></button>
+                        <div className="mt-2 flex items-center justify-between gap-1 flex-wrap">
+                          <button onClick={() => onEdit(v)} title="Edit" className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><Pencil className="h-3 w-3" />Edit</button>
+                          <button onClick={() => onAssign(v.id)} title="Assign" className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"><UserPlus className="h-3 w-3" />Assign</button>
+                          {onOpenAI && <button onClick={() => onOpenAI(v.id)} title="AI" className="text-[10px] font-semibold text-primary hover:underline">AI</button>}
+                          <button onClick={() => onDelete(v.id)} title="Delete" className="text-[10px] text-destructive hover:underline inline-flex items-center gap-0.5"><Trash2 className="h-3 w-3" /></button>
+                          <Badge variant={v.status === "open" ? "default" : v.status === "filled" ? "secondary" : "outline"} className="text-[9px] h-4 px-1 ml-auto">{v.status}</Badge>
                         </div>
+
                       </div>
                     </ContextMenuTrigger>
                     <ContextMenuContent className="w-56">
@@ -685,10 +707,14 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                     const isToday = dk === todayKey;
                     const isSelected = selected.has(cellKey(v.id, slot, dk));
                     const isClipSource = clipboard?.sourceKeys.includes(cellKey(v.id, slot, dk)) ?? false;
-                    const slotAssignee = (v.assignments ?? []).find((a) =>
-                      a.slot_index === slot &&
-                      ["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage),
-                    );
+                    // Candidate picker options = anyone shortlisted/placed against this vacancy across any slot
+                    const candidateOptionsMap = new Map<string, string>();
+                    (v.assignments ?? []).forEach((a) => {
+                      if (["shortlisted","submitted","interviewing","offer","placed"].includes(a.stage)) {
+                        candidateOptionsMap.set(a.candidate.id, a.candidate.full_name);
+                      }
+                    });
+                    const candidateOptions = Array.from(candidateOptionsMap, ([id, name]) => ({ id, name }));
                     return (
                       <Cell
                         key={dk}
@@ -699,7 +725,11 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                         cancelled={cell.cancelled}
                         start={cell.start}
                         finish={cell.finish}
-                        assignee={slotAssignee ? { id: slotAssignee.candidate.id, name: slotAssignee.candidate.full_name } : null}
+                        assignee={cell.assignee}
+                        overridden={cell.overridden}
+                        candidateOptions={candidateOptions}
+                        defaultStart={v.start_time?.slice(0, 5) ?? "09:00"}
+                        defaultFinish={v.finish_time?.slice(0, 5) ?? "17:00"}
                         isSelected={isSelected}
                         isClipSource={isClipSource}
                         clipMode={clipboard?.mode ?? null}
@@ -708,8 +738,14 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                           else if (e.ctrlKey || e.metaKey) toggleSelect(v.id, slot, dIdx);
                           else selectSingle(v.id, slot, dIdx);
                         }}
-                        onDoubleClickEdit={cell.active}
-                        onSave={async (st, fi) => { await upsert(v.id, slot, dk, st, fi, false); await load(); }}
+                        onDoubleClickEdit={true}
+                        onSave={async (st, fi, candidateChoice) => {
+                          await upsert(v.id, slot, dk, st, fi, false);
+                          if (candidateChoice !== undefined) {
+                            await setShiftCandidate(v.id, slot, dk, candidateChoice);
+                          }
+                          await load();
+                        }}
                         onContextDelete={async () => { await removeShift(v.id, slot, dk); await load(); }}
                         onContextCopy={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => collectClip("copy"), 0); }}
                         onContextCut={() => { if (!isSelected) selectSingle(v.id, slot, dIdx); setTimeout(() => collectClip("cut"), 0); }}
@@ -717,6 +753,7 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
                         onContextAdd={async () => { await upsert(v.id, slot, dk, v.start_time?.slice(0, 5) ?? "09:00", v.finish_time?.slice(0, 5) ?? "17:00", false); await load(); }}
                         onContextBulkPaste={() => setBulkPaste({ vacancyId: v.id, slot, date: dk })}
                         clipboardHasItems={!!clipboard}
+
                       />
                     );
                   })}
@@ -799,6 +836,10 @@ export default function ShiftPlannerGrid({ vacancies, onCreate, onEdit, onAssign
   );
 }
 
+type CandidateOption = { id: string; name: string };
+const ASSIGNEE_INHERIT = "__inherit__";
+const ASSIGNEE_NONE = "__none__";
+
 function Cell(props: {
   date: Date;
   rowBg: string;
@@ -808,12 +849,17 @@ function Cell(props: {
   start: string | null;
   finish: string | null;
   assignee: { id: string; name: string } | null;
+  overridden: boolean;
+  candidateOptions: CandidateOption[];
+  defaultStart: string;
+  defaultFinish: string;
   isSelected: boolean;
   isClipSource: boolean;
   clipMode: "copy" | "cut" | null;
   onClick: (e: React.MouseEvent) => void;
   onDoubleClickEdit: boolean;
-  onSave: (start: string, finish: string) => Promise<void> | void;
+  // candidateChoice: undefined = leave assignment alone; null = explicitly unassign; string = candidate id
+  onSave: (start: string, finish: string, candidateChoice?: string | null) => Promise<void> | void;
   onContextDelete: () => void;
   onContextCopy: () => void;
   onContextCut: () => void;
@@ -822,13 +868,23 @@ function Cell(props: {
   onContextBulkPaste: () => void;
   clipboardHasItems: boolean;
 }) {
-  const { date, rowBg, isToday, active, cancelled, start, finish, assignee, isSelected, isClipSource, clipMode,
+  const { date, rowBg, isToday, active, cancelled, start, finish, assignee, overridden, candidateOptions,
+    defaultStart, defaultFinish, isSelected, isClipSource, clipMode,
     onClick, onDoubleClickEdit, onSave, onContextDelete, onContextCopy, onContextCut, onContextPaste, onContextAdd, onContextBulkPaste, clipboardHasItems } = props;
 
   const [editOpen, setEditOpen] = useState(false);
-  const [st, setSt] = useState(start ?? "09:00");
-  const [fi, setFi] = useState(finish ?? "17:00");
-  useEffect(() => { setSt(start ?? "09:00"); setFi(finish ?? "17:00"); }, [start, finish]);
+  const [st, setSt] = useState(start ?? defaultStart);
+  const [fi, setFi] = useState(finish ?? defaultFinish);
+  // assignee mode: inherit (use slot default), none (explicitly empty), or a candidate id
+  const initialAssigneeValue = overridden
+    ? (assignee ? assignee.id : ASSIGNEE_NONE)
+    : ASSIGNEE_INHERIT;
+  const [assigneeValue, setAssigneeValue] = useState<string>(initialAssigneeValue);
+  useEffect(() => {
+    setSt(start ?? defaultStart);
+    setFi(finish ?? defaultFinish);
+    setAssigneeValue(overridden ? (assignee ? assignee.id : ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
+  }, [start, finish, defaultStart, defaultFinish, overridden, assignee]);
 
   const todayTint = isToday ? "bg-primary/5" : rowBg;
   const selectionRing = isSelected ? "ring-2 ring-primary ring-inset" : "";
@@ -851,17 +907,28 @@ function Cell(props: {
       <div className="flex h-full w-full flex-col items-start justify-center rounded border border-primary/30 bg-primary/5 px-2 py-1.5 text-left gap-0.5">
         <div className="text-[11px] font-semibold leading-tight text-foreground">{to12h(start)}</div>
         <div className="text-[11px] leading-tight text-muted-foreground">{to12h(finish)}</div>
-        {assignee && (
+        {assignee ? (
           <div className="mt-0.5 flex items-center gap-1 max-w-full">
             <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[8px] font-semibold text-primary">
               {initials(assignee.name)}
             </span>
             <span className="truncate text-[10px] text-foreground/80">{assignee.name}</span>
           </div>
-        )}
+        ) : overridden ? (
+          <div className="mt-0.5 text-[9px] italic text-muted-foreground">unassigned</div>
+        ) : null}
       </div>
     );
   }
+
+  const handleSave = async () => {
+    let choice: string | null | undefined;
+    if (assigneeValue === ASSIGNEE_INHERIT) choice = undefined;
+    else if (assigneeValue === ASSIGNEE_NONE) choice = null;
+    else choice = assigneeValue;
+    await onSave(st, fi, choice);
+    setEditOpen(false);
+  };
 
   return (
     <ContextMenu>
@@ -875,12 +942,11 @@ function Cell(props: {
           className={`relative cursor-pointer select-none border-b border-r ${todayTint} p-1 min-h-[78px] outline-none focus:outline-none focus-visible:outline-none ${selectionRing} ${clipBorder}`}
         >
           {inner}
-          {/* Hidden edit popover anchor */}
           <Popover open={editOpen} onOpenChange={setEditOpen}>
             <PopoverTrigger asChild>
               <span className="absolute inset-0 pointer-events-none" />
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-3 space-y-2" align="center">
+            <PopoverContent className="w-72 p-3 space-y-3" align="center">
               <div className="text-xs font-medium">
                 {date.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short", year: "numeric" })}
               </div>
@@ -894,14 +960,30 @@ function Cell(props: {
                   <Input type="time" value={fi} onChange={(e) => setFi(e.target.value)} className="h-8" />
                 </div>
               </div>
-              <Button size="sm" className="w-full" onClick={async () => { await onSave(st, fi); setEditOpen(false); }}>Save</Button>
+              <div>
+                <div className="text-[10px] text-muted-foreground mb-1">Assigned to (this day only)</div>
+                <Select value={assigneeValue} onValueChange={setAssigneeValue}>
+                  <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ASSIGNEE_INHERIT}>Use slot default</SelectItem>
+                    <SelectItem value={ASSIGNEE_NONE}>— Unassigned —</SelectItem>
+                    {candidateOptions.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {candidateOptions.length === 0 && (
+                  <p className="mt-1 text-[10px] text-muted-foreground">No one shortlisted for this job yet — use "Assign" on the job to add candidates first.</p>
+                )}
+              </div>
+              <Button size="sm" className="w-full" onClick={handleSave}>Save</Button>
             </PopoverContent>
           </Popover>
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         {!active && !cancelled && <ContextMenuItem onSelect={onContextAdd}>Add shift</ContextMenuItem>}
-        {active && <ContextMenuItem onSelect={() => setEditOpen(true)}>Edit times</ContextMenuItem>}
+        <ContextMenuItem onSelect={() => setEditOpen(true)}>Edit shift…</ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onSelect={onContextCopy} disabled={!active}>Copy</ContextMenuItem>
         <ContextMenuItem onSelect={onContextCut} disabled={!active}>Cut</ContextMenuItem>
@@ -911,6 +993,7 @@ function Cell(props: {
         <ContextMenuItem onSelect={onContextDelete} className="text-destructive" disabled={!active && !cancelled}>Delete</ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
+
   );
 }
 
