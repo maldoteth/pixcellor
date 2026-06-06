@@ -1234,6 +1234,73 @@ async function saveBrief(
   return { ok: true, profile: data };
 }
 
+// Upsert a candidate (worker) — only writes fields the AI provided. Mirrors saveBrief.
+async function saveCandidate(
+  supabase: DbClient,
+  args: Record<string, unknown>
+) {
+  const email = typeof args.email === "string" ? args.email.trim().toLowerCase() : "";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { ok: false, error: "invalid_email" };
+  }
+
+  // Look up existing candidate by email
+  const { data: existing } = await supabase
+    .from("candidates")
+    .select("id, full_name")
+    .ilike("email", email)
+    .maybeSingle();
+
+  const payload: Record<string, unknown> = { email };
+  if (typeof args.full_name === "string" && args.full_name.trim()) {
+    payload.full_name = args.full_name.trim();
+  } else if (!existing) {
+    // full_name is NOT NULL — fall back to email local-part if AI didn't pass one
+    payload.full_name = email.split("@")[0];
+  }
+  for (const key of ["phone", "location", "headline", "current_role_title", "notes"] as const) {
+    if (typeof args[key] === "string" && (args[key] as string).trim()) {
+      payload[key] = (args[key] as string).trim();
+    }
+  }
+  if (typeof args.years_experience === "number" && Number.isFinite(args.years_experience)) {
+    payload.years_experience = Math.max(0, Math.round(args.years_experience));
+  }
+  if (Array.isArray(args.skills)) {
+    payload.skills = (args.skills as unknown[]).filter((v) => typeof v === "string" && v.trim()).map((v) => (v as string).trim());
+  }
+  if (Array.isArray(args.preferred_locations)) {
+    payload.preferred_locations = (args.preferred_locations as unknown[]).filter((v) => typeof v === "string" && v.trim()).map((v) => (v as string).trim());
+  }
+  if (typeof args.availability_date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(args.availability_date)) {
+    payload.availability_date = args.availability_date;
+  }
+  payload.source = "chat";
+  payload.is_open_to_work = true;
+
+  let result;
+  if (existing?.id) {
+    result = await supabase
+      .from("candidates")
+      .update(payload)
+      .eq("id", existing.id)
+      .select()
+      .maybeSingle();
+  } else {
+    result = await supabase
+      .from("candidates")
+      .insert(payload)
+      .select()
+      .maybeSingle();
+  }
+
+  if (result.error) {
+    console.error("saveCandidate error:", result.error);
+    return { ok: false, error: result.error.message };
+  }
+  return { ok: true, candidate: result.data, created: !existing };
+}
+
 const cleanText = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
 
 const cleanDevNotes = (value: unknown, max: number) => cleanText(value, max)
