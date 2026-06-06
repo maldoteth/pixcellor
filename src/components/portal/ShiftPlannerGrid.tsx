@@ -59,7 +59,7 @@ type Props = {
   onVacancyChanged?: () => void | Promise<void>;
 };
 
-type ClipItem = { start: string | null; finish: string | null };
+type ClipItem = { start: string | null; finish: string | null; candidateId: string | null };
 
 const DOW_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const DOW_DISPLAY = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
@@ -299,15 +299,6 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     return true;
   };
 
-  const clearShiftOverride = async (vacancyId: string, slot: number, date: string) => {
-    const { error } = await supabase.rpc("portal_clear_shift_override" as never, {
-      _vacancy_id: vacancyId, _slot: slot, _date: date,
-    } as never);
-    if (error) { toast({ title: "Clear failed", description: error.message, variant: "destructive" }); return false; }
-    return true;
-  };
-
-
   const removeShift = async (vacancyId: string, slot: number, date: string) => {
     const cell = resolveCell(vacancyId, slot, date);
     if (cell.hasExplicit) {
@@ -375,7 +366,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
     const items: ClipItem[] = keys.map((k) => {
       const { vid, slot, date } = parseCellKey(k);
       const c = resolveCell(vid, slot, date);
-      return { start: c.start, finish: c.finish };
+      return { start: c.start, finish: c.finish, candidateId: c.assignee?.id ?? null };
     });
     setClipboard({ mode, items, sourceKeys: keys });
     toast({ title: `${mode === "copy" ? "Copied" : "Cut"} ${items.length} cell${items.length === 1 ? "" : "s"}` });
@@ -393,6 +384,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
         const item = clip.items[i % clip.items.length];
         if (item.start || item.finish) {
           await upsert(vid, slot, date, item.start, item.finish, false);
+          await setShiftCandidate(vid, slot, date, item.candidateId);
         }
       }),
     );
@@ -425,6 +417,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
       const item = clip.items[i % clip.items.length];
       if (item.start || item.finish) {
         await upsert(bulkPaste.vacancyId, bulkPaste.slot, dt, item.start, item.finish, false);
+        await setShiftCandidate(bulkPaste.vacancyId, bulkPaste.slot, dt, item.candidateId);
       }
     }));
     setBulkPaste(null);
@@ -751,9 +744,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                         onSave={async (st, fi, candidateChoice) => {
                           const isNewManualShift = !cell.active || cell.cancelled;
                           await upsert(v.id, slot, dk, st, fi, false);
-                          if (candidateChoice === "__inherit__") {
-                            await clearShiftOverride(v.id, slot, dk);
-                          } else if (candidateChoice !== undefined) {
+                          if (candidateChoice !== undefined) {
                             await setShiftCandidate(v.id, slot, dk, candidateChoice);
                           } else if (isNewManualShift) {
                             await setShiftCandidate(v.id, slot, dk, null);
@@ -855,7 +846,6 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
 }
 
 type CandidateOption = { id: string; name: string };
-const ASSIGNEE_INHERIT = "__inherit__";
 const ASSIGNEE_NONE = "__none__";
 
 function Cell(props: {
@@ -876,9 +866,7 @@ function Cell(props: {
   clipMode: "copy" | "cut" | null;
   onClick: (e: React.MouseEvent) => void;
   onDoubleClickEdit: boolean;
-  // candidateChoice: undefined = leave assignment alone; null = explicitly unassign;
-  //                  "__inherit__" = clear per-day override, revert to slot default;
-  //                  string id = override with that candidate
+  // candidateChoice: undefined = leave assignment alone; null = explicitly unassign; string id = assign that candidate
   onSave: (start: string, finish: string, candidateChoice?: string | null) => Promise<void> | void;
   onContextDelete: () => void;
   onContextCopy: () => void;
@@ -895,18 +883,13 @@ function Cell(props: {
   const [editOpen, setEditOpen] = useState(false);
   const [st, setSt] = useState(start ?? defaultStart);
   const [fi, setFi] = useState(finish ?? defaultFinish);
-  // assignee mode: inherit (use slot default), none (explicitly empty), or a candidate id
-  const initialAssigneeValue = !active
-    ? ASSIGNEE_NONE
-    : overridden
-    ? (assignee ? assignee.id : ASSIGNEE_NONE)
-    : ASSIGNEE_INHERIT;
+  const initialAssigneeValue = assignee ? assignee.id : ASSIGNEE_NONE;
   const [assigneeValue, setAssigneeValue] = useState<string>(initialAssigneeValue);
   const assigneeId = assignee?.id ?? null;
   const syncEditorValues = useCallback(() => {
     setSt(start ?? defaultStart);
     setFi(finish ?? defaultFinish);
-    setAssigneeValue(!active ? ASSIGNEE_NONE : overridden ? (assigneeId ?? ASSIGNEE_NONE) : ASSIGNEE_INHERIT);
+    setAssigneeValue(assigneeId ?? ASSIGNEE_NONE);
   }, [start, finish, defaultStart, defaultFinish, active, overridden, assigneeId]);
 
   useEffect(() => {
@@ -950,10 +933,7 @@ function Cell(props: {
 
   const handleSave = async () => {
     let choice: string | null | undefined;
-    if (assigneeValue === ASSIGNEE_INHERIT) {
-      // If the row was previously overridden, signal parent to clear; otherwise no-op for assignment.
-      choice = overridden ? "__inherit__" : undefined;
-    } else if (assigneeValue === ASSIGNEE_NONE) choice = null;
+    if (assigneeValue === ASSIGNEE_NONE) choice = null;
     else choice = assigneeValue;
     await onSave(st, fi, choice);
     setEditOpen(false);
@@ -995,7 +975,6 @@ function Cell(props: {
                 <Select value={assigneeValue} onValueChange={setAssigneeValue}>
                   <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={ASSIGNEE_INHERIT}>Use slot default</SelectItem>
                     <SelectItem value={ASSIGNEE_NONE}>— Unassigned —</SelectItem>
                     {candidateOptions.map((c) => (
                       <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
