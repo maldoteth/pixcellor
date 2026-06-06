@@ -739,14 +739,16 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
             >
               {rowMode === "candidate" ? "Candidate" : "Job"}{sortArrow("title")}
             </button>
-            <button
-              type="button"
-              onClick={() => toggleSort("client")}
-              className="sticky z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]"
-              style={{ left: `${jobColW}px` }}
-            >
-              {rowMode === "candidate" ? "Details" : secondColumn === "candidate" ? "Candidate" : "Client"}{sortArrow("client")}
-            </button>
+            {rowMode !== "candidate" && (
+              <button
+                type="button"
+                onClick={() => toggleSort("client")}
+                className="sticky z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]"
+                style={{ left: `${jobColW}px` }}
+              >
+                {secondColumn === "candidate" ? "Candidate" : "Client"}{sortArrow("client")}
+              </button>
+            )}
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
               const dow = DOW_DISPLAY[(new Date(ymd(d) + "T00:00:00").getDay() + 6) % 7];
