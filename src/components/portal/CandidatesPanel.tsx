@@ -105,7 +105,8 @@ export default function CandidatesPanel() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [titleFilter, setTitleFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
-  const [view, setView] = useState<"list" | "kanban">("list");
+  const [view, setView] = useState<"calendar" | "list" | "kanban">("calendar");
+  const [allVacancies, setAllVacancies] = useState<any[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [timesheetsOpen, setTimesheetsOpen] = useState(false);
@@ -150,6 +151,23 @@ export default function CandidatesPanel() {
     setCandidates((data as Candidate[]) ?? []);
     setLoading(false);
   }, []);
+
+  const loadAllVacancies = useCallback(async () => {
+    const { data } = await (supabase as any).rpc("portal_list_vacancies");
+    setAllVacancies((data as any[]) ?? []);
+  }, []);
+
+  useEffect(() => { loadAllVacancies(); }, [loadAllVacancies]);
+
+  useEffect(() => {
+    const ch = supabase
+      .channel("candidates-vacancies-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "vacancies" }, loadAllVacancies)
+      .on("postgres_changes", { event: "*", schema: "public", table: "vacancy_assignments" }, loadAllVacancies)
+      .on("postgres_changes", { event: "*", schema: "public", table: "vacancy_shifts" }, loadAllVacancies)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [loadAllVacancies]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -449,6 +467,7 @@ export default function CandidatesPanel() {
         </Select>
         <Tabs value={view} onValueChange={(v) => setView(v as any)}>
           <TabsList>
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="list">List</TabsTrigger>
             <TabsTrigger value="kanban">Pipeline</TabsTrigger>
           </TabsList>
@@ -457,6 +476,21 @@ export default function CandidatesPanel() {
 
       {loading ? (
         <Card className="p-6 text-sm text-muted-foreground">Loading…</Card>
+      ) : view === "calendar" ? (
+        <ShiftPlannerGrid
+          vacancies={allVacancies}
+          candidates={candidates.map(c => ({
+            id: c.id, full_name: c.full_name, status: c.status,
+            email: c.email, phone: c.phone, headline: c.headline ?? c.current_role_title,
+            photo_url: c.photo_url,
+          }))}
+          secondColumn="candidate"
+          candidateColumnOnlyAssigned
+          onEdit={() => { /* editing vacancies happens on the vacancies page */ }}
+          onDelete={() => { /* no-op on candidates view */ }}
+          onCandidateClick={(id) => setActiveId(id)}
+          onVacancyChanged={loadAllVacancies}
+        />
       ) : filtered.length === 0 ? (
         <Card className="p-6 text-sm text-muted-foreground">No candidates yet. Add one or wait for an applicant.</Card>
       ) : view === "list" ? (

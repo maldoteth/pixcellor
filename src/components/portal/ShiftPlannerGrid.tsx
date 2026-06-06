@@ -52,13 +52,19 @@ type Shift = {
 
 type Props = {
   vacancies: Vacancy[];
-  candidates?: Array<{ id: string; full_name: string; status?: string | null }>;
+  candidates?: Array<{ id: string; full_name: string; status?: string | null; email?: string | null; phone?: string | null; headline?: string | null; photo_url?: string | null }>;
   onCreate?: () => void;
   onEdit: (v: Vacancy) => void;
   onDelete: (id: string) => void;
   onVacancyChanged?: () => void | Promise<void>;
   /** When provided, show only rows (vacancy+slot) assigned to this candidate. First column becomes the vacancy. */
   candidateFilter?: { id: string; name: string };
+  /** Second sticky column. Defaults to "client". When "candidate", shows the assigned candidate's name and details instead. */
+  secondColumn?: "client" | "candidate";
+  /** When in candidate-column mode, hide rows whose slot has no assigned candidate. */
+  candidateColumnOnlyAssigned?: boolean;
+  /** Called when the candidate cell is clicked (candidate-column mode). */
+  onCandidateClick?: (candidateId: string) => void;
 };
 
 type ClipItem = { start: string | null; finish: string | null; candidateId: string | null };
@@ -105,7 +111,7 @@ const parseCellKey = (k: string): { vid: string; slot: number; date: string } =>
   return { vid, slot: Number(slotStr) || 0, date };
 };
 
-export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit, onDelete, onVacancyChanged, candidateFilter }: Props) {
+export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate, onEdit, onDelete, onVacancyChanged, candidateFilter, secondColumn = "client", candidateColumnOnlyAssigned = false, onCandidateClick }: Props) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const jobColW = isMobile ? 110 : 240;
@@ -127,37 +133,69 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
   const [bulkUnit, setBulkUnit] = useState<"days" | "weeks" | "months">("weeks");
   const [sortBy, setSortBy] = useState<"title" | "client">("title");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const ACTIVE_STAGES = ["shortlisted", "submitted", "interviewing", "offer", "placed"] as const;
+  const candidateLookup = useMemo(() => {
+    const m = new Map<string, NonNullable<Props["candidates"]>[number]>();
+    candidates.forEach((c) => m.set(c.id, c));
+    return m;
+  }, [candidates]);
+  const slotAssignedCandidateId = useCallback((v: Vacancy, slot: number): string | null => {
+    const fromShifts = Object.values(shifts[v.id]?.[slot] ?? {}).find(
+      (s) => !s.cancelled && s.assignment_overridden && s.candidate_id,
+    );
+    if (fromShifts?.candidate_id) return fromShifts.candidate_id;
+    const a = (v.assignments ?? []).find(
+      (a) => Number(a.slot_index ?? 0) === slot && (ACTIVE_STAGES as readonly string[]).includes(a.stage),
+    );
+    return a?.candidate?.id ?? null;
+  }, [shifts]);
   const sortedVacancies = useMemo(() => {
     const arr = [...vacancies];
     arr.sort((a, b) => {
-      const av = (sortBy === "title" ? a.title : a.client?.name ?? "") || "";
-      const bv = (sortBy === "title" ? b.title : b.client?.name ?? "") || "";
-      const cmp = av.localeCompare(bv, undefined, { sensitivity: "base" });
+      const cmp = (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: "base" });
       return sortDir === "asc" ? cmp : -cmp;
     });
+    if (sortBy === "title") return arr;
+    // Secondary-column sort: build rows then sort by column value, but keep as vacancies array (rows handled below).
     return arr;
   }, [vacancies, sortBy, sortDir]);
   // Expand each vacancy into N rows (one per opening), keep them individual.
   const displayRows = useMemo(() => {
     const rows: Array<{ vacancy: Vacancy; slot: number; total: number }> = [];
-    const activeStages = ["shortlisted", "submitted", "interviewing", "offer", "placed"];
     sortedVacancies.forEach((v) => {
       const total = Math.max(1, Number(v.openings ?? 1) || 1);
       for (let i = 0; i < total; i++) {
         if (candidateFilter) {
-          // Only show the row if the candidate has at least one non-cancelled shift
-          // explicitly assigning them on this slot. Vacancy-level assignments without
-          // any actual shifts shouldn't surface a job on the candidate's calendar.
           const hasShiftForCandidate = Object.values(shifts[v.id]?.[i] ?? {}).some(
             (s) => !s.cancelled && s.assignment_overridden && s.candidate_id === candidateFilter.id,
           );
           if (!hasShiftForCandidate) continue;
         }
+        if (secondColumn === "candidate" && candidateColumnOnlyAssigned) {
+          if (!slotAssignedCandidateId(v, i)) continue;
+        }
         rows.push({ vacancy: v, slot: i, total });
       }
     });
+    if (sortBy === "client") {
+      rows.sort((a, b) => {
+        let av = "";
+        let bv = "";
+        if (secondColumn === "candidate") {
+          const ai = slotAssignedCandidateId(a.vacancy, a.slot);
+          const bi = slotAssignedCandidateId(b.vacancy, b.slot);
+          av = (ai ? candidateLookup.get(ai)?.full_name ?? "" : "");
+          bv = (bi ? candidateLookup.get(bi)?.full_name ?? "" : "");
+        } else {
+          av = a.vacancy.client?.name ?? "";
+          bv = b.vacancy.client?.name ?? "";
+        }
+        const cmp = av.localeCompare(bv, undefined, { sensitivity: "base" });
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
     return rows;
-  }, [sortedVacancies, candidateFilter, shifts]);
+  }, [sortedVacancies, candidateFilter, shifts, secondColumn, candidateColumnOnlyAssigned, slotAssignedCandidateId, sortBy, sortDir, candidateLookup]);
   const [vacancyClip, setVacancyClip] = useState<Vacancy | null>(null);
   const changeOpenings = async (v: Vacancy, next: number, cloneFromSlot?: number, removeSlot?: number) => {
     const current = Math.max(1, Number(v.openings ?? 1) || 1);
@@ -639,7 +677,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
               className="sticky z-30 border-b border-r bg-muted px-2 py-2 text-left text-[11px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]"
               style={{ left: `${jobColW}px` }}
             >
-              Client{sortArrow("client")}
+              {secondColumn === "candidate" ? "Candidate" : "Client"}{sortArrow("client")}
             </button>
             {weekDates.map((d, i) => {
               const isToday = ymd(d) === todayKey;
@@ -724,11 +762,37 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                       </ContextMenuItem>
                     </ContextMenuContent>
                   </ContextMenu>
-                  {/* Client (frozen) */}
-                  <div className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`} style={{ left: `${jobColW}px` }}>
-                    <div className="text-sm">{v.client?.name ?? "—"}</div>
-                    {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
-                  </div>
+                  {/* Second sticky column: Client OR Candidate */}
+                  {secondColumn === "candidate" ? (() => {
+                    const cid = slotAssignedCandidateId(v, slot);
+                    const cinfo = cid ? candidateLookup.get(cid) : null;
+                    const name = cinfo?.full_name
+                      ?? (v.assignments ?? []).find((a) => Number(a.slot_index ?? 0) === slot)?.candidate?.full_name
+                      ?? null;
+                    return (
+                      <div
+                        className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] ${cid && onCandidateClick ? "cursor-pointer hover:bg-muted/40" : ""}`}
+                        style={{ left: `${jobColW}px` }}
+                        onClick={() => { if (cid && onCandidateClick) onCandidateClick(cid); }}
+                      >
+                        {name ? (
+                          <>
+                            <div className="text-sm font-medium truncate">{name}</div>
+                            {cinfo?.headline && <div className="text-[10px] text-muted-foreground line-clamp-1">{cinfo.headline}</div>}
+                            {cinfo?.email && <div className="text-[10px] text-muted-foreground truncate">{cinfo.email}</div>}
+                            {cinfo?.phone && <div className="text-[10px] text-muted-foreground truncate">{cinfo.phone}</div>}
+                          </>
+                        ) : (
+                          <div className="text-xs text-muted-foreground italic">Unassigned</div>
+                        )}
+                      </div>
+                    );
+                  })() : (
+                    <div className={`sticky z-10 border-b border-r ${rowBg} px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]`} style={{ left: `${jobColW}px` }}>
+                      <div className="text-sm">{v.client?.name ?? "—"}</div>
+                      {v.location && <div className="text-[10px] text-muted-foreground line-clamp-2">{v.location}</div>}
+                    </div>
+                  )}
                   {/* Day cells (per slot) */}
                   {weekDates.map((d, dIdx) => {
                     const dk = ymd(d);
