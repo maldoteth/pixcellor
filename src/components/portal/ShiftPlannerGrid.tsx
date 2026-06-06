@@ -933,10 +933,7 @@ function Cell(props: {
 
   const handleSave = async () => {
     let choice: string | null | undefined;
-    if (assigneeValue === ASSIGNEE_INHERIT) {
-      // If the row was previously overridden, signal parent to clear; otherwise no-op for assignment.
-      choice = overridden ? "__inherit__" : undefined;
-    } else if (assigneeValue === ASSIGNEE_NONE) choice = null;
+    if (assigneeValue === ASSIGNEE_NONE) choice = null;
     else choice = assigneeValue;
     await onSave(st, fi, choice);
     setEditOpen(false);
@@ -978,7 +975,6 @@ function Cell(props: {
                 <Select value={assigneeValue} onValueChange={setAssigneeValue}>
                   <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={ASSIGNEE_INHERIT}>Use slot default</SelectItem>
                     <SelectItem value={ASSIGNEE_NONE}>— Unassigned —</SelectItem>
                     {candidateOptions.map((c) => (
                       <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
