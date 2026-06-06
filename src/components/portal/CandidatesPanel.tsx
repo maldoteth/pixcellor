@@ -107,6 +107,7 @@ export default function CandidatesPanel() {
   const [view, setView] = useState<"list" | "kanban">("list");
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [timesheetsOpen, setTimesheetsOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
   const [activeId, setActiveId] = useState<string | null>(null);
