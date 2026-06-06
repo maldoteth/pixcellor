@@ -723,6 +723,9 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
       if (e.key === "Escape") {
         clearSelectionRef.current(); setClipboard(null); return;
       }
+      if (mod && (e.key === "a" || e.key === "A")) {
+        e.preventDefault(); selectAllRef.current(); return;
+      }
       if (!hasSel) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault(); blurActive(); void deleteSelectionRef.current();
