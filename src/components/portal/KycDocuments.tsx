@@ -90,7 +90,7 @@ export default function KycDocuments({
       setDocs((data as KycDoc[]) ?? []);
     } else {
       // Make sure candidates.user_id is linked to the auth user before listing.
-      await supabase.rpc("candidate_link_self" as never).catch(() => undefined);
+      try { await supabase.rpc("candidate_link_self" as never); } catch { /* noop */ }
       const { data, error } = await (supabase as any).rpc("candidate_list_my_documents");
       if (error) toast.error(error.message);
       const rows = (data as KycDoc[]) ?? [];
