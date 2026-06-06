@@ -180,11 +180,15 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         } as never),
       ),
     );
-    const map: Record<string, Record<string, Shift>> = {};
+    const map: Record<string, Record<number, Record<string, Shift>>> = {};
     vacancies.forEach((v, i) => {
       const rows = ((results[i].data as Shift[]) ?? []);
-      const m: Record<string, Shift> = {};
-      rows.forEach((s) => { m[s.shift_date] = s; });
+      const m: Record<number, Record<string, Shift>> = {};
+      rows.forEach((s) => {
+        const slot = Number(s.slot_index ?? 0);
+        if (!m[slot]) m[slot] = {};
+        m[slot][s.shift_date] = s;
+      });
       map[v.id] = m;
     });
     setShifts(map);
@@ -193,10 +197,10 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
 
   useEffect(() => { load(); }, [load]);
 
-  // Resolve effective shift for a given cell
-  const resolveCell = useCallback((vacancyId: string, date: string) => {
+  // Resolve effective shift for a given cell (per-slot)
+  const resolveCell = useCallback((vacancyId: string, slot: number, date: string) => {
     const v = vacancies.find((x) => x.id === vacancyId);
-    const shift = shifts[vacancyId]?.[date];
+    const shift = shifts[vacancyId]?.[slot]?.[date];
     const tStart = v?.start_time ? v.start_time.slice(0, 5) : null;
     const tFinish = v?.finish_time ? v.finish_time.slice(0, 5) : null;
     const templateSet = new Set((v?.schedule_days ?? []).map((d) => d.slice(0, 3)));
@@ -209,7 +213,8 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
         finish: (shift.finish_time ?? tFinish)?.slice(0, 5) ?? null,
       };
     }
-    // Template-driven recurring days only count within the vacancy's date window.
+    // Template-driven recurring days only apply to slot 0 and within the vacancy's date window.
+    if (slot !== 0) return { active: false, cancelled: false, start: null, finish: null, hasExplicit: false };
     const inRange = (() => {
       if (v?.start_date && date < v.start_date) return false;
       if (v?.end_date && date > v.end_date) return false;
@@ -222,7 +227,6 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
   const DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"] as const;
 
   // Ensure the vacancy's date window and schedule_days cover this shift's date/time.
-  // Keeps the Edit form in sync when shifts are created on the calendar.
   const syncVacancyWindow = async (vacancyId: string, date: string, s: string | null, f: string | null, cancelled: boolean) => {
     if (cancelled) return;
     const v = vacancies.find((x) => x.id === vacancyId);
@@ -238,66 +242,64 @@ export default function ShiftPlannerGrid({ vacancies, onEdit, onAssign, onDelete
     if (f && !v.finish_time) patch.finish_time = f.length === 5 ? `${f}:00` : f;
     if (Object.keys(patch).length === 0) return;
     const { error } = await supabase.rpc("portal_update_vacancy" as never, { _id: vacancyId, _patch: patch } as never);
-    if (error) {
-      // Non-fatal — the shift was saved; just log
-      console.warn("Vacancy window sync failed", error.message);
-    } else {
-      await onVacancyChanged?.();
-    }
+    if (error) console.warn("Vacancy window sync failed", error.message);
+    else await onVacancyChanged?.();
   };
 
-  const upsert = async (vacancyId: string, date: string, s: string | null, f: string | null, cancelled = false) => {
+  const upsert = async (vacancyId: string, slot: number, date: string, s: string | null, f: string | null, cancelled = false) => {
     const { error } = await supabase.rpc("portal_upsert_vacancy_shift" as never, {
-      _vacancy_id: vacancyId, _date: date, _start: s, _finish: f, _cancelled: cancelled,
+      _vacancy_id: vacancyId, _date: date, _start: s, _finish: f, _cancelled: cancelled, _slot: slot,
     } as never);
     if (error) { toast({ title: "Save failed", description: error.message, variant: "destructive" }); return; }
     await syncVacancyWindow(vacancyId, date, s, f, cancelled);
   };
 
-  const removeShift = async (vacancyId: string, date: string) => {
-    const cell = resolveCell(vacancyId, date);
+  const removeShift = async (vacancyId: string, slot: number, date: string) => {
+    const cell = resolveCell(vacancyId, slot, date);
     if (cell.hasExplicit) {
       const { error } = await supabase.rpc("portal_delete_vacancy_shift" as never, {
-        _vacancy_id: vacancyId, _date: date,
+        _vacancy_id: vacancyId, _date: date, _slot: slot,
       } as never);
       if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
     } else if (cell.active) {
-      // template-only: cancel it explicitly
-      await upsert(vacancyId, date, null, null, true);
+      // template-only: cancel it explicitly for this slot
+      await upsert(vacancyId, slot, date, null, null, true);
     }
   };
 
   // Selection helpers
   const blurActive = () => { try { (document.activeElement as HTMLElement | null)?.blur(); } catch { /* noop */ } };
-  const selectSingle = (vacancyId: string, dateIdx: number) => {
+  const selectSingle = (vacancyId: string, slot: number, dateIdx: number) => {
     const date = ymd(weekDates[dateIdx]);
-    setSelected(new Set([cellKey(vacancyId, date)]));
-    setLastSelected({ vacancyId, dateIdx });
+    setSelected(new Set([cellKey(vacancyId, slot, date)]));
+    setLastSelected({ vacancyId, slot, dateIdx });
     blurActive();
   };
-  const toggleSelect = (vacancyId: string, dateIdx: number) => {
+  const toggleSelect = (vacancyId: string, slot: number, dateIdx: number) => {
     const date = ymd(weekDates[dateIdx]);
-    const k = cellKey(vacancyId, date);
+    const k = cellKey(vacancyId, slot, date);
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(k)) next.delete(k); else next.add(k);
       return next;
     });
-    setLastSelected({ vacancyId, dateIdx });
+    setLastSelected({ vacancyId, slot, dateIdx });
   };
-  const rangeSelect = (vacancyId: string, dateIdx: number) => {
-    if (!lastSelected) { selectSingle(vacancyId, dateIdx); return; }
+  const rangeSelect = (vacancyId: string, slot: number, dateIdx: number) => {
+    if (!lastSelected) { selectSingle(vacancyId, slot, dateIdx); return; }
     setSelected((prev) => {
       const next = new Set(prev);
-      // Build a rectangular range across rows and dates
-      const rowIds = vacancies.map((v) => v.id);
-      const r1 = rowIds.indexOf(lastSelected.vacancyId);
-      const r2 = rowIds.indexOf(vacancyId);
+      // Rectangular range across display rows (vacancy+slot) and dates
+      const rowKeys = displayRows.map((r) => `${r.vacancy.id}#${r.slot}`);
+      const r1 = rowKeys.indexOf(`${lastSelected.vacancyId}#${lastSelected.slot}`);
+      const r2 = rowKeys.indexOf(`${vacancyId}#${slot}`);
+      if (r1 < 0 || r2 < 0) { next.add(cellKey(vacancyId, slot, ymd(weekDates[dateIdx]))); return next; }
       const [rMin, rMax] = [Math.min(r1, r2), Math.max(r1, r2)];
       const [dMin, dMax] = [Math.min(lastSelected.dateIdx, dateIdx), Math.max(lastSelected.dateIdx, dateIdx)];
       for (let r = rMin; r <= rMax; r++) {
+        const row = displayRows[r];
         for (let d = dMin; d <= dMax; d++) {
-          next.add(cellKey(rowIds[r], ymd(weekDates[d])));
+          next.add(cellKey(row.vacancy.id, row.slot, ymd(weekDates[d])));
         }
       }
       return next;
