@@ -554,7 +554,7 @@ export default function VacanciesPanel() {
                       const bits = [
                         s.employment_type as string,
                         s.location as string,
-                        s.pay_min || s.pay_max ? `${s.pay_currency ?? "GBP"} ${s.pay_min ?? "?"}–${s.pay_max ?? "?"}/${s.pay_period ?? ""}` : null,
+                        s.pay_min || s.pay_max ? `${(s.pay_currency ?? "GBP") === "GBP" ? "£" : (s.pay_currency ?? "GBP")} ${s.pay_min ?? "?"}–${s.pay_max ?? "?"}/${s.pay_period ?? ""}` : null,
                       ].filter(Boolean);
                       return (
                         <button
