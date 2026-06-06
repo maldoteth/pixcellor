@@ -1047,6 +1047,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
               </ContextMenuContent>
             </ContextMenu>
             </>
+          )}
         </div>
       </div>
 
