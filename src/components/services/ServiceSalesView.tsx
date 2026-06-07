@@ -246,22 +246,43 @@ export default function ServiceSalesView({
       </motion.section>
 
       {/* DELIVERABLES */}
-      <motion.section {...fadeUp} className="mb-12 md:mb-16">
-        <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
-          Deliverables
-        </h2>
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {service.deliverables.map((d) => (
-            <li
-              key={d}
-              className="flex items-start gap-3 text-sm leading-relaxed text-foreground/85"
-            >
-              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-foreground/60" />
-              {d}
-            </li>
-          ))}
-        </ul>
-      </motion.section>
+      {service.deliverables.length > 0 && (
+        <motion.section {...fadeUp} className="mb-12 md:mb-16">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
+            Deliverables
+          </h2>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {service.deliverables.map((d) => (
+              <li
+                key={d}
+                className="flex items-start gap-3 text-sm leading-relaxed text-foreground/85"
+              >
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-foreground/60" />
+                {d}
+              </li>
+            ))}
+          </ul>
+        </motion.section>
+      )}
+
+      {/* TEAM FROM */}
+      {service.teamFrom && service.teamFrom.length > 0 && (
+        <motion.section {...fadeUp} className="mb-12 md:mb-16">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
+            Team from
+          </h2>
+          <div className="flex flex-wrap items-center gap-3">
+            {service.teamFrom.map((name) => (
+              <span
+                key={name}
+                className="inline-flex items-center rounded-md border border-foreground/15 bg-foreground/[0.04] px-4 py-2 text-sm font-semibold tracking-tight text-foreground/90 backdrop-blur-md"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        </motion.section>
+      )}
 
       {/* FOOTER CTA */}
       <motion.section
