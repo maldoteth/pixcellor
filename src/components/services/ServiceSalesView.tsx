@@ -6,6 +6,19 @@ import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/
 import { Button } from "@/components/ui/button";
 import { SERVICE_IMAGES } from "@/assets/services";
 import { useIsMobile } from "@/hooks/use-mobile";
+import randstadLogo from "@/assets/logos/randstad.svg";
+import blueArrowLogo from "@/assets/logos/bluearrow.svg";
+import itsLogo from "@/assets/logos/its.svg";
+import haysLogo from "@/assets/logos/hays.svg";
+import manpowerLogo from "@/assets/logos/manpower.svg";
+
+const TEAM_LOGOS: Record<string, string> = {
+  "Randstad": randstadLogo,
+  "Blue Arrow": blueArrowLogo,
+  "ITS Building People": itsLogo,
+  "Hays": haysLogo,
+  "Manpower": manpowerLogo,
+};
 
 // Code-split the heavy WebGL hero banners so the drawer's initial JS payload
 // stays small. Each banner only downloads its three.js / shader code when the
@@ -271,15 +284,28 @@ export default function ServiceSalesView({
           <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
             Team from
           </h2>
-          <div className="flex flex-wrap items-center gap-3">
-            {service.teamFrom.map((name) => (
-              <span
-                key={name}
-                className="inline-flex items-center rounded-md border border-foreground/15 bg-foreground/[0.04] px-4 py-2 text-sm font-semibold tracking-tight text-foreground/90 backdrop-blur-md"
-              >
-                {name}
-              </span>
-            ))}
+          <div className="flex flex-wrap items-center gap-4 md:gap-6">
+            {service.teamFrom.map((name) => {
+              const logo = TEAM_LOGOS[name];
+              return (
+                <div
+                  key={name}
+                  className="flex h-14 items-center justify-center rounded-md border border-foreground/15 bg-foreground/[0.04] px-5 backdrop-blur-md"
+                >
+                  {logo ? (
+                    <img
+                      src={logo}
+                      alt={`${name} logo`}
+                      className="h-7 w-auto object-contain brightness-0 invert opacity-90"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="text-sm font-semibold tracking-tight text-foreground/90">{name}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </motion.section>
       )}
