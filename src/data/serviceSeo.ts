@@ -167,7 +167,7 @@ export const SERVICE_SEO: Record<string, ServiceSeo> = {
   "recruitment-ats": {
     title: "Recruitment Agency & Custom AI ATS — Flat Fees | Pixcellor",
     description:
-      "Top-billing recruiters across tech, healthcare, crypto and construction. Flat 15% temps, 5% perms — or your own AI-agent ATS.",
+      "Top-billing recruiters across tech, healthcare, crypto and construction. Capped 5% on all temporary and permanent placements — or your own AI-agent ATS.",
     keywords: [
       "recruitment agency UK",
       "AI ATS build",
