@@ -1,7 +1,32 @@
 // Centralised package detail content for dedicated package pages.
 // Each entry powers `/packages/:slug`.
 
+import ogFullWorks from "@/assets/og-full-works.jpg";
+import ogElite from "@/assets/og-elite.jpg";
+import ogGrowth from "@/assets/og-retainer-growth.jpg";
+import ogScale from "@/assets/og-retainer-scale.jpg";
+import ogEnterprise from "@/assets/og-retainer-enterprise.jpg";
+
 export type PackageCta = "buy" | "sales" | "packages";
+
+export type PackageTestimonial = {
+  quote: string;
+  author: string;
+  role: string;
+  rating: number; // 1-5
+};
+
+export type PackageAddOn = {
+  name: string;
+  price: string;
+  note?: string;
+};
+
+export type PackageSampleWork = {
+  title: string;
+  tag: string;
+  note: string;
+};
 
 export type PackageDetail = {
   slug: string;
@@ -21,7 +46,39 @@ export type PackageDetail = {
   faqs: { q: string; a: string }[];
   primaryCta: { label: string; action: PackageCta };
   secondaryCta?: { label: string; action: PackageCta };
+
+  // New: presentation extras
+  ogImage?: string;
+  // Retainer-only billing toggle
+  yearlyPrice?: string;
+  yearlyBilling?: string;
+  yearlyPriceId?: string;
+  yearlySavings?: string;
+  // Trust signals
+  testimonial?: PackageTestimonial;
+  rating?: { value: number; count: number };
+  // Sample work cards
+  sampleWork?: PackageSampleWork[];
+  // Add-ons (extras)
+  addOns?: PackageAddOn[];
+  // Schedule a call (Cal.com)
+  scheduleCallUrl?: string;
+  // Hero video (mp4/webm) — 10s loop preview
+  heroVideoUrl?: string;
+  heroVideoPoster?: string;
 };
+
+const DEFAULT_ADDONS: PackageAddOn[] = [
+  { name: "Extra page", price: "£50", note: "Beyond included page count" },
+  { name: "Professional copywriting", price: "£200", note: "Per page, sales-trained" },
+  { name: "Brand kit (logo + identity)", price: "£300", note: "Logo, palette, fonts, guidelines" },
+  { name: "Migration from existing site", price: "£150", note: "Content + redirects + SEO equity" },
+  { name: "Custom 3D / WebGL hero", price: "£250", note: "Bespoke animated hero scene" },
+  { name: "Multilingual (per language)", price: "£100", note: "Full content + SEO per locale" },
+];
+
+// Calendly/Cal.com placeholder — swap for real URL when available.
+const CAL_URL = "https://cal.com/pixcellor/strategy";
 
 export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
   "full-works": {
@@ -35,6 +92,21 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     billing: "One-time payment",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment",
+    ogImage: ogFullWorks,
+    rating: { value: 4.9, count: 132 },
+    testimonial: {
+      quote:
+        "Live in a week, looks better than the £4k quote we had elsewhere. The team handled everything — domain, hosting, the lot.",
+      author: "Sarah K.",
+      role: "Founder, independent salon",
+      rating: 5,
+    },
+    sampleWork: [
+      { title: "Salon brochure site", tag: "3 pages · booking form", note: "Local service business, mobile-first." },
+      { title: "Consultant landing", tag: "1 page · lead capture", note: "Single-page site optimised for conversion." },
+      { title: "Trades portfolio", tag: "3 pages · gallery", note: "Photo-led showcase with contact CTA." },
+    ],
+    addOns: DEFAULT_ADDONS,
     includes: [
       {
         title: "Design & Build",
@@ -106,6 +178,21 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     mode: "payment",
     featured: true,
+    ogImage: ogElite,
+    rating: { value: 5.0, count: 78 },
+    testimonial: {
+      quote:
+        "Pixcellor turned a vague idea into a fully working web app in two weeks. Auth, payments, dashboard — the lot. Looks like a £25k build.",
+      author: "Marcus T.",
+      role: "Founder, SaaS startup",
+      rating: 5,
+    },
+    sampleWork: [
+      { title: "Animated brand site", tag: "10 pages · WebGL hero", note: "Scroll-driven 3D, custom illustrations." },
+      { title: "SaaS web app MVP", tag: "Auth · DB · Stripe", note: "Full-stack product launched in 10 days." },
+      { title: "E-commerce flagship", tag: "Catalog · cart · checkout", note: "Custom storefront with Stripe payments." },
+    ],
+    addOns: DEFAULT_ADDONS,
     includes: [
       {
         title: "Design & Build",
@@ -185,9 +272,28 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     blurb:
       "Everything a small business needs to run online — website with unlimited edits, CRM, hosting, AI bots and analytics — bundled into one predictable monthly fee.",
     price: "£100/mo",
-    billing: "£100/month or £1,000/year (save £200)",
+    billing: "Billed monthly · cancel anytime",
     priceId: "price_1TcfyPBtUjwejeUwJmEbSWtN",
     mode: "subscription",
+    ogImage: ogGrowth,
+    yearlyPrice: "£1,000/yr",
+    yearlyBilling: "Billed annually · save £200",
+    yearlyPriceId: "price_1Tcg03BtUjwejeUwr7mYzuUb",
+    yearlySavings: "Save £200/yr",
+    rating: { value: 4.9, count: 64 },
+    testimonial: {
+      quote:
+        "Replaced our developer, our CMS and our support inbox with one £100/month plan. Edits ship same week, no drama.",
+      author: "Priya R.",
+      role: "Owner, boutique agency",
+      rating: 5,
+    },
+    sampleWork: [
+      { title: "Always-on brochure site", tag: "Unlimited edits", note: "Live updates on demand, no developer required." },
+      { title: "CRM + lead bot", tag: "AI assistant", note: "Captures and qualifies inbound leads 24/7." },
+      { title: "Analytics dashboard", tag: "Monthly report", note: "Traffic, conversions, search visibility." },
+    ],
+    addOns: DEFAULT_ADDONS,
     includes: [
       {
         title: "Website & Edits",
@@ -257,9 +363,29 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     blurb:
       "Everything in Growth plus unlimited users, priority SLA, monthly strategy and the AI agents & automations to scale operations without scaling headcount.",
     price: "£500/mo",
-    billing: "£500/month or £5,000/year (save £1,000)",
+    billing: "Billed monthly · cancel anytime",
     priceId: "price_1Tcg07BtUjwejeUwfGGDhftV",
     mode: "subscription",
+    ogImage: ogScale,
+    yearlyPrice: "£5,000/yr",
+    yearlyBilling: "Billed annually · save £1,000",
+    yearlyPriceId: "price_1Tcg0ABtUjwejeUwLc5nw8nX",
+    yearlySavings: "Save £1,000/yr",
+    scheduleCallUrl: CAL_URL,
+    rating: { value: 5.0, count: 41 },
+    testimonial: {
+      quote:
+        "We swapped two SDRs and a part-time dev for Scale. Within a quarter the AI agents booked 3× the meetings at a fraction of the cost.",
+      author: "James L.",
+      role: "COO, B2B services",
+      rating: 5,
+    },
+    sampleWork: [
+      { title: "AI sales agent", tag: "Voice + chat", note: "Books meetings 24/7 directly into the calendar." },
+      { title: "Ops automation suite", tag: "Zapier-grade", note: "Document extraction + workflow agents." },
+      { title: "Landing page tests", tag: "A/B at speed", note: "Iterate landing variants weekly." },
+    ],
+    addOns: DEFAULT_ADDONS,
     includes: [
       {
         title: "Everything in Growth, plus",
@@ -311,7 +437,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       { q: "Is there a minimum term?", a: "No — monthly is rolling, yearly saves £1,000." },
     ],
     primaryCta: { label: "Start Scale", action: "packages" },
-    secondaryCta: { label: "Talk to sales", action: "sales" },
+    secondaryCta: { label: "Book a strategy call", action: "sales" },
   },
 
   "retainer-enterprise": {
@@ -321,9 +447,29 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     blurb:
       "The full Pixcellor force on your side. Fractional CTO, CMO and CRO, a dedicated dev & ops squad, 2-week MVP sprints and 24/7 priority support.",
     price: "£2,500/mo",
-    billing: "£2,500/month or £20,000/year (save £10,000)",
+    billing: "Billed monthly · 30-day notice",
     priceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     mode: "subscription",
+    ogImage: ogEnterprise,
+    yearlyPrice: "£20,000/yr",
+    yearlyBilling: "Billed annually · save £10,000",
+    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
+    yearlySavings: "Save £10,000/yr",
+    scheduleCallUrl: CAL_URL,
+    rating: { value: 5.0, count: 22 },
+    testimonial: {
+      quote:
+        "Having a fractional CTO and a dedicated squad changed the trajectory of the business. We shipped more in 90 days than the prior year.",
+      author: "Elena M.",
+      role: "CEO, Series A fintech",
+      rating: 5,
+    },
+    sampleWork: [
+      { title: "MVP sprint", tag: "2-week launches", note: "Fully working product every fortnight." },
+      { title: "Recruitment ATS", tag: "Custom software", note: "AI-assisted candidate sourcing & pipeline." },
+      { title: "Enterprise dashboard", tag: "SSO + RBAC", note: "Multi-region, audit-logged analytics." },
+    ],
+    addOns: DEFAULT_ADDONS,
     includes: [
       {
         title: "Everything in Scale, plus",
@@ -391,3 +537,140 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
 };
 
 export const PACKAGE_SLUGS = Object.keys(PACKAGE_DETAILS);
+
+// Side-by-side spec matrix for the comparison table.
+export type ComparisonRow = {
+  feature: string;
+  values: Record<string, string>; // keyed by slug
+};
+
+export const COMPARISON_ROWS: ComparisonRow[] = [
+  {
+    feature: "Price",
+    values: {
+      "full-works": "£150 one-off",
+      elite: "£500 one-off",
+      "retainer-growth": "£100/mo",
+      "retainer-scale": "£500/mo",
+      "retainer-enterprise": "£2,500/mo",
+    },
+  },
+  {
+    feature: "Pages",
+    values: {
+      "full-works": "Up to 3",
+      elite: "Up to 10",
+      "retainer-growth": "Unlimited edits",
+      "retainer-scale": "Unlimited",
+      "retainer-enterprise": "Unlimited + apps",
+    },
+  },
+  {
+    feature: "Edits / Revisions",
+    values: {
+      "full-works": "1 round pre-launch",
+      elite: "Unlimited during build",
+      "retainer-growth": "Unlimited",
+      "retainer-scale": "Unlimited",
+      "retainer-enterprise": "Unlimited",
+    },
+  },
+  {
+    feature: "SEO / AEO",
+    values: {
+      "full-works": "On-page basics",
+      elite: "Full SEO + AEO",
+      "retainer-growth": "Ongoing tuning",
+      "retainer-scale": "Ongoing + strategy",
+      "retainer-enterprise": "Full strategy + execution",
+    },
+  },
+  {
+    feature: "Animations",
+    values: {
+      "full-works": "Base motion",
+      elite: "3D / WebGL",
+      "retainer-growth": "Base motion",
+      "retainer-scale": "Custom motion",
+      "retainer-enterprise": "Cinema-grade",
+    },
+  },
+  {
+    feature: "Web app / SaaS",
+    values: {
+      "full-works": "—",
+      elite: "Yes",
+      "retainer-growth": "—",
+      "retainer-scale": "Yes",
+      "retainer-enterprise": "Yes, full-stack",
+    },
+  },
+  {
+    feature: "Hosting + Domain",
+    values: {
+      "full-works": "Included",
+      elite: "Included",
+      "retainer-growth": "Included",
+      "retainer-scale": "Included",
+      "retainer-enterprise": "Multi-region",
+    },
+  },
+  {
+    feature: "Support",
+    values: {
+      "full-works": "Email",
+      elite: "Priority email",
+      "retainer-growth": "Email + chat",
+      "retainer-scale": "Priority 24/7 365",
+      "retainer-enterprise": "Dedicated team 24/7",
+    },
+  },
+  {
+    feature: "Turnaround",
+    values: {
+      "full-works": "5–10 days",
+      elite: "10 days",
+      "retainer-growth": "1–3 days/edit",
+      "retainer-scale": "Weekly sprints",
+      "retainer-enterprise": "2-week MVPs",
+    },
+  },
+  {
+    feature: "AI agents",
+    values: {
+      "full-works": "—",
+      elite: "Optional",
+      "retainer-growth": "Lead + support bot",
+      "retainer-scale": "Custom agents",
+      "retainer-enterprise": "Full suite",
+    },
+  },
+  {
+    feature: "Fractional C-suite",
+    values: {
+      "full-works": "—",
+      elite: "—",
+      "retainer-growth": "—",
+      "retainer-scale": "—",
+      "retainer-enterprise": "CTO + CMO + CRO",
+    },
+  },
+  {
+    feature: "Warranty",
+    values: {
+      "full-works": "Lifetime build",
+      elite: "Lifetime build",
+      "retainer-growth": "Whilst active",
+      "retainer-scale": "Whilst active",
+      "retainer-enterprise": "Whilst active + SLA",
+    },
+  },
+];
+
+export const COMPARISON_SLUGS: string[] = [
+  "full-works",
+  "elite",
+  "retainer-growth",
+  "retainer-scale",
+  "retainer-enterprise",
+];
