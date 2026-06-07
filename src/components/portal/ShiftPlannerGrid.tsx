@@ -1269,24 +1269,38 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                         })()}
                         <div className="mt-2 flex items-center justify-between gap-1 flex-wrap">
                           {(() => {
-                            // Per-slot status: a slot is "filled" only if every active day in the vacancy's
-                            // date window has an assignee. Any unassigned active day => "open".
+                            // Per-slot status:
+                            //   - If the vacancy has any explicit shift rows for this slot, the slot is
+                            //     "filled" when every non-cancelled shift row has an assignee. Template
+                            //     days without an explicit shift are ignored in that case, so a vacancy
+                            //     with one filled shift box reads "filled" regardless of a stale
+                            //     start_date/end_date or schedule_days template.
+                            //   - Otherwise (no explicit shifts yet) fall back to the template-driven
+                            //     window: any unassigned active template day => "open".
                             let status: string = v.status;
-                            if (v.start_date && v.end_date) {
-                              const start = new Date(v.start_date + "T00:00:00");
-                              const end = new Date(v.end_date + "T00:00:00");
-                              let anyActive = false;
-                              let allAssigned = true;
-                              const MAX_DAYS_CHECK = 400;
-                              let n = 0;
-                              for (let d = new Date(start); d <= end && n < MAX_DAYS_CHECK; d.setDate(d.getDate() + 1), n++) {
-                                const dk = ymd(d);
-                                const cell = resolveCell(v.id, slot, dk);
-                                if (!cell.active) continue;
-                                anyActive = true;
-                                if (!cell.assignee) { allAssigned = false; break; }
-                              }
-                              if (v.status !== "closed" && v.status !== "draft") {
+                            if (v.status !== "closed" && v.status !== "draft") {
+                              const slotShifts = Object.values(shifts[v.id]?.[slot] ?? {});
+                              const activeShifts = slotShifts.filter((s) => !s.cancelled);
+                              if (activeShifts.length > 0) {
+                                const allAssigned = activeShifts.every((s) => {
+                                  const cell = resolveCell(v.id, slot, s.shift_date);
+                                  return !!cell.assignee;
+                                });
+                                status = allAssigned ? "filled" : "open";
+                              } else if (v.start_date && v.end_date) {
+                                const start = new Date(v.start_date + "T00:00:00");
+                                const end = new Date(v.end_date + "T00:00:00");
+                                let anyActive = false;
+                                let allAssigned = true;
+                                const MAX_DAYS_CHECK = 400;
+                                let n = 0;
+                                for (let d = new Date(start); d <= end && n < MAX_DAYS_CHECK; d.setDate(d.getDate() + 1), n++) {
+                                  const dk = ymd(d);
+                                  const cell = resolveCell(v.id, slot, dk);
+                                  if (!cell.active) continue;
+                                  anyActive = true;
+                                  if (!cell.assignee) { allAssigned = false; break; }
+                                }
                                 status = anyActive && allAssigned ? "filled" : "open";
                               }
                             }
