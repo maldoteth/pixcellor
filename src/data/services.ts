@@ -438,8 +438,7 @@ export const SERVICES: Service[] = [
     heroBlurb:
       "Senior recruiters from the world's biggest agencies — annual top-billers across tech, healthcare, construction, crypto and more. Or we build you an AI-agent ATS that does the same job without the middle-man fees.",
     features: [
-      "Flat 15% on temp placements",
-      "Flat 5% on permanent placements",
+      "Capped 5% on all temporary and permanent placements",
       "Senior recruiters with sector-specific track records",
       "Optional custom ATS with AI agent recruiters",
       "Compliance + onboarding handled",
@@ -456,7 +455,7 @@ export const SERVICES: Service[] = [
       "Placed candidate(s)",
       "Optional ATS handover for future hires",
     ],
-    pricing: "Flat 15% on temps · Flat 5% on perms",
+    pricing: "Capped 5% on all temporary and permanent placements",
     clients: [
       "TikTok",
       "LinkedIn",
