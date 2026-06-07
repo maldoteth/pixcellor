@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/context-menu";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  ChevronRight, Trash2, Loader2, CalendarDays, Clipboard, Copy, ClipboardPaste, Plus, Minus,
+  ChevronRight, Trash2, Loader2, CalendarDays, Clipboard, Copy, ClipboardPaste, Plus, Minus, Sparkles,
 } from "lucide-react";
+import AIRecommendationsPanel from "./AIRecommendationsPanel";
 
 type Vacancy = {
   id: string;
@@ -1401,6 +1402,9 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                         isSelected={isSelected}
                         isClipSource={isClipSource}
                         clipMode={clipboard?.mode ?? null}
+                        vacancyId={v.id}
+                        vacancyTitle={v.title}
+                        showFindCandidates={viewerMode === "admin"}
                         onClick={(e) => {
                           if (e.shiftKey) rangeSelect(v.id, slot, dIdx);
                           else if (e.ctrlKey || e.metaKey) toggleSelect(v.id, slot, dIdx);
@@ -1622,6 +1626,9 @@ function Cell(props: {
   isSelected: boolean;
   isClipSource: boolean;
   clipMode: "copy" | "cut" | null;
+  vacancyId?: string;
+  vacancyTitle?: string;
+  showFindCandidates?: boolean;
   onClick: (e: React.MouseEvent) => void;
   onDoubleClickEdit: boolean;
   // candidateChoice: undefined = leave assignment alone; null = explicitly unassign; string id = assign that candidate
@@ -1635,8 +1642,10 @@ function Cell(props: {
   clipboardHasItems: boolean;
 }) {
   const { date, rowBg, isToday, active, cancelled, start, finish, assignee, overridden, candidateOptions,
-    defaultStart, defaultFinish, isSelected, isClipSource, clipMode,
+    defaultStart, defaultFinish, isSelected, isClipSource, clipMode, vacancyId, vacancyTitle, showFindCandidates,
     onClick, onDoubleClickEdit, onSave, onContextDelete, onContextCopy, onContextCut, onContextPaste, onContextAdd, onContextBulkPaste, clipboardHasItems } = props;
+
+  const [findOpen, setFindOpen] = useState(false);
 
   const [editOpen, setEditOpen] = useState(false);
   const [st, setSt] = useState(start ?? defaultStart);
@@ -1743,9 +1752,26 @@ function Cell(props: {
                   <p className="mt-1 text-[10px] text-muted-foreground">No one shortlisted for this job yet — use "Assign" on the job to add candidates first.</p>
                 )}
               </div>
-              <Button size="sm" className="w-full" onClick={handleSave}>Save</Button>
+              <div className="flex gap-2">
+                <Button size="sm" className="flex-1" onClick={handleSave}>Save</Button>
+                {showFindCandidates && vacancyId && (
+                  <Button size="sm" variant="outline" className="gap-1" onClick={() => setFindOpen(true)} title="Search and invite candidates">
+                    <Sparkles className="h-3.5 w-3.5" />Find
+                  </Button>
+                )}
+              </div>
             </PopoverContent>
           </Popover>
+          {showFindCandidates && vacancyId && (
+            <Dialog open={findOpen} onOpenChange={setFindOpen}>
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()}>
+                <DialogHeader>
+                  <DialogTitle>Find & invite candidates{vacancyTitle ? ` — ${vacancyTitle}` : ""}</DialogTitle>
+                </DialogHeader>
+                <AIRecommendationsPanel vacancyId={vacancyId} />
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
