@@ -1072,11 +1072,11 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 </button>
 
               </div>
-              {retainerBilling === "yearly" && (
-                <div className="text-xs text-muted-foreground mb-2">
-                  Save £{(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} vs monthly
-                </div>
-              )}
+              <div className="text-xs text-muted-foreground mb-2">
+                {retainerBilling === "yearly"
+                  ? `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} vs monthly`
+                  : `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} with yearly`}
+              </div>
               <ul className="mb-6 space-y-2 text-base text-foreground">
                 {RETAINER_TIERS[retainerTier].features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
@@ -1554,11 +1554,11 @@ function MobileCards() {
                 </button>
 
               </div>
-              {retainerBilling === "yearly" && (
-                <div className="text-xs text-muted-foreground mb-2">
-                  Save £{(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} vs monthly
-                </div>
-              )}
+              <div className="text-xs text-muted-foreground mb-2">
+                {retainerBilling === "yearly"
+                  ? `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} vs monthly`
+                  : `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} with yearly`}
+              </div>
               <ul className="space-y-2 flex-1 mb-4">
                 {RETAINER_TIERS[retainerTier].features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-base text-foreground">
