@@ -901,6 +901,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           loading={loading === "fullWorks"}
           label="Buy Now"
         />
+        <Link to="/packages/full-works" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
         </div>
       </motion.div>
       </div>
