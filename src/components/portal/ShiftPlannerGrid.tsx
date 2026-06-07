@@ -1539,6 +1539,36 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
             const payRate = v.pay_min ?? v.pay_max ?? null;
             const currency = v.pay_currency ?? "GBP";
             const symbol = currency === "GBP" ? "£" : currency === "EUR" ? "€" : currency === "USD" ? "$" : `${currency} `;
+            // Compute live status from explicit shift rows (mirrors vacancy-row logic),
+            // so a fully-assigned vacancy reads "filled" instead of the stale DB status.
+            let liveStatus: string = v.status;
+            // Derive real assignment date range from explicit shift rows across all slots;
+            // fall back to v.start_date / v.end_date when none exist.
+            let derivedStart: string | null = null;
+            let derivedEnd: string | null = null;
+            if (v.status !== "closed" && v.status !== "draft") {
+              const bySlot = shifts[v.id] ?? {};
+              const allActive: Shift[] = [];
+              let slotAssignedFlags: boolean[] = [];
+              Object.entries(bySlot).forEach(([slotKey, byDate]) => {
+                const slotN = Number(slotKey);
+                const active = Object.values(byDate).filter((x) => !x.cancelled);
+                if (active.length === 0) return;
+                allActive.push(...active);
+                const allAssigned = active.every((x) => !!resolveCell(v.id, slotN, x.shift_date).assignee);
+                slotAssignedFlags.push(allAssigned);
+              });
+              if (allActive.length > 0) {
+                liveStatus = slotAssignedFlags.every(Boolean) ? "filled" : "open";
+                const dates = allActive.map((x) => x.shift_date).sort();
+                derivedStart = dates[0];
+                derivedEnd = dates[dates.length - 1];
+              }
+            }
+            const fmtDate = (iso: string) =>
+              new Date(iso + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+            const startDateDisp = derivedStart ?? v.start_date ?? null;
+            const endDateDisp = derivedEnd ?? v.end_date ?? null;
             return (
               <>
                 <DialogHeader>
