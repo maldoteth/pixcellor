@@ -255,7 +255,9 @@ export default function PackageDetailPage() {
                     <span className={`ml-2 inline-block rounded-full px-2 py-0.5 text-[9px] tracking-wider ${
                       billing === "yearly" ? "bg-background/20 text-background" : "bg-foreground/10 text-foreground/80"
                     }`}>
-                      {pkg.yearlySavings}
+                      {billing === "monthly"
+                        ? `${pkg.yearlySavings.replace(/\/yr$/i, "")} with yearly`
+                        : pkg.yearlySavings}
                     </span>
                   )}
                 </button>
