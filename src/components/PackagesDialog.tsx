@@ -938,9 +938,13 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         </div>
         <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-[404px] translate-y-[297px] z-30 -rotate-[18deg]" />
         <motion.div
-          animate={{ y: [0, -4, 0] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="absolute top-2 right-2 rounded-sm border border-foreground/30 bg-foreground px-3 text-[10px] font-extrabold text-background shadow z-20 uppercase tracking-wider py-[2px]"
+          animate={{ boxShadow: [
+            "0 0 0px 0px hsl(var(--foreground) / 0)",
+            "0 0 14px 2px hsl(var(--foreground) / 0.35)",
+            "0 0 0px 0px hsl(var(--foreground) / 0)",
+          ] }}
+          transition={{ repeat: Infinity, duration: 2.6, ease: "easeInOut" }}
+          className="absolute top-2 right-2 rounded-sm border border-foreground/30 bg-foreground px-3 text-[10px] font-extrabold text-background z-20 uppercase tracking-wider py-[2px]"
         >
           MOST POPULAR
         </motion.div>
