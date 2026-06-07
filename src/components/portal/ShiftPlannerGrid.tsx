@@ -1623,6 +1623,9 @@ function Cell(props: {
   isSelected: boolean;
   isClipSource: boolean;
   clipMode: "copy" | "cut" | null;
+  vacancyId?: string;
+  vacancyTitle?: string;
+  showFindCandidates?: boolean;
   onClick: (e: React.MouseEvent) => void;
   onDoubleClickEdit: boolean;
   // candidateChoice: undefined = leave assignment alone; null = explicitly unassign; string id = assign that candidate
@@ -1636,8 +1639,10 @@ function Cell(props: {
   clipboardHasItems: boolean;
 }) {
   const { date, rowBg, isToday, active, cancelled, start, finish, assignee, overridden, candidateOptions,
-    defaultStart, defaultFinish, isSelected, isClipSource, clipMode,
+    defaultStart, defaultFinish, isSelected, isClipSource, clipMode, vacancyId, vacancyTitle, showFindCandidates,
     onClick, onDoubleClickEdit, onSave, onContextDelete, onContextCopy, onContextCut, onContextPaste, onContextAdd, onContextBulkPaste, clipboardHasItems } = props;
+
+  const [findOpen, setFindOpen] = useState(false);
 
   const [editOpen, setEditOpen] = useState(false);
   const [st, setSt] = useState(start ?? defaultStart);
