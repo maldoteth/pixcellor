@@ -266,7 +266,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         items: [
           "Unlimited seats & users on CRM",
           "Unlimited edits & revisions",
-          "Priority support with SLA",
+          "Priority support 24/7 365",
           "Monthly strategy & roadmap call",
         ],
       },

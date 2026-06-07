@@ -83,7 +83,7 @@ export const RETAINER_TIERS = {
       "Everything in Growth",
       "Unlimited seats & users",
       "Unlimited edits & revisions",
-      "Priority support & SLA",
+      "Priority support 24/7 365",
       "Monthly strategy calls",
       "AI agents & automations",
     ],
