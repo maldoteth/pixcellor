@@ -268,6 +268,13 @@ export default function PackageDetailPage() {
               <div className="text-[10px] uppercase tracking-[0.22em] text-foreground/50 mb-1">From</div>
               <div className="text-4xl md:text-5xl font-bold">{displayPrice}</div>
               <div className="text-xs text-foreground/60 mt-1">{displayBilling}</div>
+              {hasYearly && pkg.yearlySavings && (
+                <div className="text-xs font-semibold text-foreground/80 mt-1">
+                  {billing === "yearly"
+                    ? `You're saving ${pkg.yearlySavings}`
+                    : `Save ${pkg.yearlySavings} with yearly`}
+                </div>
+              )}
             </div>
             {pkg.rrp && (
               <div className="text-sm text-foreground/50 line-through">RRP {pkg.rrp}</div>
