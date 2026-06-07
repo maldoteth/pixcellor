@@ -1749,9 +1749,26 @@ function Cell(props: {
                   <p className="mt-1 text-[10px] text-muted-foreground">No one shortlisted for this job yet — use "Assign" on the job to add candidates first.</p>
                 )}
               </div>
-              <Button size="sm" className="w-full" onClick={handleSave}>Save</Button>
+              <div className="flex gap-2">
+                <Button size="sm" className="flex-1" onClick={handleSave}>Save</Button>
+                {showFindCandidates && vacancyId && (
+                  <Button size="sm" variant="outline" className="gap-1" onClick={() => setFindOpen(true)} title="Search and invite candidates">
+                    <Sparkles className="h-3.5 w-3.5" />Find
+                  </Button>
+                )}
+              </div>
             </PopoverContent>
           </Popover>
+          {showFindCandidates && vacancyId && (
+            <Dialog open={findOpen} onOpenChange={setFindOpen}>
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()}>
+                <DialogHeader>
+                  <DialogTitle>Find & invite candidates{vacancyTitle ? ` — ${vacancyTitle}` : ""}</DialogTitle>
+                </DialogHeader>
+                <AIRecommendationsPanel vacancyId={vacancyId} />
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
