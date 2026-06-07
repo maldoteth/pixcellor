@@ -1402,6 +1402,9 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                         isSelected={isSelected}
                         isClipSource={isClipSource}
                         clipMode={clipboard?.mode ?? null}
+                        vacancyId={v.id}
+                        vacancyTitle={v.title}
+                        showFindCandidates={viewerMode === "admin"}
                         onClick={(e) => {
                           if (e.shiftKey) rangeSelect(v.id, slot, dIdx);
                           else if (e.ctrlKey || e.metaKey) toggleSelect(v.id, slot, dIdx);
