@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/context-menu";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  ChevronRight, Trash2, Loader2, CalendarDays, Clipboard, Copy, ClipboardPaste, Plus, Minus,
+  ChevronRight, Trash2, Loader2, CalendarDays, Clipboard, Copy, ClipboardPaste, Plus, Minus, Sparkles,
 } from "lucide-react";
+import AIRecommendationsPanel from "./AIRecommendationsPanel";
 
 type Vacancy = {
   id: string;
