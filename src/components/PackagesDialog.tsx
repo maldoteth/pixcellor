@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, Lock, X, Code2, Megaphone, Briefcase, Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -900,6 +901,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           loading={loading === "fullWorks"}
           label="Buy Now"
         />
+        <Link to="/packages/full-works" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
         </div>
       </motion.div>
       </div>
@@ -972,6 +976,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         />
         </div>
         <div className="mt-2.5"><StripeBadge /></div>
+        <Link to="/packages/elite" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
 
@@ -1094,6 +1101,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 loading={loading === `retainer-${retainerTier}`}
                 label="Subscribe"
               />
+              <Link to={`/packages/retainer-${retainerTier}`} className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+                See full details →
+              </Link>
             </div>
           </div>
 
