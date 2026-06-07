@@ -976,6 +976,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         />
         </div>
         <div className="mt-2.5"><StripeBadge /></div>
+        <Link to="/packages/elite" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
         </div>{/* close relative z-10 wrapper */}
       </motion.div>
 
