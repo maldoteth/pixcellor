@@ -1101,6 +1101,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 loading={loading === `retainer-${retainerTier}`}
                 label="Subscribe"
               />
+              <Link to={`/packages/retainer-${retainerTier}`} className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+                See full details →
+              </Link>
             </div>
           </div>
 
