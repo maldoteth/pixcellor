@@ -442,7 +442,7 @@ export const SERVICES: Service[] = [
       "Senior recruiters with sector-specific track records",
       "Optional custom ATS with AI agent recruiters",
       "Compliance + onboarding handled",
-      "No exclusivity required",
+      "Service guarantee, unhappy? Don't pay (terms apply)",
     ],
     process: [
       "Role brief and ideal-candidate profile",
