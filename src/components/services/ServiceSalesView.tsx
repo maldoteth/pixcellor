@@ -6,6 +6,19 @@ import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/
 import { Button } from "@/components/ui/button";
 import { SERVICE_IMAGES } from "@/assets/services";
 import { useIsMobile } from "@/hooks/use-mobile";
+import randstadLogo from "@/assets/logos/randstad.svg";
+import blueArrowLogo from "@/assets/logos/bluearrow.svg";
+import itsLogo from "@/assets/logos/its.svg";
+import haysLogo from "@/assets/logos/hays.svg";
+import manpowerLogo from "@/assets/logos/manpower.svg";
+
+const TEAM_LOGOS: Record<string, string> = {
+  "Randstad": randstadLogo,
+  "Blue Arrow": blueArrowLogo,
+  "ITS Building People": itsLogo,
+  "Hays": haysLogo,
+  "Manpower": manpowerLogo,
+};
 
 // Code-split the heavy WebGL hero banners so the drawer's initial JS payload
 // stays small. Each banner only downloads its three.js / shader code when the
