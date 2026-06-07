@@ -28,6 +28,7 @@ const ServicesIndex = lazy(() => import("./pages/ServicesIndex"));
 const CandidateApply = lazy(() => import("./pages/CandidateApply"));
 const CandidatePortal = lazy(() => import("./pages/CandidatePortal"));
 const VacancyRespond = lazy(() => import("./pages/VacancyRespond"));
+const PackageDetail = lazy(() => import("./pages/PackageDetail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
