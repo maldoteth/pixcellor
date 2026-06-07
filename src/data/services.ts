@@ -20,6 +20,8 @@ export type Service = {
   pricing?: string;
   /** Optional past-client logos/names. */
   clients?: string[];
+  /** Optional list of past employers / agencies the team comes from. */
+  teamFrom?: string[];
   primaryCta: { label: string; action: ServiceCtaAction };
   secondaryCta?: { label: string; action: ServiceCtaAction };
 };
@@ -450,11 +452,8 @@ export const SERVICES: Service[] = [
       "Shortlist with full interview notes",
       "Offer + onboarding support",
     ],
-    deliverables: [
-      "Vetted shortlist within days",
-      "Placed candidate(s)",
-      "Optional ATS handover for future hires",
-    ],
+    deliverables: [],
+    teamFrom: ["Randstad", "Blue Arrow", "ITS Building People", "Hays", "Manpower"],
     pricing: "Capped 5% on all temporary and permanent placements",
     clients: [
       "TikTok",
