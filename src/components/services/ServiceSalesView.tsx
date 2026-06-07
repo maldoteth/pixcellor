@@ -284,15 +284,28 @@ export default function ServiceSalesView({
           <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
             Team from
           </h2>
-          <div className="flex flex-wrap items-center gap-3">
-            {service.teamFrom.map((name) => (
-              <span
-                key={name}
-                className="inline-flex items-center rounded-md border border-foreground/15 bg-foreground/[0.04] px-4 py-2 text-sm font-semibold tracking-tight text-foreground/90 backdrop-blur-md"
-              >
-                {name}
-              </span>
-            ))}
+          <div className="flex flex-wrap items-center gap-4 md:gap-6">
+            {service.teamFrom.map((name) => {
+              const logo = TEAM_LOGOS[name];
+              return (
+                <div
+                  key={name}
+                  className="flex h-14 items-center justify-center rounded-md border border-foreground/15 bg-foreground/[0.04] px-5 backdrop-blur-md"
+                >
+                  {logo ? (
+                    <img
+                      src={logo}
+                      alt={`${name} logo`}
+                      className="h-7 w-auto object-contain brightness-0 invert opacity-90"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="text-sm font-semibold tracking-tight text-foreground/90">{name}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </motion.section>
       )}
