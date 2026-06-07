@@ -167,7 +167,6 @@ export default function PackageDetailPage() {
   const hasYearly = Boolean(pkg.yearlyPrice);
   const displayPrice = billing === "yearly" && hasYearly ? pkg.yearlyPrice! : pkg.price;
   const displayBilling = billing === "yearly" && hasYearly ? pkg.yearlyBilling! : pkg.billing;
-  const yearlySavingsLabel = pkg.yearlySavings?.replace(/\/yr$/i, "");
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -256,9 +255,7 @@ export default function PackageDetailPage() {
                     <span className={`ml-2 inline-block rounded-full px-2 py-0.5 text-[9px] tracking-wider ${
                       billing === "yearly" ? "bg-background/20 text-background" : "bg-foreground/10 text-foreground/80"
                     }`}>
-                      {billing === "monthly"
-                        ? `${pkg.yearlySavings.replace(/\/yr$/i, "")} with yearly`
-                        : pkg.yearlySavings}
+                      {pkg.yearlySavings}
                     </span>
                   )}
                 </button>
@@ -271,11 +268,6 @@ export default function PackageDetailPage() {
               <div className="text-[10px] uppercase tracking-[0.22em] text-foreground/50 mb-1">From</div>
               <div className="text-4xl md:text-5xl font-bold">{displayPrice}</div>
               <div className="text-xs text-foreground/60 mt-1">{displayBilling}</div>
-              {hasYearly && billing === "monthly" && yearlySavingsLabel && (
-                <div className="mt-2 text-xs font-semibold uppercase tracking-wider text-foreground/80">
-                  {yearlySavingsLabel} with yearly
-                </div>
-              )}
             </div>
             {pkg.rrp && (
               <div className="text-sm text-foreground/50 line-through">RRP {pkg.rrp}</div>
