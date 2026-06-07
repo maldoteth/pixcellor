@@ -1613,7 +1613,7 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                     )}
                     <div>
                       <div className="text-xs uppercase tracking-wide text-muted-foreground">Status</div>
-                      <Badge variant="outline">{v.status}</Badge>
+                      <Badge variant={liveStatus === "filled" ? "secondary" : liveStatus === "open" ? "destructive" : "outline"}>{liveStatus}</Badge>
                     </div>
                     {payRate != null && viewerMode === "candidate" && (
                       <div>
@@ -1621,10 +1621,10 @@ export default function ShiftPlannerGrid({ vacancies, candidates = [], onCreate,
                         <div>{symbol}{payRate}{v.pay_period ? ` / ${v.pay_period}` : ""}</div>
                       </div>
                     )}
-                    {(v.start_date || v.end_date) && (
+                    {(startDateDisp || endDateDisp) && (
                       <div>
                         <div className="text-xs uppercase tracking-wide text-muted-foreground">Assignment dates</div>
-                        <div>{v.start_date ?? "—"}{v.end_date ? ` → ${v.end_date}` : ""}</div>
+                        <div>{startDateDisp ? fmtDate(startDateDisp) : "—"}{endDateDisp && endDateDisp !== startDateDisp ? ` → ${fmtDate(endDateDisp)}` : ""}</div>
                       </div>
                     )}
                   </div>
