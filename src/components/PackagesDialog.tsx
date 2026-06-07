@@ -940,11 +940,11 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="absolute top-1.5 right-2 rounded-sm border border-foreground/30 bg-foreground px-3 text-[10px] font-extrabold text-background shadow z-20 uppercase tracking-wider py-[2px] mx-[2px] my-[6px]"
+          className="absolute top-8 right-2 rounded-sm border border-foreground/30 bg-foreground px-3 text-[10px] font-extrabold text-background shadow z-20 uppercase tracking-wider py-[2px] mx-[2px] my-[6px]"
         >
           MOST POPULAR
         </motion.div>
-        <div className="relative z-10 -mt-28">
+        <div className="relative z-10 -mt-16">
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
         <div className="mb-1 flex items-baseline gap-2">
           <div className="text-5xl font-black text-foreground">£500</div>
