@@ -7,9 +7,16 @@ Pixcellor offers three packages: Full Works (£100, modern fast site with lifeti
 ## Pages
 
 - [Home](/): Pixcellor overview, packages, portfolio and contact.
+- [Full Works package](/packages/full-works): £150 one-off site, lifetime warranty, 3 pages, base animations.
+- [Elite package](/packages/elite): £500 one-off animated site or web app, unlimited revisions, SEO/AEO, 10-day turnaround.
+- [Growth Retainer](/packages/retainer-growth): £100/mo always-on web team — site, CRM, hosting, AI bots, analytics.
+- [Scale Retainer](/packages/retainer-scale): £500/mo full digital department — unlimited seats, AI agents, priority SLA, monthly strategy.
+- [Enterprise Retainer](/packages/retainer-enterprise): £2,500/mo fractional CTO/CMO/CRO, dedicated dev team, 2-week MVP sprints, 24/7 support.
 - [Legal](/legal): Index of legal documents.
 - [Terms of service](/legal/terms): Terms governing use of Pixcellor services.
 - [Privacy policy](/legal/privacy): How Pixcellor handles personal data.
+- [Refund policy](/legal/refund): Refund and cancellation terms.
+- [Acceptable use](/legal/acceptable-use): Acceptable use policy for Pixcellor services.
 - [Refund policy](/legal/refund): Refund and cancellation terms.
 - [Acceptable use](/legal/acceptable-use): Acceptable use policy for Pixcellor services.
 
