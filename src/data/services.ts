@@ -214,7 +214,7 @@ export const SERVICES: Service[] = [
       "Tracking + account audit",
       "Creative + audience build",
       "Launch and daily optimisation",
-      "Weekly review and scale",
+      "Monthly review and scale",
     ],
     deliverables: [
       "Tracking infrastructure that actually works",
