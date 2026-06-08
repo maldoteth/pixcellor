@@ -308,6 +308,29 @@ function StripeBadge() {
   );
 }
 
+function PackageExamples({ label, items }: { label: string; items: { name: string; url: string }[] }) {
+  return (
+    <div className="mb-4 -mt-1">
+      <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5">{label}</div>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((it) => (
+          <a
+            key={it.url}
+            href={it.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-sm border border-foreground/20 bg-foreground/[0.04] px-2 py-0.5 text-[11px] font-medium text-foreground/90 transition hover:bg-foreground/10 hover:text-foreground"
+          >
+            {it.name}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+
 function FreeSamplesBadge({ className = "" }: { className?: string }) {
   // 24-point starburst polygon
   const points = Array.from({ length: 48 }, (_, i) => {
@@ -887,7 +910,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           <span className="text-muted-foreground text-sm">or £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
-        <ul className="mb-6 space-y-2 text-base text-foreground">
+        <ul className="mb-4 space-y-2 text-base text-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -895,6 +918,14 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             </li>
           ))}
         </ul>
+        <PackageExamples
+          label="What £150 buys you:"
+          items={[
+            { name: "Oak Shore", url: "https://oakshore.homes" },
+            { name: "First Class", url: "https://firstclassagencytiktok.com" },
+            { name: "DeLabs", url: "https://delabs.co.uk" },
+          ]}
+        />
         <GlassBuyButton
           onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
           disabled={!!loading}
@@ -963,6 +994,14 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             </li>
           ))}
         </ul>
+        <PackageExamples
+          label="What £500 buys you:"
+          items={[
+            { name: "Anna's Bees", url: "https://annasbees.pixcellor.com" },
+            { name: "Life Brownie", url: "https://lifebrownie.com" },
+            { name: "Set In Stone", url: "https://setinstonesouthern.pixcellor.com" },
+          ]}
+        />
         <div className="mt-3">
         <GlassBuyButton
           onClick={() =>
@@ -1433,7 +1472,7 @@ function MobileCards() {
           <span className="text-muted-foreground text-sm">or £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
-        <ul className="space-y-2 flex-1 mb-4">
+        <ul className="space-y-2 flex-1 mb-3">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -1441,6 +1480,14 @@ function MobileCards() {
             </li>
           ))}
         </ul>
+        <PackageExamples
+          label="What £150 buys you:"
+          items={[
+            { name: "Oak Shore", url: "https://oakshore.homes" },
+            { name: "First Class", url: "https://firstclassagencytiktok.com" },
+            { name: "DeLabs", url: "https://delabs.co.uk" },
+          ]}
+        />
         <GlassBuyButton
           onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
           disabled={!!loading}
@@ -1465,7 +1512,7 @@ function MobileCards() {
           <span className="text-muted-foreground text-sm">or £1,500</span>
         </div>
         <IntroductoryOfferText discount="67%" />
-        <ul className="space-y-2 flex-1 mb-4">
+        <ul className="space-y-2 flex-1 mb-3">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -1473,6 +1520,14 @@ function MobileCards() {
             </li>
           ))}
         </ul>
+        <PackageExamples
+          label="What £500 buys you:"
+          items={[
+            { name: "Anna's Bees", url: "https://annasbees.pixcellor.com" },
+            { name: "Life Brownie", url: "https://lifebrownie.com" },
+            { name: "Set In Stone", url: "https://setinstonesouthern.pixcellor.com" },
+          ]}
+        />
         <GlassBuyButton
           onClick={() =>
             buy(
