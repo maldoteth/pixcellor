@@ -62,7 +62,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1TcfyPBtUjwejeUwJmEbSWtN",
     yearlyPriceId: "price_1Tcg03BtUjwejeUwr7mYzuUb",
     features: [
-      "Website with unlimited edits",
+      "Website, web app or SaaS with unlimited edits",
       "Custom CRM access",
       "Hosting, domain & cloud",
       "AI lead generation bot",
