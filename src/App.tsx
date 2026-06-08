@@ -29,6 +29,7 @@ const CandidateApply = lazy(() => import("./pages/CandidateApply"));
 const CandidatePortal = lazy(() => import("./pages/CandidatePortal"));
 const VacancyRespond = lazy(() => import("./pages/VacancyRespond"));
 const PackageDetail = lazy(() => import("./pages/PackageDetail"));
+const Portfolio = lazy(() => import("./pages/Portfolio"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
