@@ -69,7 +69,7 @@ export const SERVICES: Service[] = [
     deliverables: [
       "Live dialler with call recordings",
       "Booked meetings or qualified leads in your CRM",
-      "Weekly performance report (dials, contacts, conversions)",
+      "Monthly performance report (dials, contacts, conversions)",
       "Refined scripts and objection handling library",
     ],
     pricing: "£22 / hour — every call recorded, full CRM access included",
