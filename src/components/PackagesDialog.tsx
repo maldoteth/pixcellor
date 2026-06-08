@@ -308,6 +308,26 @@ function StripeBadge() {
   );
 }
 
+function PackageExamples({ label, items }: { label: string; items: { name: string; url: string }[] }) {
+  return (
+    <div className="mb-4 -mt-1">
+      <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5">{label}</div>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((it) => (
+          <a
+            key={it.url}
+            href={it.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-sm border border-foreground/20 bg-foreground/[0.04] px-2 py-0.5 text-[11px] font-medium text-foreground/90 transition hover:bg-foreground/10 hover:text-foreground"
+          >
+            {it.name}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+
 function FreeSamplesBadge({ className = "" }: { className?: string }) {
   // 24-point starburst polygon
   const points = Array.from({ length: 48 }, (_, i) => {
