@@ -623,7 +623,7 @@ export const SERVICES: Service[] = [
     process: [
       "Scoping + roadmap workshop",
       "Sprint cadence kick-off",
-      "Weekly delivery + stakeholder updates",
+      "Monthly delivery + stakeholder updates",
       "Launch + retrospective",
     ],
     deliverables: [
