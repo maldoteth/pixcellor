@@ -56,7 +56,7 @@ export const SERVICES: Service[] = [
       "Dedicated UK-based caller(s) on your campaign",
       "Every call recorded and stored in your CRM",
       "Custom scripting built around your offer and objections",
-      "Weekly performance reviews and feedback loops",
+      "Monthly performance reviews and feedback loops",
       "Lead scoring + handover to your sales team or calendar",
       "Compliant data handling (GDPR + TPS scrubbed)",
     ],
