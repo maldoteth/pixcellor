@@ -38,16 +38,7 @@ export default function Portfolio() {
   }, []);
 
   return (
-    <>
-      <Helmet>
-        <title>Portfolio — Pixcellor</title>
-        <meta
-          name="description"
-          content="Every project we've shipped — websites, web apps, dApps and brands built by Pixcellor."
-        />
-        <link rel="canonical" href="https://pixcellor.com/portfolio" />
-      </Helmet>
-      <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground">
         <div className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8 md:py-16">
           <div className="mb-8 flex items-center justify-between gap-4">
             <Link
