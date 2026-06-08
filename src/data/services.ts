@@ -179,7 +179,7 @@ export const SERVICES: Service[] = [
       "Multi-platform scheduling (X, LinkedIn, IG, TikTok)",
       "DM and comment automation with human handover",
       "Lead capture into your CRM",
-      "Weekly content performance reports",
+      "Monthly content performance reports",
     ],
     process: [
       "Brand voice + content pillar workshop",
