@@ -1489,7 +1489,7 @@ function MobileCards() {
           <span className="text-muted-foreground text-sm">or £1,500</span>
         </div>
         <IntroductoryOfferText discount="67%" />
-        <ul className="space-y-2 flex-1 mb-4">
+        <ul className="space-y-2 flex-1 mb-3">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -1497,6 +1497,14 @@ function MobileCards() {
             </li>
           ))}
         </ul>
+        <PackageExamples
+          label="What £500 buys you:"
+          items={[
+            { name: "Anna's Bees", url: "https://annasbees.pixcellor.com" },
+            { name: "Life Brownie", url: "https://lifebrownie.com" },
+            { name: "Set In Stone", url: "https://setinstonesouthern.pixcellor.com" },
+          ]}
+        />
         <GlassBuyButton
           onClick={() =>
             buy(
