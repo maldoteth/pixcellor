@@ -887,7 +887,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           <span className="text-muted-foreground text-sm">or £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
-        <ul className="mb-6 space-y-2 text-base text-foreground">
+        <ul className="mb-4 space-y-2 text-base text-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -895,6 +895,14 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             </li>
           ))}
         </ul>
+        <PackageExamples
+          label="What £150 buys you:"
+          items={[
+            { name: "Oak Shore", url: "https://oakshore.homes" },
+            { name: "First Class", url: "https://firstclassagencytiktok.com" },
+            { name: "DeLabs", url: "https://delabs.co.uk" },
+          ]}
+        />
         <GlassBuyButton
           onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
           disabled={!!loading}
