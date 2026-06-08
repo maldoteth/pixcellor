@@ -304,7 +304,7 @@ export const SERVICES: Service[] = [
     ],
     process: [
       "Discovery + technical scoping",
-      "2-week MVP sprint",
+      "Monthly MVP sprint",
       "Iterative releases with daily updates",
       "Launch + ongoing support",
     ],
