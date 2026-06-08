@@ -1,58 +1,32 @@
 ## Goal
 
-Turn `/me` (CandidatePortal) into a unified portal that serves two audiences from the same place, with the calendar styled exactly like the admin `ShiftPlannerGrid`:
+Anna's Bees website calls our public `process-lets-talk-lead` endpoint using our anon key. Those leads aren't ours — they're hers. Treat them like the inbound webhook leads from DMB / Set In Stone: save the contact, tag the source, but don't schedule a callback, don't mark as hot, and don't pretend the company name is ours to act on.
 
-- **Candidates** (logged in by candidate email) — see only vacancies they've been assigned/confirmed for, with confirm/cancel actions per shift.
-- **Clients** (logged in by an email that matches `contacts.email` OR any `contact_persons.email`) — see all vacancies whose `client_contact_id` belongs to their company, with the same admin-style grid (open slots, assigned candidates, shift dates) read-only plus a "Re-invite" action.
+## Detection
 
-A logged-in user can be both at once — both groups of vacancies show up in their own tabs.
+Identify a lead as Anna's Bees when the request body has `source === "annas_bees"` (Anna's Bees site will send this). Build a small `THIRD_PARTY_SOURCES` registry inside `supabase/functions/process-lets-talk-lead/index.ts` so we can add future partners (e.g. `annas_bees → { label: "Anna's Bees" }`) without code churn.
 
-## UI
+## Behaviour changes in `process-lets-talk-lead`
 
-Tabs on `/me`:
-1. **Schedule** — the new ShiftPlannerGrid-style calendar (rows = openings, columns = days), filtered to the user's vacancies.
-2. **My Jobs** (candidates) — list of vacancies they're assigned/invited to, with Confirm/Decline buttons for pending invitations.
-3. **Vacancies** (clients only) — list of their company's open vacancies and assigned candidates, mirroring admin `VacanciesPanel` read-only.
-4. **Documents** — existing `KycDocuments` (candidates only).
+When the incoming `source` is in `THIRD_PARTY_SOURCES`:
 
-Tabs appear conditionally: a pure candidate sees Schedule + My Jobs + Documents; a pure client sees Schedule + Vacancies; a person who is both sees all four.
+1. **Company name** — ignore whatever `request_details.company` was sent. Store `contacts.name = "Unknown"` (matching how DMB / Set In Stone inbound contacts read).
+2. **Note** — prepend a clear line: `Lead from Anna's Bees` (using the registry `label`), followed by any dream/colours/attachment summary the visitor provided. No "Let's Talk" headline for these.
+3. **Status** — do NOT set `"hot"`. Use `"new"` (same default as the `contacts-ingest` webhook path) and never upgrade an existing contact's status from this code path.
+4. **Callback scheduling** — skip entirely. Don't insert the `contact_events` "call back today" row even if a phone number is present.
+5. **Welcome email** — skip. We shouldn't send our sales-welcome to a visitor who filled in Anna's form.
+6. **client_profiles mirror** — skip. That table powers our own customer dashboard / enquiries view; these aren't our clients.
+7. **Timeline event** — best-effort insert a `contact_events` row titled `Inbound from Anna's Bees` (mirroring the `contacts-ingest` pattern) so it shows on the contact timeline.
 
-## Data access (RPCs)
+For all other sources, behaviour is unchanged.
 
-New SECURITY DEFINER RPCs in DB, all keyed on `auth.uid()` → email:
+## Files touched
 
-- `portal_my_vacancy_ids()` → returns `{ as_candidate uuid[], as_client uuid[] }` by matching the auth email against candidates.email, contacts.email, contact_persons.email.
-- `portal_my_shifts(_from date, _to date)` → vacancy_shifts rows for those vacancy_ids, with vacancy meta (title, client name, slot_index).
-- `portal_my_vacancies()` → vacancies + assignments + open slot counts, scoped to the two id lists.
-- `candidate_confirm_invitation(_invitation_id)` / `candidate_decline_invitation(_invitation_id)` — same as the public token flow but auth'd.
+- `supabase/functions/process-lets-talk-lead/index.ts` — add registry + branch on third-party source near the top of the handler, gate the callback / welcome / client_profiles / status-upgrade blocks behind `!isThirdParty`.
 
-The first-accept-wins rule (per whole vacancy) is enforced inside the existing `vacancy_invitation_respond` DB function: on confirm, set this invitation to `confirmed` AND mark all other `sent` invitations for the same vacancy as `expired` ("position filled"); set the vacancy `status = 'filled'`. Wrapped in a transaction with `SELECT ... FOR UPDATE` on the vacancy row.
+No DB migration, no frontend changes, no changes to `contacts-ingest` (Anna's Bees is staying on the Let's Talk endpoint with the anon key, per your message).
 
-## Invitations & email
+## Out of scope
 
-- Existing `send-vacancy-invitations` edge function already sends `vacancy-invitation` template with confirm/decline tokens. Leave it as-is.
-- Existing `vacancy-respond` edge function already calls `vacancy_invitation_respond`. We update the SQL function to enforce first-wins and broadcast "filled" emails to losers via a new `vacancy-position-filled` template.
-- A new in-portal "Confirm" button calls `candidate_confirm_invitation` which internally runs the same RPC, then triggers the `vacancy-confirmed` email to the winner.
-
-## Client auth
-
-No new role. Same magic-link flow as candidates (`signInWithOtp` to `/me`). On portal load, `portal_my_vacancy_ids()` decides what they see based on which tables their email matches. Nothing to configure per user.
-
-## Files
-
-New / edited:
-- `src/pages/CandidatePortal.tsx` — replace month grid with tabs + new components.
-- `src/components/portal/PortalScheduleGrid.tsx` — new, reuses the visual structure of `ShiftPlannerGrid` but read-mostly and driven by `portal_my_shifts`.
-- `src/components/portal/PortalMyJobs.tsx` — invitations + assignments list with Confirm/Decline.
-- `src/components/portal/PortalClientVacancies.tsx` — client read-only vacancies list.
-- New migration: RPCs above + update `vacancy_invitation_respond` + add `expired_reason` text col on `vacancy_invitations` (optional, for "position filled").
-- New email template `vacancy-position-filled.tsx` + registry entry.
-- `supabase/functions/vacancy-respond/index.ts` — after confirm, fetch losers and queue position-filled emails.
-
-## Out of scope (this round)
-
-- Client login link button on a separate page — they use the same `/me` magic link flow.
-- Editing shifts as a client (read-only this round).
-- Per-slot race rule (you chose per-whole-vacancy).
-
-Approve and I'll build it.
+- Giving Anna's Bees the bearer-token `contacts-ingest` route (existing decision: she uses the public Let's Talk endpoint).
+- Rate-limiting / abuse protection on the public endpoint — flag if you want this next.
