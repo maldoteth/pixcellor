@@ -1449,7 +1449,7 @@ function MobileCards() {
           <span className="text-muted-foreground text-sm">or £375</span>
         </div>
         <IntroductoryOfferText discount="60%" />
-        <ul className="space-y-2 flex-1 mb-4">
+        <ul className="space-y-2 flex-1 mb-3">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -1457,6 +1457,14 @@ function MobileCards() {
             </li>
           ))}
         </ul>
+        <PackageExamples
+          label="What £150 buys you:"
+          items={[
+            { name: "Oak Shore", url: "https://oakshore.homes" },
+            { name: "First Class", url: "https://firstclassagencytiktok.com" },
+            { name: "DeLabs", url: "https://delabs.co.uk" },
+          ]}
+        />
         <GlassBuyButton
           onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
           disabled={!!loading}
