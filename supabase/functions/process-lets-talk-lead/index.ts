@@ -72,6 +72,16 @@ Deno.serve(async (req) => {
     const isSampleRequest = source === "free_sample_request";
     const isPartial = body.partial === true;
 
+    // Third-party partner sites that POST into our public Let's Talk endpoint
+    // using our anon key. Their leads belong to the partner, not to us:
+    // - don't mark hot / schedule callbacks / send welcome emails
+    // - anonymise company on our side, tag the source clearly
+    const THIRD_PARTY_SOURCES: Record<string, { label: string }> = {
+      annas_bees: { label: "Anna's Bees" },
+    };
+    const thirdParty = THIRD_PARTY_SOURCES[source] ?? null;
+    const isThirdParty = !!thirdParty;
+
     if (!name) return new Response(JSON.stringify({ ok: false, error: "missing_name" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (!email && !phone) return new Response(JSON.stringify({ ok: false, error: "email_or_phone_required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
@@ -104,9 +114,11 @@ Deno.serve(async (req) => {
 
     // Concise note — no boilerplate. Source/email/phone are already columns.
     const today = new Date().toISOString().slice(0, 10);
-    const headline = isSampleRequest
-      ? `Free sample request (${source}) — ${today}`
-      : `Let's Talk (${source}) — ${today}`;
+    const headline = isThirdParty
+      ? `Lead from ${thirdParty!.label} — ${today}`
+      : isSampleRequest
+        ? `Free sample request (${source}) — ${today}`
+        : `Let's Talk (${source}) — ${today}`;
     const noteLines = [headline, briefLines].filter(Boolean).join("\n");
 
     // Merge new attachments into contact media (dedupe, cap at 50)
@@ -115,27 +127,32 @@ Deno.serve(async (req) => {
       .filter((u): u is string => typeof u === "string");
     const mergedMedia = Array.from(new Set([...existingUrls, ...attachments])).slice(0, 50);
 
-    const desiredStatus = "hot";
+    const desiredStatus = isThirdParty ? "new" : "hot";
 
-    // contacts.name = company (per CRM convention); contacts.contact_name = person name
-    const contactCompany = company || name;
+    // contacts.name = company (per CRM convention); contacts.contact_name = person name.
+    // For third-party leads, anonymise the company — it's not ours to act on.
+    const contactCompany = isThirdParty ? "Unknown" : (company || name);
 
     let contactId: string;
     if (existingId) {
+      const updatePatch: Record<string, unknown> = {
+        contact_name: name,
+        email: email || null,
+        phone: phone || null,
+        notes: existingNotes?.includes(noteLines)
+          ? existingNotes
+          : [existingNotes, noteLines].filter(Boolean).join("\n"),
+        media: mergedMedia,
+        updated_at: new Date().toISOString(),
+      };
+      if (!isThirdParty) {
+        // Don't overwrite our own CRM data with partner-site leads
+        updatePatch.name = contactCompany;
+        updatePatch.status = desiredStatus;
+      }
       const { data, error } = await supabase
         .from("contacts")
-        .update({
-          name: contactCompany,
-          contact_name: name,
-          email: email || null,
-          phone: phone || null,
-          notes: existingNotes?.includes(noteLines)
-            ? existingNotes
-            : [existingNotes, noteLines].filter(Boolean).join("\n"),
-          status: desiredStatus,
-          media: mergedMedia,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePatch)
         .eq("id", existingId)
         .select("id")
         .single();
@@ -150,7 +167,7 @@ Deno.serve(async (req) => {
           email: email || null,
           phone: phone || null,
           industry: "general",
-          source: isSampleRequest ? "free_sample_request" : "lets_talk",
+          source: isThirdParty ? source : (isSampleRequest ? "free_sample_request" : "lets_talk"),
           status: desiredStatus,
           notes: noteLines,
           media: mergedMedia,
@@ -159,6 +176,21 @@ Deno.serve(async (req) => {
         .single();
       if (error) throw error;
       contactId = data.id;
+    }
+
+    // Third-party partner leads: log a timeline event and stop here —
+    // no client_profiles mirror, no callback, no welcome email.
+    if (isThirdParty) {
+      await supabase.from("contact_events").insert({
+        contact_id: contactId,
+        title: `Inbound from ${thirdParty!.label}`,
+        description: briefLines || `Lead submitted via ${thirdParty!.label}`,
+        event_type: "note",
+      }).then(({ error }) => { if (error) console.error("third-party event insert failed:", error); });
+
+      return new Response(JSON.stringify({ ok: true, contact_id: contactId, callback_scheduled: false, welcome_sent: false }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Mirror into client_profiles for the customer dashboard / enquiries view
