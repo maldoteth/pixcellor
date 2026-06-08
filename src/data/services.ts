@@ -90,7 +90,7 @@ export const SERVICES: Service[] = [
       "Cold email, LinkedIn, and telesales orchestration",
       "Lead-scoring + CRM hygiene",
       "Founder-led sales training for your team",
-      "Weekly pipeline reviews",
+      "Monthly pipeline reviews",
     ],
     process: [
       "GTM audit of your current funnel and offer",
