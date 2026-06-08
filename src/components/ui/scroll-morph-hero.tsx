@@ -1165,7 +1165,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                 {galleryItems.length > 0 && (
                     <motion.div
                         style={{ opacity: contentOpacity, filter: contentBlur, pointerEvents: portfolioInteractive ? "auto" : "none" }}
-                        className="absolute inset-x-0 top-[calc(28%-5px+5px)] md:top-[32%] bottom-[calc(18%+64px-5px)] md:bottom-[18%] z-[100]"
+                        className="absolute inset-x-0 top-[calc(28%-5px)] md:top-[32%] bottom-[calc(18%+64px)] md:bottom-[18%] z-[100]"
                     >
                         <CircularGallery
                             items={galleryItems}
@@ -1173,14 +1173,13 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                             // Baseline tuned for 16 items; add ~14px per extra item on desktop, ~9px on mobile.
                             radius={
                                 containerSize.width < 768
-                                    ? (270 + Math.max(0, galleryItems.length - 12) * 11) * 0.85
+                                    ? 270 + Math.max(0, galleryItems.length - 12) * 11
                                     : 360 + Math.max(0, galleryItems.length - 12) * 13
                             }
                             externalRotation={galleryRotationValue}
                             interactive={portfolioInteractive}
                         />
                     </motion.div>
-
                 )}
 
                 {/* Main Container */}
