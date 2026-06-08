@@ -72,6 +72,16 @@ Deno.serve(async (req) => {
     const isSampleRequest = source === "free_sample_request";
     const isPartial = body.partial === true;
 
+    // Third-party partner sites that POST into our public Let's Talk endpoint
+    // using our anon key. Their leads belong to the partner, not to us:
+    // - don't mark hot / schedule callbacks / send welcome emails
+    // - anonymise company on our side, tag the source clearly
+    const THIRD_PARTY_SOURCES: Record<string, { label: string }> = {
+      annas_bees: { label: "Anna's Bees" },
+    };
+    const thirdParty = THIRD_PARTY_SOURCES[source] ?? null;
+    const isThirdParty = !!thirdParty;
+
     if (!name) return new Response(JSON.stringify({ ok: false, error: "missing_name" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (!email && !phone) return new Response(JSON.stringify({ ok: false, error: "email_or_phone_required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
