@@ -220,7 +220,7 @@ export const SERVICES: Service[] = [
       "Tracking infrastructure that actually works",
       "Tested creative library",
       "Live campaigns with ROAS reporting",
-      "Weekly performance reviews",
+      "Monthly performance reviews",
     ],
     primaryCta: salesCta,
   },
