@@ -26,6 +26,7 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = "Portfolio — Pixcellor";
     (async () => {
       const { data } = await supabase
         .from("portfolio_projects")
