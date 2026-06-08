@@ -208,7 +208,7 @@ export const SERVICES: Service[] = [
       "Creative production and split-testing",
       "Audience and lookalike building",
       "Retargeting flows across channels",
-      "Weekly spend reviews and budget reallocation",
+      "Monthly spend reviews and budget reallocation",
     ],
     process: [
       "Tracking + account audit",
