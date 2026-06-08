@@ -628,7 +628,7 @@ export const SERVICES: Service[] = [
     ],
     deliverables: [
       "Live roadmap and sprint board",
-      "Weekly status reports",
+      "Monthly status reports",
       "Shipped product",
     ],
     primaryCta: salesCta,
