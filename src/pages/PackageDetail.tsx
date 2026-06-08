@@ -365,7 +365,7 @@ export default function PackageDetailPage() {
               ))}
             </div>
             <div className="mt-4 text-center">
-              <Link to="/#portfolio" className="text-xs uppercase tracking-wider text-foreground/60 hover:text-foreground">
+              <Link to="/portfolio" className="text-xs uppercase tracking-wider text-foreground/60 hover:text-foreground">
                 Browse full portfolio →
               </Link>
             </div>
