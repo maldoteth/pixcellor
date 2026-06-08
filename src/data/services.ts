@@ -64,7 +64,7 @@ export const SERVICES: Service[] = [
       "Discovery call — target market, offer, ideal outcome",
       "We build the data list, script and CRM workflow",
       "Pilot week of dials with daily readouts",
-      "Scale up with weekly reviews and script iteration",
+      "Scale up with monthly reviews and script iteration",
     ],
     deliverables: [
       "Live dialler with call recordings",
