@@ -327,6 +327,9 @@ function PackageExamples({ label, items }: { label: string; items: { name: strin
       </div>
     </div>
   );
+}
+
+
 
 function FreeSamplesBadge({ className = "" }: { className?: string }) {
   // 24-point starburst polygon
