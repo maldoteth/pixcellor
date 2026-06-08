@@ -43,7 +43,7 @@ const PACKAGES = {
     monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription" as const,
-    features: ["Fractional CTO, CMO & CRO", "Development & operations", "Consultancy & execution", "2 week MVP sprints", "Daily updates"],
+    features: ["Fractional CTO, CMO & CRO", "Development & operations", "Consultancy & execution", "Monthly MVP sprints", "Daily updates"],
   },
   enterprise: {
     name: "Custom",
