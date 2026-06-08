@@ -1120,7 +1120,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   ? `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} vs monthly`
                   : `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} with yearly`}
               </div>
-              <ul className="mb-6 space-y-2 text-base text-foreground">
+              <ul className="mb-4 space-y-2 text-base text-foreground">
                 {RETAINER_TIERS[retainerTier].features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -1128,6 +1128,14 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   </li>
                 ))}
               </ul>
+              <PackageExamples
+                label="What the retainer builds:"
+                items={[
+                  { name: "Last Chad Standing", url: "https://lastchadstanding.com" },
+                  { name: "DeHub", url: "https://dehub.io" },
+                  { name: "TikUp", url: "https://tikup.xyz" },
+                ]}
+              />
               <GlassBuyButton
                 onClick={() =>
                   buy(
@@ -1618,7 +1626,7 @@ function MobileCards() {
                   ? `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} vs monthly`
                   : `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} with yearly`}
               </div>
-              <ul className="space-y-2 flex-1 mb-4">
+              <ul className="space-y-2 flex-1 mb-3">
                 {RETAINER_TIERS[retainerTier].features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-base text-foreground">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -1626,6 +1634,14 @@ function MobileCards() {
                   </li>
                 ))}
               </ul>
+              <PackageExamples
+                label="What the retainer builds:"
+                items={[
+                  { name: "Last Chad Standing", url: "https://lastchadstanding.com" },
+                  { name: "DeHub", url: "https://dehub.io" },
+                  { name: "TikUp", url: "https://tikup.xyz" },
+                ]}
+              />
               <GlassBuyButton
                 onClick={() =>
                   buy(
