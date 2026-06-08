@@ -51,7 +51,7 @@ export const SERVICES: Service[] = [
     info: "Every call recorded on your custom client CRM with regular feedback and reviews.",
     tagline: "Outbound that actually converts — at £22 an hour.",
     heroBlurb:
-      "Veteran B2B and B2C callers running your campaigns end-to-end. Every dial recorded, every outcome logged to your own CRM, and weekly performance reviews so you always know what's working.",
+      "Veteran B2B and B2C callers running your campaigns end-to-end. Every dial recorded, every outcome logged to your own CRM, and monthly performance reviews so you always know what's working.",
     features: [
       "Dedicated UK-based caller(s) on your campaign",
       "Every call recorded and stored in your CRM",
