@@ -226,7 +226,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "creative-branding-makeovers",
-    name: "Creative, branding and makeovers",
+    name: "Creative & branding",
     category: "marketing",
     info: "Full brand identities, rebrands and creative makeovers — logos, guidelines, campaign assets and packaging from senior designers.",
     tagline: "Brands that actually look like the business you want to be.",
