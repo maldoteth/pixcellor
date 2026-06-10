@@ -249,7 +249,7 @@ export const SERVICE_SEO: Record<string, ServiceSeo> = {
     ],
   },
   "creative-branding-makeovers": {
-    title: "Creative, Branding & Makeovers — Identity & Rebrands | Pixcellor",
+    title: "Creative & Branding — Identity & Rebrands | Pixcellor",
     description:
       "Senior creative direction, brand identities, rebrands and full visual makeovers. Logos, guidelines, campaign assets and packaging.",
     keywords: [

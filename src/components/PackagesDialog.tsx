@@ -126,7 +126,7 @@ const SERVICE_BACKS = {
       { name: "SEO & AEO optimisation", info: "Get ranked instantly with our team of experts stemming from some of the largest companies in the world." },
       { name: "Social media automation", info: "Generate leads while you sleep with automated social media management and save 90% on SMM salaries." },
       { name: "Paid ads & retargeting", info: "Leverage the latest techniques and strategies to maximise ROI with our advertising services." },
-      { name: "Creative, branding and makeovers", info: "Full brand identities, rebrands and creative makeovers — logos, guidelines, campaign assets and packaging from senior designers." },
+      { name: "Creative & branding", info: "Full brand identities, rebrands and creative makeovers — logos, guidelines, campaign assets and packaging from senior designers." },
     ],
   },
   elite: {
