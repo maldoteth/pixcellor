@@ -248,4 +248,40 @@ export const SERVICE_SEO: Record<string, ServiceSeo> = {
       "sprint planning",
     ],
   },
+  "creative-branding-makeovers": {
+    title: "Creative, Branding & Makeovers — Identity & Rebrands | Pixcellor",
+    description:
+      "Senior creative direction, brand identities, rebrands and full visual makeovers. Logos, guidelines, campaign assets and packaging.",
+    keywords: [
+      "branding agency",
+      "rebrand specialist",
+      "logo design",
+      "brand identity system",
+      "creative direction",
+    ],
+  },
+  "video-3d-animations": {
+    title: "Video & 3D Animation Studio — Product, Ads, WebGL | Pixcellor",
+    description:
+      "Cinematic video, motion graphics and 3D animation for products, ads, explainers and immersive web experiences. Cinema-grade output.",
+    keywords: [
+      "3D animation studio",
+      "product video production",
+      "motion graphics agency",
+      "WebGL animation",
+      "explainer video",
+    ],
+  },
+  "documents-and-decks": {
+    title: "Pitch Decks, Sales Decks & Document Design | Pixcellor",
+    description:
+      "Investor decks, sales decks, proposals and reports — strategy, copy and design in one team. Built to get signed, funded and shared.",
+    keywords: [
+      "pitch deck design",
+      "investor deck agency",
+      "sales deck design",
+      "proposal design",
+      "whitepaper design",
+    ],
+  },
 };

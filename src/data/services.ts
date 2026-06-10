@@ -224,6 +224,35 @@ export const SERVICES: Service[] = [
     ],
     primaryCta: salesCta,
   },
+  {
+    slug: "creative-branding-makeovers",
+    name: "Creative, branding and makeovers",
+    category: "marketing",
+    info: "Full brand identities, rebrands and creative makeovers — logos, guidelines, campaign assets and packaging from senior designers.",
+    tagline: "Brands that actually look like the business you want to be.",
+    heroBlurb:
+      "Senior creative direction, brand identity systems, rebrands and full visual makeovers — from logo and guidelines to campaign assets, packaging and pitch decks.",
+    features: [
+      "Logo design and full brand identity systems",
+      "Rebrands and visual makeovers for existing businesses",
+      "Brand guidelines (typography, colour, voice, usage)",
+      "Campaign creative across digital, print and social",
+      "Packaging, merch and physical brand assets",
+      "Pitch deck and investor-grade presentation design",
+    ],
+    process: [
+      "Brand discovery — audience, positioning, references",
+      "Concept directions to pick from",
+      "Refinement + full asset rollout",
+      "Guidelines + handover files",
+    ],
+    deliverables: [
+      "Logo suite + full brand identity files",
+      "Brand guidelines PDF",
+      "Launch-ready campaign and social assets",
+    ],
+    primaryCta: salesCta,
+  },
 
   // ────────────── TECH ──────────────
   {
@@ -426,6 +455,35 @@ export const SERVICES: Service[] = [
       "Audited smart contracts",
       "Front-end dApp",
       "Monitoring and admin dashboards",
+    ],
+    primaryCta: salesCta,
+  },
+  {
+    slug: "video-3d-animations",
+    name: "Video & 3D animations",
+    category: "tech",
+    info: "Cinematic video, motion graphics and full 3D animations for product launches, ads, explainers and immersive web experiences.",
+    tagline: "Cinema-grade video and 3D — for screens, sites and launches.",
+    heroBlurb:
+      "From product hero videos and motion-graphic ads to full 3D scenes, character animation and WebGL experiences — produced by the team behind our own animated sites.",
+    features: [
+      "Product, brand and explainer video production",
+      "Motion graphics and broadcast-quality ads",
+      "Full 3D modelling, lighting and animation",
+      "Realtime 3D and WebGL for websites and apps",
+      "AR/VR ready assets where needed",
+      "Sound design and licensed music",
+    ],
+    process: [
+      "Creative brief + storyboard",
+      "Asset production + animatic review",
+      "Full render + sound pass",
+      "Delivery in every format you need",
+    ],
+    deliverables: [
+      "Master video files in all required ratios",
+      "3D scene files / WebGL embed where applicable",
+      "Source project files",
     ],
     primaryCta: salesCta,
   },
@@ -633,6 +691,35 @@ export const SERVICES: Service[] = [
     ],
     primaryCta: salesCta,
   },
+  {
+    slug: "documents-and-decks",
+    name: "Documents and decks",
+    category: "business",
+    info: "Investor decks, sales decks, proposals, reports and operational docs — written, designed and built to win the room.",
+    tagline: "Decks and docs that get signed, funded and shared.",
+    heroBlurb:
+      "Investor pitch decks, sales decks, proposals, whitepapers and operational documents — strategy, copywriting and design in one team. Built to win the meeting, not just look pretty.",
+    features: [
+      "Investor and fundraising decks",
+      "Sales decks and proposal templates",
+      "Whitepapers, one-pagers and reports",
+      "SOPs and internal operating documents",
+      "Templated systems so your team can self-serve later",
+      "Design in Figma, Keynote, PowerPoint or Google Slides",
+    ],
+    process: [
+      "Discovery — audience, goal, narrative",
+      "Story + structure outline",
+      "Copy + design pass",
+      "Revisions + final delivery in editable formats",
+    ],
+    deliverables: [
+      "Final deck/document in your chosen format",
+      "Editable source files",
+      "Reusable template for future versions",
+    ],
+    primaryCta: salesCta,
+  },
 ];
 
 export const getServiceBySlug = (slug: string) =>
@@ -666,6 +753,9 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Analytics dashboards": "analytics-dashboards",
   "API & third-party support": "api-third-party",
   "Product/project management": "product-project-management",
+  "Creative, branding and makeovers": "creative-branding-makeovers",
+  "Video & 3D animations": "video-3d-animations",
+  "Documents and decks": "documents-and-decks",
 };
 
 export const getServiceByName = (name: string) => {
