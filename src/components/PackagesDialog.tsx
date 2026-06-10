@@ -126,6 +126,7 @@ const SERVICE_BACKS = {
       { name: "SEO & AEO optimisation", info: "Get ranked instantly with our team of experts stemming from some of the largest companies in the world." },
       { name: "Social media automation", info: "Generate leads while you sleep with automated social media management and save 90% on SMM salaries." },
       { name: "Paid ads & retargeting", info: "Leverage the latest techniques and strategies to maximise ROI with our advertising services." },
+      { name: "Creative, branding and makeovers", info: "Full brand identities, rebrands and creative makeovers — logos, guidelines, campaign assets and packaging from senior designers." },
     ],
   },
   elite: {
@@ -140,6 +141,7 @@ const SERVICE_BACKS = {
       { name: "CRM systems", info: "Want a CRM that suits your exact needs powered by a swarm of AI agents that work to your will, saving you and your staff time and money while ensuring nothing is ever missed? Look no further." },
       { name: "E-commerce stores", info: "Our Shopify stores have scaled tens of thousands of sales on launch days and we're ready to help you get the same results." },
       { name: "AI & blockchain integrations", info: "Our team have scaled top 300 crypto projects and generated hundreds of millions in market cap, and millions in year 1 revenue for multiple projects, as well as numerous 7 figure fundraises." },
+      { name: "Video & 3D animations", info: "Cinematic video, motion graphics and full 3D animations for product launches, ads, explainers and immersive web experiences." },
     ],
   },
   retainer: {
@@ -154,6 +156,7 @@ const SERVICE_BACKS = {
       { name: "Analytics dashboards", info: "View your business like never before with a custom analytics dashboard that maps your entire company activity and cashflow, giving you information a thousand men would take years to conclude." },
       { name: "API & third-party support", info: "We will help you set up systems requiring technical knowledge." },
       { name: "Product/project management", info: "If you want something as stunning as this website or any of our portfolio work, then look no further." },
+      { name: "Documents and decks", info: "Investor decks, sales decks, proposals, reports and operational docs — written, designed and built to win the room." },
     ],
   },
 } as const;
@@ -1207,13 +1210,14 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       }}
     >
       {/* Desktop (lg+): tilted 3-card row */}
-      <div className="hidden lg:flex items-center justify-center gap-6 h-full w-full">
+      <div className="hidden lg:flex items-end justify-center gap-6 h-full w-full">
         <ServiceBackCard variant="side" rotate={-6} data={SERVICE_BACKS.fullWorks} onAction={onServiceAction} />
         <ServiceBackCard variant="center" rotate={0} data={SERVICE_BACKS.elite} onAction={onServiceAction} />
         <ServiceBackCard variant="side" rotate={6} data={SERVICE_BACKS.retainer} onAction={onServiceAction} />
       </div>
       {/* Tablet (md to lg): compact static 3-card row */}
-      <div className="lg:hidden flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.745] min-[880px]:max-lg:scale-[0.84] min-[960px]:max-lg:scale-[0.955] md:max-lg:origin-center">
+      <div className="lg:hidden flex items-end justify-center gap-6 h-full w-full md:max-lg:scale-[0.745] min-[880px]:max-lg:scale-[0.84] min-[960px]:max-lg:scale-[0.955] md:max-lg:origin-bottom">
+
         <div className="md:max-lg:translate-x-[18px]">
           <ServiceBackCard variant="side" rotate={-6} data={SERVICE_BACKS.fullWorks} onAction={onServiceAction} />
         </div>
