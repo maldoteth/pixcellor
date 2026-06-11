@@ -347,6 +347,8 @@ export default function ServiceSalesView({
                   <InternalToolsHero />
                 ) : service.slug === "ecommerce-stores" ? (
                   <EcommerceStoresHero />
+                ) : service.slug === "crm-systems" ? (
+                  <CrmSystemsHero />
                 ) : (
                   <Wave />
                 )}
