@@ -1315,7 +1315,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     }}
                     aria-label="Scroll up"
                     data-hero-scroll-control="true"
-                    className={`hidden md:flex relative z-[140] -mx-12 px-12 py-6 translate-y-[40px] cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"} ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
+                    className={`hidden md:flex relative z-[140] -mx-12 px-12 py-6 translate-y-[31.2px] cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"} ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                     style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                 >
                     <motion.div
