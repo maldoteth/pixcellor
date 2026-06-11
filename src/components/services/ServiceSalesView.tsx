@@ -28,6 +28,7 @@ const LandingPagesHero = lazy(() => import("@/components/services/LandingPagesHe
 const FullWebAppsHero = lazy(() => import("@/components/services/FullWebAppsHero"));
 const VideoAnimationsHero = lazy(() => import("@/components/services/VideoAnimationsHero"));
 const InternalToolsHero = lazy(() => import("@/components/services/InternalToolsHero"));
+const EcommerceStoresHero = lazy(() => import("@/components/services/EcommerceStoresHero"));
 const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
 
 // Lightweight placeholder shown while a banner chunk is loading.
@@ -108,7 +109,8 @@ export default function ServiceSalesView({
     service.slug === "ai-integrations-agents" ||
     service.slug === "blockchain-integrations" ||
     service.slug === "video-3d-animations" ||
-    service.slug === "internal-tools";
+    service.slug === "internal-tools" ||
+    service.slug === "ecommerce-stores";
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
@@ -128,6 +130,8 @@ export default function ServiceSalesView({
                   <VideoAnimationsHero />
                 ) : service.slug === "internal-tools" ? (
                   <InternalToolsHero />
+                ) : service.slug === "ecommerce-stores" ? (
+                  <EcommerceStoresHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
@@ -337,6 +341,8 @@ export default function ServiceSalesView({
                   <VideoAnimationsHero />
                 ) : service.slug === "internal-tools" ? (
                   <InternalToolsHero />
+                ) : service.slug === "ecommerce-stores" ? (
+                  <EcommerceStoresHero />
                 ) : (
                   <Wave />
                 )}
