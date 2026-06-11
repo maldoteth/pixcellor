@@ -111,7 +111,8 @@ export default function ServiceSalesView({
     service.slug === "blockchain-integrations" ||
     service.slug === "video-3d-animations" ||
     service.slug === "internal-tools" ||
-    service.slug === "ecommerce-stores";
+    service.slug === "ecommerce-stores" ||
+    service.slug === "crm-systems";
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
@@ -133,6 +134,8 @@ export default function ServiceSalesView({
                   <InternalToolsHero />
                 ) : service.slug === "ecommerce-stores" ? (
                   <EcommerceStoresHero />
+                ) : service.slug === "crm-systems" ? (
+                  <CrmSystemsHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
