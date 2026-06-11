@@ -1,11 +1,11 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 import IntroAnimation from "@/components/ui/scroll-morph-hero";
-import ChatBot from "@/components/ChatBot";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SeoHead from "@/components/SeoHead";
 
 // Lazy-loaded: large bundles or overlays that mount on user events.
 // Keeping these off the critical path shaves ~200KB of JS off first paint.
+const ChatBot = lazy(() => import("@/components/ChatBot"));
 const PackagesDialog = lazy(() => import("@/components/PackagesDialog"));
 const VisionGenerator = lazy(() => import("@/components/VisionGenerator"));
 const CustomerAccess = lazy(() => import("@/components/CustomerAccess"));
@@ -155,7 +155,9 @@ const Index = () => {
           <VisionGenerator hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
           <CustomerAccess hidden={heroScrolled || overlayOpen} chatOpen={chatOpen} />
         </Suspense>
-        <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
+        <Suspense fallback={null}>
+          <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} hidden={heroScrolled || overlayOpen} />
+        </Suspense>
         <Suspense fallback={null}>
           <TryBeforeBuyDrawer />
           <LetsTalkPrompt />

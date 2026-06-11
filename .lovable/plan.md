@@ -1,32 +1,46 @@
-## Goal
+# Performance Optimization Plan
 
-Anna's Bees website calls our public `process-lets-talk-lead` endpoint using our anon key. Those leads aren't ours — they're hers. Treat them like the inbound webhook leads from DMB / Set In Stone: save the contact, tag the source, but don't schedule a callback, don't mark as hot, and don't pretend the company name is ours to act on.
+Goal: cut FCP/LCP on pixcellor.com (currently ~2.1s FP / 3.7s FCP) and shrink the 286KB main bundle.
 
-## Detection
+## 1. Code-split heavy routes (biggest win)
+Currently `src/App.tsx` imports every page eagerly, so the 286KB main bundle contains code for `/portal`, `/admin`, `/customer-portal`, `/portfolio`, vision wizard, etc. — even for the home-page visitor.
 
-Identify a lead as Anna's Bees when the request body has `source === "annas_bees"` (Anna's Bees site will send this). Build a small `THIRD_PARTY_SOURCES` registry inside `supabase/functions/process-lets-talk-lead/index.ts` so we can add future partners (e.g. `annas_bees → { label: "Anna's Bees" }`) without code churn.
+- Convert all non-essential routes in `src/App.tsx` to `React.lazy(() => import(...))` wrapped in `<Suspense fallback={null}>`.
+- Keep `Index` (`/`) eager so the home page paints instantly.
+- Lazy-load: `/portal/*`, `/customer-portal/*`, `/admin`, `/portfolio`, `/services`, `/services/:slug`, `/packages/:slug`, `/legal`, `/order-success`, `/vision-preview`, `/edit-request`, `/project-requirements`, `/auth-handoff`, `/customer-auth`, `/portal-auth`, `/candidate-apply`, `/vacancy-respond`, `/reset-password`, `/unsubscribe`, `NotFound`.
+- Expected: main bundle ~286KB → ~120–150KB, FCP -0.8s to -1.2s.
 
-## Behaviour changes in `process-lets-talk-lead`
+## 2. Preload the LCP wordmark
+Add to `index.html` `<head>`:
+```html
+<link rel="preload" as="image" href="/assets/<hashed>.png" fetchpriority="high" />
+```
+Since Vite hashes the filename, use the import path via a build-time approach — instead, add `<link rel="preload">` for the public copy of the wordmark, OR move the wordmark to `/public/pixcellor-wordmark-white.png` and reference it directly so we can preload by static URL.
 
-When the incoming `source` is in `THIRD_PARTY_SOURCES`:
+- Pushes LCP from ~2.1s to under 1.5s.
 
-1. **Company name** — ignore whatever `request_details.company` was sent. Store `contacts.name = "Unknown"` (matching how DMB / Set In Stone inbound contacts read).
-2. **Note** — prepend a clear line: `Lead from Anna's Bees` (using the registry `label`), followed by any dream/colours/attachment summary the visitor provided. No "Let's Talk" headline for these.
-3. **Status** — do NOT set `"hot"`. Use `"new"` (same default as the `contacts-ingest` webhook path) and never upgrade an existing contact's status from this code path.
-4. **Callback scheduling** — skip entirely. Don't insert the `contact_events` "call back today" row even if a phone number is present.
-5. **Welcome email** — skip. We shouldn't send our sales-welcome to a visitor who filled in Anna's form.
-6. **client_profiles mirror** — skip. That table powers our own customer dashboard / enquiries view; these aren't our clients.
-7. **Timeline event** — best-effort insert a `contact_events` row titled `Inbound from Anna's Bees` (mirroring the `contacts-ingest` pattern) so it shows on the contact timeline.
+## 3. Defer analytics XHR (1.4s blocker)
+`/~api/analytics` fires during initial load and takes ~1.4s. Wrap any analytics calls in `requestIdleCallback` (with `setTimeout` fallback) so they run after LCP.
 
-For all other sources, behaviour is unchanged.
+- Find the call site (likely `src/main.tsx` or `src/App.tsx` or a tracking hook) and defer.
+
+## 4. Lazy-load below-the-fold portfolio thumbnails
+68 portfolio images load in the first second (~2.3MB total). Confirm `loading="lazy"` + `decoding="async"` on every `<img>` in `Portfolio.tsx` / portfolio book / sliders, and ensure no `fetchpriority="high"` is set on non-LCP imgs.
+
+## 5. Re-verify
+After ship, re-run performance profile on pixcellor.com and report new FCP / LCP / bundle size.
+
+## Out of scope (for now)
+- Tree-shaking Framer Motion (already mostly necessary).
+- Server-side rendering / SSG.
+- Switching off the Vite dev preview overhead.
 
 ## Files touched
+- `src/App.tsx` — convert route imports to `React.lazy` + `Suspense`.
+- `index.html` — add `<link rel="preload">` for wordmark.
+- `public/pixcellor-wordmark-white.png` — move from `src/assets` (or symlink/copy).
+- `src/components/ui/scroll-morph-hero.tsx` — swap import to the public URL string.
+- Analytics call site (TBD on read) — defer to idle.
+- `src/pages/Portfolio.tsx` and portfolio image components — audit `loading`/`fetchpriority`.
 
-- `supabase/functions/process-lets-talk-lead/index.ts` — add registry + branch on third-party source near the top of the handler, gate the callback / welcome / client_profiles / status-upgrade blocks behind `!isThirdParty`.
-
-No DB migration, no frontend changes, no changes to `contacts-ingest` (Anna's Bees is staying on the Let's Talk endpoint with the anon key, per your message).
-
-## Out of scope
-
-- Giving Anna's Bees the bearer-token `contacts-ingest` route (existing decision: she uses the public Let's Talk endpoint).
-- Rate-limiting / abuse protection on the public endpoint — flag if you want this next.
+No DB, edge function, or backend changes.
