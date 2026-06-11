@@ -26,6 +26,7 @@ const TEAM_LOGOS: Record<string, string> = {
 const TubesCursor = lazy(() => import("@/components/ui/tubes-cursor"));
 const LandingPagesHero = lazy(() => import("@/components/services/LandingPagesHero"));
 const FullWebAppsHero = lazy(() => import("@/components/services/FullWebAppsHero"));
+const VideoAnimationsHero = lazy(() => import("@/components/services/VideoAnimationsHero"));
 const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
 
 // Lightweight placeholder shown while a banner chunk is loading.
@@ -104,7 +105,8 @@ export default function ServiceSalesView({
     service.slug === "full-web-apps" ||
     service.slug === "landing-pages" ||
     service.slug === "ai-integrations-agents" ||
-    service.slug === "blockchain-integrations";
+    service.slug === "blockchain-integrations" ||
+    service.slug === "video-3d-animations";
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
@@ -120,6 +122,8 @@ export default function ServiceSalesView({
                   <LandingPagesHero />
                 ) : service.slug === "landing-pages" ? (
                   <FullWebAppsHero />
+                ) : service.slug === "video-3d-animations" ? (
+                  <VideoAnimationsHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
