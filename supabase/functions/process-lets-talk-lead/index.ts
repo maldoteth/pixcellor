@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
     // - don't mark hot / schedule callbacks / send welcome emails
     // - anonymise company on our side, tag the source clearly
     const THIRD_PARTY_SOURCES: Record<string, { label: string }> = {
-      annas_bees: { label: "Anna's Bees" },
+      annas_bees: { label: "Stoningale" },
     };
     const thirdParty = THIRD_PARTY_SOURCES[source] ?? null;
     const isThirdParty = !!thirdParty;
