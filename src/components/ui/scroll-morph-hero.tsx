@@ -951,7 +951,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                         style={{ opacity: titleOpacity }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground md:mt-[20px] lg:mt-[10px]"
                     >
-                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" className="h-[4.36rem] md:h-[6.804rem] lg:h-[7rem] w-auto md:mt-[2.5px] lg:mt-[8px]" />
+                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" width={1200} height={628} fetchPriority="high" decoding="async" className="h-[4.36rem] md:h-[6.804rem] lg:h-[7rem] w-auto md:mt-[2.5px] lg:mt-[8px]" />
                     </motion.h1>
                     <motion.p
                         style={{ opacity: subtitleOpacity }}
