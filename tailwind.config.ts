@@ -88,6 +88,10 @@ export default {
           from: { opacity: "1", backdropFilter: "blur(12px)" },
           to: { opacity: "0", backdropFilter: "blur(0px)" },
         },
+        spotlight: {
+          "0%": { opacity: "0", transform: "translate(-72%, -62%) scale(0.5)" },
+          "100%": { opacity: "1", transform: "translate(-50%,-40%) scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -96,6 +100,7 @@ export default {
         "blur-out": "blur-out 0.35s cubic-bezier(0.22, 1, 0.36, 1) both",
         "blur-overlay-in": "blur-overlay-in 0.45s ease-out both",
         "blur-overlay-out": "blur-overlay-out 0.35s ease-out both",
+        spotlight: "spotlight 2s ease .75s 1 forwards",
       },
     },
   },
