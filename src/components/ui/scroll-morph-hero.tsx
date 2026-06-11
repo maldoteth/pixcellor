@@ -12,7 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Import hero UI images
 import ui1 from '@/assets/hero/ui-1.webp';
-import pixcellorWordmarkWhite from '@/assets/pixcellor-wordmark-white.png';
+// Served from /public so index.html can <link rel="preload"> it as the LCP image.
+const pixcellorWordmarkWhite = '/pixcellor-wordmark-white.png';
 import ui2 from '@/assets/hero/ui-2.webp';
 import ui3 from '@/assets/hero/ui-3.webp';
 import ui4 from '@/assets/hero/ui-4.webp';
