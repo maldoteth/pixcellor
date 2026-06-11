@@ -112,7 +112,7 @@ export default function ServiceSalesView({
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
       {/* HERO */}
       <motion.section {...fadeUp} className="mb-12 md:mb-16">
-        {heroImage && (
+        {(heroImage || hasWebglHero) && (
           <div className="relative mb-8 overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[16/9] md:aspect-[21/9] py-0 my-[10px]">
             {hasWebglHero ? (
               <Suspense fallback={<BannerFallback />}>
