@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -54,7 +55,21 @@ const AuthRedirectHandler = () => {
 
     if ((authType === "invite" || authType === "recovery") && window.location.pathname !== "/reset-password") {
       window.setTimeout(() => navigate("/reset-password", { replace: true }), 150);
+      return;
     }
+
+    // First-load only: send already-authenticated users straight to the customer portal
+    const FLAG = "pixcellor:home-redirect-checked";
+    if (sessionStorage.getItem(FLAG)) return;
+    sessionStorage.setItem(FLAG, "1");
+
+    if (window.location.pathname !== "/") return;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        navigate("/customer-portal", { replace: true });
+      }
+    });
   }, [navigate]);
 
   return null;
