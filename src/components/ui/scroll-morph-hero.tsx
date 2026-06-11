@@ -1174,7 +1174,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                             radius={
                                 containerSize.width < 768
                                     ? 270 + Math.max(0, galleryItems.length - 12) * 11
-                                    : (360 + Math.max(0, galleryItems.length - 12) * 13) * 0.85
+                                    : 360 + Math.max(0, galleryItems.length - 12) * 13
                             }
                             externalRotation={galleryRotationValue}
                             interactive={portfolioInteractive}
