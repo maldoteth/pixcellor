@@ -329,6 +329,8 @@ export default function ServiceSalesView({
                   <TubesCursor />
                 ) : service.slug === "full-web-apps" ? (
                   <LandingPagesHero />
+                ) : service.slug === "video-3d-animations" ? (
+                  <VideoAnimationsHero />
                 ) : (
                   <Wave />
                 )}
