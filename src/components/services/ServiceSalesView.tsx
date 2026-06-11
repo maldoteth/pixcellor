@@ -28,6 +28,7 @@ const LandingPagesHero = lazy(() => import("@/components/services/LandingPagesHe
 const FullWebAppsHero = lazy(() => import("@/components/services/FullWebAppsHero"));
 const VideoAnimationsHero = lazy(() => import("@/components/services/VideoAnimationsHero"));
 const InternalToolsHero = lazy(() => import("@/components/services/InternalToolsHero"));
+const EcommerceStoresHero = lazy(() => import("@/components/services/EcommerceStoresHero"));
 const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
 
 // Lightweight placeholder shown while a banner chunk is loading.
