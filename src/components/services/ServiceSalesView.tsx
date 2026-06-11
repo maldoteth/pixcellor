@@ -341,6 +341,8 @@ export default function ServiceSalesView({
                   <VideoAnimationsHero />
                 ) : service.slug === "internal-tools" ? (
                   <InternalToolsHero />
+                ) : service.slug === "ecommerce-stores" ? (
+                  <EcommerceStoresHero />
                 ) : (
                   <Wave />
                 )}
