@@ -80,6 +80,7 @@ Deno.serve(async (req) => {
     const THIRD_PARTY_SOURCES: Record<string, { label: string }> = {
       annas_bees: { label: "Anna's Bees" },
       stoningale: { label: "Stoningale" },
+      wayne_sherlock: { label: "Wayne Sherlock Plastering" },
     };
     const thirdParty = THIRD_PARTY_SOURCES[source] ?? null;
     const isThirdParty = !!thirdParty;
