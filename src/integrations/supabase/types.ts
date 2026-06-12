@@ -1299,30 +1299,33 @@ export type Database = {
           body: string | null
           created_at: string
           id: string
+          is_template: boolean
           package_slug: string
           rating: number
           title: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           author_name: string
           body?: string | null
           created_at?: string
           id?: string
+          is_template?: boolean
           package_slug: string
           rating: number
           title?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           author_name?: string
           body?: string | null
           created_at?: string
           id?: string
+          is_template?: boolean
           package_slug?: string
           rating?: number
           title?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

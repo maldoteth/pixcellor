@@ -95,7 +95,7 @@ export default function PackageReviews({ slug }: { slug: string }) {
     };
   }, [slug]);
 
-  const hasOwnReview = reviews.some((r) => r.user_id === userId);
+  const hasOwnReview = !!userId && reviews.some((r) => r.user_id && r.user_id === userId);
 
   const submit = async () => {
     if (!userId) return;
