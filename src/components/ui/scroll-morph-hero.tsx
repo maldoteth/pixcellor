@@ -737,7 +737,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const morphFadeFast = useTransform(smoothMorph, [0, 0.3], [1, 0]);
     const titleOpacity = useTransform([introFadeIn, morphFade], ([f, m]: number[]) => f * m);
     const subtitleOpacity = useTransform([introFadeIn, morphFade], ([f, m]: number[]) => f * m * 0.8);
-    const ctaOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.95);
+    const ctaOpacity = useTransform(morphFadeFast, (m: number) => m * 0.95);
     const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
     // Footer fades in/out smoothly with the morph progress (matches other hero elements)
     const footerRevealProgress = useTransform(smoothMorph, [0.5, 1], [0, 1]);
