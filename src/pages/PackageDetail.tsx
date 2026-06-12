@@ -230,9 +230,11 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
           </h1>
           <p className="mt-3 text-base md:text-xl text-foreground/70 max-w-3xl">{pkg.tagline}</p>
 
-          <div className="mt-4">
-            <StarRow count={reviewCount} />
-          </div>
+          {slug !== "retainer-enterprise" && (
+            <div className="mt-4">
+              <StarRow count={reviewCount} />
+            </div>
+          )}
 
           <p className="mt-6 text-sm md:text-base text-foreground/80 max-w-3xl leading-relaxed">
             {pkg.blurb}
@@ -319,7 +321,7 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
         </motion.section>
 
         {/* REVIEWS */}
-        <PackageReviews slug={pkg.slug} />
+        {pkg.slug !== "retainer-enterprise" && <PackageReviews slug={pkg.slug} />}
 
 
         {/* WHAT'S INCLUDED */}
