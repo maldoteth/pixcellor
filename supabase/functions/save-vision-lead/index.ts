@@ -166,6 +166,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Internal Pixcellor team notification (fire-and-forget) — only on first create
+    await notifyInternalLead({
+      sourceLabel: "Pixcellor — AI Vision Generator",
+      leadName: name || undefined,
+      leadEmail: email || undefined,
+      leadPhone: phone || undefined,
+      leadMessage: company ? `Company / brand: ${company}` : undefined,
+      contactId: inserted!.id,
+    });
+
     return new Response(JSON.stringify({ ok: true, contactId: inserted?.id, action: "created" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
