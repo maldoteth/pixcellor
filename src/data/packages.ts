@@ -656,6 +656,26 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
+    feature: "AI chat bot",
+    values: {
+      "full-works": "—",
+      elite: "Included",
+      "retainer-growth": "Included",
+      "retainer-scale": "Included",
+      "retainer-enterprise": "Included",
+    },
+  },
+  {
+    feature: "Automated outreach",
+    values: {
+      "full-works": "—",
+      elite: "—",
+      "retainer-growth": "Included",
+      "retainer-scale": "Included",
+      "retainer-enterprise": "Included",
+    },
+  },
+  {
     feature: "Warranty",
     values: {
       "full-works": "Lifetime build",
