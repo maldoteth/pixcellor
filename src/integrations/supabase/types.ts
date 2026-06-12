@@ -1293,6 +1293,39 @@ export type Database = {
         }
         Relationships: []
       }
+      package_reviews: {
+        Row: {
+          author_name: string
+          body: string | null
+          created_at: string
+          id: string
+          package_slug: string
+          rating: number
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          package_slug: string
+          rating: number
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          package_slug?: string
+          rating?: number
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_projects: {
         Row: {
           category: string | null
@@ -2766,6 +2799,7 @@ export type Database = {
       }
       claim_login_handoff: { Args: { _sid: string }; Returns: Json }
       create_candidate_from_intake: { Args: { _payload: Json }; Returns: Json }
+      current_user_has_purchase: { Args: never; Returns: boolean }
       customer_fetch_portal: { Args: never; Returns: Json }
       customer_has_lead_source: {
         Args: { _source: string; _user_id: string }
