@@ -147,7 +147,6 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
 
 interface GalleryCardProps {
   item: GalleryItem;
-  isFrontFacing: boolean;
   interactive: boolean;
   mobileMode?: boolean;
   glowIntensity?: number;
@@ -155,19 +154,60 @@ interface GalleryCardProps {
 
 const GalleryCard: React.FC<GalleryCardProps> = ({
   item,
-  isFrontFacing,
   interactive,
   mobileMode = false,
   glowIntensity = 1,
 }) => {
   const color = useDominantColor(pickWarmupUrl(item.photo.url));
+  const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
+  const suppressClickRef = useRef(false);
 
-  const openLink = (e?: React.MouseEvent) => {
+  const openLink = (e?: React.MouseEvent | React.PointerEvent) => {
+    e?.preventDefault();
     e?.stopPropagation();
     const url = item.photo.by;
     if (!url) return;
     const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
     window.open(href, '_blank', 'noopener,noreferrer');
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!interactive) return;
+    e.preventDefault();
+    e.stopPropagation();
+    pointerStartRef.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!interactive) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const start = pointerStartRef.current;
+    pointerStartRef.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    if (!start || start.id !== e.pointerId) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.sqrt(dx * dx + dy * dy) <= 14) {
+      suppressClickRef.current = true;
+      openLink(e);
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    openLink(e);
+  };
+
+  const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+    pointerStartRef.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
   };
 
   // Fallback to a neutral warm tone when extraction fails (CORS etc.) so every
@@ -185,9 +225,17 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
 
   return (
     <div
-      className={cn('relative w-full h-full', interactive && isFrontFacing && 'cursor-pointer')}
-      style={{ pointerEvents: interactive && isFrontFacing ? 'auto' : 'none' }}
-      onClick={openLink}
+      className={cn('relative w-full h-full', interactive && 'cursor-pointer')}
+      style={{ pointerEvents: interactive ? 'auto' : 'none', touchAction: 'none' }}
+      role="link"
+      tabIndex={interactive ? 0 : -1}
+      onClick={handleClick}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') openLink(e as unknown as React.MouseEvent);
+      }}
     >
       {/* Touch-driven halo (mobile only). Sits behind the card; only the ring
           beyond the card's edge is visible because the inner card is opaque. */}
@@ -540,22 +588,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
           className="relative w-full h-full"
           style={{ transformStyle: 'preserve-3d' }}
         >
-          {(() => {
-            // Pre-compute which card is closest to fully front-facing.
-            // Only that card is clickable so foreshortened side cards
-            // can't steal clicks from the visually-front card next to them.
-            let frontIdx = 0;
-            let frontDelta = Infinity;
-            const totalRot = effectiveRotation % 360;
-            items.forEach((_, i) => {
-              const rel = (i * anglePerItem + totalRot + 360) % 360;
-              const norm = Math.abs(rel > 180 ? 360 - rel : rel);
-              if (norm < frontDelta) {
-                frontDelta = norm;
-                frontIdx = i;
-              }
-            });
-            return items.map((item, i) => {
+          {items.map((item, i) => {
               const itemAngle = i * anglePerItem;
               const totalRotation = effectiveRotation % 360;
               const relativeAngle = (itemAngle + totalRotation + 360) % 360;
@@ -563,7 +596,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                 relativeAngle > 180 ? 360 - relativeAngle : relativeAngle
               );
               const depthDim = Math.max(0.68, 1 - normalizedAngle / 420);
-              const isFrontFacing = i === frontIdx;
 
               return (
                 <div
@@ -582,12 +614,11 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
                     transition: 'opacity 0.3s ease-out',
-                    pointerEvents: isFrontFacing ? 'auto' : 'none',
+                    pointerEvents: interactive ? 'auto' : 'none',
                   }}
                 >
                   <GalleryCard
                     item={item}
-                    isFrontFacing={isFrontFacing}
                     interactive={interactive}
                     mobileMode={isMobile}
                     glowIntensity={glowIntensities[i] ?? 0}
@@ -599,8 +630,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   />
                 </div>
               );
-            });
-          })()}
+            })}
         </div>
       </div>
     );
