@@ -67,7 +67,7 @@ export default function Portfolio() {
               {Array.from({ length: 9 }).map((_, i) => (
                 <div
                   key={i}
-                  className="aspect-[4/3] rounded-xl border border-foreground/10 bg-foreground/[0.04] animate-pulse"
+                  className="aspect-[3/4] rounded-xl border border-foreground/10 bg-foreground/[0.04] animate-pulse"
                 />
               ))}
             </div>
@@ -88,7 +88,7 @@ export default function Portfolio() {
                     transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.04 }}
                     className="group relative overflow-hidden rounded-xl border border-foreground/10 bg-foreground/[0.03] backdrop-blur-md transition hover:border-foreground/30"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-black">
+                    <div className="relative aspect-[3/4] overflow-hidden bg-black">
                       <img
                         src={img}
                         alt={`${p.name} — ${p.category ?? "portfolio project"}`}
