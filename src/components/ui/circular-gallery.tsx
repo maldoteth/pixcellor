@@ -160,6 +160,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
 }) => {
   const color = useDominantColor(pickWarmupUrl(item.photo.url));
   const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
+  const suppressClickRef = useRef(false);
 
   const openLink = (e?: React.MouseEvent | React.PointerEvent) => {
     e?.preventDefault();
@@ -188,7 +189,20 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
     if (!start || start.id !== e.pointerId) return;
     const dx = e.clientX - start.x;
     const dy = e.clientY - start.y;
-    if (Math.sqrt(dx * dx + dy * dy) <= 14) openLink(e);
+    if (Math.sqrt(dx * dx + dy * dy) <= 14) {
+      suppressClickRef.current = true;
+      openLink(e);
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    openLink(e);
   };
 
   const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -215,7 +229,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
       style={{ pointerEvents: interactive ? 'auto' : 'none', touchAction: 'none' }}
       role="link"
       tabIndex={interactive ? 0 : -1}
-      onClick={openLink}
+      onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
