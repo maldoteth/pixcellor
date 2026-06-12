@@ -291,20 +291,9 @@ export default function PackageDetailPage() {
           </div>
         </motion.section>
 
-        {/* TESTIMONIAL */}
-        {pkg.testimonial && (
-          <motion.section {...fadeUp} className="mb-12 md:mb-16">
-            <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-6 md:p-8 backdrop-blur-md">
-              <StarRow value={pkg.testimonial.rating} />
-              <blockquote className="mt-3 text-lg md:text-xl leading-relaxed text-foreground/90">
-                "{pkg.testimonial.quote}"
-              </blockquote>
-              <div className="mt-4 text-xs uppercase tracking-[0.18em] text-foreground/60">
-                {pkg.testimonial.author} <span className="text-foreground/40">·</span> {pkg.testimonial.role}
-              </div>
-            </div>
-          </motion.section>
-        )}
+        {/* REVIEWS */}
+        <PackageReviews slug={pkg.slug} />
+
 
         {/* WHAT'S INCLUDED */}
         <motion.section {...fadeUp} className="mb-12 md:mb-16">
