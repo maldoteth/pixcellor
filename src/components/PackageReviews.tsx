@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Star, Loader2, Search } from "lucide-react";
+import { Star, Loader2, Search, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +72,7 @@ function ReviewItem({ r }: { r: Review }) {
 
 export default function PackageReviews({ slug }: { slug: string }) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -82,6 +85,29 @@ export default function PackageReviews({ slug }: { slug: string }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filterStar, setFilterStar] = useState<number | null>(null);
   const [query, setQuery] = useState("");
+  const [showFormInDrawer, setShowFormInDrawer] = useState(false);
+
+  const handleAddReviewClick = () => {
+    if (!userId) {
+      toast({ title: "Please sign in", description: "Log in as a customer to leave a review." });
+      navigate(`/customer-login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+    if (!canReview) {
+      toast({
+        title: "Customers only",
+        description: "Only customers who have purchased a package can leave a review.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (hasOwnReview) {
+      toast({ title: "Already reviewed", description: "Thanks — your review is already published." });
+      return;
+    }
+    setShowFormInDrawer(true);
+  };
+
 
   useEffect(() => {
     let mounted = true;
@@ -207,10 +233,21 @@ export default function PackageReviews({ slug }: { slug: string }) {
                 </DrawerTrigger>
                 <DrawerContent className="max-h-[90vh]">
                   <DrawerHeader>
-                    <DrawerTitle className="text-xs uppercase tracking-[0.22em] text-foreground/60">
-                      All reviews ({reviews.length})
-                    </DrawerTitle>
+                    <div className="flex items-center justify-between gap-3">
+                      <DrawerTitle className="text-xs uppercase tracking-[0.22em] text-foreground/60">
+                        All reviews ({reviews.length})
+                      </DrawerTitle>
+                      <button
+                        type="button"
+                        onClick={handleAddReviewClick}
+                        aria-label="Add a review"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-foreground/20 bg-foreground/[0.04] text-foreground/80 hover:text-foreground hover:bg-foreground/10 transition-colors"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
                   </DrawerHeader>
+
 
                   <div className="px-4 md:px-6 pb-2 space-y-3">
                     <div className="relative">
@@ -255,7 +292,46 @@ export default function PackageReviews({ slug }: { slug: string }) {
                     </div>
                   </div>
 
+                  {showFormInDrawer && canReview && !hasOwnReview && (
+                    <div className="px-4 md:px-6 pb-4 space-y-3 border-t border-foreground/10 pt-4 mt-2">
+                      <div className="text-sm font-semibold">Leave a review</div>
+                      <StarPicker value={form.rating} onChange={(n) => setForm((f) => ({ ...f, rating: n }))} />
+                      <Input
+                        placeholder="Your name"
+                        value={form.name}
+                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                        maxLength={60}
+                      />
+                      <Input
+                        placeholder="Title (optional)"
+                        value={form.title}
+                        onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                        maxLength={120}
+                      />
+                      <Textarea
+                        placeholder="What did you think?"
+                        value={form.body}
+                        onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
+                        rows={4}
+                        maxLength={1000}
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button onClick={submit} disabled={submitting} variant="pricing">
+                          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Post review"}
+                        </Button>
+                        <button
+                          type="button"
+                          onClick={() => setShowFormInDrawer(false)}
+                          className="text-xs uppercase tracking-wider text-foreground/60 hover:text-foreground"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="overflow-y-auto px-4 md:px-6 pb-6">
+
                     {filtered.length === 0 ? (
                       <p className="text-sm text-foreground/60 py-6 text-center">No reviews match.</p>
                     ) : (
