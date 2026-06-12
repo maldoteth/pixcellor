@@ -203,11 +203,9 @@ export default function PackageDetailPage() {
           </h1>
           <p className="mt-3 text-base md:text-xl text-foreground/70 max-w-3xl">{pkg.tagline}</p>
 
-          {pkg.rating && (
-            <div className="mt-4">
-              <StarRow value={pkg.rating.value} count={pkg.rating.count} />
-            </div>
-          )}
+          <div className="mt-4">
+            <StarRow count={reviewCount} />
+          </div>
 
           <p className="mt-6 text-sm md:text-base text-foreground/80 max-w-3xl leading-relaxed">
             {pkg.blurb}
