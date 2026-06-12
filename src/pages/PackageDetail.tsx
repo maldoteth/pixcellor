@@ -159,6 +159,26 @@ export default function PackageDetailPage() {
   const displayPrice = billing === "yearly" && hasYearly ? pkg.yearlyPrice! : pkg.price;
   const displayBilling = billing === "yearly" && hasYearly ? pkg.yearlyBilling! : pkg.billing;
 
+  return <PackageDetailInner slug={pkg.slug} pkg={pkg} billing={billing} setBilling={setBilling} hasYearly={hasYearly} displayPrice={displayPrice} displayBilling={displayBilling} />;
+}
+
+function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, displayPrice, displayBilling }: { slug: string; pkg: PackageDetail; billing: "monthly" | "yearly"; setBilling: (b: "monthly" | "yearly") => void; hasYearly: boolean; displayPrice: string; displayBilling: string }) {
+  const [reviewCount, setReviewCount] = useState(0);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase
+      .from("package_reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("package_slug", slug)
+      .then(({ count }) => {
+        if (mounted) setReviewCount(count ?? 0);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SeoHead
