@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue, animate } from "framer-motion";
-import { ChevronDown, ChevronUp, X, BookOpen, ShoppingCart, Phone } from "lucide-react";
+import { ChevronDown, ChevronUp, X, BookOpen, ShoppingCart, Phone, Tag } from "lucide-react";
 
 import PackagesDialog from "@/components/PackagesDialog";
 import Footer from "@/components/Footer";
@@ -1019,27 +1019,11 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                         <motion.button
                             style={{ opacity: ctaOpacity }}
                             type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                const start = scrollRef.current;
-                                const end = Math.min(Math.max(start, 0) + 2000, MAX_SCROLL);
-                                const duration = 1200;
-                                const t0 = performance.now();
-                                const step = (now: number) => {
-                                    const t = Math.min((now - t0) / duration, 1);
-                                    const eased = 1 - Math.pow(1 - t, 3);
-                                    const v = start + (end - start) * eased;
-                                    scrollRef.current = v;
-                                    virtualScroll.set(v);
-                                    onVirtualScrollChangeRef.current?.(v);
-                                    if (t < 1) requestAnimationFrame(step);
-                                };
-                                requestAnimationFrame(step);
-                            }}
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-packages")); }}
                             className="pricing-button text-foreground transition h-[34px] w-full flex items-center justify-center gap-1.5 text-xs font-semibold rounded-md"
                         >
-                            <BookOpen className="w-3.5 h-3.5" />
-                            Portfolio
+                            <Tag className="w-3.5 h-3.5" />
+                            Pricing
                         </motion.button>
                         <motion.button
                             style={{ opacity: ctaOpacity }}
@@ -1056,27 +1040,11 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                         <motion.button
                             style={{ opacity: ctaOpacity }}
                             type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                const start = scrollRef.current;
-                                const end = Math.min(Math.max(start, 0) + 2000, MAX_SCROLL);
-                                const duration = 1200;
-                                const t0 = performance.now();
-                                const step = (now: number) => {
-                                    const t = Math.min((now - t0) / duration, 1);
-                                    const eased = 1 - Math.pow(1 - t, 3);
-                                    const v = start + (end - start) * eased;
-                                    scrollRef.current = v;
-                                    virtualScroll.set(v);
-                                    onVirtualScrollChangeRef.current?.(v);
-                                    if (t < 1) requestAnimationFrame(step);
-                                };
-                                requestAnimationFrame(step);
-                            }}
+                            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("pixcellor:open-packages")); }}
                             className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center gap-2 text-sm font-semibold rounded-md"
                         >
-                            <BookOpen className="w-4 h-4" />
-                            Portfolio
+                            <Tag className="w-4 h-4" />
+                            Pricing
                         </motion.button>
                         <motion.button
                             style={{ opacity: ctaOpacity }}
