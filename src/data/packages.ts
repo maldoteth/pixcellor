@@ -666,7 +666,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "Automated outreach",
+    feature: "Automated Outreach",
     values: {
       "full-works": "—",
       elite: "—",
