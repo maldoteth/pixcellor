@@ -147,7 +147,6 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
 
 interface GalleryCardProps {
   item: GalleryItem;
-  isFrontFacing: boolean;
   interactive: boolean;
   mobileMode?: boolean;
   glowIntensity?: number;
@@ -155,19 +154,46 @@ interface GalleryCardProps {
 
 const GalleryCard: React.FC<GalleryCardProps> = ({
   item,
-  isFrontFacing,
   interactive,
   mobileMode = false,
   glowIntensity = 1,
 }) => {
   const color = useDominantColor(pickWarmupUrl(item.photo.url));
+  const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
 
-  const openLink = (e?: React.MouseEvent) => {
+  const openLink = (e?: React.MouseEvent | React.PointerEvent) => {
+    e?.preventDefault();
     e?.stopPropagation();
     const url = item.photo.by;
     if (!url) return;
     const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
     window.open(href, '_blank', 'noopener,noreferrer');
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!interactive) return;
+    e.preventDefault();
+    e.stopPropagation();
+    pointerStartRef.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!interactive) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const start = pointerStartRef.current;
+    pointerStartRef.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    if (!start || start.id !== e.pointerId) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.sqrt(dx * dx + dy * dy) <= 14) openLink(e);
+  };
+
+  const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+    pointerStartRef.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
   };
 
   // Fallback to a neutral warm tone when extraction fails (CORS etc.) so every
