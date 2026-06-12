@@ -7,6 +7,22 @@ import ogGrowth from "@/assets/og-retainer-growth.jpg";
 import ogScale from "@/assets/og-retainer-scale.jpg";
 import ogEnterprise from "@/assets/og-retainer-enterprise.jpg";
 
+import imgSalonBrochure from "@/assets/sample-work/salon-brochure.jpg";
+import imgConsultantLanding from "@/assets/sample-work/consultant-landing.jpg";
+import imgTradesPortfolio from "@/assets/sample-work/trades-portfolio.jpg";
+import imgAnimatedBrandSite from "@/assets/sample-work/animated-brand-site.jpg";
+import imgSaasMvp from "@/assets/sample-work/saas-mvp.jpg";
+import imgEcommerceFlagship from "@/assets/sample-work/ecommerce-flagship.jpg";
+import imgAlwaysOnBrochure from "@/assets/sample-work/always-on-brochure.jpg";
+import imgCrmLeadBot from "@/assets/sample-work/crm-lead-bot.jpg";
+import imgAnalyticsDashboard from "@/assets/sample-work/analytics-dashboard.jpg";
+import imgAiSalesAgent from "@/assets/sample-work/ai-sales-agent.jpg";
+import imgOpsAutomation from "@/assets/sample-work/ops-automation.jpg";
+import imgLandingTests from "@/assets/sample-work/landing-tests.jpg";
+import imgMvpSprint from "@/assets/sample-work/mvp-sprint.jpg";
+import imgRecruitmentAts from "@/assets/sample-work/recruitment-ats.jpg";
+import imgEnterpriseDashboard from "@/assets/sample-work/enterprise-dashboard.jpg";
+
 export type PackageCta = "buy" | "sales" | "packages";
 
 export type PackageTestimonial = {
@@ -26,6 +42,7 @@ export type PackageSampleWork = {
   title: string;
   tag: string;
   note: string;
+  image?: string;
 };
 
 export type PackageDetail = {
