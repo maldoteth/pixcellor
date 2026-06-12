@@ -7,6 +7,22 @@ import ogGrowth from "@/assets/og-retainer-growth.jpg";
 import ogScale from "@/assets/og-retainer-scale.jpg";
 import ogEnterprise from "@/assets/og-retainer-enterprise.jpg";
 
+import imgSalonBrochure from "@/assets/sample-work/salon-brochure.jpg";
+import imgConsultantLanding from "@/assets/sample-work/consultant-landing.jpg";
+import imgTradesPortfolio from "@/assets/sample-work/trades-portfolio.jpg";
+import imgAnimatedBrandSite from "@/assets/sample-work/animated-brand-site.jpg";
+import imgSaasMvp from "@/assets/sample-work/saas-mvp.jpg";
+import imgEcommerceFlagship from "@/assets/sample-work/ecommerce-flagship.jpg";
+import imgAlwaysOnBrochure from "@/assets/sample-work/always-on-brochure.jpg";
+import imgCrmLeadBot from "@/assets/sample-work/crm-lead-bot.jpg";
+import imgAnalyticsDashboard from "@/assets/sample-work/analytics-dashboard.jpg";
+import imgAiSalesAgent from "@/assets/sample-work/ai-sales-agent.jpg";
+import imgOpsAutomation from "@/assets/sample-work/ops-automation.jpg";
+import imgLandingTests from "@/assets/sample-work/landing-tests.jpg";
+import imgMvpSprint from "@/assets/sample-work/mvp-sprint.jpg";
+import imgRecruitmentAts from "@/assets/sample-work/recruitment-ats.jpg";
+import imgEnterpriseDashboard from "@/assets/sample-work/enterprise-dashboard.jpg";
+
 export type PackageCta = "buy" | "sales" | "packages";
 
 export type PackageTestimonial = {
@@ -26,6 +42,7 @@ export type PackageSampleWork = {
   title: string;
   tag: string;
   note: string;
+  image?: string;
 };
 
 export type PackageDetail = {
@@ -102,9 +119,9 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       rating: 5,
     },
     sampleWork: [
-      { title: "Salon brochure site", tag: "3 pages · booking form", note: "Local service business, mobile-first." },
-      { title: "Consultant landing", tag: "1 page · lead capture", note: "Single-page site optimised for conversion." },
-      { title: "Trades portfolio", tag: "3 pages · gallery", note: "Photo-led showcase with contact CTA." },
+      { title: "Salon brochure site", tag: "3 pages · booking form", note: "Local service business, mobile-first.", image: imgSalonBrochure },
+      { title: "Consultant landing", tag: "1 page · lead capture", note: "Single-page site optimised for conversion.", image: imgConsultantLanding },
+      { title: "Trades portfolio", tag: "3 pages · gallery", note: "Photo-led showcase with contact CTA.", image: imgTradesPortfolio },
     ],
     addOns: DEFAULT_ADDONS,
     includes: [
@@ -188,9 +205,9 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       rating: 5,
     },
     sampleWork: [
-      { title: "Animated brand site", tag: "10 pages · WebGL hero", note: "Scroll-driven 3D, custom illustrations." },
-      { title: "SaaS web app MVP", tag: "Auth · DB · Stripe", note: "Full-stack product launched in 10 days." },
-      { title: "E-commerce flagship", tag: "Catalog · cart · checkout", note: "Custom storefront with Stripe payments." },
+      { title: "Animated brand site", tag: "10 pages · WebGL hero", note: "Scroll-driven 3D, custom illustrations.", image: imgAnimatedBrandSite },
+      { title: "SaaS web app MVP", tag: "Auth · DB · Stripe", note: "Full-stack product launched in 10 days.", image: imgSaasMvp },
+      { title: "E-commerce flagship", tag: "Catalog · cart · checkout", note: "Custom storefront with Stripe payments.", image: imgEcommerceFlagship },
     ],
     addOns: DEFAULT_ADDONS,
     includes: [
@@ -289,9 +306,9 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       rating: 5,
     },
     sampleWork: [
-      { title: "Always-on brochure site", tag: "Unlimited edits", note: "Live updates on demand, no developer required." },
-      { title: "CRM + lead bot", tag: "AI assistant", note: "Captures and qualifies inbound leads 24/7." },
-      { title: "Analytics dashboard", tag: "Monthly report", note: "Traffic, conversions, search visibility." },
+      { title: "Always-on brochure site", tag: "Unlimited edits", note: "Live updates on demand, no developer required.", image: imgAlwaysOnBrochure },
+      { title: "CRM + lead bot", tag: "AI assistant", note: "Captures and qualifies inbound leads 24/7.", image: imgCrmLeadBot },
+      { title: "Analytics dashboard", tag: "Monthly report", note: "Traffic, conversions, search visibility.", image: imgAnalyticsDashboard },
     ],
     includes: [
       {
@@ -380,9 +397,9 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       rating: 5,
     },
     sampleWork: [
-      { title: "AI sales agent", tag: "Voice + chat", note: "Books meetings 24/7 directly into the calendar." },
-      { title: "Ops automation suite", tag: "Zapier-grade", note: "Document extraction + workflow agents." },
-      { title: "Landing page tests", tag: "A/B at speed", note: "Iterate landing variants weekly." },
+      { title: "AI sales agent", tag: "Voice + chat", note: "Books meetings 24/7 directly into the calendar.", image: imgAiSalesAgent },
+      { title: "Ops automation suite", tag: "Zapier-grade", note: "Document extraction + workflow agents.", image: imgOpsAutomation },
+      { title: "Landing page tests", tag: "A/B at speed", note: "Iterate landing variants weekly.", image: imgLandingTests },
     ],
     includes: [
       {
@@ -463,9 +480,9 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       rating: 5,
     },
     sampleWork: [
-      { title: "MVP sprint", tag: "2-week launches", note: "Fully working product every fortnight." },
-      { title: "Recruitment ATS", tag: "Custom software", note: "AI-assisted candidate sourcing & pipeline." },
-      { title: "Enterprise dashboard", tag: "SSO + RBAC", note: "Multi-region, audit-logged analytics." },
+      { title: "MVP sprint", tag: "2-week launches", note: "Fully working product every fortnight.", image: imgMvpSprint },
+      { title: "Recruitment ATS", tag: "Custom software", note: "AI-assisted candidate sourcing & pipeline.", image: imgRecruitmentAts },
+      { title: "Enterprise dashboard", tag: "SSO + RBAC", note: "Multi-region, audit-logged analytics.", image: imgEnterpriseDashboard },
     ],
     includes: [
       {
