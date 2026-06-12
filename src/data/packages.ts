@@ -527,7 +527,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       "Founders wanting C-level firepower without a £400k payroll",
     ],
     faqs: [
-      { q: "Is the team really dedicated?", a: "Yes — a named squad assigned to you, not pooled across clients." },
+      { q: "Is the team really dedicated?", a: "Yes — a named squad assigned to you." },
       { q: "Can we white-label your team?", a: "Yes — we can operate under your brand for clients or investors." },
       { q: "Notice period?", a: "30 days on monthly; yearly term saves £10,000." },
     ],
