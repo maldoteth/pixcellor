@@ -432,7 +432,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       "Companies needing faster shipping than a normal agency",
     ],
     faqs: [
-      { q: "Do you replace our developers?", a: "We complement them — we can plug in as squad, lead or backup." },
+      { q: "Do you replace our developers?", a: "Yes or complement them — we can plug in as squad, lead or backup." },
       { q: "How quickly are AI agents live?", a: "Typically a working agent within 2 weeks of scope sign-off." },
       { q: "Is there a minimum term?", a: "No — monthly is rolling, yearly saves £1,000." },
     ],
