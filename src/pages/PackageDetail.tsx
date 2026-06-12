@@ -72,20 +72,16 @@ const fadeUp = {
   transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
 };
 
-function StarRow({ value, count }: { value: number; count?: number }) {
-  const full = Math.floor(value);
+function StarRow({ count }: { count: number }) {
   return (
     <div className="flex items-center gap-1.5">
       <div className="flex items-center gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            className={`h-3.5 w-3.5 ${i < full ? "fill-foreground text-foreground" : "text-foreground/30"}`}
-          />
+          <Star key={i} className="h-3.5 w-3.5 fill-foreground text-foreground" />
         ))}
       </div>
       <span className="text-xs text-foreground/70">
-        {value.toFixed(1)}{count != null ? ` · ${count} reviews` : ""}
+        5.0 · {count} {count === 1 ? "review" : "reviews"}
       </span>
     </div>
   );
