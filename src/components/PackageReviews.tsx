@@ -1,10 +1,17 @@
-import { useEffect, useState } from "react";
-import { Star, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Star, Loader2, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 type Review = {
   id: string;
@@ -13,7 +20,7 @@ type Review = {
   title: string | null;
   body: string | null;
   created_at: string;
-  user_id: string;
+  user_id: string | null;
 };
 
 function Stars({ value, size = "h-4 w-4" }: { value: number; size?: string }) {
@@ -48,15 +55,33 @@ function StarPicker({ value, onChange }: { value: number; onChange: (n: number) 
   );
 }
 
+function ReviewItem({ r }: { r: Review }) {
+  return (
+    <li className="border-b border-foreground/10 pb-4 last:border-0 last:pb-0">
+      <div className="flex items-center gap-3">
+        <Stars value={r.rating} />
+        <span className="text-xs uppercase tracking-[0.18em] text-foreground/60">{r.author_name}</span>
+      </div>
+      {r.title && <div className="mt-2 text-sm font-semibold">{r.title}</div>}
+      {r.body && <p className="mt-1 text-sm text-foreground/80 leading-relaxed">{r.body}</p>}
+    </li>
+  );
+}
+
 export default function PackageReviews({ slug }: { slug: string }) {
   const { toast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [, setUserEmail] = useState<string | null>(null);
   const [canReview, setCanReview] = useState(false);
   const [form, setForm] = useState({ name: "", rating: 5, title: "", body: "" });
   const [submitting, setSubmitting] = useState(false);
+
+  // Drawer state
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [filterStar, setFilterStar] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -96,6 +121,22 @@ export default function PackageReviews({ slug }: { slug: string }) {
   }, [slug]);
 
   const hasOwnReview = !!userId && reviews.some((r) => r.user_id && r.user_id === userId);
+
+  // Top of page: only most recent 5-star reviews (max 5)
+  const featured = useMemo(
+    () => reviews.filter((r) => r.rating === 5).slice(0, 5),
+    [reviews]
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return reviews.filter((r) => {
+      if (filterStar !== null && r.rating !== filterStar) return false;
+      if (!q) return true;
+      const hay = `${r.author_name} ${r.title ?? ""} ${r.body ?? ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [reviews, filterStar, query]);
 
   const submit = async () => {
     if (!userId) return;
@@ -137,36 +178,94 @@ export default function PackageReviews({ slug }: { slug: string }) {
           </div>
         ) : (
           <>
-            {reviews.length === 0 ? (
+            {featured.length === 0 ? (
               <p className="text-sm text-foreground/60">No reviews yet — be the first.</p>
             ) : (
               <ul className="space-y-5">
-                {reviews.map((r) => (
-                  <li key={r.id} className="border-b border-foreground/10 pb-4 last:border-0 last:pb-0">
-                    <div className="flex items-center gap-3">
-                      <Stars value={r.rating} />
-                      <span className="text-xs uppercase tracking-[0.18em] text-foreground/60">{r.author_name}</span>
-                    </div>
-                    {r.title && <div className="mt-2 text-sm font-semibold">{r.title}</div>}
-                    {r.body && <p className="mt-1 text-sm text-foreground/80 leading-relaxed">{r.body}</p>}
-                  </li>
+                {featured.map((r) => (
+                  <ReviewItem key={r.id} r={r} />
                 ))}
               </ul>
             )}
 
-            <div className="mt-6 border-t border-foreground/10 pt-5">
-              {!userId ? (
-                <div className="text-sm text-foreground/70">
-                  See All
-                </div>
-              ) : !canReview ? (
-                <div className="text-sm text-foreground/70">
-                  See All
-                </div>
-              ) : hasOwnReview ? (
+            <div className="mt-6 border-t border-foreground/10 pt-5 space-y-4">
+              <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+                <DrawerTrigger asChild>
+                  <button
+                    type="button"
+                    className="text-sm font-semibold text-foreground/80 hover:text-foreground underline underline-offset-4"
+                  >
+                    See All
+                  </button>
+                </DrawerTrigger>
+                <DrawerContent className="max-h-[90vh]">
+                  <DrawerHeader>
+                    <DrawerTitle className="text-xs uppercase tracking-[0.22em] text-foreground/60">
+                      All reviews ({reviews.length})
+                    </DrawerTitle>
+                  </DrawerHeader>
+
+                  <div className="px-4 md:px-6 pb-2 space-y-3">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/50" />
+                      <Input
+                        placeholder="Search reviews…"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setFilterStar(null)}
+                        className={`px-3 py-1.5 rounded-full text-xs uppercase tracking-[0.18em] border ${
+                          filterStar === null
+                            ? "border-foreground/60 bg-foreground/10 text-foreground"
+                            : "border-foreground/15 text-foreground/60 hover:text-foreground"
+                        }`}
+                      >
+                        All
+                      </button>
+                      {[5, 4, 3, 2, 1].map((n) => {
+                        const count = reviews.filter((r) => r.rating === n).length;
+                        return (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => setFilterStar(n)}
+                            className={`px-3 py-1.5 rounded-full text-xs flex items-center gap-1 border ${
+                              filterStar === n
+                                ? "border-foreground/60 bg-foreground/10 text-foreground"
+                                : "border-foreground/15 text-foreground/60 hover:text-foreground"
+                            }`}
+                          >
+                            {n} <Star className="h-3 w-3 fill-current" />
+                            <span className="text-foreground/40">({count})</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="overflow-y-auto px-4 md:px-6 pb-6">
+                    {filtered.length === 0 ? (
+                      <p className="text-sm text-foreground/60 py-6 text-center">No reviews match.</p>
+                    ) : (
+                      <ul className="space-y-5 pt-2">
+                        {filtered.map((r) => (
+                          <ReviewItem key={r.id} r={r} />
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </DrawerContent>
+              </Drawer>
+
+              {!userId ? null : !canReview ? null : hasOwnReview ? (
                 <div className="text-sm text-foreground/70">Thanks — your review is published.</div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 pt-2">
                   <div className="text-sm font-semibold">Leave a review</div>
                   <StarPicker value={form.rating} onChange={(n) => setForm((f) => ({ ...f, rating: n }))} />
                   <Input
