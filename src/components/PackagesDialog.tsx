@@ -989,14 +989,6 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             </li>
           ))}
         </ul>
-        <PackageExamples
-          label="What £500 buys you:"
-          items={[
-            { name: "Stoningale", url: "https://stoningale.com" },
-            { name: "Life Brownie", url: "https://lifebrownie.com" },
-            { name: "Set In Stone", url: "https://setinstonesouthern.pixcellor.com" },
-          ]}
-        />
         <div className="mt-3">
         <GlassBuyButton
           onClick={() =>
