@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -17,6 +18,7 @@ import {
 import SeoHead from "@/components/SeoHead";
 import { Button } from "@/components/ui/button";
 import PackageCompareTable from "@/components/PackageCompareTable";
+import PackageReviews from "@/components/PackageReviews";
 import { PACKAGE_DETAILS, type PackageDetail, type PackageCta } from "@/data/packages";
 
 const SITE_ORIGIN = "https://pixcellor.com";
@@ -71,20 +73,16 @@ const fadeUp = {
   transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
 };
 
-function StarRow({ value, count }: { value: number; count?: number }) {
-  const full = Math.floor(value);
+function StarRow({ count }: { count: number }) {
   return (
     <div className="flex items-center gap-1.5">
       <div className="flex items-center gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            className={`h-3.5 w-3.5 ${i < full ? "fill-foreground text-foreground" : "text-foreground/30"}`}
-          />
+          <Star key={i} className="h-3.5 w-3.5 fill-foreground text-foreground" />
         ))}
       </div>
       <span className="text-xs text-foreground/70">
-        {value.toFixed(1)}{count != null ? ` · ${count} reviews` : ""}
+        5.0 · {count} {count === 1 ? "review" : "reviews"}
       </span>
     </div>
   );
@@ -98,13 +96,6 @@ function JsonLd({ pkg }: { pkg: PackageDetail }) {
       name: `Pixcellor ${pkg.name}`,
       description: pkg.blurb,
       brand: { "@type": "Brand", name: "Pixcellor" },
-      ...(pkg.rating && {
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: pkg.rating.value,
-          reviewCount: pkg.rating.count,
-        },
-      }),
       offers: {
         "@type": "Offer",
         price: pkg.price.replace(/[^0-9.]/g, ""),
@@ -168,6 +159,26 @@ export default function PackageDetailPage() {
   const displayPrice = billing === "yearly" && hasYearly ? pkg.yearlyPrice! : pkg.price;
   const displayBilling = billing === "yearly" && hasYearly ? pkg.yearlyBilling! : pkg.billing;
 
+  return <PackageDetailInner slug={pkg.slug} pkg={pkg} billing={billing} setBilling={setBilling} hasYearly={hasYearly} displayPrice={displayPrice} displayBilling={displayBilling} />;
+}
+
+function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, displayPrice, displayBilling }: { slug: string; pkg: PackageDetail; billing: "monthly" | "yearly"; setBilling: (b: "monthly" | "yearly") => void; hasYearly: boolean; displayPrice: string; displayBilling: string }) {
+  const [reviewCount, setReviewCount] = useState(0);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase
+      .from("package_reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("package_slug", slug)
+      .then(({ count }) => {
+        if (mounted) setReviewCount(count ?? 0);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SeoHead
@@ -213,11 +224,9 @@ export default function PackageDetailPage() {
           </h1>
           <p className="mt-3 text-base md:text-xl text-foreground/70 max-w-3xl">{pkg.tagline}</p>
 
-          {pkg.rating && (
-            <div className="mt-4">
-              <StarRow value={pkg.rating.value} count={pkg.rating.count} />
-            </div>
-          )}
+          <div className="mt-4">
+            <StarRow count={reviewCount} />
+          </div>
 
           <p className="mt-6 text-sm md:text-base text-foreground/80 max-w-3xl leading-relaxed">
             {pkg.blurb}
@@ -303,20 +312,9 @@ export default function PackageDetailPage() {
           </div>
         </motion.section>
 
-        {/* TESTIMONIAL */}
-        {pkg.testimonial && (
-          <motion.section {...fadeUp} className="mb-12 md:mb-16">
-            <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-6 md:p-8 backdrop-blur-md">
-              <StarRow value={pkg.testimonial.rating} />
-              <blockquote className="mt-3 text-lg md:text-xl leading-relaxed text-foreground/90">
-                "{pkg.testimonial.quote}"
-              </blockquote>
-              <div className="mt-4 text-xs uppercase tracking-[0.18em] text-foreground/60">
-                {pkg.testimonial.author} <span className="text-foreground/40">·</span> {pkg.testimonial.role}
-              </div>
-            </div>
-          </motion.section>
-        )}
+        {/* REVIEWS */}
+        <PackageReviews slug={pkg.slug} />
+
 
         {/* WHAT'S INCLUDED */}
         <motion.section {...fadeUp} className="mb-12 md:mb-16">
