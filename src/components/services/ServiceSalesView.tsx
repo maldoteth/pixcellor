@@ -30,6 +30,7 @@ const VideoAnimationsHero = lazy(() => import("@/components/services/VideoAnimat
 const InternalToolsHero = lazy(() => import("@/components/services/InternalToolsHero"));
 const EcommerceStoresHero = lazy(() => import("@/components/services/EcommerceStoresHero"));
 const CrmSystemsHero = lazy(() => import("@/components/services/CrmSystemsHero"));
+const CreativeBrandingHero = lazy(() => import("@/components/services/CreativeBrandingHero"));
 const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
 
 // Lightweight placeholder shown while a banner chunk is loading.
@@ -112,7 +113,9 @@ export default function ServiceSalesView({
     service.slug === "video-3d-animations" ||
     service.slug === "internal-tools" ||
     service.slug === "ecommerce-stores" ||
-    service.slug === "crm-systems";
+    service.slug === "crm-systems" ||
+    service.slug === "creative-branding-makeovers" ||
+    service.slug === "documents-and-decks";
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
@@ -136,6 +139,8 @@ export default function ServiceSalesView({
                   <EcommerceStoresHero />
                 ) : service.slug === "crm-systems" ? (
                   <CrmSystemsHero />
+                ) : service.slug === "creative-branding-makeovers" ? (
+                  <CreativeBrandingHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
@@ -349,6 +354,8 @@ export default function ServiceSalesView({
                   <EcommerceStoresHero />
                 ) : service.slug === "crm-systems" ? (
                   <CrmSystemsHero />
+                ) : service.slug === "creative-branding-makeovers" ? (
+                  <CreativeBrandingHero />
                 ) : (
                   <Wave />
                 )}
