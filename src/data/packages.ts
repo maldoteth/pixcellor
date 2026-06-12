@@ -656,7 +656,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "AI chat bot",
+    feature: "AI Chat Lead Gen",
     values: {
       "full-works": "—",
       elite: "Included",
