@@ -293,7 +293,6 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       { title: "CRM + lead bot", tag: "AI assistant", note: "Captures and qualifies inbound leads 24/7." },
       { title: "Analytics dashboard", tag: "Monthly report", note: "Traffic, conversions, search visibility." },
     ],
-    addOns: DEFAULT_ADDONS,
     includes: [
       {
         title: "Website & Edits",
@@ -385,7 +384,6 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       { title: "Ops automation suite", tag: "Zapier-grade", note: "Document extraction + workflow agents." },
       { title: "Landing page tests", tag: "A/B at speed", note: "Iterate landing variants weekly." },
     ],
-    addOns: DEFAULT_ADDONS,
     includes: [
       {
         title: "Everything in Growth, plus",
@@ -469,7 +467,6 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       { title: "Recruitment ATS", tag: "Custom software", note: "AI-assisted candidate sourcing & pipeline." },
       { title: "Enterprise dashboard", tag: "SSO + RBAC", note: "Multi-region, audit-logged analytics." },
     ],
-    addOns: DEFAULT_ADDONS,
     includes: [
       {
         title: "Everything in Scale, plus",
