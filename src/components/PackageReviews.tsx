@@ -292,7 +292,46 @@ export default function PackageReviews({ slug }: { slug: string }) {
                     </div>
                   </div>
 
+                  {showFormInDrawer && canReview && !hasOwnReview && (
+                    <div className="px-4 md:px-6 pb-4 space-y-3 border-t border-foreground/10 pt-4 mt-2">
+                      <div className="text-sm font-semibold">Leave a review</div>
+                      <StarPicker value={form.rating} onChange={(n) => setForm((f) => ({ ...f, rating: n }))} />
+                      <Input
+                        placeholder="Your name"
+                        value={form.name}
+                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                        maxLength={60}
+                      />
+                      <Input
+                        placeholder="Title (optional)"
+                        value={form.title}
+                        onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                        maxLength={120}
+                      />
+                      <Textarea
+                        placeholder="What did you think?"
+                        value={form.body}
+                        onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
+                        rows={4}
+                        maxLength={1000}
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button onClick={submit} disabled={submitting} variant="pricing">
+                          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Post review"}
+                        </Button>
+                        <button
+                          type="button"
+                          onClick={() => setShowFormInDrawer(false)}
+                          className="text-xs uppercase tracking-wider text-foreground/60 hover:text-foreground"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="overflow-y-auto px-4 md:px-6 pb-6">
+
                     {filtered.length === 0 ? (
                       <p className="text-sm text-foreground/60 py-6 text-center">No reviews match.</p>
                     ) : (
