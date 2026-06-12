@@ -233,10 +233,21 @@ export default function PackageReviews({ slug }: { slug: string }) {
                 </DrawerTrigger>
                 <DrawerContent className="max-h-[90vh]">
                   <DrawerHeader>
-                    <DrawerTitle className="text-xs uppercase tracking-[0.22em] text-foreground/60">
-                      All reviews ({reviews.length})
-                    </DrawerTitle>
+                    <div className="flex items-center justify-between gap-3">
+                      <DrawerTitle className="text-xs uppercase tracking-[0.22em] text-foreground/60">
+                        All reviews ({reviews.length})
+                      </DrawerTitle>
+                      <button
+                        type="button"
+                        onClick={handleAddReviewClick}
+                        aria-label="Add a review"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-foreground/20 bg-foreground/[0.04] text-foreground/80 hover:text-foreground hover:bg-foreground/10 transition-colors"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
                   </DrawerHeader>
+
 
                   <div className="px-4 md:px-6 pb-2 space-y-3">
                     <div className="relative">
