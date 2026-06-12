@@ -195,7 +195,7 @@ export default function PackageReviews({ slug }: { slug: string }) {
                     type="button"
                     className="text-sm font-semibold text-foreground/80 hover:text-foreground underline underline-offset-4"
                   >
-                    See All
+                    See all
                   </button>
                 </DrawerTrigger>
                 <DrawerContent className="max-h-[90vh]">
