@@ -16,11 +16,13 @@ export function useHeroReady() {
     };
     window.addEventListener("pixcellor:hero-circle", onCircle);
     window.addEventListener("pixcellor:hero-visible", onVisible);
-    const fallback = window.setTimeout(() => setReady(true), 2700);
+    // Show the top buttons immediately (still fading in via CSS transition)
+    // rather than waiting for the hero intro animation to complete.
+    const raf = requestAnimationFrame(() => setReady(true));
     return () => {
       window.removeEventListener("pixcellor:hero-circle", onCircle);
       window.removeEventListener("pixcellor:hero-visible", onVisible);
-      window.clearTimeout(fallback);
+      cancelAnimationFrame(raf);
     };
   }, []);
 
