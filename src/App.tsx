@@ -30,6 +30,7 @@ const CandidateApply = lazy(() => import("./pages/CandidateApply"));
 const CandidatePortal = lazy(() => import("./pages/CandidatePortal"));
 const VacancyRespond = lazy(() => import("./pages/VacancyRespond"));
 const PackageDetail = lazy(() => import("./pages/PackageDetail"));
+const Packages = lazy(() => import("./pages/Packages"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 
 const queryClient = new QueryClient({
@@ -113,6 +114,7 @@ const App = () => (
               <Route path="/me" element={<CandidatePortal />} />
               <Route path="/candidate-portal" element={<CandidatePortal />} />
               <Route path="/vacancy/respond" element={<VacancyRespond />} />
+              <Route path="/packages" element={<Packages />} />
               <Route path="/packages/:slug" element={<PackageDetail />} />
               <Route path="/portfolio" element={<Portfolio />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
