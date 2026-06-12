@@ -141,5 +141,15 @@ Deno.serve(async (req) => {
     }
   }
 
+  // Internal Pixcellor team notification (fire-and-forget)
+  await notifyInternalLead({
+    sourceLabel: `${customerWebsite.label} (via Pixcellor)`,
+    leadName: name,
+    leadEmail: email,
+    leadPhone: phone,
+    leadMessage: message,
+    contactId: data.id,
+  });
+
   return json(200, { ok: true, contact_id: data.id });
 });
