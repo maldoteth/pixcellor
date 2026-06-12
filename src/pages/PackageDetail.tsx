@@ -356,7 +356,17 @@ export default function PackageDetailPage() {
                   className="group rounded-xl border border-foreground/10 bg-foreground/[0.03] p-5 backdrop-blur-md transition-colors hover:border-foreground/25"
                 >
                   <div className="aspect-[4/3] w-full overflow-hidden rounded-md mb-4 bg-gradient-to-br from-foreground/10 via-foreground/5 to-transparent flex items-center justify-center">
-                    <Sparkles className="h-6 w-6 text-foreground/40 transition-transform duration-500 group-hover:scale-110" />
+                    {s.image ? (
+                      <img
+                        src={s.image}
+                        alt={`${s.title} — ${s.tag}`}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      />
+                    ) : (
+                      <Sparkles className="h-6 w-6 text-foreground/40 transition-transform duration-500 group-hover:scale-110" />
+                    )}
                   </div>
                   <div className="text-[10px] uppercase tracking-[0.18em] text-foreground/55 mb-1">{s.tag}</div>
                   <div className="text-sm font-semibold">{s.title}</div>
