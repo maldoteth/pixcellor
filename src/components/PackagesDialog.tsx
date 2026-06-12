@@ -1000,7 +1000,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <PackageExamples
           label="What £500 buys you:"
           items={[
-            { name: "Anna's Bees", url: "https://annasbees.pixcellor.com" },
+            { name: "Stoningale", url: "https://stoningale.com" },
             { name: "Life Brownie", url: "https://lifebrownie.com" },
             { name: "Set In Stone", url: "https://setinstonesouthern.pixcellor.com" },
           ]}
@@ -1535,7 +1535,7 @@ function MobileCards() {
         <PackageExamples
           label="What £500 buys you:"
           items={[
-            { name: "Anna's Bees", url: "https://annasbees.pixcellor.com" },
+            { name: "Stoningale", url: "https://stoningale.com" },
             { name: "Life Brownie", url: "https://lifebrownie.com" },
             { name: "Set In Stone", url: "https://setinstonesouthern.pixcellor.com" },
           ]}
