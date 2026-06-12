@@ -1115,14 +1115,6 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   </li>
                 ))}
               </ul>
-              <PackageExamples
-                label="What the retainer builds:"
-                items={[
-                  { name: "Last Chad Standing", url: "https://lastchadstanding.com" },
-                  { name: "DeHub", url: "https://dehub.io" },
-                  { name: "TikUp", url: "https://tikup.xyz" },
-                ]}
-              />
               <GlassBuyButton
                 onClick={() =>
                   buy(
@@ -1606,14 +1598,6 @@ function MobileCards() {
                   </li>
                 ))}
               </ul>
-              <PackageExamples
-                label="What the retainer builds:"
-                items={[
-                  { name: "Last Chad Standing", url: "https://lastchadstanding.com" },
-                  { name: "DeHub", url: "https://dehub.io" },
-                  { name: "TikUp", url: "https://tikup.xyz" },
-                ]}
-              />
               <GlassBuyButton
                 onClick={() =>
                   buy(
