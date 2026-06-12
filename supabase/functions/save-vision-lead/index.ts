@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+import { notifyInternalLead } from "../_shared/notify-internal-lead.ts";
 
 const BodySchema = z.object({
   company: z.string().max(2000).optional().nullable(),
@@ -164,6 +165,16 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Internal Pixcellor team notification (fire-and-forget) — only on first create
+    await notifyInternalLead({
+      sourceLabel: "Pixcellor — AI Vision Generator",
+      leadName: name || undefined,
+      leadEmail: email || undefined,
+      leadPhone: phone || undefined,
+      leadMessage: company ? `Company / brand: ${company}` : undefined,
+      contactId: inserted!.id,
+    });
 
     return new Response(JSON.stringify({ ok: true, contactId: inserted?.id, action: "created" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

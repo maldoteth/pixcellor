@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+import { notifyInternalLead } from "../_shared/notify-internal-lead.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -258,6 +259,24 @@ Deno.serve(async (req) => {
       } else {
         welcomeSent = true;
       }
+    }
+
+    // Internal Pixcellor team notification (fire-and-forget)
+    if (!isPartial) {
+      const messageParts = [
+        company ? `Company: ${company}` : "",
+        dream ? `Dream: ${dream}` : "",
+        colours ? `Colours: ${colours}` : "",
+        attachments.length ? `Attachments:\n${attachments.join("\n")}` : "",
+      ].filter(Boolean);
+      await notifyInternalLead({
+        sourceLabel: `Pixcellor — ${isSampleRequest ? "Free Sample Request" : "Let's Talk"}`,
+        leadName: name,
+        leadEmail: email,
+        leadPhone: phone,
+        leadMessage: messageParts.join("\n\n"),
+        contactId,
+      });
     }
 
     return new Response(JSON.stringify({ ok: true, contact_id: contactId, callback_scheduled: !!phone, welcome_sent: welcomeSent }), {

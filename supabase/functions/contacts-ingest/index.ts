@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+import { notifyInternalLead } from "../_shared/notify-internal-lead.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -139,6 +140,16 @@ Deno.serve(async (req) => {
       console.warn("customer notification email error:", e);
     }
   }
+
+  // Internal Pixcellor team notification (fire-and-forget)
+  await notifyInternalLead({
+    sourceLabel: `${customerWebsite.label} (via Pixcellor)`,
+    leadName: name,
+    leadEmail: email,
+    leadPhone: phone,
+    leadMessage: message,
+    contactId: data.id,
+  });
 
   return json(200, { ok: true, contact_id: data.id });
 });
