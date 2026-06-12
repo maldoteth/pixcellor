@@ -157,13 +157,11 @@ export default function PackageReviews({ slug }: { slug: string }) {
             <div className="mt-6 border-t border-foreground/10 pt-5">
               {!userId ? (
                 <div className="text-sm text-foreground/70">
-                  <span className="font-semibold text-foreground">Customers only.</span>{" "}
-                  Reviews can be left by customers who have purchased a package.
+                  See All
                 </div>
               ) : !canReview ? (
                 <div className="text-sm text-foreground/70">
-                  <span className="font-semibold text-foreground">Customers only.</span>{" "}
-                  Reviews can be left by customers who have purchased a package.
+                  See All
                 </div>
               ) : hasOwnReview ? (
                 <div className="text-sm text-foreground/70">Thanks — your review is published.</div>
