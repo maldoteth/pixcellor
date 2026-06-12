@@ -139,6 +139,8 @@ export default function ServiceSalesView({
                   <EcommerceStoresHero />
                 ) : service.slug === "crm-systems" ? (
                   <CrmSystemsHero />
+                ) : service.slug === "creative-branding-makeovers" ? (
+                  <CreativeBrandingHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
