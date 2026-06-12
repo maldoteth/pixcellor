@@ -110,14 +110,6 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment",
     ogImage: ogFullWorks,
-    rating: { value: 4.9, count: 132 },
-    testimonial: {
-      quote:
-        "Live in a week, looks better than the £4k quote we had elsewhere. The team handled everything — domain, hosting, the lot.",
-      author: "Sarah K.",
-      role: "Founder, independent salon",
-      rating: 5,
-    },
     sampleWork: [
       { title: "Salon brochure site", tag: "3 pages · booking form", note: "Local service business, mobile-first.", image: imgSalonBrochure },
       { title: "Consultant landing", tag: "1 page · lead capture", note: "Single-page site optimised for conversion.", image: imgConsultantLanding },
@@ -196,14 +188,6 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     mode: "payment",
     featured: true,
     ogImage: ogElite,
-    rating: { value: 5.0, count: 78 },
-    testimonial: {
-      quote:
-        "Pixcellor turned a vague idea into a fully working web app in two weeks. Auth, payments, dashboard — the lot. Looks like a £25k build.",
-      author: "Marcus T.",
-      role: "Founder, SaaS startup",
-      rating: 5,
-    },
     sampleWork: [
       { title: "Animated brand site", tag: "10 pages · WebGL hero", note: "Scroll-driven 3D, custom illustrations.", image: imgAnimatedBrandSite },
       { title: "SaaS web app MVP", tag: "Auth · DB · Stripe", note: "Full-stack product launched in 10 days.", image: imgSaasMvp },
@@ -297,14 +281,6 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     yearlyBilling: "Billed annually · save £200",
     yearlyPriceId: "price_1Tcg03BtUjwejeUwr7mYzuUb",
     yearlySavings: "Save £200/yr",
-    rating: { value: 4.9, count: 64 },
-    testimonial: {
-      quote:
-        "Replaced our developer, our CMS and our support inbox with one £100/month plan. Edits ship same week, no drama.",
-      author: "Priya R.",
-      role: "Owner, boutique agency",
-      rating: 5,
-    },
     sampleWork: [
       { title: "Always-on brochure site", tag: "Unlimited edits", note: "Live updates on demand, no developer required.", image: imgAlwaysOnBrochure },
       { title: "CRM + lead bot", tag: "AI assistant", note: "Captures and qualifies inbound leads 24/7.", image: imgCrmLeadBot },
@@ -388,14 +364,6 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     yearlyPriceId: "price_1Tcg0ABtUjwejeUwLc5nw8nX",
     yearlySavings: "Save £1,000/yr",
     scheduleCallUrl: CAL_URL,
-    rating: { value: 5.0, count: 41 },
-    testimonial: {
-      quote:
-        "We swapped two SDRs and a part-time dev for Scale. Within a quarter the AI agents booked 3× the meetings at a fraction of the cost.",
-      author: "James L.",
-      role: "COO, B2B services",
-      rating: 5,
-    },
     sampleWork: [
       { title: "AI sales agent", tag: "Voice + chat", note: "Books meetings 24/7 directly into the calendar.", image: imgAiSalesAgent },
       { title: "Ops automation suite", tag: "Zapier-grade", note: "Document extraction + workflow agents.", image: imgOpsAutomation },
@@ -471,14 +439,6 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     yearlySavings: "Save £10,000/yr",
     scheduleCallUrl: CAL_URL,
-    rating: { value: 5.0, count: 22 },
-    testimonial: {
-      quote:
-        "Having a fractional CTO and a dedicated squad changed the trajectory of the business. We shipped more in 90 days than the prior year.",
-      author: "Elena M.",
-      role: "CEO, Series A fintech",
-      rating: 5,
-    },
     sampleWork: [
       { title: "MVP sprint", tag: "2-week launches", note: "Fully working product every fortnight.", image: imgMvpSprint },
       { title: "Recruitment ATS", tag: "Custom software", note: "AI-assisted candidate sourcing & pipeline.", image: imgRecruitmentAts },
