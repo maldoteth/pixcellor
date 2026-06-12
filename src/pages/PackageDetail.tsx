@@ -17,6 +17,7 @@ import {
 import SeoHead from "@/components/SeoHead";
 import { Button } from "@/components/ui/button";
 import PackageCompareTable from "@/components/PackageCompareTable";
+import PackageReviews from "@/components/PackageReviews";
 import { PACKAGE_DETAILS, type PackageDetail, type PackageCta } from "@/data/packages";
 
 const SITE_ORIGIN = "https://pixcellor.com";
