@@ -120,6 +120,13 @@ export default function PackageReviews({ slug }: { slug: string }) {
     };
   }, [slug]);
 
+  useEffect(() => {
+    const open = () => setDrawerOpen(true);
+    window.addEventListener("pixcellor:open-reviews-drawer", open);
+    return () => window.removeEventListener("pixcellor:open-reviews-drawer", open);
+  }, []);
+
+
   const hasOwnReview = !!userId && reviews.some((r) => r.user_id && r.user_id === userId);
 
   // Top of page: only most recent 5-star reviews (max 5)
