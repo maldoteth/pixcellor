@@ -211,9 +211,17 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
 
   return (
     <div
-      className={cn('relative w-full h-full', interactive && isFrontFacing && 'cursor-pointer')}
-      style={{ pointerEvents: interactive && isFrontFacing ? 'auto' : 'none' }}
+      className={cn('relative w-full h-full', interactive && 'cursor-pointer')}
+      style={{ pointerEvents: interactive ? 'auto' : 'none', touchAction: 'none' }}
+      role="link"
+      tabIndex={interactive ? 0 : -1}
       onClick={openLink}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') openLink(e as unknown as React.MouseEvent);
+      }}
     >
       {/* Touch-driven halo (mobile only). Sits behind the card; only the ring
           beyond the card's edge is visible because the inner card is opaque. */}
@@ -608,12 +616,11 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
                     transition: 'opacity 0.3s ease-out',
-                    pointerEvents: isFrontFacing ? 'auto' : 'none',
+                    pointerEvents: interactive ? 'auto' : 'none',
                   }}
                 >
                   <GalleryCard
                     item={item}
-                    isFrontFacing={isFrontFacing}
                     interactive={interactive}
                     mobileMode={isMobile}
                     glowIntensity={glowIntensities[i] ?? 0}
