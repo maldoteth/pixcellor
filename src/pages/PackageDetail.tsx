@@ -75,18 +75,24 @@ const fadeUp = {
 
 function StarRow({ count }: { count: number }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <button
+      type="button"
+      onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-reviews-drawer"))}
+      className="flex items-center gap-1.5 group rounded-md -mx-1 px-1 py-0.5 hover:bg-foreground/5 transition-colors"
+      aria-label="See all reviews"
+    >
       <div className="flex items-center gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
           <Star key={i} className="h-3.5 w-3.5 fill-foreground text-foreground" />
         ))}
       </div>
-      <span className="text-xs text-foreground/70">
+      <span className="text-xs text-foreground/70 group-hover:text-foreground underline-offset-4 group-hover:underline">
         5.0 · {count} {count === 1 ? "review" : "reviews"}
       </span>
-    </div>
+    </button>
   );
 }
+
 
 function JsonLd({ pkg }: { pkg: PackageDetail }) {
   const data = useMemo(
