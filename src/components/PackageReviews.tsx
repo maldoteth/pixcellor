@@ -128,7 +128,7 @@ export default function PackageReviews({ slug }: { slug: string }) {
 
   return (
     <section className="mb-12 md:mb-16">
-      <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">Customer reviews</h2>
+      <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">TESTIMONIALS&nbsp;</h2>
 
       <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-5 md:p-6 backdrop-blur-md">
         {loading ? (
