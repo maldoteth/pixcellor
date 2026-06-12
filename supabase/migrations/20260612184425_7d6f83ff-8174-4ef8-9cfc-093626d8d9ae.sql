@@ -1,0 +1,1 @@
+UPDATE public.portfolio_projects SET image_url = '/portfolio/wayne-sherlock.png' WHERE name = 'Wayne Sherlock Plastering';
