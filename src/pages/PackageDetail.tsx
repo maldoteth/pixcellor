@@ -95,13 +95,6 @@ function JsonLd({ pkg }: { pkg: PackageDetail }) {
       name: `Pixcellor ${pkg.name}`,
       description: pkg.blurb,
       brand: { "@type": "Brand", name: "Pixcellor" },
-      ...(pkg.rating && {
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: pkg.rating.value,
-          reviewCount: pkg.rating.count,
-        },
-      }),
       offers: {
         "@type": "Offer",
         price: pkg.price.replace(/[^0-9.]/g, ""),
