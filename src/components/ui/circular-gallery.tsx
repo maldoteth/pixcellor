@@ -540,51 +540,67 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
           className="relative w-full h-full"
           style={{ transformStyle: 'preserve-3d' }}
         >
-          {items.map((item, i) => {
-            const itemAngle = i * anglePerItem;
-            const totalRotation = effectiveRotation % 360;
-            const relativeAngle = (itemAngle + totalRotation + 360) % 360;
-            const normalizedAngle = Math.abs(
-              relativeAngle > 180 ? 360 - relativeAngle : relativeAngle
-            );
-            const depthDim = Math.max(0.68, 1 - normalizedAngle / 420);
-            const isFrontFacing = normalizedAngle < 75;
+          {(() => {
+            // Pre-compute which card is closest to fully front-facing.
+            // Only that card is clickable so foreshortened side cards
+            // can't steal clicks from the visually-front card next to them.
+            let frontIdx = 0;
+            let frontDelta = Infinity;
+            const totalRot = effectiveRotation % 360;
+            items.forEach((_, i) => {
+              const rel = (i * anglePerItem + totalRot + 360) % 360;
+              const norm = Math.abs(rel > 180 ? 360 - rel : rel);
+              if (norm < frontDelta) {
+                frontDelta = norm;
+                frontIdx = i;
+              }
+            });
+            return items.map((item, i) => {
+              const itemAngle = i * anglePerItem;
+              const totalRotation = effectiveRotation % 360;
+              const relativeAngle = (itemAngle + totalRotation + 360) % 360;
+              const normalizedAngle = Math.abs(
+                relativeAngle > 180 ? 360 - relativeAngle : relativeAngle
+              );
+              const depthDim = Math.max(0.68, 1 - normalizedAngle / 420);
+              const isFrontFacing = i === frontIdx;
 
-            return (
-              <div
-                key={i}
-                ref={(el) => {
-                  cardRefs.current[i] = el;
-                }}
-                className="absolute top-1/2 left-1/2"
-                style={{
-                  width: cardW,
-                  height: cardH,
-                  marginLeft: -cardW / 2,
-                  marginTop: -cardH / 2,
-                  transform: `rotateY(${itemAngle + effectiveRotation}deg) translateZ(${effectiveRadius}px)`,
-                  transformStyle: 'preserve-3d',
-                  backfaceVisibility: 'hidden',
-                  WebkitBackfaceVisibility: 'hidden',
-                  transition: 'opacity 0.3s ease-out',
-                  pointerEvents: isFrontFacing ? 'auto' : 'none',
-                }}
-              >
-                <GalleryCard
-                  item={item}
-                  isFrontFacing={isFrontFacing}
-                  interactive={interactive}
-                  mobileMode={isMobile}
-                  glowIntensity={glowIntensities[i] ?? 0}
-                />
+              return (
                 <div
-                  className="absolute inset-0 bg-black pointer-events-none rounded-2xl"
-                  style={{ opacity: 1 - depthDim }}
-                  aria-hidden
-                />
-              </div>
-            );
-          })}
+                  key={i}
+                  ref={(el) => {
+                    cardRefs.current[i] = el;
+                  }}
+                  className="absolute top-1/2 left-1/2"
+                  style={{
+                    width: cardW,
+                    height: cardH,
+                    marginLeft: -cardW / 2,
+                    marginTop: -cardH / 2,
+                    transform: `rotateY(${itemAngle + effectiveRotation}deg) translateZ(${effectiveRadius}px)`,
+                    transformStyle: 'preserve-3d',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transition: 'opacity 0.3s ease-out',
+                    pointerEvents: isFrontFacing ? 'auto' : 'none',
+                  }}
+                >
+                  <GalleryCard
+                    item={item}
+                    isFrontFacing={isFrontFacing}
+                    interactive={interactive}
+                    mobileMode={isMobile}
+                    glowIntensity={glowIntensities[i] ?? 0}
+                  />
+                  <div
+                    className="absolute inset-0 bg-black pointer-events-none rounded-2xl"
+                    style={{ opacity: 1 - depthDim }}
+                    aria-hidden
+                  />
+                </div>
+              );
+            });
+          })()}
         </div>
       </div>
     );
