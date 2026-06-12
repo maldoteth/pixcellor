@@ -113,7 +113,9 @@ export default function ServiceSalesView({
     service.slug === "video-3d-animations" ||
     service.slug === "internal-tools" ||
     service.slug === "ecommerce-stores" ||
-    service.slug === "crm-systems";
+    service.slug === "crm-systems" ||
+    service.slug === "creative-branding-makeovers" ||
+    service.slug === "documents-and-decks";
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
