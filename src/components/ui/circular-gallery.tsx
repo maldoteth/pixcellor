@@ -574,22 +574,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
           className="relative w-full h-full"
           style={{ transformStyle: 'preserve-3d' }}
         >
-          {(() => {
-            // Pre-compute which card is closest to fully front-facing.
-            // Only that card is clickable so foreshortened side cards
-            // can't steal clicks from the visually-front card next to them.
-            let frontIdx = 0;
-            let frontDelta = Infinity;
-            const totalRot = effectiveRotation % 360;
-            items.forEach((_, i) => {
-              const rel = (i * anglePerItem + totalRot + 360) % 360;
-              const norm = Math.abs(rel > 180 ? 360 - rel : rel);
-              if (norm < frontDelta) {
-                frontDelta = norm;
-                frontIdx = i;
-              }
-            });
-            return items.map((item, i) => {
+          {items.map((item, i) => {
               const itemAngle = i * anglePerItem;
               const totalRotation = effectiveRotation % 360;
               const relativeAngle = (itemAngle + totalRotation + 360) % 360;
@@ -597,7 +582,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                 relativeAngle > 180 ? 360 - relativeAngle : relativeAngle
               );
               const depthDim = Math.max(0.68, 1 - normalizedAngle / 420);
-              const isFrontFacing = i === frontIdx;
 
               return (
                 <div
@@ -632,8 +616,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   />
                 </div>
               );
-            });
-          })()}
+            })}
         </div>
       </div>
     );
