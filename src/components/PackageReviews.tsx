@@ -72,6 +72,7 @@ function ReviewItem({ r }: { r: Review }) {
 
 export default function PackageReviews({ slug }: { slug: string }) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -84,6 +85,29 @@ export default function PackageReviews({ slug }: { slug: string }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filterStar, setFilterStar] = useState<number | null>(null);
   const [query, setQuery] = useState("");
+  const [showFormInDrawer, setShowFormInDrawer] = useState(false);
+
+  const handleAddReviewClick = () => {
+    if (!userId) {
+      toast({ title: "Please sign in", description: "Log in as a customer to leave a review." });
+      navigate(`/customer-login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+    if (!canReview) {
+      toast({
+        title: "Customers only",
+        description: "Only customers who have purchased a package can leave a review.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (hasOwnReview) {
+      toast({ title: "Already reviewed", description: "Thanks — your review is already published." });
+      return;
+    }
+    setShowFormInDrawer(true);
+  };
+
 
   useEffect(() => {
     let mounted = true;
