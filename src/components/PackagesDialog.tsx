@@ -921,14 +921,6 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             </li>
           ))}
         </ul>
-        <PackageExamples
-          label="What £150 buys you:"
-          items={[
-            { name: "Oak Shore", url: "https://oakshore.homes" },
-            { name: "First Class", url: "https://firstclassagencytiktok.com" },
-            { name: "DeLabs", url: "https://delabs.co.uk" },
-          ]}
-        />
         <GlassBuyButton
           onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
           disabled={!!loading}
@@ -997,14 +989,6 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             </li>
           ))}
         </ul>
-        <PackageExamples
-          label="What £500 buys you:"
-          items={[
-            { name: "Stoningale", url: "https://stoningale.com" },
-            { name: "Life Brownie", url: "https://lifebrownie.com" },
-            { name: "Set In Stone", url: "https://setinstonesouthern.pixcellor.com" },
-          ]}
-        />
         <div className="mt-3">
         <GlassBuyButton
           onClick={() =>
@@ -1492,14 +1476,6 @@ function MobileCards() {
             </li>
           ))}
         </ul>
-        <PackageExamples
-          label="What £150 buys you:"
-          items={[
-            { name: "Oak Shore", url: "https://oakshore.homes" },
-            { name: "First Class", url: "https://firstclassagencytiktok.com" },
-            { name: "DeLabs", url: "https://delabs.co.uk" },
-          ]}
-        />
         <GlassBuyButton
           onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
           disabled={!!loading}
@@ -1532,14 +1508,6 @@ function MobileCards() {
             </li>
           ))}
         </ul>
-        <PackageExamples
-          label="What £500 buys you:"
-          items={[
-            { name: "Stoningale", url: "https://stoningale.com" },
-            { name: "Life Brownie", url: "https://lifebrownie.com" },
-            { name: "Set In Stone", url: "https://setinstonesouthern.pixcellor.com" },
-          ]}
-        />
         <GlassBuyButton
           onClick={() =>
             buy(
