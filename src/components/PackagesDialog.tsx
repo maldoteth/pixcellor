@@ -79,7 +79,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tcg07BtUjwejeUwfGGDhftV",
     yearlyPriceId: "price_1Tcg0ABtUjwejeUwLc5nw8nX",
     features: [
-      "Everything in Growth",
+      "\n",
       "Unlimited seats & users",
       "Unlimited edits & revisions",
       "Priority support 24/7 365",
