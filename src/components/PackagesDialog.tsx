@@ -97,7 +97,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     features: [
-      "Everything in Scale",
+      "\n",
       "Fractional CTO, CMO & CRO",
       "Dedicated dev & ops team",
       "Monthly MVP sprints",
