@@ -1107,8 +1107,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   : `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} with yearly`}
               </div>
               <ul className="mb-4 space-y-2 text-base text-foreground">
-                {RETAINER_TIERS[retainerTier].features.map((f) => (
-                  <li key={f} className="flex items-start gap-2">
+                {RETAINER_TIERS[retainerTier].features.map((f, i) => (
+                  <li key={`${f}-${i}`} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                     {f}
                   </li>
