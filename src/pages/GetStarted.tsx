@@ -21,6 +21,7 @@ import HoneypotField from "@/components/HoneypotField";
 import { useAntiSpam } from "@/lib/anti-spam";
 import { supabase } from "@/integrations/supabase/client";
 import { trackAdsConversion } from "@/lib/ads-tracking";
+import CallBookingPicker, { type BookingSelection } from "@/components/CallBookingPicker";
 
 import hays from "@/assets/logos/hays.svg";
 import manpower from "@/assets/logos/manpower.svg";
@@ -104,6 +105,10 @@ const GetStarted = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [booking, setBooking] = useState<BookingSelection | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [confirmedLabel, setConfirmedLabel] = useState<string>("");
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const { honeypotValue, setHoneypotValue, isHuman } = useAntiSpam();
 
   useEffect(() => {
@@ -112,6 +117,20 @@ const GetStarted = () => {
     return () => {
       document.documentElement.style.scrollBehavior = "";
     };
+  }, []);
+
+  // Fetch booked slots for the next 30 days so we can hide them in the picker
+  useEffect(() => {
+    const from = new Date();
+    const to = new Date();
+    to.setDate(to.getDate() + 35);
+    const url = `https://rkgjkvghejcmostuqkgw.supabase.co/functions/v1/book-call?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.ok && Array.isArray(data.booked)) setBookedSlots(data.booked);
+      })
+      .catch(() => {});
   }, []);
 
   const scrollToForm = () => {
@@ -125,6 +144,7 @@ const GetStarted = () => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setBookingError(null);
     const parsed = schema.safeParse(values);
     if (!parsed.success) {
       const fieldErrors: Partial<Record<keyof FormValues, string>> = {};
@@ -135,6 +155,10 @@ const GetStarted = () => {
       setErrors(fieldErrors);
       return;
     }
+    if (!booking) {
+      setBookingError("Pick a time or a callback preference above.");
+      return;
+    }
     if (!isHuman()) {
       // Silently "succeed" for bots.
       setDone(true);
@@ -142,40 +166,42 @@ const GetStarted = () => {
     }
     setSubmitting(true);
     try {
-      const requestDetails = {
-        company: values.company?.trim() || null,
-        brief: values.brief?.trim() || null,
-        landing_page: "/get-started",
-        utm: typeof window !== "undefined" ? window.location.search || null : null,
-      };
-
-      const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
-        name: values.name.trim(),
-        email: values.email.trim(),
-        phone: values.phone.trim(),
-        source: "ads_landing",
-        request_details: requestDetails,
-        attachment_urls: null,
+      const { data, error } = await supabase.functions.invoke("book-call", {
+        body: {
+          name: values.name.trim(),
+          email: values.email.trim(),
+          phone: values.phone.trim(),
+          company: values.company?.trim() || null,
+          brief: values.brief?.trim() || null,
+          preference: booking.preference,
+          scheduled_at: booking.scheduledAt,
+          source: "ads_landing",
+          hp: honeypotValue,
+        },
       });
-      if (insertErr) throw insertErr;
+      if (error) throw error;
+      if (!data?.ok) {
+        if (data?.error === "slot_taken") {
+          setBookingError("Sorry — that slot was just taken. Please pick another time.");
+          // refresh booked slots
+          const from = new Date();
+          const to = new Date();
+          to.setDate(to.getDate() + 35);
+          const url = `https://rkgjkvghejcmostuqkgw.supabase.co/functions/v1/book-call?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`;
+          fetch(url).then((r) => r.json()).then((d) => {
+            if (d?.ok) setBookedSlots(d.booked || []);
+          }).catch(() => {});
+          setBooking(null);
+          return;
+        }
+        throw new Error(data?.error || "unknown_error");
+      }
 
-      supabase.functions
-        .invoke("process-lets-talk-lead", {
-          body: {
-            name: values.name.trim(),
-            email: values.email.trim(),
-            phone: values.phone.trim(),
-            source: "ads_landing",
-            request_details: requestDetails,
-            attachment_urls: null,
-          },
-        })
-        .catch((err) => console.error("process-lets-talk-lead failed:", err));
-
+      setConfirmedLabel(data.when_label || data.preference_label || booking.label);
       trackAdsConversion();
       setDone(true);
     } catch (err) {
-      console.error("ads landing submit failed", err);
+      console.error("book-call submit failed", err);
       toast.error("Something went wrong — please try again or email hello@pixcellor.com.");
     } finally {
       setSubmitting(false);
@@ -358,6 +384,18 @@ const GetStarted = () => {
                       />
                     </div>
 
+                    {/* iOS-style calendar booking */}
+                    <div className="pt-2 border-t border-white/10">
+                      <CallBookingPicker
+                        bookedSlots={bookedSlots}
+                        value={booking}
+                        onChange={(v) => { setBooking(v); setBookingError(null); }}
+                      />
+                      {bookingError && (
+                        <p className="mt-2 text-xs text-red-400">{bookingError}</p>
+                      )}
+                    </div>
+
                     <Button
                       type="submit"
                       disabled={submitting}
@@ -365,17 +403,17 @@ const GetStarted = () => {
                     >
                       {submitting ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin" /> Sending…
+                          <Loader2 className="w-4 h-4 animate-spin" /> Booking…
                         </>
                       ) : (
                         <>
-                          Book my free call <ArrowRight className="w-4 h-4" />
+                          Confirm my call <ArrowRight className="w-4 h-4" />
                         </>
                       )}
                     </Button>
 
                     <p className="text-[11px] text-white/40 text-center">
-                      By submitting you agree to be contacted by Pixcellor about your enquiry. We never share your details.
+                      You&apos;ll get an instant email confirmation. By submitting you agree to be contacted by Pixcellor about your enquiry.
                     </p>
                   </form>
                 </>
@@ -388,9 +426,11 @@ const GetStarted = () => {
                   <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-center mx-auto mb-5">
                     <Check className="w-7 h-7 text-emerald-400" />
                   </div>
-                  <h2 className="text-2xl font-semibold">You&apos;re in.</h2>
+                  <h2 className="text-2xl font-semibold">You&apos;re booked in.</h2>
                   <p className="mt-2 text-white/70">
-                    We&apos;ll call or email you within 1 working hour. Keep an eye on your inbox.
+                    {confirmedLabel
+                      ? <>We&apos;ll call you on <span className="text-white">{confirmedLabel}</span>. A confirmation is on its way to your inbox.</>
+                      : <>We&apos;ll be in touch shortly. A confirmation is on its way to your inbox.</>}
                   </p>
                   <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
                     <Link to="/portfolio">

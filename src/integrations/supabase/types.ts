@@ -118,6 +118,57 @@ export type Database = {
           },
         ]
       }
+      call_bookings: {
+        Row: {
+          brief: string | null
+          company: string | null
+          contact_id: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          preference: string
+          scheduled_at: string | null
+          source: string
+          status: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          brief?: string | null
+          company?: string | null
+          contact_id?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          preference?: string
+          scheduled_at?: string | null
+          source?: string
+          status?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          brief?: string | null
+          company?: string | null
+          contact_id?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          preference?: string
+          scheduled_at?: string | null
+          source?: string
+          status?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       candidate_applications: {
         Row: {
           applied_at: string
