@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Check, Loader2, Sparkles, Zap, ShieldCheck, ArrowRight } from "lucide-react";
+import {
+  Check, Loader2, ArrowRight,
+  Infinity as InfinityIcon, Gauge, ShieldCheck, Bot, Wrench, Headphones,
+  Megaphone, Code2, Briefcase,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 import SeoHead from "@/components/SeoHead";
@@ -22,6 +26,9 @@ import { useAntiSpam } from "@/lib/anti-spam";
 import { supabase } from "@/integrations/supabase/client";
 import { trackAdsConversion } from "@/lib/ads-tracking";
 import CallBookingPicker, { type BookingSelection } from "@/components/CallBookingPicker";
+import PackageCompareTable from "@/components/PackageCompareTable";
+import { PACKAGE_DETAILS } from "@/data/packages";
+import { SERVICES, SERVICE_CATEGORIES, type ServiceCategory } from "@/data/services";
 
 import hays from "@/assets/logos/hays.svg";
 import manpower from "@/assets/logos/manpower.svg";
@@ -52,44 +59,89 @@ const TRUST_LOGOS = [
   { src: bluearrow, alt: "Blue Arrow" },
 ];
 
+// Real past clients pulled from services data (telesales + recruitment).
+const PAST_CLIENTS = [
+  "3M", "Barclays Bank", "Guide Dogs", "NHS",
+  "TikTok", "LinkedIn", "Berkeley Homes", "Bupa",
+  "Galliford Try", "Morgan Sindall",
+];
+
+// Real differentiators, not marketing fluff.
 const FEATURES = [
   {
-    icon: Zap,
-    title: "Live in 24 hours",
-    body: "Most sites are designed, built and deployed within a single working day.",
-  },
-  {
-    icon: Sparkles,
-    title: "AI-powered, custom built",
-    body: "Bespoke design powered by AI — chatbots, booking, payments, automations built in.",
+    icon: Gauge,
+    title: "5–10 day turnaround",
+    body: "Full Works sites ship in 5–10 working days. Elite builds (10 pages, apps, animations) in 10 days. Edits on retainer are 1–3 days.",
   },
   {
     icon: ShieldCheck,
-    title: "UK studio, no contracts",
-    body: "From £299. Own your code. Cancel anytime. Real humans on email and WhatsApp.",
+    title: "Lifetime build warranty",
+    body: "One-off builds carry a lifetime warranty on defects. Retainers cover everything for as long as you're active. Own your code, no lock-in.",
+  },
+  {
+    icon: InfinityIcon,
+    title: "Unlimited revisions on Elite",
+    body: "Any visual or copy change during the build cycle — no per-edit fees. Growth and Scale retainers ship unlimited edits each month.",
+  },
+  {
+    icon: Bot,
+    title: "AI agents built in",
+    body: "Custom sales, support and ops agents wired into your CRM, inbox and calendars. Running 24/7 with audit logs and human-in-the-loop checkpoints.",
+  },
+  {
+    icon: Wrench,
+    title: "One team, full stack",
+    body: "Design, build, hosting, SEO/AEO, payments, automations, ads, branding, video, decks — handled by one senior team. No agency hand-offs.",
+  },
+  {
+    icon: Headphones,
+    title: "Real humans, no contracts",
+    body: "UK studio. Retainers are cancel-anytime monthly, or save up to £10K/yr annually. Email, chat and WhatsApp support — actual people.",
   },
 ];
+
+// Pulled live from packages.ts so prices/RRPs/billing stay in sync.
+const ONE_OFFS = ["full-works", "elite"] as const;
+const RETAINERS = ["retainer-growth", "retainer-scale", "retainer-enterprise"] as const;
+
+const CATEGORY_META: Record<ServiceCategory, { Icon: typeof Megaphone; blurb: string }> = {
+  marketing: { Icon: Megaphone, blurb: "Get found, get cited, get leads." },
+  tech: { Icon: Code2, blurb: "Sites, apps and AI built around your business." },
+  business: { Icon: Briefcase, blurb: "Ops, hiring and intel without the headcount." },
+};
 
 const FAQ = [
   {
     q: "How fast can you launch my site?",
-    a: "Most projects go live within 24 hours of brief approval. Larger builds (e-commerce, custom web apps) take 3–7 days.",
+    a: "Full Works sites typically go live 5–10 working days from a signed-off brief. Elite (up to 10 pages, animations, apps) is a 10-day turnaround. Retainer edits are 1–3 days; urgent fixes same-day.",
   },
   {
     q: "How much does it cost?",
-    a: "Sites start at £299 for a polished one-page launch. Multi-page sites, booking, and AI chat add-ons are quoted on the call — see our packages page for full pricing.",
+    a: "One-off builds: Full Works £150 (RRP £375) or Elite £500 (RRP £1,500). Retainers: Growth £100/mo, Scale £500/mo, Enterprise £2,500/mo — all cancel-anytime, with up to £10K/yr saved on annual. Add-ons (extra pages, copy, brand kit, migration, 3D hero, multilingual) are fixed price.",
   },
   {
-    q: "Do I own the site?",
-    a: "Yes. You own the code, content and domain outright. We can host it for you or hand it over to your developer.",
+    q: "Do I really own the site?",
+    a: "Yes — you own the code, content and domain outright. We can host it for you on our global CDN (free with the build) or hand it over to your developer with logins and docs.",
   },
   {
     q: "What if I don't like the first draft?",
-    a: "Every package includes unlimited revisions until you're happy. If we can't deliver something you love, you don't pay.",
+    a: "Full Works includes 1 revision round pre-launch. Elite includes unlimited revisions during the build — any visual or copy change, no per-edit fees. Retainers ship unlimited edits each month.",
   },
   {
-    q: "Can you integrate with X (Stripe, CRMs, Calendly…)?",
-    a: "Almost certainly yes. We've integrated Stripe, HubSpot, Salesforce, Twilio, Calendly, WhatsApp and dozens of others. Mention it on the call.",
+    q: "Can you build a full web app or SaaS?",
+    a: "Yes. Elite and the Scale/Enterprise retainers cover full-stack: React + TypeScript front-end, Postgres + edge-function back-end, auth, Stripe payments, file storage, real-time, admin dashboards and PWAs. We've shipped CRMs, ATSs, marketplaces and dApps.",
+  },
+  {
+    q: "Can you integrate with Stripe, HubSpot, Salesforce, Twilio, Cal.com, WhatsApp…?",
+    a: "Almost certainly yes. REST, GraphQL, webhooks, middleware, queues, retries and monitoring — we plumb your stack so it actually talks to itself. Mention the integrations on the call.",
+  },
+  {
+    q: "Who's actually on my project?",
+    a: "Senior UK team only. Operators who've launched products to 9-figure market caps, top-billing recruiters from Hays, Manpower, Randstad, ITS and Blue Arrow, and engineers who've shipped Shopify stores through tens of thousands of launch-day orders and top-300 crypto projects.",
+  },
+  {
+    q: "What about SEO and getting cited by ChatGPT?",
+    a: "Elite includes full technical SEO + AEO (Answer Engine Optimisation), JSON-LD schema, llms.txt and AI discoverability. Retainers add ongoing tuning, content briefs, link building and monthly ranking + AI-citation reports.",
   },
 ];
 
