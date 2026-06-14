@@ -166,15 +166,28 @@ const CallRoom = () => {
     } catch (e) {
       const err = e as DOMException;
       const inIframe = window.self !== window.top;
+      const ua = navigator.userAgent || "";
+      const isIOS = /iPad|iPhone|iPod/.test(ua);
+      // iOS in-app browsers (Gmail, Outlook, Instagram, FB, LinkedIn, TikTok, Snapchat) block getUserMedia.
+      // Safari UA on iOS contains "Safari/" AND "Version/". WKWebView in-app browsers usually lack "Safari/" or "Version/".
+      const isIOSInAppBrowser =
+        isIOS && (!/Safari\//.test(ua) || !/Version\//.test(ua) ||
+          /FBAN|FBAV|Instagram|Line|GSA\/|CriOS|FxiOS|EdgiOS|GMail|Outlook|LinkedInApp|Snapchat|TikTok/i.test(ua));
       let msg = "Couldn't access camera/microphone.";
       if (err?.name === "NotAllowedError" || err?.name === "SecurityError") {
-        msg = inIframe
-          ? "Camera/mic blocked because this page is loaded inside a preview frame. Open this call link in a new browser tab (not in the Lovable preview) and try again."
-          : "Permission was blocked. Click the camera icon in your browser's address bar, set Camera and Microphone to Allow for this site, then reload.";
+        if (inIframe) {
+          msg = "Camera/mic blocked because this page is loaded inside a preview frame. Open this call link in a new browser tab and try again.";
+        } else if (isIOSInAppBrowser) {
+          msg = "It looks like you opened this link inside an email or social app (Gmail, Outlook, Instagram, etc.). These in-app browsers block camera and microphone access on iPhone. Tap the ••• menu (or the share icon) and choose \"Open in Safari\", then try again.";
+        } else if (isIOS) {
+          msg = "Camera and microphone are blocked for this site in Safari. Open Settings → Safari → Camera / Microphone and set this site to Allow, then reload. If you tapped the link from an email or social app, open it in Safari directly.";
+        } else {
+          msg = "Permission was blocked. Click the camera icon in your browser's address bar, set Camera and Microphone to Allow for this site, then reload.";
+        }
       } else if (err?.name === "NotFoundError" || err?.name === "OverconstrainedError") {
         msg = "No camera or microphone was found on this device.";
       } else if (err?.name === "NotReadableError") {
-        msg = "Another app is using your camera or microphone. Close Zoom/Meet/Teams/OBS and try again.";
+        msg = "Another app is using your camera or microphone. Close Zoom/Meet/Teams/OBS/FaceTime and try again.";
       } else if (err?.message) {
         msg = `Couldn't access camera/microphone: ${err.message}`;
       }
