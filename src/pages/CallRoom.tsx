@@ -403,7 +403,7 @@ const CallRoom = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-black text-white flex flex-col" style={{ minHeight: "100dvh" }}>
       <SeoHead title="Pixcellor call" description="Live video call." path="/call" noindex />
       {/* Header */}
       <header className="px-5 py-3 flex items-center justify-between border-b border-white/10">
