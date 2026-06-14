@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
         scheduled_at: b.preference === "specific" ? b.scheduled_at : null,
         source,
       })
-      .select("id")
+      .select("id, host_token, guest_token")
       .single();
 
     if (insertErr) {
@@ -156,6 +156,13 @@ Deno.serve(async (req) => {
     const bookingId = booking.id;
     const whenLabel = b.preference === "specific" && b.scheduled_at ? formatLondon(b.scheduled_at) : "";
     const prefLabel = preferenceLabel(b.preference);
+
+    // Public site origin for call links
+    const siteOrigin = Deno.env.get("PUBLIC_SITE_URL") || "https://pixcellor.com";
+    const callLinkGuest = b.preference === "specific"
+      ? `${siteOrigin}/call/${bookingId}?t=${booking.guest_token}`
+      : "";
+    const callLinkHost = `${siteOrigin}/call/${bookingId}?t=${booking.host_token}`;
 
     // Mirror into contacts CRM
     let contactId: string | null = null;
@@ -227,6 +234,7 @@ Deno.serve(async (req) => {
             preferenceLabel: prefLabel,
             phone: b.phone,
             brief: b.brief || "",
+            callLink: callLinkGuest,
           },
         },
       });
@@ -246,6 +254,8 @@ Deno.serve(async (req) => {
         whenLabel ? `When: ${whenLabel}` : `Preference: ${prefLabel}`,
         b.company ? `Company: ${b.company}` : "",
         b.brief ? `Brief: ${b.brief}` : "",
+        `Host call link: ${callLinkHost}`,
+        callLinkGuest ? `Guest call link: ${callLinkGuest}` : "",
       ].filter(Boolean).join("\n\n"),
       contactId: contactId || bookingId,
     }).catch((e) => console.warn("internal notify failed:", e));
@@ -256,6 +266,8 @@ Deno.serve(async (req) => {
       when_label: whenLabel,
       preference_label: prefLabel,
       email_sent: emailSent,
+      call_link_guest: callLinkGuest,
+      call_link_host: callLinkHost,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("book-call error:", e);

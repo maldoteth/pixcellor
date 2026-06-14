@@ -1,5 +1,5 @@
 import * as React from 'npm:react@18.3.1'
-import { Body, Container, Head, Heading, Hr, Html, Preview, Section, Text } from 'npm:@react-email/components@0.0.22'
+import { Body, Button, Container, Head, Heading, Hr, Html, Preview, Section, Text } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
 const BRAND_NAME = 'Pixcellor'
@@ -10,9 +10,10 @@ type Props = {
   preferenceLabel?: string // human label like "Anytime callback"
   phone?: string
   brief?: string
+  callLink?: string // present only when a specific slot is booked
 }
 
-const Email = ({ name, whenLabel, preferenceLabel, phone, brief }: Props) => (
+const Email = ({ name, whenLabel, preferenceLabel, phone, brief, callLink }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>
@@ -35,6 +36,18 @@ const Email = ({ name, whenLabel, preferenceLabel, phone, brief }: Props) => (
               <Text style={cardMeta}>We&apos;ll call you on {phone}</Text>
             ) : null}
           </Section>
+
+          {callLink ? (
+            <Section style={{ textAlign: 'center' as const, margin: '8px 0 20px' }}>
+              <Button href={callLink} style={cta}>
+                Join the video call
+              </Button>
+              <Text style={cardMeta}>
+                Or paste this link in your browser at call time:<br />
+                <span style={{ wordBreak: 'break-all' as const }}>{callLink}</span>
+              </Text>
+            </Section>
+          ) : null}
 
           {brief ? (
             <>
@@ -96,3 +109,4 @@ const cardValue = { color: '#111111', fontSize: '18px', fontWeight: '600' as con
 const cardMeta = { color: '#444444', fontSize: '13px', lineHeight: '1.4', margin: '4px 0 0' }
 const hr = { borderColor: '#eaeaea', margin: '24px 0' }
 const signoff = { color: '#333333', fontSize: '15px', lineHeight: '1.6', margin: '24px 0 0' }
+const cta = { backgroundColor: '#111111', color: '#ffffff', padding: '12px 22px', borderRadius: '8px', textDecoration: 'none', fontWeight: '600' as const, fontSize: '15px', display: 'inline-block' as const }
