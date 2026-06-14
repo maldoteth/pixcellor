@@ -894,6 +894,12 @@ export default function CustomerPortal() {
                   )}
                 </TabsContent>
 
+                {isAdmin && (
+                  <TabsContent value="calls" className="space-y-4">
+                    <CallBookingsPanel />
+                  </TabsContent>
+                )}
+
               </Tabs>
             </section>
           </main>
