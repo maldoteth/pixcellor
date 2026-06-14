@@ -26,6 +26,9 @@ const Email = ({ name, whenLabel, preferenceLabel, phone, brief, callLink }: Pro
           <Text style={text}>
             Thanks for booking a free strategy call with {BRAND_NAME}. We&apos;ve got you in the diary.
           </Text>
+          <Text style={tip}>
+            Forwarding this to a colleague? Ask them to whitelist <strong>pixcellor.com</strong> so the call link doesn&apos;t get blocked by their spam filter.
+          </Text>
 
           <Section style={card}>
             <Text style={cardLabel}>YOUR CALL</Text>
@@ -110,3 +113,4 @@ const cardMeta = { color: '#444444', fontSize: '13px', lineHeight: '1.4', margin
 const hr = { borderColor: '#eaeaea', margin: '24px 0' }
 const signoff = { color: '#333333', fontSize: '15px', lineHeight: '1.6', margin: '24px 0 0' }
 const cta = { backgroundColor: '#111111', color: '#ffffff', padding: '12px 22px', borderRadius: '8px', textDecoration: 'none', fontWeight: '600' as const, fontSize: '15px', display: 'inline-block' as const }
+const tip = { color: '#666666', fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px', fontStyle: 'italic' as const }

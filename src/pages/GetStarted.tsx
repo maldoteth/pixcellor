@@ -555,6 +555,13 @@ const GetStarted = () => {
                       ? <>We&apos;ll call you on <span className="text-white">{confirmedLabel}</span>. A confirmation is on its way to your inbox.</>
                       : <>We&apos;ll be in touch shortly. A confirmation is on its way to your inbox.</>}
                   </p>
+                  <div className="mt-5 mx-auto max-w-md rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] px-4 py-3 text-left">
+                    <p className="text-[13px] text-amber-100/90 leading-snug">
+                      <span className="font-semibold">📬 Don&apos;t see it?</span>{" "}
+                      Check your <span className="font-medium">spam / junk folder</span> for an email from{" "}
+                      <span className="font-mono text-amber-200">pixcellor.com</span> and mark it as &ldquo;Not Junk&rdquo; so future ones land in your inbox.
+                    </p>
+                  </div>
                   <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
                     <Link to="/portfolio">
                       <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
