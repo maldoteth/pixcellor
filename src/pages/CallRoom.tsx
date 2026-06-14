@@ -166,15 +166,28 @@ const CallRoom = () => {
     } catch (e) {
       const err = e as DOMException;
       const inIframe = window.self !== window.top;
+      const ua = navigator.userAgent || "";
+      const isIOS = /iPad|iPhone|iPod/.test(ua);
+      // iOS in-app browsers (Gmail, Outlook, Instagram, FB, LinkedIn, TikTok, Snapchat) block getUserMedia.
+      // Safari UA on iOS contains "Safari/" AND "Version/". WKWebView in-app browsers usually lack "Safari/" or "Version/".
+      const isIOSInAppBrowser =
+        isIOS && (!/Safari\//.test(ua) || !/Version\//.test(ua) ||
+          /FBAN|FBAV|Instagram|Line|GSA\/|CriOS|FxiOS|EdgiOS|GMail|Outlook|LinkedInApp|Snapchat|TikTok/i.test(ua));
       let msg = "Couldn't access camera/microphone.";
       if (err?.name === "NotAllowedError" || err?.name === "SecurityError") {
-        msg = inIframe
-          ? "Camera/mic blocked because this page is loaded inside a preview frame. Open this call link in a new browser tab (not in the Lovable preview) and try again."
-          : "Permission was blocked. Click the camera icon in your browser's address bar, set Camera and Microphone to Allow for this site, then reload.";
+        if (inIframe) {
+          msg = "Camera/mic blocked because this page is loaded inside a preview frame. Open this call link in a new browser tab and try again.";
+        } else if (isIOSInAppBrowser) {
+          msg = "It looks like you opened this link inside an email or social app (Gmail, Outlook, Instagram, etc.). These in-app browsers block camera and microphone access on iPhone. Tap the ••• menu (or the share icon) and choose \"Open in Safari\", then try again.";
+        } else if (isIOS) {
+          msg = "Camera and microphone are blocked for this site in Safari. Open Settings → Safari → Camera / Microphone and set this site to Allow, then reload. If you tapped the link from an email or social app, open it in Safari directly.";
+        } else {
+          msg = "Permission was blocked. Click the camera icon in your browser's address bar, set Camera and Microphone to Allow for this site, then reload.";
+        }
       } else if (err?.name === "NotFoundError" || err?.name === "OverconstrainedError") {
         msg = "No camera or microphone was found on this device.";
       } else if (err?.name === "NotReadableError") {
-        msg = "Another app is using your camera or microphone. Close Zoom/Meet/Teams/OBS and try again.";
+        msg = "Another app is using your camera or microphone. Close Zoom/Meet/Teams/OBS/FaceTime and try again.";
       } else if (err?.message) {
         msg = `Couldn't access camera/microphone: ${err.message}`;
       }
@@ -323,6 +336,12 @@ const CallRoom = () => {
   }
 
   if (status === "ready") {
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const isIOS = /iPad|iPhone|iPod/.test(ua);
+    const isIOSInAppBrowser =
+      isIOS && (!/Safari\//.test(ua) || !/Version\//.test(ua) ||
+        /FBAN|FBAV|Instagram|Line|GSA\/|CriOS|FxiOS|EdgiOS|GMail|Outlook|LinkedInApp|Snapchat|TikTok/i.test(ua));
+    const fullUrl = typeof window !== "undefined" ? window.location.href : "";
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
         <SeoHead title="Join your Pixcellor call" description="Secure browser-based video call with the Pixcellor team." path="/call" noindex />
@@ -336,6 +355,20 @@ const CallRoom = () => {
           <p className="text-white/60 text-sm mb-6">
             {room.role === "host" ? `Calling with ${room.display_name}` : `You're meeting the ${room.display_name}`}
           </p>
+          {isIOSInAppBrowser && (
+            <div className="mb-5 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-left">
+              <p className="text-amber-200 text-xs font-medium mb-1">⚠️ Open in Safari first</p>
+              <p className="text-amber-100/80 text-[12px] leading-relaxed">
+                You're in an in-app browser (Gmail, Outlook, Instagram, etc.). iPhone blocks camera/mic here. Tap the ••• or share icon and choose <span className="font-medium">"Open in Safari"</span>, or copy this link and paste it into Safari.
+              </p>
+              <button
+                onClick={() => { void navigator.clipboard?.writeText(fullUrl); }}
+                className="mt-3 w-full h-9 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-white"
+              >
+                Copy call link
+              </button>
+            </div>
+          )}
           <Button
             onClick={join}
             className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
