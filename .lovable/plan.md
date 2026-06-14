@@ -1,36 +1,53 @@
-## What's changing
+## Goal
+Give the Pixcellor team a place inside `/portal` to see scheduled call bookings and join each one as the host with one click — no digging through inbox for the host link.
 
-### 1. Add a "check spam/junk" note in two places
+## Where it lives
+- New admin-only tab **"Calls"** in `src/pages/CustomerPortal.tsx`, gated by the existing `isAdmin` (`has_role('admin')`) check that already wraps the other admin tabs.
+- New component `src/components/portal/CallBookingsPanel.tsx` rendered when that tab is active.
 
-**a) The success screen** users see right after booking a call (in `src/pages/GetStarted.tsx`, the final step of the booking stepper).
+## What the panel shows
+A single list grouped into two sections:
 
-Add a small line under the "Confirmation sent" message:
+1. **Upcoming / pending** — `status` ≠ `cancelled` and either `scheduled_at >= now()` or `preference` ≠ `specific` (callback requests with no fixed slot), ordered by `scheduled_at` ascending (nulls first).
+2. **Past** — `scheduled_at < now()`, ordered descending, collapsed by default (last 30 days only, "Show more" to load older).
 
-> 📬 **Don't see it?** Check your spam / junk folder for an email from `pixcellor.com` and mark it as "Not Junk" so future ones land in your inbox.
+Each row shows:
+- When: formatted London time, or "Callback — {preference}" if no specific slot.
+- Customer: name, company, email, phone (tap-to-call link).
+- Brief (truncated, expandable).
+- Status badge: `pending` / `confirmed` / `completed` / `cancelled`.
+- Actions:
+  - **Join as host** — primary button, opens `/call/{id}?t={host_token}` in a new tab.
+  - **Copy guest link** — copies `/call/{id}?t={guest_token}` to clipboard (toast on success).
+  - **Copy host link**.
+  - Overflow menu: Mark completed, Mark cancelled.
 
-Styled to match the existing glass-card aesthetic (subtle, low-contrast, but visible).
+Top of panel: small stat row (Today, This week, Pending callbacks) and a refresh button. Auto-refresh every 60 s.
 
-**b) The confirmation email itself** (`supabase/functions/_shared/transactional-email-templates/call-booking-confirmation.tsx`) — add a small note near the top of the email body:
+## Data access
+- `call_bookings` is currently service-role only. Add an RLS policy so admins can read and update it directly from the client:
+  - `SELECT` for any user where `public.has_role(auth.uid(), 'admin')`.
+  - `UPDATE` (status only) for admins.
+- Grant `SELECT, UPDATE` on `public.call_bookings` to `authenticated` (service_role grant stays).
+- No new tables, no new edge functions — the panel queries `call_bookings` directly with the supabase client.
 
-> *If you're forwarding this to a colleague, ask them to whitelist `pixcellor.com` so the call link doesn't get blocked.*
+## Status updates
+"Mark completed/cancelled" updates `call_bookings.status` directly via the client (covered by the new admin UPDATE policy). After updating, refetch the list.
 
-This won't help the recipient who already received it, but it primes the next person.
+## Styling
+Match existing portal aesthetic: black surface, white/10 borders, glass cards, Framer Motion fade-in on rows. Buttons use the existing `Button` variants. Status badges use the project's badge colors.
 
-### 2. Fix the 404
+## Out of scope (not changing now)
+- Internal-lead notification email content stays the same — host link is still in it as a fallback.
+- No calendar `.ics` invite yet (option B/C wasn't chosen).
+- No realtime/Supabase realtime subscription — polling every 60 s is enough.
 
-This isn't a code change — your `/call/:bookingId` route exists in the codebase and works in preview. The 404 happens because the **live site at `pixcellor.com` hasn't been republished** since the route was added.
+## Files touched
+- `supabase/migrations/<new>.sql` — RLS policies + grants on `call_bookings`.
+- `src/pages/CustomerPortal.tsx` — add admin "Calls" tab trigger + content.
+- `src/components/portal/CallBookingsPanel.tsx` — new component (list, actions, polling).
 
-**Action**: hit Publish. Once republished, the same link you clicked will work.
-
-After republishing, test by:
-1. Booking another test slot
-2. Opening the email link on your laptop (guest view)
-3. Opening the host link (from the internal notification email) on your phone
-4. Both sides should connect
-
-### Files touched
-- `src/pages/GetStarted.tsx` — add spam note to confirmation step
-- `supabase/functions/_shared/transactional-email-templates/call-booking-confirmation.tsx` — add forwarding note
-- Deploy `send-transactional-email` after template edit
-
-No DB changes, no new secrets, no new routes.
+## Acceptance
+- Admin logs in to `/portal`, sees a **Calls** tab.
+- Tab shows the upcoming bookings, each with a working **Join as host** button that opens the call room as host.
+- Non-admin users do not see the tab and cannot read `call_bookings`.

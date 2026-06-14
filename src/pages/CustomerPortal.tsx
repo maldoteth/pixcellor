@@ -33,6 +33,7 @@ import {
 import PortalScheduleAdminGrid from "@/components/portal/PortalScheduleAdminGrid";
 import PortalMyJobs from "@/components/portal/PortalMyJobs";
 import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
+import CallBookingsPanel from "@/components/portal/CallBookingsPanel";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -106,7 +107,7 @@ const BUY_AGAIN_PACKAGES = [
   },
 ] as const;
 
-type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads";
+type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls";
 
 type CustomerOrder = {
   id: string;
@@ -391,6 +392,7 @@ export default function CustomerPortal() {
     { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Payments", value: "payments", icon: CreditCard },
     { title: "Leads", value: "leads" as const, icon: Inbox },
+    ...(isAdmin ? [{ title: "Calls", value: "calls" as const, icon: Phone }] : []),
   ];
 
   const handleSignOut = async () => {
@@ -891,6 +893,12 @@ export default function CustomerPortal() {
                     <EmptyState icon={CreditCard} title="No subscription found" text="One-time project payments remain visible in order history." />
                   )}
                 </TabsContent>
+
+                {isAdmin && (
+                  <TabsContent value="calls" className="space-y-4">
+                    <CallBookingsPanel />
+                  </TabsContent>
+                )}
 
               </Tabs>
             </section>
