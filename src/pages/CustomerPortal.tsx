@@ -392,6 +392,7 @@ export default function CustomerPortal() {
     { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Payments", value: "payments", icon: CreditCard },
     { title: "Leads", value: "leads" as const, icon: Inbox },
+    ...(isAdmin ? [{ title: "Calls", value: "calls" as const, icon: Phone }] : []),
   ];
 
   const handleSignOut = async () => {
