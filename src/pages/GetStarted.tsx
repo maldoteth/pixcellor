@@ -21,6 +21,7 @@ import HoneypotField from "@/components/HoneypotField";
 import { useAntiSpam } from "@/lib/anti-spam";
 import { supabase } from "@/integrations/supabase/client";
 import { trackAdsConversion } from "@/lib/ads-tracking";
+import CallBookingPicker, { type BookingSelection } from "@/components/CallBookingPicker";
 
 import hays from "@/assets/logos/hays.svg";
 import manpower from "@/assets/logos/manpower.svg";
@@ -104,6 +105,10 @@ const GetStarted = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [booking, setBooking] = useState<BookingSelection | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [confirmedLabel, setConfirmedLabel] = useState<string>("");
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const { honeypotValue, setHoneypotValue, isHuman } = useAntiSpam();
 
   useEffect(() => {
@@ -112,6 +117,20 @@ const GetStarted = () => {
     return () => {
       document.documentElement.style.scrollBehavior = "";
     };
+  }, []);
+
+  // Fetch booked slots for the next 30 days so we can hide them in the picker
+  useEffect(() => {
+    const from = new Date();
+    const to = new Date();
+    to.setDate(to.getDate() + 35);
+    const url = `https://rkgjkvghejcmostuqkgw.supabase.co/functions/v1/book-call?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.ok && Array.isArray(data.booked)) setBookedSlots(data.booked);
+      })
+      .catch(() => {});
   }, []);
 
   const scrollToForm = () => {
