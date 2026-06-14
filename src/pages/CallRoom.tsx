@@ -164,7 +164,21 @@ const CallRoom = () => {
 
       channelRef.current = channel;
     } catch (e) {
-      setError("Couldn't access camera/microphone. Please grant permission and try again.");
+      const err = e as DOMException;
+      const inIframe = window.self !== window.top;
+      let msg = "Couldn't access camera/microphone.";
+      if (err?.name === "NotAllowedError" || err?.name === "SecurityError") {
+        msg = inIframe
+          ? "Camera/mic blocked because this page is loaded inside a preview frame. Open this call link in a new browser tab (not in the Lovable preview) and try again."
+          : "Permission was blocked. Click the camera icon in your browser's address bar, set Camera and Microphone to Allow for this site, then reload.";
+      } else if (err?.name === "NotFoundError" || err?.name === "OverconstrainedError") {
+        msg = "No camera or microphone was found on this device.";
+      } else if (err?.name === "NotReadableError") {
+        msg = "Another app is using your camera or microphone. Close Zoom/Meet/Teams/OBS and try again.";
+      } else if (err?.message) {
+        msg = `Couldn't access camera/microphone: ${err.message}`;
+      }
+      setError(msg);
       setStatus("ready");
     }
   }, [room, iceServers, createPeer, sendSignal, startNegotiation]);
