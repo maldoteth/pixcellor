@@ -144,6 +144,7 @@ const GetStarted = () => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setBookingError(null);
     const parsed = schema.safeParse(values);
     if (!parsed.success) {
       const fieldErrors: Partial<Record<keyof FormValues, string>> = {};
@@ -154,6 +155,10 @@ const GetStarted = () => {
       setErrors(fieldErrors);
       return;
     }
+    if (!booking) {
+      setBookingError("Pick a time or a callback preference above.");
+      return;
+    }
     if (!isHuman()) {
       // Silently "succeed" for bots.
       setDone(true);
@@ -161,40 +166,42 @@ const GetStarted = () => {
     }
     setSubmitting(true);
     try {
-      const requestDetails = {
-        company: values.company?.trim() || null,
-        brief: values.brief?.trim() || null,
-        landing_page: "/get-started",
-        utm: typeof window !== "undefined" ? window.location.search || null : null,
-      };
-
-      const { error: insertErr } = await supabase.from("lets_talk_leads").insert({
-        name: values.name.trim(),
-        email: values.email.trim(),
-        phone: values.phone.trim(),
-        source: "ads_landing",
-        request_details: requestDetails,
-        attachment_urls: null,
+      const { data, error } = await supabase.functions.invoke("book-call", {
+        body: {
+          name: values.name.trim(),
+          email: values.email.trim(),
+          phone: values.phone.trim(),
+          company: values.company?.trim() || null,
+          brief: values.brief?.trim() || null,
+          preference: booking.preference,
+          scheduled_at: booking.scheduledAt,
+          source: "ads_landing",
+          hp: honeypotValue,
+        },
       });
-      if (insertErr) throw insertErr;
+      if (error) throw error;
+      if (!data?.ok) {
+        if (data?.error === "slot_taken") {
+          setBookingError("Sorry — that slot was just taken. Please pick another time.");
+          // refresh booked slots
+          const from = new Date();
+          const to = new Date();
+          to.setDate(to.getDate() + 35);
+          const url = `https://rkgjkvghejcmostuqkgw.supabase.co/functions/v1/book-call?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`;
+          fetch(url).then((r) => r.json()).then((d) => {
+            if (d?.ok) setBookedSlots(d.booked || []);
+          }).catch(() => {});
+          setBooking(null);
+          return;
+        }
+        throw new Error(data?.error || "unknown_error");
+      }
 
-      supabase.functions
-        .invoke("process-lets-talk-lead", {
-          body: {
-            name: values.name.trim(),
-            email: values.email.trim(),
-            phone: values.phone.trim(),
-            source: "ads_landing",
-            request_details: requestDetails,
-            attachment_urls: null,
-          },
-        })
-        .catch((err) => console.error("process-lets-talk-lead failed:", err));
-
+      setConfirmedLabel(data.when_label || data.preference_label || booking.label);
       trackAdsConversion();
       setDone(true);
     } catch (err) {
-      console.error("ads landing submit failed", err);
+      console.error("book-call submit failed", err);
       toast.error("Something went wrong — please try again or email hello@pixcellor.com.");
     } finally {
       setSubmitting(false);
