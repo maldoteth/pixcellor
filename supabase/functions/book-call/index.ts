@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
         scheduled_at: b.preference === "specific" ? b.scheduled_at : null,
         source,
       })
-      .select("id")
+      .select("id, host_token, guest_token")
       .single();
 
     if (insertErr) {
