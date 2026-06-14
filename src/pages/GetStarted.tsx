@@ -384,6 +384,18 @@ const GetStarted = () => {
                       />
                     </div>
 
+                    {/* iOS-style calendar booking */}
+                    <div className="pt-2 border-t border-white/10">
+                      <CallBookingPicker
+                        bookedSlots={bookedSlots}
+                        value={booking}
+                        onChange={(v) => { setBooking(v); setBookingError(null); }}
+                      />
+                      {bookingError && (
+                        <p className="mt-2 text-xs text-red-400">{bookingError}</p>
+                      )}
+                    </div>
+
                     <Button
                       type="submit"
                       disabled={submitting}
@@ -391,17 +403,17 @@ const GetStarted = () => {
                     >
                       {submitting ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin" /> Sending…
+                          <Loader2 className="w-4 h-4 animate-spin" /> Booking…
                         </>
                       ) : (
                         <>
-                          Book my free call <ArrowRight className="w-4 h-4" />
+                          Confirm my call <ArrowRight className="w-4 h-4" />
                         </>
                       )}
                     </Button>
 
                     <p className="text-[11px] text-white/40 text-center">
-                      By submitting you agree to be contacted by Pixcellor about your enquiry. We never share your details.
+                      You&apos;ll get an instant email confirmation. By submitting you agree to be contacted by Pixcellor about your enquiry.
                     </p>
                   </form>
                 </>
