@@ -125,6 +125,8 @@ export type Database = {
           contact_id: string | null
           created_at: string
           email: string
+          guest_token: string
+          host_token: string
           id: string
           name: string
           phone: string
@@ -141,6 +143,8 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           email: string
+          guest_token?: string
+          host_token?: string
           id?: string
           name: string
           phone: string
@@ -157,6 +161,8 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           email?: string
+          guest_token?: string
+          host_token?: string
           id?: string
           name?: string
           phone?: string
@@ -168,6 +174,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      call_recordings: {
+        Row: {
+          booking_id: string
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          mime_type: string
+          recorded_by: string
+          size_bytes: number | null
+          storage_path: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          mime_type?: string
+          recorded_by?: string
+          size_bytes?: number | null
+          storage_path: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          mime_type?: string
+          recorded_by?: string
+          size_bytes?: number | null
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_recordings_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "call_bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       candidate_applications: {
         Row: {
@@ -2878,6 +2925,16 @@ export type Database = {
       }
       fetch_chat_history: { Args: { _client_id: string }; Returns: Json }
       generate_order_code: { Args: never; Returns: string }
+      get_call_room: {
+        Args: { p_booking: string; p_token: string }
+        Returns: {
+          booking_id: string
+          display_name: string
+          role: string
+          scheduled_at: string
+          status: string
+        }[]
+      }
       get_vision_preview_by_slug: {
         Args: { _slug: string }
         Returns: {
