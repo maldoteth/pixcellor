@@ -157,6 +157,7 @@ const GetStarted = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
   const [booking, setBooking] = useState<BookingSelection | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [confirmedLabel, setConfirmedLabel] = useState<string>("");
