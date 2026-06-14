@@ -32,6 +32,7 @@ const VacancyRespond = lazy(() => import("./pages/VacancyRespond"));
 const PackageDetail = lazy(() => import("./pages/PackageDetail"));
 const Packages = lazy(() => import("./pages/Packages"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
+const GetStarted = lazy(() => import("./pages/GetStarted"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -117,6 +118,7 @@ const App = () => (
               <Route path="/packages" element={<Packages />} />
               <Route path="/packages/:slug" element={<PackageDetail />} />
               <Route path="/portfolio" element={<Portfolio />} />
+              <Route path="/get-started" element={<GetStarted />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
