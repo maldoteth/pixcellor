@@ -378,113 +378,166 @@ const GetStarted = () => {
             <div className="backdrop-blur-xl bg-white/[0.04] border border-white/15 p-6 sm:p-8 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.6)]">
               {!done ? (
                 <>
-                  <h2 className="text-xl sm:text-2xl font-semibold">Book your free call</h2>
-                  <p className="text-sm text-white/60 mt-1">
-                    We&apos;ll be in touch within 1 working hour.
-                  </p>
+                  {/* Step indicator */}
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <h2 className="text-xl sm:text-2xl font-semibold">
+                        {step === 1 ? "Book your free call" : "Pick a time"}
+                      </h2>
+                      <p className="text-sm text-white/60 mt-1">
+                        {step === 1
+                          ? "Tell us who you are — takes 20 seconds."
+                          : <>For <span className="text-white">{values.name}</span> · {values.email}</>}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className={`h-1.5 w-6 rounded-full transition-colors ${step >= 1 ? "bg-white" : "bg-white/20"}`} />
+                      <span className={`h-1.5 w-6 rounded-full transition-colors ${step >= 2 ? "bg-white" : "bg-white/20"}`} />
+                    </div>
+                  </div>
 
-                  <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
+                  <form onSubmit={onSubmit} className="space-y-4" noValidate>
                     <HoneypotField value={honeypotValue} onChange={setHoneypotValue} />
 
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="gs-name" className="text-white/80">Name *</Label>
-                        <Input
-                          id="gs-name"
-                          value={values.name}
-                          onChange={(e) => onChange("name", e.target.value)}
-                          className="mt-1.5 bg-black/40 border-white/20 text-white"
-                          autoComplete="name"
-                          required
-                        />
-                        {errors.name && <p className="text-xs text-red-400 mt-1">{errors.name}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="gs-company" className="text-white/80">Company</Label>
-                        <Input
-                          id="gs-company"
-                          value={values.company}
-                          onChange={(e) => onChange("company", e.target.value)}
-                          className="mt-1.5 bg-black/40 border-white/20 text-white"
-                          autoComplete="organization"
-                        />
-                      </div>
+                    <div className="relative overflow-hidden">
+                      <AnimatePresence mode="wait" initial={false}>
+                        {step === 1 ? (
+                          <motion.div
+                            key="step-1"
+                            initial={{ opacity: 0, x: 24 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -24 }}
+                            transition={{ duration: 0.25, ease: "easeOut" }}
+                            className="space-y-4"
+                          >
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="gs-name" className="text-white/80">Name *</Label>
+                                <Input
+                                  id="gs-name"
+                                  value={values.name}
+                                  onChange={(e) => onChange("name", e.target.value)}
+                                  className="mt-1.5 bg-black/40 border-white/20 text-white"
+                                  autoComplete="name"
+                                  required
+                                />
+                                {errors.name && <p className="text-xs text-red-400 mt-1">{errors.name}</p>}
+                              </div>
+                              <div>
+                                <Label htmlFor="gs-company" className="text-white/80">Company</Label>
+                                <Input
+                                  id="gs-company"
+                                  value={values.company}
+                                  onChange={(e) => onChange("company", e.target.value)}
+                                  className="mt-1.5 bg-black/40 border-white/20 text-white"
+                                  autoComplete="organization"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="gs-email" className="text-white/80">Email *</Label>
+                                <Input
+                                  id="gs-email"
+                                  type="email"
+                                  value={values.email}
+                                  onChange={(e) => onChange("email", e.target.value)}
+                                  className="mt-1.5 bg-black/40 border-white/20 text-white"
+                                  autoComplete="email"
+                                  required
+                                />
+                                {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email}</p>}
+                              </div>
+                              <div>
+                                <Label htmlFor="gs-phone" className="text-white/80">Phone *</Label>
+                                <Input
+                                  id="gs-phone"
+                                  type="tel"
+                                  value={values.phone}
+                                  onChange={(e) => onChange("phone", e.target.value)}
+                                  className="mt-1.5 bg-black/40 border-white/20 text-white"
+                                  autoComplete="tel"
+                                  required
+                                />
+                                {errors.phone && <p className="text-xs text-red-400 mt-1">{errors.phone}</p>}
+                              </div>
+                            </div>
+
+                            <div>
+                              <Label htmlFor="gs-brief" className="text-white/80">
+                                What do you need? <span className="text-white/40">(optional)</span>
+                              </Label>
+                              <Textarea
+                                id="gs-brief"
+                                value={values.brief}
+                                onChange={(e) => onChange("brief", e.target.value)}
+                                rows={3}
+                                placeholder="e.g. a booking site for my salon, a quote calculator, an AI chatbot for my store…"
+                                className="mt-1.5 bg-black/40 border-white/20 text-white resize-none"
+                              />
+                            </div>
+
+                            <Button
+                              type="button"
+                              onClick={goToCalendar}
+                              className="w-full h-12 text-base font-medium"
+                            >
+                              Book a time <ArrowRight className="w-4 h-4" />
+                            </Button>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="step-2"
+                            initial={{ opacity: 0, x: 24 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -24 }}
+                            transition={{ duration: 0.25, ease: "easeOut" }}
+                            className="space-y-4"
+                          >
+                            <CallBookingPicker
+                              bookedSlots={bookedSlots}
+                              value={booking}
+                              onChange={(v) => { setBooking(v); setBookingError(null); }}
+                            />
+                            {bookingError && (
+                              <p className="text-xs text-red-400">{bookingError}</p>
+                            )}
+
+                            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-1">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setStep(1)}
+                                disabled={submitting}
+                                className="sm:w-auto h-12 border-white/20 text-white hover:bg-white/10"
+                              >
+                                <ArrowLeft className="w-4 h-4" /> Back
+                              </Button>
+                              <Button
+                                type="submit"
+                                disabled={submitting}
+                                className="flex-1 h-12 text-base font-medium"
+                              >
+                                {submitting ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 animate-spin" /> Booking…
+                                  </>
+                                ) : (
+                                  <>
+                                    Confirm my call <ArrowRight className="w-4 h-4" />
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+
+                            <p className="text-[11px] text-white/40 text-center">
+                              You&apos;ll get an instant email confirmation. By submitting you agree to be contacted by Pixcellor about your enquiry.
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="gs-email" className="text-white/80">Email *</Label>
-                        <Input
-                          id="gs-email"
-                          type="email"
-                          value={values.email}
-                          onChange={(e) => onChange("email", e.target.value)}
-                          className="mt-1.5 bg-black/40 border-white/20 text-white"
-                          autoComplete="email"
-                          required
-                        />
-                        {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="gs-phone" className="text-white/80">Phone *</Label>
-                        <Input
-                          id="gs-phone"
-                          type="tel"
-                          value={values.phone}
-                          onChange={(e) => onChange("phone", e.target.value)}
-                          className="mt-1.5 bg-black/40 border-white/20 text-white"
-                          autoComplete="tel"
-                          required
-                        />
-                        {errors.phone && <p className="text-xs text-red-400 mt-1">{errors.phone}</p>}
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="gs-brief" className="text-white/80">
-                        What do you need? <span className="text-white/40">(optional)</span>
-                      </Label>
-                      <Textarea
-                        id="gs-brief"
-                        value={values.brief}
-                        onChange={(e) => onChange("brief", e.target.value)}
-                        rows={3}
-                        placeholder="e.g. a booking site for my salon, a quote calculator, an AI chatbot for my store…"
-                        className="mt-1.5 bg-black/40 border-white/20 text-white resize-none"
-                      />
-                    </div>
-
-                    {/* iOS-style calendar booking */}
-                    <div className="pt-2 border-t border-white/10">
-                      <CallBookingPicker
-                        bookedSlots={bookedSlots}
-                        value={booking}
-                        onChange={(v) => { setBooking(v); setBookingError(null); }}
-                      />
-                      {bookingError && (
-                        <p className="mt-2 text-xs text-red-400">{bookingError}</p>
-                      )}
-                    </div>
-
-                    <Button
-                      type="submit"
-                      disabled={submitting}
-                      className="w-full h-12 text-base font-medium"
-                    >
-                      {submitting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" /> Booking…
-                        </>
-                      ) : (
-                        <>
-                          Confirm my call <ArrowRight className="w-4 h-4" />
-                        </>
-                      )}
-                    </Button>
-
-                    <p className="text-[11px] text-white/40 text-center">
-                      You&apos;ll get an instant email confirmation. By submitting you agree to be contacted by Pixcellor about your enquiry.
-                    </p>
                   </form>
                 </>
               ) : (
