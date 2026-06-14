@@ -37,6 +37,18 @@ const Email = ({ name, whenLabel, preferenceLabel, phone, brief, callLink }: Pro
             ) : null}
           </Section>
 
+          {callLink ? (
+            <Section style={{ textAlign: 'center' as const, margin: '8px 0 20px' }}>
+              <Button href={callLink} style={cta}>
+                Join the video call
+              </Button>
+              <Text style={cardMeta}>
+                Or paste this link in your browser at call time:<br />
+                <span style={{ wordBreak: 'break-all' as const }}>{callLink}</span>
+              </Text>
+            </Section>
+          ) : null}
+
           {brief ? (
             <>
               <Text style={textMuted}>What you told us:</Text>
