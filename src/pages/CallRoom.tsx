@@ -284,11 +284,31 @@ const CallRoom = () => {
 
   // --- Render ---
   if (error) {
+    const inIframe = typeof window !== "undefined" && window.self !== window.top;
+    const fullUrl = typeof window !== "undefined" ? window.location.href : "";
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-8">
         <div className="max-w-md text-center">
           <p className="text-2xl font-light mb-3">Unable to join the call</p>
-          <p className="text-white/60 text-sm">{error}</p>
+          <p className="text-white/70 text-sm mb-6 leading-relaxed">{error}</p>
+          <div className="flex flex-col gap-2">
+            {inIframe && (
+              <a
+                href={fullUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-11 rounded-2xl bg-white text-black hover:bg-white/90 font-medium flex items-center justify-center"
+              >
+                Open call in a new tab
+              </a>
+            )}
+            <button
+              onClick={() => { setError(null); setStatus("ready"); }}
+              className="h-11 rounded-2xl border border-white/20 hover:bg-white/[0.06] text-sm"
+            >
+              Try again
+            </button>
+          </div>
         </div>
       </div>
     );
