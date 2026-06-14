@@ -403,7 +403,7 @@ const CallRoom = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-black text-white flex flex-col" style={{ minHeight: "100dvh" }}>
       <SeoHead title="Pixcellor call" description="Live video call." path="/call" noindex />
       {/* Header */}
       <header className="px-5 py-3 flex items-center justify-between border-b border-white/10">
@@ -442,7 +442,10 @@ const CallRoom = () => {
         )}
 
         {/* Local preview */}
-        <div className="absolute bottom-24 right-4 md:bottom-28 md:right-6 w-32 md:w-48 aspect-video rounded-2xl overflow-hidden border border-white/20 shadow-xl bg-black/60 backdrop-blur">
+        <div
+          className="absolute right-3 md:right-6 w-28 md:w-48 aspect-video rounded-2xl overflow-hidden border border-white/20 shadow-xl bg-black/60 backdrop-blur"
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
+        >
           <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
           {!camOn && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80 text-white/60 text-xs">
@@ -453,7 +456,10 @@ const CallRoom = () => {
       </div>
 
       {/* Controls */}
-      <div className="px-4 pb-6 pt-3 flex items-center justify-center gap-2 md:gap-3">
+      <div
+        className="px-4 pt-3 flex items-center justify-center gap-2 md:gap-3"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
+      >
         <CtrlButton onClick={toggleMic} active={micOn} label={micOn ? "Mute" : "Unmute"}>
           {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
         </CtrlButton>
