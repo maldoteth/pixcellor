@@ -85,13 +85,12 @@ const CallRoom = () => {
   const createPeer = useCallback((): RTCPeerConnection => {
     // Defensive: only keep ICE entries with supported schemes (stun:, turn:, turns:).
     // Any other scheme makes the browser throw "ICE server protocol not supported".
-    const safeIce: RTCIceServer[] = (iceServers ?? [])
-      .map((s) => {
-        const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
-        const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
-        return cleaned.length ? { ...s, urls: cleaned } : null;
-      })
-      .filter((s): s is RTCIceServer => s !== null);
+    const safeIce: RTCIceServer[] = [];
+    for (const s of iceServers ?? []) {
+      const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
+      const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
+      if (cleaned.length) safeIce.push({ ...s, urls: cleaned });
+    }
     const pc = new RTCPeerConnection({ iceServers: safeIce });
     pc.onicecandidate = (e) => {
       if (e.candidate) sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID });
