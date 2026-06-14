@@ -483,7 +483,7 @@ const GetStarted = () => {
                               onClick={goToCalendar}
                               className="w-full h-12 text-base font-medium"
                             >
-                              Book a time <ArrowRight className="w-4 h-4" />
+                              Confirm <ArrowRight className="w-4 h-4" />
                             </Button>
                           </motion.div>
                         ) : (
