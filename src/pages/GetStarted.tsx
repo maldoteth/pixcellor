@@ -426,9 +426,11 @@ const GetStarted = () => {
                   <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-center mx-auto mb-5">
                     <Check className="w-7 h-7 text-emerald-400" />
                   </div>
-                  <h2 className="text-2xl font-semibold">You&apos;re in.</h2>
+                  <h2 className="text-2xl font-semibold">You&apos;re booked in.</h2>
                   <p className="mt-2 text-white/70">
-                    We&apos;ll call or email you within 1 working hour. Keep an eye on your inbox.
+                    {confirmedLabel
+                      ? <>We&apos;ll call you on <span className="text-white">{confirmedLabel}</span>. A confirmation is on its way to your inbox.</>
+                      : <>We&apos;ll be in touch shortly. A confirmation is on its way to your inbox.</>}
                   </p>
                   <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
                     <Link to="/portfolio">
