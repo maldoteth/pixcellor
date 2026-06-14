@@ -336,6 +336,12 @@ const CallRoom = () => {
   }
 
   if (status === "ready") {
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const isIOS = /iPad|iPhone|iPod/.test(ua);
+    const isIOSInAppBrowser =
+      isIOS && (!/Safari\//.test(ua) || !/Version\//.test(ua) ||
+        /FBAN|FBAV|Instagram|Line|GSA\/|CriOS|FxiOS|EdgiOS|GMail|Outlook|LinkedInApp|Snapchat|TikTok/i.test(ua));
+    const fullUrl = typeof window !== "undefined" ? window.location.href : "";
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
         <SeoHead title="Join your Pixcellor call" description="Secure browser-based video call with the Pixcellor team." path="/call" noindex />
@@ -349,6 +355,20 @@ const CallRoom = () => {
           <p className="text-white/60 text-sm mb-6">
             {room.role === "host" ? `Calling with ${room.display_name}` : `You're meeting the ${room.display_name}`}
           </p>
+          {isIOSInAppBrowser && (
+            <div className="mb-5 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-left">
+              <p className="text-amber-200 text-xs font-medium mb-1">⚠️ Open in Safari first</p>
+              <p className="text-amber-100/80 text-[12px] leading-relaxed">
+                You're in an in-app browser (Gmail, Outlook, Instagram, etc.). iPhone blocks camera/mic here. Tap the ••• or share icon and choose <span className="font-medium">"Open in Safari"</span>, or copy this link and paste it into Safari.
+              </p>
+              <button
+                onClick={() => { void navigator.clipboard?.writeText(fullUrl); }}
+                className="mt-3 w-full h-9 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-white"
+              >
+                Copy call link
+              </button>
+            </div>
+          )}
           <Button
             onClick={join}
             className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
