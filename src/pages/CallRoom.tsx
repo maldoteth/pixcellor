@@ -164,7 +164,21 @@ const CallRoom = () => {
 
       channelRef.current = channel;
     } catch (e) {
-      setError("Couldn't access camera/microphone. Please grant permission and try again.");
+      const err = e as DOMException;
+      const inIframe = window.self !== window.top;
+      let msg = "Couldn't access camera/microphone.";
+      if (err?.name === "NotAllowedError" || err?.name === "SecurityError") {
+        msg = inIframe
+          ? "Camera/mic blocked because this page is loaded inside a preview frame. Open this call link in a new browser tab (not in the Lovable preview) and try again."
+          : "Permission was blocked. Click the camera icon in your browser's address bar, set Camera and Microphone to Allow for this site, then reload.";
+      } else if (err?.name === "NotFoundError" || err?.name === "OverconstrainedError") {
+        msg = "No camera or microphone was found on this device.";
+      } else if (err?.name === "NotReadableError") {
+        msg = "Another app is using your camera or microphone. Close Zoom/Meet/Teams/OBS and try again.";
+      } else if (err?.message) {
+        msg = `Couldn't access camera/microphone: ${err.message}`;
+      }
+      setError(msg);
       setStatus("ready");
     }
   }, [room, iceServers, createPeer, sendSignal, startNegotiation]);
@@ -270,11 +284,31 @@ const CallRoom = () => {
 
   // --- Render ---
   if (error) {
+    const inIframe = typeof window !== "undefined" && window.self !== window.top;
+    const fullUrl = typeof window !== "undefined" ? window.location.href : "";
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-8">
         <div className="max-w-md text-center">
           <p className="text-2xl font-light mb-3">Unable to join the call</p>
-          <p className="text-white/60 text-sm">{error}</p>
+          <p className="text-white/70 text-sm mb-6 leading-relaxed">{error}</p>
+          <div className="flex flex-col gap-2">
+            {inIframe && (
+              <a
+                href={fullUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-11 rounded-2xl bg-white text-black hover:bg-white/90 font-medium flex items-center justify-center"
+              >
+                Open call in a new tab
+              </a>
+            )}
+            <button
+              onClick={() => { setError(null); setStatus("ready"); }}
+              className="h-11 rounded-2xl border border-white/20 hover:bg-white/[0.06] text-sm"
+            >
+              Try again
+            </button>
+          </div>
         </div>
       </div>
     );
