@@ -286,7 +286,7 @@ const GetStarted = () => {
             offers: {
               "@type": "Offer",
               priceCurrency: "GBP",
-              price: "299",
+              price: "150",
               availability: "https://schema.org/InStock",
             },
           }),
@@ -308,19 +308,22 @@ const GetStarted = () => {
               UK Studio · Booking calls this week
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.05] tracking-tight">
-              AI websites, chatbots &amp; apps —
-              <span className="block text-white/60">live in 24 hours.</span>
+              Websites, web apps &amp; AI agents —
+              <span className="block text-white/60">built in days, not months.</span>
             </h1>
             <p className="mt-5 text-base sm:text-lg text-white/70 max-w-xl">
-              Bespoke sites that book, sell and reply for you. From £299. Real designers, AI-accelerated.
+              From a polished Full Works site at <span className="text-white">£150</span> (RRP £375)
+              to flagship Elite builds with unlimited revisions at <span className="text-white">£500</span> (RRP £1,500),
+              or an always-on retainer from <span className="text-white">£100/mo</span>.
               Book a free 15-minute call and we&apos;ll show you exactly what we&apos;d build.
             </p>
 
             <ul className="mt-7 space-y-2 text-white/80">
               {[
-                "Free 15-min strategy call",
+                "Free 15-min strategy call · no pitch, no obligation",
                 "AI-generated preview of your site before you pay",
-                "Unlimited revisions until you're happy",
+                "Lifetime warranty on the build · you own the code",
+                "Unlimited revisions on Elite & retainers",
               ].map((line) => (
                 <li key={line} className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" aria-hidden />
