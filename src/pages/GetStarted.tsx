@@ -506,12 +506,18 @@ const GetStarted = () => {
         </div>
       </section>
 
-      {/* FEATURES */}
+      {/* FEATURES — real differentiators */}
       <section className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-center max-w-2xl mx-auto">
-            Why founders pick Pixcellor over an agency
-          </h2>
+          <div className="text-center max-w-2xl mx-auto">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-white/40">Why Pixcellor</p>
+            <h2 className="mt-3 text-2xl sm:text-3xl font-semibold">
+              One senior team. Every discipline. Fixed prices.
+            </h2>
+            <p className="mt-3 text-white/60 text-sm sm:text-base">
+              We replace the agency, the freelance roster and the SaaS bill — with one team that designs, builds, hosts, integrates and runs it.
+            </p>
+          </div>
           <div className="mt-10 grid md:grid-cols-3 gap-5">
             {FEATURES.map((f, i) => (
               <motion.div
@@ -519,7 +525,7 @@ const GetStarted = () => {
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
+                transition={{ duration: 0.5, delay: i * 0.05 }}
                 className="backdrop-blur-xl bg-white/[0.03] border border-white/10 p-6"
               >
                 <f.icon className="w-6 h-6 text-white" />
@@ -531,80 +537,205 @@ const GetStarted = () => {
         </div>
       </section>
 
-      {/* SOCIAL PROOF QUOTES */}
+      {/* WHAT WE DO — services by category */}
       <section className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-center">
-            What clients say
-          </h2>
-          <div className="mt-10 grid md:grid-cols-3 gap-5">
-            {[
-              {
-                q: "Live in under 24 hours. Bookings started the same week.",
-                a: "Sarah M.",
-                r: "Salon owner, Manchester",
-              },
-              {
-                q: "Looks better than the £8k quote we got from an agency.",
-                a: "James R.",
-                r: "Founder, B2B SaaS",
-              },
-              {
-                q: "The AI chatbot replies to leads while I sleep. Game changer.",
-                a: "Priya K.",
-                r: "Consultant, London",
-              },
-            ].map((t, i) => (
-              <motion.blockquote
-                key={t.a}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="backdrop-blur-xl bg-white/[0.03] border border-white/10 p-6"
-              >
-                <p className="text-white/90 text-base leading-relaxed">&ldquo;{t.q}&rdquo;</p>
-                <footer className="mt-4 text-sm text-white/60">
-                  <span className="text-white/90">{t.a}</span> · {t.r}
-                </footer>
-              </motion.blockquote>
-            ))}
+          <div className="text-center max-w-2xl mx-auto">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-white/40">What we do</p>
+            <h2 className="mt-3 text-2xl sm:text-3xl font-semibold">
+              {SERVICES.length}+ services across marketing, tech &amp; business
+            </h2>
+            <p className="mt-3 text-white/60 text-sm sm:text-base">
+              Mention any of these on the call — odds are it&apos;s already in-house.
+            </p>
           </div>
-        </div>
-      </section>
 
-      {/* PRICING TEASER */}
-      <section className="border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-24 text-center">
-          <h2 className="text-2xl sm:text-3xl font-semibold">Simple, fixed pricing</h2>
-          <p className="mt-3 text-white/65 max-w-xl mx-auto">
-            From quick launches to full-stack web apps — fixed-price packages with no surprises.
-          </p>
-          <div className="mt-10 grid md:grid-cols-3 gap-5 text-left">
-            {[
-              { name: "Launch", price: "£299", desc: "Polished one-page site, live in 24 hours." },
-              { name: "Full Works", price: "£999", desc: "Multi-page site, booking, payments, AI chat." },
-              { name: "Elite Build", price: "£2,499+", desc: "Custom web app, integrations, automations." },
-            ].map((p) => (
-              <div
-                key={p.name}
-                className="backdrop-blur-xl bg-white/[0.03] border border-white/10 p-6"
-              >
-                <h3 className="text-lg font-semibold">{p.name}</h3>
-                <p className="mt-2 text-3xl font-semibold">{p.price}</p>
-                <p className="mt-3 text-sm text-white/65">{p.desc}</p>
-              </div>
-            ))}
+          <div className="mt-10 grid lg:grid-cols-3 gap-5">
+            {(Object.keys(SERVICE_CATEGORIES) as ServiceCategory[]).map((cat) => {
+              const meta = SERVICE_CATEGORIES[cat];
+              const items = SERVICES.filter((s) => s.category === cat);
+              const { Icon, blurb } = CATEGORY_META[cat];
+              return (
+                <motion.div
+                  key={cat}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.5 }}
+                  className="backdrop-blur-xl bg-white/[0.03] border border-white/10 p-6"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-9 h-9 rounded-full border border-white/15 bg-white/5 flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-white" />
+                    </span>
+                    <div>
+                      <h3 className="text-base font-semibold">{meta.title}</h3>
+                      <p className="text-[12px] text-white/55">{blurb}</p>
+                    </div>
+                  </div>
+                  <ul className="mt-5 space-y-2">
+                    {items.map((s) => (
+                      <li key={s.slug} className="flex items-start gap-2 text-sm text-white/80">
+                        <Check className="w-4 h-4 text-white/40 mt-0.5 shrink-0" aria-hidden />
+                        <Link
+                          to={`/services/${s.slug}`}
+                          className="hover:text-white transition-colors"
+                        >
+                          {s.name}
+                          {s.pricing ? (
+                            <span className="text-white/40"> · {s.pricing.split(" — ")[0]}</span>
+                          ) : null}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              );
+            })}
           </div>
-          <div className="mt-8">
-            <Link to="/packages">
+
+          <div className="mt-8 text-center">
+            <Link to="/services">
               <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                See all packages <ArrowRight className="w-4 h-4" />
+                Browse all services <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
         </div>
       </section>
+
+      {/* TRUST — real past clients */}
+      <section className="border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-24 text-center">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-white/40">Trusted by</p>
+          <h2 className="mt-3 text-2xl sm:text-3xl font-semibold">
+            Brands our team has shipped for
+          </h2>
+          <p className="mt-3 text-white/60 text-sm sm:text-base max-w-xl mx-auto">
+            Operators behind 9-figure market caps, top-300 crypto launches, Shopify stores doing tens of thousands of launch-day orders, and top-billing recruiters from the world&apos;s biggest agencies.
+          </p>
+          <div className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-3">
+            {PAST_CLIENTS.map((c) => (
+              <span
+                key={c}
+                className="px-4 py-2 border border-white/15 bg-white/[0.03] text-sm text-white/80 backdrop-blur"
+              >
+                {c}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING — real packages */}
+      <section className="border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
+          <div className="text-center max-w-2xl mx-auto">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-white/40">Packages</p>
+            <h2 className="mt-3 text-2xl sm:text-3xl font-semibold">
+              Fixed prices. Lifetime warranty. No contracts.
+            </h2>
+            <p className="mt-3 text-white/60 text-sm sm:text-base">
+              Two one-off builds and three retainers. Everything below is the real list price — no upsells on the call.
+            </p>
+          </div>
+
+          {/* One-off packages */}
+          <div className="mt-10 grid md:grid-cols-2 gap-5">
+            {ONE_OFFS.map((slug) => {
+              const p = PACKAGE_DETAILS[slug];
+              return (
+                <motion.div
+                  key={slug}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.5 }}
+                  className={`relative backdrop-blur-xl border p-6 sm:p-8 ${
+                    p.featured ? "bg-white/[0.06] border-white/30" : "bg-white/[0.03] border-white/10"
+                  }`}
+                >
+                  {p.featured && (
+                    <span className="absolute -top-3 left-6 text-[10px] uppercase tracking-[0.18em] bg-white text-black px-2 py-1">
+                      Most popular
+                    </span>
+                  )}
+                  <div className="flex items-baseline justify-between">
+                    <h3 className="text-xl font-semibold">{p.name}</h3>
+                    <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">One-off</span>
+                  </div>
+                  <p className="mt-2 text-sm text-white/65">{p.tagline}</p>
+                  <div className="mt-5 flex items-baseline gap-3">
+                    <span className="text-4xl font-semibold">{p.price}</span>
+                    {p.rrp && (
+                      <span className="text-white/40 line-through text-base">{p.rrp}</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-white/40 mt-1">{p.billing}</p>
+                  <ul className="mt-5 space-y-2 text-sm text-white/80">
+                    {p.includes[0].items.slice(0, 5).map((item) => (
+                      <li key={item} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" aria-hidden />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link to={`/packages/${slug}`} className="mt-6 inline-block">
+                    <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                      See {p.name} details <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Retainers */}
+          <div className="mt-6 grid md:grid-cols-3 gap-5">
+            {RETAINERS.map((slug) => {
+              const p = PACKAGE_DETAILS[slug];
+              return (
+                <div
+                  key={slug}
+                  className="backdrop-blur-xl bg-white/[0.03] border border-white/10 p-6"
+                >
+                  <div className="flex items-baseline justify-between">
+                    <h3 className="text-lg font-semibold">{p.name}</h3>
+                    <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">Retainer</span>
+                  </div>
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="text-2xl font-semibold">{p.price}</span>
+                    {p.yearlySavings && (
+                      <span className="text-[11px] text-emerald-400">{p.yearlySavings}</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-white/40 mt-1">{p.billing}</p>
+                  <p className="mt-3 text-sm text-white/65 leading-relaxed">{p.tagline}</p>
+                  <Link
+                    to={`/packages/${slug}`}
+                    className="mt-4 inline-flex items-center gap-1 text-xs uppercase tracking-wider text-white/80 hover:text-white"
+                  >
+                    Details <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Full comparison table */}
+          <div className="mt-12">
+            <div className="flex items-baseline justify-between mb-4">
+              <h3 className="text-lg font-semibold">Full comparison</h3>
+              <Link to="/packages" className="text-xs uppercase tracking-wider text-white/60 hover:text-white">
+                Full packages page <ArrowRight className="w-3 h-3 inline" />
+              </Link>
+            </div>
+            <PackageCompareTable />
+          </div>
+        </div>
+      </section>
+
+
 
       {/* FAQ */}
       <section className="border-b border-white/10">
