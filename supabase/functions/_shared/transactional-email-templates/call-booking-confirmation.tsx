@@ -113,3 +113,4 @@ const cardMeta = { color: '#444444', fontSize: '13px', lineHeight: '1.4', margin
 const hr = { borderColor: '#eaeaea', margin: '24px 0' }
 const signoff = { color: '#333333', fontSize: '15px', lineHeight: '1.6', margin: '24px 0 0' }
 const cta = { backgroundColor: '#111111', color: '#ffffff', padding: '12px 22px', borderRadius: '8px', textDecoration: 'none', fontWeight: '600' as const, fontSize: '15px', display: 'inline-block' as const }
+const tip = { color: '#666666', fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px', fontStyle: 'italic' as const }
