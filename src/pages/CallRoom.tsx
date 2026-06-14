@@ -291,7 +291,7 @@ const CallRoom = () => {
   if (status === "ready") {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
-        <SeoHead title="Join your Pixcellor call" description="Secure browser-based video call with the Pixcellor team." />
+        <SeoHead title="Join your Pixcellor call" description="Secure browser-based video call with the Pixcellor team." path="/call" noindex />
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -329,7 +329,7 @@ const CallRoom = () => {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      <SeoHead title="Pixcellor call" description="Live video call." />
+      <SeoHead title="Pixcellor call" description="Live video call." path="/call" noindex />
       {/* Header */}
       <header className="px-5 py-3 flex items-center justify-between border-b border-white/10">
         <div className="flex items-center gap-3">
