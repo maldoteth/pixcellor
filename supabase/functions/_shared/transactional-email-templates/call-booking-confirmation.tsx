@@ -26,6 +26,9 @@ const Email = ({ name, whenLabel, preferenceLabel, phone, brief, callLink }: Pro
           <Text style={text}>
             Thanks for booking a free strategy call with {BRAND_NAME}. We&apos;ve got you in the diary.
           </Text>
+          <Text style={tip}>
+            Forwarding this to a colleague? Ask them to whitelist <strong>pixcellor.com</strong> so the call link doesn&apos;t get blocked by their spam filter.
+          </Text>
 
           <Section style={card}>
             <Text style={cardLabel}>YOUR CALL</Text>
