@@ -113,7 +113,7 @@ const CATEGORY_META: Record<ServiceCategory, { Icon: typeof Megaphone; blurb: st
 const FAQ = [
   {
     q: "How fast can you launch my site?",
-    a: "Full Works sites typically go live 5–10 working days from a signed-off brief. Elite (up to 10 pages, animations, apps) is a 10-day turnaround. Retainer edits are 1–3 days; urgent fixes same-day.",
+    a: "Fast track sites can be live in hours, generally Full Works sites typically go live 5–10 working days from a signed-off brief. Elite builds (up to 10 pages, animations, apps) are a 10-day turnaround. Retainer edits are 1–3 days; urgent fixes same-day.",
   },
   {
     q: "How much does it cost?",
