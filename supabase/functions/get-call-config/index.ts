@@ -46,8 +46,13 @@ Deno.serve(async (req) => {
     const turnCred = Deno.env.get("METERED_TURN_CREDENTIAL");
 
     if (turnUrls && turnUser && turnCred) {
-      const urls = turnUrls.split(",").map((u) => u.trim()).filter(Boolean);
-      iceServers.push({ urls, username: turnUser, credential: turnCred });
+      const urls = turnUrls
+        .split(",")
+        .map((u) => u.trim())
+        .filter((u) => /^(stun|turn|turns):/i.test(u));
+      if (urls.length > 0) {
+        iceServers.push({ urls, username: turnUser, credential: turnCred });
+      }
     }
 
     return new Response(JSON.stringify({
