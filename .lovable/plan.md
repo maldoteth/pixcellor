@@ -1,72 +1,108 @@
+# Booking system upgrade — Google Meet, .ics invites, reminders
 
-# /get-started — Ad Landing Page
+## What changes for the customer
 
-A dedicated, conversion-focused landing page to send Google Ads (Performance Max) traffic to. Short "book a call" form up top, supporting sections below, sticky CTA on scroll.
+| Booking type | What they get |
+|---|---|
+| **Specific time slot** | Email with Google Meet link + .ics calendar invite + 24h reminder + 1h reminder |
+| **Anytime / mornings / afternoons / evenings** | Email confirming we'll call their number — no Meet link, no .ics, no reminders (we ring them) |
 
-## Route & file
-- New route: `/get-started` (add to `src/App.tsx`, lazy-loaded like other routes)
-- New page: `src/pages/GetStarted.tsx`
-- Keep the existing `LetsTalkPrompt` drawer intact — this page is a parallel, ad-only entry point that submits to the same backend (`lets_talk_leads` + `process-lets-talk-lead` edge function) so leads land in the same CRM with a new `source: "ads_landing"` tag.
+## 1. Connect Google Calendar
 
-## Page structure (top → bottom)
+Link the `google_calendar` connector to the Pixcellor Google account. All Meet links and calendar events are created in **your** calendar — customers get a normal invite from `you@pixcellor.com`.
 
-1. **Hero + form (above the fold)**
-   - Left: H1 "AI websites, chatbots & apps — live in 24 hours", subhead, 3 trust bullets (UK studio · From £299 · 24-hr turnaround), and a small logo strip (Hays, Manpower, Randstad, ITS, BlueArrow — reuse `src/assets/logos`).
-   - Right: glass card with the form — Name, Company, Email, Phone, optional "What do you need?" (1-line). CTA button: "Book my free call". Honeypot + anti-spam reused from `src/lib/anti-spam.ts`. Inline validation via zod (same schemas as `LetsTalkPrompt`).
-   - On submit: insert into `lets_talk_leads` + invoke `process-lets-talk-lead` with `source: "ads_landing"`, then show inline success state ("We'll be in touch within 1 working hour") and fire conversion tracking.
+## 2. Database
 
-2. **Why Pixcellor** — 3-up feature grid (Speed, Custom-built, AI-powered). Glass cards, framer-motion entrance.
+Add three columns to `call_bookings`:
+- `meet_link text` — Google Meet URL (null for callback-window bookings)
+- `google_event_id text` — so we can update/cancel later
+- `reminders_sent jsonb default '{}'` — tracks `{"24h": true, "1h": true}` to prevent double-sends
 
-3. **Portfolio strip** — horizontal scroll of 4–6 portfolio thumbnails (reuse `src/assets/portfolio` data already used elsewhere). Link "See full portfolio" → `/portfolio`.
+## 3. `book-call` edge function
 
-4. **Pricing teaser** — 3 package cards summarising tiers (from `src/data/packages.ts`), CTA "See all packages" → `/packages`.
+When `preference === "specific"`:
+1. Insert booking row as today.
+2. Call Google Calendar API via gateway: `POST /calendars/primary/events` with `conferenceData.createRequest` → returns event with `hangoutLink` (the Meet URL) and `id`.
+3. Update booking row with `meet_link` + `google_event_id`.
+4. Pass `meetLink` + ISO start/end into the confirmation email template.
+5. Generate .ics string server-side and attach via the email send (note: current `send-transactional-email` doesn't support attachments — see Technical section).
 
-5. **Testimonials / reviews** — 2–3 quotes (reuse content style from `PackageReviews.tsx`).
+When `preference !== "specific"`:
+- Unchanged: confirmation email says "we'll call you on {phone}".
 
-6. **FAQ** — accordion: How fast? How much? Do I own it? What if I don't like it? Can you integrate X?
+## 4. Email template updates
 
-7. **Final CTA band** — repeat name/email/phone mini-form or a "Scroll to top / Book a call" button that scrolls to the hero form.
+Edit `call-booking-confirmation.tsx`:
+- If `meetLink` present → show prominent "Join Google Meet" button + "Add to calendar" link + the time + dial-in fallback (their phone if Meet fails).
+- If no `meetLink` → keep current "we'll call you" copy.
 
-8. **Sticky mobile CTA bar** — fixed bottom "Book a free call" button that scrolls to the form (mobile only).
+Add two new templates:
+- `call-booking-reminder-24h.tsx`
+- `call-booking-reminder-1h.tsx`
 
-## Design
-- Match homepage: fully black bg, white text, glass-morphism cards, system-ui font, framer-motion for entrance/hover (per project core rules).
-- Reuse existing UI primitives: `Button`, `Input`, `Label`, `Textarea`, `Accordion`, `Footer`, `SeoHead`.
-- No new design tokens; uses existing semantic tokens.
+Both include the Meet link, time, and a "need to reschedule? reply to this email" line.
 
-## Google Ads conversion tracking
+## 5. Reminder cron
 
-Add a small helper `src/lib/ads-tracking.ts`:
+New edge function `send-call-reminders` (runs every 5 minutes via pg_cron):
+- Finds `call_bookings` where `scheduled_at` is in the next 24h ± 5min window and `reminders_sent->>'24h'` is null → send 24h reminder, mark sent.
+- Finds bookings where `scheduled_at` is in the next 1h ± 5min window and `reminders_sent->>'1h'` is null → send 1h reminder, mark sent.
+- Skips cancelled bookings and callback-window bookings (no `scheduled_at`).
 
-```ts
-declare global { interface Window { gtag?: (...args: unknown[]) => void } }
-export const trackAdsConversion = (label?: string) => {
-  const id = import.meta.env.VITE_GOOGLE_ADS_CONVERSION_ID; // e.g. "AW-1234567890"
-  const lbl = label ?? import.meta.env.VITE_GOOGLE_ADS_CONVERSION_LABEL; // e.g. "abc123"
-  if (!id || !window.gtag) return;
-  window.gtag("event", "conversion", { send_to: `${id}/${lbl}` });
-};
+## 6. /get-started UI
+
+Tiny copy tweak on the confirmation success screen:
+- Specific slot → "Check your inbox — Google Meet link and calendar invite are on their way."
+- Callback window → "Check your inbox — we'll ring you on {phone}."
+
+---
+
+## Technical section
+
+**Google Calendar API call** (via connector gateway):
 ```
+POST https://connector-gateway.lovable.dev/google_calendar/calendar/v3/calendars/primary/events?conferenceDataVersion=1
+{
+  summary: "Pixcellor call with {name}",
+  description: "{brief}\n\nBooked via /get-started",
+  start: { dateTime: scheduled_at, timeZone: "Europe/London" },
+  end:   { dateTime: scheduled_at + 30min, timeZone: "Europe/London" },
+  attendees: [{ email: customer.email }, { email: "you@pixcellor.com" }],
+  conferenceData: { createRequest: { requestId: bookingId, conferenceSolutionKey: { type: "hangoutsMeet" } } },
+  reminders: { useDefault: false }   // we send our own reminders
+}
+```
+Returns `hangoutLink` (Meet URL) and `id` (event ID).
 
-- Load gtag.js in `index.html` (placeholder ID, you'll paste yours):
-  ```html
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-CONVERSION_ID"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','AW-CONVERSION_ID');</script>
-  ```
-- Call `trackAdsConversion()` after a successful form submit on `/get-started`.
-- I'll add the env var placeholders and a clear `// TODO: paste your AW-... ID + conversion label` comment so you can drop them in.
+Headers: `Authorization: Bearer $LOVABLE_API_KEY`, `X-Connection-Api-Key: $GOOGLE_CALENDAR_API_KEY`.
 
-## SEO
-- `SeoHead` with title "Get Started — AI Websites in 24 Hours | Pixcellor" (<60 chars) and meta desc (<160).
-- Single H1, semantic sections, alt text on logos/portfolio images.
-- Add `/get-started` to `public/sitemap.xml` (priority 0.9).
-- JSON-LD: `Service` schema with provider Pixcellor.
+**.ics attachment caveat**: the current `send-transactional-email` function doesn't support attachments. Two options:
+- **A (recommended)**: rely on the Google Calendar event itself — Google auto-emails an invite to `attendees`, which already adds it to their calendar. Our confirmation email then just shows the Meet button + a "View in calendar" link to the event's `htmlLink`. **Zero extra work, customer gets a real invite from Google.**
+- **B**: extend `send-transactional-email` to accept `attachments[]` and inline-generate .ics. More work, duplicates what Google already does.
 
-## Backend
-- No schema changes — uses existing `lets_talk_leads` table and `process-lets-talk-lead` edge function.
-- New `source` value: `"ads_landing"` (string column, no migration needed).
+I recommend **A** — it's simpler, more reliable, and the customer experience is better (they get a proper Google invite with RSVP buttons).
 
-## Out of scope (ask if you want them)
-- A/B variants of the page
-- Calendly / live booking widget instead of callback request
-- Meta/TikTok pixel (only Google Ads tracking included)
+**Cron**: add `pg_cron` job hitting `send-call-reminders` every 5 minutes via `supabase--insert` (not migration, since it embeds the project URL + anon key).
+
+**Failure handling**: if Google Calendar call fails, still save the booking and send the email without a Meet link, plus log to `admin_alerts` so you can manually add the call. Customer never sees a failure.
+
+**Cost**: £0. Google Calendar API + Meet links are free. Reminders use existing Lovable Emails infra.
+
+---
+
+## Files touched
+
+- `supabase/migrations/...` — add 3 columns to `call_bookings`
+- `supabase/functions/book-call/index.ts` — create Google Calendar event for specific slots
+- `supabase/functions/_shared/transactional-email-templates/call-booking-confirmation.tsx` — show Meet button when present
+- `supabase/functions/_shared/transactional-email-templates/call-booking-reminder-24h.tsx` — new
+- `supabase/functions/_shared/transactional-email-templates/call-booking-reminder-1h.tsx` — new
+- `supabase/functions/_shared/transactional-email-templates/registry.ts` — register new templates
+- `supabase/functions/send-call-reminders/index.ts` — new cron worker
+- `src/pages/GetStarted.tsx` — success-state copy tweak
+
+## What I need from you before building
+
+1. **Approve linking the Google Calendar connector** to your Pixcellor Google account (you'll click through a Google OAuth screen — takes ~20 seconds).
+2. **Confirm the internal attendee email** to add to every event (so the call lands in your calendar too) — e.g. `hello@pixcellor.com`?
+3. **Confirm option A** (rely on Google's native invite) vs option B (build .ics attachment support).
