@@ -456,7 +456,10 @@ const CallRoom = () => {
       </div>
 
       {/* Controls */}
-      <div className="px-4 pb-6 pt-3 flex items-center justify-center gap-2 md:gap-3">
+      <div
+        className="px-4 pt-3 flex items-center justify-center gap-2 md:gap-3"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
+      >
         <CtrlButton onClick={toggleMic} active={micOn} label={micOn ? "Mute" : "Unmute"}>
           {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
         </CtrlButton>
