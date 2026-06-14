@@ -195,9 +195,7 @@ const GetStarted = () => {
     if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBookingError(null);
+  const validateContact = () => {
     const parsed = schema.safeParse(values);
     if (!parsed.success) {
       const fieldErrors: Partial<Record<keyof FormValues, string>> = {};
@@ -206,6 +204,22 @@ const GetStarted = () => {
         if (!fieldErrors[path]) fieldErrors[path] = issue.message;
       }
       setErrors(fieldErrors);
+      return false;
+    }
+    return true;
+  };
+
+  const goToCalendar = () => {
+    setBookingError(null);
+    if (!validateContact()) return;
+    setStep(2);
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBookingError(null);
+    if (!validateContact()) {
+      setStep(1);
       return;
     }
     if (!booking) {
