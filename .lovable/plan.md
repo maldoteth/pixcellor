@@ -1,45 +1,34 @@
-## Goal
-Let anyone with the guest link join an in-progress call. The host gets a knock popup to admit (or deny) each guest, including late joiners.
+## What the logs say
 
-## Current state
-- `CallRoom.tsx` is a single peer connection (`pcRef`). Host ↔ one guest only.
-- `guest_token` on `call_bookings` is shared by everyone who has the link, but the room logic assumes one peer.
-- "Start call" is a single global step that begins negotiation with whoever happens to be in the channel.
+Edge-function logs only show boot/shutdown — no errors — so `get-call-config` is fine. You said the phones get stuck on "Connecting…" forever (not a permissions / `getUserMedia` error). That means signaling worked, the host sent the offer, the phone answered, but **ICE never finds a working path between the two peers**.
 
-## Changes (frontend-only, `src/pages/CallRoom.tsx`)
+## Most likely cause
 
-### Signaling
-- All signal messages already carry `from: PEER_ID`. Add a `to?: string` field so messages can be addressed to a specific peer.
-- Guests address everything to the host's PEER_ID once known. Host addresses each guest by their PEER_ID.
-- The `hello` reply from host now also includes `role: "host"` so guests learn the host's PEER_ID.
+Even though both devices are "on the same WiFi", desktop-to-desktop works because the browsers exchange direct LAN IP candidates. Mobile browsers (especially iOS Safari and Samsung Internet) only expose **mDNS-obfuscated `.local` candidates** instead of real LAN IPs. Many home/office routers (and almost every guest/corporate WiFi) block `.local` resolution between clients (AP/client isolation), so the LAN path silently fails. The connection then has to fall back to TURN — and right now the TURN secrets are set, but we never verify that the TURN URL list actually contains a relay-capable entry, and we never force a relay-only retry when ICE stalls.
 
-### Host: multi-peer mesh
-- Replace `pcRef: RTCPeerConnection | null` with `peersRef: Map<peerId, { pc, stream, name }>`.
-- When a guest's `hello` arrives:
-  - If the call hasn't started yet → add to a `pendingGuests` list (knock queue).
-  - If the call is live → show a "X wants to join" popup with Admit / Deny buttons.
-- On Admit: create a new `RTCPeerConnection` for that peer, attach local tracks, create offer, send `{type:"offer", to: peerId}`.
-- On Deny: send `{type:"deny", to: peerId}` and ignore further signals from that peer.
-- Render remote videos in a responsive grid (1 → big, 2 → split, 3+ → tiled). Local preview stays as PiP.
+That matches your symptom exactly: works on desktop⇄desktop (LAN candidates succeed), fails on mobile⇄desktop (LAN candidates fail, TURN never kicks in cleanly).
 
-### Guest
-- One PC to host. On load, send `hello`. Wait for either `offer` (admitted) or `deny` (rejected — show "Host declined your request to join").
-- Show "Waiting for host to let you in…" until offer arrives.
-- Multiple guests using the same link is fine because each has a unique `PEER_ID`.
+## Plan
 
-### Host UI additions
-- Pre-call waiting room: list all pending guests with Admit All / individual Admit.
-- During call: top-right toast "<name> is asking to join" with Admit / Deny. Stacks if multiple.
-- Display name: guests don't currently send a name. Use `room.display_name` from the DB (the booking's customer name) for the first guest, and "Guest 2", "Guest 3"… for additional ones — or have guests send their name in `hello`. Plan: include `name` in `hello` payload; guest UI prompts for name only if `display_name` is empty (it normally isn't for the booked customer; extras get "Guest").
+1. **Edge function `get-call-config`** — harden the TURN config:
+   - Log how many `turn:` / `turns:` URLs were emitted, so we can see in edge logs whether the secret is shaped correctly.
+   - If `METERED_TURN_URLS` is just a single hostname, expand it to the canonical Metered set (`turn:<host>:80`, `turn:<host>:80?transport=tcp`, `turn:<host>:443`, `turns:<host>:443?transport=tcp`) so mobile networks that block UDP still have a TCP/TLS fallback.
+   - Return a separate `relay_only_ice_servers` array (TURN entries only) for the client to use on retry.
 
-### Hangup / cleanup
-- Close every PC in the map, stop remote streams, send `bye` to all.
-- If a single guest leaves (`bye` from that peer), only tear down their PC and remove their tile.
+2. **Client `CallRoom.tsx`** — make mobile ICE actually complete:
+   - Add a "stuck on calling" watchdog: if `iceConnectionState` is still `checking`/`new` after ~6 s, tear the PC down and rebuild it with `iceTransportPolicy: 'relay'` using the relay-only ICE list, then re-negotiate (guest re-knocks, host re-offers).
+   - Log every ICE candidate type that's emitted (`host` / `srflx` / `relay`) so we can confirm in the phone's remote debugger that relay candidates are actually being generated.
+   - Surface a visible "Reconnecting over relay…" hint instead of an indefinite "Connecting…" so the user knows something is happening.
+   - Drop the strict `frameRate: { max: 30 }` / `1280×720 max` constraints on mobile and use `{ ideal: … }` only — a few Samsung front cameras throw `OverconstrainedError` silently on the `max` form, which also presents as "stuck connecting".
+
+3. **Verification**
+   - Open the iPhone using Safari Web Inspector (Mac) or the Samsung in `chrome://inspect`, join the call, and confirm in console:
+     - `[call] ... ice candidate type=relay` appears at least once on both sides, and
+     - `iceConnectionState` reaches `connected`.
+   - If relay candidates never appear, the TURN credentials/secret are wrong and we'll fix those next; the edge-function log line added in step 1 will tell us immediately.
 
 ## Out of scope
-- Guest-to-guest video. Only host sees & is seen by all guests; guests see host only. (Adding mesh between guests multiplies bandwidth and isn't part of the ask.)
-- Server-side ACL changes — the existing `guest_token` already permits anyone with the link, which is the intended behaviour.
-- Recording changes — recorder still captures host's local stream.
 
-## Files touched
-- `src/pages/CallRoom.tsx` (only)
+- No UI redesign of the call room.
+- No change to booking flow, auth, or the rest of the portal.
+- No change to host↔host or desktop↔desktop behaviour (those already work).
