@@ -307,30 +307,43 @@ const CallRoom = () => {
         sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID, to: peerId });
       }
     };
-    pc.ontrack = (e) => {
-      try { peer.stream.addTrack(e.track); } catch { /* dup */ }
+    const attachToEl = () => {
       const el = remoteVideoEls.current.get(peerId);
       if (el && el.srcObject !== peer.stream) {
         el.srcObject = peer.stream;
         el.play().catch(() => { /* noop */ });
       }
-      e.track.onunmute = () => {
-        const el2 = remoteVideoEls.current.get(peerId);
-        if (el2 && el2.srcObject !== peer.stream) {
-          el2.srcObject = peer.stream;
-          el2.play().catch(() => { /* noop */ });
+    };
+    pc.ontrack = (e) => {
+      try { peer.stream.addTrack(e.track); } catch { /* dup */ }
+      console.log("[call] host ontrack from", peerId, e.track.kind);
+      attachToEl();
+      // Retry attaching for a few frames in case the <video> ref hasn't mounted yet
+      let tries = 0;
+      const iv = window.setInterval(() => {
+        attachToEl();
+        if (++tries > 20 || remoteVideoEls.current.get(peerId)?.srcObject === peer.stream) {
+          window.clearInterval(iv);
         }
-      };
+      }, 100);
+      e.track.onunmute = attachToEl;
+    };
+    pc.oniceconnectionstatechange = () => {
+      console.log("[call] host ice state", peerId, pc.iceConnectionState);
+      if (pc.iceConnectionState === "failed") {
+        try { pc.restartIce(); } catch { /* noop */ }
+      }
     };
     pc.onconnectionstatechange = () => {
+      console.log("[call] host conn state", peerId, pc.connectionState);
       if (pc.connectionState === "connected") {
         setStatus((s) => (s === "waiting" || s === "calling" ? "connected" : s));
       }
-      if (pc.connectionState === "failed" || pc.connectionState === "closed") {
-        // Tear down this peer only
-        removeHostPeer(peerId);
-      }
+      // Do NOT auto-remove on "failed" — momentary blips during ICE
+      // negotiation flip to failed and recover. Only remove when the peer
+      // explicitly says bye or the host clicks End.
     };
+
 
     // Attach local tracks (current camera + audio, or active screen)
     const localStream = screenStreamRef.current ?? localStreamRef.current;
