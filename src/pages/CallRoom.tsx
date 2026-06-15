@@ -257,21 +257,16 @@ const CallRoom = () => {
       const pc = createPeer();
       pcRef.current = pc;
 
-      // Use addTransceiver so we can: (a) set sendEncodings up front to cap
-      // bitrate/framerate, (b) prefer VP8 codec before the first offer, and
-      // (c) avoid the race where addTrack fires before the m= line exists.
-      const audioTrack = stream.getAudioTracks()[0];
-      const videoTrack = stream.getVideoTracks()[0];
-
-      if (audioTrack) {
-        pc.addTransceiver(audioTrack, { direction: "sendrecv", streams: [stream] });
+      // Use addTrack (not addTransceiver) so the browser creates m-lines in
+      // the standard order. Pre-adding transceivers on the guest side caused
+      // setRemoteDescription to fail when the host's offer arrived with a
+      // different m-line ordering. We still apply codec preference + bitrate
+      // tuning afterwards via the resulting sender/transceiver.
+      for (const track of stream.getTracks()) {
+        pc.addTrack(track, stream);
       }
-      if (videoTrack) {
-        const videoTx = pc.addTransceiver(videoTrack, {
-          direction: "sendrecv",
-          streams: [stream],
-          sendEncodings: [{ maxBitrate: 1_200_000, maxFramerate: 30 }],
-        });
+      const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
+      if (videoTx) {
         preferVP8(videoTx);
         await tuneVideoSender(videoTx.sender, "camera");
       }
