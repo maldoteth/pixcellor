@@ -50,13 +50,13 @@ Deno.serve(async (req) => {
   for (const id of ids) {
     const { data: bk, error } = await admin
       .from("call_bookings")
-      .select("id, name, email, phone, company, brief, contact_id, host_token, guest_token, source")
+      .select("id, name, email, phone, company, brief, contact_id, host_token, guest_token, host_code, guest_code, source")
       .eq("id", id)
       .maybeSingle();
     if (error || !bk) { results.push({ id, ok: false, error: "not_found" }); continue; }
 
-    const callLinkHost = `${baseUrl}/call/${bk.id}?t=${bk.host_token}`;
-    const callLinkGuest = `${baseUrl}/call/${bk.id}?t=${bk.guest_token}`;
+    const callLinkHost = `${baseUrl}/meeting/${bk.host_code}`;
+    const callLinkGuest = `${baseUrl}/meeting/${bk.guest_code}`;
 
     await notifyInternalLead({
       sourceLabel: `Pixcellor — Call Booking (${bk.source}) [resend]`,
