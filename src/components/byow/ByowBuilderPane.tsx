@@ -230,7 +230,7 @@ export default function ByowBuilderPane({ siteId, onBack }: { siteId: string; on
               <Button
                 onClick={send}
                 disabled={!canSend || sending || !input.trim()}
-                className="w-full bg-white text-black hover:bg-white/90"
+                className="w-full request-shimmer bg-white text-black hover:bg-white"
               >
                 {sending ? "Sending…" : canSend ? "Send" : remaining === 0 ? "Out of prompts" : "Unavailable"}
               </Button>

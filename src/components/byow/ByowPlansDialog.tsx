@@ -92,7 +92,7 @@ export default function ByowPlansDialog({ siteId, open, onOpenChange, defaultTab
                 <Button
                   onClick={() => checkout("subscription", s.key)}
                   disabled={loadingKey !== null}
-                  className="mt-4 w-full bg-white text-black hover:bg-white/90"
+                  className="mt-4 w-full request-shimmer bg-white text-black hover:bg-white"
                 >
                   {loadingKey === `subscription:${s.key}` ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
@@ -124,7 +124,7 @@ export default function ByowPlansDialog({ siteId, open, onOpenChange, defaultTab
                 <Button
                   onClick={() => checkout("topup", t.key)}
                   disabled={loadingKey !== null}
-                  className="mt-4 w-full bg-white text-black hover:bg-white/90"
+                  className="mt-4 w-full request-shimmer bg-white text-black hover:bg-white"
                 >
                   {loadingKey === `topup:${t.key}` ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
