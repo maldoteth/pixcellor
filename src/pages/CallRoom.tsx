@@ -187,26 +187,26 @@ const CallRoom = () => {
     }
   }, []);
 
-  // Reorder codec preferences so VP8 is first. VP8 has hardware encoders on
-  // basically every device — VP9/AV1 software-encoded on a phone is the #1
-  // cause of jittery video.
+  // Reorder codec preferences so VP8 is first on the sender side. VP8 has
+  // hardware encoders on basically every device. We only reorder the primary
+  // media codecs and keep the rest (rtx/red/ulpfec/flexfec) in their original
+  // order so payload-type associations stay valid.
   const preferVP8 = useCallback((transceiver: RTCRtpTransceiver) => {
     try {
       const caps = RTCRtpSender.getCapabilities?.("video");
-      if (!caps?.codecs) return;
-      const codecs = [...caps.codecs];
-      codecs.sort((a, b) => {
-        const score = (c: { mimeType: string }) => {
-          const m = c.mimeType.toLowerCase();
-          if (m === "video/vp8") return 0;
-          if (m === "video/h264") return 1;
-          if (m === "video/vp9") return 2;
-          if (m === "video/av1") return 3;
-          return 4;
-        };
-        return score(a) - score(b);
-      });
-      transceiver.setCodecPreferences?.(codecs);
+      if (!caps?.codecs || !transceiver.setCodecPreferences) return;
+      const score = (m: string) => {
+        if (m === "video/vp8") return 0;
+        if (m === "video/h264") return 1;
+        if (m === "video/vp9") return 2;
+        if (m === "video/av1") return 3;
+        return 4;
+      };
+      const primary = caps.codecs
+        .filter((c) => score(c.mimeType.toLowerCase()) < 4)
+        .sort((a, b) => score(a.mimeType.toLowerCase()) - score(b.mimeType.toLowerCase()));
+      const rest = caps.codecs.filter((c) => score(c.mimeType.toLowerCase()) === 4);
+      transceiver.setCodecPreferences([...primary, ...rest]);
     } catch (e) {
       console.warn("preferVP8 failed", e);
     }
@@ -257,21 +257,16 @@ const CallRoom = () => {
       const pc = createPeer();
       pcRef.current = pc;
 
-      // Use addTransceiver so we can: (a) set sendEncodings up front to cap
-      // bitrate/framerate, (b) prefer VP8 codec before the first offer, and
-      // (c) avoid the race where addTrack fires before the m= line exists.
-      const audioTrack = stream.getAudioTracks()[0];
-      const videoTrack = stream.getVideoTracks()[0];
-
-      if (audioTrack) {
-        pc.addTransceiver(audioTrack, { direction: "sendrecv", streams: [stream] });
+      // Use addTrack (not addTransceiver) so the browser creates m-lines in
+      // the standard order. Pre-adding transceivers on the guest side caused
+      // setRemoteDescription to fail when the host's offer arrived with a
+      // different m-line ordering. We still apply codec preference + bitrate
+      // tuning afterwards via the resulting sender/transceiver.
+      for (const track of stream.getTracks()) {
+        pc.addTrack(track, stream);
       }
-      if (videoTrack) {
-        const videoTx = pc.addTransceiver(videoTrack, {
-          direction: "sendrecv",
-          streams: [stream],
-          sendEncodings: [{ maxBitrate: 1_200_000, maxFramerate: 30 }],
-        });
+      const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
+      if (videoTx) {
         preferVP8(videoTx);
         await tuneVideoSender(videoTx.sender, "camera");
       }
