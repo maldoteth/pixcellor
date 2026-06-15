@@ -261,10 +261,12 @@ const CallRoom = () => {
         try { pc.restartIce(); } catch { /* noop */ }
         if (!failTimerRef.current) {
           failTimerRef.current = window.setTimeout(() => {
-            if (pc.iceConnectionState !== "connected" && pc.iceConnectionState !== "completed") {
+            const cur = pc.iceConnectionState;
+            failTimerRef.current = null;
+            if (cur !== "connected" && cur !== "completed") {
               markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
             }
-          }, 5000);
+          }, 8000);
         }
       }
     };
@@ -272,7 +274,16 @@ const CallRoom = () => {
       const s = pc.connectionState;
       if (s === "connected") markConnected();
       if (s === "failed") {
-        markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
+        // Require sustained failure — some browsers flip to "failed" briefly
+        // during ICE restart or candidate pair swap. Only surface if still
+        // failed after 4s.
+        if (failTimerRef.current) return;
+        failTimerRef.current = window.setTimeout(() => {
+          failTimerRef.current = null;
+          if (pc.connectionState === "failed") {
+            markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
+          }
+        }, 4000);
       }
     };
     return pc;
@@ -300,18 +311,16 @@ const CallRoom = () => {
       const pc = createPeer();
       pcRef.current = pc;
 
-      // Host owns the m-line order (it creates the offer), so attach tracks
-      // immediately. Guest waits for the offer and then attaches via the
-      // transceivers it creates — this guarantees m-line ordering matches.
-      if (room.role === "host") {
-        for (const track of stream.getTracks()) {
-          pc.addTrack(track, stream);
-        }
-        const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
-        if (videoTx) {
-          preferVP8(videoTx);
-          await tuneVideoSender(videoTx.sender, "camera");
-        }
+      // Both peers attach local tracks up front. (Earlier attempt to defer
+      // guest tracks until after setRemoteDescription caused malformed
+      // answers on some Chromium builds.)
+      for (const track of stream.getTracks()) {
+        pc.addTrack(track, stream);
+      }
+      const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
+      if (videoTx) {
+        preferVP8(videoTx);
+        await tuneVideoSender(videoTx.sender, "camera");
       }
 
       const channel = supabase.channel(`call:${room.booking_id}`, {
@@ -337,30 +346,6 @@ const CallRoom = () => {
           } else if (msg.type === "offer") {
             if (status !== "calling" && status !== "connected") setStatus("calling");
             await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-
-            // Guest attaches local tracks to the transceivers created by the
-            // offer (matching m-line order exactly).
-            if (room.role === "guest") {
-              const local = localStreamRef.current;
-              if (local) {
-                for (const tx of peer.getTransceivers()) {
-                  const kind = tx.receiver.track?.kind;
-                  if (!kind) continue;
-                  const localTrack = kind === "audio"
-                    ? local.getAudioTracks()[0]
-                    : kind === "video" ? local.getVideoTracks()[0] : null;
-                  if (localTrack && tx.sender) {
-                    await tx.sender.replaceTrack(localTrack);
-                    tx.direction = "sendrecv";
-                    if (kind === "video") {
-                      preferVP8(tx);
-                      await tuneVideoSender(tx.sender, "camera");
-                    }
-                  }
-                }
-              }
-            }
-
             await drainPendingIce(peer);
             const answer = await peer.createAnswer();
             await peer.setLocalDescription(answer);
@@ -417,22 +402,27 @@ const CallRoom = () => {
 
   useEffect(() => () => { hangup(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
-  // Watchdog: if we're stuck on "calling" for >15s, surface a failure so the
-  // user isn't left staring at a "Connecting…" spinner forever.
+  // Soft watchdog: if we're still on "calling" after 15s, show a hint under
+  // the Connecting spinner. We DO NOT flip to "failed" here — only the peer
+  // connection's own "failed" state (with a 4s confirm) can do that. Slow
+  // TURN handshakes can legitimately take 20s+ on cellular/captive Wi-Fi.
   useEffect(() => {
-    if (status !== "calling") return;
+    if (status !== "calling") {
+      setFailMessage("");
+      return;
+    }
     if (watchdogRef.current) window.clearTimeout(watchdogRef.current);
     watchdogRef.current = window.setTimeout(() => {
       const pc = pcRef.current;
       const s = pc?.connectionState;
       const ice = pc?.iceConnectionState;
       if (s === "connected" || ice === "connected" || ice === "completed") return;
-      markFailed("Couldn't establish the call within 15 seconds. This usually means a firewall or restrictive network is blocking video. Try a different network or mobile data.");
+      setFailMessage("Still connecting… this can take up to 30 seconds on slow networks.");
     }, CONNECT_TIMEOUT_MS);
     return () => {
       if (watchdogRef.current) { window.clearTimeout(watchdogRef.current); watchdogRef.current = null; }
     };
-  }, [status, markFailed]);
+  }, [status]);
 
   // Dev-only stats poll so we can confirm bitrate / framerate / packet loss
   // are healthy after the tuning above. No-op in production.
@@ -847,10 +837,15 @@ const CallRoom = () => {
         )}
 
         {status === "calling" && (
-          <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Connecting…
+          <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm px-6">
+            <div className="flex flex-col items-center gap-3 text-center max-w-xs">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Connecting…
+              </div>
+              {failMessage && (
+                <p className="text-[12px] text-white/50 leading-relaxed">{failMessage}</p>
+              )}
             </div>
           </div>
         )}
