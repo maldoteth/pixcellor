@@ -1594,6 +1594,7 @@ export type Database = {
           email: string
           expires_at: string
           id: string
+          login_url: string | null
           token: string | null
         }
         Insert: {
@@ -1602,6 +1603,7 @@ export type Database = {
           email: string
           expires_at?: string
           id: string
+          login_url?: string | null
           token?: string | null
         }
         Update: {
@@ -1610,6 +1612,7 @@ export type Database = {
           email?: string
           expires_at?: string
           id?: string
+          login_url?: string | null
           token?: string | null
         }
         Relationships: []
