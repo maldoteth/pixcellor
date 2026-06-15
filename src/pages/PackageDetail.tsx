@@ -191,7 +191,7 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
         title={`${pkg.name} — ${pkg.price} | Pixcellor`}
         description={pkg.tagline}
         path={`/packages/${pkg.slug}`}
-        image={pkg.ogImage}
+        image={OG_PACKAGE_BY_SLUG[pkg.slug] ?? pkg.ogImage}
       />
       <JsonLd pkg={pkg} />
 

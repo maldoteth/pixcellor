@@ -20,6 +20,7 @@ export default function PackagesPage() {
         title="Packages — Pixcellor"
         description="Choose a Pixcellor package — one-off builds and ongoing retainers for fast, premium websites."
         path="/packages"
+        image={OG_PACKAGES}
       />
 
       <div className="mx-auto w-full max-w-6xl px-5 py-10 md:px-10 md:py-16 pb-28 md:pb-16">

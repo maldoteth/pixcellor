@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import SeoHead from "@/components/SeoHead";
 import Footer from "@/components/Footer";
 import { SERVICE_CATEGORIES, SERVICES, type ServiceCategory } from "@/data/services";
+import { OG_SERVICES } from "@/data/ogImages";
 
 const ORDER: ServiceCategory[] = ["marketing", "tech", "business"];
 
@@ -18,6 +19,7 @@ export default function ServicesIndex() {
         title="Services — Pixcellor"
         description="Marketing, tech and business services from Pixcellor — websites, web apps, telesales, recruitment, AI agents and more."
         path="/services"
+        image={OG_SERVICES}
       />
       <header className="sticky top-0 z-30 border-b border-foreground/10 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3 md:px-10">
