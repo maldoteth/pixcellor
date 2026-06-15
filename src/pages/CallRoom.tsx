@@ -618,7 +618,7 @@ const CallRoom = () => {
           className="absolute right-3 md:right-6 w-28 md:w-48 aspect-video rounded-2xl overflow-hidden border border-white/20 shadow-xl bg-black/60 backdrop-blur"
           style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
         >
-          <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+          <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-contain" />
           {!camOn && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80 text-white/60 text-xs">
               Camera off
