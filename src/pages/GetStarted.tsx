@@ -385,7 +385,7 @@ const GetStarted = () => {
                   <Phone className="h-4 w-4" />
                 </span>
                 <span className="flex flex-col leading-tight">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-amber-200/80">Call now</span>
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-amber-200/80">URGENT? CALL US 24/7 365</span>
                   <span className="text-base font-semibold text-amber-50">01483 219430</span>
                 </span>
               </span>
