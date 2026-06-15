@@ -37,6 +37,7 @@ const CallRoom = lazy(() => import("./pages/CallRoom"));
 const MeetingRedirect = lazy(() => import("./pages/MeetingRedirect"));
 const ByowLanding = lazy(() => import("./pages/ByowLanding"));
 const PublicSite = lazy(() => import("./pages/PublicSite"));
+const ByowGeneratedEditor = lazy(() => import("./pages/ByowGeneratedEditor"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
