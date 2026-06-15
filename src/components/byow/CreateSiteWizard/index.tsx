@@ -41,6 +41,7 @@ export default function CreateSiteWizard() {
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [importedChars, setImportedChars] = useState<number | null>(null);
+  const [tplCategory, setTplCategory] = useState<TemplateCategory | "all">("all");
 
   useEffect(() => {
     let alive = true;
@@ -58,10 +59,17 @@ export default function CreateSiteWizard() {
     FONT_PRESETS.forEach((f) => { if (f.googleHref) ensureFontLoaded(f.googleHref); });
   }, []);
 
+  const filteredTemplates = useMemo(
+    () => (tplCategory === "all" ? TEMPLATES : TEMPLATES.filter((t) => t.category === tplCategory)),
+    [tplCategory]
+  );
+
   const nextHint = () => {
-    if (step !== 0) return "";
-    if (displayName.trim().length < 2) return "Add a site name to continue";
-    if (brief.trim().length < 10) return "Add a short description (at least 10 characters)";
+    if (step === 0) {
+      if (displayName.trim().length < 2) return "Add a site name to continue";
+      if (brief.trim().length < 10) return "Add a short description (at least 10 characters)";
+    }
+    if (step === 1 && !template) return "Pick a template to continue";
     return "";
   };
   const canNext = () => nextHint() === "";
