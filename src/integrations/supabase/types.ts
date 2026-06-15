@@ -366,7 +366,9 @@ export type Database = {
           contact_id: string | null
           created_at: string
           email: string
+          guest_code: string
           guest_token: string
+          host_code: string
           host_token: string
           id: string
           name: string
@@ -384,7 +386,9 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           email: string
+          guest_code: string
           guest_token?: string
+          host_code: string
           host_token?: string
           id?: string
           name: string
@@ -402,7 +406,9 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           email?: string
+          guest_code?: string
           guest_token?: string
+          host_code?: string
           host_token?: string
           id?: string
           name?: string
@@ -3168,6 +3174,7 @@ export type Database = {
         Returns: Json
       }
       fetch_chat_history: { Args: { _client_id: string }; Returns: Json }
+      gen_meeting_code: { Args: never; Returns: string }
       generate_order_code: { Args: never; Returns: string }
       get_call_room: {
         Args: { p_booking: string; p_token: string }
