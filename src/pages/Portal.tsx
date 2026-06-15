@@ -43,6 +43,7 @@ import SentEmails from "@/components/email/SentEmails";
 import { useDomainPrompt } from "@/components/DomainPromptDialog";
 import NewOrderDialog from "@/components/portal/NewOrderDialog";
 import VisionStudio from "@/components/portal/VisionStudio";
+import ByowAdminPanel from "@/components/byow/ByowAdminPanel";
 import CandidatesPanel from "@/components/portal/CandidatesPanel";
 import VacanciesPanel from "@/components/portal/VacanciesPanel";
 
@@ -3479,8 +3480,9 @@ export default function Portal() {
             </DialogContent>
           </Dialog>
 
-          <TabsContent value="studio" className="min-w-0">
+          <TabsContent value="studio" className="min-w-0 space-y-6">
             <VisionStudio />
+            <ByowAdminPanel />
           </TabsContent>
 
           <TabsContent value="candidates" className="min-w-0">
