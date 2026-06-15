@@ -99,7 +99,7 @@ interface Props {
   initialVision?: VisionBrief | null;
 }
 
-const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = true, packageName, billing, initialValues, initialVision }: Props) => {
+const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = false, packageName, billing, initialValues, initialVision }: Props) => {
   const isMobile = useIsMobileOrTablet();
 
   const computeInitial = (): { values: BuyerDetails; step: Step; vision: VisionBrief | null } => {
