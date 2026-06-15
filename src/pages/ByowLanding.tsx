@@ -70,11 +70,8 @@ const TOPUPS = [
   { key: "pack1000" as const, label: "1,000 prompt pack", price: "£1,250", per: "one-off", rate: "£1.25 / prompt" },
 ];
 
-const STEPS = [
-  { n: "01", title: "Pick a plan", text: "Growth, Scale or Enterprise. Cancel any time. Top-up packs never expire." },
-  { n: "02", title: "Brief us in chat", text: "Describe the change — copy, layout, new page, integration. Our team picks it up the same day." },
-  { n: "03", title: "Watch it go live", text: "We ship inside your quota with a live + preview view side-by-side. Refresh and it's there." },
-];
+
+
 
 const BENEFITS = [
   { icon: Zap, title: "24-hour delivery", text: "Real humans iterating on your site every business day — no DIY drag-and-drop." },
