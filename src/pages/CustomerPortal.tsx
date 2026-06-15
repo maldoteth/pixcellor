@@ -109,7 +109,7 @@ const BUY_AGAIN_PACKAGES = [
   },
 ] as const;
 
-type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls";
+type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls" | "sites";
 
 type CustomerOrder = {
   id: string;
