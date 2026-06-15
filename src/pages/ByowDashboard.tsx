@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 
 interface Site {
@@ -57,10 +56,6 @@ export default function ByowDashboard() {
 
   return (
     <>
-      <Helmet>
-        <title>Your sites — Pixcellor Client Portal</title>
-        <meta name="robots" content="noindex" />
-      </Helmet>
       <div className="min-h-screen bg-black text-white">
         <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
           <div>

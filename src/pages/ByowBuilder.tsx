@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 
@@ -139,10 +138,6 @@ export default function ByowBuilder() {
 
   return (
     <>
-      <Helmet>
-        <title>{site.display_name} — Pixcellor Client Portal</title>
-        <meta name="robots" content="noindex" />
-      </Helmet>
       <div className="min-h-screen bg-black text-white flex flex-col">
         {/* Header */}
         <header className="border-b border-white/10 px-4 sm:px-6 py-3 flex items-center justify-between gap-4 shrink-0">

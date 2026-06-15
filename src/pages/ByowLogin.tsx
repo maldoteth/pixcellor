@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Helmet } from "react-helmet-async";
 
 export default function ByowLogin() {
   const navigate = useNavigate();
@@ -43,10 +42,6 @@ export default function ByowLogin() {
 
   return (
     <>
-      <Helmet>
-        <title>Sign in — Pixcellor Client Portal</title>
-        <meta name="robots" content="noindex" />
-      </Helmet>
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
           <div className="mb-10 text-center">

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 
 interface QueueItem {
@@ -176,10 +175,6 @@ export default function ByowAdmin() {
 
   return (
     <>
-      <Helmet>
-        <title>BYOW Admin — Pixcellor</title>
-        <meta name="robots" content="noindex" />
-      </Helmet>
       <div className="min-h-screen bg-black text-white">
         <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
           <div>
