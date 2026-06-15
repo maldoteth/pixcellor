@@ -22,6 +22,18 @@ const SLOT_START_HOUR = 9; // 09:00 UK
 const SLOT_END_HOUR = 17; // last slot starts at 16:30
 const SLOT_MINUTES = 30;
 const WORK_DAYS = [1, 2, 3, 4, 5]; // Mon–Fri
+const MIN_LEAD_MS = 36 * 60 * 60 * 1000; // 36-hour minimum lead time
+const FAKE_BUSY_RATIO = 0.67; // 67% of bookable slots shown as already taken
+
+// Deterministic hash → [0,1) so the same slot is "busy" on every render.
+function slotHash(iso: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < iso.length; i++) {
+    h ^= iso.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 10000) / 10000;
+}
 
 const QUICK_OPTIONS: { key: BookingPreference; label: string; sub: string; Icon: typeof Sun }[] = [
   { key: "anytime", label: "Anytime", sub: "Call me whenever suits you", Icon: Clock },
