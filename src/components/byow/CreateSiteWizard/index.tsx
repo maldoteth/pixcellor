@@ -135,16 +135,11 @@ export default function CreateSiteWizard() {
               <label className="text-xs uppercase tracking-wider text-white/50">What does the business do?</label>
               <Textarea value={brief} onChange={(e) => setBrief(e.target.value)} placeholder="One or two sentences. Who you serve, what you sell, what makes you different." className="mt-1 bg-white/5 border-white/10 text-white min-h-[100px]" />
             </div>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs uppercase tracking-wider text-white/50">Industry / type (optional)</label>
-                <Input value={businessType} onChange={(e) => setBusinessType(e.target.value)} placeholder="Bakery, SaaS, salon, consultant…" className="mt-1 bg-white/5 border-white/10 text-white h-11" />
-              </div>
-              <div>
-                <label className="text-xs uppercase tracking-wider text-white/50">Email (optional, to claim later)</label>
-                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@business.com" className="mt-1 bg-white/5 border-white/10 text-white h-11" />
-              </div>
+            <div>
+              <label className="text-xs uppercase tracking-wider text-white/50">Industry / type (optional)</label>
+              <Input value={businessType} onChange={(e) => setBusinessType(e.target.value)} placeholder="Bakery, SaaS, salon, consultant…" className="mt-1 bg-white/5 border-white/10 text-white h-11" />
             </div>
+
           </motion.div>
         )}
 
