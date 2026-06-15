@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SeoHead from "@/components/SeoHead";
+import CreateSiteWizard from "@/components/byow/CreateSiteWizard";
 
 const TIERS = [
   {
