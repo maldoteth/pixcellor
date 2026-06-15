@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { TEMPLATES, type TemplatePreset } from "./templates";
 import { FONT_PRESETS, type FontTriple, ensureFontLoaded } from "./fontPresets";
+
 
 type Brand = {
   logo_url?: string;
