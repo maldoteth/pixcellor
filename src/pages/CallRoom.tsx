@@ -119,7 +119,6 @@ const CallRoom = () => {
         setRoom(data.room);
         setIceServers(data.ice_servers);
         const relays: RTCIceServer[] = Array.isArray(data.relay_only_ice_servers) ? data.relay_only_ice_servers : [];
-        setRelayServers(relays);
         relayServersRef.current = relays;
         setStatus("preflight");
       } catch (e) {
