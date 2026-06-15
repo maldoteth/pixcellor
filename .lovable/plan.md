@@ -1,64 +1,41 @@
-## Why the video feels like MSN 2006
+## Diagnosis
 
-The audio works because audio is tiny (≈40 kbps) and self-recovers. Video stutters because nothing in the current `CallRoom.tsx` setup tells the browser how to behave when bandwidth or CPU is tight, and the ICE setup may be forcing a long-haul path. Specifically:
+TURN secrets (`METERED_TURN_URLS / USERNAME / CREDENTIAL`) ARE configured in Cloud — so the "stuck on connecting" is **not** a TURN problem. The remaining causes are two real code bugs in `src/pages/CallRoom.tsx`:
 
-1. **No bitrate / framerate / degradation hints on the video sender.** We just `addTrack` and let the browser pick. Default in Chromium is "maintain-resolution", which keeps 720p and drops frames the moment bandwidth wobbles → exactly the "slideshow" feel.
-2. **VP9 (or AV1) may be negotiated.** VP9/AV1 encode is heavy on mid-range phones — frames pile up in the encoder, audio overtakes video → lip-sync lag.
-3. **`getUserMedia` requests 1280×720 with no `frameRate` ceiling.** With most laptop cams that pushes ~1.3 Mbps; on a mobile uplink it constantly congests.
-4. **TURN is optional.** If `METERED_TURN_*` secrets aren't set, peers stuck behind symmetric NAT (most carrier 4G/5G) try to hairpin through STUN, which means the path is fragile or unreachable. Audio survives the loss; video doesn't.
-5. **No `transceiver` direction set up-front** — the first offer is created before media is fully attached in some race conditions, leading to one-way renegotiations and the initial freeze that never recovers.
+### Bug 1 — ICE candidates dropped before `setRemoteDescription`
+Host sends offer then immediately bursts ICE candidates. Realtime broadcast callbacks run concurrently, so `ice` messages frequently fire while the `offer` handler is still `await`-ing `setRemoteDescription`. `addIceCandidate` then throws `InvalidStateError`, the candidate is swallowed by the `console.warn`, and lost. Losing early candidates can prevent the connection from ever forming.
 
-## Plan (frontend-only, surgical to `src/pages/CallRoom.tsx`, plus one ICE check)
+### Bug 2 — Failure states are invisible, "Connected" only watches one signal
+`pc.onconnectionstatechange` only handles the `"connected"` case. On older iOS Safari, `connectionState` can lag behind `iceConnectionState`, so the UI hangs on "Connecting…" while media is actually flowing. There's also no handling for `failed` / `disconnected` — a dead negotiation spins forever with no error and no retry.
 
-### 1. Cap the camera at sane mobile-friendly numbers
-Change preflight `getUserMedia` to:
-```ts
-video: {
-  width:  { ideal: 1280, max: 1280 },
-  height: { ideal: 720,  max: 720  },
-  frameRate: { ideal: 30, max: 30 },
-}
-```
-This makes the source predictable; without `max`, the camera can deliver weird intermediate sizes the encoder has to rescale every frame.
+### Bonus — guest m-line ordering
+Guest currently pre-`addTrack`s before the offer arrives. If the host's offer ever emits m-lines in a different order (codec preference side-effects, screen share already attached), `setRemoteDescription` throws inside the Realtime callback and disappears. Belt-and-braces fix: drop pre-add on the guest, attach via `replaceTrack` on the transceivers created by the offer.
 
-### 2. After negotiation, set sender parameters
-For the video `RTCRtpSender`, apply:
-```ts
-const params = sender.getParameters();
-params.degradationPreference = 'maintain-framerate'; // smoothness > pixels
-params.encodings = [{
-  maxBitrate: 1_200_000,   // 1.2 Mbps cap (HD-quality, mobile-safe)
-  maxFramerate: 30,
-  scaleResolutionDownBy: 1,
-}];
-await sender.setParameters(params);
-```
-For **screen share**, swap to `maintain-resolution` + 2.5 Mbps when the screen track is in place, so text stays crisp.
+## Implementation (one file: `src/pages/CallRoom.tsx`)
 
-### 3. Prefer VP8 over VP9/AV1
-After creating the peer, if `RTCRtpSender.getCapabilities('video')` is available, reorder codecs so `video/VP8` is first and call `transceiver.setCodecPreferences(...)`. VP8 has hardware encoders on basically every device — VP9/AV1 software-encoded on a phone is the #1 cause of jitter.
+### A. ICE candidate buffer
+- Add `pendingIceRef = useRef<RTCIceCandidateInit[]>([])`.
+- In the `ice` branch: if `peer.remoteDescription` is null, push into `pendingIceRef` and return. Otherwise `addIceCandidate`.
+- After every successful `setRemoteDescription` (guest after offer, host after answer), drain the queue with `for (const c of pendingIceRef.current) await peer.addIceCandidate(c)` then clear it.
 
-### 4. Pre-add transceivers
-Before `createOffer`, explicitly:
-```ts
-pc.addTransceiver('audio', { direction: 'sendrecv' });
-pc.addTransceiver('video', { direction: 'sendrecv' });
-```
-…then attach tracks via `replaceTrack` on the existing transceivers. Stops the "first connect is broken until renegotiation" race.
+### B. Robust connection-state handling + 15s watchdog
+- Add `pc.oniceconnectionstatechange`: flip to `connected` when state is `"connected"` or `"completed"`.
+- Extend `pc.onconnectionstatechange`: on `"failed"` or `"disconnected"`, first call `pc.restartIce()`; if still not connected after 5s, set `status = "failed"` with a user-friendly message.
+- Add a 15-second watchdog started when `status` becomes `"calling"`. If not connected by then, set `status = "failed"` with: *"Connection couldn't be established. This is usually a corporate firewall or restrictive network. Try a different network or use mobile data."*
+- Add a `"failed"` Stage with a retry card (reuses the existing "ended" layout) — buttons: **Try again** (reload) and **Close**.
 
-### 5. Verify TURN is actually configured
-Check whether `METERED_TURN_URLS`, `METERED_TURN_USERNAME`, `METERED_TURN_CREDENTIAL` are set in Cloud secrets. If not, mobile-to-mobile or mobile-to-corporate-Wi-Fi calls will silently fall back to a bad path. No code change in the edge function — just a status check + ask you to add a TURN credential if missing. (Metered has a free tier.)
+### C. Wrap signal handler in try/catch
+Wrap the entire broadcast handler body in `try / catch (e) { console.error("[call] signal error", e); }` so future SDP issues stop dying silently.
 
-### 6. Lightweight in-call diagnostics
-Add a dev-only `getStats()` poll every 3 s that logs `framesPerSecond`, `bytesSent`, and `packetsLost` for the outbound video. Lets us confirm whether the fix actually moved the needle without guessing.
+### D. Guest: attach via offer-created transceivers
+- In `enterWaitingRoom`, for guests (`room.role === "guest"`) **skip** the `pc.addTrack` loop.
+- In the `offer` branch (guest path): after `setRemoteDescription`, iterate `pc.getTransceivers()`. For each transceiver where `receiver.track.kind` is `audio` or `video`, find the matching local track on `localStreamRef.current` and call `transceiver.sender.replaceTrack(localTrack)` + set `transceiver.direction = "sendrecv"`. Then apply `preferVP8` + `tuneVideoSender` to the video transceiver, `createAnswer`, `setLocalDescription`, broadcast answer.
+- Host path unchanged — host is the offerer and owns m-line order.
 
-## What I won't touch
-- Signalling / Realtime channel logic.
-- `get-call-config` edge function (other than recommending the TURN env vars).
-- UI, controls, recording flow, rejoin behaviour.
+## Not touched
+Signaling protocol, `get-call-config`, recording, screen share toggle, UI/controls, styling, every other file.
 
-## After implementing
-- Test in a fresh tab; expect ~30 fps smooth video, slightly softer image when uplink dips (by design).
-- If TURN is still missing, I'll flag it and ask you to add a credential before declaring "fixed".
-
-Want me to switch to build mode and apply this?
+## Verification
+After edit: re-read the file, then ask you to start a call admin-side. Expected outcomes:
+- Call connects on most networks (ICE buffer fix).
+- If it still fails, you'll see "Connection couldn't be established…" within 15s instead of spinning forever — that's diagnostic gold.

@@ -25,7 +25,9 @@ type SignalMessage =
 
 const PEER_ID = crypto.randomUUID();
 
-type Stage = "loading" | "preflight" | "waiting" | "calling" | "connected" | "ended";
+type Stage = "loading" | "preflight" | "waiting" | "calling" | "connected" | "ended" | "failed";
+
+const CONNECT_TIMEOUT_MS = 15000;
 
 const CallRoom = () => {
   const { bookingId = "" } = useParams<{ bookingId: string }>();
@@ -58,6 +60,10 @@ const CallRoom = () => {
   const recordStartRef = useRef<number>(0);
   const repliedHelloRef = useRef<Set<string>>(new Set());
   const negotiationStartedRef = useRef(false);
+  const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
+  const watchdogRef = useRef<number | null>(null);
+  const failTimerRef = useRef<number | null>(null);
+  const [failMessage, setFailMessage] = useState<string>("");
 
   // 1. Verify token + fetch ICE config
   useEffect(() => {
@@ -212,6 +218,20 @@ const CallRoom = () => {
     }
   }, []);
 
+  const markFailed = useCallback((message: string) => {
+    setFailMessage(message);
+    setStatus("failed");
+  }, []);
+
+  const drainPendingIce = useCallback(async (peer: RTCPeerConnection) => {
+    if (!peer.remoteDescription) return;
+    const queue = pendingIceRef.current;
+    pendingIceRef.current = [];
+    for (const c of queue) {
+      try { await peer.addIceCandidate(c); } catch (e) { console.warn("[call] drained ice add failed", e); }
+    }
+  }, []);
+
   const createPeer = useCallback((): RTCPeerConnection => {
     const safeIce: RTCIceServer[] = [];
     for (const s of iceServers ?? []) {
@@ -229,11 +249,34 @@ const CallRoom = () => {
         remoteVideoRef.current.srcObject = stream;
       }
     };
+    const markConnected = () => {
+      setStatus("connected");
+      if (watchdogRef.current) { window.clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+      if (failTimerRef.current) { window.clearTimeout(failTimerRef.current); failTimerRef.current = null; }
+    };
+    pc.oniceconnectionstatechange = () => {
+      const s = pc.iceConnectionState;
+      if (s === "connected" || s === "completed") markConnected();
+      if (s === "failed") {
+        try { pc.restartIce(); } catch { /* noop */ }
+        if (!failTimerRef.current) {
+          failTimerRef.current = window.setTimeout(() => {
+            if (pc.iceConnectionState !== "connected" && pc.iceConnectionState !== "completed") {
+              markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
+            }
+          }, 5000);
+        }
+      }
+    };
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === "connected") setStatus("connected");
+      const s = pc.connectionState;
+      if (s === "connected") markConnected();
+      if (s === "failed") {
+        markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
+      }
     };
     return pc;
-  }, [iceServers, sendSignal]);
+  }, [iceServers, sendSignal, markFailed]);
 
   const startNegotiation = useCallback(async () => {
     const pc = pcRef.current;
@@ -257,18 +300,18 @@ const CallRoom = () => {
       const pc = createPeer();
       pcRef.current = pc;
 
-      // Use addTrack (not addTransceiver) so the browser creates m-lines in
-      // the standard order. Pre-adding transceivers on the guest side caused
-      // setRemoteDescription to fail when the host's offer arrived with a
-      // different m-line ordering. We still apply codec preference + bitrate
-      // tuning afterwards via the resulting sender/transceiver.
-      for (const track of stream.getTracks()) {
-        pc.addTrack(track, stream);
-      }
-      const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
-      if (videoTx) {
-        preferVP8(videoTx);
-        await tuneVideoSender(videoTx.sender, "camera");
+      // Host owns the m-line order (it creates the offer), so attach tracks
+      // immediately. Guest waits for the offer and then attaches via the
+      // transceivers it creates — this guarantees m-line ordering matches.
+      if (room.role === "host") {
+        for (const track of stream.getTracks()) {
+          pc.addTrack(track, stream);
+        }
+        const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
+        if (videoTx) {
+          preferVP8(videoTx);
+          await tuneVideoSender(videoTx.sender, "camera");
+        }
       }
 
       const channel = supabase.channel(`call:${room.booking_id}`, {
@@ -281,28 +324,61 @@ const CallRoom = () => {
         const peer = pcRef.current;
         if (!peer) return;
 
-        if (msg.type === "hello") {
-          setRemoteJoined(true);
-          // Reply once so a peer that joined first also learns we're here.
-          if (!msg.reply && !repliedHelloRef.current.has(msg.from)) {
-            repliedHelloRef.current.add(msg.from);
-            sendSignal({ type: "hello", from: PEER_ID, role: room.role, reply: true });
+        try {
+          if (msg.type === "hello") {
+            setRemoteJoined(true);
+            // Reply once so a peer that joined first also learns we're here.
+            if (!msg.reply && !repliedHelloRef.current.has(msg.from)) {
+              repliedHelloRef.current.add(msg.from);
+              sendSignal({ type: "hello", from: PEER_ID, role: room.role, reply: true });
+            }
+          } else if (msg.type === "start") {
+            // Host signalled "start" — guest just waits for the offer to arrive.
+          } else if (msg.type === "offer") {
+            if (status !== "calling" && status !== "connected") setStatus("calling");
+            await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+
+            // Guest attaches local tracks to the transceivers created by the
+            // offer (matching m-line order exactly).
+            if (room.role === "guest") {
+              const local = localStreamRef.current;
+              if (local) {
+                for (const tx of peer.getTransceivers()) {
+                  const kind = tx.receiver.track?.kind;
+                  if (!kind) continue;
+                  const localTrack = kind === "audio"
+                    ? local.getAudioTracks()[0]
+                    : kind === "video" ? local.getVideoTracks()[0] : null;
+                  if (localTrack && tx.sender) {
+                    await tx.sender.replaceTrack(localTrack);
+                    tx.direction = "sendrecv";
+                    if (kind === "video") {
+                      preferVP8(tx);
+                      await tuneVideoSender(tx.sender, "camera");
+                    }
+                  }
+                }
+              }
+            }
+
+            await drainPendingIce(peer);
+            const answer = await peer.createAnswer();
+            await peer.setLocalDescription(answer);
+            sendSignal({ type: "answer", sdp: answer, from: PEER_ID });
+          } else if (msg.type === "answer") {
+            await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+            await drainPendingIce(peer);
+          } else if (msg.type === "ice") {
+            if (!peer.remoteDescription) {
+              pendingIceRef.current.push(msg.candidate);
+            } else {
+              try { await peer.addIceCandidate(msg.candidate); } catch (e) { console.warn("[call] ice add failed", e); }
+            }
+          } else if (msg.type === "bye") {
+            setRemoteJoined(false);
           }
-        } else if (msg.type === "start") {
-          // Host signalled "start" — guest just waits for the offer to arrive.
-          // Nothing to do; the upcoming offer will move us forward.
-        } else if (msg.type === "offer") {
-          if (status !== "calling" && status !== "connected") setStatus("calling");
-          await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-          const answer = await peer.createAnswer();
-          await peer.setLocalDescription(answer);
-          sendSignal({ type: "answer", sdp: answer, from: PEER_ID });
-        } else if (msg.type === "answer") {
-          await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-        } else if (msg.type === "ice") {
-          try { await peer.addIceCandidate(msg.candidate); } catch (e) { console.warn("ice add failed", e); }
-        } else if (msg.type === "bye") {
-          setRemoteJoined(false);
+        } catch (e) {
+          console.error("[call] signal handler error", e);
         }
       });
 
@@ -317,7 +393,7 @@ const CallRoom = () => {
     } catch (e) {
       handleMediaError(e);
     }
-  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError, preferVP8, tuneVideoSender]);
+  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError, preferVP8, tuneVideoSender, drainPendingIce]);
 
   // Host: admit guest and begin call
   const startCall = useCallback(async () => {
@@ -340,6 +416,23 @@ const CallRoom = () => {
   }, [sendSignal]);
 
   useEffect(() => () => { hangup(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+
+  // Watchdog: if we're stuck on "calling" for >15s, surface a failure so the
+  // user isn't left staring at a "Connecting…" spinner forever.
+  useEffect(() => {
+    if (status !== "calling") return;
+    if (watchdogRef.current) window.clearTimeout(watchdogRef.current);
+    watchdogRef.current = window.setTimeout(() => {
+      const pc = pcRef.current;
+      const s = pc?.connectionState;
+      const ice = pc?.iceConnectionState;
+      if (s === "connected" || ice === "connected" || ice === "completed") return;
+      markFailed("Couldn't establish the call within 15 seconds. This usually means a firewall or restrictive network is blocking video. Try a different network or mobile data.");
+    }, CONNECT_TIMEOUT_MS);
+    return () => {
+      if (watchdogRef.current) { window.clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+    };
+  }, [status, markFailed]);
 
   // Dev-only stats poll so we can confirm bitrate / framerate / packet loss
   // are healthy after the tuning above. No-op in production.
@@ -633,6 +726,33 @@ const CallRoom = () => {
               className="request-shimmer h-11 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium"
             >
               {room?.role === "host" ? "Restart call" : "Rejoin call"}
+            </button>
+            <button
+              onClick={() => window.close()}
+              className="h-11 rounded-2xl border border-white/20 hover:bg-white/[0.06] text-sm"
+            >
+              Close tab
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "failed") {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-8 text-center">
+        <div className="max-w-sm w-full">
+          <p className="text-2xl font-light mb-2">Connection failed</p>
+          <p className="text-white/60 text-sm mb-6 leading-relaxed">
+            {failMessage || "The call couldn't connect."}
+          </p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => window.location.reload()}
+              className="request-shimmer h-11 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium"
+            >
+              Try again
             </button>
             <button
               onClick={() => window.close()}
