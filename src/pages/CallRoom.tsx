@@ -346,6 +346,40 @@ const CallRoom = () => {
 
   useEffect(() => () => { hangup(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
+  // Dev-only stats poll so we can confirm bitrate / framerate / packet loss
+  // are healthy after the tuning above. No-op in production.
+  useEffect(() => {
+    if (status !== "connected" || !import.meta.env.DEV) return;
+    let lastBytes = 0;
+    let lastTs = 0;
+    const id = window.setInterval(async () => {
+      const pc = pcRef.current;
+      if (!pc) return;
+      try {
+        const stats = await pc.getStats();
+        stats.forEach((report) => {
+          if (report.type === "outbound-rtp" && report.kind === "video") {
+            const r = report as RTCOutboundRtpStreamStats & {
+              framesPerSecond?: number;
+              bytesSent?: number;
+              timestamp?: number;
+            };
+            const bytes = r.bytesSent ?? 0;
+            const ts = r.timestamp ?? Date.now();
+            const kbps = lastTs ? Math.round(((bytes - lastBytes) * 8) / (ts - lastTs)) : 0;
+            lastBytes = bytes;
+            lastTs = ts;
+            // eslint-disable-next-line no-console
+            console.log(`[call] video ↑ ${kbps} kbps, ${r.framesPerSecond ?? "?"} fps`);
+          }
+        });
+      } catch {
+        /* ignore */
+      }
+    }, 3000);
+    return () => window.clearInterval(id);
+  }, [status]);
+
   const toggleMic = () => {
     const t = localStreamRef.current?.getAudioTracks()[0];
     if (t) { t.enabled = !t.enabled; setMicOn(t.enabled); }
