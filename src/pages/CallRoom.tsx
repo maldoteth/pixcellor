@@ -235,6 +235,25 @@ const CallRoom = () => {
     setStatus("failed");
   }, []);
 
+  // Reconfigure an existing PC to relay-only (TURN) and restart ICE.
+  // Used when the initial STUN/host-candidate path fails to connect
+  // (very common on mobile + guest WiFi with client isolation).
+  const switchPeerToRelayOnly = useCallback((pc: RTCPeerConnection) => {
+    const relay = relayServersRef.current;
+    if (!relay || relay.length === 0) {
+      console.warn("[call] no TURN relay servers available — cannot fall back");
+      return false;
+    }
+    try {
+      pc.setConfiguration({ iceServers: relay, iceTransportPolicy: "relay" });
+      console.log("[call] switched PC to relay-only");
+      return true;
+    } catch (e) {
+      console.warn("[call] setConfiguration(relay-only) failed", e);
+      return false;
+    }
+  }, []);
+
   // ---------------- GUEST side helpers ----------------
 
   const createGuestPeer = useCallback((): RTCPeerConnection => {
