@@ -15,7 +15,10 @@ type Props = {
 
 const Email = ({ name, whenLabel, preferenceLabel, phone, brief, callLink }: Props) => (
   <Html lang="en" dir="ltr">
-    <Head />
+    <Head>
+      <meta name="color-scheme" content="light only" />
+      <meta name="supported-color-schemes" content="light" />
+    </Head>
     <Preview>
       {whenLabel ? `Your call with ${BRAND_NAME} is booked for ${whenLabel}` : `Your call with ${BRAND_NAME} is booked`}
     </Preview>
@@ -112,5 +115,5 @@ const cardValue = { color: '#111111', fontSize: '18px', fontWeight: '600' as con
 const cardMeta = { color: '#444444', fontSize: '13px', lineHeight: '1.4', margin: '4px 0 0' }
 const hr = { borderColor: '#eaeaea', margin: '24px 0' }
 const signoff = { color: '#333333', fontSize: '15px', lineHeight: '1.6', margin: '24px 0 0' }
-const cta = { backgroundColor: '#111111', color: '#ffffff', padding: '12px 22px', borderRadius: '8px', textDecoration: 'none', fontWeight: '600' as const, fontSize: '15px', display: 'inline-block' as const }
+const cta = { backgroundColor: '#000000', color: '#ffffff', padding: '14px 26px', borderRadius: '6px', border: '2px solid #000000', textDecoration: 'none', fontWeight: '700' as const, fontSize: '15px', display: 'inline-block' as const, msoLineHeightRule: 'exactly' as const }
 const tip = { color: '#666666', fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px', fontStyle: 'italic' as const }
