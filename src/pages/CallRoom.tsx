@@ -739,6 +739,33 @@ const CallRoom = () => {
     );
   }
 
+  if (status === "failed") {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-8 text-center">
+        <div className="max-w-sm w-full">
+          <p className="text-2xl font-light mb-2">Connection failed</p>
+          <p className="text-white/60 text-sm mb-6 leading-relaxed">
+            {failMessage || "The call couldn't connect."}
+          </p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => window.location.reload()}
+              className="request-shimmer h-11 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium"
+            >
+              Try again
+            </button>
+            <button
+              onClick={() => window.close()}
+              className="h-11 rounded-2xl border border-white/20 hover:bg-white/[0.06] text-sm"
+            >
+              Close tab
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // waiting / calling / connected
   const inWaiting = status === "waiting";
 
