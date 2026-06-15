@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SeoHead from "@/components/SeoHead";
+import CreateSiteWizard from "@/components/byow/CreateSiteWizard";
 
 const TIERS = [
   {
@@ -69,11 +70,8 @@ const TOPUPS = [
   { key: "pack1000" as const, label: "1,000 prompt pack", price: "£1,250", per: "one-off", rate: "£1.25 / prompt" },
 ];
 
-const STEPS = [
-  { n: "01", title: "Pick a plan", text: "Growth, Scale or Enterprise. Cancel any time. Top-up packs never expire." },
-  { n: "02", title: "Brief us in chat", text: "Describe the change — copy, layout, new page, integration. Our team picks it up the same day." },
-  { n: "03", title: "Watch it go live", text: "We ship inside your quota with a live + preview view side-by-side. Refresh and it's there." },
-];
+
+
 
 const BENEFITS = [
   { icon: Zap, title: "24-hour delivery", text: "Real humans iterating on your site every business day — no DIY drag-and-drop." },
@@ -153,7 +151,7 @@ export default function ByowLanding() {
                   <a href="#pricing">See pricing <ArrowRight className="ml-2 h-4 w-4" /></a>
                 </Button>
                 <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10 h-12 px-6 text-sm">
-                  <a href="#how">How it works</a>
+                  <a href="#create">Create yours free</a>
                 </Button>
               </div>
               <p className="mt-5 text-xs text-white/40">
@@ -198,27 +196,17 @@ export default function ByowLanding() {
           </div>
         </section>
 
-        {/* How it works */}
-        <section id="how" className="border-b border-white/10">
-          <div className="max-w-6xl mx-auto px-6 py-20">
-            <h2 className="text-3xl md:text-4xl font-light text-center">How it works</h2>
-            <p className="text-center text-white/50 mt-2 text-sm">From sign-up to live in under a day.</p>
-            <div className="mt-12 grid md:grid-cols-3 gap-4">
-              {STEPS.map((s, i) => (
-                <motion.div
-                  key={s.n}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="rounded-2xl border border-white/10 bg-white/[0.02] p-6"
-                >
-                  <div className="text-xs text-white/40 tracking-widest">{s.n}</div>
-                  <div className="text-xl mt-3 font-medium">{s.title}</div>
-                  <p className="text-sm text-white/55 mt-2 leading-relaxed">{s.text}</p>
-                </motion.div>
-              ))}
+        {/* Create your site (wizard) */}
+        <section id="create" className="border-b border-white/10">
+          <div className="max-w-5xl mx-auto px-6 py-20">
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-wider text-white/70 mb-4">
+                <Sparkles className="h-3 w-3" /> Free preview · no signup
+              </div>
+              <h2 className="text-3xl md:text-4xl font-light">Create your site</h2>
+              <p className="text-white/50 mt-2 text-sm">Brief, brand, generate. You'll get a live preview URL in under a minute.</p>
             </div>
+            <CreateSiteWizard />
           </div>
         </section>
 

@@ -1,56 +1,96 @@
+
 ## Goal
-Turn `/byow` from a private client portal into a **high-conversion landing page** that sells the "Build Your Own Website" service, and move every existing BYOW feature into the portals we already have. No new portals, no new logins.
 
-## What changes
+On `/byow`, replace the **How it works** section with an interactive **Create your site** wizard. Anyone can run it for free and gets a unique preview URL `pixcellor.com/s/{ref}`. Publishing / unlocking edits requires checkout (the existing plans).
 
-### 1. `/byow` — new marketing lander (replaces ByowDashboard at this route)
-Single dark page in the Pixcellor style (system-ui, glass cards, white accents, framer-motion entrances):
+## User flow (wizard)
 
-- **Hero**: headline ("Build your own site. We ship every change in hours."), subline, two CTAs (`Start a site` → scroll to pricing; `See how it works` → scroll to steps). Animated chat-mock visual on the right.
-- **Logo strip / proof** (re-uses existing portfolio thumbs we already have).
-- **How it works** (3 steps): 1) Pick a plan → 2) Chat prompts to evolve your site → 3) We ship daily inside your usage quota.
-- **What you get**: 4-tile bento (managed hosting, SEO/AEO, AI lead-gen bot, 24h human delivery).
-- **Pricing**: 3 tier cards (Care £100, Studio £500, Agency £2,500) + monthly/yearly toggle, then a small **Top-up packs** strip (£2 / £169 / £1,250). Each card "Start" button calls `byow-create-checkout` (lander mode, see backend note).
-- **FAQ** (accordion, 6 Qs).
-- **Final CTA + footer** linking to legal pages.
-- SEO: `<SeoHead>` with title/description, JSON-LD `Service` + `FAQPage`.
+```text
+1. Brief         → site name + 1-line description + business type
+2. Template      → pick a curated preset OR "generate fresh from brief"
+3. Branding      → upload logo, pick brand colours (primary / accent / bg / text),
+                   pick 3 fonts (title / subtitle / body) from a curated list
+4. Generate      → AI produces sections JSON (hero, features, pricing, FAQ, contact, footer)
+                   Loading state with progress copy
+5. Preview       → live render at /s/{ref}, "Share", "Regenerate section", "Publish (paywall)"
+```
 
-The lander itself never asks for login. Stripe Checkout collects email; once paid, the webhook provisions the byow_site and emails a magic link into the Customer Portal.
+Every step is one card, no full-page navigation. Progress bar + Back/Next.
 
-### 2. CustomerPortal — new "Sites" tab
-Adds one tab to the existing `CustomerPortal`:
-- Lists `byow_sites` owned by the logged-in user with quota meter and plan badge.
-- Clicking a site opens an in-tab builder pane (chat column + dual-iframe Live/Preview, refresh, mode toggle) — same UX as ByowBuilder.tsx but embedded.
-- "Buy prompts / Change plan" opens the existing `ByowPlansDialog`.
-- "Manage billing" uses the existing `create-billing-portal` function (already wired in CustomerPortal? if not, reuse the same call). No separate Billing button needed beyond what CustomerPortal already exposes.
+## Generated output shape
 
-### 3. Portal (Studio tab) — new "Client sites" sub-section
-Inside the existing `Studio` tab content, render a `<ByowAdminPanel>` (extracted from current ByowAdmin.tsx) with its own internal sub-tabs:
-- **Queue** — pending prompts to action
-- **Sites** — all provisioned sites + edit project IDs / URLs / tier
-- **New site** — create a site for a customer email + tier
+Single-page site stored as JSON sections:
 
-Replaces the standalone `/byow-admin` route.
+```ts
+type SiteDoc = {
+  ref: string;            // 6-char short id, used in URL
+  brand: { logo_url?: string; colors: {...}; fonts: {...} };
+  template_key?: string;  // preset slug or null when fresh
+  sections: Array<
+    | { type: "hero"; headline; sub; cta; image? }
+    | { type: "features"; title; items: {icon; title; text}[] }
+    | { type: "pricing"; title; tiers: {...}[] }
+    | { type: "faq"; items: {q;a}[] }
+    | { type: "contact"; email; form?: boolean }
+    | { type: "footer"; links: {label;href}[] }
+  >;
+};
+```
 
-### 4. Routes & files
-- Routes removed from `src/App.tsx`: `/byow/login`, `/byow/site/:siteId`, `/byow-admin`.
-- Route kept: `/byow` → now `ByowLanding`.
-- Files deleted: `src/pages/ByowLogin.tsx`, `src/pages/ByowDashboard.tsx`, `src/pages/ByowAdmin.tsx`, `src/pages/ByowBuilder.tsx`.
-- New files: `src/pages/ByowLanding.tsx`, `src/components/byow/ByowBuilderPane.tsx` (extracted builder), `src/components/byow/ByowSitesTab.tsx` (CustomerPortal tab), `src/components/byow/ByowAdminPanel.tsx` (Studio sub-section).
-- Kept untouched: `src/components/byow/ByowPlansDialog.tsx`, all `supabase/functions/byow-*` and `_shared/byow-pricing.ts`, migrations.
+Renderer is a single React component (`<PublicSiteRenderer doc={...} />`) that maps section types to existing styled components.
 
-### 5. Backend (minimal)
-- `byow-create-checkout`: accept an optional `site_id`. If absent (lander flow), create the Stripe session without `site_id` metadata and instead set `kind: "byow_signup"` + `tier`. Stripe Checkout collects the customer email itself.
-- `stripe-webhook` (`checkout.session.completed`, branch `kind === "byow_signup"`): create a `byow_sites` row owned by a freshly created/looked-up auth user (by email) with `status = 'pending_setup'`, attach the new subscription, and send a magic-link email so the buyer lands inside `/customer-portal` on the new Sites tab.
-- No other edge-function changes. No schema changes.
+## Database
 
-## Technical notes
-- All BYOW DB tables/RLS already restrict by `owner_user_id`; CustomerPortal already authenticates with Supabase, so the existing policies cover the new Sites tab with zero changes.
-- Realtime subscription on `byow_messages` is moved into `ByowBuilderPane`.
-- The Studio sub-section uses the same `has_role(auth.uid(), 'admin')` check Portal already enforces at the page level — no extra gating needed.
-- Lander pricing buttons for unauthenticated users hit `byow-create-checkout` directly (no login wall); for users already signed in they pass their existing site_id if any.
+New tables (one migration):
 
-## Out of scope
-- No copy beyond the lander itself (no rewriting `/packages` etc.).
-- No changes to Stripe products/prices — reuses the existing IDs in `_shared/byow-pricing.ts`.
-- No changes to other portal tabs.
+- `public.byow_generated_sites`
+  - `id uuid pk`, `ref text unique` (6 chars), `owner_user_id uuid null`, `email text null`,
+    `display_name text`, `doc jsonb not null`, `status text` (`draft` | `published`),
+    `published_at timestamptz null`, `created_at`, `updated_at`
+- `public.byow_site_assets` (logo uploads)
+  - `id uuid pk`, `site_id uuid fk`, `kind text`, `storage_path text`, `created_at`
+- Storage bucket: `byow-site-assets` (public read for logos).
+
+RLS:
+- Anyone may `INSERT` a draft (anon allowed) and `SELECT` by `ref` (public read).
+- Only `owner_user_id = auth.uid()` may update / publish.
+- Edge functions use service role for AI write-back.
+
+## Edge functions
+
+- `byow-generate-site` — POST `{ ref?, brief, brand, template_key }`. Calls Lovable AI Gateway (`google/gemini-2.5-flash`) with a structured-JSON schema matching `SiteDoc.sections`. Inserts/updates row. Returns `{ ref, doc }`. Rate-limited per IP (in-memory map fine for now).
+- `byow-upload-logo` — POST multipart; stores in `byow-site-assets`, returns public URL.
+- `byow-publish-site` — POST `{ ref }`. Requires auth + active subscription on this site OR triggers checkout (re-use existing `byow-create-checkout` with `lander:true` + `site_ref` in metadata). On webhook success, set `status='published'`.
+
+## Frontend changes
+
+- **`src/pages/ByowLanding.tsx`**
+  - Replace the `STEPS` "How it works" section with `<CreateSiteWizard />`.
+  - Keep hero, benefits, pricing, FAQ.
+- **`src/components/byow/CreateSiteWizard/`** (new)
+  - `index.tsx` — stepper shell, holds wizard state, calls edge functions
+  - `StepBrief.tsx`, `StepTemplate.tsx`, `StepBranding.tsx`, `StepGenerate.tsx`, `StepPreview.tsx`
+  - `templates.ts` — 6 curated presets (Salon, SaaS, Restaurant, Consultant, Portfolio, Local trades) — each a partial `SiteDoc`
+  - `fontPresets.ts` — 8 title/subtitle/body triples (Inter+Inter+Inter, Space Grotesk+Inter+Inter, Playfair+Inter+Inter, etc.) loaded via Google Fonts `<link>` injection
+  - `ColorPicker.tsx`, `LogoUpload.tsx`
+- **`src/components/byow/PublicSiteRenderer.tsx`** (new) — renders `SiteDoc` with brand vars applied via inline CSS variables.
+- **`src/pages/PublicSite.tsx`** (new) — fetches `byow_generated_sites` by `ref`, renders `<PublicSiteRenderer />`. SEO via `<SeoHead>`.
+- **`src/App.tsx`** — add route `/s/:ref` → `PublicSite`.
+- **`src/pages/CustomerPortal.tsx` → ByowSitesTab** — surface generated sites under the user's account once they sign up (link draft refs by email at signup).
+
+## Paywall behaviour
+
+- Preview at `/s/{ref}` is fully visible (free), with a sticky banner: *"Preview — publish to claim your subdomain and edits."*
+- "Publish" button triggers `byow-create-checkout` (existing flow) passing the `ref`. Webhook attaches `owner_user_id` to the site row and sets `status='published'`.
+- Edits beyond regeneration require an active plan (uses existing prompt-quota system).
+
+## Out of scope (for this PR)
+
+- Real `xxxxx.pixcellor.com` wildcard hosting — using `/s/{ref}` per your answer; trivial to swap to subdomain later by adding a host-based router.
+- Multi-page generation.
+- Editing individual section copy in-place (regenerate-only for now).
+
+## Files touched
+
+- New: migration, 3 edge functions, `PublicSite.tsx`, `PublicSiteRenderer.tsx`, 7 wizard files
+- Edited: `ByowLanding.tsx`, `App.tsx`, `CustomerPortal.tsx` (sites tab integration)

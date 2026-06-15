@@ -172,6 +172,48 @@ export type Database = {
           },
         ]
       }
+      byow_generated_sites: {
+        Row: {
+          brief: string | null
+          created_at: string
+          display_name: string
+          doc: Json
+          email: string | null
+          id: string
+          owner_user_id: string | null
+          published_at: string | null
+          ref: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          brief?: string | null
+          created_at?: string
+          display_name: string
+          doc?: Json
+          email?: string | null
+          id?: string
+          owner_user_id?: string | null
+          published_at?: string | null
+          ref: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          brief?: string | null
+          created_at?: string
+          display_name?: string
+          doc?: Json
+          email?: string | null
+          id?: string
+          owner_user_id?: string | null
+          published_at?: string | null
+          ref?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       byow_messages: {
         Row: {
           content: string
