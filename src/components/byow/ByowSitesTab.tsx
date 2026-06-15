@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Globe2 } from "lucide-react";
+import { Sparkles, Globe2, Wand2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import ByowPlansDialog from "@/components/byow/ByowPlansDialog";
 import ByowBuilderPane from "@/components/byow/ByowBuilderPane";
