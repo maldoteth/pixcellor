@@ -34,10 +34,7 @@ const Packages = lazy(() => import("./pages/Packages"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 const GetStarted = lazy(() => import("./pages/GetStarted"));
 const CallRoom = lazy(() => import("./pages/CallRoom"));
-const ByowLogin = lazy(() => import("./pages/ByowLogin"));
-const ByowDashboard = lazy(() => import("./pages/ByowDashboard"));
-const ByowBuilder = lazy(() => import("./pages/ByowBuilder"));
-const ByowAdmin = lazy(() => import("./pages/ByowAdmin"));
+const ByowLanding = lazy(() => import("./pages/ByowLanding"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
