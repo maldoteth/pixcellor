@@ -218,6 +218,20 @@ const CallRoom = () => {
     }
   }, []);
 
+  const markFailed = useCallback((message: string) => {
+    setFailMessage(message);
+    setStatus("failed");
+  }, []);
+
+  const drainPendingIce = useCallback(async (peer: RTCPeerConnection) => {
+    if (!peer.remoteDescription) return;
+    const queue = pendingIceRef.current;
+    pendingIceRef.current = [];
+    for (const c of queue) {
+      try { await peer.addIceCandidate(c); } catch (e) { console.warn("[call] drained ice add failed", e); }
+    }
+  }, []);
+
   const createPeer = useCallback((): RTCPeerConnection => {
     const safeIce: RTCIceServer[] = [];
     for (const s of iceServers ?? []) {
@@ -235,11 +249,34 @@ const CallRoom = () => {
         remoteVideoRef.current.srcObject = stream;
       }
     };
+    const markConnected = () => {
+      setStatus("connected");
+      if (watchdogRef.current) { window.clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+      if (failTimerRef.current) { window.clearTimeout(failTimerRef.current); failTimerRef.current = null; }
+    };
+    pc.oniceconnectionstatechange = () => {
+      const s = pc.iceConnectionState;
+      if (s === "connected" || s === "completed") markConnected();
+      if (s === "failed") {
+        try { pc.restartIce(); } catch { /* noop */ }
+        if (!failTimerRef.current) {
+          failTimerRef.current = window.setTimeout(() => {
+            if (pc.iceConnectionState !== "connected" && pc.iceConnectionState !== "completed") {
+              markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
+            }
+          }, 5000);
+        }
+      }
+    };
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === "connected") setStatus("connected");
+      const s = pc.connectionState;
+      if (s === "connected") markConnected();
+      if (s === "failed") {
+        markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
+      }
     };
     return pc;
-  }, [iceServers, sendSignal]);
+  }, [iceServers, sendSignal, markFailed]);
 
   const startNegotiation = useCallback(async () => {
     const pc = pcRef.current;
