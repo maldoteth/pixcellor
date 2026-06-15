@@ -2,6 +2,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  BYOW_SUB_PRICES,
+  PRICE_TO_BYOW_TIER,
+  PRICE_TO_BYOW_TOPUP,
+  BYOW_TOPUP_PRICES,
+} from "../_shared/byow-pricing.ts";
+
 
 const SITE_URL = "https://pixcellor.com";
 // Card authorizations expire after ~7 days on most networks. Tracked so we can
@@ -339,6 +346,119 @@ serve(async (req) => {
 
     if (eventInsert.error && eventInsert.error.code !== "23505") {
       throw new Error(`Failed to insert stripe event: ${eventInsert.error.message}`);
+    }
+
+    // ---- BYOW (Build Your Own Website) portal events ----
+    if (event.type === "checkout.session.completed") {
+      const s = event.data.object as Stripe.Checkout.Session;
+      if (s.metadata?.source === "byow") {
+        const meta = s.metadata as Record<string, string>;
+        const siteId = meta.site_id;
+        const userId = meta.user_id;
+        if (!siteId || !userId) {
+          console.warn("[byow] missing metadata", meta);
+        } else if (meta.kind === "subscription") {
+          const tier = meta.tier as keyof typeof BYOW_SUB_PRICES;
+          const cfg = BYOW_SUB_PRICES[tier];
+          const subId = typeof s.subscription === "string" ? s.subscription : null;
+          const custId = typeof s.customer === "string" ? s.customer : null;
+          let periodStart: number | undefined;
+          let periodEnd: number | undefined;
+          if (subId) {
+            try {
+              const sub = await stripe.subscriptions.retrieve(subId);
+              const item = sub.items?.data?.[0] as any;
+              periodStart = item?.current_period_start ?? (sub as any).current_period_start;
+              periodEnd = item?.current_period_end ?? (sub as any).current_period_end;
+            } catch (e) { console.error("[byow] retrieve sub failed", e); }
+          }
+          await supabase.from("byow_subscriptions").upsert({
+            site_id: siteId,
+            owner_user_id: userId,
+            tier,
+            stripe_customer_id: custId,
+            stripe_subscription_id: subId,
+            status: "active",
+            prompt_quota: cfg?.quota ?? 0,
+            prompts_used: 0,
+            current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+            current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "site_id" });
+        } else if (meta.kind === "topup") {
+          const prompts = Number(meta.prompts_added) || 0;
+          // Increment prompt_quota for this site. If no row exists yet, create a parked one.
+          const { data: existing } = await supabase
+            .from("byow_subscriptions")
+            .select("id, prompt_quota")
+            .eq("site_id", siteId)
+            .maybeSingle();
+          if (existing) {
+            await supabase.from("byow_subscriptions")
+              .update({ prompt_quota: (existing.prompt_quota ?? 0) + prompts, updated_at: new Date().toISOString() })
+              .eq("id", existing.id);
+          } else {
+            await supabase.from("byow_subscriptions").insert({
+              site_id: siteId,
+              owner_user_id: userId,
+              tier: "care",
+              status: "inactive",
+              prompt_quota: prompts,
+              prompts_used: 0,
+            });
+          }
+        }
+        return new Response(JSON.stringify({ received: true, byow: meta.kind }), {
+          status: 200, headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // ---- BYOW subscription renewal (invoice.paid resets prompts_used) ----
+    if (event.type === "invoice.paid" || event.type === "invoice.payment_succeeded") {
+      const inv = event.data.object as Stripe.Invoice;
+      const subId = typeof (inv as any).subscription === "string" ? (inv as any).subscription : null;
+      if (subId) {
+        try {
+          const sub = await stripe.subscriptions.retrieve(subId);
+          if (sub.metadata?.source === "byow") {
+            const priceId = sub.items?.data?.[0]?.price?.id;
+            const tier = priceId ? PRICE_TO_BYOW_TIER[priceId] : null;
+            const cfg = tier ? BYOW_SUB_PRICES[tier] : null;
+            const item = sub.items?.data?.[0] as any;
+            const periodStart = item?.current_period_start ?? (sub as any).current_period_start;
+            const periodEnd = item?.current_period_end ?? (sub as any).current_period_end;
+            const siteId = sub.metadata.site_id;
+            if (siteId && cfg) {
+              await supabase.from("byow_subscriptions").update({
+                status: "active",
+                prompt_quota: cfg.quota,
+                prompts_used: 0,
+                current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+                current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+                updated_at: new Date().toISOString(),
+              }).eq("site_id", siteId);
+            }
+            return new Response(JSON.stringify({ received: true, byow: "renewed" }), {
+              status: 200, headers: { "Content-Type": "application/json" },
+            });
+          }
+        } catch (e) { console.error("[byow] invoice handler", e); }
+      }
+    }
+
+    // ---- BYOW subscription canceled/updated ----
+    if (event.type === "customer.subscription.deleted" || event.type === "customer.subscription.updated") {
+      const sub = event.data.object as Stripe.Subscription;
+      if (sub.metadata?.source === "byow" && sub.metadata.site_id) {
+        await supabase.from("byow_subscriptions").update({
+          status: sub.status === "active" ? "active" : sub.status === "past_due" ? "past_due" : "canceled",
+          updated_at: new Date().toISOString(),
+        }).eq("site_id", sub.metadata.site_id);
+        return new Response(JSON.stringify({ received: true, byow: "status_update" }), {
+          status: 200, headers: { "Content-Type": "application/json" },
+        });
+      }
     }
 
     // ---- Checkout session events ----
