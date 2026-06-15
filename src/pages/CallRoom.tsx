@@ -628,6 +628,64 @@ const CallRoom = () => {
     };
   }, [status]);
 
+  // Relay-fallback watchdog: if ICE is still checking/new after 6s, switch
+  // this side to relay-only and ask the other side to do the same + re-offer.
+  // Fixes mobile-on-same-WiFi cases where mDNS .local candidates can't talk
+  // to the desktop's host candidates (router client-isolation, etc.).
+  useEffect(() => {
+    if (status !== "calling" && status !== "waiting") return;
+    if (relayWatchdogRef.current) { window.clearInterval(relayWatchdogRef.current); }
+    relayWatchdogRef.current = window.setInterval(() => {
+      if (isHost) {
+        for (const [peerId, p] of peersRef.current) {
+          const s = p.pc.iceConnectionState;
+          if ((s === "checking" || s === "new" || s === "disconnected") && !relayRetriedRef.current.has(peerId)) {
+            const since = (p as RemotePeer & { _checkingSince?: number })._checkingSince;
+            if (!since) {
+              (p as RemotePeer & { _checkingSince?: number })._checkingSince = Date.now();
+            } else if (Date.now() - since > 6000) {
+              relayRetriedRef.current.add(peerId);
+              console.log("[call] host watchdog: forcing relay for", peerId);
+              if (switchPeerToRelayOnly(p.pc)) {
+                setFailMessage("Reconnecting over relay…");
+                (async () => {
+                  try {
+                    const offer = await p.pc.createOffer({ iceRestart: true });
+                    await p.pc.setLocalDescription(offer);
+                    sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: peerId });
+                  } catch (e) { console.warn("[call] watchdog re-offer failed", e); }
+                })();
+              }
+            }
+          }
+        }
+      } else {
+        const pc = pcRef.current;
+        if (!pc) return;
+        const s = pc.iceConnectionState;
+        const key = hostPeerIdRef.current ?? "host";
+        if ((s === "checking" || s === "new" || s === "disconnected") && !relayRetriedRef.current.has(key)) {
+          const w = (pc as RTCPeerConnection & { _checkingSince?: number });
+          if (!w._checkingSince) {
+            w._checkingSince = Date.now();
+          } else if (Date.now() - w._checkingSince > 6000) {
+            relayRetriedRef.current.add(key);
+            console.log("[call] guest watchdog: forcing relay");
+            if (switchPeerToRelayOnly(pc) && hostPeerIdRef.current) {
+              setFailMessage("Reconnecting over relay…");
+              sendSignal({ type: "nudge_relay", from: PEER_ID, to: hostPeerIdRef.current });
+              try { pc.restartIce(); } catch { /* noop */ }
+            }
+          }
+        }
+      }
+    }, 1000);
+    return () => {
+      if (relayWatchdogRef.current) { window.clearInterval(relayWatchdogRef.current); relayWatchdogRef.current = null; }
+    };
+  }, [status, isHost, switchPeerToRelayOnly, sendSignal]);
+
+
   // Attach remote streams to grid video elements when refs become available
   useEffect(() => {
     for (const { peerId } of remotePeers) {
