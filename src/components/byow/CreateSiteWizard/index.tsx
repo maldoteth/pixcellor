@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check, Lock, Globe, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +37,9 @@ export default function CreateSiteWizard() {
   const [logoFile, setLogoFile] = useState<string>("");
   const [generating, setGenerating] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importedChars, setImportedChars] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -59,6 +62,49 @@ export default function CreateSiteWizard() {
     setFontKey(f.key);
     if (f.googleHref) ensureFontLoaded(f.googleHref);
     setBrand((b) => ({ ...b, fonts: { title: f.title, subtitle: f.subtitle, body: f.body }, font_href: f.googleHref }));
+  };
+
+  const importFromUrl = async () => {
+    const raw = importUrl.trim();
+    if (!raw) {
+      toast.error("Enter your website URL first.");
+      return;
+    }
+    setImporting(true);
+    setImportedChars(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("byow-import-site", {
+        body: { url: raw },
+      });
+      if (error) throw error;
+      if (!data?.ok) {
+        const msg = data?.error === "scrape_failed"
+          ? "We couldn't read that site. Some sites (Facebook, Instagram, Yelp) block imports."
+          : data?.error === "invalid_url"
+          ? "That doesn't look like a valid website URL."
+          : "Couldn't import that site.";
+        toast.error(msg);
+        return;
+      }
+      if (data.display_name && !displayName) setDisplayName(String(data.display_name));
+      if (data.brief) setBrief(String(data.brief));
+      if (data.business_type) setBusinessType(String(data.business_type));
+      if (data.brand) {
+        setBrand((prev) => ({
+          ...prev,
+          ...data.brand,
+          colors: { ...prev.colors, ...(data.brand.colors || {}) },
+          fonts: { ...prev.fonts, ...(data.brand.fonts || {}) },
+        }));
+        if (data.brand.logo_url) setLogoFile(String(data.brand.logo_url));
+      }
+      setImportedChars(typeof data.chars === "number" ? data.chars : null);
+      toast.success("Imported! Review and edit anything below.");
+    } catch (e: any) {
+      toast.error(e?.message || "Couldn't import that site.");
+    } finally {
+      setImporting(false);
+    }
   };
 
   const onLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -150,6 +196,45 @@ export default function CreateSiteWizard() {
       <AnimatePresence mode="wait">
         {step === 0 && (
           <motion.div key="brief" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
+            {/* Import from existing website */}
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-white/70" />
+                  <span className="text-sm font-medium text-white">Import from existing website</span>
+                </div>
+                <span className="text-[10px] uppercase tracking-wider text-white/40">Optional</span>
+              </div>
+              <div className="mt-3 flex items-stretch gap-2">
+                <div className="flex items-center rounded-lg border border-white/10 bg-white/5 px-3 text-xs text-white/50">https://</div>
+                <Input
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (!importing) importFromUrl(); } }}
+                  placeholder="yourwebsite.com"
+                  className="flex-1 bg-white/5 border-white/10 text-white h-10"
+                  disabled={importing}
+                />
+                <Button
+                  type="button"
+                  onClick={importFromUrl}
+                  disabled={importing || !importUrl.trim()}
+                  className="bg-white text-black hover:bg-white/90 h-10 px-4"
+                >
+                  {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Import"}
+                </Button>
+              </div>
+              <p className="mt-2 text-[11px] text-white/40">
+                We'll auto-fill the description, industry and brand colours. Some sites (Facebook, Instagram, Yelp) can't be imported.
+              </p>
+              {importedChars !== null && (
+                <div className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-emerald-300">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Extracted content · {importedChars.toLocaleString()} chars
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="text-xs uppercase tracking-wider text-white/50">Site name</label>
               <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="e.g. Acme Bakery" className="mt-1 bg-white/5 border-white/10 text-white h-11" />
