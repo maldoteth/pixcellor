@@ -61,6 +61,7 @@ const CallRoom = () => {
   // Multi-peer state
   const [pendingGuests, setPendingGuests] = useState<PendingGuest[]>([]);
   const [remotePeers, setRemotePeers] = useState<Array<{ peerId: string; name: string }>>([]);
+  const [remotePeerTicks, setRemotePeerTicks] = useState<Record<string, number>>({});
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const previewVideoRef = useRef<HTMLVideoElement>(null);
@@ -311,11 +312,17 @@ const CallRoom = () => {
       const el = remoteVideoEls.current.get(peerId);
       if (el && el.srcObject !== peer.stream) {
         el.srcObject = peer.stream;
-        el.play().catch(() => { /* noop */ });
       }
+      if (el) el.play().catch(() => { /* noop */ });
     };
     pc.ontrack = (e) => {
-      try { peer.stream.addTrack(e.track); } catch { /* dup */ }
+      const incoming = e.streams[0];
+      for (const track of incoming?.getTracks() ?? [e.track]) {
+        if (!peer.stream.getTracks().some((t) => t.id === track.id)) {
+          peer.stream.addTrack(track);
+        }
+      }
+      setRemotePeerTicks((ticks) => ({ ...ticks, [peerId]: Date.now() }));
       console.log("[call] host ontrack from", peerId, e.track.kind);
       attachToEl();
       // Retry attaching for a few frames in case the <video> ref hasn't mounted yet
@@ -492,6 +499,8 @@ const CallRoom = () => {
         }
       }
 
+      channelRef.current = channel;
+
       await channel.subscribe(async (s) => {
         if (s === "SUBSCRIBED") {
           if (isHost) {
@@ -502,8 +511,6 @@ const CallRoom = () => {
           }
         }
       });
-
-      channelRef.current = channel;
       setStatus("waiting");
     } catch (e) {
       handleMediaError(e);
@@ -518,6 +525,7 @@ const CallRoom = () => {
       }
       peersRef.current.clear();
       setRemotePeers([]);
+      setRemotePeerTicks({});
     } else {
       try { pcRef.current?.close(); } catch { /* noop */ }
       pcRef.current = null;
@@ -557,7 +565,7 @@ const CallRoom = () => {
         el.play().catch(() => { /* noop */ });
       }
     }
-  }, [remotePeers]);
+  }, [remotePeers, remotePeerTicks]);
 
   const toggleMic = () => {
     const t = localStreamRef.current?.getAudioTracks()[0];
@@ -937,11 +945,23 @@ const CallRoom = () => {
             {remotePeers.map(({ peerId, name }) => (
               <div key={peerId} className="relative bg-black/60 rounded-xl overflow-hidden border border-white/10">
                 <video
-                  ref={(el) => { remoteVideoEls.current.set(peerId, el); }}
+                  ref={(el) => {
+                    remoteVideoEls.current.set(peerId, el);
+                    const peer = peersRef.current.get(peerId);
+                    if (el && peer && el.srcObject !== peer.stream) {
+                      el.srcObject = peer.stream;
+                      el.play().catch(() => { /* noop */ });
+                    }
+                  }}
                   autoPlay
                   playsInline
                   className="w-full h-full object-contain"
                 />
+                {(peersRef.current.get(peerId)?.stream.getVideoTracks().length ?? 0) === 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center text-white/45 text-xs">
+                    Connecting video…
+                  </div>
+                )}
                 <span className="absolute left-2 bottom-2 text-[11px] text-white/70 bg-black/50 px-2 py-0.5 rounded">
                   {name}
                 </span>
