@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { TemplatePreview } from "./templates";
 
 /**
