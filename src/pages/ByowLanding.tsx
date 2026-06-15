@@ -52,7 +52,7 @@ const TIERS = [
     blurb: "Full delegated build pipeline for serious operators.",
     features: [
       "1,000 prompt edits / mo",
-      "Unlimited AI lead-gen runs",
+      "10,000 AI lead-gen runs / mo",
       "Same-day delivery",
       "Dedicated builder",
       "Export to any host",
