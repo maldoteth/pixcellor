@@ -599,14 +599,14 @@ const CallRoom = () => {
             <Button
               onClick={startPreflight}
               disabled={preflightLoading}
-              className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
+              className="request-shimmer w-full h-12 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium"
             >
               {preflightLoading ? "Requesting access…" : "Allow camera & mic"}
             </Button>
           ) : (
             <Button
               onClick={enterWaitingRoom}
-              className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
+              className="request-shimmer w-full h-12 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium"
             >
               {room.role === "host" ? "Enter call room" : "Join waiting room"}
             </Button>
