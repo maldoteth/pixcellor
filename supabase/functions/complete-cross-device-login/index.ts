@@ -4,7 +4,25 @@ import { z } from 'https://deno.land/x/zod@v3.23.8/mod.ts';
 
 const BodySchema = z.object({
   sid: z.string().min(16).max(128),
+  redirectTo: z.string().max(1024).optional(),
 }).passthrough();
+
+const ALLOWED_REDIRECT_ORIGINS = new Set([
+  'https://pixcellor.com',
+  'https://www.pixcellor.com',
+  'https://morph-glide-show.lovable.app',
+]);
+const ALLOWED_REDIRECT_SUFFIXES = ['.lovable.app', '.lovable.dev', '.lovableproject.com'];
+function isAllowedRedirect(target: string): boolean {
+  try {
+    const u = new URL(target);
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
+    if (ALLOWED_REDIRECT_ORIGINS.has(u.origin)) return true;
+    return ALLOWED_REDIRECT_SUFFIXES.some((s) => u.hostname.endsWith(s));
+  } catch {
+    return false;
+  }
+}
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -41,6 +59,10 @@ Deno.serve(async (req) => {
     if (!sid || sid.length < 16 || sid.length > 128) {
       return json({ error: 'Invalid handoff id' }, 400);
     }
+    const redirectTo = parsedBody.data.redirectTo || 'https://pixcellor.com/customer-portal';
+    if (!isAllowedRedirect(redirectTo)) {
+      return json({ error: 'Invalid redirect' }, 400);
+    }
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
@@ -50,7 +72,7 @@ Deno.serve(async (req) => {
     const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
       type: 'magiclink',
       email,
-      options: { redirectTo: `${new URL(req.url).origin}/auth/handoff` },
+      options: { redirectTo },
     });
     if (linkErr || !linkData?.properties?.hashed_token || !linkData?.properties?.action_link) {
       console.error('generateLink failed', linkErr);

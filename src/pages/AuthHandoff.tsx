@@ -60,7 +60,7 @@ export default function AuthHandoff() {
           const { error } = await supabase.functions.invoke(
             "complete-cross-device-login",
             {
-              body: { sid },
+              body: { sid, redirectTo: `${window.location.origin}/customer-portal` },
               headers: { Authorization: `Bearer ${jwt}` },
             },
           );
