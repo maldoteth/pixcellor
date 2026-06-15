@@ -105,7 +105,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (!template_key) {
+    if (!template_key && !existingRef) {
       return new Response(JSON.stringify({ error: "Pick a template before generating." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
