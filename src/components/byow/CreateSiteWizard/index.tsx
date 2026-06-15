@@ -52,10 +52,13 @@ export default function CreateSiteWizard() {
     return () => { alive = false; sub.subscription.unsubscribe(); };
   }, []);
 
-  const canNext = () => {
-    if (step === 0) return displayName.trim().length >= 2 && brief.trim().length >= 10;
-    return true;
+  const nextHint = () => {
+    if (step !== 0) return "";
+    if (displayName.trim().length < 2) return "Add a site name to continue";
+    if (brief.trim().length < 10) return "Add a short description (at least 10 characters)";
+    return "";
   };
+  const canNext = () => nextHint() === "";
 
 
   const pickFont = (f: FontTriple) => {
@@ -389,13 +392,18 @@ export default function CreateSiteWizard() {
           <ArrowLeft className="h-4 w-4 mr-1" /> Back
         </Button>
         {step < STEPS.length - 1 && (
-          <Button
-            disabled={!canNext()}
-            onClick={() => setStep((s) => s + 1)}
-            className="bg-white text-black hover:bg-white/90"
-          >
-            Next <ArrowRight className="h-4 w-4 ml-1" />
-          </Button>
+          <div className="flex items-center gap-3">
+            {!canNext() && nextHint() && (
+              <span className="text-[11px] text-white/50 hidden sm:inline">{nextHint()}</span>
+            )}
+            <Button
+              disabled={!canNext()}
+              onClick={() => setStep((s) => s + 1)}
+              className="bg-white text-black hover:bg-white/90 disabled:opacity-50"
+            >
+              Next <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         )}
       </div>
     </div>
