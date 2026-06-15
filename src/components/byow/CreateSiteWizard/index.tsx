@@ -196,6 +196,45 @@ export default function CreateSiteWizard() {
       <AnimatePresence mode="wait">
         {step === 0 && (
           <motion.div key="brief" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
+            {/* Import from existing website */}
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-white/70" />
+                  <span className="text-sm font-medium text-white">Import from existing website</span>
+                </div>
+                <span className="text-[10px] uppercase tracking-wider text-white/40">Optional</span>
+              </div>
+              <div className="mt-3 flex items-stretch gap-2">
+                <div className="flex items-center rounded-lg border border-white/10 bg-white/5 px-3 text-xs text-white/50">https://</div>
+                <Input
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (!importing) importFromUrl(); } }}
+                  placeholder="yourwebsite.com"
+                  className="flex-1 bg-white/5 border-white/10 text-white h-10"
+                  disabled={importing}
+                />
+                <Button
+                  type="button"
+                  onClick={importFromUrl}
+                  disabled={importing || !importUrl.trim()}
+                  className="bg-white text-black hover:bg-white/90 h-10 px-4"
+                >
+                  {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Import"}
+                </Button>
+              </div>
+              <p className="mt-2 text-[11px] text-white/40">
+                We'll auto-fill the description, industry and brand colours. Some sites (Facebook, Instagram, Yelp) can't be imported.
+              </p>
+              {importedChars !== null && (
+                <div className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-emerald-300">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Extracted content · {importedChars.toLocaleString()} chars
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="text-xs uppercase tracking-wider text-white/50">Site name</label>
               <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="e.g. Acme Bakery" className="mt-1 bg-white/5 border-white/10 text-white h-11" />
