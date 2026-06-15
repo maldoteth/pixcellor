@@ -363,10 +363,14 @@ const CallRoom = () => {
 
     if (!sharing) {
       try {
-        const screen = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        const screen = await navigator.mediaDevices.getDisplayMedia({
+          video: { frameRate: { ideal: 15, max: 15 } },
+          audio: false,
+        });
         screenStreamRef.current = screen;
         const screenTrack = screen.getVideoTracks()[0];
         await sender.replaceTrack(screenTrack);
+        await tuneVideoSender(sender, "screen");
         if (localVideoRef.current) localVideoRef.current.srcObject = screen;
         setSharing(true);
         screenTrack.onended = () => { void revertShare(); };
