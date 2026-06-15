@@ -322,7 +322,7 @@ const CallRoom = () => {
     } catch (e) {
       handleMediaError(e);
     }
-  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError]);
+  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError, preferVP8, tuneVideoSender]);
 
   // Host: admit guest and begin call
   const startCall = useCallback(async () => {
