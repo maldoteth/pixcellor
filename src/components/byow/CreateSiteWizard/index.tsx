@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check, Lock, Globe, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check, Lock, Globe, CheckCircle2, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { TEMPLATES, type TemplatePreset } from "./templates";
+import { Link, useNavigate } from "react-router-dom";
+import { TEMPLATES, TEMPLATE_CATEGORIES, type TemplatePreset, type TemplateCategory } from "./templates";
+import { TemplateThumb } from "./TemplateThumb";
 import { FONT_PRESETS, type FontTriple, ensureFontLoaded } from "./fontPresets";
 
 
@@ -40,6 +41,7 @@ export default function CreateSiteWizard() {
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [importedChars, setImportedChars] = useState<number | null>(null);
+  const [tplCategory, setTplCategory] = useState<TemplateCategory | "all">("all");
 
   useEffect(() => {
     let alive = true;
@@ -57,10 +59,17 @@ export default function CreateSiteWizard() {
     FONT_PRESETS.forEach((f) => { if (f.googleHref) ensureFontLoaded(f.googleHref); });
   }, []);
 
+  const filteredTemplates = useMemo(
+    () => (tplCategory === "all" ? TEMPLATES : TEMPLATES.filter((t) => t.category === tplCategory)),
+    [tplCategory]
+  );
+
   const nextHint = () => {
-    if (step !== 0) return "";
-    if (displayName.trim().length < 2) return "Add a site name to continue";
-    if (brief.trim().length < 10) return "Add a short description (at least 10 characters)";
+    if (step === 0) {
+      if (displayName.trim().length < 2) return "Add a site name to continue";
+      if (brief.trim().length < 10) return "Add a short description (at least 10 characters)";
+    }
+    if (step === 1 && !template) return "Pick a template to continue";
     return "";
   };
   const canNext = () => nextHint() === "";
@@ -260,35 +269,90 @@ export default function CreateSiteWizard() {
         )}
 
         {step === 1 && (
-          <motion.div key="template" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
-            <div className="text-sm text-white/60 mb-2">Pick a starting template — or skip and we'll generate fresh.</div>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-              <button
-                onClick={() => setTemplate(null)}
-                className={`text-left rounded-xl border p-4 transition-colors ${
-                  template === null ? "border-white bg-white/10" : "border-white/10 bg-white/[0.02] hover:border-white/30"
-                }`}
-              >
-                <Sparkles className="h-4 w-4" />
-                <div className="text-sm font-semibold mt-2">Generate fresh</div>
-                <div className="text-[11px] text-white/50 mt-1">AI builds the layout from your brief.</div>
-              </button>
-              {TEMPLATES.map((t) => {
+          <motion.div key="template" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-sm text-white">Pick a template <span className="text-white/40">· required</span></div>
+                <div className="text-[12px] text-white/50 mt-0.5">{TEMPLATES.length} hand-tuned layouts. Your brand + brief are styled into the one you choose.</div>
+              </div>
+              {template && (
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] text-white">
+                  <Check className="h-3 w-3" /> {template.label}
+                </div>
+              )}
+            </div>
+
+            {/* Category filter chips */}
+            <div className="flex flex-wrap gap-1.5">
+              {TEMPLATE_CATEGORIES.map((c) => {
+                const active = tplCategory === c.key;
+                return (
+                  <button
+                    key={c.key}
+                    onClick={() => setTplCategory(c.key)}
+                    className={`rounded-full px-3 py-1 text-[11px] uppercase tracking-wider transition-colors ${
+                      active
+                        ? "bg-white text-black"
+                        : "bg-white/5 text-white/60 border border-white/10 hover:text-white hover:border-white/30"
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Template grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {filteredTemplates.map((t) => {
                 const active = template?.key === t.key;
                 return (
                   <button
                     key={t.key}
                     onClick={() => setTemplate(t)}
-                    className={`text-left rounded-xl border p-4 transition-colors ${
-                      active ? "border-white bg-white/10" : "border-white/10 bg-white/[0.02] hover:border-white/30"
+                    className={`group text-left rounded-2xl border p-2.5 transition-all ${
+                      active
+                        ? "border-white bg-white/10 ring-1 ring-white/40"
+                        : "border-white/10 bg-white/[0.02] hover:border-white/30 hover:bg-white/[0.04]"
                     }`}
                   >
-                    <div className="text-[10px] uppercase tracking-wider text-white/40">{t.industry}</div>
-                    <div className="text-sm font-semibold mt-1">{t.label}</div>
-                    <div className="text-[11px] text-white/50 mt-1 leading-relaxed">{t.blurb}</div>
+                    <div className="relative">
+                      <TemplateThumb preview={t.preview} label={t.label} />
+                      {active && (
+                        <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-white text-black flex items-center justify-center shadow">
+                          <Check className="h-3.5 w-3.5" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mt-2.5">
+                      <div className="text-sm font-semibold text-white">{t.label}</div>
+                      <div className="text-[10px] uppercase tracking-wider text-white/40">{t.industry}</div>
+                    </div>
+                    <div className="text-[11px] text-white/55 mt-0.5 leading-relaxed">{t.blurb}</div>
                   </button>
                 );
               })}
+            </div>
+
+            {/* Hire-our-team upsell */}
+            <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-4 md:p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                  <Wrench className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-white">None of these are quite right?</div>
+                  <div className="text-[12px] text-white/55 mt-0.5">
+                    Our designers can build exactly what you have in mind — custom layouts, animations, integrations, the lot.
+                  </div>
+                </div>
+              </div>
+              <Link
+                to="/get-started"
+                className="inline-flex items-center justify-center rounded-full bg-white text-black h-9 px-4 text-xs font-medium hover:bg-white/90 transition-colors whitespace-nowrap"
+              >
+                Hire our team →
+              </Link>
             </div>
           </motion.div>
         )}
@@ -365,7 +429,7 @@ export default function CreateSiteWizard() {
             <div className="text-xs uppercase tracking-wider text-white/40">Ready to ship</div>
             <h3 className="text-2xl md:text-3xl font-light mt-3">Generate your site</h3>
             <p className="text-white/60 mt-3 max-w-md mx-auto text-sm">
-              We'll generate a full single-page site using your brief, brand and {template ? `the ${template.label} template` : "a fresh layout"}.
+              We'll style the <span className="text-white">{template?.label ?? "selected"}</span> layout with your brand and brief.
               Takes ~10 seconds. Free to preview.
             </p>
             <Button
@@ -382,6 +446,12 @@ export default function CreateSiteWizard() {
             <p className="text-[11px] text-white/40 mt-4">
               You'll get a shareable preview URL. Publish to a permanent address with any plan.
             </p>
+            <div className="mt-6 text-[12px] text-white/50">
+              Want it pixel-perfect and human-built?{" "}
+              <Link to="/get-started" className="text-white underline underline-offset-2 hover:text-white/80">
+                Hire our team to customise →
+              </Link>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

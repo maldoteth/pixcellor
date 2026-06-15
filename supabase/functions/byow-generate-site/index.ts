@@ -105,9 +105,19 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (!template_key) {
+      return new Response(JSON.stringify({ error: "Pick a template before generating." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const admin = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
 
+    const seed = (template_seed && typeof template_seed === "object") ? template_seed as Record<string, unknown> : {};
+    const tone = String(seed.tone ?? "confident, modern, conversion-focused");
+    const audience = String(seed.audience ?? "the target customer");
+    const layoutRecipe = String(seed.layout_recipe ?? seed.sections_hint ?? "");
 
     const prompt = `
 You are generating the content for a high-conversion single-page marketing website.
@@ -116,14 +126,23 @@ BUSINESS BRIEF:
 - Name: ${display_name}
 - Type: ${business_type || "Not specified"}
 - Description: ${brief}
-${template_key ? `- Starter template: ${template_key} (use it as structural inspiration; rewrite all copy)` : "- No template selected — generate fresh."}
-${template_seed ? `- Template hint JSON: ${JSON.stringify(template_seed).slice(0, 1500)}` : ""}
+
+SELECTED TEMPLATE (HARD CONSTRAINTS — do not improvise):
+- Template key: ${template_key}
+- Voice / tone: ${tone}
+- Primary audience: ${audience}
+- Layout recipe (follow exactly, in this order and density): ${layoutRecipe}
 
 BRAND:
 - Colors: ${JSON.stringify(brand.colors)}
 - Fonts: title=${brand.fonts.title}, subtitle=${brand.fonts.subtitle}, body=${brand.fonts.body}
 
 ${SECTION_SCHEMA}
+
+Additional rules:
+- Every section must reflect the layout recipe above; do NOT reorder or drop sections.
+- Copy must be specific to the business — no generic "your business" placeholders.
+- Match the template tone exactly — do not soften or hype past what the tone allows.
 
 Return ONLY the JSON object (no \`\`\`json fences). Start with {.
 `.trim();
