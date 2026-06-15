@@ -206,7 +206,6 @@ const CallRoom = () => {
         };
         return score(a) - score(b);
       });
-      // @ts-expect-error setCodecPreferences exists in modern browsers
       transceiver.setCodecPreferences?.(codecs);
     } catch (e) {
       console.warn("preferVP8 failed", e);
