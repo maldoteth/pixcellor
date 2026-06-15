@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check, Lock, Globe, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check, Lock, Globe, CheckCircle2, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { TEMPLATES, type TemplatePreset } from "./templates";
+import { Link, useNavigate } from "react-router-dom";
+import { TEMPLATES, TEMPLATE_CATEGORIES, type TemplatePreset, type TemplateCategory } from "./templates";
+import { TemplateThumb } from "./TemplateThumb";
 import { FONT_PRESETS, type FontTriple, ensureFontLoaded } from "./fontPresets";
 
 
