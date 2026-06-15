@@ -174,8 +174,8 @@ const CallRoom = () => {
     if (!sender) return;
     try {
       const params = sender.getParameters();
-      // @ts-expect-error degradationPreference is valid on RTCRtpSendParameters in modern browsers
-      params.degradationPreference = mode === "screen" ? "maintain-resolution" : "maintain-framerate";
+      (params as RTCRtpSendParameters).degradationPreference =
+        mode === "screen" ? "maintain-resolution" : "maintain-framerate";
       if (!params.encodings || params.encodings.length === 0) {
         params.encodings = [{}];
       }
