@@ -52,6 +52,11 @@ export default function CreateSiteWizard() {
     return () => { alive = false; sub.subscription.unsubscribe(); };
   }, []);
 
+  // Preload all font presets so the preview tiles render in their real typefaces
+  useEffect(() => {
+    FONT_PRESETS.forEach((f) => { if (f.googleHref) ensureFontLoaded(f.googleHref); });
+  }, []);
+
   const nextHint = () => {
     if (step !== 0) return "";
     if (displayName.trim().length < 2) return "Add a site name to continue";
