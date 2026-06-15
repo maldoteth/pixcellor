@@ -22,25 +22,43 @@ interface Sub {
   prompts_used: number;
 }
 
+interface GeneratedSite {
+  id: string;
+  ref: string;
+  display_name: string;
+  status: string;
+  published_at: string | null;
+  created_at: string;
+}
+
 export default function ByowSitesTab() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [sites, setSites] = useState<Site[]>([]);
+  const [genSites, setGenSites] = useState<GeneratedSite[]>([]);
+  const [hasActiveSub, setHasActiveSub] = useState(false);
   const [subs, setSubs] = useState<Record<string, Sub>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [plansFor, setPlansFor] = useState<{ id: string; hasSub: boolean; tab: "subscription" | "topup" } | null>(null);
 
   const reload = async () => {
     setLoading(true);
-    const [{ data: sitesData, error: sErr }, { data: subsData }] = await Promise.all([
+    const [{ data: sitesData, error: sErr }, { data: subsData }, { data: genData, error: gErr }] = await Promise.all([
       supabase.from("byow_sites").select("id, display_name, published_url, status").order("created_at"),
       supabase.from("byow_subscriptions").select("site_id, tier, status, prompt_quota, prompts_used"),
+      supabase
+        .from("byow_generated_sites")
+        .select("id, ref, display_name, status, published_at, created_at")
+        .order("created_at", { ascending: false }),
     ]);
     if (sErr) toast.error(sErr.message);
+    if (gErr) console.warn(gErr.message);
     setSites(sitesData || []);
+    setGenSites(genData || []);
     const subMap: Record<string, Sub> = {};
     (subsData || []).forEach((s: any) => { subMap[s.site_id] = s; });
     setSubs(subMap);
+    setHasActiveSub((subsData || []).some((s: any) => s.status === "active"));
     setLoading(false);
   };
 
