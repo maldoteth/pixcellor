@@ -492,6 +492,18 @@ const CallRoom = () => {
               } else {
                 try { await p.pc.addIceCandidate(msg.candidate); } catch (e) { console.warn("[call] ice add failed", e); }
               }
+            } else if (msg.type === "nudge_relay") {
+              const p = peersRef.current.get(msg.from);
+              if (!p) return;
+              console.log("[call] host got nudge_relay — renegotiating relay-only with", msg.from);
+              switchPeerToRelayOnly(p.pc);
+              try {
+                const offer = await p.pc.createOffer({ iceRestart: true });
+                await p.pc.setLocalDescription(offer);
+                sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: msg.from });
+              } catch (e) {
+                console.warn("[call] relay re-offer failed", e);
+              }
             } else if (msg.type === "bye") {
               removeHostPeer(msg.from);
             }
