@@ -23,6 +23,7 @@ type SignalMessage =
   | { type: "knock"; from: string; name?: string; to?: string }
   | { type: "admit"; from: string; to: string }
   | { type: "deny"; from: string; to: string }
+  | { type: "nudge_relay"; from: string; to: string }
   | { type: "bye"; from: string; to?: string };
 
 const PEER_ID = crypto.randomUUID();
