@@ -154,7 +154,7 @@ export default function ByowLanding() {
                   <a href="#pricing">See pricing <ArrowRight className="ml-2 h-4 w-4" /></a>
                 </Button>
                 <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10 h-12 px-6 text-sm">
-                  <a href="#how">How it works</a>
+                  <a href="#create">Create yours free</a>
                 </Button>
               </div>
               <p className="mt-5 text-xs text-white/40">
