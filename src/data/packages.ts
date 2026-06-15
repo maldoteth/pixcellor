@@ -648,6 +648,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       "retainer-scale": "Included",
       "retainer-enterprise": "Included",
     },
+  },
   {
     feature: "Fractional C-suite",
     values: {
