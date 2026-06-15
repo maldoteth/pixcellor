@@ -70,24 +70,24 @@ const TOPUPS = [
 ];
 
 const STEPS = [
-  { n: "01", title: "Pick a plan", text: "Care, Studio or Agency. Cancel any time. Top-up packs never expire." },
+  { n: "01", title: "Pick a plan", text: "Growth, Scale or Enterprise. Cancel any time. Top-up packs never expire." },
   { n: "02", title: "Brief us in chat", text: "Describe the change — copy, layout, new page, integration. Our team picks it up the same day." },
   { n: "03", title: "Watch it go live", text: "We ship inside your quota with a live + preview view side-by-side. Refresh and it's there." },
 ];
 
 const BENEFITS = [
   { icon: Zap, title: "24-hour delivery", text: "Real humans iterating on your site every business day — no DIY drag-and-drop." },
-  { icon: Globe2, title: "Managed hosting", text: "Hosting, SSL, custom domain, performance, and uptime — handled, included." },
+  { icon: Globe2, title: "Managed hosting", text: "Hosting, SSL, custom domain, performance, and uptime — handled, included. Export to any host any time." },
   { icon: Bot, title: "AI lead-gen chatbot", text: "Trained on your business. Captures, qualifies and books leads while you sleep." },
   { icon: MessageSquare, title: "One chat workspace", text: "Every edit lives in one thread. No more chasing devs across emails." },
 ];
 
 const FAQ = [
-  { q: "How fast do edits ship?", a: "Same business day for Studio and Agency plans. Care plan edits ship within 48 hours." },
+  { q: "How fast do edits ship?", a: "Same business day for Scale and Enterprise plans. Growth plan edits ship within 48 hours." },
   { q: "What counts as one prompt?", a: "One discrete change request — \"swap the hero image\", \"add a pricing FAQ\", \"connect Stripe\". Multi-part requests are usually still one prompt." },
-  { q: "Do I own my site?", a: "Yes. Your site, your domain, your content. Cancel any time and we hand everything over." },
+  { q: "Do I own my site?", a: "Yes. Your site, your domain, your content. Export to any host or cancel any time — we hand everything over." },
   { q: "Can I bring an existing site?", a: "Yes. We migrate it onto our managed stack for free on first sign-up." },
-  { q: "What about backend / Stripe / databases?", a: "Studio and Agency plans include integrations: Stripe, mailing lists, booking, CRMs, dashboards, AI agents." },
+  { q: "What about backend / Stripe / databases?", a: "Scale and Enterprise plans include integrations: Stripe, mailing lists, booking, CRMs, dashboards, AI agents." },
   { q: "Is there a contract?", a: "No. Month-to-month, cancel any time, no exit fees." },
 ];
 
