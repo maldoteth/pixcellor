@@ -251,13 +251,13 @@ Deno.serve(async (req) => {
       leadEmail: b.email,
       leadPhone: b.phone,
       leadMessage: [
-        whenLabel ? `When: ${whenLabel}` : `Preference: ${prefLabel}`,
         b.company ? `Company: ${b.company}` : "",
         b.brief ? `Brief: ${b.brief}` : "",
         `Host call link: ${callLinkHost}`,
         callLinkGuest ? `Guest call link: ${callLinkGuest}` : "",
       ].filter(Boolean).join("\n\n"),
       contactId: contactId || bookingId,
+      eventId: bookingId,
     }).catch((e) => console.warn("internal notify failed:", e));
 
     // Do NOT include call_link_host in the response — that link contains the
