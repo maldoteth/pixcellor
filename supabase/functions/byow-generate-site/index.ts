@@ -114,9 +114,9 @@ serve(async (req) => {
 
     const admin = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
 
-    // Free tier: 1 generated site per user. More requires an active subscription.
+    // Free tier: 1 generated site per user. More requires an active subscription or admin role.
     if (!existingRef) {
-      const [{ count: existingCount }, { data: paidSubs }] = await Promise.all([
+      const [{ count: existingCount }, { data: paidSubs }, { data: adminRole }] = await Promise.all([
         admin
           .from("byow_generated_sites")
           .select("id", { count: "exact", head: true })
@@ -127,9 +127,16 @@ serve(async (req) => {
           .eq("owner_user_id", userId)
           .eq("status", "active")
           .limit(1),
+        admin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .eq("role", "admin")
+          .limit(1),
       ]);
       const hasPaid = (paidSubs?.length ?? 0) > 0;
-      if ((existingCount ?? 0) >= 1 && !hasPaid) {
+      const isAdmin = (adminRole?.length ?? 0) > 0;
+      if ((existingCount ?? 0) >= 1 && !hasPaid && !isAdmin) {
         return new Response(
           JSON.stringify({
             error: "free_quota_exceeded",

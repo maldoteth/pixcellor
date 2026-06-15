@@ -62,7 +62,7 @@ export default function ByowGeneratedEditor() {
         navigate(`/customer-auth?redirect=/byow/edit/${ref}`);
         return;
       }
-      const [{ data: row, error }, { data: subs }] = await Promise.all([
+      const [{ data: row, error }, { data: subs }, { data: adminRow }] = await Promise.all([
         supabase
           .from("byow_generated_sites")
           .select("id, ref, display_name, brief, doc, owner_user_id")
@@ -73,6 +73,12 @@ export default function ByowGeneratedEditor() {
           .select("status")
           .eq("status", "active")
           .limit(1),
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .limit(1),
       ]);
       if (!alive) return;
       if (error || !row) {
@@ -81,7 +87,7 @@ export default function ByowGeneratedEditor() {
         return;
       }
       setSite(row as GenSite);
-      setHasActiveSub((subs?.length ?? 0) > 0);
+      setHasActiveSub((subs?.length ?? 0) > 0 || (adminRow?.length ?? 0) > 0);
       setLoading(false);
       setTimeout(() => taRef.current?.focus(), 50);
     })();
