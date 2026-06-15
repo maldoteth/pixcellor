@@ -25,7 +25,9 @@ type SignalMessage =
 
 const PEER_ID = crypto.randomUUID();
 
-type Stage = "loading" | "preflight" | "waiting" | "calling" | "connected" | "ended";
+type Stage = "loading" | "preflight" | "waiting" | "calling" | "connected" | "ended" | "failed";
+
+const CONNECT_TIMEOUT_MS = 15000;
 
 const CallRoom = () => {
   const { bookingId = "" } = useParams<{ bookingId: string }>();
