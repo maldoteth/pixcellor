@@ -59,6 +59,20 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
     [cleanup, navigate, redirectTarget],
   );
 
+  const continueWithClaim = useCallback(
+    (claim: { token?: string; login_url?: string } | null) => {
+      if (claim?.login_url) {
+        claimingRef.current = true;
+        setStatus("claiming");
+        cleanup();
+        window.location.assign(claim.login_url);
+        return;
+      }
+      if (claim?.token) redeem(claim.token);
+    },
+    [cleanup, redeem],
+  );
+
   /**
    * Returns the redirect URL to feed into `signInWithOtp`'s
    * `emailRedirectTo`, AND starts listening for the handoff token.
@@ -89,10 +103,10 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
           return;
         }
         const { data } = await (supabase as any).rpc("claim_login_handoff", { _sid: sid });
-        const token = (data as { token?: string } | null)?.token;
-        if (token) {
+        const claim = data as { token?: string; login_url?: string } | null;
+        if (claim?.login_url || claim?.token) {
           window.clearInterval(handle);
-          redeem(token);
+          continueWithClaim(claim);
         }
       }, intervalMs);
       // Stash on channelRef-shaped slot so cleanup clears it.
@@ -103,7 +117,7 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
       const target = `${window.location.origin}${basePath}?sid=${encodeURIComponent(sid)}`;
       return target;
     },
-    [cleanup, redeem],
+    [cleanup, continueWithClaim],
   );
 
   return { start, status, sid: sidRef.current };

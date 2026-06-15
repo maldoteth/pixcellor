@@ -44,17 +44,21 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Generate a one-time magic link token for this email.
+    // Generate a one-time magic link for this email. The desktop gets the
+    // full action URL so the auth callback can persist the session exactly
+    // like a clicked email link; the token hash is retained as fallback.
     const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
       type: 'magiclink',
       email,
+      options: { redirectTo: `${new URL(req.url).origin}/auth/handoff` },
     });
-    if (linkErr || !linkData?.properties?.hashed_token) {
+    if (linkErr || !linkData?.properties?.hashed_token || !linkData?.properties?.action_link) {
       console.error('generateLink failed', linkErr);
       return json({ error: 'Could not mint handoff token' }, 500);
     }
 
     const tokenHash = linkData.properties.hashed_token;
+    const loginUrl = linkData.properties.action_link;
 
     // Upsert the handoff row.
     const { error: upsertErr } = await admin
@@ -63,6 +67,7 @@ Deno.serve(async (req) => {
         id: sid,
         email,
         token: tokenHash,
+        login_url: loginUrl,
         expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
       });
     if (upsertErr) {
