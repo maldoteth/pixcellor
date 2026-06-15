@@ -34,6 +34,10 @@ const Packages = lazy(() => import("./pages/Packages"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 const GetStarted = lazy(() => import("./pages/GetStarted"));
 const CallRoom = lazy(() => import("./pages/CallRoom"));
+const ByowLogin = lazy(() => import("./pages/ByowLogin"));
+const ByowDashboard = lazy(() => import("./pages/ByowDashboard"));
+const ByowBuilder = lazy(() => import("./pages/ByowBuilder"));
+const ByowAdmin = lazy(() => import("./pages/ByowAdmin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -121,6 +125,10 @@ const App = () => (
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/get-started" element={<GetStarted />} />
               <Route path="/call/:bookingId" element={<CallRoom />} />
+              <Route path="/byow/login" element={<ByowLogin />} />
+              <Route path="/byow" element={<ByowDashboard />} />
+              <Route path="/byow/site/:siteId" element={<ByowBuilder />} />
+              <Route path="/byow-admin" element={<ByowAdmin />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
