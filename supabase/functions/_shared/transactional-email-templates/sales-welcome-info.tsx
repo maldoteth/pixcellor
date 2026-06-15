@@ -12,7 +12,10 @@ type SalesWelcomeProps = {
 
 const SalesWelcomeEmail = ({ name }: SalesWelcomeProps) => (
   <Html lang="en" dir="ltr">
-    <Head />
+    <Head>
+      <meta name="color-scheme" content="light only" />
+      <meta name="supported-color-schemes" content="light" />
+    </Head>
     <Preview>Thanks for reaching out to Pixcellor — here's what happens next.</Preview>
     <Body style={main}>
       <Container style={shell}>
