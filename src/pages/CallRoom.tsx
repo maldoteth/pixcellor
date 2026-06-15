@@ -261,10 +261,12 @@ const CallRoom = () => {
         try { pc.restartIce(); } catch { /* noop */ }
         if (!failTimerRef.current) {
           failTimerRef.current = window.setTimeout(() => {
-            if (pc.iceConnectionState !== "connected" && pc.iceConnectionState !== "completed") {
+            const cur = pc.iceConnectionState;
+            failTimerRef.current = null;
+            if (cur !== "connected" && cur !== "completed") {
               markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
             }
-          }, 5000);
+          }, 8000);
         }
       }
     };
@@ -272,7 +274,16 @@ const CallRoom = () => {
       const s = pc.connectionState;
       if (s === "connected") markConnected();
       if (s === "failed") {
-        markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
+        // Require sustained failure — some browsers flip to "failed" briefly
+        // during ICE restart or candidate pair swap. Only surface if still
+        // failed after 4s.
+        if (failTimerRef.current) return;
+        failTimerRef.current = window.setTimeout(() => {
+          failTimerRef.current = null;
+          if (pc.connectionState === "failed") {
+            markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
+          }
+        }, 4000);
       }
     };
     return pc;
