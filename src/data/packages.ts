@@ -620,6 +620,36 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
+    feature: "AI lead-gen runs",
+    values: {
+      "full-works": "—",
+      elite: "—",
+      "retainer-growth": "250 / mo",
+      "retainer-scale": "1,000 / mo",
+      "retainer-enterprise": "10,000 / mo",
+    },
+  },
+  {
+    feature: "Export to any host",
+    values: {
+      "full-works": "Yes",
+      elite: "Yes",
+      "retainer-growth": "Yes",
+      "retainer-scale": "Yes",
+      "retainer-enterprise": "Yes",
+    },
+  },
+  {
+    feature: "Whitelabel delivery",
+    values: {
+      "full-works": "—",
+      elite: "Optional",
+      "retainer-growth": "Included",
+      "retainer-scale": "Included",
+      "retainer-enterprise": "Included",
+    },
+  },
+  {
     feature: "Fractional C-suite",
     values: {
       "full-works": "—",
