@@ -599,14 +599,14 @@ const CallRoom = () => {
             <Button
               onClick={startPreflight}
               disabled={preflightLoading}
-              className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
+              className="request-shimmer w-full h-12 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium"
             >
               {preflightLoading ? "Requesting access…" : "Allow camera & mic"}
             </Button>
           ) : (
             <Button
               onClick={enterWaitingRoom}
-              className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
+              className="request-shimmer w-full h-12 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium"
             >
               {room.role === "host" ? "Enter call room" : "Join waiting room"}
             </Button>
@@ -630,7 +630,7 @@ const CallRoom = () => {
           <div className="flex flex-col gap-2">
             <button
               onClick={() => window.location.reload()}
-              className="h-11 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
+              className="request-shimmer h-11 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium"
             >
               {room?.role === "host" ? "Restart call" : "Rejoin call"}
             </button>
@@ -703,7 +703,7 @@ const CallRoom = () => {
                   <Button
                     onClick={startCall}
                     disabled={!remoteJoined}
-                    className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="request-shimmer w-full h-12 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {remoteJoined ? "Start call" : "Waiting for customer…"}
                   </Button>
