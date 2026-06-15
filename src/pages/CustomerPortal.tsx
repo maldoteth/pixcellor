@@ -614,6 +614,11 @@ export default function CustomerPortal() {
                   </div>
                 </TabsContent>
 
+                <TabsContent value="sites" className="min-w-0 space-y-4">
+                  <SectionHeader title="My managed sites" description="Chat your changes, watch us ship them in hours." />
+                  <ByowSitesTab />
+                </TabsContent>
+
                 <TabsContent value="schedule" className="min-w-0 space-y-4">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <SectionHeader title="Schedule" description="Your shifts across every vacancy. Empty days are shown so you can plan ahead." />
