@@ -49,7 +49,6 @@ const CallRoom = () => {
 
   const [room, setRoom] = useState<Room | null>(null);
   const [iceServers, setIceServers] = useState<RTCIceServer[] | null>(null);
-  const [relayServers, setRelayServers] = useState<RTCIceServer[]>([]);
   const relayServersRef = useRef<RTCIceServer[]>([]);
   const relayRetriedRef = useRef<Set<string>>(new Set());
   const relayWatchdogRef = useRef<number | null>(null);
