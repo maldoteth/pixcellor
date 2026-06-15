@@ -23,6 +23,7 @@ type SignalMessage =
   | { type: "knock"; from: string; name?: string; to?: string }
   | { type: "admit"; from: string; to: string }
   | { type: "deny"; from: string; to: string }
+  | { type: "nudge_relay"; from: string; to: string }
   | { type: "bye"; from: string; to?: string };
 
 const PEER_ID = crypto.randomUUID();
@@ -48,6 +49,9 @@ const CallRoom = () => {
 
   const [room, setRoom] = useState<Room | null>(null);
   const [iceServers, setIceServers] = useState<RTCIceServer[] | null>(null);
+  const relayServersRef = useRef<RTCIceServer[]>([]);
+  const relayRetriedRef = useRef<Set<string>>(new Set());
+  const relayWatchdogRef = useRef<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<Stage>("loading");
   const [preflightReady, setPreflightReady] = useState(false);
@@ -114,6 +118,8 @@ const CallRoom = () => {
         }
         setRoom(data.room);
         setIceServers(data.ice_servers);
+        const relays: RTCIceServer[] = Array.isArray(data.relay_only_ice_servers) ? data.relay_only_ice_servers : [];
+        relayServersRef.current = relays;
         setStatus("preflight");
       } catch (e) {
         if (!cancel) setError(String((e as Error)?.message ?? e));
@@ -156,12 +162,15 @@ const CallRoom = () => {
     if (preflightReady || preflightLoading) return;
     setPreflightLoading(true);
     try {
+      const ua = navigator.userAgent || "";
+      const isMobile = /iPad|iPhone|iPod|Android/.test(ua);
+      // Strict `max` constraints cause silent OverconstrainedError on some
+      // iPhone front cams and Samsung devices. Use `ideal` only on mobile.
+      const videoConstraints: MediaTrackConstraints = isMobile
+        ? { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24 } }
+        : { width: { ideal: 1280, max: 1280 }, height: { ideal: 720, max: 720 }, frameRate: { ideal: 30, max: 30 } };
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280, max: 1280 },
-          height: { ideal: 720, max: 720 },
-          frameRate: { ideal: 30, max: 30 },
-        },
+        video: videoConstraints,
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
       localStreamRef.current = stream;
@@ -224,6 +233,25 @@ const CallRoom = () => {
     setStatus("failed");
   }, []);
 
+  // Reconfigure an existing PC to relay-only (TURN) and restart ICE.
+  // Used when the initial STUN/host-candidate path fails to connect
+  // (very common on mobile + guest WiFi with client isolation).
+  const switchPeerToRelayOnly = useCallback((pc: RTCPeerConnection) => {
+    const relay = relayServersRef.current;
+    if (!relay || relay.length === 0) {
+      console.warn("[call] no TURN relay servers available — cannot fall back");
+      return false;
+    }
+    try {
+      pc.setConfiguration({ iceServers: relay, iceTransportPolicy: "relay" });
+      console.log("[call] switched PC to relay-only");
+      return true;
+    } catch (e) {
+      console.warn("[call] setConfiguration(relay-only) failed", e);
+      return false;
+    }
+  }, []);
+
   // ---------------- GUEST side helpers ----------------
 
   const createGuestPeer = useCallback((): RTCPeerConnection => {
@@ -236,7 +264,9 @@ const CallRoom = () => {
     const pc = new RTCPeerConnection({ iceServers: safeIce });
     pc.onicecandidate = (e) => {
       if (e.candidate) {
-        sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID, to: hostPeerIdRef.current ?? undefined });
+        const c = e.candidate;
+        console.log("[call] guest local cand", c.type ?? "?", c.protocol ?? "", c.address ?? c.candidate?.slice(0, 60));
+        sendSignal({ type: "ice", candidate: c.toJSON(), from: PEER_ID, to: hostPeerIdRef.current ?? undefined });
       }
     };
     pc.ontrack = (e) => {
@@ -307,7 +337,9 @@ const CallRoom = () => {
 
     pc.onicecandidate = (e) => {
       if (e.candidate) {
-        sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID, to: peerId });
+        const c = e.candidate;
+        console.log("[call] host local cand", peerId, c.type ?? "?", c.protocol ?? "", c.address ?? c.candidate?.slice(0, 60));
+        sendSignal({ type: "ice", candidate: c.toJSON(), from: PEER_ID, to: peerId });
       }
     };
     const attachToEl = (force = false) => {
@@ -458,6 +490,18 @@ const CallRoom = () => {
               } else {
                 try { await p.pc.addIceCandidate(msg.candidate); } catch (e) { console.warn("[call] ice add failed", e); }
               }
+            } else if (msg.type === "nudge_relay") {
+              const p = peersRef.current.get(msg.from);
+              if (!p) return;
+              console.log("[call] host got nudge_relay — renegotiating relay-only with", msg.from);
+              switchPeerToRelayOnly(p.pc);
+              try {
+                const offer = await p.pc.createOffer({ iceRestart: true });
+                await p.pc.setLocalDescription(offer);
+                sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: msg.from });
+              } catch (e) {
+                console.warn("[call] relay re-offer failed", e);
+              }
             } else if (msg.type === "bye") {
               removeHostPeer(msg.from);
             }
@@ -581,6 +625,64 @@ const CallRoom = () => {
       if (watchdogRef.current) { window.clearTimeout(watchdogRef.current); watchdogRef.current = null; }
     };
   }, [status]);
+
+  // Relay-fallback watchdog: if ICE is still checking/new after 6s, switch
+  // this side to relay-only and ask the other side to do the same + re-offer.
+  // Fixes mobile-on-same-WiFi cases where mDNS .local candidates can't talk
+  // to the desktop's host candidates (router client-isolation, etc.).
+  useEffect(() => {
+    if (status !== "calling" && status !== "waiting") return;
+    if (relayWatchdogRef.current) { window.clearInterval(relayWatchdogRef.current); }
+    relayWatchdogRef.current = window.setInterval(() => {
+      if (isHost) {
+        for (const [peerId, p] of peersRef.current) {
+          const s = p.pc.iceConnectionState;
+          if ((s === "checking" || s === "new" || s === "disconnected") && !relayRetriedRef.current.has(peerId)) {
+            const since = (p as RemotePeer & { _checkingSince?: number })._checkingSince;
+            if (!since) {
+              (p as RemotePeer & { _checkingSince?: number })._checkingSince = Date.now();
+            } else if (Date.now() - since > 6000) {
+              relayRetriedRef.current.add(peerId);
+              console.log("[call] host watchdog: forcing relay for", peerId);
+              if (switchPeerToRelayOnly(p.pc)) {
+                setFailMessage("Reconnecting over relay…");
+                (async () => {
+                  try {
+                    const offer = await p.pc.createOffer({ iceRestart: true });
+                    await p.pc.setLocalDescription(offer);
+                    sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: peerId });
+                  } catch (e) { console.warn("[call] watchdog re-offer failed", e); }
+                })();
+              }
+            }
+          }
+        }
+      } else {
+        const pc = pcRef.current;
+        if (!pc) return;
+        const s = pc.iceConnectionState;
+        const key = hostPeerIdRef.current ?? "host";
+        if ((s === "checking" || s === "new" || s === "disconnected") && !relayRetriedRef.current.has(key)) {
+          const w = (pc as RTCPeerConnection & { _checkingSince?: number });
+          if (!w._checkingSince) {
+            w._checkingSince = Date.now();
+          } else if (Date.now() - w._checkingSince > 6000) {
+            relayRetriedRef.current.add(key);
+            console.log("[call] guest watchdog: forcing relay");
+            if (switchPeerToRelayOnly(pc) && hostPeerIdRef.current) {
+              setFailMessage("Reconnecting over relay…");
+              sendSignal({ type: "nudge_relay", from: PEER_ID, to: hostPeerIdRef.current });
+              try { pc.restartIce(); } catch { /* noop */ }
+            }
+          }
+        }
+      }
+    }, 1000);
+    return () => {
+      if (relayWatchdogRef.current) { window.clearInterval(relayWatchdogRef.current); relayWatchdogRef.current = null; }
+    };
+  }, [status, isHost, switchPeerToRelayOnly, sendSignal]);
+
 
   // Attach remote streams to grid video elements when refs become available
   useEffect(() => {
