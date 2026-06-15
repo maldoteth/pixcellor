@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Loader2, ShieldCheck, MailWarning, CheckCircle2 } from "lucide-react";
+import { Loader2, MailWarning, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import SeoHead from "@/components/SeoHead";
 import { Button } from "@/components/ui/button";
