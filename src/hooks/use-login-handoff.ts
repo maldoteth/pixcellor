@@ -37,7 +37,7 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
   useEffect(() => () => cleanup(), [cleanup]);
 
   const redeem = useCallback(
-    async (tokenHash: string) => {
+    async (tokenHash: string, loginUrl?: string) => {
       if (claimingRef.current) return;
       claimingRef.current = true;
       setStatus("claiming");
@@ -52,6 +52,11 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
         navigate(redirectTarget, { replace: true });
       } catch (err) {
         console.error("handoff redeem failed", err);
+        if (loginUrl) {
+          cleanup();
+          window.location.assign(loginUrl);
+          return;
+        }
         setStatus("error");
         claimingRef.current = false;
       }
@@ -61,17 +66,20 @@ export function useLoginHandoff(redirectTarget = "/customer-portal") {
 
   const continueWithClaim = useCallback(
     (claim: { token?: string; login_url?: string } | null) => {
+      if (claim?.token) {
+        redeem(claim.token, claim.login_url);
+        return;
+      }
       if (claim?.login_url) {
         claimingRef.current = true;
         setStatus("claiming");
         cleanup();
         window.location.assign(claim.login_url);
-        return;
       }
-      if (claim?.token) redeem(claim.token);
     },
     [cleanup, redeem],
   );
+
 
   /**
    * Returns the redirect URL to feed into `signInWithOtp`'s
