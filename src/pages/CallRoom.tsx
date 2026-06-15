@@ -240,7 +240,7 @@ const CallRoom = () => {
             const cur = pc.iceConnectionState;
             failTimerRef.current = null;
             if (cur !== "connected" && cur !== "completed") {
-              markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
+              markFailed("The call could not connect. Please reload and try again.");
             }
           }, 8000);
         }
@@ -257,7 +257,7 @@ const CallRoom = () => {
         failTimerRef.current = window.setTimeout(() => {
           failTimerRef.current = null;
           if (pc.connectionState === "failed") {
-            markFailed("The connection failed. Try a different network — corporate firewalls and some mobile carriers block video calls.");
+            markFailed("The call could not connect. Please reload and try again.");
           }
         }, 4000);
       }
