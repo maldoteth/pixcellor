@@ -14,7 +14,8 @@ export interface InternalLeadPayload {
   leadEmail?: string;
   leadPhone?: string;
   leadMessage?: string;
-  contactId: string;          // used for idempotency
+  contactId: string;          // used as part of idempotency
+  eventId?: string;           // per-event id (booking id, inquiry id) to keep idempotency unique per event
 }
 
 export async function notifyInternalLead(payload: InternalLeadPayload): Promise<void> {
@@ -39,7 +40,7 @@ export async function notifyInternalLead(payload: InternalLeadPayload): Promise<
           body: JSON.stringify({
             templateName: "customer-lead-notification",
             recipientEmail: recipient,
-            idempotencyKey: `internal-lead-${payload.contactId}-${recipient}`,
+            idempotencyKey: `internal-lead-${payload.contactId}-${payload.eventId ?? "x"}-${recipient}`,
             templateData: {
               customerWebsiteName: payload.sourceLabel,
               leadName: payload.leadName || "",
