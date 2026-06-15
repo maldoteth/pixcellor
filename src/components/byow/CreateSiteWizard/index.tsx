@@ -155,6 +155,15 @@ export default function CreateSiteWizard() {
           template_seed: template?.seed,
         },
       });
+      // Surface server-side quota errors as a friendly message + upgrade CTA
+      const payload: any = (error as any)?.context ? await (error as any).context.json().catch(() => null) : data;
+      if (payload?.error === "free_quota_exceeded") {
+        toast.error(payload.message || "Free plan limit reached.", {
+          description: "Upgrade your plan in My Sites → Choose a plan to create more.",
+          action: { label: "My Sites", onClick: () => nav("/customer-portal?tab=byow-sites") },
+        });
+        return;
+      }
       if (error) throw error;
       if (!data?.ref) throw new Error("No ref returned");
       toast.success("Your site is live in preview!");
