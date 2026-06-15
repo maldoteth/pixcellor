@@ -19,10 +19,13 @@ type SignalMessage =
   | { type: "offer"; sdp: RTCSessionDescriptionInit; from: string }
   | { type: "answer"; sdp: RTCSessionDescriptionInit; from: string }
   | { type: "ice"; candidate: RTCIceCandidateInit; from: string }
-  | { type: "hello"; from: string; role: "host" | "guest" }
+  | { type: "hello"; from: string; role: "host" | "guest"; reply?: boolean }
+  | { type: "start"; from: string }
   | { type: "bye"; from: string };
 
 const PEER_ID = crypto.randomUUID();
+
+type Stage = "loading" | "preflight" | "waiting" | "calling" | "connected" | "ended";
 
 const CallRoom = () => {
   const { bookingId = "" } = useParams<{ bookingId: string }>();
@@ -32,8 +35,10 @@ const CallRoom = () => {
   const [room, setRoom] = useState<Room | null>(null);
   const [iceServers, setIceServers] = useState<RTCIceServer[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "calling" | "connected" | "ended">("loading");
+  const [status, setStatus] = useState<Stage>("loading");
   const [remoteJoined, setRemoteJoined] = useState(false);
+  const [preflightReady, setPreflightReady] = useState(false);
+  const [preflightLoading, setPreflightLoading] = useState(false);
 
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
@@ -41,6 +46,7 @@ const CallRoom = () => {
   const [recording, setRecording] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -50,6 +56,8 @@ const CallRoom = () => {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const recordStartRef = useRef<number>(0);
+  const repliedHelloRef = useRef<Set<string>>(new Set());
+  const negotiationStartedRef = useRef(false);
 
   // 1. Verify token + fetch ICE config
   useEffect(() => {
@@ -70,7 +78,7 @@ const CallRoom = () => {
         }
         setRoom(data.room);
         setIceServers(data.ice_servers);
-        setStatus("ready");
+        setStatus("preflight");
       } catch (e) {
         if (!cancel) setError(String((e as Error)?.message ?? e));
       }
@@ -78,13 +86,81 @@ const CallRoom = () => {
     return () => { cancel = true; };
   }, [bookingId, token]);
 
+  const handleMediaError = useCallback((e: unknown) => {
+    const err = e as DOMException;
+    const inIframe = window.self !== window.top;
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPad|iPhone|iPod/.test(ua);
+    const isIOSInAppBrowser =
+      isIOS && (!/Safari\//.test(ua) || !/Version\//.test(ua) ||
+        /FBAN|FBAV|Instagram|Line|GSA\/|CriOS|FxiOS|EdgiOS|GMail|Outlook|LinkedInApp|Snapchat|TikTok/i.test(ua));
+    let msg = "Couldn't access camera/microphone.";
+    if (err?.name === "NotAllowedError" || err?.name === "SecurityError") {
+      if (inIframe) {
+        msg = "Camera/mic blocked because this page is loaded inside a preview frame. Open this call link in a new browser tab and try again.";
+      } else if (isIOSInAppBrowser) {
+        msg = "It looks like you opened this link inside an email or social app (Gmail, Outlook, Instagram, etc.). These in-app browsers block camera and microphone access on iPhone. Tap the ••• menu (or the share icon) and choose \"Open in Safari\", then try again.";
+      } else if (isIOS) {
+        msg = "Camera and microphone are blocked for this site in Safari. Open Settings → Safari → Camera / Microphone and set this site to Allow, then reload. If you tapped the link from an email or social app, open it in Safari directly.";
+      } else {
+        msg = "Permission was blocked. Click the camera icon in your browser's address bar, set Camera and Microphone to Allow for this site, then reload.";
+      }
+    } else if (err?.name === "NotFoundError" || err?.name === "OverconstrainedError") {
+      msg = "No camera or microphone was found on this device.";
+    } else if (err?.name === "NotReadableError") {
+      msg = "Another app is using your camera or microphone. Close Zoom/Meet/Teams/OBS/FaceTime and try again.";
+    } else if (err?.message) {
+      msg = `Couldn't access camera/microphone: ${err.message}`;
+    }
+    setError(msg);
+  }, []);
+
+  // Acquire media for the preflight preview
+  const startPreflight = useCallback(async () => {
+    if (preflightReady || preflightLoading) return;
+    setPreflightLoading(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: { echoCancellation: true, noiseSuppression: true },
+      });
+      localStreamRef.current = stream;
+      cameraTrackRef.current = stream.getVideoTracks()[0] ?? null;
+      // Apply current toggle states
+      const aTrack = stream.getAudioTracks()[0];
+      if (aTrack) aTrack.enabled = micOn;
+      if (cameraTrackRef.current) cameraTrackRef.current.enabled = camOn;
+      if (previewVideoRef.current) previewVideoRef.current.srcObject = stream;
+      setPreflightReady(true);
+    } catch (e) {
+      handleMediaError(e);
+    } finally {
+      setPreflightLoading(false);
+    }
+  }, [preflightReady, preflightLoading, micOn, camOn, handleMediaError]);
+
+  const togglePreflightMic = () => {
+    setMicOn((v) => {
+      const next = !v;
+      const t = localStreamRef.current?.getAudioTracks()[0];
+      if (t) t.enabled = next;
+      return next;
+    });
+  };
+  const togglePreflightCam = () => {
+    setCamOn((v) => {
+      const next = !v;
+      const t = cameraTrackRef.current;
+      if (t) t.enabled = next;
+      return next;
+    });
+  };
+
   const sendSignal = useCallback((msg: SignalMessage) => {
     channelRef.current?.send({ type: "broadcast", event: "signal", payload: msg });
   }, []);
 
   const createPeer = useCallback((): RTCPeerConnection => {
-    // Defensive: only keep ICE entries with supported schemes (stun:, turn:, turns:).
-    // Any other scheme makes the browser throw "ICE server protocol not supported".
     const safeIce: RTCIceServer[] = [];
     for (const s of iceServers ?? []) {
       const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
@@ -103,9 +179,6 @@ const CallRoom = () => {
     };
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === "connected") setStatus("connected");
-      if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
-        // keep UI; user can hang up
-      }
     };
     return pc;
   }, [iceServers, sendSignal]);
@@ -113,23 +186,20 @@ const CallRoom = () => {
   const startNegotiation = useCallback(async () => {
     const pc = pcRef.current;
     if (!pc || !room) return;
-    if (room.role !== "host") return; // host is the offerer
+    if (room.role !== "host") return;
+    if (negotiationStartedRef.current) return;
+    negotiationStartedRef.current = true;
+    setStatus("calling");
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     sendSignal({ type: "offer", sdp: offer, from: PEER_ID });
   }, [room, sendSignal]);
 
-  // 2. Get media + join channel once user clicks Join
-  const join = useCallback(async () => {
-    if (!room || !iceServers) return;
-    setStatus("calling");
+  // Enter waiting room: open peer + channel using the preflight stream
+  const enterWaitingRoom = useCallback(async () => {
+    if (!room || !iceServers || !localStreamRef.current) return;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: { echoCancellation: true, noiseSuppression: true },
-      });
-      localStreamRef.current = stream;
-      cameraTrackRef.current = stream.getVideoTracks()[0] ?? null;
+      const stream = localStreamRef.current;
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
 
       const pc = createPeer();
@@ -148,9 +218,16 @@ const CallRoom = () => {
 
         if (msg.type === "hello") {
           setRemoteJoined(true);
-          // Host kicks off negotiation when guest arrives
-          if (room.role === "host") await startNegotiation();
+          // Reply once so a peer that joined first also learns we're here.
+          if (!msg.reply && !repliedHelloRef.current.has(msg.from)) {
+            repliedHelloRef.current.add(msg.from);
+            sendSignal({ type: "hello", from: PEER_ID, role: room.role, reply: true });
+          }
+        } else if (msg.type === "start") {
+          // Host signalled "start" — guest just waits for the offer to arrive.
+          // Nothing to do; the upcoming offer will move us forward.
         } else if (msg.type === "offer") {
+          if (status !== "calling" && status !== "connected") setStatus("calling");
           await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
           const answer = await peer.createAnswer();
           await peer.setLocalDescription(answer);
@@ -171,38 +248,17 @@ const CallRoom = () => {
       });
 
       channelRef.current = channel;
+      setStatus("waiting");
     } catch (e) {
-      const err = e as DOMException;
-      const inIframe = window.self !== window.top;
-      const ua = navigator.userAgent || "";
-      const isIOS = /iPad|iPhone|iPod/.test(ua);
-      // iOS in-app browsers (Gmail, Outlook, Instagram, FB, LinkedIn, TikTok, Snapchat) block getUserMedia.
-      // Safari UA on iOS contains "Safari/" AND "Version/". WKWebView in-app browsers usually lack "Safari/" or "Version/".
-      const isIOSInAppBrowser =
-        isIOS && (!/Safari\//.test(ua) || !/Version\//.test(ua) ||
-          /FBAN|FBAV|Instagram|Line|GSA\/|CriOS|FxiOS|EdgiOS|GMail|Outlook|LinkedInApp|Snapchat|TikTok/i.test(ua));
-      let msg = "Couldn't access camera/microphone.";
-      if (err?.name === "NotAllowedError" || err?.name === "SecurityError") {
-        if (inIframe) {
-          msg = "Camera/mic blocked because this page is loaded inside a preview frame. Open this call link in a new browser tab and try again.";
-        } else if (isIOSInAppBrowser) {
-          msg = "It looks like you opened this link inside an email or social app (Gmail, Outlook, Instagram, etc.). These in-app browsers block camera and microphone access on iPhone. Tap the ••• menu (or the share icon) and choose \"Open in Safari\", then try again.";
-        } else if (isIOS) {
-          msg = "Camera and microphone are blocked for this site in Safari. Open Settings → Safari → Camera / Microphone and set this site to Allow, then reload. If you tapped the link from an email or social app, open it in Safari directly.";
-        } else {
-          msg = "Permission was blocked. Click the camera icon in your browser's address bar, set Camera and Microphone to Allow for this site, then reload.";
-        }
-      } else if (err?.name === "NotFoundError" || err?.name === "OverconstrainedError") {
-        msg = "No camera or microphone was found on this device.";
-      } else if (err?.name === "NotReadableError") {
-        msg = "Another app is using your camera or microphone. Close Zoom/Meet/Teams/OBS/FaceTime and try again.";
-      } else if (err?.message) {
-        msg = `Couldn't access camera/microphone: ${err.message}`;
-      }
-      setError(msg);
-      setStatus("ready");
+      handleMediaError(e);
     }
-  }, [room, iceServers, createPeer, sendSignal, startNegotiation]);
+  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError]);
+
+  // Host: admit guest and begin call
+  const startCall = useCallback(async () => {
+    sendSignal({ type: "start", from: PEER_ID });
+    await startNegotiation();
+  }, [sendSignal, startNegotiation]);
 
   const hangup = useCallback(() => {
     sendSignal({ type: "bye", from: PEER_ID });
@@ -272,7 +328,6 @@ const CallRoom = () => {
     }
     if (!localStreamRef.current) return;
     try {
-      // Record the local composite (mic + cam). Simpler and reliable than remote recording.
       const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
         ? "video/webm;codecs=vp9,opus"
         : "video/webm";
@@ -324,7 +379,7 @@ const CallRoom = () => {
               </a>
             )}
             <button
-              onClick={() => { setError(null); setStatus("ready"); }}
+              onClick={() => { setError(null); setStatus("preflight"); }}
               className="h-11 rounded-2xl border border-white/20 hover:bg-white/[0.06] text-sm"
             >
               Try again
@@ -343,7 +398,7 @@ const CallRoom = () => {
     );
   }
 
-  if (status === "ready") {
+  if (status === "preflight") {
     const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
     const isIOS = /iPad|iPhone|iPod/.test(ua);
     const isIOSInAppBrowser =
@@ -351,18 +406,74 @@ const CallRoom = () => {
         /FBAN|FBAV|Instagram|Line|GSA\/|CriOS|FxiOS|EdgiOS|GMail|Outlook|LinkedInApp|Snapchat|TikTok/i.test(ua));
     const fullUrl = typeof window !== "undefined" ? window.location.href : "";
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-6 py-10">
         <SeoHead title="Join your Pixcellor call" description="Secure browser-based video call with the Pixcellor team." path="/call" noindex />
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full rounded-3xl border border-white/15 bg-white/[0.04] backdrop-blur-xl p-8 text-center"
+          className="max-w-md w-full rounded-3xl border border-white/15 bg-white/[0.04] backdrop-blur-xl p-6 text-center"
         >
           <p className="text-[11px] uppercase tracking-[0.18em] text-white/50 mb-2">Pixcellor</p>
-          <h1 className="text-2xl font-light mb-2">Ready to join</h1>
-          <p className="text-white/60 text-sm mb-6">
+          <h1 className="text-2xl font-light mb-1">Ready to join</h1>
+          <p className="text-white/60 text-sm mb-5">
             {room.role === "host" ? `Calling with ${room.display_name}` : `You're meeting the ${room.display_name}`}
           </p>
+
+          {/* Camera preview */}
+          <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/15 bg-black mb-4">
+            <video
+              ref={previewVideoRef}
+              autoPlay
+              playsInline
+              muted
+              className={cn("w-full h-full object-cover", (!preflightReady || !camOn) && "opacity-0")}
+            />
+            {!preflightReady && (
+              <div className="absolute inset-0 flex items-center justify-center text-white/50 text-xs">
+                {preflightLoading ? (
+                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Requesting camera…</span>
+                ) : (
+                  <span>Camera preview will appear here</span>
+                )}
+              </div>
+            )}
+            {preflightReady && !camOn && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80 text-white/60 text-xs">
+                Camera off
+              </div>
+            )}
+          </div>
+
+          {/* Pre-join mic / cam toggles */}
+          {preflightReady && (
+            <div className="flex items-center justify-center gap-3 mb-5">
+              <button
+                onClick={togglePreflightMic}
+                aria-label={micOn ? "Turn mic off" : "Turn mic on"}
+                className={cn(
+                  "h-11 w-11 rounded-2xl border flex items-center justify-center transition-colors",
+                  micOn
+                    ? "bg-white/[0.06] border-white/15 text-white hover:bg-white/[0.12]"
+                    : "bg-red-500/20 border-red-400/40 text-red-200 hover:bg-red-500/30"
+                )}
+              >
+                {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+              </button>
+              <button
+                onClick={togglePreflightCam}
+                aria-label={camOn ? "Turn camera off" : "Turn camera on"}
+                className={cn(
+                  "h-11 w-11 rounded-2xl border flex items-center justify-center transition-colors",
+                  camOn
+                    ? "bg-white/[0.06] border-white/15 text-white hover:bg-white/[0.12]"
+                    : "bg-red-500/20 border-red-400/40 text-red-200 hover:bg-red-500/30"
+                )}
+              >
+                {camOn ? <VideoIcon className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+              </button>
+            </div>
+          )}
+
           {isIOSInAppBrowser && (
             <div className="mb-5 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-left">
               <p className="text-amber-200 text-xs font-medium mb-1">⚠️ Open in Safari first</p>
@@ -377,14 +488,25 @@ const CallRoom = () => {
               </button>
             </div>
           )}
-          <Button
-            onClick={join}
-            className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
-          >
-            Allow camera & mic and join
-          </Button>
+
+          {!preflightReady ? (
+            <Button
+              onClick={startPreflight}
+              disabled={preflightLoading}
+              className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
+            >
+              {preflightLoading ? "Requesting access…" : "Allow camera & mic"}
+            </Button>
+          ) : (
+            <Button
+              onClick={enterWaitingRoom}
+              className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
+            >
+              {room.role === "host" ? "Enter call room" : "Join waiting room"}
+            </Button>
+          )}
           <p className="text-[11px] text-white/40 mt-4">
-            Your browser will ask for camera and microphone access.
+            You can change mic and camera anytime during the call.
           </p>
         </motion.div>
       </div>
@@ -402,6 +524,9 @@ const CallRoom = () => {
     );
   }
 
+  // waiting / calling / connected
+  const inWaiting = status === "waiting";
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col" style={{ minHeight: "100dvh" }}>
       <SeoHead title="Pixcellor call" description="Live video call." path="/call" noindex />
@@ -410,7 +535,13 @@ const CallRoom = () => {
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium tracking-wide">Pixcellor™</span>
           <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">
-            {status === "connected" ? "Connected" : remoteJoined ? "Connecting…" : "Waiting for other side…"}
+            {status === "connected"
+              ? "Connected"
+              : status === "calling"
+              ? "Connecting…"
+              : remoteJoined
+              ? room.role === "host" ? "Customer is waiting" : "Host is here"
+              : room.role === "host" ? "Waiting for customer…" : "Waiting for host…"}
           </span>
         </div>
         {recording && (
@@ -429,14 +560,55 @@ const CallRoom = () => {
           playsInline
           className={cn(
             "absolute inset-0 w-full h-full object-cover",
-            !remoteJoined && "opacity-0",
+            (inWaiting || status === "calling") && "opacity-0",
           )}
         />
-        {!remoteJoined && (
+
+        {inWaiting && (
+          <div className="absolute inset-0 flex items-center justify-center p-6">
+            <div className="max-w-md w-full rounded-3xl border border-white/15 bg-white/[0.04] backdrop-blur-xl p-6 text-center">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/50 mb-2">Waiting room</p>
+              {room.role === "host" ? (
+                <>
+                  <h2 className="text-xl font-light mb-1">
+                    {remoteJoined ? `${room.display_name} is waiting` : `Waiting for ${room.display_name}…`}
+                  </h2>
+                  <p className="text-white/60 text-sm mb-5">
+                    {remoteJoined
+                      ? "They've joined the waiting room. Start the call when you're ready."
+                      : "You'll be able to start the call as soon as they arrive."}
+                  </p>
+                  <Button
+                    onClick={startCall}
+                    disabled={!remoteJoined}
+                    className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {remoteJoined ? "Start call" : "Waiting for customer…"}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-light mb-1">You're in the waiting room</h2>
+                  <p className="text-white/60 text-sm mb-4">
+                    {remoteJoined
+                      ? "The host is here and will start the call shortly."
+                      : "The Pixcellor team will let you in shortly. Please keep this tab open."}
+                  </p>
+                  <div className="flex items-center justify-center gap-2 text-white/50 text-xs">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Waiting for host to start the call…
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {status === "calling" && (
           <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm">
             <div className="flex items-center gap-3">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Waiting for {room.role === "host" ? room.display_name : "the Pixcellor team"} to join…
+              Connecting…
             </div>
           </div>
         )}
@@ -466,10 +638,12 @@ const CallRoom = () => {
         <CtrlButton onClick={toggleCam} active={camOn} label={camOn ? "Camera off" : "Camera on"}>
           {camOn ? <VideoIcon className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
         </CtrlButton>
-        <CtrlButton onClick={toggleShare} active={!sharing} highlight={sharing} label={sharing ? "Stop sharing" : "Share screen"}>
-          {sharing ? <ScreenShareOff className="w-5 h-5" /> : <ScreenShare className="w-5 h-5" />}
-        </CtrlButton>
-        {room.role === "host" && (
+        {!inWaiting && (
+          <CtrlButton onClick={toggleShare} active={!sharing} highlight={sharing} label={sharing ? "Stop sharing" : "Share screen"}>
+            {sharing ? <ScreenShareOff className="w-5 h-5" /> : <ScreenShare className="w-5 h-5" />}
+          </CtrlButton>
+        )}
+        {room.role === "host" && !inWaiting && (
           <CtrlButton onClick={toggleRecord} active={!recording} highlight={recording} label={recording ? "Stop recording" : "Record"}>
             {recording ? <Square className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
           </CtrlButton>
@@ -479,7 +653,7 @@ const CallRoom = () => {
           className="ml-1 md:ml-2 h-12 px-5 rounded-2xl bg-red-500 hover:bg-red-600 text-white flex items-center gap-2 transition-colors"
         >
           <PhoneOff className="w-5 h-5" />
-          <span className="text-sm font-medium">End</span>
+          <span className="text-sm font-medium">{inWaiting ? "Leave" : "End"}</span>
         </button>
       </div>
     </div>
