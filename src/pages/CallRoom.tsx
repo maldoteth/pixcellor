@@ -61,6 +61,7 @@ const CallRoom = () => {
   // Multi-peer state
   const [pendingGuests, setPendingGuests] = useState<PendingGuest[]>([]);
   const [remotePeers, setRemotePeers] = useState<Array<{ peerId: string; name: string }>>([]);
+  const [remotePeerTicks, setRemotePeerTicks] = useState<Record<string, number>>({});
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const previewVideoRef = useRef<HTMLVideoElement>(null);
@@ -68,6 +69,7 @@ const CallRoom = () => {
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   // Host-side: map of peerId -> video element
   const remoteVideoEls = useRef<Map<string, HTMLVideoElement | null>>(new Map());
+  const remoteAudioEls = useRef<Map<string, HTMLAudioElement | null>>(new Map());
 
   // Guest-side single PC (to host)
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -87,6 +89,7 @@ const CallRoom = () => {
   const recordStartRef = useRef<number>(0);
   const watchdogRef = useRef<number | null>(null);
   const failTimerRef = useRef<number | null>(null);
+  const knockTimerRef = useRef<number | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const [failMessage, setFailMessage] = useState<string>("");
 
@@ -307,17 +310,31 @@ const CallRoom = () => {
         sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID, to: peerId });
       }
     };
-    const attachToEl = () => {
+    const attachToEl = (force = false) => {
       const el = remoteVideoEls.current.get(peerId);
-      if (el && el.srcObject !== peer.stream) {
+      if (el && (force || el.srcObject !== peer.stream)) {
+        if (force) el.srcObject = null;
+        el.muted = true;
         el.srcObject = peer.stream;
-        el.play().catch(() => { /* noop */ });
       }
+      if (el) el.play().catch(() => { /* noop */ });
+      const audio = remoteAudioEls.current.get(peerId);
+      if (audio && audio.srcObject !== peer.stream) {
+        audio.srcObject = peer.stream;
+      }
+      if (audio) audio.play().catch(() => { /* noop */ });
     };
     pc.ontrack = (e) => {
-      try { peer.stream.addTrack(e.track); } catch { /* dup */ }
+      const incoming = e.streams[0];
+      if (incoming) peer.stream = incoming;
+      for (const track of incoming?.getTracks() ?? [e.track]) {
+        if (!peer.stream.getTracks().some((t) => t.id === track.id)) {
+          peer.stream.addTrack(track);
+        }
+      }
+      setRemotePeerTicks((ticks) => ({ ...ticks, [peerId]: (ticks[peerId] ?? 0) + 1 }));
       console.log("[call] host ontrack from", peerId, e.track.kind);
-      attachToEl();
+      attachToEl(e.track.kind === "video");
       // Retry attaching for a few frames in case the <video> ref hasn't mounted yet
       let tries = 0;
       const iv = window.setInterval(() => {
@@ -326,7 +343,7 @@ const CallRoom = () => {
           window.clearInterval(iv);
         }
       }, 100);
-      e.track.onunmute = attachToEl;
+      e.track.onunmute = () => attachToEl();
     };
     pc.oniceconnectionstatechange = () => {
       console.log("[call] host ice state", peerId, pc.iceConnectionState);
@@ -366,6 +383,7 @@ const CallRoom = () => {
       peersRef.current.delete(peerId);
     }
     remoteVideoEls.current.delete(peerId);
+    remoteAudioEls.current.delete(peerId);
     setRemotePeers((arr) => arr.filter((x) => x.peerId !== peerId));
   }, []);
 
@@ -448,10 +466,15 @@ const CallRoom = () => {
             const peer = pcRef.current;
             if (msg.type === "hello" && msg.role === "host") {
               hostPeerIdRef.current = msg.from;
+              if (!peer?.remoteDescription) {
+                sendSignal({ type: "knock", from: PEER_ID, name: room.display_name || "Guest", to: msg.from });
+              }
             } else if (msg.type === "admit") {
               hostPeerIdRef.current = msg.from;
+              if (knockTimerRef.current) { window.clearInterval(knockTimerRef.current); knockTimerRef.current = null; }
               setStatus((s) => (s === "waiting" ? "calling" : s));
             } else if (msg.type === "deny") {
+              if (knockTimerRef.current) { window.clearInterval(knockTimerRef.current); knockTimerRef.current = null; }
               setStatus("denied");
               try { pcRef.current?.close(); } catch { /* noop */ }
               pcRef.current = null;
@@ -467,6 +490,7 @@ const CallRoom = () => {
               const answer = await peer.createAnswer();
               await peer.setLocalDescription(answer);
               sendSignal({ type: "answer", sdp: answer, from: PEER_ID, to: msg.from });
+              if (knockTimerRef.current) { window.clearInterval(knockTimerRef.current); knockTimerRef.current = null; }
             } else if (msg.type === "ice" && peer) {
               if (!peer.remoteDescription) {
                 guestPendingIceRef.current.push(msg.candidate);
@@ -492,18 +516,27 @@ const CallRoom = () => {
         }
       }
 
+      channelRef.current = channel;
+
       await channel.subscribe(async (s) => {
         if (s === "SUBSCRIBED") {
           if (isHost) {
             // Announce host presence so any already-waiting guests learn our PEER_ID and re-knock.
             sendSignal({ type: "hello", from: PEER_ID, role: "host" });
           } else {
-            sendSignal({ type: "knock", from: PEER_ID, name: room.display_name || "Guest" });
+            const knock = () => sendSignal({ type: "knock", from: PEER_ID, name: room.display_name || "Guest", to: hostPeerIdRef.current ?? undefined });
+            knock();
+            if (knockTimerRef.current) window.clearInterval(knockTimerRef.current);
+            knockTimerRef.current = window.setInterval(() => {
+              if (pcRef.current?.remoteDescription) {
+                if (knockTimerRef.current) { window.clearInterval(knockTimerRef.current); knockTimerRef.current = null; }
+                return;
+              }
+              knock();
+            }, 2000);
           }
         }
       });
-
-      channelRef.current = channel;
       setStatus("waiting");
     } catch (e) {
       handleMediaError(e);
@@ -518,11 +551,13 @@ const CallRoom = () => {
       }
       peersRef.current.clear();
       setRemotePeers([]);
+      setRemotePeerTicks({});
     } else {
       try { pcRef.current?.close(); } catch { /* noop */ }
       pcRef.current = null;
     }
     remoteStreamRef.current = null;
+    if (knockTimerRef.current) { window.clearInterval(knockTimerRef.current); knockTimerRef.current = null; }
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     channelRef.current && supabase.removeChannel(channelRef.current);
@@ -553,11 +588,17 @@ const CallRoom = () => {
       const el = remoteVideoEls.current.get(peerId);
       const p = peersRef.current.get(peerId);
       if (el && p && el.srcObject !== p.stream) {
+        el.muted = true;
         el.srcObject = p.stream;
         el.play().catch(() => { /* noop */ });
       }
+      const audio = remoteAudioEls.current.get(peerId);
+      if (audio && p && audio.srcObject !== p.stream) {
+        audio.srcObject = p.stream;
+        audio.play().catch(() => { /* noop */ });
+      }
     }
-  }, [remotePeers]);
+  }, [remotePeers, remotePeerTicks]);
 
   const toggleMic = () => {
     const t = localStreamRef.current?.getAudioTracks()[0];
@@ -937,11 +978,37 @@ const CallRoom = () => {
             {remotePeers.map(({ peerId, name }) => (
               <div key={peerId} className="relative bg-black/60 rounded-xl overflow-hidden border border-white/10">
                 <video
-                  ref={(el) => { remoteVideoEls.current.set(peerId, el); }}
+                  ref={(el) => {
+                    remoteVideoEls.current.set(peerId, el);
+                    const peer = peersRef.current.get(peerId);
+                    if (el && peer && el.srcObject !== peer.stream) {
+                      el.muted = true;
+                      el.srcObject = peer.stream;
+                      el.play().catch(() => { /* noop */ });
+                    }
+                  }}
                   autoPlay
                   playsInline
+                  muted
                   className="w-full h-full object-contain"
                 />
+                <audio
+                  ref={(el) => {
+                    remoteAudioEls.current.set(peerId, el);
+                    const peer = peersRef.current.get(peerId);
+                    if (el && peer && el.srcObject !== peer.stream) {
+                      el.srcObject = peer.stream;
+                      el.play().catch(() => { /* noop */ });
+                    }
+                  }}
+                  autoPlay
+                  className="hidden"
+                />
+                {(peersRef.current.get(peerId)?.stream.getVideoTracks().length ?? 0) === 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center text-white/45 text-xs">
+                    Connecting video…
+                  </div>
+                )}
                 <span className="absolute left-2 bottom-2 text-[11px] text-white/70 bg-black/50 px-2 py-0.5 rounded">
                   {name}
                 </span>
