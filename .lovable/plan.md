@@ -1,20 +1,45 @@
-Plan:
+## Goal
+Let anyone with the guest link join an in-progress call. The host gets a knock popup to admit (or deny) each guest, including late joiners.
 
-1. Remove the VP8 codec-forcing path from `CallRoom.tsx`:
-   - Delete `preferVP8()` and its `setCodecPreferences(...)` call.
-   - Stop calling it after `addTrack(...)`.
+## Current state
+- `CallRoom.tsx` is a single peer connection (`pcRef`). Host ↔ one guest only.
+- `guest_token` on `call_bookings` is shared by everyone who has the link, but the room logic assumes one peer.
+- "Start call" is a single global step that begins negotiation with whoever happens to be in the channel.
 
-2. Remove initial forced sender tuning from the call setup:
-   - Stop calling `tuneVideoSender(..., "camera")` immediately after adding tracks.
-   - This returns initial negotiation to the plain browser-managed `addTrack` flow that was working.
+## Changes (frontend-only, `src/pages/CallRoom.tsx`)
 
-3. Keep the non-regression safety fixes:
-   - Keep pending ICE candidate buffering/draining.
-   - Keep the softer connection failure handling.
-   - Keep the guest/host both using simple `addTrack(...)`.
+### Signaling
+- All signal messages already carry `from: PEER_ID`. Add a `to?: string` field so messages can be addressed to a specific peer.
+- Guests address everything to the host's PEER_ID once known. Host addresses each guest by their PEER_ID.
+- The `hello` reply from host now also includes `role: "host"` so guests learn the host's PEER_ID.
 
-4. Make failure copy less misleading:
-   - Replace the “firewall/mobile carrier” wording with a neutral “The call could not connect. Please reload and try again.”
+### Host: multi-peer mesh
+- Replace `pcRef: RTCPeerConnection | null` with `peersRef: Map<peerId, { pc, stream, name }>`.
+- When a guest's `hello` arrives:
+  - If the call hasn't started yet → add to a `pendingGuests` list (knock queue).
+  - If the call is live → show a "X wants to join" popup with Admit / Deny buttons.
+- On Admit: create a new `RTCPeerConnection` for that peer, attach local tracks, create offer, send `{type:"offer", to: peerId}`.
+- On Deny: send `{type:"deny", to: peerId}` and ignore further signals from that peer.
+- Render remote videos in a responsive grid (1 → big, 2 → split, 3+ → tiled). Local preview stays as PiP.
 
-Technical note:
-- Claude’s read matches the current code: `preferVP8()` is present and called before offer/answer, which can break cross-browser negotiation. I did not identify that before the last fix; the last fix focused on the transceiver/m-line regression and timeout behavior, but left this codec-forcing regression in place.
+### Guest
+- One PC to host. On load, send `hello`. Wait for either `offer` (admitted) or `deny` (rejected — show "Host declined your request to join").
+- Show "Waiting for host to let you in…" until offer arrives.
+- Multiple guests using the same link is fine because each has a unique `PEER_ID`.
+
+### Host UI additions
+- Pre-call waiting room: list all pending guests with Admit All / individual Admit.
+- During call: top-right toast "<name> is asking to join" with Admit / Deny. Stacks if multiple.
+- Display name: guests don't currently send a name. Use `room.display_name` from the DB (the booking's customer name) for the first guest, and "Guest 2", "Guest 3"… for additional ones — or have guests send their name in `hello`. Plan: include `name` in `hello` payload; guest UI prompts for name only if `display_name` is empty (it normally isn't for the booked customer; extras get "Guest").
+
+### Hangup / cleanup
+- Close every PC in the map, stop remote streams, send `bye` to all.
+- If a single guest leaves (`bye` from that peer), only tear down their PC and remove their tile.
+
+## Out of scope
+- Guest-to-guest video. Only host sees & is seen by all guests; guests see host only. (Adding mesh between guests multiplies bandwidth and isn't part of the ask.)
+- Server-side ACL changes — the existing `guest_token` already permits anyone with the link, which is the intended behaviour.
+- Recording changes — recorder still captures host's local stream.
+
+## Files touched
+- `src/pages/CallRoom.tsx` (only)
