@@ -164,6 +164,56 @@ const CallRoom = () => {
     channelRef.current?.send({ type: "broadcast", event: "signal", payload: msg });
   }, []);
 
+  // Apply sane bitrate / framerate / degradation hints so video doesn't stutter
+  // on mid-grade networks. "camera" prioritises smooth motion; "screen" keeps
+  // resolution sharp so text stays readable.
+  const tuneVideoSender = useCallback(async (
+    sender: RTCRtpSender | undefined,
+    mode: "camera" | "screen",
+  ) => {
+    if (!sender) return;
+    try {
+      const params = sender.getParameters();
+      // @ts-expect-error degradationPreference is valid on RTCRtpSendParameters in modern browsers
+      params.degradationPreference = mode === "screen" ? "maintain-resolution" : "maintain-framerate";
+      if (!params.encodings || params.encodings.length === 0) {
+        params.encodings = [{}];
+      }
+      params.encodings[0].maxBitrate = mode === "screen" ? 2_500_000 : 1_200_000;
+      params.encodings[0].maxFramerate = mode === "screen" ? 15 : 30;
+      await sender.setParameters(params);
+    } catch (e) {
+      console.warn("tuneVideoSender failed", e);
+    }
+  }, []);
+
+  // Reorder codec preferences so VP8 is first. VP8 has hardware encoders on
+  // basically every device — VP9/AV1 software-encoded on a phone is the #1
+  // cause of jittery video.
+  const preferVP8 = useCallback((transceiver: RTCRtpTransceiver) => {
+    try {
+      // @ts-expect-error getCapabilities exists in modern browsers
+      const caps = RTCRtpSender.getCapabilities?.("video");
+      if (!caps?.codecs) return;
+      const codecs = [...caps.codecs];
+      codecs.sort((a, b) => {
+        const score = (c: { mimeType: string }) => {
+          const m = c.mimeType.toLowerCase();
+          if (m === "video/vp8") return 0;
+          if (m === "video/h264") return 1;
+          if (m === "video/vp9") return 2;
+          if (m === "video/av1") return 3;
+          return 4;
+        };
+        return score(a) - score(b);
+      });
+      // @ts-expect-error setCodecPreferences exists in modern browsers
+      transceiver.setCodecPreferences?.(codecs);
+    } catch (e) {
+      console.warn("preferVP8 failed", e);
+    }
+  }, []);
+
   const createPeer = useCallback((): RTCPeerConnection => {
     const safeIce: RTCIceServer[] = [];
     for (const s of iceServers ?? []) {
