@@ -67,8 +67,9 @@ export default function AuthHandoff() {
           if (error) throw error;
         }
         if (cancelled) return;
-        setStage("done");
-        setTimeout(() => navigate("/customer-portal", { replace: true }), 800);
+        // Navigate immediately without flashing a success screen — keep the
+        // spinner UI stable until the portal mounts.
+        navigate("/customer-portal", { replace: true });
       } catch (err) {
         console.error("handoff complete failed", err);
         if (cancelled) return;
