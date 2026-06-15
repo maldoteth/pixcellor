@@ -256,7 +256,25 @@ const CallRoom = () => {
 
       const pc = createPeer();
       pcRef.current = pc;
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+
+      // Use addTransceiver so we can: (a) set sendEncodings up front to cap
+      // bitrate/framerate, (b) prefer VP8 codec before the first offer, and
+      // (c) avoid the race where addTrack fires before the m= line exists.
+      const audioTrack = stream.getAudioTracks()[0];
+      const videoTrack = stream.getVideoTracks()[0];
+
+      if (audioTrack) {
+        pc.addTransceiver(audioTrack, { direction: "sendrecv", streams: [stream] });
+      }
+      if (videoTrack) {
+        const videoTx = pc.addTransceiver(videoTrack, {
+          direction: "sendrecv",
+          streams: [stream],
+          sendEncodings: [{ maxBitrate: 1_200_000, maxFramerate: 30 }],
+        });
+        preferVP8(videoTx);
+        await tuneVideoSender(videoTx.sender, "camera");
+      }
 
       const channel = supabase.channel(`call:${room.booking_id}`, {
         config: { broadcast: { self: false } },
