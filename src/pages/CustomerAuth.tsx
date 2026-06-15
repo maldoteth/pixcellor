@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import SeoHead from "@/components/SeoHead";
 import { useLoginHandoff } from "@/hooks/use-login-handoff";
 import { useRequestLoginLink } from "@/hooks/use-request-login-link";
