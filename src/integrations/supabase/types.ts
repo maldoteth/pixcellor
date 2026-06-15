@@ -178,9 +178,8 @@ export type Database = {
           created_at: string
           display_name: string
           doc: Json
-          email: string | null
           id: string
-          owner_user_id: string | null
+          owner_user_id: string
           published_at: string | null
           ref: string
           status: string
@@ -191,9 +190,8 @@ export type Database = {
           created_at?: string
           display_name: string
           doc?: Json
-          email?: string | null
           id?: string
-          owner_user_id?: string | null
+          owner_user_id: string
           published_at?: string | null
           ref: string
           status?: string
@@ -204,9 +202,8 @@ export type Database = {
           created_at?: string
           display_name?: string
           doc?: Json
-          email?: string | null
           id?: string
-          owner_user_id?: string | null
+          owner_user_id?: string
           published_at?: string | null
           ref?: string
           status?: string
