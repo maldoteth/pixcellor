@@ -84,14 +84,18 @@ const CallBookingPicker = ({ bookedSlots, value, onChange, daysAhead = 21 }: Pro
   // Build slots for selected day
   const slots = useMemo(() => {
     const out: { date: Date; iso: string; disabled: boolean }[] = [];
-    const now = Date.now();
+    const earliest = Date.now() + MIN_LEAD_MS;
     for (let h = SLOT_START_HOUR; h < SLOT_END_HOUR; h++) {
       for (let m = 0; m < 60; m += SLOT_MINUTES) {
         const d = new Date(selectedDay);
         d.setHours(h, m, 0, 0);
         const iso = d.toISOString();
-        const disabled = d.getTime() < now + 60 * 60 * 1000 || bookedSet.has(iso);
-        out.push({ date: d, iso, disabled });
+        const tooSoon = d.getTime() < earliest;
+        const realBooked = bookedSet.has(iso);
+        // Make the calendar look busy: ~67% of otherwise-free slots are
+        // shown as taken (deterministic per slot so it doesn't flicker).
+        const fakeBooked = !tooSoon && !realBooked && slotHash(iso) < FAKE_BUSY_RATIO;
+        out.push({ date: d, iso, disabled: tooSoon || realBooked || fakeBooked });
       }
     }
     return out;
