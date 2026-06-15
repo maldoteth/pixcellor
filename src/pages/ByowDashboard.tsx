@@ -69,8 +69,24 @@ export default function ByowDashboard() {
           </div>
           <div className="flex items-center gap-3 text-xs text-white/50">
             <span className="hidden sm:inline">{email}</span>
+            <button
+              onClick={async () => {
+                try {
+                  const { data, error } = await supabase.functions.invoke("create-billing-portal");
+                  if (error) throw error;
+                  if (!data?.url) throw new Error("No portal URL");
+                  window.open(data.url, "_blank", "noopener,noreferrer");
+                } catch (e: any) {
+                  toast.error(e.message || "No active subscription yet.");
+                }
+              }}
+              className="hover:text-white"
+            >
+              Billing
+            </button>
             <button onClick={signOut} className="hover:text-white">Sign out</button>
           </div>
+
         </header>
 
         <main className="max-w-4xl mx-auto px-6 py-12">

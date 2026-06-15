@@ -135,6 +135,33 @@ export default function ByowPlansDialog({ siteId, open, onOpenChange, defaultTab
           </div>
         )}
 
+        {hasActiveSub && (
+          <div className="border-t border-white/10 pt-3 mt-1 flex items-center justify-between gap-3">
+            <p className="text-[11px] text-white/40">
+              Update card, download invoices, or cancel anytime.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={loadingKey === "portal"}
+              onClick={async () => {
+                setLoadingKey("portal");
+                try {
+                  const { data, error } = await supabase.functions.invoke("create-billing-portal");
+                  if (error) throw error;
+                  if (!data?.url) throw new Error("No portal URL");
+                  window.open(data.url, "_blank", "noopener,noreferrer");
+                } catch (e: any) {
+                  toast.error(e.message || "Could not open billing portal");
+                } finally { setLoadingKey(null); }
+              }}
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              {loadingKey === "portal" ? <Loader2 className="w-3 h-3 animate-spin" /> : "Manage billing"}
+            </Button>
+          </div>
+        )}
+
         <p className="text-[10px] text-white/30 mt-3 text-center">
           Secure checkout via Stripe. Cancel anytime. Top-up prompts never expire.
         </p>
@@ -142,3 +169,4 @@ export default function ByowPlansDialog({ siteId, open, onOpenChange, defaultTab
     </Dialog>
   );
 }
+
