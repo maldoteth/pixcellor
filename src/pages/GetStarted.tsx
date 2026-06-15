@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
-  Check, Loader2, ArrowRight, ArrowLeft,
+  Check, Loader2, ArrowRight, ArrowLeft, Phone,
   Infinity as InfinityIcon, Gauge, ShieldCheck, Bot, Wrench, Headphones,
   Megaphone, Code2, Briefcase,
 } from "lucide-react";
@@ -375,7 +375,25 @@ const GetStarted = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="relative"
           >
+            {/* Call now — gold accent */}
+            <a
+              href="tel:01483219430"
+              className="group mb-4 flex items-center justify-between gap-3 rounded-2xl border border-amber-300/40 bg-gradient-to-br from-amber-400/15 via-amber-300/10 to-yellow-200/10 px-4 py-3 backdrop-blur-xl shadow-[0_10px_40px_-15px_rgba(251,191,36,0.45)] transition-colors hover:border-amber-300/60 hover:bg-amber-400/20"
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/25 border border-amber-300/40 text-amber-100">
+                  <Phone className="h-4 w-4" />
+                </span>
+                <span className="flex flex-col leading-tight">
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-amber-200/80">Call now</span>
+                  <span className="text-base font-semibold text-amber-50">01483 219430</span>
+                </span>
+              </span>
+              <ArrowRight className="h-4 w-4 text-amber-100/80 transition-transform group-hover:translate-x-0.5" />
+            </a>
+
             <div className="backdrop-blur-xl bg-white/[0.04] border border-white/15 p-6 sm:p-8 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.6)]">
+
               {!done ? (
                 <>
                   {/* Step indicator */}
