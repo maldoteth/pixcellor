@@ -103,8 +103,31 @@ export default function CreateSiteWizard() {
     }
   };
 
+  if (authed === false) {
+    return (
+      <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-10 text-center">
+        <div className="mx-auto h-12 w-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+          <Lock className="h-5 w-5 text-white/70" />
+        </div>
+        <h3 className="text-2xl font-light">Sign in to create your site</h3>
+        <p className="text-white/60 mt-2 max-w-md mx-auto text-sm">
+          Generated sites are saved to your account so you can edit, regenerate and publish them later.
+        </p>
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <Button
+            onClick={() => nav(`/customer-login?redirect=${encodeURIComponent("/byow#create")}`)}
+            className="bg-white text-black hover:bg-white/90 h-11 px-6"
+          >
+            Sign in / Sign up
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 md:p-10">
+
       {/* Progress */}
       <div className="flex items-center gap-2 mb-8">
         {STEPS.map((label, i) => {
