@@ -9,11 +9,17 @@ import { useRequestLoginLink } from "@/hooks/use-request-login-link";
 
 type Stage = "waiting-session" | "completing" | "expired" | "error";
 
-const SESSION_TIMEOUT_MS = 8000;
+const SESSION_TIMEOUT_MS = 30000;
 
 function parseHashParams(): URLSearchParams {
   const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : window.location.hash;
   return new URLSearchParams(hash);
+}
+
+function removeAuthParamsFromUrl() {
+  const hashParams = parseHashParams();
+  if (!hashParams.has("access_token") && !hashParams.has("refresh_token")) return;
+  window.history.replaceState(null, document.title, `${window.location.pathname}${window.location.search}`);
 }
 
 export default function AuthHandoff() {
@@ -78,27 +84,50 @@ export default function AuthHandoff() {
       }
     };
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session?.access_token) {
-        complete(data.session.access_token);
+    const restoreSession = async () => {
+      const hashParams = parseHashParams();
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+
+      if (accessToken && refreshToken) {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (error) throw error;
+        removeAuthParamsFromUrl();
+        return data.session?.access_token ?? accessToken;
       }
-    });
+
+      const { data } = await supabase.auth.getSession();
+      return data.session?.access_token ?? null;
+    };
+
+    restoreSession()
+      .then((token) => {
+        if (token) complete(token);
+      })
+      .catch((err) => {
+        console.error("session restore failed", err);
+        if (cancelled) return;
+        setErrorMessage("This sign-in link could not be verified. Request a fresh one below.");
+        setStage("error");
+      });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (session?.access_token) complete(session.access_token);
     });
 
-    // Safety net: if we never get a session and there's no explicit error
-    // in the URL, treat the link as expired/invalid after a timeout so the
-    // user isn't stuck on "Signing you in…" forever.
+    // Safety net: if auth restoration is slow, keep the spinner longer so a
+    // valid clicked link is not incorrectly labelled expired.
     const timeout = window.setTimeout(() => {
       if (cancelled || didComplete) return;
       setStage((current) => {
         if (current === "waiting-session") {
           setErrorMessage(
-            "This sign-in link has expired or is no longer valid. Request a fresh one below.",
+            "This sign-in is taking longer than expected. Request a fresh link below if it does not complete.",
           );
-          return "expired";
+          return "error";
         }
         return current;
       });
