@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRequestLoginLink } from "@/hooks/use-request-login-link";
 
-type Stage = "waiting-session" | "completing" | "done" | "expired" | "error";
+type Stage = "waiting-session" | "completing" | "expired" | "error";
 
 const SESSION_TIMEOUT_MS = 8000;
 
