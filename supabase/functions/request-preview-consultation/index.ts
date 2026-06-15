@@ -80,7 +80,9 @@ Deno.serve(async (req) => {
     const finalPhone = (providedPhone || knownPhone || '').trim()
     if (!finalPhone && !phoneProvided) {
       // No phone on file and caller hasn't been prompted yet — ask for one.
-      return json({ ok: false, reason: 'phone_required', email })
+      // Do NOT echo the email back; that would allow slug enumeration to
+      // harvest customer email addresses.
+      return json({ ok: false, reason: 'phone_required' })
     }
 
     const imageUrl = admin.storage.from(BUCKET).getPublicUrl(preview.image_path).data.publicUrl
@@ -113,7 +115,7 @@ Deno.serve(async (req) => {
       .invoke('process-lets-talk-lead', { body: insertPayload })
       .catch((err) => console.error('process-lets-talk-lead failed:', err))
 
-    return json({ ok: true, email })
+    return json({ ok: true })
   } catch (e) {
     console.error('request-preview-consultation error', e)
     return json({ error: e instanceof Error ? e.message : 'Unknown error' }, 500)

@@ -20,6 +20,27 @@ const SENDER_DOMAIN = 'notify.pixcellor.com'
 const FROM_DOMAIN = 'pixcellor.com'
 const SITE_URL = 'https://pixcellor.com'
 
+// Allowlist of origins permitted as magic-link redirect targets. Prevents
+// attackers from harvesting auth tokens by pointing the link at an external
+// domain.
+const ALLOWED_REDIRECT_ORIGINS = new Set([
+  'https://pixcellor.com',
+  'https://www.pixcellor.com',
+  'https://morph-glide-show.lovable.app',
+])
+const ALLOWED_REDIRECT_SUFFIXES = ['.lovable.app', '.lovable.dev']
+function isAllowedRedirect(target: string): boolean {
+  try {
+    const u = new URL(target)
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false
+    if (ALLOWED_REDIRECT_ORIGINS.has(u.origin)) return true
+    return ALLOWED_REDIRECT_SUFFIXES.some((s) => u.hostname.endsWith(s))
+  } catch {
+    return false
+  }
+}
+
+
 const RATE_LIMIT_COUNT = 3
 const RATE_LIMIT_WINDOW_SECONDS = 120
 
@@ -54,7 +75,7 @@ Deno.serve(async (req) => {
     if (!rawEmail || !/.+@.+\..+/.test(rawEmail) || rawEmail.length > 254) {
       return json({ error: 'Invalid email' }, 400)
     }
-    if (!/^https?:\/\//.test(redirectTo) || redirectTo.length > 1024) {
+    if (redirectTo.length > 1024 || !isAllowedRedirect(redirectTo)) {
       return json({ error: 'Invalid redirect' }, 400)
     }
 
