@@ -311,18 +311,16 @@ const CallRoom = () => {
       const pc = createPeer();
       pcRef.current = pc;
 
-      // Host owns the m-line order (it creates the offer), so attach tracks
-      // immediately. Guest waits for the offer and then attaches via the
-      // transceivers it creates — this guarantees m-line ordering matches.
-      if (room.role === "host") {
-        for (const track of stream.getTracks()) {
-          pc.addTrack(track, stream);
-        }
-        const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
-        if (videoTx) {
-          preferVP8(videoTx);
-          await tuneVideoSender(videoTx.sender, "camera");
-        }
+      // Both peers attach local tracks up front. (Earlier attempt to defer
+      // guest tracks until after setRemoteDescription caused malformed
+      // answers on some Chromium builds.)
+      for (const track of stream.getTracks()) {
+        pc.addTrack(track, stream);
+      }
+      const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
+      if (videoTx) {
+        preferVP8(videoTx);
+        await tuneVideoSender(videoTx.sender, "camera");
       }
 
       const channel = supabase.channel(`call:${room.booking_id}`, {
