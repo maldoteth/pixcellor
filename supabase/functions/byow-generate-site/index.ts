@@ -114,6 +114,33 @@ serve(async (req) => {
 
     const admin = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
 
+    // Free tier: 1 generated site per user. More requires an active subscription.
+    if (!existingRef) {
+      const [{ count: existingCount }, { data: paidSubs }] = await Promise.all([
+        admin
+          .from("byow_generated_sites")
+          .select("id", { count: "exact", head: true })
+          .eq("owner_user_id", userId),
+        admin
+          .from("byow_subscriptions")
+          .select("id")
+          .eq("owner_user_id", userId)
+          .eq("status", "active")
+          .limit(1),
+      ]);
+      const hasPaid = (paidSubs?.length ?? 0) > 0;
+      if ((existingCount ?? 0) >= 1 && !hasPaid) {
+        return new Response(
+          JSON.stringify({
+            error: "free_quota_exceeded",
+            message: "Free accounts can generate 1 site. Upgrade to create more.",
+          }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
+
     const seed = (template_seed && typeof template_seed === "object") ? template_seed as Record<string, unknown> : {};
     const tone = String(seed.tone ?? "confident, modern, conversion-focused");
     const audience = String(seed.audience ?? "the target customer");
