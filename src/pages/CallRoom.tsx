@@ -69,6 +69,7 @@ const CallRoom = () => {
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   // Host-side: map of peerId -> video element
   const remoteVideoEls = useRef<Map<string, HTMLVideoElement | null>>(new Map());
+  const remoteAudioEls = useRef<Map<string, HTMLAudioElement | null>>(new Map());
 
   // Guest-side single PC (to host)
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -313,9 +314,15 @@ const CallRoom = () => {
       const el = remoteVideoEls.current.get(peerId);
       if (el && (force || el.srcObject !== peer.stream)) {
         if (force) el.srcObject = null;
+        el.muted = true;
         el.srcObject = peer.stream;
       }
       if (el) el.play().catch(() => { /* noop */ });
+      const audio = remoteAudioEls.current.get(peerId);
+      if (audio && audio.srcObject !== peer.stream) {
+        audio.srcObject = peer.stream;
+      }
+      if (audio) audio.play().catch(() => { /* noop */ });
     };
     pc.ontrack = (e) => {
       const incoming = e.streams[0];
@@ -376,6 +383,7 @@ const CallRoom = () => {
       peersRef.current.delete(peerId);
     }
     remoteVideoEls.current.delete(peerId);
+    remoteAudioEls.current.delete(peerId);
     setRemotePeers((arr) => arr.filter((x) => x.peerId !== peerId));
   }, []);
 
@@ -580,8 +588,14 @@ const CallRoom = () => {
       const el = remoteVideoEls.current.get(peerId);
       const p = peersRef.current.get(peerId);
       if (el && p && el.srcObject !== p.stream) {
+        el.muted = true;
         el.srcObject = p.stream;
         el.play().catch(() => { /* noop */ });
+      }
+      const audio = remoteAudioEls.current.get(peerId);
+      if (audio && p && audio.srcObject !== p.stream) {
+        audio.srcObject = p.stream;
+        audio.play().catch(() => { /* noop */ });
       }
     }
   }, [remotePeers, remotePeerTicks]);
@@ -968,13 +982,27 @@ const CallRoom = () => {
                     remoteVideoEls.current.set(peerId, el);
                     const peer = peersRef.current.get(peerId);
                     if (el && peer && el.srcObject !== peer.stream) {
+                      el.muted = true;
                       el.srcObject = peer.stream;
                       el.play().catch(() => { /* noop */ });
                     }
                   }}
                   autoPlay
                   playsInline
+                  muted
                   className="w-full h-full object-contain"
+                />
+                <audio
+                  ref={(el) => {
+                    remoteAudioEls.current.set(peerId, el);
+                    const peer = peersRef.current.get(peerId);
+                    if (el && peer && el.srcObject !== peer.stream) {
+                      el.srcObject = peer.stream;
+                      el.play().catch(() => { /* noop */ });
+                    }
+                  }}
+                  autoPlay
+                  className="hidden"
                 />
                 {(peersRef.current.get(peerId)?.stream.getVideoTracks().length ?? 0) === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center text-white/45 text-xs">
