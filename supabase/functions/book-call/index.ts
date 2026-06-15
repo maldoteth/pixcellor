@@ -112,11 +112,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // If specific time: ensure it's in the future
+    // If specific time: ensure it's at least 36 hours in the future
     if (b.preference === "specific" && b.scheduled_at) {
       const t = new Date(b.scheduled_at).getTime();
-      if (!Number.isFinite(t) || t < Date.now() - 60_000) {
-        return new Response(JSON.stringify({ ok: false, error: "slot_in_past" }), {
+      const minLeadMs = 36 * 60 * 60 * 1000;
+      if (!Number.isFinite(t) || t < Date.now() + minLeadMs - 60_000) {
+        return new Response(JSON.stringify({ ok: false, error: "slot_too_soon" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
