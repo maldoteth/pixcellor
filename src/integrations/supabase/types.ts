@@ -118,6 +118,208 @@ export type Database = {
           },
         ]
       }
+      byow_admin_queue: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          message_id: string | null
+          mode: string
+          owner_user_id: string
+          prompt: string
+          resolved_at: string | null
+          site_id: string
+          status: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          mode?: string
+          owner_user_id: string
+          prompt: string
+          resolved_at?: string | null
+          site_id: string
+          status?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          mode?: string
+          owner_user_id?: string
+          prompt?: string
+          resolved_at?: string | null
+          site_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "byow_admin_queue_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "byow_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "byow_admin_queue_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "byow_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      byow_messages: {
+        Row: {
+          content: string
+          created_at: string
+          credits_cost: number
+          error_message: string | null
+          id: string
+          mcp_run_id: string | null
+          metadata: Json
+          mode: string
+          owner_user_id: string
+          role: string
+          site_id: string
+          status: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          credits_cost?: number
+          error_message?: string | null
+          id?: string
+          mcp_run_id?: string | null
+          metadata?: Json
+          mode?: string
+          owner_user_id: string
+          role: string
+          site_id: string
+          status?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          credits_cost?: number
+          error_message?: string | null
+          id?: string
+          mcp_run_id?: string | null
+          metadata?: Json
+          mode?: string
+          owner_user_id?: string
+          role?: string
+          site_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "byow_messages_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "byow_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      byow_sites: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+          lovable_preview_url: string | null
+          lovable_project_id: string | null
+          notes: string | null
+          owner_user_id: string
+          published_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          id?: string
+          lovable_preview_url?: string | null
+          lovable_project_id?: string | null
+          notes?: string | null
+          owner_user_id: string
+          published_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          lovable_preview_url?: string | null
+          lovable_project_id?: string | null
+          notes?: string | null
+          owner_user_id?: string
+          published_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      byow_subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          owner_user_id: string
+          prompt_quota: number
+          prompts_used: number
+          site_id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          owner_user_id: string
+          prompt_quota?: number
+          prompts_used?: number
+          site_id: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          owner_user_id?: string
+          prompt_quota?: number
+          prompts_used?: number
+          site_id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "byow_subscriptions_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: true
+            referencedRelation: "byow_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_bookings: {
         Row: {
           brief: string | null
