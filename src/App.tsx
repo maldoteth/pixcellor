@@ -34,6 +34,7 @@ const Packages = lazy(() => import("./pages/Packages"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 const GetStarted = lazy(() => import("./pages/GetStarted"));
 const CallRoom = lazy(() => import("./pages/CallRoom"));
+const MeetingRedirect = lazy(() => import("./pages/MeetingRedirect"));
 const ByowLanding = lazy(() => import("./pages/ByowLanding"));
 const PublicSite = lazy(() => import("./pages/PublicSite"));
 
@@ -123,6 +124,7 @@ const App = () => (
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/get-started" element={<GetStarted />} />
               <Route path="/call/:bookingId" element={<CallRoom />} />
+              <Route path="/meeting/:code" element={<MeetingRedirect />} />
               <Route path="/byow" element={<ByowLanding />} />
               <Route path="/s/:ref" element={<PublicSite />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
