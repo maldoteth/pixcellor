@@ -157,6 +157,14 @@ export default function ByowBuilder() {
             </div>
           </div>
           <div className="flex items-center gap-1 text-xs">
+            <button
+              onClick={() => { setPlansTab(sub?.status === "active" ? "topup" : "subscription"); setPlansOpen(true); }}
+              className="mr-2 px-3 py-1 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 flex items-center gap-1.5"
+              title="Buy more prompts or change plan"
+            >
+              <Sparkles className="h-3 w-3" />
+              {sub?.status === "active" ? "Buy prompts" : "Activate plan"}
+            </button>
             {(["split", "live", "preview"] as const).map((v) => (
               <button
                 key={v}
@@ -174,6 +182,7 @@ export default function ByowBuilder() {
               <RefreshCw className="h-3.5 w-3.5" />
             </button>
           </div>
+
         </header>
 
         {/* Body */}
@@ -248,12 +257,24 @@ export default function ByowBuilder() {
                 {sending ? "Sending…" : canSend ? "Send" : remaining === 0 ? "Out of prompts" : "Unavailable"}
               </Button>
               {!canSend && sub?.status !== "active" && (
-                <p className="text-[10px] text-white/40 text-center">
+                <button
+                  onClick={() => { setPlansTab("subscription"); setPlansOpen(true); }}
+                  className="text-[10px] text-white/60 hover:text-white text-center w-full underline underline-offset-2"
+                >
                   Activate a plan to start sending edit requests.
-                </p>
+                </button>
+              )}
+              {!canSend && sub?.status === "active" && remaining === 0 && (
+                <button
+                  onClick={() => { setPlansTab("topup"); setPlansOpen(true); }}
+                  className="text-[10px] text-white/60 hover:text-white text-center w-full underline underline-offset-2"
+                >
+                  Out of prompts — buy a top-up pack.
+                </button>
               )}
             </div>
           </aside>
+
 
           {/* Previews */}
           <section className="flex flex-col min-h-0 bg-neutral-950">
