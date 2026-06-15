@@ -631,7 +631,10 @@ const CallRoom = () => {
   // Fixes mobile-on-same-WiFi cases where mDNS .local candidates can't talk
   // to the desktop's host candidates (router client-isolation, etc.).
   useEffect(() => {
-    if (status !== "calling" && status !== "waiting") return;
+    // Only watchdog AFTER the host has admitted / started — never during
+    // the waiting room, otherwise the guest's PC is force-switched to
+    // relay-only before any offer arrives and the eventual handshake fails.
+    if (status !== "calling") return;
     if (relayWatchdogRef.current) { window.clearInterval(relayWatchdogRef.current); }
     relayWatchdogRef.current = window.setInterval(() => {
       if (isHost) {
