@@ -574,18 +574,24 @@ export default function CustomerPortal() {
               </div>
 
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PortalTab)} className="space-y-5">
-                <TabsList className="flex h-auto w-full flex-wrap gap-2 bg-transparent p-0">
-                  {navItems.map((item) => (
-                    <TabsTrigger
-                      key={item.value}
-                      value={item.value}
-                      className="pricing-button h-10 gap-2 rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"
-                    >
-                      <item.icon className="h-3.5 w-3.5 shrink-0" />
-                      <span>{item.value === "delivered" ? "Domains" : item.value === "payments" ? "Payments" : item.title}</span>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+                <div className="relative w-full">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-gradient-to-r from-background to-transparent" />
+                  <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-gradient-to-l from-background to-transparent" />
+                  <div className="overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    <TabsList className="flex h-auto w-max flex-nowrap gap-2 bg-transparent p-0 px-1">
+                      {navItems.map((item) => (
+                        <TabsTrigger
+                          key={item.value}
+                          value={item.value}
+                          className="pricing-button h-10 shrink-0 gap-2 whitespace-nowrap rounded-none px-3 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"
+                        >
+                          <item.icon className="h-3.5 w-3.5 shrink-0" />
+                          <span>{item.value === "delivered" ? "Domains" : item.value === "payments" ? "Payments" : item.title}</span>
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </div>
+                </div>
 
                 <TabsContent value="overview" className="space-y-5">
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
