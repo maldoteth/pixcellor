@@ -52,10 +52,13 @@ export default function CreateSiteWizard() {
     return () => { alive = false; sub.subscription.unsubscribe(); };
   }, []);
 
-  const canNext = () => {
-    if (step === 0) return displayName.trim().length >= 2 && brief.trim().length >= 10;
-    return true;
+  const nextHint = () => {
+    if (step !== 0) return "";
+    if (displayName.trim().length < 2) return "Add a site name to continue";
+    if (brief.trim().length < 10) return "Add a short description (at least 10 characters)";
+    return "";
   };
+  const canNext = () => nextHint() === "";
 
 
   const pickFont = (f: FontTriple) => {
