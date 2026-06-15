@@ -60,6 +60,10 @@ const CallRoom = () => {
   const recordStartRef = useRef<number>(0);
   const repliedHelloRef = useRef<Set<string>>(new Set());
   const negotiationStartedRef = useRef(false);
+  const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
+  const watchdogRef = useRef<number | null>(null);
+  const failTimerRef = useRef<number | null>(null);
+  const [failMessage, setFailMessage] = useState<string>("");
 
   // 1. Verify token + fetch ICE config
   useEffect(() => {
