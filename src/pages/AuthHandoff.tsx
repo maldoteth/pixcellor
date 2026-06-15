@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Loader2, ShieldCheck, MailWarning, CheckCircle2 } from "lucide-react";
+import { Loader2, MailWarning, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import SeoHead from "@/components/SeoHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRequestLoginLink } from "@/hooks/use-request-login-link";
 
-type Stage = "waiting-session" | "completing" | "done" | "expired" | "error";
+type Stage = "waiting-session" | "completing" | "expired" | "error";
 
 const SESSION_TIMEOUT_MS = 8000;
 
@@ -67,8 +67,9 @@ export default function AuthHandoff() {
           if (error) throw error;
         }
         if (cancelled) return;
-        setStage("done");
-        setTimeout(() => navigate("/customer-portal", { replace: true }), 800);
+        // Navigate immediately without flashing a success screen — keep the
+        // spinner UI stable until the portal mounts.
+        navigate("/customer-portal", { replace: true });
       } catch (err) {
         console.error("handoff complete failed", err);
         if (cancelled) return;
@@ -123,15 +124,7 @@ export default function AuthHandoff() {
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center px-6">
       <SeoHead title="Signing you in · Pixcellor™" description="Securely complete cross-device sign-in to your Pixcellor account from a magic link or authentication handoff." path="/auth/handoff" noindex />
       <div className="max-w-md w-full text-center space-y-4">
-        {stage === "done" ? (
-          <>
-            <ShieldCheck className="h-10 w-10 mx-auto text-foreground" />
-            <h1 className="text-xl font-semibold">You're signed in</h1>
-            <p className="text-sm text-foreground/70">
-              We've also logged in the device you started on. You can close this tab if you like.
-            </p>
-          </>
-        ) : stage === "expired" ? (
+        {stage === "expired" ? (
           <>
             <MailWarning className="h-10 w-10 mx-auto text-foreground" />
             <h1 className="text-xl font-semibold">Sign-in link expired</h1>
