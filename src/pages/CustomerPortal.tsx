@@ -384,10 +384,11 @@ export default function CustomerPortal() {
 
   const navItems: { title: string; value: PortalTab; icon: typeof Home }[] = [
     { title: "Overview", value: "overview", icon: Home },
+    { title: "My sites", value: "sites", icon: Sparkles },
     { title: "Schedule", value: "schedule", icon: CalendarDays },
     ...(isCandidate ? [{ title: "My Jobs", value: "myjobs" as const, icon: Briefcase }] : []),
     ...(isClient ? [{ title: "Vacancies", value: "vacancies" as const, icon: Building2 }] : []),
-    
+
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
     { title: "Domains", value: "delivered", icon: Globe2 },
