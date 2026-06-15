@@ -300,18 +300,18 @@ const CallRoom = () => {
       const pc = createPeer();
       pcRef.current = pc;
 
-      // Use addTrack (not addTransceiver) so the browser creates m-lines in
-      // the standard order. Pre-adding transceivers on the guest side caused
-      // setRemoteDescription to fail when the host's offer arrived with a
-      // different m-line ordering. We still apply codec preference + bitrate
-      // tuning afterwards via the resulting sender/transceiver.
-      for (const track of stream.getTracks()) {
-        pc.addTrack(track, stream);
-      }
-      const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
-      if (videoTx) {
-        preferVP8(videoTx);
-        await tuneVideoSender(videoTx.sender, "camera");
+      // Host owns the m-line order (it creates the offer), so attach tracks
+      // immediately. Guest waits for the offer and then attaches via the
+      // transceivers it creates — this guarantees m-line ordering matches.
+      if (room.role === "host") {
+        for (const track of stream.getTracks()) {
+          pc.addTrack(track, stream);
+        }
+        const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
+        if (videoTx) {
+          preferVP8(videoTx);
+          await tuneVideoSender(videoTx.sender, "camera");
+        }
       }
 
       const channel = supabase.channel(`call:${room.booking_id}`, {
@@ -324,28 +324,61 @@ const CallRoom = () => {
         const peer = pcRef.current;
         if (!peer) return;
 
-        if (msg.type === "hello") {
-          setRemoteJoined(true);
-          // Reply once so a peer that joined first also learns we're here.
-          if (!msg.reply && !repliedHelloRef.current.has(msg.from)) {
-            repliedHelloRef.current.add(msg.from);
-            sendSignal({ type: "hello", from: PEER_ID, role: room.role, reply: true });
+        try {
+          if (msg.type === "hello") {
+            setRemoteJoined(true);
+            // Reply once so a peer that joined first also learns we're here.
+            if (!msg.reply && !repliedHelloRef.current.has(msg.from)) {
+              repliedHelloRef.current.add(msg.from);
+              sendSignal({ type: "hello", from: PEER_ID, role: room.role, reply: true });
+            }
+          } else if (msg.type === "start") {
+            // Host signalled "start" — guest just waits for the offer to arrive.
+          } else if (msg.type === "offer") {
+            if (status !== "calling" && status !== "connected") setStatus("calling");
+            await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+
+            // Guest attaches local tracks to the transceivers created by the
+            // offer (matching m-line order exactly).
+            if (room.role === "guest") {
+              const local = localStreamRef.current;
+              if (local) {
+                for (const tx of peer.getTransceivers()) {
+                  const kind = tx.receiver.track?.kind;
+                  if (!kind) continue;
+                  const localTrack = kind === "audio"
+                    ? local.getAudioTracks()[0]
+                    : kind === "video" ? local.getVideoTracks()[0] : null;
+                  if (localTrack && tx.sender) {
+                    await tx.sender.replaceTrack(localTrack);
+                    tx.direction = "sendrecv";
+                    if (kind === "video") {
+                      preferVP8(tx);
+                      await tuneVideoSender(tx.sender, "camera");
+                    }
+                  }
+                }
+              }
+            }
+
+            await drainPendingIce(peer);
+            const answer = await peer.createAnswer();
+            await peer.setLocalDescription(answer);
+            sendSignal({ type: "answer", sdp: answer, from: PEER_ID });
+          } else if (msg.type === "answer") {
+            await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+            await drainPendingIce(peer);
+          } else if (msg.type === "ice") {
+            if (!peer.remoteDescription) {
+              pendingIceRef.current.push(msg.candidate);
+            } else {
+              try { await peer.addIceCandidate(msg.candidate); } catch (e) { console.warn("[call] ice add failed", e); }
+            }
+          } else if (msg.type === "bye") {
+            setRemoteJoined(false);
           }
-        } else if (msg.type === "start") {
-          // Host signalled "start" — guest just waits for the offer to arrive.
-          // Nothing to do; the upcoming offer will move us forward.
-        } else if (msg.type === "offer") {
-          if (status !== "calling" && status !== "connected") setStatus("calling");
-          await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-          const answer = await peer.createAnswer();
-          await peer.setLocalDescription(answer);
-          sendSignal({ type: "answer", sdp: answer, from: PEER_ID });
-        } else if (msg.type === "answer") {
-          await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-        } else if (msg.type === "ice") {
-          try { await peer.addIceCandidate(msg.candidate); } catch (e) { console.warn("ice add failed", e); }
-        } else if (msg.type === "bye") {
-          setRemoteJoined(false);
+        } catch (e) {
+          console.error("[call] signal handler error", e);
         }
       });
 
@@ -360,7 +393,7 @@ const CallRoom = () => {
     } catch (e) {
       handleMediaError(e);
     }
-  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError, preferVP8, tuneVideoSender]);
+  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError, preferVP8, tuneVideoSender, drainPendingIce]);
 
   // Host: admit guest and begin call
   const startCall = useCallback(async () => {
