@@ -192,7 +192,7 @@ export default function ByowAdminPanel() {
               ))}
             </div>
           </div>
-          <Button type="submit" disabled={nsCreating} className="bg-white text-black hover:bg-white/90">
+          <Button type="submit" disabled={nsCreating} className="request-shimmer bg-white text-black hover:bg-white">
             {nsCreating ? "Creating…" : "Create site & activate plan"}
           </Button>
         </form>
@@ -231,7 +231,7 @@ function QueueRow({ item, siteName, onAction }: {
             onClick={() => onAction(item.id, "in_progress", notes)}>Mark in progress</Button>
         )}
         {item.status !== "done" && (
-          <Button size="sm" className="bg-white text-black hover:bg-white/90"
+          <Button size="sm" className="request-shimmer bg-white text-black hover:bg-white"
             onClick={() => onAction(item.id, "done", notes)}>Mark done & notify client</Button>
         )}
         {item.status !== "rejected" && item.status !== "done" && (
@@ -276,7 +276,7 @@ function SiteRow({ site, onReload }: { site: Site; onReload: () => void }) {
             className="bg-white/5 border-white/10 text-white text-sm" />
           <Input value={prev} onChange={(e) => setPrev(e.target.value)} placeholder="Lovable preview URL"
             className="bg-white/5 border-white/10 text-white text-sm" />
-          <Button size="sm" className="bg-white text-black hover:bg-white/90" onClick={save}>Save</Button>
+          <Button size="sm" className="request-shimmer bg-white text-black hover:bg-white" onClick={save}>Save</Button>
         </div>
       )}
     </div>

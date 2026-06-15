@@ -147,7 +147,7 @@ export default function ByowLanding() {
                 Skip the agency back-and-forth. Pick a plan, brief us in chat, and watch real humans ship every change to your live site — usually same-day.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild className="bg-white text-black hover:bg-white/90 h-12 px-6 text-sm">
+                <Button asChild className="request-shimmer bg-white text-black hover:bg-white h-12 px-6 text-sm">
                   <a href="#pricing">See pricing <ArrowRight className="ml-2 h-4 w-4" /></a>
                 </Button>
                 <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10 h-12 px-6 text-sm">
@@ -296,7 +296,7 @@ export default function ByowLanding() {
                     onClick={() => startCheckout("subscription", t.key)}
                     disabled={loadingKey !== null}
                     className={`mt-6 w-full h-11 ${
-                      t.featured ? "bg-white text-black hover:bg-white/90" : "bg-white/10 text-white border border-white/20 hover:bg-white/20"
+                      t.featured ? "request-shimmer bg-white text-black hover:bg-white" : "bg-white/10 text-white border border-white/20 hover:bg-white/20"
                     }`}
                   >
                     {loadingKey === `subscription:${t.key}` ? <Loader2 className="h-4 w-4 animate-spin" /> : `Start ${t.name}`}
@@ -371,7 +371,7 @@ export default function ByowLanding() {
             <p className="mt-4 text-white/60 max-w-xl mx-auto">
               No contracts. No setup fees. One link, one chat, one team that ships every day.
             </p>
-            <Button asChild className="mt-8 bg-white text-black hover:bg-white/90 h-12 px-6">
+            <Button asChild className="mt-8 request-shimmer bg-white text-black hover:bg-white h-12 px-6">
               <a href="#pricing">Start a site <ArrowRight className="ml-2 h-4 w-4" /></a>
             </Button>
           </div>

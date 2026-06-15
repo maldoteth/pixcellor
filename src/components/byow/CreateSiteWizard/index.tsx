@@ -165,7 +165,7 @@ export default function CreateSiteWizard() {
         <div className="mt-6 flex items-center justify-center gap-3">
           <Button
             onClick={() => nav(`/customer-login?redirect=${encodeURIComponent("/byow#create")}`)}
-            className="bg-white text-black hover:bg-white/90 h-11 px-6"
+            className="request-shimmer bg-white text-black hover:bg-white h-11 px-6"
           >
             Sign in / Sign up
           </Button>
@@ -222,7 +222,7 @@ export default function CreateSiteWizard() {
                   type="button"
                   onClick={importFromUrl}
                   disabled={importing || !importUrl.trim()}
-                  className="bg-white text-black hover:bg-white/90 h-10 px-4"
+                  className="request-shimmer bg-white text-black hover:bg-white h-10 px-4"
                 >
                   {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Import"}
                 </Button>
@@ -366,7 +366,7 @@ export default function CreateSiteWizard() {
             <Button
               onClick={generate}
               disabled={generating}
-              className="mt-8 bg-white text-black hover:bg-white/90 h-12 px-8"
+              className="mt-8 request-shimmer bg-white text-black hover:bg-white h-12 px-8"
             >
               {generating ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generating…</>
@@ -399,7 +399,7 @@ export default function CreateSiteWizard() {
             <Button
               disabled={!canNext()}
               onClick={() => setStep((s) => s + 1)}
-              className="bg-white text-black hover:bg-white/90 disabled:opacity-50"
+              className="request-shimmer bg-white text-black hover:bg-white disabled:opacity-50"
             >
               Next <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
