@@ -559,7 +559,7 @@ const CallRoom = () => {
           autoPlay
           playsInline
           className={cn(
-            "absolute inset-0 w-full h-full object-cover",
+            "absolute inset-0 w-full h-full object-contain",
             (inWaiting || status === "calling") && "opacity-0",
           )}
         />
