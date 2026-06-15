@@ -63,6 +63,7 @@ const CallRoom = () => {
   const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
   const watchdogRef = useRef<number | null>(null);
   const failTimerRef = useRef<number | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
   const [failMessage, setFailMessage] = useState<string>("");
 
   // 1. Verify token + fetch ICE config
@@ -220,9 +221,25 @@ const CallRoom = () => {
       if (e.candidate) sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID });
     };
     pc.ontrack = (e) => {
-      const [stream] = e.streams;
-      if (remoteVideoRef.current && stream) {
-        remoteVideoRef.current.srcObject = stream;
+      // Build a remote stream manually — relying on e.streams[0] is unreliable
+      // across browsers (sometimes empty when peers use addTrack without an
+      // explicit stream id match). Aggregating tracks ensures both audio and
+      // video from the remote peer attach to the same <video> element.
+      let remote = remoteStreamRef.current;
+      if (!remote) {
+        remote = new MediaStream();
+        remoteStreamRef.current = remote;
+      }
+      try { remote.addTrack(e.track); } catch { /* duplicate add is fine */ }
+      e.track.onunmute = () => {
+        if (remoteVideoRef.current && remoteVideoRef.current.srcObject !== remote) {
+          remoteVideoRef.current.srcObject = remote;
+          remoteVideoRef.current.play().catch(() => { /* autoplay may need user gesture */ });
+        }
+      };
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = remote;
+        remoteVideoRef.current.play().catch(() => { /* autoplay may need user gesture */ });
       }
     };
     const markConnected = () => {
@@ -361,6 +378,7 @@ const CallRoom = () => {
     sendSignal({ type: "bye", from: PEER_ID });
     pcRef.current?.close();
     pcRef.current = null;
+    remoteStreamRef.current = null;
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     channelRef.current && supabase.removeChannel(channelRef.current);
