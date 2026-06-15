@@ -33,10 +33,16 @@ Deno.serve(async (req) => {
 
     const signature = req.headers.get("X-Twilio-Signature") ?? "";
     const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-    if (authToken && signature) {
-      const ok = await validateTwilioSignature(req.url, params, signature, authToken);
-      if (!ok) return new Response("forbidden", { status: 403 });
+    // Fail closed: reject unsigned requests or when the auth token isn't configured.
+    if (!authToken) {
+      console.error("TWILIO_AUTH_TOKEN not configured — refusing status webhook");
+      return new Response("forbidden", { status: 403 });
     }
+    if (!signature) {
+      return new Response("forbidden", { status: 403 });
+    }
+    const sigOk = await validateTwilioSignature(req.url, params, signature, authToken);
+    if (!sigOk) return new Response("forbidden", { status: 403 });
 
     const sid = params.MessageSid || params.SmsSid;
     const status = params.MessageStatus || params.SmsStatus;

@@ -260,6 +260,8 @@ Deno.serve(async (req) => {
       contactId: contactId || bookingId,
     }).catch((e) => console.warn("internal notify failed:", e));
 
+    // Do NOT include call_link_host in the response — that link contains the
+    // host token. It is only sent internally to the Pixcellor team above.
     return new Response(JSON.stringify({
       ok: true,
       booking_id: bookingId,
@@ -267,7 +269,6 @@ Deno.serve(async (req) => {
       preference_label: prefLabel,
       email_sent: emailSent,
       call_link_guest: callLinkGuest,
-      call_link_host: callLinkHost,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("book-call error:", e);

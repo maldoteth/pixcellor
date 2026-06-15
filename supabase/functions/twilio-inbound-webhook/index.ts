@@ -36,12 +36,19 @@ Deno.serve(async (req) => {
     const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const url = req.url; // include query string
 
-    if (authToken && signature) {
-      const ok = await validateTwilioSignature(url, params, signature, authToken);
-      if (!ok) {
-        console.warn("Invalid Twilio signature");
-        return new Response("forbidden", { status: 403 });
-      }
+    // Fail closed: reject unsigned requests or when the auth token isn't configured.
+    if (!authToken) {
+      console.error("TWILIO_AUTH_TOKEN not configured — refusing inbound webhook");
+      return new Response("forbidden", { status: 403 });
+    }
+    if (!signature) {
+      console.warn("Missing X-Twilio-Signature header");
+      return new Response("forbidden", { status: 403 });
+    }
+    const sigOk = await validateTwilioSignature(url, params, signature, authToken);
+    if (!sigOk) {
+      console.warn("Invalid Twilio signature");
+      return new Response("forbidden", { status: 403 });
     }
 
     const from = params.From;

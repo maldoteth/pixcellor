@@ -34,6 +34,32 @@ const corsHeaders = {
 const clean = (value: unknown) => typeof value === "string" && value.trim() ? value.trim().slice(0, 500) : null;
 const getClientIp = (req: Request) => req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || null;
 
+// Server-side allowlist of public Stripe price IDs. Any priceId the client
+// posts must be one of these — prevents attackers from initiating checkout at
+// an arbitrary (e.g. discounted/test) price by guessing or harvesting other
+// price IDs in the Stripe account.
+const ALLOWED_PRICE_IDS = new Set<string>([
+  // Vision / starter
+  "price_1TQzD5BtUjwejeUwG4CFjskt",
+  "price_1TJrT7BtUjwejeUwQ47tCkiv",
+  "price_1TJrTNBtUjwejeUw3ihfpz98",
+  // Growth / Scale / Enterprise (monthly + yearly)
+  "price_1TcfyPBtUjwejeUwJmEbSWtN",
+  "price_1Tcg03BtUjwejeUwr7mYzuUb",
+  "price_1Tcg07BtUjwejeUwfGGDhftV",
+  "price_1Tcg0ABtUjwejeUwLc5nw8nX",
+  "price_1TSmB8BtUjwejeUw8UXRTbBQ",
+  "price_1TSmBtBtUjwejeUwb8xPSvvf",
+  // BYOW subscription tiers
+  "price_1TiUpGBtUjwejeUwWVs10yfp",
+  "price_1TiUpHBtUjwejeUwhjdoDCvI",
+  "price_1TiUpJBtUjwejeUwDifHr1Px",
+  // BYOW prompt packs
+  "price_1TiUpKBtUjwejeUw3uCQ0uGP",
+  "price_1TiUpKBtUjwejeUwgu5blcCQ",
+  "price_1TiUpLBtUjwejeUwqXnPdicz",
+]);
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -51,6 +77,9 @@ serve(async (req) => {
     const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp, visionBrief } = parsedBody.data;
 
     if (!priceId) throw new Error("Missing priceId");
+    if (!ALLOWED_PRICE_IDS.has(priceId)) {
+      return new Response(JSON.stringify({ error: "invalid_price" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Domain add-on (optional). The domain is reserved in the basket and only
     // registered after the webhook confirms payment. See `register-domain`.
