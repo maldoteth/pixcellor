@@ -164,12 +164,15 @@ const CallRoom = () => {
     if (preflightReady || preflightLoading) return;
     setPreflightLoading(true);
     try {
+      const ua = navigator.userAgent || "";
+      const isMobile = /iPad|iPhone|iPod|Android/.test(ua);
+      // Strict `max` constraints cause silent OverconstrainedError on some
+      // iPhone front cams and Samsung devices. Use `ideal` only on mobile.
+      const videoConstraints: MediaTrackConstraints = isMobile
+        ? { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24 } }
+        : { width: { ideal: 1280, max: 1280 }, height: { ideal: 720, max: 720 }, frameRate: { ideal: 30, max: 30 } };
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280, max: 1280 },
-          height: { ideal: 720, max: 720 },
-          frameRate: { ideal: 30, max: 30 },
-        },
+        video: videoConstraints,
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
       localStreamRef.current = stream;
