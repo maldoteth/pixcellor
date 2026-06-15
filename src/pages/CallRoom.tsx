@@ -837,10 +837,15 @@ const CallRoom = () => {
         )}
 
         {status === "calling" && (
-          <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Connecting…
+          <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm px-6">
+            <div className="flex flex-col items-center gap-3 text-center max-w-xs">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Connecting…
+              </div>
+              {failMessage && (
+                <p className="text-[12px] text-white/50 leading-relaxed">{failMessage}</p>
+              )}
             </div>
           </div>
         )}
