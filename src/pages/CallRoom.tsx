@@ -402,22 +402,27 @@ const CallRoom = () => {
 
   useEffect(() => () => { hangup(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
-  // Watchdog: if we're stuck on "calling" for >15s, surface a failure so the
-  // user isn't left staring at a "Connecting…" spinner forever.
+  // Soft watchdog: if we're still on "calling" after 15s, show a hint under
+  // the Connecting spinner. We DO NOT flip to "failed" here — only the peer
+  // connection's own "failed" state (with a 4s confirm) can do that. Slow
+  // TURN handshakes can legitimately take 20s+ on cellular/captive Wi-Fi.
   useEffect(() => {
-    if (status !== "calling") return;
+    if (status !== "calling") {
+      setFailMessage("");
+      return;
+    }
     if (watchdogRef.current) window.clearTimeout(watchdogRef.current);
     watchdogRef.current = window.setTimeout(() => {
       const pc = pcRef.current;
       const s = pc?.connectionState;
       const ice = pc?.iceConnectionState;
       if (s === "connected" || ice === "connected" || ice === "completed") return;
-      markFailed("Couldn't establish the call within 15 seconds. This usually means a firewall or restrictive network is blocking video. Try a different network or mobile data.");
+      setFailMessage("Still connecting… this can take up to 30 seconds on slow networks.");
     }, CONNECT_TIMEOUT_MS);
     return () => {
       if (watchdogRef.current) { window.clearTimeout(watchdogRef.current); watchdogRef.current = null; }
     };
-  }, [status, markFailed]);
+  }, [status]);
 
   // Dev-only stats poll so we can confirm bitrate / framerate / packet loss
   // are healthy after the tuning above. No-op in production.
