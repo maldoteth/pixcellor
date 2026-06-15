@@ -118,49 +118,20 @@ export default function ByowAdmin() {
     if (!nsName || !nsEmail) return;
     setNsCreating(true);
     try {
-      // Find user by email
-      const { data: userRow, error: uErr } = await supabase
-        .from("client_profiles")
-        .select("user_id")
-        .eq("email", nsEmail.trim().toLowerCase())
-        .maybeSingle();
-
-      let ownerUserId: string | null = userRow?.user_id || null;
-
-      if (!ownerUserId) {
-        toast.error(`No user found with email ${nsEmail}. Ask them to sign in at /byow/login first, then retry.`);
-        setNsCreating(false);
-        return;
-      }
-
-      const { data: site, error: sErr } = await supabase
-        .from("byow_sites")
-        .insert({
-          owner_user_id: ownerUserId,
+      const { data, error } = await supabase.functions.invoke("byow-admin-create-site", {
+        body: {
+          client_email: nsEmail.trim().toLowerCase(),
           display_name: nsName.trim(),
-          published_url: nsPublished.trim() || null,
-          lovable_preview_url: nsPreview.trim() || null,
-          lovable_project_id: nsProjectId.trim() || null,
-        })
-        .select()
-        .single();
-      if (sErr) throw sErr;
-
-      const tier = TIERS[nsTier];
-      const now = new Date();
-      const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      await supabase.from("byow_subscriptions").insert({
-        site_id: site.id,
-        owner_user_id: ownerUserId,
-        tier: nsTier,
-        status: "active",
-        prompt_quota: tier.quota,
-        prompts_used: 0,
-        current_period_start: now.toISOString(),
-        current_period_end: periodEnd.toISOString(),
+          published_url: nsPublished.trim() || undefined,
+          lovable_preview_url: nsPreview.trim() || undefined,
+          lovable_project_id: nsProjectId.trim() || undefined,
+          tier: nsTier,
+        },
       });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      toast.success(`Created "${nsName}" on ${tier.label} plan`);
+      toast.success(`Created "${nsName}" on ${TIERS[nsTier].label} plan. Invite email sent to ${nsEmail}.`);
       setNsName(""); setNsEmail(""); setNsPublished(""); setNsPreview(""); setNsProjectId("");
       setTab("sites");
       await loadAll();
@@ -170,6 +141,7 @@ export default function ByowAdmin() {
       setNsCreating(false);
     }
   };
+
 
   if (!authed) return <div className="min-h-screen bg-black text-white/40 flex items-center justify-center text-sm">Checking access…</div>;
 
