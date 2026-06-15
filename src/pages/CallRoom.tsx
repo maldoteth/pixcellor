@@ -336,7 +336,7 @@ const CallRoom = () => {
           window.clearInterval(iv);
         }
       }, 100);
-      e.track.onunmute = attachToEl;
+      e.track.onunmute = () => attachToEl();
     };
     pc.oniceconnectionstatechange = () => {
       console.log("[call] host ice state", peerId, pc.iceConnectionState);
