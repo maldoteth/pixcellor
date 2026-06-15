@@ -346,30 +346,6 @@ const CallRoom = () => {
           } else if (msg.type === "offer") {
             if (status !== "calling" && status !== "connected") setStatus("calling");
             await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-
-            // Guest attaches local tracks to the transceivers created by the
-            // offer (matching m-line order exactly).
-            if (room.role === "guest") {
-              const local = localStreamRef.current;
-              if (local) {
-                for (const tx of peer.getTransceivers()) {
-                  const kind = tx.receiver.track?.kind;
-                  if (!kind) continue;
-                  const localTrack = kind === "audio"
-                    ? local.getAudioTracks()[0]
-                    : kind === "video" ? local.getVideoTracks()[0] : null;
-                  if (localTrack && tx.sender) {
-                    await tx.sender.replaceTrack(localTrack);
-                    tx.direction = "sendrecv";
-                    if (kind === "video") {
-                      preferVP8(tx);
-                      await tuneVideoSender(tx.sender, "camera");
-                    }
-                  }
-                }
-              }
-            }
-
             await drainPendingIce(peer);
             const answer = await peer.createAnswer();
             await peer.setLocalDescription(answer);
