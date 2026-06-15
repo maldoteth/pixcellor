@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +16,6 @@ interface QueueItem {
   owner_user_id: string;
   admin_notes: string | null;
 }
-
 interface Site {
   id: string;
   display_name: string;
@@ -34,15 +32,12 @@ const TIERS = {
   agency: { label: "Agency", price: "£2,500", quota: 1000 },
 } as const;
 
-export default function ByowAdmin() {
-  const navigate = useNavigate();
-  const [authed, setAuthed] = useState(false);
+export default function ByowAdminPanel() {
   const [loading, setLoading] = useState(true);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
   const [tab, setTab] = useState<"queue" | "sites" | "new">("queue");
 
-  // New site form
   const [nsName, setNsName] = useState("");
   const [nsEmail, setNsEmail] = useState("");
   const [nsPublished, setNsPublished] = useState("");
@@ -50,29 +45,6 @@ export default function ByowAdmin() {
   const [nsProjectId, setNsProjectId] = useState("");
   const [nsTier, setNsTier] = useState<"care" | "studio" | "agency">("care");
   const [nsCreating, setNsCreating] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      const { data: s } = await supabase.auth.getSession();
-      if (!s.session) {
-        navigate("/byow/login", { replace: true });
-        return;
-      }
-      const { data: roleRow } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", s.session.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      if (!roleRow) {
-        toast.error("Admin access required");
-        navigate("/", { replace: true });
-        return;
-      }
-      setAuthed(true);
-      await loadAll();
-    })();
-  }, [navigate]);
 
   const loadAll = async () => {
     setLoading(true);
@@ -85,14 +57,14 @@ export default function ByowAdmin() {
     setLoading(false);
   };
 
+  useEffect(() => { void loadAll(); }, []);
+
   const setStatus = async (id: string, status: string, notes?: string) => {
     const patch: any = { status };
     if (status === "done" || status === "rejected") patch.resolved_at = new Date().toISOString();
     if (notes !== undefined) patch.admin_notes = notes;
     const { error } = await supabase.from("byow_admin_queue").update(patch).eq("id", id);
     if (error) { toast.error(error.message); return; }
-
-    // When a queue item is done, also post an assistant message
     if (status === "done") {
       const q = queue.find((x) => x.id === id);
       if (q) {
@@ -130,7 +102,6 @@ export default function ByowAdmin() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-
       toast.success(`Created "${nsName}" on ${TIERS[nsTier].label} plan. Invite email sent to ${nsEmail}.`);
       setNsName(""); setNsEmail(""); setNsPublished(""); setNsPreview(""); setNsProjectId("");
       setTab("sites");
@@ -142,114 +113,91 @@ export default function ByowAdmin() {
     }
   };
 
-
-  if (!authed) return <div className="min-h-screen bg-black text-white/40 flex items-center justify-center text-sm">Checking access…</div>;
-
   return (
-    <>
-      <div className="min-h-screen bg-black text-white">
-        <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
-          <div>
-            <div className="text-lg font-light">BYOW Admin</div>
-            <div className="text-xs text-white/40">Client portal control</div>
-          </div>
-          <div className="flex gap-1 text-xs">
-            {(["queue", "sites", "new"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-3 py-1.5 rounded-md border ${tab === t ? "border-white/40 bg-white/10" : "border-white/10 text-white/50 hover:text-white"}`}
-              >
-                {t === "queue" ? `Queue (${queue.filter(q => q.status === "pending").length})` : t === "sites" ? `Sites (${sites.length})` : "+ New site"}
-              </button>
-            ))}
-          </div>
-        </header>
-
-        <main className="max-w-5xl mx-auto px-6 py-8">
-          {loading && <div className="text-white/40 text-sm">Loading…</div>}
-
-          {!loading && tab === "queue" && (
-            <div className="space-y-3">
-              {queue.length === 0 && <div className="text-white/40 text-sm">Queue is empty.</div>}
-              {queue.map((q) => {
-                const site = sites.find((s) => s.id === q.site_id);
-                return (
-                  <QueueRow
-                    key={q.id}
-                    item={q}
-                    siteName={site?.display_name || "(unknown site)"}
-                    onAction={setStatus}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {!loading && tab === "sites" && (
-            <div className="space-y-3">
-              {sites.length === 0 && <div className="text-white/40 text-sm">No sites yet. Add one in "+ New site".</div>}
-              {sites.map((s) => <SiteRow key={s.id} site={s} onReload={loadAll} />)}
-            </div>
-          )}
-
-          {!loading && tab === "new" && (
-            <form onSubmit={createSite} className="max-w-lg space-y-4">
-              <div>
-                <Label className="text-xs text-white/60 uppercase tracking-wider">Client email</Label>
-                <Input value={nsEmail} onChange={(e) => setNsEmail(e.target.value)} required type="email"
-                  placeholder="client@example.com"
-                  className="mt-1 bg-white/5 border-white/10 text-white" />
-                <p className="text-[10px] text-white/40 mt-1">The client must have signed in at /byow/login at least once.</p>
-              </div>
-              <div>
-                <Label className="text-xs text-white/60 uppercase tracking-wider">Site display name</Label>
-                <Input value={nsName} onChange={(e) => setNsName(e.target.value)} required
-                  placeholder="Acme Bakery"
-                  className="mt-1 bg-white/5 border-white/10 text-white" />
-              </div>
-              <div>
-                <Label className="text-xs text-white/60 uppercase tracking-wider">Published URL</Label>
-                <Input value={nsPublished} onChange={(e) => setNsPublished(e.target.value)}
-                  placeholder="https://acme.com"
-                  className="mt-1 bg-white/5 border-white/10 text-white" />
-              </div>
-              <div>
-                <Label className="text-xs text-white/60 uppercase tracking-wider">Lovable preview URL</Label>
-                <Input value={nsPreview} onChange={(e) => setNsPreview(e.target.value)}
-                  placeholder="https://id-preview--xxx.lovable.app"
-                  className="mt-1 bg-white/5 border-white/10 text-white" />
-              </div>
-              <div>
-                <Label className="text-xs text-white/60 uppercase tracking-wider">Lovable project ID (optional)</Label>
-                <Input value={nsProjectId} onChange={(e) => setNsProjectId(e.target.value)}
-                  placeholder="ffd2b11e-..."
-                  className="mt-1 bg-white/5 border-white/10 text-white" />
-              </div>
-              <div>
-                <Label className="text-xs text-white/60 uppercase tracking-wider">Plan</Label>
-                <div className="mt-1 grid grid-cols-3 gap-2">
-                  {(Object.keys(TIERS) as Array<keyof typeof TIERS>).map((k) => (
-                    <button
-                      key={k}
-                      type="button"
-                      onClick={() => setNsTier(k)}
-                      className={`rounded-md border px-3 py-2 text-left ${nsTier === k ? "border-white bg-white/10" : "border-white/10 hover:border-white/30"}`}
-                    >
-                      <div className="text-sm">{TIERS[k].label}</div>
-                      <div className="text-[10px] text-white/50">{TIERS[k].price}/mo · {TIERS[k].quota} prompts</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Button type="submit" disabled={nsCreating} className="bg-white text-black hover:bg-white/90">
-                {nsCreating ? "Creating…" : "Create site & activate plan"}
-              </Button>
-            </form>
-          )}
-        </main>
+    <div className="rounded-xl border border-border bg-black text-white p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <div className="text-base font-semibold">BYOW client sites</div>
+          <div className="text-xs text-white/40">Queue, provisioned sites, and new client setup.</div>
+        </div>
+        <div className="flex gap-1 text-xs">
+          {(["queue", "sites", "new"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-3 py-1.5 rounded-md border ${tab === t ? "border-white/40 bg-white/10" : "border-white/10 text-white/50 hover:text-white"}`}
+            >
+              {t === "queue" ? `Queue (${queue.filter(q => q.status === "pending").length})` : t === "sites" ? `Sites (${sites.length})` : "+ New site"}
+            </button>
+          ))}
+        </div>
       </div>
-    </>
+
+      {loading && <div className="text-white/40 text-sm">Loading…</div>}
+
+      {!loading && tab === "queue" && (
+        <div className="space-y-3">
+          {queue.length === 0 && <div className="text-white/40 text-sm">Queue is empty.</div>}
+          {queue.map((q) => {
+            const site = sites.find((s) => s.id === q.site_id);
+            return <QueueRow key={q.id} item={q} siteName={site?.display_name || "(unknown site)"} onAction={setStatus} />;
+          })}
+        </div>
+      )}
+
+      {!loading && tab === "sites" && (
+        <div className="space-y-3">
+          {sites.length === 0 && <div className="text-white/40 text-sm">No sites yet. Add one in "+ New site".</div>}
+          {sites.map((s) => <SiteRow key={s.id} site={s} onReload={loadAll} />)}
+        </div>
+      )}
+
+      {!loading && tab === "new" && (
+        <form onSubmit={createSite} className="max-w-lg space-y-4">
+          <div>
+            <Label className="text-xs text-white/60 uppercase tracking-wider">Client email</Label>
+            <Input value={nsEmail} onChange={(e) => setNsEmail(e.target.value)} required type="email"
+              placeholder="client@example.com" className="mt-1 bg-white/5 border-white/10 text-white" />
+            <p className="text-[10px] text-white/40 mt-1">If they don't have an account, we'll email them an invite.</p>
+          </div>
+          <div>
+            <Label className="text-xs text-white/60 uppercase tracking-wider">Site display name</Label>
+            <Input value={nsName} onChange={(e) => setNsName(e.target.value)} required
+              placeholder="Acme Bakery" className="mt-1 bg-white/5 border-white/10 text-white" />
+          </div>
+          <div>
+            <Label className="text-xs text-white/60 uppercase tracking-wider">Published URL</Label>
+            <Input value={nsPublished} onChange={(e) => setNsPublished(e.target.value)}
+              placeholder="https://acme.com" className="mt-1 bg-white/5 border-white/10 text-white" />
+          </div>
+          <div>
+            <Label className="text-xs text-white/60 uppercase tracking-wider">Lovable preview URL</Label>
+            <Input value={nsPreview} onChange={(e) => setNsPreview(e.target.value)}
+              placeholder="https://id-preview--xxx.lovable.app" className="mt-1 bg-white/5 border-white/10 text-white" />
+          </div>
+          <div>
+            <Label className="text-xs text-white/60 uppercase tracking-wider">Lovable project ID (optional)</Label>
+            <Input value={nsProjectId} onChange={(e) => setNsProjectId(e.target.value)}
+              placeholder="ffd2b11e-..." className="mt-1 bg-white/5 border-white/10 text-white" />
+          </div>
+          <div>
+            <Label className="text-xs text-white/60 uppercase tracking-wider">Plan</Label>
+            <div className="mt-1 grid grid-cols-3 gap-2">
+              {(Object.keys(TIERS) as Array<keyof typeof TIERS>).map((k) => (
+                <button key={k} type="button" onClick={() => setNsTier(k)}
+                  className={`rounded-md border px-3 py-2 text-left ${nsTier === k ? "border-white bg-white/10" : "border-white/10 hover:border-white/30"}`}>
+                  <div className="text-sm">{TIERS[k].label}</div>
+                  <div className="text-[10px] text-white/50">{TIERS[k].price}/mo · {TIERS[k].quota} prompts</div>
+                </button>
+              ))}
+            </div>
+          </div>
+          <Button type="submit" disabled={nsCreating} className="bg-white text-black hover:bg-white/90">
+            {nsCreating ? "Creating…" : "Create site & activate plan"}
+          </Button>
+        </form>
+      )}
+    </div>
   );
 }
 
@@ -274,31 +222,21 @@ function QueueRow({ item, siteName, onAction }: {
         </div>
       </div>
       <div className="text-sm text-white/80 whitespace-pre-wrap bg-black/40 rounded-md p-3 mb-3">{item.prompt}</div>
-      <Textarea
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        placeholder="Optional note for the client (e.g. 'Changed hero copy & added testimonial section.')"
-        rows={2}
-        className="bg-white/5 border-white/10 text-white text-sm mb-2"
-      />
+      <Textarea value={notes} onChange={(e) => setNotes(e.target.value)}
+        placeholder="Optional note for the client" rows={2}
+        className="bg-white/5 border-white/10 text-white text-sm mb-2" />
       <div className="flex gap-2 flex-wrap">
         {item.status === "pending" && (
           <Button size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10"
-            onClick={() => onAction(item.id, "in_progress", notes)}>
-            Mark in progress
-          </Button>
+            onClick={() => onAction(item.id, "in_progress", notes)}>Mark in progress</Button>
         )}
         {item.status !== "done" && (
           <Button size="sm" className="bg-white text-black hover:bg-white/90"
-            onClick={() => onAction(item.id, "done", notes)}>
-            Mark done & notify client
-          </Button>
+            onClick={() => onAction(item.id, "done", notes)}>Mark done & notify client</Button>
         )}
         {item.status !== "rejected" && item.status !== "done" && (
           <Button size="sm" variant="ghost" className="text-white/60 hover:text-white hover:bg-white/10"
-            onClick={() => onAction(item.id, "rejected", notes)}>
-            Reject
-          </Button>
+            onClick={() => onAction(item.id, "rejected", notes)}>Reject</Button>
         )}
       </div>
     </div>
@@ -330,9 +268,7 @@ function SiteRow({ site, onReload }: { site: Site; onReload: () => void }) {
           </div>
         </div>
         <Button size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10"
-          onClick={() => setEditing((v) => !v)}>
-          {editing ? "Cancel" : "Edit URLs"}
-        </Button>
+          onClick={() => setEditing((v) => !v)}>{editing ? "Cancel" : "Edit URLs"}</Button>
       </div>
       {editing && (
         <div className="mt-3 space-y-2">

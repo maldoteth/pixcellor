@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft, RefreshCw, Sparkles } from "lucide-react";
+import { RefreshCw, Sparkles, ArrowLeft } from "lucide-react";
 import ByowPlansDialog from "@/components/byow/ByowPlansDialog";
-
 
 interface Site {
   id: string;
@@ -15,14 +13,12 @@ interface Site {
   published_url: string | null;
   status: string;
 }
-
 interface Sub {
   tier: string;
   status: string;
   prompt_quota: number;
   prompts_used: number;
 }
-
 interface Message {
   id: string;
   role: "user" | "assistant" | "system";
@@ -34,10 +30,7 @@ interface Message {
 
 type ViewMode = "split" | "live" | "preview";
 
-export default function ByowBuilder() {
-  const { siteId } = useParams<{ siteId: string }>();
-  const navigate = useNavigate();
-
+export default function ByowBuilderPane({ siteId, onBack }: { siteId: string; onBack?: () => void }) {
   const [loading, setLoading] = useState(true);
   const [site, setSite] = useState<Site | null>(null);
   const [sub, setSub] = useState<Sub | null>(null);
@@ -56,12 +49,7 @@ export default function ByowBuilder() {
   useEffect(() => {
     if (!siteId) return;
     (async () => {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        navigate("/byow/login", { replace: true });
-        return;
-      }
-
+      setLoading(true);
       const [{ data: siteData, error: siteErr }, { data: subData }, { data: msgsData }] = await Promise.all([
         supabase.from("byow_sites").select("*").eq("id", siteId).maybeSingle(),
         supabase.from("byow_subscriptions").select("*").eq("site_id", siteId).maybeSingle(),
@@ -69,7 +57,7 @@ export default function ByowBuilder() {
       ]);
       if (siteErr || !siteData) {
         toast.error("Site not found");
-        navigate("/byow", { replace: true });
+        onBack?.();
         return;
       }
       setSite(siteData as Site);
@@ -78,9 +66,8 @@ export default function ByowBuilder() {
       setLoading(false);
       setTimeout(() => textareaRef.current?.focus(), 50);
     })();
-  }, [siteId, navigate]);
+  }, [siteId, onBack]);
 
-  // Realtime updates for messages
   useEffect(() => {
     if (!siteId) return;
     const channel = supabase
@@ -116,16 +103,12 @@ export default function ByowBuilder() {
         body: { site_id: site.id, prompt: text, mode },
       });
       if (error) throw error;
-      if (data?.user_message && data?.assistant_message) {
-        // Realtime will deliver; do nothing
-      }
       if (typeof data?.prompts_remaining === "number" && sub) {
         setSub({ ...sub, prompts_used: sub.prompt_quota - data.prompts_remaining });
       }
       setTimeout(() => setPreviewKey((k) => k + 1), 500);
     } catch (err: any) {
-      const msg = err?.message || "Failed to send";
-      toast.error(msg);
+      toast.error(err?.message || "Failed to send");
       setInput(text);
     } finally {
       setSending(false);
@@ -134,7 +117,7 @@ export default function ByowBuilder() {
   };
 
   if (loading || !site) {
-    return <div className="min-h-screen bg-black text-white/40 flex items-center justify-center text-sm">Loading…</div>;
+    return <div className="rounded-xl border border-border bg-card/40 p-12 text-center text-sm text-muted-foreground">Loading site…</div>;
   }
 
   const remaining = sub ? Math.max(0, sub.prompt_quota - sub.prompts_used) : 0;
@@ -142,13 +125,14 @@ export default function ByowBuilder() {
 
   return (
     <>
-      <div className="min-h-screen bg-black text-white flex flex-col">
-        {/* Header */}
-        <header className="border-b border-white/10 px-4 sm:px-6 py-3 flex items-center justify-between gap-4 shrink-0">
+      <div className="rounded-xl border border-border bg-black text-white overflow-hidden">
+        <header className="border-b border-white/10 px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3 min-w-0">
-            <Link to="/byow" className="text-white/40 hover:text-white">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
+            {onBack && (
+              <button onClick={onBack} className="text-white/40 hover:text-white" aria-label="Back to sites">
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+            )}
             <div className="min-w-0">
               <div className="text-sm truncate">{site.display_name}</div>
               <div className="text-[10px] text-white/40 uppercase tracking-wider">
@@ -160,7 +144,6 @@ export default function ByowBuilder() {
             <button
               onClick={() => { setPlansTab(sub?.status === "active" ? "topup" : "subscription"); setPlansOpen(true); }}
               className="mr-2 px-3 py-1 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 flex items-center gap-1.5"
-              title="Buy more prompts or change plan"
             >
               <Sparkles className="h-3 w-3" />
               {sub?.status === "active" ? "Buy prompts" : "Activate plan"}
@@ -182,17 +165,14 @@ export default function ByowBuilder() {
               <RefreshCw className="h-3.5 w-3.5" />
             </button>
           </div>
-
         </header>
 
-        {/* Body */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-[380px_1fr] min-h-0">
-          {/* Chat */}
-          <aside className="border-r border-white/10 flex flex-col min-h-0 max-h-[60vh] lg:max-h-none">
+        <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] min-h-[640px]">
+          <aside className="border-r border-white/10 flex flex-col min-h-0 max-h-[480px] lg:max-h-none">
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 && (
                 <div className="text-xs text-white/40 px-2 py-6 text-center">
-                  Tell us what to change on your site. e.g. "Change the hero headline to 'Big tech for UK SMEs'" or "Add a testimonial section under pricing."
+                  Tell us what to change on your site. e.g. "Change the hero headline" or "Add a testimonial section."
                 </div>
               )}
               {messages.map((m) => (
@@ -211,9 +191,7 @@ export default function ByowBuilder() {
               ))}
               {sending && (
                 <div className="flex justify-start">
-                  <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white/50">
-                    Sending…
-                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white/50">Sending…</div>
                 </div>
               )}
             </div>
@@ -275,8 +253,6 @@ export default function ByowBuilder() {
             </div>
           </aside>
 
-
-          {/* Previews */}
           <section className="flex flex-col min-h-0 bg-neutral-950">
             {view === "split" ? (
               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-0">
@@ -293,6 +269,7 @@ export default function ByowBuilder() {
           </section>
         </div>
       </div>
+
       <ByowPlansDialog
         siteId={site.id}
         open={plansOpen}
@@ -304,18 +281,17 @@ export default function ByowBuilder() {
   );
 }
 
-
 function PreviewFrame({ title, url, cacheKey }: { title: string; url: string | null; cacheKey: number }) {
   if (!url) {
     return (
-      <div className="h-full flex items-center justify-center text-xs text-white/40 p-4 text-center">
-        No {title.toLowerCase()} URL configured for this site yet.
+      <div className="h-full flex items-center justify-center text-xs text-white/40 p-4 text-center min-h-[300px]">
+        No {title.toLowerCase()} URL configured yet.
       </div>
     );
   }
   const src = `${url}${url.includes("?") ? "&" : "?"}_pxc=${cacheKey}`;
   return (
-    <div className="h-full flex flex-col min-h-0">
+    <div className="h-full flex flex-col min-h-[300px]">
       <div className="px-3 py-1.5 border-b border-white/10 text-[10px] uppercase tracking-wider text-white/40 flex items-center justify-between">
         <span>{title}</span>
         <a href={url} target="_blank" rel="noopener noreferrer" className="hover:text-white">Open ↗</a>

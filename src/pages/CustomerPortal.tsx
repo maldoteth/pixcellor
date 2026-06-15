@@ -29,11 +29,13 @@ import {
   Wand2,
   EyeOff,
   Plus,
+  Sparkles,
 } from "lucide-react";
 import PortalScheduleAdminGrid from "@/components/portal/PortalScheduleAdminGrid";
 import PortalMyJobs from "@/components/portal/PortalMyJobs";
 import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
 import CallBookingsPanel from "@/components/portal/CallBookingsPanel";
+import ByowSitesTab from "@/components/byow/ByowSitesTab";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -107,7 +109,7 @@ const BUY_AGAIN_PACKAGES = [
   },
 ] as const;
 
-type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls";
+type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls" | "sites";
 
 type CustomerOrder = {
   id: string;
@@ -382,10 +384,11 @@ export default function CustomerPortal() {
 
   const navItems: { title: string; value: PortalTab; icon: typeof Home }[] = [
     { title: "Overview", value: "overview", icon: Home },
+    { title: "My sites", value: "sites", icon: Sparkles },
     { title: "Schedule", value: "schedule", icon: CalendarDays },
     ...(isCandidate ? [{ title: "My Jobs", value: "myjobs" as const, icon: Briefcase }] : []),
     ...(isClient ? [{ title: "Vacancies", value: "vacancies" as const, icon: Building2 }] : []),
-    
+
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
     { title: "Domains", value: "delivered", icon: Globe2 },
@@ -609,6 +612,11 @@ export default function CustomerPortal() {
                     <SectionHeader title="Recent orders" description="Your latest purchases and project status." count={orders.length} />
                     {orders.length === 0 ? <EmptyState icon={PackageCheck} title="No order history yet" text="Orders will appear here after checkout." /> : orders.slice(0, 3).map((order) => <OrderCard key={order.id} order={order} requirement={requirementsBySession.get(order.session_id)} />)}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="sites" className="min-w-0 space-y-4">
+                  <SectionHeader title="My managed sites" description="Chat your changes, watch us ship them in hours." />
+                  <ByowSitesTab />
                 </TabsContent>
 
                 <TabsContent value="schedule" className="min-w-0 space-y-4">
