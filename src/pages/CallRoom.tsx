@@ -193,30 +193,6 @@ const CallRoom = () => {
     }
   }, []);
 
-  // Reorder codec preferences so VP8 is first on the sender side. VP8 has
-  // hardware encoders on basically every device. We only reorder the primary
-  // media codecs and keep the rest (rtx/red/ulpfec/flexfec) in their original
-  // order so payload-type associations stay valid.
-  const preferVP8 = useCallback((transceiver: RTCRtpTransceiver) => {
-    try {
-      const caps = RTCRtpSender.getCapabilities?.("video");
-      if (!caps?.codecs || !transceiver.setCodecPreferences) return;
-      const score = (m: string) => {
-        if (m === "video/vp8") return 0;
-        if (m === "video/h264") return 1;
-        if (m === "video/vp9") return 2;
-        if (m === "video/av1") return 3;
-        return 4;
-      };
-      const primary = caps.codecs
-        .filter((c) => score(c.mimeType.toLowerCase()) < 4)
-        .sort((a, b) => score(a.mimeType.toLowerCase()) - score(b.mimeType.toLowerCase()));
-      const rest = caps.codecs.filter((c) => score(c.mimeType.toLowerCase()) === 4);
-      transceiver.setCodecPreferences([...primary, ...rest]);
-    } catch (e) {
-      console.warn("preferVP8 failed", e);
-    }
-  }, []);
 
   const markFailed = useCallback((message: string) => {
     setFailMessage(message);
@@ -317,11 +293,6 @@ const CallRoom = () => {
       for (const track of stream.getTracks()) {
         pc.addTrack(track, stream);
       }
-      const videoTx = pc.getTransceivers().find((t) => t.sender.track?.kind === "video");
-      if (videoTx) {
-        preferVP8(videoTx);
-        await tuneVideoSender(videoTx.sender, "camera");
-      }
 
       const channel = supabase.channel(`call:${room.booking_id}`, {
         config: { broadcast: { self: false } },
@@ -378,7 +349,7 @@ const CallRoom = () => {
     } catch (e) {
       handleMediaError(e);
     }
-  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError, preferVP8, tuneVideoSender, drainPendingIce]);
+  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError, drainPendingIce]);
 
   // Host: admit guest and begin call
   const startCall = useCallback(async () => {

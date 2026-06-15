@@ -1,27 +1,20 @@
-## Goal
-Stop the "Connection failed" card from firing on calls that would otherwise connect, while keeping the real bug fixes from the last patch (ICE candidate buffering, signal-handler error logging).
+Plan:
 
-## Changes (all in `src/pages/CallRoom.tsx` — no other files touched)
+1. Remove the VP8 codec-forcing path from `CallRoom.tsx`:
+   - Delete `preferVP8()` and its `setCodecPreferences(...)` call.
+   - Stop calling it after `addTrack(...)`.
 
-### 1. Revert guest to `addTrack` (the regression)
-In `enterWaitingRoom`, remove the `if (room.role === "host")` gate. Both host and guest call `addTrack` for every local track before the channel subscribes, exactly like it worked before today. Delete the guest-side `getTransceivers()` / `replaceTrack` / `tx.direction = "sendrecv"` block inside the `offer` branch of the signal handler — guest just does `setRemoteDescription → drainPendingIce → createAnswer → setLocalDescription → send answer`.
+2. Remove initial forced sender tuning from the call setup:
+   - Stop calling `tuneVideoSender(..., "camera")` immediately after adding tracks.
+   - This returns initial negotiation to the plain browser-managed `addTrack` flow that was working.
 
-### 2. Make the 15s watchdog non-fatal
-Replace the `markFailed(...)` call inside the `useEffect` watchdog with a **soft warning state** only. Concretely: keep the timer, but instead of flipping `status` to `"failed"`, only set `failMessage` to a "Still connecting… this can take up to 30s on slow networks" hint shown under the existing Connecting spinner. The card only flips to `failed` when the peer connection itself reports `failed` (see #3). This means a slow-but-successful connect no longer gets killed by our timer.
+3. Keep the non-regression safety fixes:
+   - Keep pending ICE candidate buffering/draining.
+   - Keep the softer connection failure handling.
+   - Keep the guest/host both using simple `addTrack(...)`.
 
-### 3. Require sustained failure before showing the failed card
-In `createPeer`:
-- `onconnectionstatechange`: on `failed`, don't call `markFailed` immediately. Start a 4s confirm-timer; if state is still `failed` after 4s, then `markFailed`. If state recovers to `connected`/`connecting` in that window, cancel the timer.
-- `oniceconnectionstatechange`: keep the existing `restartIce()` on `failed`, but raise the post-restart confirmation from 5s → 8s so an ICE restart actually has time to complete on relay.
-- Keep `markConnected()` on `connected`/`completed` (clears all pending fail timers).
+4. Make failure copy less misleading:
+   - Replace the “firewall/mobile carrier” wording with a neutral “The call could not connect. Please reload and try again.”
 
-### 4. Keep these from the last patch (no changes)
-- `pendingIceRef` queue + `drainPendingIce` after `setRemoteDescription` on both `offer` and `answer` branches.
-- `try/catch` wrapper around the broadcast signal handler with `console.error`.
-- The `failed` Stage render block (now only reachable via sustained pc-level failure, not the timer).
-
-## Why this fixes it
-The guest transceiver path was the actual regression — reverting it restores the working SDP flow. The watchdog and instant-failed handler were turning slow-but-recoverable connections into hard failures; softening both lets normal connects finish and only shows the failed UI when WebRTC itself gives up.
-
-## Out of scope
-Signaling protocol, `get-call-config`, recording, screen share, UI/styling, every other file.
+Technical note:
+- Claude’s read matches the current code: `preferVP8()` is present and called before offer/answer, which can break cross-browser negotiation. I did not identify that before the last fix; the last fix focused on the transceiver/m-line regression and timeout behavior, but left this codec-forcing regression in place.
