@@ -86,8 +86,8 @@ export default function CreateSiteWizard() {
           brief,
           display_name: displayName,
           business_type: businessType || template?.industry,
-          email: email || undefined,
           brand,
+
           template_key: template?.key,
           template_seed: template?.seed,
         },
