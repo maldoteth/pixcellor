@@ -429,7 +429,7 @@ export default function CreateSiteWizard() {
             <div className="text-xs uppercase tracking-wider text-white/40">Ready to ship</div>
             <h3 className="text-2xl md:text-3xl font-light mt-3">Generate your site</h3>
             <p className="text-white/60 mt-3 max-w-md mx-auto text-sm">
-              We'll generate a full single-page site using your brief, brand and {template ? `the ${template.label} template` : "a fresh layout"}.
+              We'll style the <span className="text-white">{template?.label ?? "selected"}</span> layout with your brand and brief.
               Takes ~10 seconds. Free to preview.
             </p>
             <Button
@@ -446,6 +446,12 @@ export default function CreateSiteWizard() {
             <p className="text-[11px] text-white/40 mt-4">
               You'll get a shareable preview URL. Publish to a permanent address with any plan.
             </p>
+            <div className="mt-6 text-[12px] text-white/50">
+              Want it pixel-perfect and human-built?{" "}
+              <Link to="/get-started" className="text-white underline underline-offset-2 hover:text-white/80">
+                Hire our team to customise →
+              </Link>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
