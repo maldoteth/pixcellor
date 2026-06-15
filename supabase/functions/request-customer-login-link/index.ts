@@ -28,7 +28,7 @@ const ALLOWED_REDIRECT_ORIGINS = new Set([
   'https://www.pixcellor.com',
   'https://morph-glide-show.lovable.app',
 ])
-const ALLOWED_REDIRECT_SUFFIXES = ['.lovable.app', '.lovable.dev']
+const ALLOWED_REDIRECT_SUFFIXES = ['.lovable.app', '.lovable.dev', '.lovableproject.com']
 function isAllowedRedirect(target: string): boolean {
   try {
     const u = new URL(target)
