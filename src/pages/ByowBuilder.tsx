@@ -293,9 +293,17 @@ export default function ByowBuilder() {
           </section>
         </div>
       </div>
+      <ByowPlansDialog
+        siteId={site.id}
+        open={plansOpen}
+        onOpenChange={setPlansOpen}
+        defaultTab={plansTab}
+        hasActiveSub={sub?.status === "active"}
+      />
     </>
   );
 }
+
 
 function PreviewFrame({ title, url, cacheKey }: { title: string; url: string | null; cacheKey: number }) {
   if (!url) {
