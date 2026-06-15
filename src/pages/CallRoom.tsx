@@ -703,7 +703,7 @@ const CallRoom = () => {
                   <Button
                     onClick={startCall}
                     disabled={!remoteJoined}
-                    className="w-full h-12 rounded-2xl bg-white text-black hover:bg-white/90 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="request-shimmer w-full h-12 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {remoteJoined ? "Start call" : "Waiting for customer…"}
                   </Button>
