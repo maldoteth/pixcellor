@@ -417,6 +417,23 @@ const CallRoom = () => {
 
   useEffect(() => () => { hangup(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
+  // Watchdog: if we're stuck on "calling" for >15s, surface a failure so the
+  // user isn't left staring at a "Connecting…" spinner forever.
+  useEffect(() => {
+    if (status !== "calling") return;
+    if (watchdogRef.current) window.clearTimeout(watchdogRef.current);
+    watchdogRef.current = window.setTimeout(() => {
+      const pc = pcRef.current;
+      const s = pc?.connectionState;
+      const ice = pc?.iceConnectionState;
+      if (s === "connected" || ice === "connected" || ice === "completed") return;
+      markFailed("Couldn't establish the call within 15 seconds. This usually means a firewall or restrictive network is blocking video. Try a different network or mobile data.");
+    }, CONNECT_TIMEOUT_MS);
+    return () => {
+      if (watchdogRef.current) { window.clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+    };
+  }, [status, markFailed]);
+
   // Dev-only stats poll so we can confirm bitrate / framerate / packet loss
   // are healthy after the tuning above. No-op in production.
   useEffect(() => {
