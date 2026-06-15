@@ -31,17 +31,29 @@ export default function CreateSiteWizard() {
   const [displayName, setDisplayName] = useState("");
   const [brief, setBrief] = useState("");
   const [businessType, setBusinessType] = useState("");
-  const [email, setEmail] = useState("");
   const [template, setTemplate] = useState<TemplatePreset | null>(null);
   const [brand, setBrand] = useState<Brand>(DEFAULT_BRAND);
   const [fontKey, setFontKey] = useState<string>("system");
   const [logoFile, setLogoFile] = useState<string>("");
   const [generating, setGenerating] = useState(false);
+  const [authed, setAuthed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (alive) setAuthed(!!data.session);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthed(!!session);
+    });
+    return () => { alive = false; sub.subscription.unsubscribe(); };
+  }, []);
 
   const canNext = () => {
     if (step === 0) return displayName.trim().length >= 2 && brief.trim().length >= 10;
     return true;
   };
+
 
   const pickFont = (f: FontTriple) => {
     setFontKey(f.key);
