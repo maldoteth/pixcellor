@@ -3,6 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import ByowPlansDialog from "@/components/byow/ByowPlansDialog";
+import { Sparkles } from "lucide-react";
+
 
 interface Site {
   id: string;
@@ -26,6 +29,8 @@ export default function ByowDashboard() {
   const [sites, setSites] = useState<Site[]>([]);
   const [subs, setSubs] = useState<Record<string, Sub>>({});
   const [email, setEmail] = useState<string>("");
+  const [plansFor, setPlansFor] = useState<{ id: string; hasSub: boolean; tab: "subscription" | "topup" } | null>(null);
+
 
   useEffect(() => {
     (async () => {
@@ -89,19 +94,19 @@ export default function ByowDashboard() {
               {sites.map((site) => {
                 const sub = subs[site.id];
                 const remaining = sub ? Math.max(0, sub.prompt_quota - sub.prompts_used) : 0;
+                const active = sub?.status === "active";
                 return (
-                  <Link
+                  <div
                     key={site.id}
-                    to={`/byow/site/${site.id}`}
-                    className="block rounded-xl border border-white/10 bg-white/5 p-5 hover:border-white/30 transition-colors"
+                    className="rounded-xl border border-white/10 bg-white/5 p-5 hover:border-white/30 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
+                      <Link to={`/byow/site/${site.id}`} className="min-w-0 flex-1">
                         <div className="text-lg">{site.display_name}</div>
                         {site.published_url && (
                           <div className="text-xs text-white/40 truncate mt-0.5">{site.published_url}</div>
                         )}
-                      </div>
+                      </Link>
                       <div className="text-right text-xs shrink-0">
                         {sub ? (
                           <>
@@ -113,13 +118,46 @@ export default function ByowDashboard() {
                         )}
                       </div>
                     </div>
-                  </Link>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Link
+                        to={`/byow/site/${site.id}`}
+                        className="text-xs px-3 py-1.5 rounded-md bg-white text-black hover:bg-white/90"
+                      >
+                        Open builder
+                      </Link>
+                      <button
+                        onClick={() => setPlansFor({ id: site.id, hasSub: active, tab: active ? "topup" : "subscription" })}
+                        className="text-xs px-3 py-1.5 rounded-md border border-white/20 text-white hover:bg-white/10 flex items-center gap-1.5"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        {active ? "Buy prompts" : "Choose a plan"}
+                      </button>
+                      {active && (
+                        <button
+                          onClick={() => setPlansFor({ id: site.id, hasSub: true, tab: "subscription" })}
+                          className="text-xs px-3 py-1.5 rounded-md border border-white/10 text-white/60 hover:text-white"
+                        >
+                          Change plan
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 );
               })}
             </div>
           )}
         </main>
       </div>
+      {plansFor && (
+        <ByowPlansDialog
+          siteId={plansFor.id}
+          open={true}
+          onOpenChange={(v) => { if (!v) setPlansFor(null); }}
+          defaultTab={plansFor.tab}
+          hasActiveSub={plansFor.hasSub}
+        />
+      )}
     </>
   );
 }
+
