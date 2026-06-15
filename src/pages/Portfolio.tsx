@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import SeoHead from "@/components/SeoHead";
+import { OG_PORTFOLIO } from "@/data/ogImages";
 
 type Project = {
   name: string;
@@ -39,6 +41,12 @@ export default function Portfolio() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      <SeoHead
+        title="Portfolio — Pixcellor"
+        description="Selected work from Pixcellor — modern, animated, and interactive websites and apps built for ambitious brands."
+        path="/portfolio"
+        image={OG_PORTFOLIO}
+      />
         <div className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8 md:py-16">
           <div className="mb-8 flex items-center justify-between gap-4">
             <Link
