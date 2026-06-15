@@ -192,7 +192,6 @@ const CallRoom = () => {
   // cause of jittery video.
   const preferVP8 = useCallback((transceiver: RTCRtpTransceiver) => {
     try {
-      // @ts-expect-error getCapabilities exists in modern browsers
       const caps = RTCRtpSender.getCapabilities?.("video");
       if (!caps?.codecs) return;
       const codecs = [...caps.codecs];
