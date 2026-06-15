@@ -1,41 +1,27 @@
-## Diagnosis
+## Goal
+Stop the "Connection failed" card from firing on calls that would otherwise connect, while keeping the real bug fixes from the last patch (ICE candidate buffering, signal-handler error logging).
 
-TURN secrets (`METERED_TURN_URLS / USERNAME / CREDENTIAL`) ARE configured in Cloud — so the "stuck on connecting" is **not** a TURN problem. The remaining causes are two real code bugs in `src/pages/CallRoom.tsx`:
+## Changes (all in `src/pages/CallRoom.tsx` — no other files touched)
 
-### Bug 1 — ICE candidates dropped before `setRemoteDescription`
-Host sends offer then immediately bursts ICE candidates. Realtime broadcast callbacks run concurrently, so `ice` messages frequently fire while the `offer` handler is still `await`-ing `setRemoteDescription`. `addIceCandidate` then throws `InvalidStateError`, the candidate is swallowed by the `console.warn`, and lost. Losing early candidates can prevent the connection from ever forming.
+### 1. Revert guest to `addTrack` (the regression)
+In `enterWaitingRoom`, remove the `if (room.role === "host")` gate. Both host and guest call `addTrack` for every local track before the channel subscribes, exactly like it worked before today. Delete the guest-side `getTransceivers()` / `replaceTrack` / `tx.direction = "sendrecv"` block inside the `offer` branch of the signal handler — guest just does `setRemoteDescription → drainPendingIce → createAnswer → setLocalDescription → send answer`.
 
-### Bug 2 — Failure states are invisible, "Connected" only watches one signal
-`pc.onconnectionstatechange` only handles the `"connected"` case. On older iOS Safari, `connectionState` can lag behind `iceConnectionState`, so the UI hangs on "Connecting…" while media is actually flowing. There's also no handling for `failed` / `disconnected` — a dead negotiation spins forever with no error and no retry.
+### 2. Make the 15s watchdog non-fatal
+Replace the `markFailed(...)` call inside the `useEffect` watchdog with a **soft warning state** only. Concretely: keep the timer, but instead of flipping `status` to `"failed"`, only set `failMessage` to a "Still connecting… this can take up to 30s on slow networks" hint shown under the existing Connecting spinner. The card only flips to `failed` when the peer connection itself reports `failed` (see #3). This means a slow-but-successful connect no longer gets killed by our timer.
 
-### Bonus — guest m-line ordering
-Guest currently pre-`addTrack`s before the offer arrives. If the host's offer ever emits m-lines in a different order (codec preference side-effects, screen share already attached), `setRemoteDescription` throws inside the Realtime callback and disappears. Belt-and-braces fix: drop pre-add on the guest, attach via `replaceTrack` on the transceivers created by the offer.
+### 3. Require sustained failure before showing the failed card
+In `createPeer`:
+- `onconnectionstatechange`: on `failed`, don't call `markFailed` immediately. Start a 4s confirm-timer; if state is still `failed` after 4s, then `markFailed`. If state recovers to `connected`/`connecting` in that window, cancel the timer.
+- `oniceconnectionstatechange`: keep the existing `restartIce()` on `failed`, but raise the post-restart confirmation from 5s → 8s so an ICE restart actually has time to complete on relay.
+- Keep `markConnected()` on `connected`/`completed` (clears all pending fail timers).
 
-## Implementation (one file: `src/pages/CallRoom.tsx`)
+### 4. Keep these from the last patch (no changes)
+- `pendingIceRef` queue + `drainPendingIce` after `setRemoteDescription` on both `offer` and `answer` branches.
+- `try/catch` wrapper around the broadcast signal handler with `console.error`.
+- The `failed` Stage render block (now only reachable via sustained pc-level failure, not the timer).
 
-### A. ICE candidate buffer
-- Add `pendingIceRef = useRef<RTCIceCandidateInit[]>([])`.
-- In the `ice` branch: if `peer.remoteDescription` is null, push into `pendingIceRef` and return. Otherwise `addIceCandidate`.
-- After every successful `setRemoteDescription` (guest after offer, host after answer), drain the queue with `for (const c of pendingIceRef.current) await peer.addIceCandidate(c)` then clear it.
+## Why this fixes it
+The guest transceiver path was the actual regression — reverting it restores the working SDP flow. The watchdog and instant-failed handler were turning slow-but-recoverable connections into hard failures; softening both lets normal connects finish and only shows the failed UI when WebRTC itself gives up.
 
-### B. Robust connection-state handling + 15s watchdog
-- Add `pc.oniceconnectionstatechange`: flip to `connected` when state is `"connected"` or `"completed"`.
-- Extend `pc.onconnectionstatechange`: on `"failed"` or `"disconnected"`, first call `pc.restartIce()`; if still not connected after 5s, set `status = "failed"` with a user-friendly message.
-- Add a 15-second watchdog started when `status` becomes `"calling"`. If not connected by then, set `status = "failed"` with: *"Connection couldn't be established. This is usually a corporate firewall or restrictive network. Try a different network or use mobile data."*
-- Add a `"failed"` Stage with a retry card (reuses the existing "ended" layout) — buttons: **Try again** (reload) and **Close**.
-
-### C. Wrap signal handler in try/catch
-Wrap the entire broadcast handler body in `try / catch (e) { console.error("[call] signal error", e); }` so future SDP issues stop dying silently.
-
-### D. Guest: attach via offer-created transceivers
-- In `enterWaitingRoom`, for guests (`room.role === "guest"`) **skip** the `pc.addTrack` loop.
-- In the `offer` branch (guest path): after `setRemoteDescription`, iterate `pc.getTransceivers()`. For each transceiver where `receiver.track.kind` is `audio` or `video`, find the matching local track on `localStreamRef.current` and call `transceiver.sender.replaceTrack(localTrack)` + set `transceiver.direction = "sendrecv"`. Then apply `preferVP8` + `tuneVideoSender` to the video transceiver, `createAnswer`, `setLocalDescription`, broadcast answer.
-- Host path unchanged — host is the offerer and owns m-line order.
-
-## Not touched
-Signaling protocol, `get-call-config`, recording, screen share toggle, UI/controls, styling, every other file.
-
-## Verification
-After edit: re-read the file, then ask you to start a call admin-side. Expected outcomes:
-- Call connects on most networks (ICE buffer fix).
-- If it still fails, you'll see "Connection couldn't be established…" within 15s instead of spinning forever — that's diagnostic gold.
+## Out of scope
+Signaling protocol, `get-call-config`, recording, screen share, UI/styling, every other file.
