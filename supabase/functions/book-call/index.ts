@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
         scheduled_at: b.preference === "specific" ? b.scheduled_at : null,
         source,
       })
-      .select("id, host_token, guest_token")
+      .select("id, host_token, guest_token, host_code, guest_code")
       .single();
 
     if (insertErr) {
@@ -161,9 +161,9 @@ Deno.serve(async (req) => {
     // Public site origin for call links
     const siteOrigin = Deno.env.get("PUBLIC_SITE_URL") || "https://pixcellor.com";
     const callLinkGuest = b.preference === "specific"
-      ? `${siteOrigin}/call/${bookingId}?t=${booking.guest_token}`
+      ? `${siteOrigin}/meeting/${booking.guest_code}`
       : "";
-    const callLinkHost = `${siteOrigin}/call/${bookingId}?t=${booking.host_token}`;
+    const callLinkHost = `${siteOrigin}/meeting/${booking.host_code}`;
 
     // Mirror into contacts CRM
     let contactId: string | null = null;

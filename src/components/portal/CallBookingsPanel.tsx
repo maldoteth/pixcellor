@@ -25,6 +25,8 @@ type Booking = {
   status: string;
   host_token: string;
   guest_token: string;
+  host_code: string | null;
+  guest_code: string | null;
   created_at: string;
   source: string | null;
 };
@@ -74,7 +76,7 @@ export default function CallBookingsPanel() {
     if (!silent) setRefreshing(true);
     const { data, error } = await supabase
       .from("call_bookings")
-      .select("id,name,email,phone,company,brief,preference,scheduled_at,status,host_token,guest_token,created_at,source")
+      .select("id,name,email,phone,company,brief,preference,scheduled_at,status,host_token,guest_token,host_code,guest_code,created_at,source")
       .order("scheduled_at", { ascending: true, nullsFirst: true })
       .limit(200);
     if (error) {
@@ -250,8 +252,12 @@ function BookingRow({
   onStatus: (id: string, status: string) => void;
   muted?: boolean;
 }) {
-  const hostUrl = `${origin}/call/${booking.id}?t=${booking.host_token}`;
-  const guestUrl = `${origin}/call/${booking.id}?t=${booking.guest_token}`;
+  const hostUrl = booking.host_code
+    ? `${origin}/meeting/${booking.host_code}`
+    : `${origin}/call/${booking.id}?t=${booking.host_token}`;
+  const guestUrl = booking.guest_code
+    ? `${origin}/meeting/${booking.guest_code}`
+    : `${origin}/call/${booking.id}?t=${booking.guest_token}`;
   const when = booking.scheduled_at ? fmtLondon(booking.scheduled_at) : `Callback — ${prefLabel(booking.preference)}`;
   const statusClass = STATUS_COLORS[booking.status] || "border-border bg-muted/20 text-muted-foreground";
 
