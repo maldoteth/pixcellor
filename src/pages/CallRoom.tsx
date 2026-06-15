@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Mic, MicOff, Video as VideoIcon, VideoOff, ScreenShare, ScreenShareOff, PhoneOff, Circle, Square, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mic, MicOff, Video as VideoIcon, VideoOff, ScreenShare, ScreenShareOff, PhoneOff, Circle, Square, Loader2, UserPlus, X, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,18 +16,30 @@ type Room = {
 };
 
 type SignalMessage =
-  | { type: "offer"; sdp: RTCSessionDescriptionInit; from: string }
-  | { type: "answer"; sdp: RTCSessionDescriptionInit; from: string }
-  | { type: "ice"; candidate: RTCIceCandidateInit; from: string }
-  | { type: "hello"; from: string; role: "host" | "guest"; reply?: boolean }
-  | { type: "start"; from: string }
-  | { type: "bye"; from: string };
+  | { type: "offer"; sdp: RTCSessionDescriptionInit; from: string; to?: string }
+  | { type: "answer"; sdp: RTCSessionDescriptionInit; from: string; to?: string }
+  | { type: "ice"; candidate: RTCIceCandidateInit; from: string; to?: string }
+  | { type: "hello"; from: string; role: "host" | "guest"; name?: string; reply?: boolean; to?: string }
+  | { type: "knock"; from: string; name?: string; to?: string }
+  | { type: "admit"; from: string; to: string }
+  | { type: "deny"; from: string; to: string }
+  | { type: "bye"; from: string; to?: string };
 
 const PEER_ID = crypto.randomUUID();
 
-type Stage = "loading" | "preflight" | "waiting" | "calling" | "connected" | "ended" | "failed";
+type Stage = "loading" | "preflight" | "waiting" | "calling" | "connected" | "ended" | "failed" | "denied";
 
 const CONNECT_TIMEOUT_MS = 15000;
+
+type RemotePeer = {
+  pc: RTCPeerConnection;
+  stream: MediaStream;
+  name: string;
+  videoEl?: HTMLVideoElement | null;
+  pendingIce: RTCIceCandidateInit[];
+};
+
+type PendingGuest = { peerId: string; name: string; at: number };
 
 const CallRoom = () => {
   const { bookingId = "" } = useParams<{ bookingId: string }>();
@@ -38,7 +50,6 @@ const CallRoom = () => {
   const [iceServers, setIceServers] = useState<RTCIceServer[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<Stage>("loading");
-  const [remoteJoined, setRemoteJoined] = useState(false);
   const [preflightReady, setPreflightReady] = useState(false);
   const [preflightLoading, setPreflightLoading] = useState(false);
 
@@ -47,10 +58,26 @@ const CallRoom = () => {
   const [sharing, setSharing] = useState(false);
   const [recording, setRecording] = useState(false);
 
+  // Multi-peer state
+  const [pendingGuests, setPendingGuests] = useState<PendingGuest[]>([]);
+  const [remotePeers, setRemotePeers] = useState<Array<{ peerId: string; name: string }>>([]);
+
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const previewVideoRef = useRef<HTMLVideoElement>(null);
+  // Guest-side single remote (host) video
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  // Host-side: map of peerId -> video element
+  const remoteVideoEls = useRef<Map<string, HTMLVideoElement | null>>(new Map());
+
+  // Guest-side single PC (to host)
   const pcRef = useRef<RTCPeerConnection | null>(null);
+  const hostPeerIdRef = useRef<string | null>(null);
+  const guestPendingIceRef = useRef<RTCIceCandidateInit[]>([]);
+
+  // Host-side peers map
+  const peersRef = useRef<Map<string, RemotePeer>>(new Map());
+  const deniedRef = useRef<Set<string>>(new Set());
+
   const localStreamRef = useRef<MediaStream | null>(null);
   const cameraTrackRef = useRef<MediaStreamTrack | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
@@ -58,13 +85,12 @@ const CallRoom = () => {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const recordStartRef = useRef<number>(0);
-  const repliedHelloRef = useRef<Set<string>>(new Set());
-  const negotiationStartedRef = useRef(false);
-  const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
   const watchdogRef = useRef<number | null>(null);
   const failTimerRef = useRef<number | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const [failMessage, setFailMessage] = useState<string>("");
+
+  const isHost = room?.role === "host";
 
   // 1. Verify token + fetch ICE config
   useEffect(() => {
@@ -137,7 +163,6 @@ const CallRoom = () => {
       });
       localStreamRef.current = stream;
       cameraTrackRef.current = stream.getVideoTracks()[0] ?? null;
-      // Apply current toggle states
       const aTrack = stream.getAudioTracks()[0];
       if (aTrack) aTrack.enabled = micOn;
       if (cameraTrackRef.current) cameraTrackRef.current.enabled = camOn;
@@ -171,9 +196,6 @@ const CallRoom = () => {
     channelRef.current?.send({ type: "broadcast", event: "signal", payload: msg });
   }, []);
 
-  // Apply sane bitrate / framerate / degradation hints so video doesn't stutter
-  // on mid-grade networks. "camera" prioritises smooth motion; "screen" keeps
-  // resolution sharp so text stays readable.
   const tuneVideoSender = useCallback(async (
     sender: RTCRtpSender | undefined,
     mode: "camera" | "screen",
@@ -194,22 +216,14 @@ const CallRoom = () => {
     }
   }, []);
 
-
   const markFailed = useCallback((message: string) => {
     setFailMessage(message);
     setStatus("failed");
   }, []);
 
-  const drainPendingIce = useCallback(async (peer: RTCPeerConnection) => {
-    if (!peer.remoteDescription) return;
-    const queue = pendingIceRef.current;
-    pendingIceRef.current = [];
-    for (const c of queue) {
-      try { await peer.addIceCandidate(c); } catch (e) { console.warn("[call] drained ice add failed", e); }
-    }
-  }, []);
+  // ---------------- GUEST side helpers ----------------
 
-  const createPeer = useCallback((): RTCPeerConnection => {
+  const createGuestPeer = useCallback((): RTCPeerConnection => {
     const safeIce: RTCIceServer[] = [];
     for (const s of iceServers ?? []) {
       const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
@@ -218,29 +232,25 @@ const CallRoom = () => {
     }
     const pc = new RTCPeerConnection({ iceServers: safeIce });
     pc.onicecandidate = (e) => {
-      if (e.candidate) sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID });
+      if (e.candidate) {
+        sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID, to: hostPeerIdRef.current ?? undefined });
+      }
     };
     pc.ontrack = (e) => {
-      // Build a remote stream manually — relying on e.streams[0] is unreliable
-      // across browsers (sometimes empty when peers use addTrack without an
-      // explicit stream id match). Aggregating tracks ensures both audio and
-      // video from the remote peer attach to the same <video> element.
       let remote = remoteStreamRef.current;
       if (!remote) {
         remote = new MediaStream();
         remoteStreamRef.current = remote;
       }
-      try { remote.addTrack(e.track); } catch { /* duplicate add is fine */ }
-      e.track.onunmute = () => {
+      try { remote.addTrack(e.track); } catch { /* dup */ }
+      const apply = () => {
         if (remoteVideoRef.current && remoteVideoRef.current.srcObject !== remote) {
           remoteVideoRef.current.srcObject = remote;
-          remoteVideoRef.current.play().catch(() => { /* autoplay may need user gesture */ });
+          remoteVideoRef.current.play().catch(() => { /* noop */ });
         }
       };
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = remote;
-        remoteVideoRef.current.play().catch(() => { /* autoplay may need user gesture */ });
-      }
+      e.track.onunmute = apply;
+      apply();
     };
     const markConnected = () => {
       setStatus("connected");
@@ -267,9 +277,6 @@ const CallRoom = () => {
       const s = pc.connectionState;
       if (s === "connected") markConnected();
       if (s === "failed") {
-        // Require sustained failure — some browsers flip to "failed" briefly
-        // during ICE restart or candidate pair swap. Only surface if still
-        // failed after 4s.
         if (failTimerRef.current) return;
         failTimerRef.current = window.setTimeout(() => {
           failTimerRef.current = null;
@@ -282,34 +289,102 @@ const CallRoom = () => {
     return pc;
   }, [iceServers, sendSignal, markFailed]);
 
-  const startNegotiation = useCallback(async () => {
-    const pc = pcRef.current;
-    if (!pc || !room) return;
-    if (room.role !== "host") return;
-    if (negotiationStartedRef.current) return;
-    negotiationStartedRef.current = true;
-    setStatus("calling");
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    sendSignal({ type: "offer", sdp: offer, from: PEER_ID });
-  }, [room, sendSignal]);
+  // ---------------- HOST side helpers ----------------
 
-  // Enter waiting room: open peer + channel using the preflight stream
+  const createHostPeerFor = useCallback((peerId: string, name: string): RemotePeer => {
+    const safeIce: RTCIceServer[] = [];
+    for (const s of iceServers ?? []) {
+      const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
+      const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
+      if (cleaned.length) safeIce.push({ ...s, urls: cleaned });
+    }
+    const pc = new RTCPeerConnection({ iceServers: safeIce });
+    const stream = new MediaStream();
+    const peer: RemotePeer = { pc, stream, name, pendingIce: [] };
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate) {
+        sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID, to: peerId });
+      }
+    };
+    pc.ontrack = (e) => {
+      try { peer.stream.addTrack(e.track); } catch { /* dup */ }
+      const el = remoteVideoEls.current.get(peerId);
+      if (el && el.srcObject !== peer.stream) {
+        el.srcObject = peer.stream;
+        el.play().catch(() => { /* noop */ });
+      }
+      e.track.onunmute = () => {
+        const el2 = remoteVideoEls.current.get(peerId);
+        if (el2 && el2.srcObject !== peer.stream) {
+          el2.srcObject = peer.stream;
+          el2.play().catch(() => { /* noop */ });
+        }
+      };
+    };
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === "connected") {
+        setStatus((s) => (s === "waiting" || s === "calling" ? "connected" : s));
+      }
+      if (pc.connectionState === "failed" || pc.connectionState === "closed") {
+        // Tear down this peer only
+        removeHostPeer(peerId);
+      }
+    };
+
+    // Attach local tracks (current camera + audio, or active screen)
+    const localStream = screenStreamRef.current ?? localStreamRef.current;
+    if (localStream) {
+      for (const t of localStream.getTracks()) {
+        pc.addTrack(t, localStream);
+      }
+    }
+
+    peersRef.current.set(peerId, peer);
+    setRemotePeers((arr) => arr.some((p) => p.peerId === peerId) ? arr : [...arr, { peerId, name }]);
+    return peer;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [iceServers, sendSignal]);
+
+  const removeHostPeer = useCallback((peerId: string) => {
+    const p = peersRef.current.get(peerId);
+    if (p) {
+      try { p.pc.close(); } catch { /* noop */ }
+      peersRef.current.delete(peerId);
+    }
+    remoteVideoEls.current.delete(peerId);
+    setRemotePeers((arr) => arr.filter((x) => x.peerId !== peerId));
+  }, []);
+
+  const admitGuest = useCallback(async (peerId: string, name: string) => {
+    setPendingGuests((arr) => arr.filter((g) => g.peerId !== peerId));
+    if (peersRef.current.has(peerId)) return;
+    const peer = createHostPeerFor(peerId, name);
+    sendSignal({ type: "admit", from: PEER_ID, to: peerId });
+    try {
+      const offer = await peer.pc.createOffer();
+      await peer.pc.setLocalDescription(offer);
+      sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: peerId });
+      setStatus((s) => (s === "waiting" ? "calling" : s));
+    } catch (e) {
+      console.error("[call] host offer failed", e);
+      removeHostPeer(peerId);
+    }
+  }, [createHostPeerFor, removeHostPeer, sendSignal]);
+
+  const denyGuest = useCallback((peerId: string) => {
+    deniedRef.current.add(peerId);
+    setPendingGuests((arr) => arr.filter((g) => g.peerId !== peerId));
+    sendSignal({ type: "deny", from: PEER_ID, to: peerId });
+  }, [sendSignal]);
+
+  // ---------------- Enter waiting room (both roles) ----------------
+
   const enterWaitingRoom = useCallback(async () => {
     if (!room || !iceServers || !localStreamRef.current) return;
     try {
       const stream = localStreamRef.current;
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
-
-      const pc = createPeer();
-      pcRef.current = pc;
-
-      // Both peers attach local tracks up front. (Earlier attempt to defer
-      // guest tracks until after setRemoteDescription caused malformed
-      // answers on some Chromium builds.)
-      for (const track of stream.getTracks()) {
-        pc.addTrack(track, stream);
-      }
 
       const channel = supabase.channel(`call:${room.booking_id}`, {
         config: { broadcast: { self: false } },
@@ -318,46 +393,100 @@ const CallRoom = () => {
       channel.on("broadcast", { event: "signal" }, async ({ payload }) => {
         const msg = payload as SignalMessage;
         if (msg.from === PEER_ID) return;
-        const peer = pcRef.current;
-        if (!peer) return;
+        // Address filter
+        if (msg.type !== "hello" && msg.type !== "knock" && "to" in msg && msg.to && msg.to !== PEER_ID) return;
+        if ((msg.type === "hello" || msg.type === "knock") && msg.to && msg.to !== PEER_ID) return;
 
         try {
-          if (msg.type === "hello") {
-            setRemoteJoined(true);
-            // Reply once so a peer that joined first also learns we're here.
-            if (!msg.reply && !repliedHelloRef.current.has(msg.from)) {
-              repliedHelloRef.current.add(msg.from);
-              sendSignal({ type: "hello", from: PEER_ID, role: room.role, reply: true });
+          if (isHost) {
+            // ----- HOST -----
+            if (msg.type === "hello" || msg.type === "knock") {
+              if (msg.from === PEER_ID) return;
+              if (deniedRef.current.has(msg.from)) return;
+              if (peersRef.current.has(msg.from)) return;
+              const name = (msg as { name?: string }).name?.trim() || "Guest";
+              // Reply so the guest learns our PEER_ID
+              sendSignal({ type: "hello", from: PEER_ID, role: "host", reply: true, to: msg.from });
+              setPendingGuests((arr) => {
+                if (arr.some((g) => g.peerId === msg.from)) return arr;
+                return [...arr, { peerId: msg.from, name, at: Date.now() }];
+              });
+            } else if (msg.type === "answer") {
+              const p = peersRef.current.get(msg.from);
+              if (!p) return;
+              await p.pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+              for (const c of p.pendingIce) {
+                try { await p.pc.addIceCandidate(c); } catch { /* noop */ }
+              }
+              p.pendingIce = [];
+            } else if (msg.type === "ice") {
+              const p = peersRef.current.get(msg.from);
+              if (!p) return;
+              if (!p.pc.remoteDescription) {
+                p.pendingIce.push(msg.candidate);
+              } else {
+                try { await p.pc.addIceCandidate(msg.candidate); } catch (e) { console.warn("[call] ice add failed", e); }
+              }
+            } else if (msg.type === "bye") {
+              removeHostPeer(msg.from);
             }
-          } else if (msg.type === "start") {
-            // Host signalled "start" — guest just waits for the offer to arrive.
-          } else if (msg.type === "offer") {
-            if (status !== "calling" && status !== "connected") setStatus("calling");
-            await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-            await drainPendingIce(peer);
-            const answer = await peer.createAnswer();
-            await peer.setLocalDescription(answer);
-            sendSignal({ type: "answer", sdp: answer, from: PEER_ID });
-          } else if (msg.type === "answer") {
-            await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-            await drainPendingIce(peer);
-          } else if (msg.type === "ice") {
-            if (!peer.remoteDescription) {
-              pendingIceRef.current.push(msg.candidate);
-            } else {
-              try { await peer.addIceCandidate(msg.candidate); } catch (e) { console.warn("[call] ice add failed", e); }
+          } else {
+            // ----- GUEST -----
+            const peer = pcRef.current;
+            if (msg.type === "hello" && msg.role === "host") {
+              hostPeerIdRef.current = msg.from;
+            } else if (msg.type === "admit") {
+              hostPeerIdRef.current = msg.from;
+              setStatus((s) => (s === "waiting" ? "calling" : s));
+            } else if (msg.type === "deny") {
+              setStatus("denied");
+              try { pcRef.current?.close(); } catch { /* noop */ }
+              pcRef.current = null;
+            } else if (msg.type === "offer" && peer) {
+              hostPeerIdRef.current = msg.from;
+              setStatus((s) => (s === "calling" || s === "connected" ? s : "calling"));
+              await peer.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+              const queue = guestPendingIceRef.current;
+              guestPendingIceRef.current = [];
+              for (const c of queue) {
+                try { await peer.addIceCandidate(c); } catch { /* noop */ }
+              }
+              const answer = await peer.createAnswer();
+              await peer.setLocalDescription(answer);
+              sendSignal({ type: "answer", sdp: answer, from: PEER_ID, to: msg.from });
+            } else if (msg.type === "ice" && peer) {
+              if (!peer.remoteDescription) {
+                guestPendingIceRef.current.push(msg.candidate);
+              } else {
+                try { await peer.addIceCandidate(msg.candidate); } catch (e) { console.warn("[call] ice add failed", e); }
+              }
+            } else if (msg.type === "bye") {
+              if (msg.from === hostPeerIdRef.current) {
+                setStatus("ended");
+              }
             }
-          } else if (msg.type === "bye") {
-            setRemoteJoined(false);
           }
         } catch (e) {
           console.error("[call] signal handler error", e);
         }
       });
 
+      if (!isHost) {
+        const pc = createGuestPeer();
+        pcRef.current = pc;
+        for (const track of stream.getTracks()) {
+          pc.addTrack(track, stream);
+        }
+      }
+
       await channel.subscribe(async (s) => {
         if (s === "SUBSCRIBED") {
-          sendSignal({ type: "hello", from: PEER_ID, role: room.role });
+          if (isHost) {
+            // Announce host presence so any already-waiting guests learn our PEER_ID and re-knock.
+            sendSignal({ type: "hello", from: PEER_ID, role: "host" });
+          } else {
+            sendSignal({ type: "knock", from: PEER_ID, name: room.display_name || "Guest" });
+          }
         }
       });
 
@@ -366,18 +495,20 @@ const CallRoom = () => {
     } catch (e) {
       handleMediaError(e);
     }
-  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError, drainPendingIce]);
-
-  // Host: admit guest and begin call
-  const startCall = useCallback(async () => {
-    sendSignal({ type: "start", from: PEER_ID });
-    await startNegotiation();
-  }, [sendSignal, startNegotiation]);
+  }, [room, iceServers, createGuestPeer, sendSignal, handleMediaError, isHost, removeHostPeer]);
 
   const hangup = useCallback(() => {
     sendSignal({ type: "bye", from: PEER_ID });
-    pcRef.current?.close();
-    pcRef.current = null;
+    if (isHost) {
+      for (const [, p] of peersRef.current) {
+        try { p.pc.close(); } catch { /* noop */ }
+      }
+      peersRef.current.clear();
+      setRemotePeers([]);
+    } else {
+      try { pcRef.current?.close(); } catch { /* noop */ }
+      pcRef.current = null;
+    }
     remoteStreamRef.current = null;
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -387,25 +518,15 @@ const CallRoom = () => {
       recorderRef.current.stop();
     }
     setStatus("ended");
-  }, [sendSignal]);
+  }, [sendSignal, isHost]);
 
   useEffect(() => () => { hangup(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
-  // Soft watchdog: if we're still on "calling" after 15s, show a hint under
-  // the Connecting spinner. We DO NOT flip to "failed" here — only the peer
-  // connection's own "failed" state (with a 4s confirm) can do that. Slow
-  // TURN handshakes can legitimately take 20s+ on cellular/captive Wi-Fi.
+  // Soft watchdog
   useEffect(() => {
-    if (status !== "calling") {
-      setFailMessage("");
-      return;
-    }
+    if (status !== "calling") { setFailMessage(""); return; }
     if (watchdogRef.current) window.clearTimeout(watchdogRef.current);
     watchdogRef.current = window.setTimeout(() => {
-      const pc = pcRef.current;
-      const s = pc?.connectionState;
-      const ice = pc?.iceConnectionState;
-      if (s === "connected" || ice === "connected" || ice === "completed") return;
       setFailMessage("Still connecting… this can take up to 30 seconds on slow networks.");
     }, CONNECT_TIMEOUT_MS);
     return () => {
@@ -413,39 +534,17 @@ const CallRoom = () => {
     };
   }, [status]);
 
-  // Dev-only stats poll so we can confirm bitrate / framerate / packet loss
-  // are healthy after the tuning above. No-op in production.
+  // Attach remote streams to grid video elements when refs become available
   useEffect(() => {
-    if (status !== "connected" || !import.meta.env.DEV) return;
-    let lastBytes = 0;
-    let lastTs = 0;
-    const id = window.setInterval(async () => {
-      const pc = pcRef.current;
-      if (!pc) return;
-      try {
-        const stats = await pc.getStats();
-        stats.forEach((report) => {
-          if (report.type === "outbound-rtp" && report.kind === "video") {
-            const r = report as RTCOutboundRtpStreamStats & {
-              framesPerSecond?: number;
-              bytesSent?: number;
-              timestamp?: number;
-            };
-            const bytes = r.bytesSent ?? 0;
-            const ts = r.timestamp ?? Date.now();
-            const kbps = lastTs ? Math.round(((bytes - lastBytes) * 8) / (ts - lastTs)) : 0;
-            lastBytes = bytes;
-            lastTs = ts;
-            // eslint-disable-next-line no-console
-            console.log(`[call] video ↑ ${kbps} kbps, ${r.framesPerSecond ?? "?"} fps`);
-          }
-        });
-      } catch {
-        /* ignore */
+    for (const { peerId } of remotePeers) {
+      const el = remoteVideoEls.current.get(peerId);
+      const p = peersRef.current.get(peerId);
+      if (el && p && el.srcObject !== p.stream) {
+        el.srcObject = p.stream;
+        el.play().catch(() => { /* noop */ });
       }
-    }, 3000);
-    return () => window.clearInterval(id);
-  }, [status]);
+    }
+  }, [remotePeers]);
 
   const toggleMic = () => {
     const t = localStreamRef.current?.getAudioTracks()[0];
@@ -456,11 +555,22 @@ const CallRoom = () => {
     if (t) { t.enabled = !t.enabled; setCamOn(t.enabled); }
   };
 
+  const allVideoSenders = useCallback((): RTCRtpSender[] => {
+    if (isHost) {
+      const senders: RTCRtpSender[] = [];
+      for (const [, p] of peersRef.current) {
+        const s = p.pc.getSenders().find((x) => x.track?.kind === "video");
+        if (s) senders.push(s);
+      }
+      return senders;
+    }
+    const s = pcRef.current?.getSenders().find((x) => x.track?.kind === "video");
+    return s ? [s] : [];
+  }, [isHost]);
+
   const toggleShare = async () => {
-    const pc = pcRef.current;
-    if (!pc) return;
-    const sender = pc.getSenders().find((s) => s.track?.kind === "video");
-    if (!sender) return;
+    const senders = allVideoSenders();
+    if (senders.length === 0 && !sharing) return;
 
     if (!sharing) {
       try {
@@ -470,8 +580,10 @@ const CallRoom = () => {
         });
         screenStreamRef.current = screen;
         const screenTrack = screen.getVideoTracks()[0];
-        await sender.replaceTrack(screenTrack);
-        await tuneVideoSender(sender, "screen");
+        for (const sender of senders) {
+          await sender.replaceTrack(screenTrack);
+          await tuneVideoSender(sender, "screen");
+        }
         if (localVideoRef.current) localVideoRef.current.srcObject = screen;
         setSharing(true);
         screenTrack.onended = () => { void revertShare(); };
@@ -484,12 +596,13 @@ const CallRoom = () => {
   };
 
   const revertShare = useCallback(async () => {
-    const pc = pcRef.current;
-    const sender = pc?.getSenders().find((s) => s.track?.kind === "video");
+    const senders = allVideoSenders();
     const camTrack = cameraTrackRef.current;
-    if (sender && camTrack) {
-      await sender.replaceTrack(camTrack);
-      await tuneVideoSender(sender, "camera");
+    if (camTrack) {
+      for (const sender of senders) {
+        await sender.replaceTrack(camTrack);
+        await tuneVideoSender(sender, "camera");
+      }
     }
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current = null;
@@ -497,7 +610,7 @@ const CallRoom = () => {
       localVideoRef.current.srcObject = localStreamRef.current;
     }
     setSharing(false);
-  }, [tuneVideoSender]);
+  }, [tuneVideoSender, allVideoSenders]);
 
   const toggleRecord = async () => {
     if (recording) {
@@ -597,7 +710,6 @@ const CallRoom = () => {
             {room.role === "host" ? `Calling with ${room.display_name}` : `You're meeting the ${room.display_name}`}
           </p>
 
-          {/* Camera preview */}
           <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/15 bg-black mb-4">
             <video
               ref={previewVideoRef}
@@ -622,7 +734,6 @@ const CallRoom = () => {
             )}
           </div>
 
-          {/* Pre-join mic / cam toggles */}
           {preflightReady && (
             <div className="flex items-center justify-center gap-3 mb-5">
               <button
@@ -680,13 +791,30 @@ const CallRoom = () => {
               onClick={enterWaitingRoom}
               className="request-shimmer w-full h-12 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium"
             >
-              {room.role === "host" ? "Enter call room" : "Join waiting room"}
+              {room.role === "host" ? "Enter call room" : "Ask to join"}
             </Button>
           )}
           <p className="text-[11px] text-white/40 mt-4">
             You can change mic and camera anytime during the call.
           </p>
         </motion.div>
+      </div>
+    );
+  }
+
+  if (status === "denied") {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-8 text-center">
+        <div className="max-w-sm w-full">
+          <p className="text-2xl font-light mb-2">Request declined</p>
+          <p className="text-white/60 text-sm mb-6">The host declined your request to join this call.</p>
+          <button
+            onClick={() => window.close()}
+            className="h-11 px-6 rounded-2xl border border-white/20 hover:bg-white/[0.06] text-sm"
+          >
+            Close tab
+          </button>
+        </div>
       </div>
     );
   }
@@ -747,6 +875,8 @@ const CallRoom = () => {
 
   // waiting / calling / connected
   const inWaiting = status === "waiting";
+  const remoteCount = isHost ? remotePeers.length : (status === "connected" ? 1 : 0);
+  const gridCols = remoteCount <= 1 ? "grid-cols-1" : remoteCount === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3";
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col" style={{ minHeight: "100dvh" }}>
@@ -757,12 +887,12 @@ const CallRoom = () => {
           <span className="text-sm font-medium tracking-wide">Pixcellor™</span>
           <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">
             {status === "connected"
-              ? "Connected"
+              ? isHost ? `Connected · ${remotePeers.length} guest${remotePeers.length === 1 ? "" : "s"}` : "Connected"
               : status === "calling"
               ? "Connecting…"
-              : remoteJoined
-              ? room.role === "host" ? "Customer is waiting" : "Host is here"
-              : room.role === "host" ? "Waiting for customer…" : "Waiting for host…"}
+              : isHost
+              ? pendingGuests.length > 0 ? `${pendingGuests.length} waiting to join` : "Waiting for guests…"
+              : "Waiting for host to let you in…"}
           </span>
         </div>
         {recording && (
@@ -775,49 +905,100 @@ const CallRoom = () => {
 
       {/* Stage */}
       <div className="relative flex-1 bg-black">
-        <video
-          ref={remoteVideoRef}
-          autoPlay
-          playsInline
-          className={cn(
-            "absolute inset-0 w-full h-full object-contain",
-            (inWaiting || status === "calling") && "opacity-0",
-          )}
-        />
+        {/* Guest: single host video */}
+        {!isHost && (
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className={cn(
+              "absolute inset-0 w-full h-full object-contain",
+              (inWaiting || status === "calling") && "opacity-0",
+            )}
+          />
+        )}
+
+        {/* Host: grid of remote guests */}
+        {isHost && remotePeers.length > 0 && (
+          <div className={cn("absolute inset-0 grid gap-2 p-2", gridCols)}>
+            {remotePeers.map(({ peerId, name }) => (
+              <div key={peerId} className="relative bg-black/60 rounded-xl overflow-hidden border border-white/10">
+                <video
+                  ref={(el) => { remoteVideoEls.current.set(peerId, el); }}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-contain"
+                />
+                <span className="absolute left-2 bottom-2 text-[11px] text-white/70 bg-black/50 px-2 py-0.5 rounded">
+                  {name}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {inWaiting && (
           <div className="absolute inset-0 flex items-center justify-center p-6">
             <div className="max-w-md w-full rounded-3xl border border-white/15 bg-white/[0.04] backdrop-blur-xl p-6 text-center">
               <p className="text-[11px] uppercase tracking-[0.18em] text-white/50 mb-2">Waiting room</p>
-              {room.role === "host" ? (
+              {isHost ? (
                 <>
                   <h2 className="text-xl font-light mb-1">
-                    {remoteJoined ? `${room.display_name} is waiting` : `Waiting for ${room.display_name}…`}
+                    {pendingGuests.length > 0 ? `${pendingGuests.length} waiting to join` : "Waiting for guests…"}
                   </h2>
                   <p className="text-white/60 text-sm mb-5">
-                    {remoteJoined
-                      ? "They've joined the waiting room. Start the call when you're ready."
-                      : "You'll be able to start the call as soon as they arrive."}
+                    Anyone with the guest link can request to join. Approve them below.
                   </p>
-                  <Button
-                    onClick={startCall}
-                    disabled={!remoteJoined}
-                    className="request-shimmer w-full h-12 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    {remoteJoined ? "Start call" : "Waiting for customer…"}
-                  </Button>
+                  {pendingGuests.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      {pendingGuests.map((g) => (
+                        <div key={g.peerId} className="flex items-center justify-between gap-2 rounded-2xl border border-white/15 bg-white/[0.04] px-3 py-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <UserPlus className="w-4 h-4 text-white/60 shrink-0" />
+                            <span className="text-sm truncate">{g.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={() => denyGuest(g.peerId)}
+                              className="h-9 w-9 rounded-xl border border-white/15 text-white/70 hover:bg-white/[0.08] flex items-center justify-center"
+                              aria-label="Deny"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => admitGuest(g.peerId, g.name)}
+                              className="h-9 px-3 rounded-xl bg-white text-black hover:bg-white/90 text-sm font-medium flex items-center gap-1.5"
+                            >
+                              <Check className="w-4 h-4" /> Admit
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {pendingGuests.length > 1 && (
+                        <Button
+                          onClick={() => pendingGuests.forEach((g) => admitGuest(g.peerId, g.name))}
+                          className="request-shimmer w-full h-11 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
+                        >
+                          Admit all
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2 text-white/50 text-xs">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Anyone you've shared the guest link with will appear here.
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
                   <h2 className="text-xl font-light mb-1">You're in the waiting room</h2>
                   <p className="text-white/60 text-sm mb-4">
-                    {remoteJoined
-                      ? "The host is here and will start the call shortly."
-                      : "The Pixcellor team will let you in shortly. Please keep this tab open."}
+                    The host will let you in shortly. Please keep this tab open.
                   </p>
                   <div className="flex items-center justify-center gap-2 text-white/50 text-xs">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Waiting for host to start the call…
+                    Waiting for host to admit you…
                   </div>
                 </>
               )}
@@ -825,7 +1006,7 @@ const CallRoom = () => {
           </div>
         )}
 
-        {status === "calling" && (
+        {status === "calling" && !isHost && (
           <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm px-6">
             <div className="flex flex-col items-center gap-3 text-center max-w-xs">
               <div className="flex items-center gap-3">
@@ -839,9 +1020,45 @@ const CallRoom = () => {
           </div>
         )}
 
+        {/* Host: floating knock toasts for late joiners */}
+        {isHost && (status === "calling" || status === "connected") && (
+          <div className="absolute top-3 right-3 flex flex-col gap-2 z-10 max-w-[280px]">
+            <AnimatePresence>
+              {pendingGuests.map((g) => (
+                <motion.div
+                  key={g.peerId}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="rounded-2xl border border-white/15 bg-black/80 backdrop-blur-xl p-3 shadow-xl"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <UserPlus className="w-4 h-4 text-white/70" />
+                    <span className="text-sm truncate"><span className="font-medium">{g.name}</span> wants to join</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => denyGuest(g.peerId)}
+                      className="flex-1 h-9 rounded-xl border border-white/15 text-white/80 hover:bg-white/[0.08] text-xs"
+                    >
+                      Deny
+                    </button>
+                    <button
+                      onClick={() => admitGuest(g.peerId, g.name)}
+                      className="flex-1 h-9 rounded-xl bg-white text-black hover:bg-white/90 text-xs font-medium"
+                    >
+                      Admit
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+
         {/* Local preview */}
         <div
-          className="absolute right-3 md:right-6 w-28 md:w-48 aspect-video rounded-2xl overflow-hidden border border-white/20 shadow-xl bg-black/60 backdrop-blur"
+          className="absolute right-3 md:right-6 w-28 md:w-48 aspect-video rounded-2xl overflow-hidden border border-white/20 shadow-xl bg-black/60 backdrop-blur z-10"
           style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
         >
           <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-contain" />
@@ -869,7 +1086,7 @@ const CallRoom = () => {
             {sharing ? <ScreenShareOff className="w-5 h-5" /> : <ScreenShare className="w-5 h-5" />}
           </CtrlButton>
         )}
-        {room.role === "host" && !inWaiting && (
+        {isHost && !inWaiting && (
           <CtrlButton onClick={toggleRecord} active={!recording} highlight={recording} label={recording ? "Stop recording" : "Record"}>
             {recording ? <Square className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
           </CtrlButton>
