@@ -320,7 +320,9 @@ const CallRoom = () => {
 
     pc.onicecandidate = (e) => {
       if (e.candidate) {
-        sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID, to: peerId });
+        const c = e.candidate;
+        console.log("[call] host local cand", peerId, c.type ?? "?", c.protocol ?? "", c.address ?? c.candidate?.slice(0, 60));
+        sendSignal({ type: "ice", candidate: c.toJSON(), from: PEER_ID, to: peerId });
       }
     };
     const attachToEl = (force = false) => {
