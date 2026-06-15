@@ -121,8 +121,12 @@ const CallRoom = () => {
     setPreflightLoading(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: { echoCancellation: true, noiseSuppression: true },
+        video: {
+          width: { ideal: 1280, max: 1280 },
+          height: { ideal: 720, max: 720 },
+          frameRate: { ideal: 30, max: 30 },
+        },
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
       localStreamRef.current = stream;
       cameraTrackRef.current = stream.getVideoTracks()[0] ?? null;
@@ -158,6 +162,54 @@ const CallRoom = () => {
 
   const sendSignal = useCallback((msg: SignalMessage) => {
     channelRef.current?.send({ type: "broadcast", event: "signal", payload: msg });
+  }, []);
+
+  // Apply sane bitrate / framerate / degradation hints so video doesn't stutter
+  // on mid-grade networks. "camera" prioritises smooth motion; "screen" keeps
+  // resolution sharp so text stays readable.
+  const tuneVideoSender = useCallback(async (
+    sender: RTCRtpSender | undefined,
+    mode: "camera" | "screen",
+  ) => {
+    if (!sender) return;
+    try {
+      const params = sender.getParameters();
+      (params as RTCRtpSendParameters).degradationPreference =
+        mode === "screen" ? "maintain-resolution" : "maintain-framerate";
+      if (!params.encodings || params.encodings.length === 0) {
+        params.encodings = [{}];
+      }
+      params.encodings[0].maxBitrate = mode === "screen" ? 2_500_000 : 1_200_000;
+      params.encodings[0].maxFramerate = mode === "screen" ? 15 : 30;
+      await sender.setParameters(params);
+    } catch (e) {
+      console.warn("tuneVideoSender failed", e);
+    }
+  }, []);
+
+  // Reorder codec preferences so VP8 is first. VP8 has hardware encoders on
+  // basically every device — VP9/AV1 software-encoded on a phone is the #1
+  // cause of jittery video.
+  const preferVP8 = useCallback((transceiver: RTCRtpTransceiver) => {
+    try {
+      const caps = RTCRtpSender.getCapabilities?.("video");
+      if (!caps?.codecs) return;
+      const codecs = [...caps.codecs];
+      codecs.sort((a, b) => {
+        const score = (c: { mimeType: string }) => {
+          const m = c.mimeType.toLowerCase();
+          if (m === "video/vp8") return 0;
+          if (m === "video/h264") return 1;
+          if (m === "video/vp9") return 2;
+          if (m === "video/av1") return 3;
+          return 4;
+        };
+        return score(a) - score(b);
+      });
+      transceiver.setCodecPreferences?.(codecs);
+    } catch (e) {
+      console.warn("preferVP8 failed", e);
+    }
   }, []);
 
   const createPeer = useCallback((): RTCPeerConnection => {
@@ -204,7 +256,25 @@ const CallRoom = () => {
 
       const pc = createPeer();
       pcRef.current = pc;
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+
+      // Use addTransceiver so we can: (a) set sendEncodings up front to cap
+      // bitrate/framerate, (b) prefer VP8 codec before the first offer, and
+      // (c) avoid the race where addTrack fires before the m= line exists.
+      const audioTrack = stream.getAudioTracks()[0];
+      const videoTrack = stream.getVideoTracks()[0];
+
+      if (audioTrack) {
+        pc.addTransceiver(audioTrack, { direction: "sendrecv", streams: [stream] });
+      }
+      if (videoTrack) {
+        const videoTx = pc.addTransceiver(videoTrack, {
+          direction: "sendrecv",
+          streams: [stream],
+          sendEncodings: [{ maxBitrate: 1_200_000, maxFramerate: 30 }],
+        });
+        preferVP8(videoTx);
+        await tuneVideoSender(videoTx.sender, "camera");
+      }
 
       const channel = supabase.channel(`call:${room.booking_id}`, {
         config: { broadcast: { self: false } },
@@ -252,7 +322,7 @@ const CallRoom = () => {
     } catch (e) {
       handleMediaError(e);
     }
-  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError]);
+  }, [room, iceServers, createPeer, sendSignal, status, handleMediaError, preferVP8, tuneVideoSender]);
 
   // Host: admit guest and begin call
   const startCall = useCallback(async () => {
@@ -276,6 +346,40 @@ const CallRoom = () => {
 
   useEffect(() => () => { hangup(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
+  // Dev-only stats poll so we can confirm bitrate / framerate / packet loss
+  // are healthy after the tuning above. No-op in production.
+  useEffect(() => {
+    if (status !== "connected" || !import.meta.env.DEV) return;
+    let lastBytes = 0;
+    let lastTs = 0;
+    const id = window.setInterval(async () => {
+      const pc = pcRef.current;
+      if (!pc) return;
+      try {
+        const stats = await pc.getStats();
+        stats.forEach((report) => {
+          if (report.type === "outbound-rtp" && report.kind === "video") {
+            const r = report as RTCOutboundRtpStreamStats & {
+              framesPerSecond?: number;
+              bytesSent?: number;
+              timestamp?: number;
+            };
+            const bytes = r.bytesSent ?? 0;
+            const ts = r.timestamp ?? Date.now();
+            const kbps = lastTs ? Math.round(((bytes - lastBytes) * 8) / (ts - lastTs)) : 0;
+            lastBytes = bytes;
+            lastTs = ts;
+            // eslint-disable-next-line no-console
+            console.log(`[call] video ↑ ${kbps} kbps, ${r.framesPerSecond ?? "?"} fps`);
+          }
+        });
+      } catch {
+        /* ignore */
+      }
+    }, 3000);
+    return () => window.clearInterval(id);
+  }, [status]);
+
   const toggleMic = () => {
     const t = localStreamRef.current?.getAudioTracks()[0];
     if (t) { t.enabled = !t.enabled; setMicOn(t.enabled); }
@@ -293,10 +397,14 @@ const CallRoom = () => {
 
     if (!sharing) {
       try {
-        const screen = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        const screen = await navigator.mediaDevices.getDisplayMedia({
+          video: { frameRate: { ideal: 15, max: 15 } },
+          audio: false,
+        });
         screenStreamRef.current = screen;
         const screenTrack = screen.getVideoTracks()[0];
         await sender.replaceTrack(screenTrack);
+        await tuneVideoSender(sender, "screen");
         if (localVideoRef.current) localVideoRef.current.srcObject = screen;
         setSharing(true);
         screenTrack.onended = () => { void revertShare(); };
@@ -312,14 +420,17 @@ const CallRoom = () => {
     const pc = pcRef.current;
     const sender = pc?.getSenders().find((s) => s.track?.kind === "video");
     const camTrack = cameraTrackRef.current;
-    if (sender && camTrack) await sender.replaceTrack(camTrack);
+    if (sender && camTrack) {
+      await sender.replaceTrack(camTrack);
+      await tuneVideoSender(sender, "camera");
+    }
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current = null;
     if (localVideoRef.current && localStreamRef.current) {
       localVideoRef.current.srcObject = localStreamRef.current;
     }
     setSharing(false);
-  }, []);
+  }, [tuneVideoSender]);
 
   const toggleRecord = async () => {
     if (recording) {
