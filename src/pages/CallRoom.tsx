@@ -516,9 +516,25 @@ const CallRoom = () => {
   if (status === "ended") {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-8 text-center">
-        <div>
+        <div className="max-w-sm w-full">
           <p className="text-2xl font-light mb-2">Call ended</p>
-          <p className="text-white/60 text-sm">You can close this tab.</p>
+          <p className="text-white/60 text-sm mb-6">
+            Changed your mind? You can rejoin this call any time — the link stays active.
+          </p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => window.location.reload()}
+              className="h-11 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
+            >
+              {room?.role === "host" ? "Restart call" : "Rejoin call"}
+            </button>
+            <button
+              onClick={() => window.close()}
+              className="h-11 rounded-2xl border border-white/20 hover:bg-white/[0.06] text-sm"
+            >
+              Close tab
+            </button>
+          </div>
         </div>
       </div>
     );
