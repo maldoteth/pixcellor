@@ -190,13 +190,19 @@ Return ONLY the JSON object (no \`\`\`json fences). Start with {.
     if (ref) {
       const { data: existing } = await admin
         .from("byow_generated_sites")
-        .select("id")
+        .select("id, owner_user_id")
         .eq("ref", ref)
         .maybeSingle();
       if (existing) {
+        if (existing.owner_user_id !== userId) {
+          return new Response(JSON.stringify({ error: "Not your site." }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
         const { error } = await admin
           .from("byow_generated_sites")
-          .update({ doc, brief, display_name, email: email ?? undefined, updated_at: new Date().toISOString() })
+          .update({ doc, brief, display_name, updated_at: new Date().toISOString() })
           .eq("id", existing.id);
         if (error) throw error;
         id = existing.id;
@@ -215,7 +221,7 @@ Return ONLY the JSON object (no \`\`\`json fences). Start with {.
             ref: candidate,
             display_name,
             brief,
-            email: email ?? null,
+            owner_user_id: userId,
             doc,
             status: "draft",
           })
@@ -229,6 +235,7 @@ Return ONLY the JSON object (no \`\`\`json fences). Start with {.
       }
       if (!ref) throw new Error("Could not allocate a unique ref");
     }
+
 
     return new Response(JSON.stringify({ ref, id, doc }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
