@@ -15,7 +15,10 @@ type Props = {
 
 const Email = ({ name, whenLabel, preferenceLabel, phone, brief, callLink }: Props) => (
   <Html lang="en" dir="ltr">
-    <Head />
+    <Head>
+      <meta name="color-scheme" content="light only" />
+      <meta name="supported-color-schemes" content="light" />
+    </Head>
     <Preview>
       {whenLabel ? `Your call with ${BRAND_NAME} is booked for ${whenLabel}` : `Your call with ${BRAND_NAME} is booked`}
     </Preview>
