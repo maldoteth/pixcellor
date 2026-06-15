@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
-  Check, Loader2, ArrowRight, ArrowLeft,
+  Check, Loader2, ArrowRight, ArrowLeft, Phone,
   Infinity as InfinityIcon, Gauge, ShieldCheck, Bot, Wrench, Headphones,
   Megaphone, Code2, Briefcase,
 } from "lucide-react";
