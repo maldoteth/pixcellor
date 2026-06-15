@@ -43,13 +43,17 @@ export default function ByowSitesTab() {
 
   const reload = async () => {
     setLoading(true);
-    const [{ data: sitesData, error: sErr }, { data: subsData }, { data: genData, error: gErr }] = await Promise.all([
+    const { data: { user } } = await supabase.auth.getUser();
+    const [{ data: sitesData, error: sErr }, { data: subsData }, { data: genData, error: gErr }, { data: adminRow }] = await Promise.all([
       supabase.from("byow_sites").select("id, display_name, published_url, status").order("created_at"),
       supabase.from("byow_subscriptions").select("site_id, tier, status, prompt_quota, prompts_used"),
       supabase
         .from("byow_generated_sites")
         .select("id, ref, display_name, status, published_at, created_at")
         .order("created_at", { ascending: false }),
+      user
+        ? supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").limit(1)
+        : Promise.resolve({ data: [] as any[] }),
     ]);
     if (sErr) toast.error(sErr.message);
     if (gErr) console.warn(gErr.message);
@@ -58,7 +62,8 @@ export default function ByowSitesTab() {
     const subMap: Record<string, Sub> = {};
     (subsData || []).forEach((s: any) => { subMap[s.site_id] = s; });
     setSubs(subMap);
-    setHasActiveSub((subsData || []).some((s: any) => s.status === "active"));
+    const isAdmin = (adminRow?.length ?? 0) > 0;
+    setHasActiveSub(isAdmin || (subsData || []).some((s: any) => s.status === "active"));
     setLoading(false);
   };
 
