@@ -9,6 +9,7 @@ import PackagesDialog from "@/components/PackagesDialog";
 import VisionGenerator from "@/components/VisionGenerator";
 import { getServiceBySlug } from "@/data/services";
 import { SERVICE_SEO } from "@/data/serviceSeo";
+import { OG_SERVICE_BY_SLUG, OG_SERVICES } from "@/data/ogImages";
 
 export default function ServicePage() {
   const { slug = "" } = useParams();
@@ -67,6 +68,7 @@ export default function ServicePage() {
         title={seoTitle}
         description={seoDescription}
         path={`/services/${service.slug}`}
+        image={OG_SERVICE_BY_SLUG[service.slug] ?? OG_SERVICES}
       />
       <script
         type="application/ld+json"

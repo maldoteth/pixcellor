@@ -10,6 +10,7 @@ import {
 import { Link } from "react-router-dom";
 
 import SeoHead from "@/components/SeoHead";
+import { OG_GET_STARTED } from "@/data/ogImages";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -281,6 +282,7 @@ const GetStarted = () => {
         title="Get Started — AI Websites in 24 Hours | Pixcellor"
         description="Book a free 15-minute call with Pixcellor. AI-powered websites, chatbots and apps for UK businesses. From £299. Live in 24 hours."
         path="/get-started"
+        image={OG_GET_STARTED}
       />
 
       {/* JSON-LD */}

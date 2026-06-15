@@ -16,6 +16,7 @@ import {
   Heart,
 } from "lucide-react";
 import SeoHead from "@/components/SeoHead";
+import { OG_PACKAGE_BY_SLUG } from "@/data/ogImages";
 import { Button } from "@/components/ui/button";
 import PackageCompareTable from "@/components/PackageCompareTable";
 import PackageReviews from "@/components/PackageReviews";
@@ -191,7 +192,7 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
         title={`${pkg.name} — ${pkg.price} | Pixcellor`}
         description={pkg.tagline}
         path={`/packages/${pkg.slug}`}
-        image={pkg.ogImage}
+        image={OG_PACKAGE_BY_SLUG[pkg.slug] ?? pkg.ogImage}
       />
       <JsonLd pkg={pkg} />
 

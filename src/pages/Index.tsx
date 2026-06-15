@@ -2,6 +2,7 @@ import { useEffect, useState, lazy, Suspense } from "react";
 import IntroAnimation from "@/components/ui/scroll-morph-hero";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SeoHead from "@/components/SeoHead";
+import { OG_HOME } from "@/data/ogImages";
 
 // Lazy-loaded: large bundles or overlays that mount on user events.
 // Keeping these off the critical path shaves ~200KB of JS off first paint.
@@ -137,6 +138,7 @@ const Index = () => {
         title="Pixcellor - Digital Services"
         description="AI powered business solutions by a team who have collectively launched over $500,000,000 in market cap and multi 7 figure GTM/Q1 revenue projects."
         path="/"
+        image={OG_HOME}
       />
       {/* Crawlable semantic heading — visually hidden, surfaces the page topic for SEO/AEO */}
       <h1 className="sr-only">Pixcellor — AI Powered Business Solutions</h1>

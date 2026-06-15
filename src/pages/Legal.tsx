@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import SeoHead from "@/components/SeoHead";
+import { OG_LEGAL, OG_LEGAL_BY_SLUG } from "@/data/ogImages";
 
 type Section = { id: string; heading: string; body: React.ReactNode };
 
@@ -551,6 +552,7 @@ const Legal = () => {
     ? `${activeDoc.title} for Pixcellor — ${activeDoc.intro}`
     : "Pixcellor's Terms of Service, Privacy Policy, Refund Policy and Acceptable Use Policy in one place.";
   const seoPath = activeDoc ? `/legal/${activeDoc.slug}` : "/legal";
+  const seoImage = activeDoc ? (OG_LEGAL_BY_SLUG[activeDoc.slug] ?? OG_LEGAL) : OG_LEGAL;
 
   // Backwards-compat: if a /legal/:doc URL is hit, scroll to that doc section.
   useEffect(() => {
@@ -565,7 +567,7 @@ const Legal = () => {
 
   return (
     <main className="min-h-dvh bg-background text-foreground">
-      <SeoHead title={seoTitle} description={seoDesc} path={seoPath} />
+      <SeoHead title={seoTitle} description={seoDesc} path={seoPath} image={seoImage} />
       <div className="mx-auto max-w-3xl px-5 py-14">
         <Link to="/" className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
           ← Pixcellor
