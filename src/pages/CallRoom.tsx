@@ -386,14 +386,17 @@ const CallRoom = () => {
     const pc = pcRef.current;
     const sender = pc?.getSenders().find((s) => s.track?.kind === "video");
     const camTrack = cameraTrackRef.current;
-    if (sender && camTrack) await sender.replaceTrack(camTrack);
+    if (sender && camTrack) {
+      await sender.replaceTrack(camTrack);
+      await tuneVideoSender(sender, "camera");
+    }
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current = null;
     if (localVideoRef.current && localStreamRef.current) {
       localVideoRef.current.srcObject = localStreamRef.current;
     }
     setSharing(false);
-  }, []);
+  }, [tuneVideoSender]);
 
   const toggleRecord = async () => {
     if (recording) {
