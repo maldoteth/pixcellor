@@ -50,9 +50,31 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     if (!lovableKey) throw new Error("Missing LOVABLE_API_KEY");
+
+    // Require an authenticated user — sites are owner-scoped now.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Sign in required to generate a site." }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+    const { data: userRes, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userRes?.user) {
+      return new Response(JSON.stringify({ error: "Sign in required to generate a site." }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = userRes.user.id;
 
     const body = await req.json();
     const {
@@ -60,7 +82,6 @@ serve(async (req) => {
       brief,
       display_name,
       business_type,
-      email,
       brand,
       template_key,
       template_seed,
@@ -69,7 +90,6 @@ serve(async (req) => {
       brief: string;
       display_name: string;
       business_type?: string;
-      email?: string;
       brand: {
         logo_url?: string;
         colors: Record<string, string>;
@@ -87,6 +107,7 @@ serve(async (req) => {
     }
 
     const admin = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
+
 
     const prompt = `
 You are generating the content for a high-conversion single-page marketing website.
@@ -169,13 +190,19 @@ Return ONLY the JSON object (no \`\`\`json fences). Start with {.
     if (ref) {
       const { data: existing } = await admin
         .from("byow_generated_sites")
-        .select("id")
+        .select("id, owner_user_id")
         .eq("ref", ref)
         .maybeSingle();
       if (existing) {
+        if (existing.owner_user_id !== userId) {
+          return new Response(JSON.stringify({ error: "Not your site." }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
         const { error } = await admin
           .from("byow_generated_sites")
-          .update({ doc, brief, display_name, email: email ?? undefined, updated_at: new Date().toISOString() })
+          .update({ doc, brief, display_name, updated_at: new Date().toISOString() })
           .eq("id", existing.id);
         if (error) throw error;
         id = existing.id;
@@ -194,7 +221,7 @@ Return ONLY the JSON object (no \`\`\`json fences). Start with {.
             ref: candidate,
             display_name,
             brief,
-            email: email ?? null,
+            owner_user_id: userId,
             doc,
             status: "draft",
           })
@@ -208,6 +235,7 @@ Return ONLY the JSON object (no \`\`\`json fences). Start with {.
       }
       if (!ref) throw new Error("Could not allocate a unique ref");
     }
+
 
     return new Response(JSON.stringify({ ref, id, doc }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

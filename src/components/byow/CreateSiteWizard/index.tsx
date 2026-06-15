@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { TEMPLATES, type TemplatePreset } from "./templates";
 import { FONT_PRESETS, type FontTriple, ensureFontLoaded } from "./fontPresets";
+
 
 type Brand = {
   logo_url?: string;
@@ -30,17 +31,29 @@ export default function CreateSiteWizard() {
   const [displayName, setDisplayName] = useState("");
   const [brief, setBrief] = useState("");
   const [businessType, setBusinessType] = useState("");
-  const [email, setEmail] = useState("");
   const [template, setTemplate] = useState<TemplatePreset | null>(null);
   const [brand, setBrand] = useState<Brand>(DEFAULT_BRAND);
   const [fontKey, setFontKey] = useState<string>("system");
   const [logoFile, setLogoFile] = useState<string>("");
   const [generating, setGenerating] = useState(false);
+  const [authed, setAuthed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (alive) setAuthed(!!data.session);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthed(!!session);
+    });
+    return () => { alive = false; sub.subscription.unsubscribe(); };
+  }, []);
 
   const canNext = () => {
     if (step === 0) return displayName.trim().length >= 2 && brief.trim().length >= 10;
     return true;
   };
+
 
   const pickFont = (f: FontTriple) => {
     setFontKey(f.key);
@@ -73,8 +86,8 @@ export default function CreateSiteWizard() {
           brief,
           display_name: displayName,
           business_type: businessType || template?.industry,
-          email: email || undefined,
           brand,
+
           template_key: template?.key,
           template_seed: template?.seed,
         },
@@ -90,8 +103,31 @@ export default function CreateSiteWizard() {
     }
   };
 
+  if (authed === false) {
+    return (
+      <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-10 text-center">
+        <div className="mx-auto h-12 w-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+          <Lock className="h-5 w-5 text-white/70" />
+        </div>
+        <h3 className="text-2xl font-light">Sign in to create your site</h3>
+        <p className="text-white/60 mt-2 max-w-md mx-auto text-sm">
+          Generated sites are saved to your account so you can edit, regenerate and publish them later.
+        </p>
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <Button
+            onClick={() => nav(`/customer-login?redirect=${encodeURIComponent("/byow#create")}`)}
+            className="bg-white text-black hover:bg-white/90 h-11 px-6"
+          >
+            Sign in / Sign up
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 md:p-10">
+
       {/* Progress */}
       <div className="flex items-center gap-2 mb-8">
         {STEPS.map((label, i) => {
@@ -122,16 +158,11 @@ export default function CreateSiteWizard() {
               <label className="text-xs uppercase tracking-wider text-white/50">What does the business do?</label>
               <Textarea value={brief} onChange={(e) => setBrief(e.target.value)} placeholder="One or two sentences. Who you serve, what you sell, what makes you different." className="mt-1 bg-white/5 border-white/10 text-white min-h-[100px]" />
             </div>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs uppercase tracking-wider text-white/50">Industry / type (optional)</label>
-                <Input value={businessType} onChange={(e) => setBusinessType(e.target.value)} placeholder="Bakery, SaaS, salon, consultant…" className="mt-1 bg-white/5 border-white/10 text-white h-11" />
-              </div>
-              <div>
-                <label className="text-xs uppercase tracking-wider text-white/50">Email (optional, to claim later)</label>
-                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@business.com" className="mt-1 bg-white/5 border-white/10 text-white h-11" />
-              </div>
+            <div>
+              <label className="text-xs uppercase tracking-wider text-white/50">Industry / type (optional)</label>
+              <Input value={businessType} onChange={(e) => setBusinessType(e.target.value)} placeholder="Bakery, SaaS, salon, consultant…" className="mt-1 bg-white/5 border-white/10 text-white h-11" />
             </div>
+
           </motion.div>
         )}
 
