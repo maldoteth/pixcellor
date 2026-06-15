@@ -122,10 +122,7 @@ const App = () => (
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/get-started" element={<GetStarted />} />
               <Route path="/call/:bookingId" element={<CallRoom />} />
-              <Route path="/byow/login" element={<ByowLogin />} />
-              <Route path="/byow" element={<ByowDashboard />} />
-              <Route path="/byow/site/:siteId" element={<ByowBuilder />} />
-              <Route path="/byow-admin" element={<ByowAdmin />} />
+              <Route path="/byow" element={<ByowLanding />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
