@@ -630,7 +630,7 @@ const CallRoom = () => {
           <div className="flex flex-col gap-2">
             <button
               onClick={() => window.location.reload()}
-              className="h-11 rounded-2xl bg-white text-black hover:bg-white/90 font-medium"
+              className="request-shimmer h-11 rounded-2xl bg-white text-black hover:bg-white hover:text-black font-medium"
             >
               {room?.role === "host" ? "Restart call" : "Rejoin call"}
             </button>
