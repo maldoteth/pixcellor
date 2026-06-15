@@ -16,6 +16,7 @@ import {
   Heart,
 } from "lucide-react";
 import SeoHead from "@/components/SeoHead";
+import { OG_PACKAGE_BY_SLUG } from "@/data/ogImages";
 import { Button } from "@/components/ui/button";
 import PackageCompareTable from "@/components/PackageCompareTable";
 import PackageReviews from "@/components/PackageReviews";

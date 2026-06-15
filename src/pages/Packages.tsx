@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight, Sparkles } from "lucide-react";
 import SeoHead from "@/components/SeoHead";
 import { PACKAGE_DETAILS } from "@/data/packages";
+import { OG_PACKAGES } from "@/data/ogImages";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },

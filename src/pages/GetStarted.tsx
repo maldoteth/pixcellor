@@ -10,6 +10,7 @@ import {
 import { Link } from "react-router-dom";
 
 import SeoHead from "@/components/SeoHead";
+import { OG_GET_STARTED } from "@/data/ogImages";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
