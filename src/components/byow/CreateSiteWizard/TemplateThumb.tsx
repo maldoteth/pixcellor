@@ -10,7 +10,7 @@ export function TemplateThumb({ preview, label }: { preview: TemplatePreview; la
   const { bg, surface, accent, text, shape } = preview;
   const dim = (op: number) => `${text}${Math.round(op * 255).toString(16).padStart(2, "0")}`;
 
-  const Block = ({ w, h, c, r = 2, style }: { w: string; h: string; c: string; r?: number; style?: React.CSSProperties }) => (
+  const Block = ({ w, h, c, r = 2, style }: { w: string; h: string; c: string; r?: number; style?: CSSProperties }) => (
     <div style={{ width: w, height: h, background: c, borderRadius: r, ...style }} />
   );
 
