@@ -50,9 +50,31 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     if (!lovableKey) throw new Error("Missing LOVABLE_API_KEY");
+
+    // Require an authenticated user — sites are owner-scoped now.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Sign in required to generate a site." }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+    const { data: userRes, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userRes?.user) {
+      return new Response(JSON.stringify({ error: "Sign in required to generate a site." }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = userRes.user.id;
 
     const body = await req.json();
     const {
@@ -60,7 +82,6 @@ serve(async (req) => {
       brief,
       display_name,
       business_type,
-      email,
       brand,
       template_key,
       template_seed,
@@ -69,7 +90,6 @@ serve(async (req) => {
       brief: string;
       display_name: string;
       business_type?: string;
-      email?: string;
       brand: {
         logo_url?: string;
         colors: Record<string, string>;
@@ -87,6 +107,7 @@ serve(async (req) => {
     }
 
     const admin = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
+
 
     const prompt = `
 You are generating the content for a high-conversion single-page marketing website.
