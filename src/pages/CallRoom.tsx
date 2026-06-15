@@ -378,6 +378,7 @@ const CallRoom = () => {
     sendSignal({ type: "bye", from: PEER_ID });
     pcRef.current?.close();
     pcRef.current = null;
+    remoteStreamRef.current = null;
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     channelRef.current && supabase.removeChannel(channelRef.current);
