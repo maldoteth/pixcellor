@@ -37,6 +37,7 @@ const CallRoom = lazy(() => import("./pages/CallRoom"));
 const MeetingRedirect = lazy(() => import("./pages/MeetingRedirect"));
 const ByowLanding = lazy(() => import("./pages/ByowLanding"));
 const PublicSite = lazy(() => import("./pages/PublicSite"));
+const ByowGeneratedEditor = lazy(() => import("./pages/ByowGeneratedEditor"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="/call/:bookingId" element={<CallRoom />} />
               <Route path="/meeting/:code" element={<MeetingRedirect />} />
               <Route path="/byow" element={<ByowLanding />} />
+              <Route path="/byow/edit/:ref" element={<ByowGeneratedEditor />} />
               <Route path="/s/:ref" element={<PublicSite />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

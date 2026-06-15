@@ -144,7 +144,7 @@ export default function ByowSitesTab() {
                             </a>
                           </Button>
                           <Button asChild size="sm" variant="pricing">
-                            <Link to={`/byow#create?edit=${g.ref}`}>Edit</Link>
+                            <Link to={`/byow/edit/${g.ref}`}>Edit</Link>
                           </Button>
                         </div>
                       </CardContent>
