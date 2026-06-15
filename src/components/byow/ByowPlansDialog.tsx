@@ -5,17 +5,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from "sonner";
 import { Check, Loader2 } from "lucide-react";
 
-const SUBS = [
+type SubOpt = { key: string; name: string; price: string; per: string; prompts: number; blurb: string; featured?: boolean };
+type TopupOpt = { key: string; name: string; price: string; per: string; prompts: number; rate: string; featured?: boolean };
+
+const SUBS: SubOpt[] = [
   { key: "care",   name: "Care",   price: "£100",   per: "/month", prompts: 25,   blurb: "Light upkeep & copy tweaks" },
   { key: "studio", name: "Studio", price: "£500",   per: "/month", prompts: 180,  blurb: "Active iteration on a live site", featured: true },
   { key: "agency", name: "Agency", price: "£2,500", per: "/month", prompts: 1000, blurb: "Full delegated build pipeline" },
-] as const;
+];
 
-const TOPUPS = [
+const TOPUPS: TopupOpt[] = [
   { key: "single",   name: "Single prompt",  price: "£2",     per: "each",     prompts: 1,    rate: "£2.00 / prompt" },
   { key: "pack100",  name: "100 prompts",    price: "£169",   per: "one-off",  prompts: 100,  rate: "£1.69 / prompt", featured: true },
   { key: "pack1000", name: "1000 prompts",   price: "£1,250", per: "one-off",  prompts: 1000, rate: "£1.25 / prompt" },
-] as const;
+];
+
 
 interface Props {
   siteId: string;

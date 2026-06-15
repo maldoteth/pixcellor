@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw, Sparkles } from "lucide-react";
+import ByowPlansDialog from "@/components/byow/ByowPlansDialog";
+
 
 interface Site {
   id: string;
@@ -45,6 +47,8 @@ export default function ByowBuilder() {
   const [sending, setSending] = useState(false);
   const [view, setView] = useState<ViewMode>("split");
   const [previewKey, setPreviewKey] = useState(0);
+  const [plansOpen, setPlansOpen] = useState(false);
+  const [plansTab, setPlansTab] = useState<"subscription" | "topup">("subscription");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
