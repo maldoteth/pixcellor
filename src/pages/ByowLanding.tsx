@@ -139,9 +139,9 @@ export default function ByowLanding() {
                 <Sparkles className="h-3 w-3" /> Pixcellor™ · Build your own
               </div>
               <h1 className="text-4xl md:text-6xl font-light tracking-tight leading-[1.05]">
-                Your site, evolved by chat.
+                BUILD YOUR
                 <br />
-                <span className="text-white/60">Shipped in hours.</span>
+                <span className="text-white/60">OWN SITE</span>
               </h1>
               <p className="mt-6 text-base md:text-lg text-white/60 max-w-xl leading-relaxed">
                 Skip the agency back-and-forth. Pick a plan, brief us in chat, and watch real humans ship every change to your live site — usually same-day.
