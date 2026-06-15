@@ -9,9 +9,9 @@ type SubOpt = { key: string; name: string; price: string; per: string; prompts: 
 type TopupOpt = { key: string; name: string; price: string; per: string; prompts: number; rate: string; featured?: boolean };
 
 const SUBS: SubOpt[] = [
-  { key: "care",   name: "Care",   price: "£100",   per: "/month", prompts: 25,   blurb: "Light upkeep & copy tweaks" },
-  { key: "studio", name: "Studio", price: "£500",   per: "/month", prompts: 180,  blurb: "Active iteration on a live site", featured: true },
-  { key: "agency", name: "Agency", price: "£2,500", per: "/month", prompts: 1000, blurb: "Full delegated build pipeline" },
+  { key: "care",   name: "Growth",     price: "£100",   per: "/month", prompts: 25,   blurb: "Light upkeep & copy tweaks · 250 lead-gen runs" },
+  { key: "studio", name: "Scale",      price: "£500",   per: "/month", prompts: 180,  blurb: "Active iteration · 1,000 lead-gen runs", featured: true },
+  { key: "agency", name: "Enterprise", price: "£2,500", per: "/month", prompts: 1000, blurb: "Full delegated build pipeline · unlimited lead-gen" },
 ];
 
 const TOPUPS: TopupOpt[] = [
