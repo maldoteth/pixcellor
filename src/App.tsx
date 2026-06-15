@@ -35,6 +35,7 @@ const Portfolio = lazy(() => import("./pages/Portfolio"));
 const GetStarted = lazy(() => import("./pages/GetStarted"));
 const CallRoom = lazy(() => import("./pages/CallRoom"));
 const ByowLanding = lazy(() => import("./pages/ByowLanding"));
+const PublicSite = lazy(() => import("./pages/PublicSite"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
