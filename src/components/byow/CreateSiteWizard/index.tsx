@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, Check, Lock, Globe, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +37,9 @@ export default function CreateSiteWizard() {
   const [logoFile, setLogoFile] = useState<string>("");
   const [generating, setGenerating] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importedChars, setImportedChars] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -59,6 +62,49 @@ export default function CreateSiteWizard() {
     setFontKey(f.key);
     if (f.googleHref) ensureFontLoaded(f.googleHref);
     setBrand((b) => ({ ...b, fonts: { title: f.title, subtitle: f.subtitle, body: f.body }, font_href: f.googleHref }));
+  };
+
+  const importFromUrl = async () => {
+    const raw = importUrl.trim();
+    if (!raw) {
+      toast.error("Enter your website URL first.");
+      return;
+    }
+    setImporting(true);
+    setImportedChars(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("byow-import-site", {
+        body: { url: raw },
+      });
+      if (error) throw error;
+      if (!data?.ok) {
+        const msg = data?.error === "scrape_failed"
+          ? "We couldn't read that site. Some sites (Facebook, Instagram, Yelp) block imports."
+          : data?.error === "invalid_url"
+          ? "That doesn't look like a valid website URL."
+          : "Couldn't import that site.";
+        toast.error(msg);
+        return;
+      }
+      if (data.display_name && !displayName) setDisplayName(String(data.display_name));
+      if (data.brief) setBrief(String(data.brief));
+      if (data.business_type) setBusinessType(String(data.business_type));
+      if (data.brand) {
+        setBrand((prev) => ({
+          ...prev,
+          ...data.brand,
+          colors: { ...prev.colors, ...(data.brand.colors || {}) },
+          fonts: { ...prev.fonts, ...(data.brand.fonts || {}) },
+        }));
+        if (data.brand.logo_url) setLogoFile(String(data.brand.logo_url));
+      }
+      setImportedChars(typeof data.chars === "number" ? data.chars : null);
+      toast.success("Imported! Review and edit anything below.");
+    } catch (e: any) {
+      toast.error(e?.message || "Couldn't import that site.");
+    } finally {
+      setImporting(false);
+    }
   };
 
   const onLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
