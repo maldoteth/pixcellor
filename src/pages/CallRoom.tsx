@@ -88,6 +88,7 @@ const CallRoom = () => {
   const recordStartRef = useRef<number>(0);
   const watchdogRef = useRef<number | null>(null);
   const failTimerRef = useRef<number | null>(null);
+  const knockTimerRef = useRef<number | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const [failMessage, setFailMessage] = useState<string>("");
 
@@ -308,23 +309,25 @@ const CallRoom = () => {
         sendSignal({ type: "ice", candidate: e.candidate.toJSON(), from: PEER_ID, to: peerId });
       }
     };
-    const attachToEl = () => {
+    const attachToEl = (force = false) => {
       const el = remoteVideoEls.current.get(peerId);
-      if (el && el.srcObject !== peer.stream) {
+      if (el && (force || el.srcObject !== peer.stream)) {
+        if (force) el.srcObject = null;
         el.srcObject = peer.stream;
       }
       if (el) el.play().catch(() => { /* noop */ });
     };
     pc.ontrack = (e) => {
       const incoming = e.streams[0];
+      if (incoming) peer.stream = incoming;
       for (const track of incoming?.getTracks() ?? [e.track]) {
         if (!peer.stream.getTracks().some((t) => t.id === track.id)) {
           peer.stream.addTrack(track);
         }
       }
-      setRemotePeerTicks((ticks) => ({ ...ticks, [peerId]: Date.now() }));
+      setRemotePeerTicks((ticks) => ({ ...ticks, [peerId]: (ticks[peerId] ?? 0) + 1 }));
       console.log("[call] host ontrack from", peerId, e.track.kind);
-      attachToEl();
+      attachToEl(e.track.kind === "video");
       // Retry attaching for a few frames in case the <video> ref hasn't mounted yet
       let tries = 0;
       const iv = window.setInterval(() => {
@@ -455,10 +458,15 @@ const CallRoom = () => {
             const peer = pcRef.current;
             if (msg.type === "hello" && msg.role === "host") {
               hostPeerIdRef.current = msg.from;
+              if (!peer?.remoteDescription) {
+                sendSignal({ type: "knock", from: PEER_ID, name: room.display_name || "Guest", to: msg.from });
+              }
             } else if (msg.type === "admit") {
               hostPeerIdRef.current = msg.from;
+              if (knockTimerRef.current) { window.clearInterval(knockTimerRef.current); knockTimerRef.current = null; }
               setStatus((s) => (s === "waiting" ? "calling" : s));
             } else if (msg.type === "deny") {
+              if (knockTimerRef.current) { window.clearInterval(knockTimerRef.current); knockTimerRef.current = null; }
               setStatus("denied");
               try { pcRef.current?.close(); } catch { /* noop */ }
               pcRef.current = null;
@@ -474,6 +482,7 @@ const CallRoom = () => {
               const answer = await peer.createAnswer();
               await peer.setLocalDescription(answer);
               sendSignal({ type: "answer", sdp: answer, from: PEER_ID, to: msg.from });
+              if (knockTimerRef.current) { window.clearInterval(knockTimerRef.current); knockTimerRef.current = null; }
             } else if (msg.type === "ice" && peer) {
               if (!peer.remoteDescription) {
                 guestPendingIceRef.current.push(msg.candidate);
@@ -507,7 +516,16 @@ const CallRoom = () => {
             // Announce host presence so any already-waiting guests learn our PEER_ID and re-knock.
             sendSignal({ type: "hello", from: PEER_ID, role: "host" });
           } else {
-            sendSignal({ type: "knock", from: PEER_ID, name: room.display_name || "Guest" });
+            const knock = () => sendSignal({ type: "knock", from: PEER_ID, name: room.display_name || "Guest", to: hostPeerIdRef.current ?? undefined });
+            knock();
+            if (knockTimerRef.current) window.clearInterval(knockTimerRef.current);
+            knockTimerRef.current = window.setInterval(() => {
+              if (pcRef.current?.remoteDescription) {
+                if (knockTimerRef.current) { window.clearInterval(knockTimerRef.current); knockTimerRef.current = null; }
+                return;
+              }
+              knock();
+            }, 2000);
           }
         }
       });
@@ -531,6 +549,7 @@ const CallRoom = () => {
       pcRef.current = null;
     }
     remoteStreamRef.current = null;
+    if (knockTimerRef.current) { window.clearInterval(knockTimerRef.current); knockTimerRef.current = null; }
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     channelRef.current && supabase.removeChannel(channelRef.current);
