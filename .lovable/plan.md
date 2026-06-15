@@ -1,34 +1,73 @@
-## What the logs say
+## Goal
 
-Edge-function logs only show boot/shutdown — no errors — so `get-call-config` is fine. You said the phones get stuck on "Connecting…" forever (not a permissions / `getUserMedia` error). That means signaling worked, the host sent the offer, the phone answered, but **ICE never finds a working path between the two peers**.
+Stop the BYOW wizard from producing generic AI-soup sites. Force users to pick from a curated catalog of real, opinionated layouts before generating, and surface a clear path to hire the Pixcellor team for deeper customisation.
 
-## Most likely cause
+## Why 30 curated layouts, not 100 scraped ones
 
-Even though both devices are "on the same WiFi", desktop-to-desktop works because the browsers exchange direct LAN IP candidates. Mobile browsers (especially iOS Safari and Samsung Internet) only expose **mDNS-obfuscated `.local` candidates** instead of real LAN IPs. Many home/office routers (and almost every guest/corporate WiFi) block `.local` resolution between clients (AP/client isolation), so the LAN path silently fails. The connection then has to fall back to TURN — and right now the TURN secrets are set, but we never verify that the TURN URL list actually contains a relay-capable entry, and we never force a relay-only retry when ICE stalls.
+Scraping 100 third-party free templates (HTML5 UP, Cruip, Tailblocks, etc.) and serving their HTML is a licensing/branding minefield — we'd be republishing other people's work. Instead we build **30 named templates we own**, each with:
+- a distinct layout/structure (sections, order, density)
+- a curated colour mood and font pairing
+- a generated preview thumbnail
+- a rich seed that locks the AI into that structure instead of free-styling
 
-That matches your symptom exactly: works on desktop⇄desktop (LAN candidates succeed), fails on mobile⇄desktop (LAN candidates fail, TURN never kicks in cleanly).
+This produces predictable, on-brand sites and lets us legally polish each one. We can grow past 30 later.
 
-## Plan
+## Catalog (30 templates, grouped)
 
-1. **Edge function `get-call-config`** — harden the TURN config:
-   - Log how many `turn:` / `turns:` URLs were emitted, so we can see in edge logs whether the secret is shaped correctly.
-   - If `METERED_TURN_URLS` is just a single hostname, expand it to the canonical Metered set (`turn:<host>:80`, `turn:<host>:80?transport=tcp`, `turn:<host>:443`, `turns:<host>:443?transport=tcp`) so mobile networks that block UDP still have a TCP/TLS fallback.
-   - Return a separate `relay_only_ice_servers` array (TURN entries only) for the client to use on retry.
+```text
+LOCAL SERVICE       SAAS / PRODUCT       HOSPITALITY         CREATIVE
+- Salon Calm        - SaaS Bold          - Restaurant Story  - Studio Mono
+- Salon Editorial   - SaaS Minimal       - Cafe Warm         - Studio Color
+- Barber Heritage   - AI Product         - Bar Nightlife     - Photo Folio
+- Trades Local      - Dev Tool           - Hotel Boutique    - Agency Grid
+                    - Mobile App                             - Designer Bento
 
-2. **Client `CallRoom.tsx`** — make mobile ICE actually complete:
-   - Add a "stuck on calling" watchdog: if `iceConnectionState` is still `checking`/`new` after ~6 s, tear the PC down and rebuild it with `iceTransportPolicy: 'relay'` using the relay-only ICE list, then re-negotiate (guest re-knocks, host re-offers).
-   - Log every ICE candidate type that's emitted (`host` / `srflx` / `relay`) so we can confirm in the phone's remote debugger that relay candidates are actually being generated.
-   - Surface a visible "Reconnecting over relay…" hint instead of an indefinite "Connecting…" so the user knows something is happening.
-   - Drop the strict `frameRate: { max: 30 }` / `1280×720 max` constraints on mobile and use `{ ideal: … }` only — a few Samsung front cameras throw `OverconstrainedError` silently on the `max` form, which also presents as "stuck connecting".
+PROFESSIONAL        ECOMMERCE            EVENTS / COMMUNITY  PERSONAL
+- Consultant Trust  - Shop Minimal       - Event Landing     - Coach 1:1
+- Lawyer Editorial  - Single Product     - Community Hub     - Author Book
+- Clinic Calm       - Lookbook                               - Personal CV
+- Finance Pro                                                - Newsletter
+```
 
-3. **Verification**
-   - Open the iPhone using Safari Web Inspector (Mac) or the Samsung in `chrome://inspect`, join the call, and confirm in console:
-     - `[call] ... ice candidate type=relay` appears at least once on both sides, and
-     - `iceConnectionState` reaches `connected`.
-   - If relay candidates never appear, the TURN credentials/secret are wrong and we'll fix those next; the edge-function log line added in step 1 will tell us immediately.
+Each template card shows:
+- A 16:10 thumbnail (generated once with imagegen, stored under `src/assets/byow-templates/`)
+- Name + industry tag
+- One-line blurb describing the layout's vibe
+- A "Customise with our team →" link on hover
+
+## UX flow changes
+
+1. **Step 1 (Brief)** — unchanged except: import-from-URL still works.
+2. **Step 2 (Template)** — REQUIRED selection. Remove the "Generate fresh" tile. Replace with a 3-column grid of 30 thumbnail cards with category filter chips (All / Service / SaaS / Hospitality / Creative / Pro / Ecom / Events / Personal). Next disabled until one is picked. Below the grid: a glass card "None of these fit? Hire our team to design + build your dream site →" linking to `/get-started`.
+3. **Step 3 (Branding)** — unchanged.
+4. **Step 4 (Generate)** — copy update: "We're styling your **{template label}** layout with your brand". Add a subtle "Want pixel-perfect, human-built? Talk to our team" link under the generate button.
+
+## Generator changes
+
+`supabase/functions/byow-generate-site/index.ts`:
+- Make `template_key` required; reject the call with 400 if missing.
+- Pass the template's `seed.sections_hint`, `tone`, `audience`, and a new `layout_recipe` field into the LLM prompt as hard constraints, not suggestions ("You MUST follow this section order and density…").
+- Keep the existing schema.
+
+## Files
+
+```text
+src/components/byow/CreateSiteWizard/templates.ts        # expand to 30 entries with layout_recipe
+src/components/byow/CreateSiteWizard/index.tsx           # step 2 redesign, required selection, hire CTA
+src/assets/byow-templates/{slug}.jpg × 30                # generated thumbnails
+supabase/functions/byow-generate-site/index.ts           # require template_key, stricter prompt
+```
 
 ## Out of scope
 
-- No UI redesign of the call room.
-- No change to booking flow, auth, or the rest of the portal.
-- No change to host↔host or desktop↔desktop behaviour (those already work).
+- No third-party template scraping/embedding.
+- No new pricing or backend tables.
+- Existing generated sites keep working.
+
+## Build order
+
+1. Expand `templates.ts` to 30 entries with `layout_recipe`.
+2. Generate 30 thumbnails in parallel (imagegen fast tier).
+3. Rebuild step 2 of the wizard: filter chips, grid, required selection, hire-team upsell.
+4. Tighten the generator prompt and require `template_key`.
+5. Add the "hire our team" link on step 4.
