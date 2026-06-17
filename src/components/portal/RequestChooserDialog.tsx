@@ -59,6 +59,7 @@ export default function RequestChooserDialog({
   const [sOpenings, setSOpenings] = useState("1");
   const [sStart, setSStart] = useState<string>(date ?? "");
   const [sLocation, setSLocation] = useState("");
+  const [sRemote, setSRemote] = useState(false);
   const [sHours, setSHours] = useState("");
   const [sNotes, setSNotes] = useState("");
 
