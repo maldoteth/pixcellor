@@ -3784,6 +3784,8 @@ export type Database = {
         Args: { _vacancy_id: string }
         Returns: undefined
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       vacancy_invitation_respond: {
         Args: { _response: string; _token: string }
         Returns: Json
