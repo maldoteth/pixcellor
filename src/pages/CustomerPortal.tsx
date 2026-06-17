@@ -491,7 +491,7 @@ export default function CustomerPortal() {
               <Button asChild variant="ghost" size="sm" className="gap-2">
                 <Link to="/">
                   <ArrowLeft className="h-4 w-4" />
-                  Pixcellor
+                  Home
                 </Link>
               </Button>
             </div>
