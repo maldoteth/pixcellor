@@ -67,7 +67,24 @@ import VisionGenerator from "@/components/VisionGenerator";
 import MyLeadsPanel from "@/components/portal/MyLeadsPanel";
 
 
-const BUY_AGAIN_PACKAGES = [
+type BuyAgainPackage = {
+  key: string;
+  name: string;
+  price: string;
+  rrp?: string;
+  discount?: string;
+  priceId: string;
+  mode: "payment" | "subscription";
+  billing: string;
+  featured?: boolean;
+  features: string[];
+  yearlyPrice?: string;
+  yearlyBilling?: string;
+  yearlyPriceId?: string;
+  yearlySavings?: string;
+};
+
+const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
   {
     key: "fullWorks",
     name: "Full Works",
@@ -77,8 +94,6 @@ const BUY_AGAIN_PACKAGES = [
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment",
     billing: "One-time payment",
-    action: "Buy again",
-    featured: false,
     features: ["Industry leading website", "Lifetime warranty", "Custom design", "Up to 3 pages"],
   },
   {
@@ -90,22 +105,47 @@ const BUY_AGAIN_PACKAGES = [
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     mode: "payment",
     billing: "One-time payment",
-    action: "Buy again",
     featured: true,
     features: ["Sites or web apps", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages"],
   },
   {
-    key: "retainer",
-    name: "Retainer",
+    key: "retainer-growth",
+    name: "Growth Retainer",
+    price: "£100/mo",
+    priceId: "price_1TcfyPBtUjwejeUwJmEbSWtN",
+    mode: "subscription",
+    billing: "Billed monthly · cancel anytime",
+    features: ["Website + unlimited edits", "CRM + AI lead bot", "Hosting, SSL, domain", "Monthly performance report"],
+    yearlyPrice: "£1,000/yr",
+    yearlyBilling: "Billed annually · save £200",
+    yearlyPriceId: "price_1Tcg03BtUjwejeUwr7mYzuUb",
+    yearlySavings: "Save £200/yr",
+  },
+  {
+    key: "retainer-scale",
+    name: "Scale Retainer",
+    price: "£500/mo",
+    priceId: "price_1Tcg07BtUjwejeUwfGGDhftV",
+    mode: "subscription",
+    billing: "Billed monthly · cancel anytime",
+    features: ["Everything in Growth", "Unlimited seats & edits", "Custom AI agents & automations", "Monthly strategy call"],
+    yearlyPrice: "£5,000/yr",
+    yearlyBilling: "Billed annually · save £1,000",
+    yearlyPriceId: "price_1Tcg0ABtUjwejeUwLc5nw8nX",
+    yearlySavings: "Save £1,000/yr",
+  },
+  {
+    key: "retainer-enterprise",
+    name: "Enterprise Retainer",
     price: "£2,500/mo",
-    rrp: "RRP £4,000",
-    discount: "37% off",
     priceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     mode: "subscription",
-    billing: "Monthly subscription",
-    action: "Subscribe",
-    featured: false,
-    features: ["Your own tech department", "Daily updates", "Websites or full apps", "Monthly billing"],
+    billing: "Billed monthly · 30-day notice",
+    features: ["Fractional CTO, CMO & CRO", "Dedicated dev & ops squad", "2-week MVP sprints", "24/7 priority support"],
+    yearlyPrice: "£20,000/yr",
+    yearlyBilling: "Billed annually · 30-day notice",
+    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
+    yearlySavings: "Save £10,000/yr",
   },
 ] as const;
 
@@ -268,6 +308,7 @@ export default function CustomerPortal() {
   const [chatOpen, setChatOpen] = useState(false);
   const [hiddenCount, setHiddenCount] = useState(0);
   const [leadQuery, setLeadQuery] = useState("");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [access, setAccess] = useState<{ as_candidate: string[]; as_client: string[] }>({ as_candidate: [], as_client: [] });
   const [myCandidateId, setMyCandidateId] = useState<string | null>(null);
   const [scheduleRefresh, setScheduleRefresh] = useState(0);
@@ -403,10 +444,13 @@ export default function CustomerPortal() {
     navigate("/customer-login", { replace: true });
   };
 
-  const handleBuyAgain = async (plan: (typeof BUY_AGAIN_PACKAGES)[number]) => {
+  const handleBuyAgain = async (plan: BuyAgainPackage, billingCycle: "monthly" | "yearly" = "monthly") => {
     try {
+      const useYearly = billingCycle === "yearly" && plan.yearlyPriceId;
+      const priceId = useYearly ? plan.yearlyPriceId! : plan.priceId;
+      const billing = useYearly ? plan.yearlyBilling || plan.billing : plan.billing;
       const { data: checkout, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: plan.priceId, mode: plan.mode, packageName: plan.name, billing: plan.billing },
+        body: { priceId, mode: plan.mode, packageName: plan.name, billing },
       });
       if (error) throw error;
       if (checkout?.url) window.location.href = checkout.url;
@@ -786,22 +830,58 @@ export default function CustomerPortal() {
                 </TabsContent>
 
                 <TabsContent value="payments" className="space-y-4">
-                  <SectionHeader title="Payments" description="Retainer plan details, past payments, and the next scheduled billing date." />
-                  <div className="grid gap-4 lg:grid-cols-3">
+                  <SectionHeader title="Payments" description="Buy a one-off project, subscribe to a retainer, and track your billing." />
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card/60 px-4 py-3 backdrop-blur-xl">
+                    <div>
+                      <p className="text-sm font-semibold">Retainer billing cycle</p>
+                      <p className="text-xs text-muted-foreground">Switch monthly vs yearly for the retainer plans below. Save up to £10,000/yr on annual billing.</p>
+                    </div>
+                    <div className="inline-flex rounded-md border border-border bg-background p-1">
+                      <button
+                        type="button"
+                        onClick={() => setBillingCycle("monthly")}
+                        className={`rounded px-3 py-1 text-xs font-medium transition ${billingCycle === "monthly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        Monthly
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBillingCycle("yearly")}
+                        className={`rounded px-3 py-1 text-xs font-medium transition ${billingCycle === "yearly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        Yearly
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                     {BUY_AGAIN_PACKAGES.map((plan) => {
                       const hasBoughtPlan = purchasedPackageNames.has(plan.name.toLowerCase());
+                      const useYearly = billingCycle === "yearly" && plan.yearlyPriceId;
+                      const displayPrice = useYearly ? plan.yearlyPrice! : plan.price;
+                      const displayBilling = useYearly ? plan.yearlyBilling || plan.billing : plan.billing;
                       const buttonLabel = hasBoughtPlan ? "Buy again" : plan.mode === "subscription" ? "Subscribe" : "Buy now";
 
                       return (
                         <Card key={plan.key} className={`relative overflow-hidden border-border bg-card/70 backdrop-blur-xl ${plan.featured ? "border-primary/40" : ""}`}>
+                          {plan.featured && (
+                            <Badge className="absolute right-3 top-3 border-primary/40 bg-primary/10 text-primary hover:bg-primary/10">Most popular</Badge>
+                          )}
                           <CardContent className="flex h-full flex-col p-5">
                             <div className="space-y-2">
                               <h3 className="text-xl font-semibold">{plan.name}</h3>
                               <div className="flex items-baseline gap-2">
-                                <span className="text-3xl font-bold">{plan.price}</span>
-                                <span className="text-muted-foreground text-sm">or {plan.rrp.replace(/^RRP\s*/i, "")}</span>
+                                <span className="text-3xl font-bold">{displayPrice}</span>
+                                {plan.rrp && !useYearly && (
+                                  <span className="text-muted-foreground text-sm">or {plan.rrp.replace(/^RRP\s*/i, "")}</span>
+                                )}
                               </div>
-                              <p className="text-xs font-semibold text-foreground">Pixcellor private SME grant — {plan.discount}</p>
+                              <p className="text-xs font-semibold text-foreground">
+                                {plan.discount
+                                  ? `Pixcellor private SME grant — ${plan.discount}`
+                                  : useYearly && plan.yearlySavings
+                                    ? plan.yearlySavings
+                                    : displayBilling}
+                              </p>
                             </div>
                             <ul className="my-5 flex-1 space-y-2 text-sm text-muted-foreground">
                               {plan.features.map((feature) => (
@@ -811,7 +891,7 @@ export default function CustomerPortal() {
                                 </li>
                               ))}
                             </ul>
-                            <Button variant="pricing" className="w-full gap-2" onClick={() => handleBuyAgain(plan)}>
+                            <Button variant="pricing" className="w-full gap-2" onClick={() => handleBuyAgain(plan, billingCycle)}>
                               {buttonLabel} <CreditCard className="h-4 w-4" />
                             </Button>
                           </CardContent>
@@ -819,6 +899,7 @@ export default function CustomerPortal() {
                       );
                     })}
                   </div>
+
                   {subscription || retainerOrders.length > 0 ? (
                     <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
                       <Card className="border-border bg-card/70 backdrop-blur-xl">
