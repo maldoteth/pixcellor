@@ -85,7 +85,7 @@ const STATUS_STYLE: Record<Availability["status"], string> = {
 
 type ClipAvail = { status: Availability["status"]; start_time: string | null; finish_time: string | null; note: string | null };
 
-export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister }: { myCandidateId?: string | null; onNeedRegister?: () => void }) {
+export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister, mode = "candidate" }: { myCandidateId?: string | null; onNeedRegister?: () => void; mode?: "candidate" | "customer" }) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
