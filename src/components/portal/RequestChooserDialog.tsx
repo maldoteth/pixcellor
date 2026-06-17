@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { CalendarClock, Briefcase, Users, ArrowLeft, Loader2 } from "lucide-react";
 
 type Mode = "chooser" | "meeting" | "staff";
@@ -58,6 +59,7 @@ export default function RequestChooserDialog({
   const [sOpenings, setSOpenings] = useState("1");
   const [sStart, setSStart] = useState<string>(date ?? "");
   const [sLocation, setSLocation] = useState("");
+  const [sRemote, setSRemote] = useState(false);
   const [sHours, setSHours] = useState("");
   const [sNotes, setSNotes] = useState("");
 
@@ -133,7 +135,7 @@ export default function RequestChooserDialog({
         `Role: ${sTitle.trim()}`,
         `Openings: ${sOpenings || "1"}`,
         sStart ? `Start date: ${sStart}` : null,
-        sLocation ? `Location: ${sLocation.trim()}` : null,
+        sRemote ? `Location: Remote` : (sLocation ? `Location: ${sLocation.trim()}` : null),
         sHours ? `Hours / shift pattern: ${sHours.trim()}` : null,
         sNotes ? `Notes: ${sNotes.trim()}` : null,
       ].filter(Boolean).join("\n");
@@ -293,8 +295,19 @@ export default function RequestChooserDialog({
               </div>
             </div>
             <div>
-              <Label htmlFor="s-location">Location</Label>
-              <Input id="s-location" placeholder="Site address or city" value={sLocation} onChange={(e) => setSLocation(e.target.value)} />
+              <div className="flex items-center justify-between">
+                <Label htmlFor="s-location">Location</Label>
+                <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+                  Remote
+                  <Switch checked={sRemote} onCheckedChange={(v) => { setSRemote(v); if (v) setSLocation(""); }} />
+                </label>
+              </div>
+              {!sRemote && (
+                <Input id="s-location" placeholder="Site address or city" value={sLocation} onChange={(e) => setSLocation(e.target.value)} />
+              )}
+              {sRemote && (
+                <p className="text-xs text-muted-foreground mt-1">Remote role — no site address needed.</p>
+              )}
             </div>
             <div>
               <Label htmlFor="s-hours">Hours / shift pattern</Label>
