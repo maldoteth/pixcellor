@@ -575,15 +575,21 @@ export default function VacanciesPanel() {
             <div><Label>Reference</Label><Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></div>
             <div className="sm:col-span-2">
               <Label>Site address</Label>
-              <PlaceAutocomplete
-                value={form.location}
-                onChange={(v) => setForm((f) => ({ ...f, location: v, latitude: "", longitude: "" }))}
-                onPick={(p) => setForm((f) => ({ ...f, location: p.address, latitude: String(p.latitude), longitude: String(p.longitude) }))}
-                countries={["gb"]}
-                placeholder="Search for the job site address…"
-              />
-              {form.latitude && form.longitude && (
-                <p className="text-[10px] text-muted-foreground mt-1">Pinned: {Number(form.latitude).toFixed(4)}, {Number(form.longitude).toFixed(4)}</p>
+              {form.arrangement === "remote" ? (
+                <p className="text-xs text-muted-foreground mt-1">Remote role — no site address needed.</p>
+              ) : (
+                <>
+                  <PlaceAutocomplete
+                    value={form.location}
+                    onChange={(v) => setForm((f) => ({ ...f, location: v, latitude: "", longitude: "" }))}
+                    onPick={(p) => setForm((f) => ({ ...f, location: p.address, latitude: String(p.latitude), longitude: String(p.longitude) }))}
+                    countries={["gb"]}
+                    placeholder="Search for the job site address…"
+                  />
+                  {form.latitude && form.longitude && (
+                    <p className="text-[10px] text-muted-foreground mt-1">Pinned: {Number(form.latitude).toFixed(4)}, {Number(form.longitude).toFixed(4)}</p>
+                  )}
+                </>
               )}
             </div>
             <div>
