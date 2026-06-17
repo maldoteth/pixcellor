@@ -678,7 +678,7 @@ export default function CustomerPortal() {
                         variant="pricing"
                         size="sm"
                         className="gap-2"
-                        onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: isClient ? "client-order" : "find-work" } }))}
+                        onClick={() => setFindOpen(true)}
                       >
                         <Search className="h-4 w-4" /> Find
                       </Button>
