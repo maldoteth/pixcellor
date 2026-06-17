@@ -694,8 +694,10 @@ export default function CustomerPortal() {
                     <PortalScheduleAdminGrid
                       key={scheduleRefresh}
                       myCandidateId={myCandidateId}
+                      mode="customer"
                       onNeedRegister={() => window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "candidate-register" } }))}
                     />
+
                   </div>
                 </TabsContent>
 
