@@ -30,7 +30,9 @@ import {
   EyeOff,
   Plus,
   Sparkles,
+  Users,
 } from "lucide-react";
+import AffiliateCrmPanel from "@/components/portal/AffiliateCrmPanel";
 import PortalScheduleAdminGrid from "@/components/portal/PortalScheduleAdminGrid";
 import PortalMyJobs from "@/components/portal/PortalMyJobs";
 import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
@@ -150,7 +152,7 @@ const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
   },
 ] as const;
 
-type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls" | "sites";
+type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls" | "sites" | "affiliate";
 
 type CustomerOrder = {
   id: string;
@@ -439,6 +441,7 @@ export default function CustomerPortal() {
     { title: "Payments", value: "payments", icon: CreditCard },
     { title: "Leads", value: "leads" as const, icon: Inbox },
     ...(isAdmin ? [{ title: "Calls", value: "calls" as const, icon: Phone }] : []),
+    { title: "Affiliate", value: "affiliate" as const, icon: Users },
   ];
 
   const handleSignOut = async () => {
@@ -997,6 +1000,12 @@ export default function CustomerPortal() {
                     <CallBookingsPanel />
                   </TabsContent>
                 )}
+
+                <TabsContent value="affiliate" className="space-y-4">
+                  <AffiliateCrmPanel />
+                </TabsContent>
+
+
 
               </Tabs>
             </section>
