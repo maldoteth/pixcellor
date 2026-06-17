@@ -163,18 +163,27 @@ export default function RequestChooserDialog({
     navigate(`/jobs/apply?from=portal${date ? `&date=${date}` : ""}`);
   };
 
+  const goFindWork = () => {
+    onOpenChange(false);
+    navigate("/work");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {mode === "chooser" && (date ? `Request for ${prettyDate(date)}` : "Create a request")}
+            {mode === "chooser" && (
+              variant === "find"
+                ? "What are you looking for?"
+                : (date ? `Request for ${prettyDate(date)}` : "Create a request")
+            )}
             {mode === "meeting" && "Request a meeting"}
-            {mode === "staff" && "Request staff"}
+            {mode === "staff" && (variant === "find" ? "Find staff" : "Request staff")}
           </DialogTitle>
         </DialogHeader>
 
-        {mode === "chooser" && (
+        {mode === "chooser" && variant === "request" && (
           <div className="grid gap-3 sm:grid-cols-3">
             <button
               type="button"
@@ -201,6 +210,29 @@ export default function RequestChooserDialog({
             >
               <Users className="h-6 w-6 text-primary" />
               <div className="font-semibold">Request staff</div>
+              <div className="text-xs text-muted-foreground">Tell us what you need. We'll line up candidates for your shift.</div>
+            </button>
+          </div>
+        )}
+
+        {mode === "chooser" && variant === "find" && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={goFindWork}
+              className="group flex flex-col items-start gap-2 rounded-lg border bg-background p-4 text-left transition hover:border-primary/60 hover:bg-primary/5"
+            >
+              <Briefcase className="h-6 w-6 text-primary" />
+              <div className="font-semibold">Find work</div>
+              <div className="text-xs text-muted-foreground">Browse all open vacancies. Search by role, location, remote and pay.</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("staff")}
+              className="group flex flex-col items-start gap-2 rounded-lg border bg-background p-4 text-left transition hover:border-primary/60 hover:bg-primary/5"
+            >
+              <Users className="h-6 w-6 text-primary" />
+              <div className="font-semibold">Find staff</div>
               <div className="text-xs text-muted-foreground">Tell us what you need. We'll line up candidates for your shift.</div>
             </button>
           </div>
