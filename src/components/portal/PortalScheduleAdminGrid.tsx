@@ -325,7 +325,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister 
                         {/* Empty hint */}
                         {bookings.length === 0 && !a && (
                           <div className="flex h-full w-full flex-1 items-center justify-center rounded border border-dashed border-border/40 text-[10px] text-muted-foreground/60">
-                            Tap to set availability
+                            Request
                           </div>
                         )}
                       </div>
