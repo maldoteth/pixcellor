@@ -1,56 +1,45 @@
-## What we're building
+## Goal
 
-Clicking any empty day cell (the dashed "Request" tile) in the customer portal Schedule tab opens a chooser modal with three cards, instead of the current "set availability" editor. Each card routes to an existing flow, prefilled with the clicked date.
+Add an **Affiliate** tab to the customer portal sidebar that gives any logged-in user the same Clients/CRM experience admins have in `src/pages/Portal.tsx` (the "profiles" tab) — but scoped strictly to contacts they themselves created. Plus: prevent adding a duplicate client, and as the user types a name (>3 chars) show a dropdown of close matches from their own CRM.
 
-```text
-┌─ Request for [Thu 18 Jun] ────────────┐
-│ [ Meeting ]  [ Work ]  [ Staff ]      │
-└───────────────────────────────────────┘
-```
+## Scope of the copy
 
-## The three options
+The admin Clients tab in `Portal.tsx` is ~1,500 lines tightly coupled to dozens of admin-only states (orders, profiles_q, contact_events, lead scoring, media uploads, duplicate panel, CSV import, etc.). A literal copy-paste into `CustomerPortal.tsx` would drag in admin-only data and break.
 
-### 1. Request meeting — in-modal quick picker
-A slim dialog (no name/email/company — the user is logged in). Fields:
-- Date (prefilled from the cell, editable)
-- Time (15-min slots, 09:00–18:00 London)
-- Brief (optional)
+Two realistic options — please pick one before I build:
 
-On submit, insert into `call_bookings` using the logged-in customer's profile (name/email/phone pulled from `client_profiles` or `auth.user`). `source = 'customer-portal'`, `status = 'pending'`, `preference = 'specific'`. Toast on success + close. No edge function needed — direct insert with RLS.
+### Option A — Faithful clone (recommended, larger change)
+Extract the existing Clients tab into a reusable `<ClientsCrmPanel mode="admin" | "affiliate" userId={...} />` component. Use it unchanged in Portal.tsx and mount it under the new Affiliate tab in CustomerPortal.tsx. Affiliate mode hides admin-only controls (CSV import to global pool, duplicate-merge across all users, lead scoring batch jobs) and filters every query to `created_by_user_id = auth.uid()`.
 
-### 2. Request work → KYC / candidate signup
-Route to the existing `/jobs/apply` page with `?from=portal&date=YYYY-MM-DD`. This is the existing flow:
-- `CandidateApply.tsx` collects name/email/phone + creates a `candidates` row
-- After signup, candidate lands in `/candidate-portal` which already mounts `KycDocuments` (passport / right-to-work / trade tickets / qualifications / ID & address — UK)
-- Backed by `candidate_documents` table with verified/pending/rejected review states
+- Pros: pixel-identical UI, single source of truth going forward.
+- Cons: ~1-2 days of careful refactor; risk of regressions in the admin Clients tab while extracting.
 
-**UK only for now** per your decision. US compliance (I-9, W-9/W-8BEN, E-Verify) is a follow-up.
+### Option B — Lean affiliate CRM (fast)
+Build a new, smaller `AffiliateCrmPanel` that reuses the same visual styles (cards, table rows, status chips, search bar) but only the core fields: name, contact_name, email, phone, website, industry, status, notes, plus a simple events/notes timeline. No CSV import, no lead-score batch, no media uploads.
 
-**Status of "is it built?":** Yes — passport upload + right-to-work + admin review queue all exist. It's compliant for UK pre-employment checks (Home Office right-to-work list A/B docs, store-and-show evidence). No changes needed for this ticket.
+- Pros: ships today, no risk to admin tab.
+- Cons: not literally the same code — visually matches, feature set is the subset that makes sense for one user's own pipeline.
 
-### 3. Request staff → vacancy intake
-Open a slim "Tell us what staff you need" dialog (in-modal, no page nav). Fields:
-- Role title
-- Number needed (openings)
-- Start date (prefilled from cell)
-- Location
-- Hours/shift pattern (free text)
-- Notes
+## Database changes (same for both options)
 
-Submit creates a row in `vacancies` with `status = 'draft'`, `client_contact_id` resolved from the logged-in user's `client_profiles → contacts` link, `created_by_user_id = auth.uid()`. Admin sees it in `VacanciesPanel` and triages.
+1. Add RLS policies so authenticated users can `SELECT/INSERT/UPDATE/DELETE` rows in `public.contacts`, `public.contact_events`, `public.contact_persons` **only where `created_by_user_id = auth.uid()`**. Admin policies stay as-is.
+2. Trigger on `contacts` insert: if `created_by_user_id` is null, set it to `auth.uid()`.
+3. Duplicate prevention: unique partial index on `(created_by_user_id, lower(name))` and on `(created_by_user_id, lower(email)) where email is not null`. App-side check runs first and surfaces a friendly error before insert.
 
-If the user has no linked contact, we fall back to creating a `contact_inquiries` row tagged `category = 'staff_request'` so nothing is lost.
+## Duplicate detection + live match dropdown
 
-## Files to change / add
+- On the "Add client" form, debounce the `name` input. When length ≥ 3, query the user's own contacts: `name ILIKE %q%` ordered by similarity (use `pg_trgm` `similarity()` if available, else simple `ILIKE` + length sort), limit 8.
+- Render a dropdown under the input. Clicking a match opens that contact instead of creating a new one.
+- On submit, re-check for exact case-insensitive name or email match in the user's own contacts; block with toast "You already have a client called X".
 
-- `src/components/portal/PortalScheduleAdminGrid.tsx` — replace `openEditor(dk)` on the empty-cell click with `setRequestChooser({ date: dk })`. Keep right-click context menu's "Edit availability" item (for candidate-side use) intact.
-- `src/components/portal/RequestChooserDialog.tsx` *(new)* — the 3-card chooser, plus the meeting picker and staff request sub-dialogs.
-- `src/pages/CandidateApply.tsx` — accept `?from=portal&date=…` query params for return-link UX (small touch-up, no behaviour change).
+## Frontend wiring
 
-No DB migrations needed — `call_bookings`, `vacancies`, `contact_inquiries` already exist with appropriate RLS.
+- `src/pages/CustomerPortal.tsx`:
+  - Add `"affiliate"` to the `PortalTab` union.
+  - Add `{ title: "Affiliate", value: "affiliate", icon: Users }` to `navItems` (position: TBD — end of list unless you want it elsewhere).
+  - Add matching `<TabsContent value="affiliate">` rendering the panel from the chosen option.
 
-## Out of scope (call out explicitly)
+## What I need from you
 
-- US KYC (I-9, W-9/W-8BEN, E-Verify) — separate ticket
-- Replacing the candidate-side availability editor — still reachable via the right-click context menu so candidates keep their workflow
-- Payment / deposit at request time
+1. **Option A or Option B?** (A = literal clone via refactor; B = same look, lean feature set, ships now.)
+2. Where should the **Affiliate** tab sit in the sidebar — at the end, or right after a specific item?
