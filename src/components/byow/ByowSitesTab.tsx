@@ -103,7 +103,7 @@ export default function ByowSitesTab() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Wand2 className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Sites you generated</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">YOUR GENERATIONS</h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] text-muted-foreground">
