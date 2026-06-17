@@ -67,7 +67,24 @@ import VisionGenerator from "@/components/VisionGenerator";
 import MyLeadsPanel from "@/components/portal/MyLeadsPanel";
 
 
-const BUY_AGAIN_PACKAGES = [
+type BuyAgainPackage = {
+  key: string;
+  name: string;
+  price: string;
+  rrp?: string;
+  discount?: string;
+  priceId: string;
+  mode: "payment" | "subscription";
+  billing: string;
+  featured?: boolean;
+  features: string[];
+  yearlyPrice?: string;
+  yearlyBilling?: string;
+  yearlyPriceId?: string;
+  yearlySavings?: string;
+};
+
+const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
   {
     key: "fullWorks",
     name: "Full Works",
@@ -77,8 +94,6 @@ const BUY_AGAIN_PACKAGES = [
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment",
     billing: "One-time payment",
-    action: "Buy again",
-    featured: false,
     features: ["Industry leading website", "Lifetime warranty", "Custom design", "Up to 3 pages"],
   },
   {
@@ -90,22 +105,47 @@ const BUY_AGAIN_PACKAGES = [
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     mode: "payment",
     billing: "One-time payment",
-    action: "Buy again",
     featured: true,
     features: ["Sites or web apps", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages"],
   },
   {
-    key: "retainer",
-    name: "Retainer",
+    key: "retainer-growth",
+    name: "Growth Retainer",
+    price: "£100/mo",
+    priceId: "price_1TcfyPBtUjwejeUwJmEbSWtN",
+    mode: "subscription",
+    billing: "Billed monthly · cancel anytime",
+    features: ["Website + unlimited edits", "CRM + AI lead bot", "Hosting, SSL, domain", "Monthly performance report"],
+    yearlyPrice: "£1,000/yr",
+    yearlyBilling: "Billed annually · save £200",
+    yearlyPriceId: "price_1Tcg03BtUjwejeUwr7mYzuUb",
+    yearlySavings: "Save £200/yr",
+  },
+  {
+    key: "retainer-scale",
+    name: "Scale Retainer",
+    price: "£500/mo",
+    priceId: "price_1Tcg07BtUjwejeUwfGGDhftV",
+    mode: "subscription",
+    billing: "Billed monthly · cancel anytime",
+    features: ["Everything in Growth", "Unlimited seats & edits", "Custom AI agents & automations", "Monthly strategy call"],
+    yearlyPrice: "£5,000/yr",
+    yearlyBilling: "Billed annually · save £1,000",
+    yearlyPriceId: "price_1Tcg0ABtUjwejeUwLc5nw8nX",
+    yearlySavings: "Save £1,000/yr",
+  },
+  {
+    key: "retainer-enterprise",
+    name: "Enterprise Retainer",
     price: "£2,500/mo",
-    rrp: "RRP £4,000",
-    discount: "37% off",
     priceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     mode: "subscription",
-    billing: "Monthly subscription",
-    action: "Subscribe",
-    featured: false,
-    features: ["Your own tech department", "Daily updates", "Websites or full apps", "Monthly billing"],
+    billing: "Billed monthly · 30-day notice",
+    features: ["Fractional CTO, CMO & CRO", "Dedicated dev & ops squad", "2-week MVP sprints", "24/7 priority support"],
+    yearlyPrice: "£20,000/yr",
+    yearlyBilling: "Billed annually · 30-day notice",
+    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
+    yearlySavings: "Save £10,000/yr",
   },
 ] as const;
 
