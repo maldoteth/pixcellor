@@ -449,14 +449,13 @@ export default function CustomerPortal() {
       />
       <div className="min-h-screen w-full bg-background text-foreground md:flex">
         <Sidebar collapsible="icon" className="border-sidebar-border bg-sidebar/95 backdrop-blur-xl">
-          <SidebarHeader className="border-b border-sidebar-border px-3 py-4">
+          <SidebarHeader className="flex h-14 justify-center border-b border-sidebar-border px-3 py-0">
             <div className="flex items-center gap-3 px-2">
               <div className="flex h-9 w-9 items-center justify-center border border-sidebar-border bg-sidebar-accent p-1.5">
                 <img src={customerPortalPLogo} alt="Pixcellor P logo" className="h-full w-full object-contain" />
               </div>
               <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                <p className="truncate text-sm font-semibold">Pixcellor™</p>
-                <p className="truncate text-xs text-sidebar-foreground/60">{"\n"}</p>
+                <p className="truncate text-sm font-semibold leading-none">Pixcellor™</p>
               </div>
             </div>
           </SidebarHeader>
