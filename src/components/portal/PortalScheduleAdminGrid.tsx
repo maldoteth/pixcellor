@@ -18,6 +18,7 @@ import {
   CalendarDays, ChevronLeft, ChevronRight, Clipboard, Copy, ClipboardPaste, Trash2, Loader2,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import RequestChooserDialog from "@/components/portal/RequestChooserDialog";
 
 type Vacancy = {
   id: string;
@@ -84,7 +85,7 @@ const STATUS_STYLE: Record<Availability["status"], string> = {
 
 type ClipAvail = { status: Availability["status"]; start_time: string | null; finish_time: string | null; note: string | null };
 
-export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister }: { myCandidateId?: string | null; onNeedRegister?: () => void }) {
+export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister, mode = "candidate" }: { myCandidateId?: string | null; onNeedRegister?: () => void; mode?: "candidate" | "customer" }) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
@@ -168,6 +169,12 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister 
 
   // Editor dialog
   const [editor, setEditor] = useState<{ date: string; status: Availability["status"]; start: string; finish: string; note: string } | null>(null);
+  const [requestDate, setRequestDate] = useState<string | null>(null);
+
+  const handleCellClick = (date: string) => {
+    if (mode === "customer") { setRequestDate(date); return; }
+    openEditor(date);
+  };
 
   const openEditor = (date: string) => {
     if (!myCandidateId) { onNeedRegister?.(); return; }
@@ -284,7 +291,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister 
                   <ContextMenuTrigger asChild>
                     <button
                       type="button"
-                      onClick={() => openEditor(dk)}
+                      onClick={() => handleCellClick(dk)}
                       className={`relative min-h-[90px] border-b border-r p-1 text-left transition hover:bg-muted/40 ${isToday ? "bg-primary/5" : "bg-background"}`}
                     >
                       <div className="flex h-full w-full flex-col gap-1">
@@ -419,6 +426,12 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <RequestChooserDialog
+        open={requestDate !== null}
+        onOpenChange={(o) => { if (!o) setRequestDate(null); }}
+        date={requestDate}
+      />
     </div>
   );
 }
