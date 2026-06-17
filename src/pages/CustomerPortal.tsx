@@ -36,6 +36,7 @@ import PortalMyJobs from "@/components/portal/PortalMyJobs";
 import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
 import CallBookingsPanel from "@/components/portal/CallBookingsPanel";
 import ByowSitesTab from "@/components/byow/ByowSitesTab";
+import RequestChooserDialog from "@/components/portal/RequestChooserDialog";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -301,6 +302,7 @@ export default function CustomerPortal() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<CustomerPortalData | null>(null);
+  const [findOpen, setFindOpen] = useState(false);
   const [subscription, setSubscription] = useState<CustomerSubscription | null>(null);
   const [billingPortalLoading, setBillingPortalLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
@@ -676,7 +678,7 @@ export default function CustomerPortal() {
                         variant="pricing"
                         size="sm"
                         className="gap-2"
-                        onClick={() => window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: isClient ? "client-order" : "find-work" } }))}
+                        onClick={() => setFindOpen(true)}
                       >
                         <Search className="h-4 w-4" /> Find
                       </Button>
@@ -1001,6 +1003,7 @@ export default function CustomerPortal() {
           </main>
           <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} showToggle={false} />
           <VisionGenerator hidden chatOpen={chatOpen} />
+          <RequestChooserDialog open={findOpen} onOpenChange={setFindOpen} date={null} variant="find" />
         </SidebarInset>
       </div>
     </SidebarProvider>
