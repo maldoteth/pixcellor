@@ -46,3 +46,6 @@ project_id = "rkgjkvghejcmostuqkgw"
     verify_jwt = false
   [functions.contacts-ingest]
     verify_jwt = false
+  [functions.parse-cv]
+    verify_jwt = false
+
