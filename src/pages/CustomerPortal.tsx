@@ -428,6 +428,7 @@ export default function CustomerPortal() {
   const navItems: { title: string; value: PortalTab; icon: typeof Home }[] = [
     { title: "Overview", value: "overview", icon: Home },
     { title: "My sites", value: "sites", icon: Sparkles },
+    { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Schedule", value: "schedule", icon: CalendarDays },
     ...(isCandidate ? [{ title: "My Jobs", value: "myjobs" as const, icon: Briefcase }] : []),
     ...(isClient ? [{ title: "Vacancies", value: "vacancies" as const, icon: Building2 }] : []),
@@ -435,7 +436,6 @@ export default function CustomerPortal() {
     { title: "Order history", value: "orders", icon: ReceiptText },
     { title: "Briefs", value: "briefs", icon: FileText },
     { title: "Domains", value: "delivered", icon: Globe2 },
-    { title: "Designs", value: "activity", icon: Wand2 },
     { title: "Payments", value: "payments", icon: CreditCard },
     { title: "Leads", value: "leads" as const, icon: Inbox },
     ...(isAdmin ? [{ title: "Calls", value: "calls" as const, icon: Phone }] : []),
