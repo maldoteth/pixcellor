@@ -135,7 +135,7 @@ export default function RequestChooserDialog({
         `Role: ${sTitle.trim()}`,
         `Openings: ${sOpenings || "1"}`,
         sStart ? `Start date: ${sStart}` : null,
-        sLocation ? `Location: ${sLocation.trim()}` : null,
+        sRemote ? `Location: Remote` : (sLocation ? `Location: ${sLocation.trim()}` : null),
         sHours ? `Hours / shift pattern: ${sHours.trim()}` : null,
         sNotes ? `Notes: ${sNotes.trim()}` : null,
       ].filter(Boolean).join("\n");
