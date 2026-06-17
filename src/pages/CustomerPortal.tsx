@@ -666,7 +666,7 @@ export default function CustomerPortal() {
                 </TabsContent>
 
                 <TabsContent value="sites" className="min-w-0 space-y-4">
-                  <SectionHeader title="My Sites" description="\n" />
+                  <SectionHeader title="My Sites" description="" />
                   <ByowSitesTab />
                 </TabsContent>
 
@@ -1015,7 +1015,7 @@ function SectionHeader({ title, description, count }: { title: string; descripti
     <div className="flex items-center justify-between gap-3">
       <div>
         <h2 className="text-2xl font-semibold tracking-normal">{title}</h2>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-sm text-muted-foreground whitespace-pre-line">{description}</p>
       </div>
       {typeof count === "number" && <Badge variant="outline">{count}</Badge>}
     </div>
