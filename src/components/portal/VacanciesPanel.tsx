@@ -601,7 +601,7 @@ export default function VacanciesPanel() {
             </div>
             <div>
               <Label>Arrangement</Label>
-              <Select value={form.arrangement} onValueChange={(v) => setForm({ ...form, arrangement: v })}>
+              <Select value={form.arrangement} onValueChange={(v) => setForm({ ...form, arrangement: v, ...(v === "remote" ? { location: "", latitude: "", longitude: "" } : {}) })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{ARRANGEMENTS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
