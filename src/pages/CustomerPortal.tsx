@@ -529,7 +529,7 @@ export default function CustomerPortal() {
                       <div>
                         <h1 className="text-3xl font-semibold tracking-normal md:text-5xl">Project dashboard</h1>
                         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
-                          Signed in as {data?.email}. Review your orders, briefs, deliveries, and retainer payments.
+                          Signed in as {data?.email}.&nbsp;
                         </p>
                       </div>
                     </div>
