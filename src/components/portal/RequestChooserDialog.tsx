@@ -33,10 +33,12 @@ export default function RequestChooserDialog({
   open,
   onOpenChange,
   date,
+  variant = "request",
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   date: string | null;
+  variant?: "request" | "find";
 }) {
   const { toast } = useToast();
   const navigate = useNavigate();
