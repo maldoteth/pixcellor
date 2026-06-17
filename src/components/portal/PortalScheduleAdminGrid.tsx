@@ -426,6 +426,12 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <RequestChooserDialog
+        open={requestDate !== null}
+        onOpenChange={(o) => { if (!o) setRequestDate(null); }}
+        date={requestDate}
+      />
     </div>
   );
 }
