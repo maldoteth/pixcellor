@@ -3721,6 +3721,57 @@ export type Database = {
         }
         Returns: undefined
       }
+      public_open_vacancies: {
+        Args: {
+          _arrangement?: string
+          _employment_type?: string
+          _location?: string
+          _min_pay?: number
+          _search?: string
+        }
+        Returns: {
+          arrangement: string
+          created_at: string
+          description: string
+          employment_type: string
+          end_date: string
+          id: string
+          location: string
+          openings: number
+          pay_currency: string
+          pay_max: number
+          pay_min: number
+          pay_period: string
+          required_skills: string[]
+          start_date: string
+          title: string
+        }[]
+      }
+      public_vacancy_detail: {
+        Args: { _id: string }
+        Returns: {
+          arrangement: string
+          benefits: string
+          certifications: string[]
+          created_at: string
+          description: string
+          duration_weeks: number
+          employment_type: string
+          end_date: string
+          hours_per_week: number
+          id: string
+          location: string
+          openings: number
+          pay_currency: string
+          pay_max: number
+          pay_min: number
+          pay_period: string
+          qualifications: string[]
+          required_skills: string[]
+          start_date: string
+          title: string
+        }[]
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
