@@ -1003,6 +1003,7 @@ export default function CustomerPortal() {
           </main>
           <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} showToggle={false} />
           <VisionGenerator hidden chatOpen={chatOpen} />
+          <RequestChooserDialog open={findOpen} onOpenChange={setFindOpen} date={null} variant="find" />
         </SidebarInset>
       </div>
     </SidebarProvider>
