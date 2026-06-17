@@ -621,7 +621,7 @@ export default function CustomerPortal() {
                 </TabsContent>
 
                 <TabsContent value="sites" className="min-w-0 space-y-4">
-                  <SectionHeader title="My managed sites" description="Chat your changes, watch us ship them in hours." />
+                  <SectionHeader title="My Sites" description="\n" />
                   <ByowSitesTab />
                 </TabsContent>
 
