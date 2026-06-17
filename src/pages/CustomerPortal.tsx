@@ -456,7 +456,7 @@ export default function CustomerPortal() {
               </div>
               <div className="min-w-0 group-data-[collapsible=icon]:hidden">
                 <p className="truncate text-sm font-semibold">Pixcellor™</p>
-                <p className="truncate text-xs text-sidebar-foreground/60">Customer app</p>
+                <p className="truncate text-xs text-sidebar-foreground/60">{"\n"}</p>
               </div>
             </div>
           </SidebarHeader>
