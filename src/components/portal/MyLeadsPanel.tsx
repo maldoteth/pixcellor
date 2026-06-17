@@ -385,7 +385,7 @@ export default function MyLeadsPanel({ maxLeads, planLabel }: { maxLeads?: numbe
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="space-y-3">
         <div>
           <h2 className="text-lg font-semibold">
             My leads <span className="text-sm font-normal text-muted-foreground">· {statusCounts.all ?? 0}{unlimited ? "" : ` / ${maxLeads}`}</span>
@@ -397,40 +397,43 @@ export default function MyLeadsPanel({ maxLeads, planLabel }: { maxLeads?: numbe
               : <span className={`ml-1 ${limitReached ? "text-red-300" : "text-muted-foreground"}`}>{remaining} of {maxLeads} remaining{planLabel ? ` · ${planLabel}` : ""}.</span>}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search my leads" className="pl-9" />
+
+        {/* Full-width search bar */}
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search my leads" className="pl-9 w-full" />
+        </div>
+
+        {/* Status filters + action buttons on the same row */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {([{ value: "all", label: "All" } as const, ...STATUSES] as const).map(s => {
+            const active = statusFilter === (s.value as any);
+            const meta = s.value === "all" ? null : statusMeta(s.value);
+            const count = statusCounts[s.value] ?? 0;
+            return (
+              <button key={s.value} onClick={() => setStatusFilter(s.value as any)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition ${
+                  active ? "border-primary bg-primary/10 text-foreground" : "border-border text-muted-foreground hover:border-foreground/30"
+                }`}>
+                {meta && <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />}
+                {s.label}
+                <span className="text-[10px] opacity-60">{count}</span>
+              </button>
+            );
+          })}
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvFile(f); }} />
+            <Button variant="outline" size="sm" disabled={uploading || limitReached} onClick={() => fileInputRef.current?.click()} className="gap-2">
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload CSV
+            </Button>
+            <Button variant="pricing" size="sm" className="gap-2" disabled={limitReached} onClick={openWizard}>
+              <Plus className="h-4 w-4" /> Add lead
+            </Button>
           </div>
-          <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvFile(f); }} />
-          <Button variant="outline" size="sm" disabled={uploading || limitReached} onClick={() => fileInputRef.current?.click()} className="gap-2">
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload CSV
-          </Button>
-          <Button variant="pricing" size="sm" className="gap-2" disabled={limitReached} onClick={openWizard}>
-            <Plus className="h-4 w-4" /> Add lead
-          </Button>
         </div>
       </div>
 
-      {/* Status filters */}
-      <div className="flex flex-wrap items-center gap-1.5">
-        {([{ value: "all", label: "All" } as const, ...STATUSES] as const).map(s => {
-          const active = statusFilter === (s.value as any);
-          const meta = s.value === "all" ? null : statusMeta(s.value);
-          const count = statusCounts[s.value] ?? 0;
-          return (
-            <button key={s.value} onClick={() => setStatusFilter(s.value as any)}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition ${
-                active ? "border-primary bg-primary/10 text-foreground" : "border-border text-muted-foreground hover:border-foreground/30"
-              }`}>
-              {meta && <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />}
-              {s.label}
-              <span className="text-[10px] opacity-60">{count}</span>
-            </button>
-          );
-        })}
-      </div>
 
       {/* Pending callbacks */}
       {pendingCallbacks.length > 0 && (
