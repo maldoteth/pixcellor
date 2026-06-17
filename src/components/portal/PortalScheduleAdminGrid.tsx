@@ -18,6 +18,7 @@ import {
   CalendarDays, ChevronLeft, ChevronRight, Clipboard, Copy, ClipboardPaste, Trash2, Loader2,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import RequestChooserDialog from "@/components/portal/RequestChooserDialog";
 
 type Vacancy = {
   id: string;
