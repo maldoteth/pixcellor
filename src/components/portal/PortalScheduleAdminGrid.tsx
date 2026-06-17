@@ -291,7 +291,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
                   <ContextMenuTrigger asChild>
                     <button
                       type="button"
-                      onClick={() => openEditor(dk)}
+                      onClick={() => handleCellClick(dk)}
                       className={`relative min-h-[90px] border-b border-r p-1 text-left transition hover:bg-muted/40 ${isToday ? "bg-primary/5" : "bg-background"}`}
                     >
                       <div className="flex h-full w-full flex-col gap-1">
