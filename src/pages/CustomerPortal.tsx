@@ -308,6 +308,7 @@ export default function CustomerPortal() {
   const [chatOpen, setChatOpen] = useState(false);
   const [hiddenCount, setHiddenCount] = useState(0);
   const [leadQuery, setLeadQuery] = useState("");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [access, setAccess] = useState<{ as_candidate: string[]; as_client: string[] }>({ as_candidate: [], as_client: [] });
   const [myCandidateId, setMyCandidateId] = useState<string | null>(null);
   const [scheduleRefresh, setScheduleRefresh] = useState(0);
