@@ -443,10 +443,13 @@ export default function CustomerPortal() {
     navigate("/customer-login", { replace: true });
   };
 
-  const handleBuyAgain = async (plan: (typeof BUY_AGAIN_PACKAGES)[number]) => {
+  const handleBuyAgain = async (plan: BuyAgainPackage, billingCycle: "monthly" | "yearly" = "monthly") => {
     try {
+      const useYearly = billingCycle === "yearly" && plan.yearlyPriceId;
+      const priceId = useYearly ? plan.yearlyPriceId! : plan.priceId;
+      const billing = useYearly ? plan.yearlyBilling || plan.billing : plan.billing;
       const { data: checkout, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: plan.priceId, mode: plan.mode, packageName: plan.name, billing: plan.billing },
+        body: { priceId, mode: plan.mode, packageName: plan.name, billing },
       });
       if (error) throw error;
       if (checkout?.url) window.location.href = checkout.url;
