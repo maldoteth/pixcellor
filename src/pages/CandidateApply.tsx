@@ -116,7 +116,7 @@ export default function CandidateApply() {
             {cvFile && <p className="text-xs text-muted-foreground mt-1">Selected: {cvFile.name}</p>}
           </F>
           <Button className="w-full" onClick={submit} disabled={submitting}>
-            {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Submit application
+            {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Submit Work Profile
           </Button>
         </Card>
       </div>
