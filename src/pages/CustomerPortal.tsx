@@ -1001,6 +1001,12 @@ export default function CustomerPortal() {
                   </TabsContent>
                 )}
 
+                <TabsContent value="affiliate" className="space-y-4">
+                  <AffiliateCrmPanel />
+                </TabsContent>
+
+
+
               </Tabs>
             </section>
           </main>
