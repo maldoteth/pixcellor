@@ -295,8 +295,19 @@ export default function RequestChooserDialog({
               </div>
             </div>
             <div>
-              <Label htmlFor="s-location">Location</Label>
-              <Input id="s-location" placeholder="Site address or city" value={sLocation} onChange={(e) => setSLocation(e.target.value)} />
+              <div className="flex items-center justify-between">
+                <Label htmlFor="s-location">Location</Label>
+                <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+                  Remote
+                  <Switch checked={sRemote} onCheckedChange={(v) => { setSRemote(v); if (v) setSLocation(""); }} />
+                </label>
+              </div>
+              {!sRemote && (
+                <Input id="s-location" placeholder="Site address or city" value={sLocation} onChange={(e) => setSLocation(e.target.value)} />
+              )}
+              {sRemote && (
+                <p className="text-xs text-muted-foreground mt-1">Remote role — no site address needed.</p>
+              )}
             </div>
             <div>
               <Label htmlFor="s-hours">Hours / shift pattern</Label>
