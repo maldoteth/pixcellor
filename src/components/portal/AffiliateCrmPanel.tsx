@@ -286,6 +286,9 @@ export default function AffiliateCrmPanel() {
           <Button onClick={openAdd} className="h-9 shrink-0">
             <UserPlus className="w-4 h-4 mr-2" /> Add Client
           </Button>
+          <Button onClick={openCodes} variant="outline" className="h-9 shrink-0">
+            <Ticket className="w-4 h-4 mr-2" /> Generate Code
+          </Button>
         </div>
       </div>
 
