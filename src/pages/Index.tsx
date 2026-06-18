@@ -20,6 +20,7 @@ const VisionPurchaseFlow = lazy(() => import("@/components/VisionPurchaseFlow"))
 
 const Index = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [chatOpen, setChatOpen] = useState(false);
   const [heroScrolled, setHeroScrolled] = useState(false);
   const [packagesOpen, setPackagesOpen] = useState(false);
@@ -28,6 +29,18 @@ const Index = () => {
   const [visionPurchaseOpen, setVisionPurchaseOpen] = useState(false);
   const [visionGenOpen, setVisionGenOpen] = useState(false);
   const [customerAccessOpen, setCustomerAccessOpen] = useState(false);
+
+  // If already logged in, jump straight to the portal on refresh / revisit.
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled && data.session) {
+        navigate("/customer-portal", { replace: true });
+      }
+    });
+    return () => { cancelled = true; };
+  }, [navigate]);
+
 
   useEffect(() => {
     let rafId = 0;
