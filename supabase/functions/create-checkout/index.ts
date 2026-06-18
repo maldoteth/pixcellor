@@ -137,6 +137,7 @@ serve(async (req) => {
       success_url: `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment=canceled`,
       client_reference_id: clientReferenceId,
+      allow_promotion_codes: true,
       ...(buyerEmail ? { customer_email: buyerEmail } : {}),
       metadata: {
         source: "pixcellor_site",

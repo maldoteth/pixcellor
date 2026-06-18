@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, UserPlus, Loader2, Trash2 } from "lucide-react";
+import { Search, UserPlus, Loader2, Trash2, Ticket, Copy } from "lucide-react";
 
 type ContactStatus = "cold" | "aware" | "hot" | "gold";
 
@@ -71,6 +71,55 @@ export default function AffiliateCrmPanel() {
   const [showMatches, setShowMatches] = useState(false);
 
   const [editing, setEditing] = useState<Contact | null>(null);
+
+  // Affiliate codes & referrals
+  type AffCode = { id: string; code: string; buyer_discount_pct: number; affiliate_commission_pct: number; active: boolean; created_at: string };
+  type Referral = { id: string; code: string; amount_subtotal_cents: number | null; commission_cents: number | null; currency: string | null; status: string; buyer_email: string | null; created_at: string };
+  const [codesOpen, setCodesOpen] = useState(false);
+  const [codes, setCodes] = useState<AffCode[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [codesLoading, setCodesLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  const loadCodes = useCallback(async () => {
+    setCodesLoading(true);
+    const [c, r] = await Promise.all([
+      supabase.from("affiliate_codes").select("id,code,buyer_discount_pct,affiliate_commission_pct,active,created_at").order("created_at", { ascending: false }),
+      supabase.from("affiliate_referrals").select("id,code,amount_subtotal_cents,commission_cents,currency,status,buyer_email,created_at").order("created_at", { ascending: false }).limit(100),
+    ]);
+    if (c.error) toast.error(c.error.message); else setCodes((c.data ?? []) as AffCode[]);
+    if (!r.error) setReferrals((r.data ?? []) as Referral[]);
+    setCodesLoading(false);
+  }, []);
+
+  const openCodes = async () => {
+    setCodesOpen(true);
+    await loadCodes();
+  };
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    const { data, error } = await supabase.functions.invoke("generate-affiliate-code", { body: {} });
+    setGenerating(false);
+    if (error || (data as any)?.error) {
+      toast.error(error?.message || (data as any)?.error || "Failed to generate code");
+      return;
+    }
+    toast.success(`Code created: ${(data as any).code}`);
+    await loadCodes();
+  };
+
+  const copy = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => toast.success("Copied"));
+  };
+
+  const totalEarned = referrals.reduce((sum, r) => sum + (r.commission_cents ?? 0), 0);
+  const fmtMoney = (cents: number | null | undefined, currency?: string | null) => {
+    if (cents == null) return "—";
+    try {
+      return new Intl.NumberFormat("en-GB", { style: "currency", currency: (currency || "gbp").toUpperCase() }).format(cents / 100);
+    } catch { return `${(cents / 100).toFixed(2)} ${currency || ""}`.trim(); }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -236,6 +285,9 @@ export default function AffiliateCrmPanel() {
         <div className="flex items-center gap-2">
           <Button onClick={openAdd} className="h-9 shrink-0">
             <UserPlus className="w-4 h-4 mr-2" /> Add Client
+          </Button>
+          <Button onClick={openCodes} variant="outline" className="h-9 shrink-0">
+            <Ticket className="w-4 h-4 mr-2" /> Generate Code
           </Button>
         </div>
       </div>
@@ -481,6 +533,75 @@ export default function AffiliateCrmPanel() {
                 {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Save
               </Button>
             </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Affiliate codes dialog */}
+      <Dialog open={codesOpen} onOpenChange={setCodesOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Your affiliate codes</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm">
+              <p>Generate a unique code to share. Buyers get <strong>10% off</strong> at checkout, and you earn <strong>5%</strong> of every deal where your code is used.</p>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-sm text-muted-foreground">
+                Total earned (pending payout): <strong className="text-foreground">{fmtMoney(totalEarned, referrals[0]?.currency ?? "gbp")}</strong>
+              </div>
+              <Button onClick={handleGenerate} disabled={generating}>
+                {generating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Ticket className="h-4 w-4 mr-2" />}
+                Generate new code
+              </Button>
+            </div>
+
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Your codes</div>
+              {codesLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground py-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
+              ) : codes.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">No codes yet — generate your first one.</p>
+              ) : (
+                <div className="max-h-48 overflow-auto rounded-none border border-border/40 divide-y divide-border/40">
+                  {codes.map(c => (
+                    <div key={c.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <code className="font-mono text-base">{c.code}</code>
+                        <Badge variant="secondary" className="rounded-none">{c.buyer_discount_pct}% off · {c.affiliate_commission_pct}% to you</Badge>
+                      </div>
+                      <Button size="sm" variant="ghost" onClick={() => copy(c.code)}><Copy className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Recent referrals</div>
+              {referrals.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">No referrals yet.</p>
+              ) : (
+                <div className="max-h-56 overflow-auto rounded-none border border-border/40 divide-y divide-border/40">
+                  {referrals.map(r => (
+                    <div key={r.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                      <div className="min-w-0">
+                        <div className="font-mono text-xs">{r.code}</div>
+                        <div className="text-xs text-muted-foreground truncate">{r.buyer_email || "—"} · {new Date(r.created_at).toLocaleDateString()}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">{fmtMoney(r.commission_cents, r.currency)}</div>
+                        <div className="text-[11px] text-muted-foreground">on {fmtMoney(r.amount_subtotal_cents, r.currency)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCodesOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

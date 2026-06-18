@@ -555,6 +555,47 @@ serve(async (req) => {
         throw new Error(`Failed to upsert checkout session: ${sessionUpsert.error.message}`);
       }
 
+      // ---- Affiliate referral tracking ----
+      // On completion, if the buyer used a Pixcellor affiliate promotion code,
+      // record a referral row crediting the affiliate with their commission.
+      if (event.type === "checkout.session.completed") {
+        try {
+          const full = await stripe.checkout.sessions.retrieve(session.id, {
+            expand: ["total_details.breakdown.discounts", "total_details.breakdown.discounts.discount.promotion_code"],
+          });
+          const discounts = (full.total_details as any)?.breakdown?.discounts ?? [];
+          for (const d of discounts) {
+            const promo = d?.discount?.promotion_code;
+            const promoId = typeof promo === "string" ? promo : promo?.id;
+            if (!promoId) continue;
+            const { data: codeRow } = await supabase
+              .from("affiliate_codes")
+              .select("id, code, owner_user_id, affiliate_commission_pct")
+              .eq("stripe_promotion_code_id", promoId)
+              .maybeSingle();
+            if (!codeRow) continue;
+            const subtotal = full.amount_subtotal ?? session.amount_total ?? 0;
+            const commissionCents = Math.round((subtotal * (codeRow.affiliate_commission_pct || 0)) / 100);
+            await supabase.from("affiliate_referrals").upsert({
+              code_id: codeRow.id,
+              code: codeRow.code,
+              owner_user_id: codeRow.owner_user_id,
+              checkout_session_id: session.id,
+              amount_subtotal_cents: subtotal,
+              amount_total_cents: session.amount_total ?? null,
+              currency: session.currency ?? null,
+              commission_cents: commissionCents,
+              status: "earned",
+              buyer_email: session.customer_details?.email ?? null,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: "checkout_session_id" });
+          }
+        } catch (err) {
+          console.error("[affiliate] failed to record referral", err);
+        }
+      }
+
+
       // Fire-and-forget domain registration on completed checkouts.
       // We register on authorization (not capture) so the buyer's domain is locked in immediately.
       // Risk window is small (~7d auth) and worst case admin eats the domain cost.

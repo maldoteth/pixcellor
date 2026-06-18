@@ -47,6 +47,101 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_codes: {
+        Row: {
+          active: boolean
+          affiliate_commission_pct: number
+          buyer_discount_pct: number
+          code: string
+          created_at: string
+          id: string
+          owner_user_id: string
+          stripe_coupon_id: string | null
+          stripe_promotion_code_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          affiliate_commission_pct?: number
+          buyer_discount_pct?: number
+          code: string
+          created_at?: string
+          id?: string
+          owner_user_id: string
+          stripe_coupon_id?: string | null
+          stripe_promotion_code_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          affiliate_commission_pct?: number
+          buyer_discount_pct?: number
+          code?: string
+          created_at?: string
+          id?: string
+          owner_user_id?: string
+          stripe_coupon_id?: string | null
+          stripe_promotion_code_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      affiliate_referrals: {
+        Row: {
+          amount_subtotal_cents: number | null
+          amount_total_cents: number | null
+          buyer_email: string | null
+          checkout_session_id: string
+          code: string
+          code_id: string | null
+          commission_cents: number | null
+          created_at: string
+          currency: string | null
+          id: string
+          owner_user_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_subtotal_cents?: number | null
+          amount_total_cents?: number | null
+          buyer_email?: string | null
+          checkout_session_id: string
+          code: string
+          code_id?: string | null
+          commission_cents?: number | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          owner_user_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_subtotal_cents?: number | null
+          amount_total_cents?: number | null
+          buyer_email?: string | null
+          checkout_session_id?: string
+          code?: string
+          code_id?: string | null
+          commission_cents?: number | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          owner_user_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_referrals_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_sample_generations: {
         Row: {
           brief: string | null
