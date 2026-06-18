@@ -72,6 +72,55 @@ export default function AffiliateCrmPanel() {
 
   const [editing, setEditing] = useState<Contact | null>(null);
 
+  // Affiliate codes & referrals
+  type AffCode = { id: string; code: string; buyer_discount_pct: number; affiliate_commission_pct: number; active: boolean; created_at: string };
+  type Referral = { id: string; code: string; amount_subtotal_cents: number | null; commission_cents: number | null; currency: string | null; status: string; buyer_email: string | null; created_at: string };
+  const [codesOpen, setCodesOpen] = useState(false);
+  const [codes, setCodes] = useState<AffCode[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [codesLoading, setCodesLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  const loadCodes = useCallback(async () => {
+    setCodesLoading(true);
+    const [c, r] = await Promise.all([
+      supabase.from("affiliate_codes").select("id,code,buyer_discount_pct,affiliate_commission_pct,active,created_at").order("created_at", { ascending: false }),
+      supabase.from("affiliate_referrals").select("id,code,amount_subtotal_cents,commission_cents,currency,status,buyer_email,created_at").order("created_at", { ascending: false }).limit(100),
+    ]);
+    if (c.error) toast.error(c.error.message); else setCodes((c.data ?? []) as AffCode[]);
+    if (!r.error) setReferrals((r.data ?? []) as Referral[]);
+    setCodesLoading(false);
+  }, []);
+
+  const openCodes = async () => {
+    setCodesOpen(true);
+    await loadCodes();
+  };
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    const { data, error } = await supabase.functions.invoke("generate-affiliate-code", { body: {} });
+    setGenerating(false);
+    if (error || (data as any)?.error) {
+      toast.error(error?.message || (data as any)?.error || "Failed to generate code");
+      return;
+    }
+    toast.success(`Code created: ${(data as any).code}`);
+    await loadCodes();
+  };
+
+  const copy = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => toast.success("Copied"));
+  };
+
+  const totalEarned = referrals.reduce((sum, r) => sum + (r.commission_cents ?? 0), 0);
+  const fmtMoney = (cents: number | null | undefined, currency?: string | null) => {
+    if (cents == null) return "—";
+    try {
+      return new Intl.NumberFormat("en-GB", { style: "currency", currency: (currency || "gbp").toUpperCase() }).format(cents / 100);
+    } catch { return `${(cents / 100).toFixed(2)} ${currency || ""}`.trim(); }
+  };
+
   const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
