@@ -1,8 +1,10 @@
 import { useEffect, useState, lazy, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import IntroAnimation from "@/components/ui/scroll-morph-hero";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SeoHead from "@/components/SeoHead";
 import { OG_HOME } from "@/data/ogImages";
+import { supabase } from "@/integrations/supabase/client";
 
 // Lazy-loaded: large bundles or overlays that mount on user events.
 // Keeping these off the critical path shaves ~200KB of JS off first paint.
@@ -18,6 +20,7 @@ const VisionPurchaseFlow = lazy(() => import("@/components/VisionPurchaseFlow"))
 
 const Index = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [chatOpen, setChatOpen] = useState(false);
   const [heroScrolled, setHeroScrolled] = useState(false);
   const [packagesOpen, setPackagesOpen] = useState(false);
@@ -26,6 +29,18 @@ const Index = () => {
   const [visionPurchaseOpen, setVisionPurchaseOpen] = useState(false);
   const [visionGenOpen, setVisionGenOpen] = useState(false);
   const [customerAccessOpen, setCustomerAccessOpen] = useState(false);
+
+  // If already logged in, jump straight to the portal on refresh / revisit.
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled && data.session) {
+        navigate("/customer-portal", { replace: true });
+      }
+    });
+    return () => { cancelled = true; };
+  }, [navigate]);
+
 
   useEffect(() => {
     let rafId = 0;
