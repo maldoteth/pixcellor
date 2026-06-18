@@ -1,8 +1,10 @@
 import { useEffect, useState, lazy, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import IntroAnimation from "@/components/ui/scroll-morph-hero";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SeoHead from "@/components/SeoHead";
 import { OG_HOME } from "@/data/ogImages";
+import { supabase } from "@/integrations/supabase/client";
 
 // Lazy-loaded: large bundles or overlays that mount on user events.
 // Keeping these off the critical path shaves ~200KB of JS off first paint.
