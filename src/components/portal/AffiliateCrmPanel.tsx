@@ -536,6 +536,75 @@ export default function AffiliateCrmPanel() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Affiliate codes dialog */}
+      <Dialog open={codesOpen} onOpenChange={setCodesOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Your affiliate codes</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm">
+              <p>Generate a unique code to share. Buyers get <strong>10% off</strong> at checkout, and you earn <strong>5%</strong> of every deal where your code is used.</p>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-sm text-muted-foreground">
+                Total earned (pending payout): <strong className="text-foreground">{fmtMoney(totalEarned, referrals[0]?.currency ?? "gbp")}</strong>
+              </div>
+              <Button onClick={handleGenerate} disabled={generating}>
+                {generating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Ticket className="h-4 w-4 mr-2" />}
+                Generate new code
+              </Button>
+            </div>
+
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Your codes</div>
+              {codesLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground py-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
+              ) : codes.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">No codes yet — generate your first one.</p>
+              ) : (
+                <div className="max-h-48 overflow-auto rounded-none border border-border/40 divide-y divide-border/40">
+                  {codes.map(c => (
+                    <div key={c.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <code className="font-mono text-base">{c.code}</code>
+                        <Badge variant="secondary" className="rounded-none">{c.buyer_discount_pct}% off · {c.affiliate_commission_pct}% to you</Badge>
+                      </div>
+                      <Button size="sm" variant="ghost" onClick={() => copy(c.code)}><Copy className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Recent referrals</div>
+              {referrals.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">No referrals yet.</p>
+              ) : (
+                <div className="max-h-56 overflow-auto rounded-none border border-border/40 divide-y divide-border/40">
+                  {referrals.map(r => (
+                    <div key={r.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                      <div className="min-w-0">
+                        <div className="font-mono text-xs">{r.code}</div>
+                        <div className="text-xs text-muted-foreground truncate">{r.buyer_email || "—"} · {new Date(r.created_at).toLocaleDateString()}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">{fmtMoney(r.commission_cents, r.currency)}</div>
+                        <div className="text-[11px] text-muted-foreground">on {fmtMoney(r.amount_subtotal_cents, r.currency)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCodesOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
