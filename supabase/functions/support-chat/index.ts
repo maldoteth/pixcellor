@@ -70,14 +70,15 @@ const tools = [
     type: "function",
     function: {
       name: "submit_edit_request",
-      description: "File an edit request against one of the user's orders.",
+      description: "File an edit request against one of the user's orders. session_id is the Stripe checkout session_id from get_account_overview.orders.",
       parameters: {
         type: "object",
-        required: ["order_id", "message"],
+        required: ["session_id", "request_details"],
         properties: {
-          order_id: { type: "string" },
-          message: { type: "string" },
-          target_user_id: { type: "string", description: "Admin only. Submit on behalf of another user." },
+          session_id: { type: "string", description: "Stripe checkout session_id from the order." },
+          request_details: { type: "string", description: "What the customer wants edited." },
+          package_name: { type: "string" },
+          target_email: { type: "string", description: "Admin only. Submit on behalf of another user." },
         },
       },
     },
