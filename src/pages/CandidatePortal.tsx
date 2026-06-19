@@ -108,7 +108,7 @@ export default function CandidatePortal() {
           <h1 className="text-xl font-semibold">My dashboard</h1>
           <p className="text-xs text-muted-foreground">Signed in as {session.user.email}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()} className="gap-2">
+        <Button variant="outline" size="sm" onClick={async () => { const { hardSignOut } = await import("@/lib/hardSignOut"); await hardSignOut("/"); }} className="gap-2">
           <LogOut className="h-4 w-4" /> Sign out
         </Button>
       </header>
