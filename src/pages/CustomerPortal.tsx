@@ -512,6 +512,11 @@ export default function CustomerPortal() {
         path="/customer-portal"
         noindex
       />
+      <WelcomeCelebration
+        show={welcome.show}
+        isFirstJoin={welcome.firstJoin}
+        onDone={() => setWelcome((w) => ({ ...w, show: false }))}
+      />
       <div className="min-h-screen w-full bg-background text-foreground md:flex">
         <Sidebar collapsible="icon" className="border-sidebar-border bg-sidebar/95 backdrop-blur-xl">
           <SidebarHeader className="flex h-14 justify-center border-b border-sidebar-border px-3 py-0 group-data-[collapsible=icon]:px-0">
