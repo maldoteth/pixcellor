@@ -36,7 +36,7 @@ interface ChatBotProps {
   setIsOpen: (open: boolean) => void;
   hidden?: boolean;
   showToggle?: boolean;
-  mode?: "sales" | "dev";
+  mode?: "sales" | "dev" | "support";
   onDevAction?: () => void;
 }
 
@@ -74,11 +74,15 @@ const glassStyle = {
   `,
 };
 
-const getClientId = (mode: "sales" | "dev" = "sales"): string => {
-  const storageKey = mode === "dev" ? "pixcellor_dev_chat_client_id" : "pixcellor_chat_client_id";
+const getClientId = (mode: "sales" | "dev" | "support" = "sales"): string => {
+  const storageKey =
+    mode === "dev" ? "pixcellor_dev_chat_client_id"
+    : mode === "support" ? "pixcellor_support_chat_client_id"
+    : "pixcellor_chat_client_id";
   let clientId = localStorage.getItem(storageKey);
   if (!clientId) {
-    clientId = `${mode === "dev" ? "dev" : "client"}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const prefix = mode === "dev" ? "dev" : mode === "support" ? "support" : "client";
+    clientId = `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     localStorage.setItem(storageKey, clientId);
   }
   return clientId;
@@ -227,6 +231,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const isDesktop = useIsDesktop();
   const clientId = useRef(getClientId(mode));
   const isDevMode = mode === "dev";
+  const isSupportMode = mode === "support";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -380,6 +385,19 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       setMessages([]);
       return;
     }
+    if (isSupportMode) {
+      // Greet immediately; no backend round-trip needed for the opener.
+      const { data: sess } = await supabase.auth.getSession();
+      const firstName = sess.session?.user?.user_metadata?.first_name
+        || sess.session?.user?.user_metadata?.full_name?.split(" ")?.[0]
+        || "";
+      const greet = firstName ? `Hey ${firstName} 👋` : "Hey 👋";
+      setMessages([{
+        role: "assistant",
+        content: `${greet} I'm Pixie, your Pixcellor support assistant. I can pull up your orders, briefs, edits, subscription, affiliate stats — and I can take action: file an edit, generate a referral code, open billing, process a refund, cancel a sub. What do you need?`,
+      }]);
+      return;
+    }
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("sales-chat", {
@@ -430,9 +448,11 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
 
     try {
       const apiMessages = [...messages.map(({ role, content }) => ({ role, content })), apiUserMessage];
-      const { data, error } = await supabase.functions.invoke("sales-chat", {
-        body: { messages: apiMessages, clientId: clientId.current, conversationId, mode },
-      });
+      const fn = isSupportMode ? "support-chat" : "sales-chat";
+      const body = isSupportMode
+        ? { messages: apiMessages }
+        : { messages: apiMessages, clientId: clientId.current, conversationId, mode };
+      const { data, error } = await supabase.functions.invoke(fn, { body });
       if (error) throw error;
       const assistantMsg: Message = { role: "assistant", content: data.reply };
       if (data.packageCards?.length) assistantMsg.packageCards = data.packageCards;
