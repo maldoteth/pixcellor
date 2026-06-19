@@ -419,6 +419,17 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
           "Advanced analytics dashboards",
         ],
       },
+      {
+        title: "Agentic Self-Improving Stack",
+        items: [
+          "Site + app rewrite themselves based on real conversion data",
+          "Automatic adoption of frontier AI models the day they release",
+          "Multi-variant testing across pages, copy, hero and CTAs",
+          "SEO/AEO agents claim new keywords as they trend",
+          "Continuous performance & accessibility self-tuning",
+          "Your stack compounds with every AI advancement — automatically",
+        ],
+      },
     ],
     deliverables: [
       "Production-ready site + app + automations",
