@@ -1503,9 +1503,9 @@ export default function Portal() {
     setEventForm(f => ({ ...f, callback_at: formatDateTimeLocal(preset.getDate()) }));
   };
 
-  const exitPortal = () => {
-    void supabase.auth.signOut();
-    navigate("/portal-login", { replace: true });
+  const exitPortal = async () => {
+    const { hardSignOut } = await import("@/lib/hardSignOut");
+    await hardSignOut("/");
   };
 
   const scrollPortalTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
