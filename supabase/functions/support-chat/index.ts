@@ -300,15 +300,14 @@ async function execTool(name: string, rawArgs: string, ctx: Ctx): Promise<unknow
     }
 
     case "generate_affiliate_code": {
-      // Reuse the existing edge function via service-role call
+      // Reuse the existing edge function — forward the user's JWT
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/generate-affiliate-code`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${SERVICE_ROLE_KEY}`,
-          "x-user-id": ctx.userId,
+          "Authorization": ctx.authHeader,
         },
-        body: JSON.stringify({ owner_user_id: ctx.userId, custom_code: args.custom_code ?? null }),
+        body: JSON.stringify({}),
       });
       const json = await resp.json();
       if (!resp.ok) throw new Error(json?.error || "Failed to generate code");
