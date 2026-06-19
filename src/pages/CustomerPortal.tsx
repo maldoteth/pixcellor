@@ -374,6 +374,20 @@ export default function CustomerPortal() {
     setSubscription((subRow as CustomerSubscription | null) ?? null);
     setLoading(false);
     refreshHiddenCount();
+
+    // Welcome celebration — once per browser per user
+    try {
+      const user = sessionData.session.user;
+      const key = `pixcellor_welcomed_${user.id}`;
+      if (!localStorage.getItem(key)) {
+        const created = user.created_at ? new Date(user.created_at).getTime() : 0;
+        const isFirstJoin = created > 0 && Date.now() - created < 10 * 60 * 1000;
+        setWelcome({ show: true, firstJoin: isFirstJoin });
+        localStorage.setItem(key, "1");
+      }
+    } catch {
+      // ignore storage errors
+    }
   }, [navigate, refreshHiddenCount]);
 
   useEffect(() => {
