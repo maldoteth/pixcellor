@@ -261,7 +261,7 @@ export default function ServiceSalesView({
       {service.outcomes && service.outcomes.length > 0 && (
         <motion.section {...fadeUp} className="mb-12 md:mb-16">
           <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
-            What this gets you
+            EXPECTED RESULTS
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2">
             {service.outcomes.map((o) => (
