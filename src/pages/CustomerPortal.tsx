@@ -468,8 +468,8 @@ export default function CustomerPortal() {
   ];
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/customer-login", { replace: true });
+    const { hardSignOut } = await import("@/lib/hardSignOut");
+    await hardSignOut("/");
   };
 
   const handleBuyAgain = async (plan: BuyAgainPackage, billingCycle: "monthly" | "yearly" = "monthly") => {
