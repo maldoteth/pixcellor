@@ -65,6 +65,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import customerPortalPLogo from "@/assets/customer-portal-p-logo.png";
 import ChatBot from "@/components/ChatBot";
+import WelcomeCelebration from "@/components/WelcomeCelebration";
 import SeoHead from "@/components/SeoHead";
 import VisionGenerator from "@/components/VisionGenerator";
 import MyLeadsPanel from "@/components/portal/MyLeadsPanel";
@@ -316,6 +317,7 @@ export default function CustomerPortal() {
   const [access, setAccess] = useState<{ as_candidate: string[]; as_client: string[] }>({ as_candidate: [], as_client: [] });
   const [myCandidateId, setMyCandidateId] = useState<string | null>(null);
   const [scheduleRefresh, setScheduleRefresh] = useState(0);
+  const [welcome, setWelcome] = useState<{ show: boolean; firstJoin: boolean }>({ show: false, firstJoin: false });
 
   const loadCandidateAccess = useCallback(async () => {
     const [cid, ids] = await Promise.all([
@@ -372,6 +374,20 @@ export default function CustomerPortal() {
     setSubscription((subRow as CustomerSubscription | null) ?? null);
     setLoading(false);
     refreshHiddenCount();
+
+    // Welcome celebration — once per browser per user
+    try {
+      const user = sessionData.session.user;
+      const key = `pixcellor_welcomed_${user.id}`;
+      if (!localStorage.getItem(key)) {
+        const created = user.created_at ? new Date(user.created_at).getTime() : 0;
+        const isFirstJoin = created > 0 && Date.now() - created < 10 * 60 * 1000;
+        setWelcome({ show: true, firstJoin: isFirstJoin });
+        localStorage.setItem(key, "1");
+      }
+    } catch {
+      // ignore storage errors
+    }
   }, [navigate, refreshHiddenCount]);
 
   useEffect(() => {
@@ -495,6 +511,11 @@ export default function CustomerPortal() {
         description="Track your Pixcellor project, requirements, edits and orders."
         path="/customer-portal"
         noindex
+      />
+      <WelcomeCelebration
+        show={welcome.show}
+        isFirstJoin={welcome.firstJoin}
+        onDone={() => setWelcome((w) => ({ ...w, show: false }))}
       />
       <div className="min-h-screen w-full bg-background text-foreground md:flex">
         <Sidebar collapsible="icon" className="border-sidebar-border bg-sidebar/95 backdrop-blur-xl">
