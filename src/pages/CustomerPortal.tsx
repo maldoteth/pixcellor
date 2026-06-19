@@ -1038,7 +1038,7 @@ export default function CustomerPortal() {
               </Tabs>
             </section>
           </main>
-          <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} showToggle={false} />
+          <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} showToggle={false} mode="support" />
           <VisionGenerator hidden chatOpen={chatOpen} />
           <RequestChooserDialog open={findOpen} onOpenChange={setFindOpen} date={null} variant="find" />
         </SidebarInset>
