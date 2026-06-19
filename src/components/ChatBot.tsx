@@ -36,7 +36,7 @@ interface ChatBotProps {
   setIsOpen: (open: boolean) => void;
   hidden?: boolean;
   showToggle?: boolean;
-  mode?: "sales" | "dev";
+  mode?: "sales" | "dev" | "support";
   onDevAction?: () => void;
 }
 
