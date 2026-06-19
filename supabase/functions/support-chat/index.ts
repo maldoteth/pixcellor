@@ -400,6 +400,7 @@ serve(async (req) => {
       isAdmin: Boolean(adminRole),
       admin,
       origin: req.headers.get("origin") || "https://pixcellor.com",
+      authHeader,
     };
 
     const body = await req.json().catch(() => ({}));
