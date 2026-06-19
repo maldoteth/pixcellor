@@ -326,6 +326,17 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         ],
       },
       {
+        title: "Agentic Self-Improving Website",
+        items: [
+          "Your site evolves on its own — no rebuild, no waiting",
+          "Auto-upgraded the moment a better AI model is released",
+          "Behavioural A/B tests run continuously to lift conversions",
+          "Agents rewrite copy and meta for fresh SEO/AEO wins",
+          "Always on the latest trends — design, perf, accessibility",
+          "Every AI breakthrough becomes your competitive edge, automatically",
+        ],
+      },
+      {
         title: "Analytics & Reporting",
         items: [
           "Conversion & visitor analytics",
