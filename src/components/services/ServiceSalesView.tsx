@@ -5,6 +5,7 @@ import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { SERVICE_CATEGORIES, type Service, type ServiceCtaAction } from "@/data/services";
 import { Button } from "@/components/ui/button";
 import { SERVICE_IMAGES } from "@/assets/services";
+import { SERVICE_GALLERY } from "@/assets/gallery";
 import { useIsMobile } from "@/hooks/use-mobile";
 import randstadLogo from "@/assets/logos/randstad.svg";
 import blueArrowLogo from "@/assets/logos/bluearrow.svg";
@@ -256,6 +257,34 @@ export default function ServiceSalesView({
           ))}
         </ul>
       </motion.section>
+
+      {/* GALLERY — 3 cohesive visuals per service */}
+      {SERVICE_GALLERY[service.slug] && (
+        <motion.section {...fadeUp} className="mb-12 md:mb-16">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {SERVICE_GALLERY[service.slug].map((img) => (
+              <div
+                key={img.src}
+                className="group relative overflow-hidden rounded-xl border border-foreground/15 bg-black aspect-[4/3]"
+              >
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  width={1280}
+                  height={896}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent"
+                />
+              </div>
+            ))}
+          </div>
+        </motion.section>
+      )}
 
       {/* OUTCOMES — what this gets you */}
       {service.outcomes && service.outcomes.length > 0 && (
