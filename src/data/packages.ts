@@ -515,6 +515,17 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
           "Dedicated account manager",
         ],
       },
+      {
+        title: "Agentic Self-Improving Estate",
+        items: [
+          "Every public surface — site, app, dashboards — evolves autonomously",
+          "Day-zero adoption of frontier AI: GPT, Claude, Gemini, open models",
+          "Always-on experimentation across product, pricing and copy",
+          "Self-healing infrastructure: incidents triaged and patched by agents",
+          "Continuous SEO/AEO + brand monitoring across the entire estate",
+          "Compounding moat: your platform gets sharper every single week, hands-off",
+        ],
+      },
     ],
     deliverables: [
       "Roadmap with quarterly OKRs",
