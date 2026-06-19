@@ -257,6 +257,26 @@ export default function ServiceSalesView({
         </ul>
       </motion.section>
 
+      {/* OUTCOMES — what this gets you */}
+      {service.outcomes && service.outcomes.length > 0 && (
+        <motion.section {...fadeUp} className="mb-12 md:mb-16">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
+            What this gets you
+          </h2>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {service.outcomes.map((o) => (
+              <li
+                key={o}
+                className="flex items-start gap-3 rounded-lg border border-foreground/10 bg-foreground/[0.03] p-4 backdrop-blur-md"
+              >
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                <span className="text-sm leading-relaxed text-foreground/90">{o}</span>
+              </li>
+            ))}
+          </ul>
+        </motion.section>
+      )}
+
       {/* PROCESS */}
       <motion.section {...fadeUp} className="mb-12 md:mb-16">
         <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
@@ -327,6 +347,30 @@ export default function ServiceSalesView({
                 </div>
               );
             })}
+          </div>
+        </motion.section>
+      )}
+
+      {/* FAQ */}
+      {service.faqs && service.faqs.length > 0 && (
+        <motion.section {...fadeUp} className="mb-12 md:mb-16">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
+            FAQ
+          </h2>
+          <div className="space-y-3">
+            {service.faqs.map((f) => (
+              <div
+                key={f.q}
+                className="rounded-lg border border-foreground/10 bg-foreground/[0.03] p-5 backdrop-blur-md"
+              >
+                <h3 className="text-sm md:text-base font-semibold text-foreground">
+                  {f.q}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+                  {f.a}
+                </p>
+              </div>
+            ))}
           </div>
         </motion.section>
       )}
