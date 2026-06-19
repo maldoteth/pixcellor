@@ -375,13 +375,20 @@ export default function CustomerPortal() {
     setLoading(false);
     refreshHiddenCount();
 
-    // Welcome celebration — once per browser per user
+    // Welcome celebration — once per browser per user.
+    // First-join detection uses Supabase auth's own timestamps:
+    // on the very first session, last_sign_in_at == created_at.
     try {
-      const user = sessionData.session.user;
+      const user = sessionData.session.user as typeof sessionData.session.user & {
+        last_sign_in_at?: string | null;
+      };
       const key = `pixcellor_welcomed_${user.id}`;
       if (!localStorage.getItem(key)) {
         const created = user.created_at ? new Date(user.created_at).getTime() : 0;
-        const isFirstJoin = created > 0 && Date.now() - created < 10 * 60 * 1000;
+        const lastSignIn = user.last_sign_in_at ? new Date(user.last_sign_in_at).getTime() : 0;
+        // Treat as first join when auth has no prior sign-in, or the gap is sub-second
+        // (Supabase stamps both fields together on the initial session).
+        const isFirstJoin = !lastSignIn || Math.abs(lastSignIn - created) < 2000;
         setWelcome({ show: true, firstJoin: isFirstJoin });
         localStorage.setItem(key, "1");
       }
