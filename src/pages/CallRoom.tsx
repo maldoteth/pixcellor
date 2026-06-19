@@ -382,21 +382,31 @@ const CallRoom = () => {
 
   // ---------------- HOST side helpers ----------------
 
-  const createHostPeerFor = useCallback((peerId: string, name: string): RemotePeer => {
-    const safeIce: RTCIceServer[] = [];
-    for (const s of iceServers ?? []) {
-      const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
-      const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
-      if (cleaned.length) safeIce.push({ ...s, urls: cleaned });
+  const createHostPeerFor = useCallback((peerId: string, name: string, relayOnly = false): RemotePeer => {
+    let config: RTCConfiguration;
+    if (relayOnly && relayServersRef.current.length > 0) {
+      config = { iceServers: relayServersRef.current, iceTransportPolicy: "relay" };
+    } else {
+      const safeIce: RTCIceServer[] = [];
+      for (const s of iceServers ?? []) {
+        const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
+        const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
+        if (cleaned.length) safeIce.push({ ...s, urls: cleaned });
+      }
+      config = { iceServers: safeIce };
     }
-    const pc = new RTCPeerConnection({ iceServers: safeIce });
-    const stream = new MediaStream();
+    const pc = new RTCPeerConnection(config);
+    // Preserve any pre-existing remote stream reference so already-attached <video>
+    // elements continue to render until ontrack swaps in the new stream.
+    const existing = peersRef.current.get(peerId);
+    const stream = existing?.stream ?? new MediaStream();
     const peer: RemotePeer = { pc, stream, name, pendingIce: [] };
 
     pc.onicecandidate = (e) => {
       if (e.candidate) {
         const c = e.candidate;
         console.log("[call] host local cand", peerId, c.type ?? "?", c.protocol ?? "", c.address ?? c.candidate?.slice(0, 60));
+        noteLocalCand(c.type);
         sendSignal({ type: "ice", candidate: c.toJSON(), from: PEER_ID, to: peerId });
       }
     };
@@ -437,6 +447,7 @@ const CallRoom = () => {
     };
     pc.oniceconnectionstatechange = () => {
       console.log("[call] host ice state", peerId, pc.iceConnectionState);
+      setDebugIceState(pc.iceConnectionState);
       if (pc.iceConnectionState === "failed") {
         try { pc.restartIce(); } catch { /* noop */ }
       }
@@ -464,7 +475,29 @@ const CallRoom = () => {
     setRemotePeers((arr) => arr.some((p) => p.peerId === peerId) ? arr : [...arr, { peerId, name }]);
     return peer;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [iceServers, sendSignal]);
+  }, [iceServers, sendSignal, noteLocalCand]);
+
+  // Recreate a single host peer with relay-only config and renegotiate.
+  // Keeps the peer entry under the same peerId (same name/list slot).
+  const recreateHostPeerRelayOnly = useCallback(async (peerId: string): Promise<RemotePeer | null> => {
+    if (!relayServersRef.current || relayServersRef.current.length === 0) {
+      console.warn("[call] recreateHostPeerRelayOnly: no relay servers");
+      return null;
+    }
+    const old = peersRef.current.get(peerId);
+    if (!old) return null;
+    try { old.pc.close(); } catch { /* noop */ }
+    const peer = createHostPeerFor(peerId, old.name, true);
+    try {
+      const offer = await peer.pc.createOffer({ iceRestart: true });
+      await peer.pc.setLocalDescription(offer);
+      sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: peerId });
+      console.log("[call] host PC recreated relay-only for", peerId);
+    } catch (e) {
+      console.warn("[call] relay-only re-offer failed", e);
+    }
+    return peer;
+  }, [createHostPeerFor, sendSignal]);
 
   const removeHostPeer = useCallback((peerId: string) => {
     const p = peersRef.current.get(peerId);
