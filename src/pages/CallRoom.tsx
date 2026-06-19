@@ -134,6 +134,15 @@ const CallRoom = () => {
         setIceServers(data.ice_servers);
         const relays: RTCIceServer[] = Array.isArray(data.relay_only_ice_servers) ? data.relay_only_ice_servers : [];
         relayServersRef.current = relays;
+        const countUrls = (arr: RTCIceServer[] | undefined) => {
+          let n = 0;
+          for (const s of arr ?? []) {
+            const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
+            for (const u of urls) if (typeof u === "string" && /^turns?:/i.test(u)) n++;
+          }
+          return n;
+        };
+        setTurnUrlCount(countUrls(data.ice_servers) + countUrls(relays));
         setStatus("preflight");
       } catch (e) {
         if (!cancel) setError(String((e as Error)?.message ?? e));
