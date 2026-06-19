@@ -57,6 +57,20 @@ const CallRoom = () => {
   const [preflightReady, setPreflightReady] = useState(false);
   const [preflightLoading, setPreflightLoading] = useState(false);
 
+  // ---- Debug overlay (enabled with ?debug=1) ----
+  const isDebug = params.get("debug") === "1";
+  const [turnUrlCount, setTurnUrlCount] = useState(0);
+  const [debugIceState, setDebugIceState] = useState<string>("");
+  const [localCandTypes, setLocalCandTypes] = useState<Set<string>>(new Set());
+  const noteLocalCand = useCallback((t: string | undefined | null) => {
+    const v = t || "unknown";
+    setLocalCandTypes((prev) => (prev.has(v) ? prev : new Set(prev).add(v)));
+  }, []);
+
+  // iOS Safari (and all iOS browsers — all WebKit) does not properly support
+  // RTCPeerConnection.setConfiguration. Force the recreate-PC relay fallback.
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || "");
+
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [sharing, setSharing] = useState(false);
