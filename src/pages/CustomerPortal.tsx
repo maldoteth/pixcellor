@@ -317,6 +317,7 @@ export default function CustomerPortal() {
   const [access, setAccess] = useState<{ as_candidate: string[]; as_client: string[] }>({ as_candidate: [], as_client: [] });
   const [myCandidateId, setMyCandidateId] = useState<string | null>(null);
   const [scheduleRefresh, setScheduleRefresh] = useState(0);
+  const [welcome, setWelcome] = useState<{ show: boolean; firstJoin: boolean }>({ show: false, firstJoin: false });
 
   const loadCandidateAccess = useCallback(async () => {
     const [cid, ids] = await Promise.all([
