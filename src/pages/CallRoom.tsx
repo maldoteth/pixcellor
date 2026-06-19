@@ -57,6 +57,20 @@ const CallRoom = () => {
   const [preflightReady, setPreflightReady] = useState(false);
   const [preflightLoading, setPreflightLoading] = useState(false);
 
+  // ---- Debug overlay (enabled with ?debug=1) ----
+  const isDebug = params.get("debug") === "1";
+  const [turnUrlCount, setTurnUrlCount] = useState(0);
+  const [debugIceState, setDebugIceState] = useState<string>("");
+  const [localCandTypes, setLocalCandTypes] = useState<Set<string>>(new Set());
+  const noteLocalCand = useCallback((t: string | undefined | null) => {
+    const v = t || "unknown";
+    setLocalCandTypes((prev) => (prev.has(v) ? prev : new Set(prev).add(v)));
+  }, []);
+
+  // iOS Safari (and all iOS browsers — all WebKit) does not properly support
+  // RTCPeerConnection.setConfiguration. Force the recreate-PC relay fallback.
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || "");
+
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [sharing, setSharing] = useState(false);
@@ -120,6 +134,15 @@ const CallRoom = () => {
         setIceServers(data.ice_servers);
         const relays: RTCIceServer[] = Array.isArray(data.relay_only_ice_servers) ? data.relay_only_ice_servers : [];
         relayServersRef.current = relays;
+        const countUrls = (arr: RTCIceServer[] | undefined) => {
+          let n = 0;
+          for (const s of arr ?? []) {
+            const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
+            for (const u of urls) if (typeof u === "string" && /^turns?:/i.test(u)) n++;
+          }
+          return n;
+        };
+        setTurnUrlCount(countUrls(data.ice_servers) + countUrls(relays));
         setStatus("preflight");
       } catch (e) {
         if (!cancel) setError(String((e as Error)?.message ?? e));
@@ -242,6 +265,12 @@ const CallRoom = () => {
       console.warn("[call] no TURN relay servers available — cannot fall back");
       return false;
     }
+    // iOS Safari (WebKit) does not properly honour setConfiguration. Force
+    // the recreate-PC path instead so the relay fallback actually takes effect.
+    if (isIOS) {
+      console.log("[call] iOS detected — skipping setConfiguration fast path");
+      return false;
+    }
     try {
       pc.setConfiguration({ iceServers: relay, iceTransportPolicy: "relay" });
       console.log("[call] switched PC to relay-only");
@@ -250,22 +279,29 @@ const CallRoom = () => {
       console.warn("[call] setConfiguration(relay-only) failed", e);
       return false;
     }
-  }, []);
+  }, [isIOS]);
 
   // ---------------- GUEST side helpers ----------------
 
-  const createGuestPeer = useCallback((): RTCPeerConnection => {
-    const safeIce: RTCIceServer[] = [];
-    for (const s of iceServers ?? []) {
-      const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
-      const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
-      if (cleaned.length) safeIce.push({ ...s, urls: cleaned });
+  const createGuestPeer = useCallback((relayOnly = false): RTCPeerConnection => {
+    let config: RTCConfiguration;
+    if (relayOnly && relayServersRef.current.length > 0) {
+      config = { iceServers: relayServersRef.current, iceTransportPolicy: "relay" };
+    } else {
+      const safeIce: RTCIceServer[] = [];
+      for (const s of iceServers ?? []) {
+        const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
+        const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
+        if (cleaned.length) safeIce.push({ ...s, urls: cleaned });
+      }
+      config = { iceServers: safeIce };
     }
-    const pc = new RTCPeerConnection({ iceServers: safeIce });
+    const pc = new RTCPeerConnection(config);
     pc.onicecandidate = (e) => {
       if (e.candidate) {
         const c = e.candidate;
         console.log("[call] guest local cand", c.type ?? "?", c.protocol ?? "", c.address ?? c.candidate?.slice(0, 60));
+        noteLocalCand(c.type);
         sendSignal({ type: "ice", candidate: c.toJSON(), from: PEER_ID, to: hostPeerIdRef.current ?? undefined });
       }
     };
@@ -292,6 +328,7 @@ const CallRoom = () => {
     };
     pc.oniceconnectionstatechange = () => {
       const s = pc.iceConnectionState;
+      setDebugIceState(s);
       if (s === "connected" || s === "completed") markConnected();
       if (s === "failed") {
         try { pc.restartIce(); } catch { /* noop */ }
@@ -320,25 +357,56 @@ const CallRoom = () => {
       }
     };
     return pc;
-  }, [iceServers, sendSignal, markFailed]);
+  }, [iceServers, sendSignal, markFailed, noteLocalCand]);
+
+  // Recreate the guest PC with relay-only config (iOS-safe relay fallback).
+  // Re-attaches the same local tracks and re-wires the same handlers.
+  const recreateGuestPeerRelayOnly = useCallback((): RTCPeerConnection | null => {
+    if (!relayServersRef.current || relayServersRef.current.length === 0) {
+      console.warn("[call] recreateGuestPeerRelayOnly: no relay servers");
+      return null;
+    }
+    try { pcRef.current?.close(); } catch { /* noop */ }
+    const pc = createGuestPeer(true);
+    pcRef.current = pc;
+    guestPendingIceRef.current = [];
+    const localStream = screenStreamRef.current ?? localStreamRef.current;
+    if (localStream) {
+      for (const t of localStream.getTracks()) {
+        try { pc.addTrack(t, localStream); } catch (e) { console.warn("[call] re-addTrack failed", e); }
+      }
+    }
+    console.log("[call] guest PC recreated relay-only");
+    return pc;
+  }, [createGuestPeer]);
 
   // ---------------- HOST side helpers ----------------
 
-  const createHostPeerFor = useCallback((peerId: string, name: string): RemotePeer => {
-    const safeIce: RTCIceServer[] = [];
-    for (const s of iceServers ?? []) {
-      const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
-      const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
-      if (cleaned.length) safeIce.push({ ...s, urls: cleaned });
+  const createHostPeerFor = useCallback((peerId: string, name: string, relayOnly = false): RemotePeer => {
+    let config: RTCConfiguration;
+    if (relayOnly && relayServersRef.current.length > 0) {
+      config = { iceServers: relayServersRef.current, iceTransportPolicy: "relay" };
+    } else {
+      const safeIce: RTCIceServer[] = [];
+      for (const s of iceServers ?? []) {
+        const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
+        const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
+        if (cleaned.length) safeIce.push({ ...s, urls: cleaned });
+      }
+      config = { iceServers: safeIce };
     }
-    const pc = new RTCPeerConnection({ iceServers: safeIce });
-    const stream = new MediaStream();
+    const pc = new RTCPeerConnection(config);
+    // Preserve any pre-existing remote stream reference so already-attached <video>
+    // elements continue to render until ontrack swaps in the new stream.
+    const existing = peersRef.current.get(peerId);
+    const stream = existing?.stream ?? new MediaStream();
     const peer: RemotePeer = { pc, stream, name, pendingIce: [] };
 
     pc.onicecandidate = (e) => {
       if (e.candidate) {
         const c = e.candidate;
         console.log("[call] host local cand", peerId, c.type ?? "?", c.protocol ?? "", c.address ?? c.candidate?.slice(0, 60));
+        noteLocalCand(c.type);
         sendSignal({ type: "ice", candidate: c.toJSON(), from: PEER_ID, to: peerId });
       }
     };
@@ -379,6 +447,7 @@ const CallRoom = () => {
     };
     pc.oniceconnectionstatechange = () => {
       console.log("[call] host ice state", peerId, pc.iceConnectionState);
+      setDebugIceState(pc.iceConnectionState);
       if (pc.iceConnectionState === "failed") {
         try { pc.restartIce(); } catch { /* noop */ }
       }
@@ -406,7 +475,29 @@ const CallRoom = () => {
     setRemotePeers((arr) => arr.some((p) => p.peerId === peerId) ? arr : [...arr, { peerId, name }]);
     return peer;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [iceServers, sendSignal]);
+  }, [iceServers, sendSignal, noteLocalCand]);
+
+  // Recreate a single host peer with relay-only config and renegotiate.
+  // Keeps the peer entry under the same peerId (same name/list slot).
+  const recreateHostPeerRelayOnly = useCallback(async (peerId: string): Promise<RemotePeer | null> => {
+    if (!relayServersRef.current || relayServersRef.current.length === 0) {
+      console.warn("[call] recreateHostPeerRelayOnly: no relay servers");
+      return null;
+    }
+    const old = peersRef.current.get(peerId);
+    if (!old) return null;
+    try { old.pc.close(); } catch { /* noop */ }
+    const peer = createHostPeerFor(peerId, old.name, true);
+    try {
+      const offer = await peer.pc.createOffer({ iceRestart: true });
+      await peer.pc.setLocalDescription(offer);
+      sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: peerId });
+      console.log("[call] host PC recreated relay-only for", peerId);
+    } catch (e) {
+      console.warn("[call] relay-only re-offer failed", e);
+    }
+    return peer;
+  }, [createHostPeerFor, sendSignal]);
 
   const removeHostPeer = useCallback((peerId: string) => {
     const p = peersRef.current.get(peerId);
@@ -494,13 +585,17 @@ const CallRoom = () => {
               const p = peersRef.current.get(msg.from);
               if (!p) return;
               console.log("[call] host got nudge_relay — renegotiating relay-only with", msg.from);
-              switchPeerToRelayOnly(p.pc);
-              try {
-                const offer = await p.pc.createOffer({ iceRestart: true });
-                await p.pc.setLocalDescription(offer);
-                sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: msg.from });
-              } catch (e) {
-                console.warn("[call] relay re-offer failed", e);
+              if (switchPeerToRelayOnly(p.pc)) {
+                try {
+                  const offer = await p.pc.createOffer({ iceRestart: true });
+                  await p.pc.setLocalDescription(offer);
+                  sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: msg.from });
+                } catch (e) {
+                  console.warn("[call] relay re-offer failed", e);
+                }
+              } else {
+                // iOS Safari / setConfiguration unsupported: rebuild the PC.
+                await recreateHostPeerRelayOnly(msg.from);
               }
             } else if (msg.type === "bye") {
               removeHostPeer(msg.from);
@@ -656,6 +751,10 @@ const CallRoom = () => {
                     sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: peerId });
                   } catch (e) { console.warn("[call] watchdog re-offer failed", e); }
                 })();
+              } else if (relayServersRef.current.length > 0) {
+                // iOS / setConfiguration unsupported — rebuild this peer relay-only.
+                setFailMessage("Reconnecting over relay…");
+                void recreateHostPeerRelayOnly(peerId);
               }
             }
           }
@@ -676,6 +775,14 @@ const CallRoom = () => {
               setFailMessage("Reconnecting over relay…");
               sendSignal({ type: "nudge_relay", from: PEER_ID, to: hostPeerIdRef.current });
               try { pc.restartIce(); } catch { /* noop */ }
+            } else if (relayServersRef.current.length > 0 && hostPeerIdRef.current) {
+              // iOS / setConfiguration unsupported — rebuild guest PC relay-only
+              // and ask the host to renegotiate.
+              setFailMessage("Reconnecting over relay…");
+              const newPc = recreateGuestPeerRelayOnly();
+              if (newPc) {
+                sendSignal({ type: "nudge_relay", from: PEER_ID, to: hostPeerIdRef.current });
+              }
             }
           }
         }
@@ -684,7 +791,7 @@ const CallRoom = () => {
     return () => {
       if (relayWatchdogRef.current) { window.clearInterval(relayWatchdogRef.current); relayWatchdogRef.current = null; }
     };
-  }, [status, isHost, switchPeerToRelayOnly, sendSignal]);
+  }, [status, isHost, switchPeerToRelayOnly, sendSignal, recreateHostPeerRelayOnly, recreateGuestPeerRelayOnly]);
 
 
   // Attach remote streams to grid video elements when refs become available
@@ -1040,6 +1147,31 @@ const CallRoom = () => {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col" style={{ minHeight: "100dvh" }}>
       <SeoHead title="Pixcellor call" description="Live video call." path="/call" noindex />
+      {isDebug && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 8,
+            left: 8,
+            zIndex: 1000,
+            background: "rgba(0,0,0,0.75)",
+            color: "#fff",
+            padding: "6px 8px",
+            fontSize: 10,
+            fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+            lineHeight: 1.3,
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: 4,
+            pointerEvents: "none",
+            maxWidth: 260,
+          }}
+        >
+          <div>TURN urls: {turnUrlCount}</div>
+          <div>ICE: {debugIceState || "—"}</div>
+          <div>local cands: {localCandTypes.size ? Array.from(localCandTypes).join(", ") : "—"}</div>
+          <div>iOS: {isIOS ? "yes" : "no"}</div>
+        </div>
+      )}
       {/* Header */}
       <header className="px-5 py-3 flex items-center justify-between border-b border-white/10">
         <div className="flex items-center gap-3">
