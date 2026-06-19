@@ -62,6 +62,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1TcfyPBtUjwejeUwJmEbSWtN",
     yearlyPriceId: "price_1Tcg03BtUjwejeUwr7mYzuUb",
     features: [
+      "Agentic self-improving site",
       "Custom CRM access",
       "Hosting, domain & cloud",
       "AI lead generation bot",
@@ -79,6 +80,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tcg07BtUjwejeUwfGGDhftV",
     yearlyPriceId: "price_1Tcg0ABtUjwejeUwLc5nw8nX",
     features: [
+      "Agentic self-improving site",
       "Unlimited seats & users",
       "Unlimited edits & revisions",
       "Priority support 24/7 365",
@@ -96,7 +98,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     features: [
-      
+      "Agentic self-improving stack",
       "Fractional CTO, CMO & CRO",
       "Dedicated dev & ops team",
       "Monthly MVP sprints",

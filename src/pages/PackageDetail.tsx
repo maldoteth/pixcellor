@@ -350,6 +350,80 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
           </div>
         </motion.section>
 
+        {/* AGENTIC SELF-IMPROVING SYSTEMS — flagship sales section */}
+        {(pkg.slug === "elite" || pkg.slug.startsWith("retainer-")) && (
+          <motion.section {...fadeUp} className="mb-12 md:mb-16">
+            <div className="relative overflow-hidden rounded-2xl border border-foreground/15 bg-gradient-to-br from-foreground/[0.08] via-foreground/[0.03] to-transparent p-6 md:p-10 backdrop-blur-md">
+              <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-foreground/10 blur-3xl pointer-events-none" />
+              <div className="relative">
+                <div className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-foreground/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-foreground/90">
+                  <Sparkles className="h-3 w-3" />
+                  <span>Agentic · Self-improving</span>
+                </div>
+                <h2 className="mt-4 text-2xl md:text-4xl font-extrabold leading-tight tracking-tight">
+                  A website that gets smarter every single day — automatically.
+                </h2>
+                <p className="mt-4 max-w-3xl text-sm md:text-base text-foreground/80 leading-relaxed">
+                  A static website is dead the moment it ships. Yours won't be. Every {pkg.name} build runs on
+                  an <strong className="text-foreground">agentic core</strong> — a swarm of AI agents that watch
+                  how real visitors behave, test variations 24/7, rewrite copy that isn't converting, and
+                  patch SEO/AEO drift before you ever notice it. You don't book a redesign. You don't wait
+                  for trends. Your site adapts on its own.
+                </p>
+                <p className="mt-4 max-w-3xl text-sm md:text-base text-foreground/80 leading-relaxed">
+                  And it doesn't just <em>maintain</em> itself — it <strong className="text-foreground">compounds</strong>.
+                  Every time a frontier AI model is released (GPT, Claude, Gemini, open-source), your site
+                  upgrades to it the same day. Every improvement in AI becomes a free improvement to your
+                  business. While competitors pay agencies £10k a rebuild to "keep up", yours is already
+                  ahead — quietly, on autopilot.
+                </p>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {[
+                    { t: "Always on the latest AI", d: "Frontier models adopted the day they ship — no rebuild, no migration." },
+                    { t: "Self-optimising conversions", d: "Continuous A/B tests on copy, layout, CTAs and hero — winners auto-promoted." },
+                    { t: "SEO/AEO that defends itself", d: "Agents track rankings and rewrite meta + content to claim new keywords as they trend." },
+                    { t: "Self-healing pages", d: "Broken links, slow assets, dead embeds and accessibility regressions fixed automatically." },
+                    { t: "Trend-aware design", d: "Layout, motion and tokens nudged toward what's converting in your niche right now." },
+                    { t: "You stay in control", d: "Every change is logged, reversible, and gated by guardrails you set." },
+                  ].map((b) => (
+                    <div key={b.t} className="rounded-xl border border-foreground/10 bg-background/40 p-4">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-foreground/80" />
+                        <div className="text-sm font-semibold">{b.t}</div>
+                      </div>
+                      <p className="mt-2 text-xs text-foreground/70 leading-relaxed">{b.d}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-8 grid gap-4 md:grid-cols-3">
+                  <div className="rounded-xl border border-foreground/10 bg-background/30 p-4">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-foreground/50">Without</div>
+                    <div className="mt-1 text-sm font-semibold">A normal website</div>
+                    <p className="mt-2 text-xs text-foreground/70 leading-relaxed">Ships once, ages immediately. Needs a rebuild every 18 months. Falls behind every AI release.</p>
+                  </div>
+                  <div className="rounded-xl border border-foreground/30 bg-foreground/[0.08] p-4">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-foreground/80">With Pixcellor</div>
+                    <div className="mt-1 text-sm font-semibold">An agentic, self-improving site</div>
+                    <p className="mt-2 text-xs text-foreground/85 leading-relaxed">Learns. Tests. Rewrites. Re-ranks. Re-skins. Upgrades to every new AI model — automatically.</p>
+                  </div>
+                  <div className="rounded-xl border border-foreground/10 bg-background/30 p-4">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-foreground/50">Result</div>
+                    <div className="mt-1 text-sm font-semibold">Compounding advantage</div>
+                    <p className="mt-2 text-xs text-foreground/70 leading-relaxed">Your site is sharper this month than last. And next month it'll be sharper still. Hands-off.</p>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <CtaButton label={pkg.primaryCta.label} action={pkg.primaryCta.action} />
+                  <span className="text-xs text-foreground/60">Smart website. Always current. Always improving.</span>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+        )}
+
         {/* SAMPLE WORK */}
         {pkg.sampleWork && pkg.sampleWork.length > 0 && (
           <motion.section {...fadeUp} className="mb-12 md:mb-16">

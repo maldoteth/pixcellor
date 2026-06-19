@@ -227,6 +227,17 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         ],
       },
       {
+        title: "Agentic Self-Improving Systems",
+        items: [
+          "Your site learns from real visitor behaviour and rewrites itself",
+          "Auto-adopts the newest AI models the moment they ship — no rebuild",
+          "Continuous A/B testing on copy, layout and CTAs, 24/7",
+          "AI agents monitor SEO/AEO drift and patch rankings automatically",
+          "Self-healing components: broken links, slow pages and dead embeds fixed without you lifting a finger",
+          "Every advance in AI = a free upgrade to your website",
+        ],
+      },
+      {
         title: "Launch & Aftercare",
         items: [
           "10-day delivery turnaround",
@@ -315,6 +326,17 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         ],
       },
       {
+        title: "Agentic Self-Improving Website",
+        items: [
+          "Your site evolves on its own — no rebuild, no waiting",
+          "Auto-upgraded the moment a better AI model is released",
+          "Behavioural A/B tests run continuously to lift conversions",
+          "Agents rewrite copy and meta for fresh SEO/AEO wins",
+          "Always on the latest trends — design, perf, accessibility",
+          "Every AI breakthrough becomes your competitive edge, automatically",
+        ],
+      },
+      {
         title: "Analytics & Reporting",
         items: [
           "Conversion & visitor analytics",
@@ -395,6 +417,17 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
           "Email & SMS broadcast tooling",
           "Lead enrichment & visitor intel",
           "Advanced analytics dashboards",
+        ],
+      },
+      {
+        title: "Agentic Self-Improving Stack",
+        items: [
+          "Site + app rewrite themselves based on real conversion data",
+          "Automatic adoption of frontier AI models the day they release",
+          "Multi-variant testing across pages, copy, hero and CTAs",
+          "SEO/AEO agents claim new keywords as they trend",
+          "Continuous performance & accessibility self-tuning",
+          "Your stack compounds with every AI advancement — automatically",
         ],
       },
     ],
@@ -480,6 +513,17 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
           "Compliance & security reviews",
           "Multi-region hosting & failover",
           "Dedicated account manager",
+        ],
+      },
+      {
+        title: "Agentic Self-Improving Estate",
+        items: [
+          "Every public surface — site, app, dashboards — evolves autonomously",
+          "Day-zero adoption of frontier AI: GPT, Claude, Gemini, open models",
+          "Always-on experimentation across product, pricing and copy",
+          "Self-healing infrastructure: incidents triaged and patched by agents",
+          "Continuous SEO/AEO + brand monitoring across the entire estate",
+          "Compounding moat: your platform gets sharper every single week, hands-off",
         ],
       },
     ],
@@ -607,6 +651,26 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       "retainer-growth": "1–3 days/edit",
       "retainer-scale": "Weekly sprints",
       "retainer-enterprise": "2-week MVPs",
+    },
+  },
+  {
+    feature: "Agentic self-improving site",
+    values: {
+      "full-works": "—",
+      elite: "Included",
+      "retainer-growth": "Continuous",
+      "retainer-scale": "Continuous + A/B",
+      "retainer-enterprise": "Estate-wide, autonomous",
+    },
+  },
+  {
+    feature: "Auto-adopts new AI models",
+    values: {
+      "full-works": "—",
+      elite: "Yes",
+      "retainer-growth": "Yes",
+      "retainer-scale": "Yes — day zero",
+      "retainer-enterprise": "Yes — frontier first",
     },
   },
   {
