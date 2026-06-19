@@ -265,6 +265,12 @@ const CallRoom = () => {
       console.warn("[call] no TURN relay servers available — cannot fall back");
       return false;
     }
+    // iOS Safari (WebKit) does not properly honour setConfiguration. Force
+    // the recreate-PC path instead so the relay fallback actually takes effect.
+    if (isIOS) {
+      console.log("[call] iOS detected — skipping setConfiguration fast path");
+      return false;
+    }
     try {
       pc.setConfiguration({ iceServers: relay, iceTransportPolicy: "relay" });
       console.log("[call] switched PC to relay-only");
@@ -273,22 +279,29 @@ const CallRoom = () => {
       console.warn("[call] setConfiguration(relay-only) failed", e);
       return false;
     }
-  }, []);
+  }, [isIOS]);
 
   // ---------------- GUEST side helpers ----------------
 
-  const createGuestPeer = useCallback((): RTCPeerConnection => {
-    const safeIce: RTCIceServer[] = [];
-    for (const s of iceServers ?? []) {
-      const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
-      const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
-      if (cleaned.length) safeIce.push({ ...s, urls: cleaned });
+  const createGuestPeer = useCallback((relayOnly = false): RTCPeerConnection => {
+    let config: RTCConfiguration;
+    if (relayOnly && relayServersRef.current.length > 0) {
+      config = { iceServers: relayServersRef.current, iceTransportPolicy: "relay" };
+    } else {
+      const safeIce: RTCIceServer[] = [];
+      for (const s of iceServers ?? []) {
+        const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
+        const cleaned = urls.filter((u): u is string => typeof u === "string" && /^(stun|turn|turns):/i.test(u));
+        if (cleaned.length) safeIce.push({ ...s, urls: cleaned });
+      }
+      config = { iceServers: safeIce };
     }
-    const pc = new RTCPeerConnection({ iceServers: safeIce });
+    const pc = new RTCPeerConnection(config);
     pc.onicecandidate = (e) => {
       if (e.candidate) {
         const c = e.candidate;
         console.log("[call] guest local cand", c.type ?? "?", c.protocol ?? "", c.address ?? c.candidate?.slice(0, 60));
+        noteLocalCand(c.type);
         sendSignal({ type: "ice", candidate: c.toJSON(), from: PEER_ID, to: hostPeerIdRef.current ?? undefined });
       }
     };
@@ -315,6 +328,7 @@ const CallRoom = () => {
     };
     pc.oniceconnectionstatechange = () => {
       const s = pc.iceConnectionState;
+      setDebugIceState(s);
       if (s === "connected" || s === "completed") markConnected();
       if (s === "failed") {
         try { pc.restartIce(); } catch { /* noop */ }
@@ -343,7 +357,28 @@ const CallRoom = () => {
       }
     };
     return pc;
-  }, [iceServers, sendSignal, markFailed]);
+  }, [iceServers, sendSignal, markFailed, noteLocalCand]);
+
+  // Recreate the guest PC with relay-only config (iOS-safe relay fallback).
+  // Re-attaches the same local tracks and re-wires the same handlers.
+  const recreateGuestPeerRelayOnly = useCallback((): RTCPeerConnection | null => {
+    if (!relayServersRef.current || relayServersRef.current.length === 0) {
+      console.warn("[call] recreateGuestPeerRelayOnly: no relay servers");
+      return null;
+    }
+    try { pcRef.current?.close(); } catch { /* noop */ }
+    const pc = createGuestPeer(true);
+    pcRef.current = pc;
+    guestPendingIceRef.current = [];
+    const localStream = screenStreamRef.current ?? localStreamRef.current;
+    if (localStream) {
+      for (const t of localStream.getTracks()) {
+        try { pc.addTrack(t, localStream); } catch (e) { console.warn("[call] re-addTrack failed", e); }
+      }
+    }
+    console.log("[call] guest PC recreated relay-only");
+    return pc;
+  }, [createGuestPeer]);
 
   // ---------------- HOST side helpers ----------------
 
