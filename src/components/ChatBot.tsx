@@ -385,6 +385,19 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
       setMessages([]);
       return;
     }
+    if (isSupportMode) {
+      // Greet immediately; no backend round-trip needed for the opener.
+      const { data: sess } = await supabase.auth.getSession();
+      const firstName = sess.session?.user?.user_metadata?.first_name
+        || sess.session?.user?.user_metadata?.full_name?.split(" ")?.[0]
+        || "";
+      const greet = firstName ? `Hey ${firstName} 👋` : "Hey 👋";
+      setMessages([{
+        role: "assistant",
+        content: `${greet} I'm Pixie, your Pixcellor support assistant. I can pull up your orders, briefs, edits, subscription, affiliate stats — and I can take action: file an edit, generate a referral code, open billing, process a refund, cancel a sub. What do you need?`,
+      }]);
+      return;
+    }
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("sales-chat", {
