@@ -448,9 +448,11 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
 
     try {
       const apiMessages = [...messages.map(({ role, content }) => ({ role, content })), apiUserMessage];
-      const { data, error } = await supabase.functions.invoke("sales-chat", {
-        body: { messages: apiMessages, clientId: clientId.current, conversationId, mode },
-      });
+      const fn = isSupportMode ? "support-chat" : "sales-chat";
+      const body = isSupportMode
+        ? { messages: apiMessages }
+        : { messages: apiMessages, clientId: clientId.current, conversationId, mode };
+      const { data, error } = await supabase.functions.invoke(fn, { body });
       if (error) throw error;
       const assistantMsg: Message = { role: "assistant", content: data.reply };
       if (data.packageCards?.length) assistantMsg.packageCards = data.packageCards;
