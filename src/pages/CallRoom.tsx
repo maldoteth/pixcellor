@@ -585,13 +585,17 @@ const CallRoom = () => {
               const p = peersRef.current.get(msg.from);
               if (!p) return;
               console.log("[call] host got nudge_relay — renegotiating relay-only with", msg.from);
-              switchPeerToRelayOnly(p.pc);
-              try {
-                const offer = await p.pc.createOffer({ iceRestart: true });
-                await p.pc.setLocalDescription(offer);
-                sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: msg.from });
-              } catch (e) {
-                console.warn("[call] relay re-offer failed", e);
+              if (switchPeerToRelayOnly(p.pc)) {
+                try {
+                  const offer = await p.pc.createOffer({ iceRestart: true });
+                  await p.pc.setLocalDescription(offer);
+                  sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: msg.from });
+                } catch (e) {
+                  console.warn("[call] relay re-offer failed", e);
+                }
+              } else {
+                // iOS Safari / setConfiguration unsupported: rebuild the PC.
+                await recreateHostPeerRelayOnly(msg.from);
               }
             } else if (msg.type === "bye") {
               removeHostPeer(msg.from);
