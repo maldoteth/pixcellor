@@ -74,11 +74,15 @@ const glassStyle = {
   `,
 };
 
-const getClientId = (mode: "sales" | "dev" = "sales"): string => {
-  const storageKey = mode === "dev" ? "pixcellor_dev_chat_client_id" : "pixcellor_chat_client_id";
+const getClientId = (mode: "sales" | "dev" | "support" = "sales"): string => {
+  const storageKey =
+    mode === "dev" ? "pixcellor_dev_chat_client_id"
+    : mode === "support" ? "pixcellor_support_chat_client_id"
+    : "pixcellor_chat_client_id";
   let clientId = localStorage.getItem(storageKey);
   if (!clientId) {
-    clientId = `${mode === "dev" ? "dev" : "client"}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const prefix = mode === "dev" ? "dev" : mode === "support" ? "support" : "client";
+    clientId = `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     localStorage.setItem(storageKey, clientId);
   }
   return clientId;
