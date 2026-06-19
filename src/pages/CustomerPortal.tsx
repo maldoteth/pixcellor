@@ -65,6 +65,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import customerPortalPLogo from "@/assets/customer-portal-p-logo.png";
 import ChatBot from "@/components/ChatBot";
+import WelcomeCelebration from "@/components/WelcomeCelebration";
 import SeoHead from "@/components/SeoHead";
 import VisionGenerator from "@/components/VisionGenerator";
 import MyLeadsPanel from "@/components/portal/MyLeadsPanel";
