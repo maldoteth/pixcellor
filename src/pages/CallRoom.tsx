@@ -1147,6 +1147,31 @@ const CallRoom = () => {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col" style={{ minHeight: "100dvh" }}>
       <SeoHead title="Pixcellor call" description="Live video call." path="/call" noindex />
+      {isDebug && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 8,
+            left: 8,
+            zIndex: 1000,
+            background: "rgba(0,0,0,0.75)",
+            color: "#fff",
+            padding: "6px 8px",
+            fontSize: 10,
+            fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+            lineHeight: 1.3,
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: 4,
+            pointerEvents: "none",
+            maxWidth: 260,
+          }}
+        >
+          <div>TURN urls: {turnUrlCount}</div>
+          <div>ICE: {debugIceState || "—"}</div>
+          <div>local cands: {localCandTypes.size ? Array.from(localCandTypes).join(", ") : "—"}</div>
+          <div>iOS: {isIOS ? "yes" : "no"}</div>
+        </div>
+      )}
       {/* Header */}
       <header className="px-5 py-3 flex items-center justify-between border-b border-white/10">
         <div className="flex items-center gap-3">
