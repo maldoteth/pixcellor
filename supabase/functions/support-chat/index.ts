@@ -164,6 +164,7 @@ interface Ctx {
   isAdmin: boolean;
   admin: ReturnType<typeof createClient>;
   origin: string;
+  authHeader: string;
 }
 
 async function resolveTargetUser(ctx: Ctx, args: { target_user_id?: string; target_email?: string }) {
