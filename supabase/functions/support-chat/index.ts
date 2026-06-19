@@ -190,17 +190,34 @@ async function execTool(name: string, rawArgs: string, ctx: Ctx): Promise<unknow
   switch (name) {
     case "get_account_overview": {
       const target = await resolveTargetUser(ctx, args as { target_user_id?: string; target_email?: string });
-      // Use a per-target client with service role for full read, scoped manually:
+      const email = target.email;
+      const uid = target.user_id;
       const db = ctx.admin;
       const [orders, briefs, edits, subs, leads, codes, refs, calls] = await Promise.all([
-        db.from("stripe_checkout_sessions").select("id, amount_total, currency, status, payment_status, created_at, package_key, customer_email, payment_intent_id, subscription_id").eq("user_id", target.user_id).order("created_at", { ascending: false }).limit(20),
-        db.from("project_requirements").select("id, session_id, project_name, summary, status, created_at").eq("user_id", target.user_id).order("created_at", { ascending: false }).limit(20),
-        db.from("edit_requests").select("id, order_id, message, status, created_at").eq("user_id", target.user_id).order("created_at", { ascending: false }).limit(20),
-        db.from("subscriptions").select("id, status, plan, current_period_end, stripe_subscription_id, cancel_at_period_end").eq("user_id", target.user_id).order("current_period_end", { ascending: false }).limit(5),
-        db.from("customer_leads").select("id, email, name, status, created_at").eq("user_id", target.user_id).order("created_at", { ascending: false }).limit(10),
-        db.from("affiliate_codes").select("code, stripe_promotion_code_id, created_at").eq("owner_user_id", target.user_id),
-        db.from("affiliate_referrals").select("id, code, buyer_email, deal_cents, commission_cents, created_at").eq("owner_user_id", target.user_id).order("created_at", { ascending: false }).limit(10),
-        db.from("call_bookings").select("id, name, email, scheduled_at, status, topic").eq("user_id", target.user_id).order("scheduled_at", { ascending: false }).limit(5),
+        db.from("stripe_checkout_sessions")
+          .select("session_id, order_code, amount_total, currency, status, payment_status, order_status, created_at, payment_intent_id, subscription_id, customer_email, refunded_amount, delivered_domain")
+          .eq("customer_email", email).order("created_at", { ascending: false }).limit(25),
+        db.from("project_requirements")
+          .select("id, session_id, site_name, extra_notes, created_at")
+          .eq("customer_email", email).order("created_at", { ascending: false }).limit(20),
+        db.from("edit_requests")
+          .select("id, session_id, package_name, request_number, request_details, status, created_at")
+          .eq("customer_email", email).order("created_at", { ascending: false }).limit(20),
+        db.from("subscriptions")
+          .select("subscription_id, tier, price_id, status, billing_interval, amount_total, currency, current_period_end, cancel_at_period_end")
+          .eq("customer_email", email).order("current_period_end", { ascending: false }).limit(5),
+        db.from("customer_leads")
+          .select("id, name, contact_name, email, phone, status, created_at, callback_at")
+          .eq("owner_user_id", uid).order("created_at", { ascending: false }).limit(10),
+        db.from("affiliate_codes")
+          .select("code, stripe_promotion_code_id, active, buyer_discount_pct, affiliate_commission_pct, created_at")
+          .eq("owner_user_id", uid),
+        db.from("affiliate_referrals")
+          .select("id, code, buyer_email, amount_total_cents, currency, commission_cents, status, created_at")
+          .eq("owner_user_id", uid).order("created_at", { ascending: false }).limit(10),
+        db.from("call_bookings")
+          .select("id, name, email, scheduled_at, status, preference, brief")
+          .eq("email", email).order("scheduled_at", { ascending: false }).limit(5),
       ]);
 
       return {
@@ -213,6 +230,8 @@ async function execTool(name: string, rawArgs: string, ctx: Ctx): Promise<unknow
         affiliate_codes: codes.data ?? [],
         affiliate_referrals: refs.data ?? [],
         call_bookings: calls.data ?? [],
+        errors: [orders.error, briefs.error, edits.error, subs.error, leads.error, codes.error, refs.error, calls.error]
+          .filter(Boolean).map((e) => (e as { message: string }).message),
       };
     }
 
