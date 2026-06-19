@@ -654,6 +654,26 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
+    feature: "Agentic self-improving site",
+    values: {
+      "full-works": "—",
+      elite: "Included",
+      "retainer-growth": "Continuous",
+      "retainer-scale": "Continuous + A/B",
+      "retainer-enterprise": "Estate-wide, autonomous",
+    },
+  },
+  {
+    feature: "Auto-adopts new AI models",
+    values: {
+      "full-works": "—",
+      elite: "Yes",
+      "retainer-growth": "Yes",
+      "retainer-scale": "Yes — day zero",
+      "retainer-enterprise": "Yes — frontier first",
+    },
+  },
+  {
     feature: "AI agents",
     values: {
       "full-works": "—",
