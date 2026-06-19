@@ -261,12 +261,23 @@ async function execTool(name: string, rawArgs: string, ctx: Ctx): Promise<unknow
     }
 
     case "submit_edit_request": {
-      const target = await resolveTargetUser(ctx, args as { target_user_id?: string });
+      const target = await resolveTargetUser(ctx, args as { target_email?: string });
+      // Compute next request_number for this session
+      const { data: existing } = await ctx.admin
+        .from("edit_requests")
+        .select("request_number")
+        .eq("session_id", args.session_id as string)
+        .order("request_number", { ascending: false })
+        .limit(1);
+      const nextNum = ((existing?.[0]?.request_number as number) ?? 0) + 1;
+
       const { data, error } = await ctx.admin.from("edit_requests").insert({
-        user_id: target.user_id,
-        order_id: args.order_id as string,
-        message: args.message as string,
-        status: "open",
+        session_id: args.session_id as string,
+        customer_email: target.email,
+        package_name: (args.package_name as string) || null,
+        request_number: nextNum,
+        request_details: args.request_details as string,
+        status: "pending",
       }).select().single();
       if (error) throw new Error(error.message);
       return { ok: true, edit_request: data };
