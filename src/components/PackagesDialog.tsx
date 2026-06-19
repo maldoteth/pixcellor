@@ -135,7 +135,7 @@ const SERVICE_BACKS = {
     action: "pricing" as const,
     items: [
       { name: "Landing pages", info: "Save time and have our team take care of all your landing page needs." },
-      { name: "Animated & Interactive", info: "£10K websites last year are now £500 websites if you speak to the right people — we are the right people." },
+      { name: "Animated & Interactive 3JS", info: "£10K websites last year are now £500 websites if you speak to the right people — we are the right people." },
       { name: "Smart sites & apps", info: "Self-improving websites and full-stack apps with built-in AI support agents that handle customers, refunds and disputes — 24/7, fairly, by the book." },
       { name: "Internal tools", info: "Custom systems, automations, agentic flows and more saving you potentially tens of thousands a year." },
       { name: "CRM systems", info: "Want a CRM that suits your exact needs powered by a swarm of AI agents that work to your will, saving you and your staff time and money while ensuring nothing is ever missed? Look no further." },

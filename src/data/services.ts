@@ -639,7 +639,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "animated-sites",
-    name: "Animated & Interactive",
+    name: "Animated & Interactive 3JS",
     category: "tech",
     info: "£10K websites last year are now £500 websites if you speak to the right people — we are the right people.",
     tagline: "Award-grade animated websites at a fraction of the agency price.",
@@ -1761,7 +1761,7 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Social media automation": "social-media-automation",
   "Paid ads & retargeting": "paid-ads-retargeting",
   "Landing pages": "landing-pages",
-  "Animated & Interactive": "animated-sites",
+  "Animated & Interactive 3JS": "animated-sites",
   "Full web apps": "full-web-apps",
   "Smart sites & apps": "full-web-apps",
   "Internal tools": "internal-tools",
