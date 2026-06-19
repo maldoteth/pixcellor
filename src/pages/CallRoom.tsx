@@ -775,6 +775,14 @@ const CallRoom = () => {
               setFailMessage("Reconnecting over relay…");
               sendSignal({ type: "nudge_relay", from: PEER_ID, to: hostPeerIdRef.current });
               try { pc.restartIce(); } catch { /* noop */ }
+            } else if (relayServersRef.current.length > 0 && hostPeerIdRef.current) {
+              // iOS / setConfiguration unsupported — rebuild guest PC relay-only
+              // and ask the host to renegotiate.
+              setFailMessage("Reconnecting over relay…");
+              const newPc = recreateGuestPeerRelayOnly();
+              if (newPc) {
+                sendSignal({ type: "nudge_relay", from: PEER_ID, to: hostPeerIdRef.current });
+              }
             }
           }
         }
@@ -783,7 +791,7 @@ const CallRoom = () => {
     return () => {
       if (relayWatchdogRef.current) { window.clearInterval(relayWatchdogRef.current); relayWatchdogRef.current = null; }
     };
-  }, [status, isHost, switchPeerToRelayOnly, sendSignal]);
+  }, [status, isHost, switchPeerToRelayOnly, sendSignal, recreateHostPeerRelayOnly, recreateGuestPeerRelayOnly]);
 
 
   // Attach remote streams to grid video elements when refs become available
