@@ -231,6 +231,7 @@ export default function ChatBot({ isOpen, setIsOpen, hidden = false, showToggle 
   const isDesktop = useIsDesktop();
   const clientId = useRef(getClientId(mode));
   const isDevMode = mode === "dev";
+  const isSupportMode = mode === "support";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
