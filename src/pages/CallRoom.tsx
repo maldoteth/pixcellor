@@ -751,6 +751,10 @@ const CallRoom = () => {
                     sendSignal({ type: "offer", sdp: offer, from: PEER_ID, to: peerId });
                   } catch (e) { console.warn("[call] watchdog re-offer failed", e); }
                 })();
+              } else if (relayServersRef.current.length > 0) {
+                // iOS / setConfiguration unsupported — rebuild this peer relay-only.
+                setFailMessage("Reconnecting over relay…");
+                void recreateHostPeerRelayOnly(peerId);
               }
             }
           }
