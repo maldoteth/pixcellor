@@ -751,6 +751,7 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Landing pages": "landing-pages",
   "Animated sites": "animated-sites",
   "Full web apps": "full-web-apps",
+  "Smart sites & apps": "full-web-apps",
   "Internal tools": "internal-tools",
   "CRM systems": "crm-systems",
   "E-commerce stores": "ecommerce-stores",
