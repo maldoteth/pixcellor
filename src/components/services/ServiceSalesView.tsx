@@ -351,6 +351,30 @@ export default function ServiceSalesView({
         </motion.section>
       )}
 
+      {/* FAQ */}
+      {service.faqs && service.faqs.length > 0 && (
+        <motion.section {...fadeUp} className="mb-12 md:mb-16">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
+            FAQ
+          </h2>
+          <div className="space-y-3">
+            {service.faqs.map((f) => (
+              <div
+                key={f.q}
+                className="rounded-lg border border-foreground/10 bg-foreground/[0.03] p-5 backdrop-blur-md"
+              >
+                <h3 className="text-sm md:text-base font-semibold text-foreground">
+                  {f.q}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+                  {f.a}
+                </p>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+      )}
+
       {/* FOOTER CTA */}
       <motion.section
         {...fadeUp}
