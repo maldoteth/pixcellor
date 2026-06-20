@@ -15,7 +15,7 @@ import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
-  CalendarDays, ChevronLeft, ChevronRight, Clipboard, Copy, ClipboardPaste, Trash2, Loader2,
+  CalendarDays, ChevronLeft, ChevronRight, Clipboard, Copy, ClipboardPaste, Trash2, Loader2, Plus, Pencil,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import RequestChooserDialog from "@/components/portal/RequestChooserDialog";
