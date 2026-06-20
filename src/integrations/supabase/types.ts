@@ -984,6 +984,51 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_out_requests: {
+        Row: {
+          account_number: string
+          amount: number
+          bank_name: string | null
+          chain: string
+          created_at: string
+          full_name: string
+          gbp_value: number | null
+          id: string
+          sort_code: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_number: string
+          amount: number
+          bank_name?: string | null
+          chain: string
+          created_at?: string
+          full_name: string
+          gbp_value?: number | null
+          id?: string
+          sort_code: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_number?: string
+          amount?: number
+          bank_name?: string | null
+          chain?: string
+          created_at?: string
+          full_name?: string
+          gbp_value?: number | null
+          id?: string
+          sort_code?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           bot_paused: boolean
@@ -2582,6 +2627,36 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      user_bank_details: {
+        Row: {
+          account_number: string
+          bank_name: string | null
+          created_at: string
+          full_name: string
+          sort_code: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_number: string
+          bank_name?: string | null
+          created_at?: string
+          full_name: string
+          sort_code: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_number?: string
+          bank_name?: string | null
+          created_at?: string
+          full_name?: string
+          sort_code?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
