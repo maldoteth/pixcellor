@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { CalendarClock, Copy, Loader2, Phone, RefreshCw, Video, XCircle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { CalendarClock, Copy, Loader2, Phone, RefreshCw, Video, XCircle, CheckCircle2, ChevronDown, ChevronUp, Megaphone, Mic, CalendarClock as CalIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,6 +72,8 @@ export default function CallBookingsPanel() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showPast, setShowPast] = useState(false);
+  const [recordingsCount, setRecordingsCount] = useState<number>(0);
+  const [campaignsCount, setCampaignsCount] = useState<number>(0);
 
   const fetchBookings = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true);
@@ -93,6 +96,17 @@ export default function CallBookingsPanel() {
     const id = setInterval(() => fetchBookings(true), 60000);
     return () => clearInterval(id);
   }, [fetchBookings]);
+
+  useEffect(() => {
+    (async () => {
+      const { count } = await supabase
+        .from("call_recordings")
+        .select("id", { count: "exact", head: true });
+      setRecordingsCount(count || 0);
+      // Campaigns: no dedicated table yet — stays at 0 until CSV uploads are wired up.
+      setCampaignsCount(0);
+    })();
+  }, []);
 
   const { upcoming, past, stats } = useMemo(() => {
     const now = Date.now();
@@ -180,45 +194,34 @@ export default function CallBookingsPanel() {
         </Card>
       </div>
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Upcoming &amp; pending ({upcoming.length})</h2>
-        <Button variant="pricing" size="sm" className="gap-2" onClick={() => fetchBookings()} disabled={refreshing}>
-          <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> Refresh
-        </Button>
-      </div>
+      <Tabs defaultValue="bookings" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="bookings" className="gap-2">
+            <CalIcon className="h-3.5 w-3.5" /> Bookings ({upcoming.length})
+          </TabsTrigger>
+          <TabsTrigger value="campaigns" className="gap-2">
+            <Megaphone className="h-3.5 w-3.5" /> Campaigns ({campaignsCount})
+          </TabsTrigger>
+          <TabsTrigger value="recordings" className="gap-2">
+            <Mic className="h-3.5 w-3.5" /> Recordings ({recordingsCount})
+          </TabsTrigger>
+        </TabsList>
 
-      {upcoming.length === 0 ? (
-        <div className="rounded-lg border border-border bg-card/50 p-8 text-center text-sm text-muted-foreground">
-          No upcoming bookings.
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {upcoming.map((b, i) => (
-            <BookingRow
-              key={b.id}
-              booking={b}
-              origin={origin}
-              index={i}
-              onCopy={copyLink}
-              onStatus={updateStatus}
-            />
-          ))}
-        </div>
-      )}
+        <TabsContent value="bookings" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Upcoming &amp; pending ({upcoming.length})</h2>
+            <Button variant="pricing" size="sm" className="gap-2" onClick={() => fetchBookings()} disabled={refreshing}>
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> Refresh
+            </Button>
+          </div>
 
-      <div className="pt-2">
-        <Button variant="pricing" size="sm" className="gap-2" onClick={() => setShowPast((s) => !s)}>
-          {showPast ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-          Past ({past.length})
-        </Button>
-        {showPast && (
-          <div className="mt-3 space-y-3">
-            {past.length === 0 ? (
-              <div className="rounded-lg border border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
-                No past bookings.
-              </div>
-            ) : (
-              past.slice(0, 50).map((b, i) => (
+          {upcoming.length === 0 ? (
+            <div className="rounded-lg border border-border bg-card/50 p-8 text-center text-sm text-muted-foreground">
+              No upcoming bookings.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {upcoming.map((b, i) => (
                 <BookingRow
                   key={b.id}
                   booking={b}
@@ -226,13 +229,66 @@ export default function CallBookingsPanel() {
                   index={i}
                   onCopy={copyLink}
                   onStatus={updateStatus}
-                  muted
                 />
-              ))
+              ))}
+            </div>
+          )}
+
+          <div className="pt-2">
+            <Button variant="pricing" size="sm" className="gap-2" onClick={() => setShowPast((s) => !s)}>
+              {showPast ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              Past ({past.length})
+            </Button>
+            {showPast && (
+              <div className="mt-3 space-y-3">
+                {past.length === 0 ? (
+                  <div className="rounded-lg border border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
+                    No past bookings.
+                  </div>
+                ) : (
+                  past.slice(0, 50).map((b, i) => (
+                    <BookingRow
+                      key={b.id}
+                      booking={b}
+                      origin={origin}
+                      index={i}
+                      onCopy={copyLink}
+                      onStatus={updateStatus}
+                      muted
+                    />
+                  ))
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
+        </TabsContent>
+
+        <TabsContent value="campaigns">
+          <Card className="border-border bg-card/70 backdrop-blur-xl">
+            <CardContent className="p-8 text-center">
+              <Megaphone className="mx-auto h-10 w-10 text-muted-foreground" />
+              <h3 className="mt-3 text-lg font-semibold">No call campaigns yet</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Upload a client's campaign CSV and it will appear here. Current count: {campaignsCount}.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="recordings">
+          <Card className="border-border bg-card/70 backdrop-blur-xl">
+            <CardContent className="p-8 text-center">
+              <Mic className="mx-auto h-10 w-10 text-muted-foreground" />
+              <h3 className="mt-3 text-lg font-semibold">
+                {recordingsCount === 0 ? "No recordings yet" : `${recordingsCount} recording${recordingsCount === 1 ? "" : "s"}`}
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Upload a client's recordings CSV and they will appear here. Current count: {recordingsCount}.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
