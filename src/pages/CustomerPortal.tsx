@@ -662,41 +662,76 @@ export default function CustomerPortal() {
                   </div>
                 </div>
 
-                <Card className="border-border bg-card/70 backdrop-blur-xl">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Next action</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {nextOrder ? (
-                      (() => {
-                        const requirements = requirementsBySession.get(nextOrder.session_id);
-                        const stage = orderStage(nextOrder, Boolean(requirements));
-                        return (
-                          <>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between gap-2 text-sm">
-                                <span className="text-muted-foreground">{packageName(nextOrder)}</span>
-                                <span className="font-medium">{stage.label}</span>
-                              </div>
-                              <Progress value={stage.progress} className="h-2" />
+                {activeTab === "affiliate" ? (
+                  (() => {
+                    const availableCents = Math.max(0, affEarnedCents - affReservedCents);
+                    const fmt = (c: number) => new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(c / 100);
+                    return (
+                      <Card className="border-border bg-card/70 backdrop-blur-xl">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base">Affiliate earnings</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div>
+                            <div className="text-xs uppercase tracking-wider text-muted-foreground">Total earned</div>
+                            <div className="text-2xl font-semibold">{fmt(affEarnedCents)}</div>
+                            <div className="mt-1 text-[11px] text-muted-foreground">
+                              Available {fmt(availableCents)} · Reserved {fmt(affReservedCents)}
                             </div>
-                            {!requirements && nextOrder.order_code && nextOrder.requirements_token ? (
-                              <Button asChild variant="pricing" className="w-full gap-2">
-                                <Link to={`/project-requirements?order=${encodeURIComponent(nextOrder.order_code)}&token=${encodeURIComponent(nextOrder.requirements_token)}`}>
-                                  Submit project brief <ClipboardList className="h-4 w-4" />
-                                </Link>
-                              </Button>
-                            ) : (
-                              <p className="text-sm text-muted-foreground">Everything needed right now is up to date.</p>
-                            )}
-                          </>
-                        );
-                      })()
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No order history is attached to this account yet.</p>
-                    )}
-                  </CardContent>
-                </Card>
+                          </div>
+                          <Button
+                            variant="pricing"
+                            className="w-full gap-2"
+                            onClick={() => setCashoutOpen(true)}
+                            disabled={affHasOpen || availableCents < 2500}
+                          >
+                            <Wallet className="h-4 w-4" />
+                            {affHasOpen ? "Withdrawal pending" : "Cash out"}
+                          </Button>
+                          {availableCents < 2500 && !affHasOpen && (
+                            <p className="text-[11px] text-muted-foreground">Minimum withdrawal is £25.</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })()
+                ) : (
+                  <Card className="border-border bg-card/70 backdrop-blur-xl">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Next action</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {nextOrder ? (
+                        (() => {
+                          const requirements = requirementsBySession.get(nextOrder.session_id);
+                          const stage = orderStage(nextOrder, Boolean(requirements));
+                          return (
+                            <>
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between gap-2 text-sm">
+                                  <span className="text-muted-foreground">{packageName(nextOrder)}</span>
+                                  <span className="font-medium">{stage.label}</span>
+                                </div>
+                                <Progress value={stage.progress} className="h-2" />
+                              </div>
+                              {!requirements && nextOrder.order_code && nextOrder.requirements_token ? (
+                                <Button asChild variant="pricing" className="w-full gap-2">
+                                  <Link to={`/project-requirements?order=${encodeURIComponent(nextOrder.order_code)}&token=${encodeURIComponent(nextOrder.requirements_token)}`}>
+                                    Submit project brief <ClipboardList className="h-4 w-4" />
+                                  </Link>
+                                </Button>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">Everything needed right now is up to date.</p>
+                              )}
+                            </>
+                          );
+                        })()
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No order history is attached to this account yet.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PortalTab)} className="space-y-5">
