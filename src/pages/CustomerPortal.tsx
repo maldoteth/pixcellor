@@ -1126,6 +1126,13 @@ export default function CustomerPortal() {
           <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} showToggle={false} mode="support" />
           <VisionGenerator hidden chatOpen={chatOpen} />
           <RequestChooserDialog open={findOpen} onOpenChange={setFindOpen} date={null} variant="find" />
+          <CashoutDialog
+            open={cashoutOpen}
+            onOpenChange={setCashoutOpen}
+            availableCents={Math.max(0, affEarnedCents - affReservedCents)}
+            hasOpenRequest={affHasOpen}
+            onSubmitted={() => { void loadAffiliateBalance(); }}
+          />
         </SidebarInset>
       </div>
     </SidebarProvider>
