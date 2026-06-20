@@ -727,7 +727,7 @@ export default function CustomerPortal() {
                           );
                         })()
                       ) : (
-                        <p className="text-sm text-muted-foreground">No order history is attached to this account yet.</p>
+                        <p className="text-sm text-muted-foreground">Nothing outstanding currently.</p>
                       )}
                     </CardContent>
                   </Card>
