@@ -146,17 +146,39 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
     setAvailability(m);
   }, [fromKey, toKey]);
 
+  const loadPersonalEvents = useCallback(async () => {
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes?.user?.id;
+    if (!uid) { setPersonalEvents({}); return; }
+    const { data, error } = await supabase
+      .from("personal_schedule_events")
+      .select("id, event_date, start_time, finish_time, title, note")
+      .eq("user_id", uid)
+      .gte("event_date", fromKey)
+      .lte("event_date", toKey)
+      .order("start_time", { ascending: true, nullsFirst: true });
+    if (error) { return; }
+    const m: Record<string, PersonalEvent[]> = {};
+    ((data as PersonalEvent[] | null) ?? []).forEach((e) => {
+      if (!m[e.event_date]) m[e.event_date] = [];
+      m[e.event_date].push(e);
+    });
+    setPersonalEvents(m);
+  }, [fromKey, toKey]);
+
   const reload = useCallback(async () => {
     setLoading(true);
     try {
       await loadVacancies();
       await loadAvailability();
+      await loadPersonalEvents();
     } finally { setLoading(false); }
-  }, [loadVacancies, loadAvailability]);
+  }, [loadVacancies, loadAvailability, loadPersonalEvents]);
 
   useEffect(() => { void reload(); }, [reload]);
   useEffect(() => { void loadShifts(vacancies); }, [vacancies, loadShifts]);
   useEffect(() => { void loadAvailability(); }, [loadAvailability]);
+  useEffect(() => { void loadPersonalEvents(); }, [loadPersonalEvents]);
 
   // Booked shifts per date that belong to me
   const bookedByDate = useMemo(() => {
