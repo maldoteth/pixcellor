@@ -72,6 +72,8 @@ export default function CallBookingsPanel() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showPast, setShowPast] = useState(false);
+  const [recordingsCount, setRecordingsCount] = useState<number>(0);
+  const [campaignsCount, setCampaignsCount] = useState<number>(0);
 
   const fetchBookings = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true);
