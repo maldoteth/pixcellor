@@ -23,6 +23,12 @@ export default function CustomerAuth() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate("/customer-portal", { replace: true });
     });
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        navigate("/customer-portal", { replace: true });
+      }
+    });
+    return () => listener.subscription.unsubscribe();
   }, [navigate]);
 
   const handleSubmit = async (event: FormEvent) => {
