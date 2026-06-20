@@ -53,7 +53,11 @@ export async function encryptString(
   const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
   const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
   const key = await deriveKey(password, salt, iterations);
-  const ctBuf = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(plaintext));
+  const ctBuf = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: iv as BufferSource },
+    key,
+    enc.encode(plaintext) as BufferSource,
+  );
   return {
     ciphertext: bytesToBase64(new Uint8Array(ctBuf)),
     salt: bytesToBase64(salt),
@@ -68,7 +72,11 @@ export async function decryptString(payload: EncryptedPayload, password: string)
   const ct = base64ToBytes(payload.ciphertext);
   const key = await deriveKey(password, salt, payload.iterations);
   try {
-    const ptBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct);
+    const ptBuf = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv as BufferSource },
+      key,
+      ct as BufferSource,
+    );
     return dec.decode(ptBuf);
   } catch {
     throw new Error("Incorrect password or corrupted data");
