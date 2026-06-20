@@ -68,6 +68,26 @@ export async function sendSol(secretKeyB64: string, to: string, amountSol: strin
   return sig;
 }
 
+export interface UsdPrices {
+  eth: number;
+  sol: number;
+}
+
+export async function getUsdPrices(): Promise<UsdPrices> {
+  try {
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=ethereum,solana&vs_currencies=usd",
+    );
+    const json = (await res.json()) as { ethereum?: { usd?: number }; solana?: { usd?: number } };
+    return {
+      eth: Number(json.ethereum?.usd ?? 0),
+      sol: Number(json.solana?.usd ?? 0),
+    };
+  } catch {
+    return { eth: 0, sol: 0 };
+  }
+}
+
 export function ethExplorer(hash: string): string {
   return `https://etherscan.io/tx/${hash}`;
 }
