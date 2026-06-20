@@ -51,6 +51,14 @@ type Availability = {
   finish_time: string | null;
   note: string | null;
 };
+type PersonalEvent = {
+  id: string;
+  event_date: string;
+  start_time: string | null;
+  finish_time: string | null;
+  title: string;
+  note: string | null;
+};
 
 const DOW_DISPLAY = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
