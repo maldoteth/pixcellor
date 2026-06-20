@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Archive, BarChart3, Briefcase, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Pencil, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Upload, Volume2, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
+import { AlertTriangle, Archive, BarChart3, Briefcase, Check, Clipboard, Copy, Download, ExternalLink, HelpCircle, Home, ImagePlus, Inbox, Link2, Loader2, Mail, MessageSquare, Megaphone, PackageCheck, Pencil, Plus, Repeat, RefreshCw, Search, ShoppingBag, Square, Upload, Volume2, Wallet, Wand2, Trash2, TrendingUp, UserPlus, Users, UserSearch, X } from "lucide-react";
 import { downloadImage } from "@/lib/download-image";
 
 const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
@@ -46,6 +46,7 @@ import VisionStudio from "@/components/portal/VisionStudio";
 import ByowAdminPanel from "@/components/byow/ByowAdminPanel";
 import CandidatesPanel from "@/components/portal/CandidatesPanel";
 import VacanciesPanel from "@/components/portal/VacanciesPanel";
+import AdminPayoutsPanel from "@/components/portal/AdminPayoutsPanel";
 
 import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import ContactMatchingCandidates from "@/components/portal/ContactMatchingCandidates";
@@ -2437,7 +2438,7 @@ export default function Portal() {
             <TabsTrigger value="studio" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Wand2 className="h-3.5 w-3.5 shrink-0" />Studio</TabsTrigger>
             <TabsTrigger value="candidates" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><UserPlus className="h-3.5 w-3.5 shrink-0" />Candidates</TabsTrigger>
             <TabsTrigger value="vacancies" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Briefcase className="h-3.5 w-3.5 shrink-0" />Vacancies</TabsTrigger>
-            
+            <TabsTrigger value="payouts" className="pricing-button h-10 gap-1.5 rounded-none px-2 text-xs text-foreground shadow-none data-[state=active]:brightness-125 sm:text-sm"><Wallet className="h-3.5 w-3.5 shrink-0" />Payouts</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sales" className="space-y-4">
@@ -3491,6 +3492,10 @@ export default function Portal() {
 
           <TabsContent value="vacancies" className="min-w-0">
             <VacanciesPanel />
+          </TabsContent>
+
+          <TabsContent value="payouts" className="min-w-0">
+            <AdminPayoutsPanel />
           </TabsContent>
 
 

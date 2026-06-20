@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, UserPlus, Loader2, Trash2, Ticket, Copy } from "lucide-react";
+import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet } from "lucide-react";
+import CashoutDialog from "@/components/portal/CashoutDialog";
 
 type ContactStatus = "cold" | "aware" | "hot" | "gold";
 
@@ -75,20 +76,25 @@ export default function AffiliateCrmPanel() {
   // Affiliate codes & referrals
   type AffCode = { id: string; code: string; buyer_discount_pct: number; affiliate_commission_pct: number; active: boolean; created_at: string };
   type Referral = { id: string; code: string; amount_subtotal_cents: number | null; commission_cents: number | null; currency: string | null; status: string; buyer_email: string | null; created_at: string };
+  type Payout = { id: string; amount_cents: number; currency: string; status: string; method: string; created_at: string };
   const [codesOpen, setCodesOpen] = useState(false);
   const [codes, setCodes] = useState<AffCode[]>([]);
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [payouts, setPayouts] = useState<Payout[]>([]);
   const [codesLoading, setCodesLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [cashoutOpen, setCashoutOpen] = useState(false);
 
   const loadCodes = useCallback(async () => {
     setCodesLoading(true);
-    const [c, r] = await Promise.all([
+    const [c, r, p] = await Promise.all([
       supabase.from("affiliate_codes").select("id,code,buyer_discount_pct,affiliate_commission_pct,active,created_at").order("created_at", { ascending: false }),
       supabase.from("affiliate_referrals").select("id,code,amount_subtotal_cents,commission_cents,currency,status,buyer_email,created_at").order("created_at", { ascending: false }).limit(100),
+      supabase.from("affiliate_payouts").select("id,amount_cents,currency,status,method,created_at").order("created_at", { ascending: false }).limit(50),
     ]);
     if (c.error) toast.error(c.error.message); else setCodes((c.data ?? []) as AffCode[]);
     if (!r.error) setReferrals((r.data ?? []) as Referral[]);
+    if (!p.error) setPayouts((p.data ?? []) as Payout[]);
     setCodesLoading(false);
   }, []);
 
@@ -113,7 +119,14 @@ export default function AffiliateCrmPanel() {
     navigator.clipboard.writeText(text).then(() => toast.success("Copied"));
   };
 
-  const totalEarned = referrals.reduce((sum, r) => sum + (r.commission_cents ?? 0), 0);
+  const totalEarned = referrals
+    .filter((r) => r.status === "earned" || r.status === "cleared" || r.status === "approved" || r.status === "paid")
+    .reduce((sum, r) => sum + (r.commission_cents ?? 0), 0);
+  const reservedByPayouts = payouts
+    .filter((p) => p.status === "requested" || p.status === "approved" || p.status === "paid")
+    .reduce((sum, p) => sum + (p.amount_cents ?? 0), 0);
+  const availableCents = Math.max(0, totalEarned - reservedByPayouts);
+  const hasOpenPayout = payouts.some((p) => p.status === "requested" || p.status === "approved");
   const fmtMoney = (cents: number | null | undefined, currency?: string | null) => {
     if (cents == null) return "—";
     try {
@@ -547,15 +560,45 @@ export default function AffiliateCrmPanel() {
             <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm">
               <p>Generate a unique code to share. Buyers get <strong>10% off</strong> at checkout, and you earn <strong>5%</strong> of every deal where your code is used.</p>
             </div>
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-sm text-muted-foreground">
-                Total earned (pending payout): <strong className="text-foreground">{fmtMoney(totalEarned, referrals[0]?.currency ?? "gbp")}</strong>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/60 bg-card/30 p-3">
+              <div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Available to cash out</div>
+                <div className="text-xl font-semibold">{fmtMoney(availableCents, "gbp")}</div>
+                <div className="text-[11px] text-muted-foreground">
+                  Earned {fmtMoney(totalEarned, "gbp")} · Reserved {fmtMoney(reservedByPayouts, "gbp")}
+                </div>
               </div>
-              <Button onClick={handleGenerate} disabled={generating}>
-                {generating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Ticket className="h-4 w-4 mr-2" />}
-                Generate new code
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button onClick={() => setCashoutOpen(true)} disabled={hasOpenPayout || availableCents < 2500} variant="default">
+                  <Wallet className="h-4 w-4 mr-2" /> Cash out
+                </Button>
+                <Button onClick={handleGenerate} disabled={generating} variant="outline">
+                  {generating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Ticket className="h-4 w-4 mr-2" />}
+                  Generate new code
+                </Button>
+              </div>
             </div>
+            {hasOpenPayout && (
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs">
+                You have an open withdrawal request. We'll process it within 3–5 business days.
+              </div>
+            )}
+            {payouts.length > 0 && (
+              <div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Withdrawals</div>
+                <div className="max-h-32 overflow-auto rounded-none border border-border/40 divide-y divide-border/40">
+                  {payouts.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                      <div className="min-w-0">
+                        <div className="font-medium">{fmtMoney(p.amount_cents, p.currency)}</div>
+                        <div className="text-[11px] text-muted-foreground">{p.method} · {new Date(p.created_at).toLocaleDateString("en-GB")}</div>
+                      </div>
+                      <Badge variant="outline" className="rounded-none capitalize">{p.status}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Your codes</div>
@@ -605,6 +648,14 @@ export default function AffiliateCrmPanel() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CashoutDialog
+        open={cashoutOpen}
+        onOpenChange={setCashoutOpen}
+        availableCents={availableCents}
+        hasOpenRequest={hasOpenPayout}
+        onSubmitted={() => { loadCodes(); }}
+      />
     </div>
   );
 }

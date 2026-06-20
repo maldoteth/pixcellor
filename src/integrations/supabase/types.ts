@@ -86,6 +86,63 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_payouts: {
+        Row: {
+          account_holder_name: string | null
+          account_number: string | null
+          admin_note: string | null
+          amount_cents: number
+          created_at: string
+          crypto_currency: string | null
+          currency: string
+          id: string
+          method: string
+          owner_user_id: string
+          processed_at: string | null
+          processed_by: string | null
+          sort_code: string | null
+          status: string
+          updated_at: string
+          wallet_address: string | null
+        }
+        Insert: {
+          account_holder_name?: string | null
+          account_number?: string | null
+          admin_note?: string | null
+          amount_cents: number
+          created_at?: string
+          crypto_currency?: string | null
+          currency?: string
+          id?: string
+          method: string
+          owner_user_id: string
+          processed_at?: string | null
+          processed_by?: string | null
+          sort_code?: string | null
+          status?: string
+          updated_at?: string
+          wallet_address?: string | null
+        }
+        Update: {
+          account_holder_name?: string | null
+          account_number?: string | null
+          admin_note?: string | null
+          amount_cents?: number
+          created_at?: string
+          crypto_currency?: string | null
+          currency?: string
+          id?: string
+          method?: string
+          owner_user_id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          sort_code?: string | null
+          status?: string
+          updated_at?: string
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
       affiliate_referrals: {
         Row: {
           amount_subtotal_cents: number | null
