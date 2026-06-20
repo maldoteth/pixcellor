@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Wallet as WalletIcon, Send, QrCode, Eye, Copy, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { getEthBalance, getSolBalance } from "@/lib/wallet/rpc";
+import { getEthBalance, getSolBalance, getUsdPrices, type UsdPrices } from "@/lib/wallet/rpc";
 import { CreateWalletDialog } from "./CreateWalletDialog";
 import { ReceiveDialog } from "./ReceiveDialog";
 import { SendDialog } from "./SendDialog";
@@ -30,8 +30,9 @@ const shorten = (addr: string) => (addr.length > 14 ? `${addr.slice(0, 6)}…${a
 export function WalletPanel({ userId }: WalletPanelProps) {
   const [wallet, setWallet] = useState<WalletRow | null>(null);
   const [loading, setLoading] = useState(true);
-  const [ethBalance, setEthBalance] = useState<string>("—");
-  const [solBalance, setSolBalance] = useState<string>("—");
+  const [ethBalance, setEthBalance] = useState<string>("0");
+  const [solBalance, setSolBalance] = useState<string>("0");
+  const [prices, setPrices] = useState<UsdPrices>({ eth: 0, sol: 0 });
   const [refreshing, setRefreshing] = useState(false);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -60,9 +61,14 @@ export function WalletPanel({ userId }: WalletPanelProps) {
   const refreshBalances = useCallback(async () => {
     if (!wallet) return;
     setRefreshing(true);
-    const [eth, sol] = await Promise.all([getEthBalance(wallet.eth_address), getSolBalance(wallet.sol_address)]);
+    const [eth, sol, px] = await Promise.all([
+      getEthBalance(wallet.eth_address),
+      getSolBalance(wallet.sol_address),
+      getUsdPrices(),
+    ]);
     setEthBalance(eth);
     setSolBalance(sol);
+    setPrices(px);
     setRefreshing(false);
   }, [wallet]);
 
