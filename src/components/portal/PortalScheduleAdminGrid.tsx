@@ -549,6 +549,52 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
         onOpenChange={(o) => { if (!o) setRequestDate(null); }}
         date={requestDate}
       />
+
+      {/* Personal Event Dialog */}
+      <Dialog open={!!eventEditor} onOpenChange={(o) => !o && setEventEditor(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {eventEditor?.id ? "Edit event" : "Add event"} · {eventEditor && new Date(eventEditor.date + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}
+            </DialogTitle>
+          </DialogHeader>
+          {eventEditor && (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Title</label>
+                <Input value={eventEditor.title} onChange={(e) => setEventEditor({ ...eventEditor, title: e.target.value })} placeholder="e.g. Dentist appointment" autoFocus />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">From (optional)</label>
+                  <Input type="time" value={eventEditor.start} onChange={(e) => setEventEditor({ ...eventEditor, start: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Until (optional)</label>
+                  <Input type="time" value={eventEditor.finish} onChange={(e) => setEventEditor({ ...eventEditor, finish: e.target.value })} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Note (optional)</label>
+                <Textarea rows={2} value={eventEditor.note} onChange={(e) => setEventEditor({ ...eventEditor, note: e.target.value })} placeholder="Details, location, reminders…" />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-2">
+            {eventEditor?.id && (
+              <Button
+                variant="ghost"
+                className="text-destructive hover:text-destructive mr-auto"
+                onClick={async () => { if (eventEditor.id) { await deletePersonalEvent(eventEditor.id); setEventEditor(null); } }}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1" />Delete
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setEventEditor(null)}>Cancel</Button>
+            <Button onClick={savePersonalEvent}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
