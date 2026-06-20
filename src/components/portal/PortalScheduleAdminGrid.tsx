@@ -437,7 +437,25 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
                       </div>
                     </button>
                   </ContextMenuTrigger>
-                  <ContextMenuContent className="w-52">
+                  <ContextMenuContent className="w-56">
+                    <ContextMenuItem onSelect={() => openNewEvent(dk)}>
+                      <Plus className="h-3.5 w-3.5 mr-2" />Add event
+                    </ContextMenuItem>
+                    {events.map((e) => (
+                      <ContextMenuItem key={`edit-${e.id}`} onSelect={() => openEditEvent(e)}>
+                        <Pencil className="h-3.5 w-3.5 mr-2" />Edit "{e.title.length > 18 ? e.title.slice(0, 18) + "…" : e.title}"
+                      </ContextMenuItem>
+                    ))}
+                    {events.map((e) => (
+                      <ContextMenuItem
+                        key={`del-${e.id}`}
+                        onSelect={() => void deletePersonalEvent(e.id)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-2" />Delete "{e.title.length > 16 ? e.title.slice(0, 16) + "…" : e.title}"
+                      </ContextMenuItem>
+                    ))}
+                    <ContextMenuSeparator />
                     <ContextMenuItem onSelect={() => openEditor(dk)}>
                       <CalendarDays className="h-3.5 w-3.5 mr-2" />Edit availability
                     </ContextMenuItem>
@@ -459,7 +477,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
                       onSelect={() => void deleteAvailability(dk)}
                       className="text-destructive focus:text-destructive"
                     >
-                      <Trash2 className="h-3.5 w-3.5 mr-2" />Clear
+                      <Trash2 className="h-3.5 w-3.5 mr-2" />Clear availability
                     </ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
