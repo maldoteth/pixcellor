@@ -41,6 +41,7 @@ import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
 import CallBookingsPanel from "@/components/portal/CallBookingsPanel";
 import ByowSitesTab from "@/components/byow/ByowSitesTab";
 import RequestChooserDialog from "@/components/portal/RequestChooserDialog";
+import { WalletPanel } from "@/components/wallet/WalletPanel";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -1119,6 +1120,10 @@ export default function CustomerPortal() {
 
                 <TabsContent value="affiliate" className="space-y-4">
                   <AffiliateCrmPanel />
+                </TabsContent>
+
+                <TabsContent value="wallet" className="space-y-4">
+                  {userId ? <WalletPanel userId={userId} /> : null}
                 </TabsContent>
 
 
