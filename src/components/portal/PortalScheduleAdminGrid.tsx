@@ -362,13 +362,15 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
               const isToday = dk === todayKey;
               const bookings = bookedByDate[dk] ?? [];
               const a = availability[dk];
+              const events = personalEvents[dk] ?? [];
+              const hasEvents = events.length > 0;
               return (
                 <ContextMenu key={dk}>
                   <ContextMenuTrigger asChild>
                     <button
                       type="button"
                       onClick={() => handleCellClick(dk)}
-                      className={`relative min-h-[90px] border-b border-r p-1 text-left transition hover:bg-muted/40 ${isToday ? "bg-primary/5" : "bg-background"}`}
+                      className={`relative min-h-[90px] border-b border-r p-1 text-left transition hover:bg-muted/40 ${hasEvents ? "bg-red-500/10" : isToday ? "bg-primary/5" : "bg-background"}`}
                     >
                       <div className="flex h-full w-full flex-col gap-1">
                         {/* Booked shifts (read-only, click still opens availability) */}
@@ -392,6 +394,27 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
                           );
                         })}
 
+                        {/* Personal events */}
+                        {events.map((e) => (
+                          <div
+                            key={e.id}
+                            role="button"
+                            tabIndex={0}
+                            onClick={(ev) => { ev.stopPropagation(); openEditEvent(e); }}
+                            onKeyDown={(ev) => { if (ev.key === "Enter") { ev.stopPropagation(); openEditEvent(e); } }}
+                            className="rounded border border-red-500/50 bg-red-500/15 px-1.5 py-1 text-red-700 dark:text-red-300 hover:bg-red-500/25 cursor-pointer"
+                            title={`${e.title}${e.start_time ? `\n${to12h(e.start_time)}${e.finish_time ? ` – ${to12h(e.finish_time)}` : ""}` : ""}${e.note ? `\n${e.note}` : ""}`}
+                          >
+                            <div className="text-[11px] font-semibold leading-tight truncate">{e.title}</div>
+                            {(e.start_time || e.finish_time) && (
+                              <div className="text-[10px] leading-tight opacity-80">
+                                {to12h(e.start_time)}{e.finish_time ? ` – ${to12h(e.finish_time)}` : ""}
+                              </div>
+                            )}
+                            {e.note && <div className="text-[9px] leading-tight opacity-80 truncate">{e.note}</div>}
+                          </div>
+                        ))}
+
                         {/* Availability chip */}
                         {a && (
                           <div className={`rounded border px-1.5 py-1 ${STATUS_STYLE[a.status]}`}>
@@ -406,7 +429,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
                         )}
 
                         {/* Empty hint */}
-                        {bookings.length === 0 && !a && (
+                        {bookings.length === 0 && !a && !hasEvents && (
                           <div className="flex h-full w-full flex-1 items-center justify-center rounded border border-dashed border-border/40 text-[10px] text-muted-foreground/60">
                             Request
                           </div>
