@@ -628,10 +628,10 @@ export default function CustomerPortal() {
             </div>
             <div className="flex items-center gap-2">
               {isAdmin && (
-                <Button asChild variant="pricing" size="sm" className="gap-2 max-md:h-9 max-md:w-9 max-md:p-0" aria-label="Admin panel">
+                <Button asChild variant="pricing" size="sm" className="gap-2 max-md:h-9 max-md:w-9 max-md:p-0" aria-label="Admin">
                   <Link to="/portal">
                     <ShieldCheck className="h-4 w-4" />
-                    <span className="max-md:hidden">Admin panel</span>
+                    <span className="max-md:hidden">Admin</span>
                   </Link>
                 </Button>
               )}
