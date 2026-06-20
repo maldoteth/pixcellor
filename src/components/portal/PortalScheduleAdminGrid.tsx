@@ -104,6 +104,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [shifts, setShifts] = useState<Record<string, Record<number, Record<string, Shift>>>>({});
   const [availability, setAvailability] = useState<Record<string, Availability>>({});
+  const [personalEvents, setPersonalEvents] = useState<Record<string, PersonalEvent[]>>({});
   const [loading, setLoading] = useState(false);
   const [clip, setClip] = useState<ClipAvail | null>(null);
 
