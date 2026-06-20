@@ -1772,6 +1772,42 @@ export type Database = {
         }
         Relationships: []
       }
+      personal_schedule_events: {
+        Row: {
+          created_at: string
+          event_date: string
+          finish_time: string | null
+          id: string
+          note: string | null
+          start_time: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          finish_time?: string | null
+          id?: string
+          note?: string | null
+          start_time?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          finish_time?: string | null
+          id?: string
+          note?: string | null
+          start_time?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_projects: {
         Row: {
           category: string | null
