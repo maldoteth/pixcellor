@@ -468,8 +468,31 @@ export default function CustomerPortal() {
   ];
 
   const handleSignOut = async () => {
-    const { hardSignOut } = await import("@/lib/hardSignOut");
-    await hardSignOut("/");
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
+    }
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        if (k.startsWith("sb-") || k.startsWith("supabase.") || k.startsWith("pixcellor_")) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+      sessionStorage.clear();
+    } catch {
+      // ignore
+    }
+    // Reset in-memory portal state so re-login starts clean
+    setData(null);
+    setSubscription(null);
+    setIsAdmin(false);
+    setLoading(true);
+    navigate("/customer-login", { replace: true });
   };
 
   const handleBuyAgain = async (plan: BuyAgainPackage, billingCycle: "monthly" | "yearly" = "monthly") => {
