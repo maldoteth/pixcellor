@@ -320,6 +320,31 @@ export default function CustomerPortal() {
   const [myCandidateId, setMyCandidateId] = useState<string | null>(null);
   const [scheduleRefresh, setScheduleRefresh] = useState(0);
   const [welcome, setWelcome] = useState<{ show: boolean; firstJoin: boolean }>({ show: false, firstJoin: false });
+  const [affEarnedCents, setAffEarnedCents] = useState(0);
+  const [affReservedCents, setAffReservedCents] = useState(0);
+  const [affHasOpen, setAffHasOpen] = useState(false);
+  const [cashoutOpen, setCashoutOpen] = useState(false);
+
+  const loadAffiliateBalance = useCallback(async () => {
+    const [refRes, payRes] = await Promise.all([
+      supabase.from("affiliate_referrals").select("commission_cents,status"),
+      supabase.from("affiliate_payouts").select("amount_cents,status"),
+    ]);
+    const earned = (refRes.data ?? [])
+      .filter((r: { status: string | null }) => ["earned", "cleared", "approved", "paid"].includes(r.status ?? ""))
+      .reduce((s: number, r: { commission_cents: number | null }) => s + Number(r.commission_cents ?? 0), 0);
+    const reserved = (payRes.data ?? [])
+      .filter((p: { status: string }) => ["requested", "approved", "paid"].includes(p.status))
+      .reduce((s: number, p: { amount_cents: number }) => s + Number(p.amount_cents ?? 0), 0);
+    const hasOpen = (payRes.data ?? []).some((p: { status: string }) => p.status === "requested" || p.status === "approved");
+    setAffEarnedCents(earned);
+    setAffReservedCents(reserved);
+    setAffHasOpen(hasOpen);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "affiliate") void loadAffiliateBalance();
+  }, [activeTab, loadAffiliateBalance]);
 
   const loadCandidateAccess = useCallback(async () => {
     const [cid, ids] = await Promise.all([
