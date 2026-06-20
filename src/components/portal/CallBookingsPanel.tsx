@@ -283,7 +283,7 @@ export default function CallBookingsPanel() {
                 {recordingsCount === 0 ? "No recordings yet" : `${recordingsCount} recording${recordingsCount === 1 ? "" : "s"}`}
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Upload a client's recordings CSV and they will appear here. Current count: {recordingsCount}.
+                Your recordings will appear here
               </p>
             </CardContent>
           </Card>
