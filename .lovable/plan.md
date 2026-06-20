@@ -1,93 +1,86 @@
-# Embedded Wallets (ETH + SOL)
+## Goal
 
-Per-user ETH + Solana wallets generated and encrypted **in the browser**. The server stores only ciphertext + public addresses — it physically cannot sign. Users unlock signing/reveal actions by entering a wallet password they set on creation.
+Close the security gap with Privy across three fronts: stronger encryption, recoverable wallets, and a second factor on every outbound transaction.
 
-## How keys are protected
+---
 
-- Keys are generated client-side using audited libraries (`ethers` for ETH, `@solana/web3.js` + `bip39` for SOL).
-- A single BIP-39 seed phrase backs both wallets (ETH derivation path `m/44'/60'/0'/0/0`, SOL path `m/44'/501'/0'/0'`).
-- The seed phrase is encrypted with **AES-256-GCM** via the browser's WebCrypto API.
-- The AES key is derived from the user's **wallet password** with **PBKDF2-SHA256, 310,000 iterations**, using a per-user random 16-byte salt.
-- Ciphertext, salt, IV, and the two public addresses are stored in `public.user_wallets` under RLS scoped to `auth.uid()`. The plaintext key never leaves the browser and is never sent over the network.
+## 1. Harden what we have
 
-### Wallet password ≠ login password
+**Key derivation**
+- Bump PBKDF2 iterations from 310,000 → **600,000** (OWASP 2023 minimum for PBKDF2-SHA256).
+- Store the iteration count per-wallet (already do) so existing wallets keep working and new wallets use the higher count.
+- Add a one-time silent "re-wrap" on next successful unlock: re-encrypt the seed with 600k iterations and update the row. No user action required.
 
-Decoupling avoids the "user reset their login password and lost their wallet" footgun. On wallet creation the user:
-1. Sets a wallet password (min 10 chars).
-2. Is shown the 12-word seed phrase **once**, must tick "I've saved this" before continuing.
-3. Can download an encrypted JSON backup.
+**Re-auth on every sensitive action**
+- Send, Reveal keys, Cash out — already prompt for password. Add a 60-second in-memory cache toggle so users aren't prompted twice in a row, but never persist the password.
+- Zero out decrypted seed/private key buffers immediately after use.
 
-If they forget the password, recovery = import the seed phrase + set a new password.
+**Reduce XSS / supply-chain blast radius**
+- Add a strict Content Security Policy via `<meta http-equiv>` in `index.html`: no inline scripts, no `eval`, restrict `connect-src` to Lovable Cloud + the ETH/SOL RPCs + CoinGecko, restrict `img-src`/`style-src` tightly.
+- Add `Permissions-Policy` and `Referrer-Policy` meta tags.
 
-## Database
+**Rate limiting**
+- Add an edge function `wallet-guard` that rate-limits decryption attempts per user (e.g. 5 failed unlocks in 10 minutes → 15-minute cooldown), tracked in a small `wallet_unlock_attempts` table. Failed attempts are reported by the client after a decrypt error.
 
-New table `public.user_wallets`:
+---
 
-- `user_id` (PK, FK → auth.users)
-- `eth_address`, `sol_address` (text, public)
-- `encrypted_seed` (text, base64 AES-GCM ciphertext of the BIP-39 mnemonic)
-- `salt`, `iv` (text, base64)
-- `kdf_iterations` (int, default 310000) — future-proofing
-- `created_at`, `updated_at`
+## 2. Password recovery (encrypted backup)
 
-RLS: each user can select/insert/update/delete only their own row. Grants to `authenticated` + `service_role`. No `anon`.
+When the user creates a wallet (and as an opt-in for existing wallets), generate a **24-word recovery code** and encrypt the seed a second time with it. Store both encrypted blobs.
 
-## UI — new "Wallet" tab in CustomerPortal
+- New table `user_wallet_recovery`: `user_id`, `encrypted_seed`, `salt`, `iv`, `kdf_iterations` (same shape as `user_wallets`, separate row).
+- Flow on create: after the user sets a password, show the recovery code **once** in a "Save this somewhere safe" modal with copy + download buttons and a "I've saved it" checkbox before continuing.
+- Flow on recovery: from the login screen, "Forgot wallet password" → user signs in normally with email/password → enters 24-word code → we decrypt the recovery blob, prompt for a new wallet password, re-encrypt the seed under it, overwrite `user_wallets` and `user_wallet_recovery`.
+- Recovery code is never sent to the server in plaintext — decryption happens entirely in the browser.
 
-```text
-┌───────────────────────────────────────────────┐
-│  Wallet                                       │
-│                                               │
-│  Ethereum            0x7a…3b9   [Copy] [QR]  │
-│  Balance: 0.0421 ETH ($142.18)                │
-│                                               │
-│  Solana              5Fc…uPq    [Copy] [QR]  │
-│  Balance: 1.204 SOL ($186.07)                 │
-│                                               │
-│  [ Send ]   [ Receive ]   [ Reveal keys ]    │
-└───────────────────────────────────────────────┘
-```
+Trade-off: this is a recovery code (like Coinbase Wallet), not Privy's email-link recovery. We can't do Privy's flow without their MPC server share.
 
-### Flows
-- **First visit / no wallet row** → "Create wallet" wizard: set password → show seed → confirm saved → encrypt + persist.
-- **Receive** → modal with address + QR (lib: `qrcode`).
-- **Send** → choose chain → recipient + amount → enter wallet password → decrypt seed in-memory → sign + broadcast via public RPC → discard plaintext immediately. Shows tx hash + explorer link.
-- **Reveal keys** → re-prompt password → display seed phrase + private keys with a 30-second auto-hide, plus "copy" buttons.
-- **Import existing seed** → on the create screen, "I already have a seed phrase" option.
+---
 
-### Balances + RPC
-- ETH: public Cloudflare endpoint `https://cloudflare-eth.com` via `ethers.JsonRpcProvider`.
-- SOL: `https://api.mainnet-beta.solana.com` via `@solana/web3.js`. (Easy to swap to a paid RPC later if rate-limited.)
+## 3. Transaction MFA (email OTP)
 
-## Files
+Every Send and Cash out requires a 6-digit code emailed to the user's account email, in addition to the wallet password.
 
-- `supabase/migrations/<ts>_user_wallets.sql` — table + GRANTs + RLS + updated_at trigger.
-- `src/lib/wallet/crypto.ts` — PBKDF2 + AES-GCM helpers.
-- `src/lib/wallet/derive.ts` — mnemonic → ETH + SOL keypairs.
-- `src/lib/wallet/rpc.ts` — balance + send helpers for both chains.
-- `src/components/wallet/WalletPanel.tsx` — main tab view.
-- `src/components/wallet/CreateWalletDialog.tsx`
-- `src/components/wallet/SendDialog.tsx`
-- `src/components/wallet/ReceiveDialog.tsx`
-- `src/components/wallet/RevealKeysDialog.tsx`
-- `src/components/wallet/PasswordPrompt.tsx`
-- `src/pages/CustomerPortal.tsx` — add "Wallet" tab entry.
+- New table `wallet_tx_otps`: `user_id`, `code_hash`, `purpose` (`send` / `cash_out`), `chain`, `expires_at`, `consumed_at`, `attempts`.
+- New edge function `wallet-request-otp`: validates JWT, generates a 6-digit code, hashes it (SHA-256 + per-row salt), stores it with a 5-minute expiry, enqueues an email via the existing transactional email system. Rate-limited to 1 request per 30 seconds, max 5 per hour per user.
+- New edge function `wallet-verify-otp`: validates JWT, checks the code, increments `attempts`, marks `consumed_at`. Max 5 attempts before the code is invalidated. Returns a short-lived signed token (10 minutes) the client must present to proceed.
+- `SendDialog` and `CashOutDialog`: after the user enters amount + password, click "Send code", then enter the 6-digit code, then we sign and broadcast the transaction. The signed OTP token gates the action client-side and is logged server-side for audit.
+- Reveal keys also requires OTP (it's effectively a full wallet exfiltration).
+- Email template uses the existing transactional email infrastructure with a "You're authorizing a transaction" subject and clear warning copy.
 
-## Dependencies
+If the email domain is not yet set up, we'll set it up first (one-time prompt), since OTP emails won't deliver reliably otherwise.
 
-`bun add ethers @solana/web3.js bip39 ed25519-hd-key qrcode` (+ `@types/qrcode`).
+---
 
-## Security boundaries (what this does and does not protect)
+## Files to add / change
 
-- Server compromise → attacker gets ciphertext only; brute-forcing PBKDF2(310k) on a strong password is infeasible.
-- Weak wallet password → vulnerable to offline brute force once ciphertext leaks. The UI enforces min length + strength meter.
-- Malicious browser extension or XSS on our domain → can scrape the plaintext seed during unlock. Standard CSP is already in place; no further mitigation in v1.
-- This is **not** MPC / TEE security. For institutional-grade guarantees, Option C (Privy/Turnkey) remains the upgrade path and the data model here is compatible with migrating addresses out.
+**New**
+- `src/lib/wallet/recovery.ts` — generate recovery code, encrypt/decrypt seed under it
+- `src/components/wallet/RecoveryCodeDialog.tsx` — show-once modal during create
+- `src/components/wallet/RecoverWalletDialog.tsx` — recover with code, set new password
+- `src/components/wallet/OtpPrompt.tsx` — shared 6-digit OTP entry component
+- `supabase/functions/wallet-request-otp/index.ts`
+- `supabase/functions/wallet-verify-otp/index.ts`
+- `supabase/functions/wallet-guard/index.ts`
+- Migration: `user_wallet_recovery`, `wallet_tx_otps`, `wallet_unlock_attempts` (all RLS + GRANTs)
 
-## Out of scope (v1)
+**Changed**
+- `src/lib/wallet/crypto.ts` — `DEFAULT_PBKDF2_ITERATIONS = 600_000`, add `reEncrypt` helper, zero-out buffers
+- `src/components/wallet/CreateWalletDialog.tsx` — generate + display recovery code
+- `src/components/wallet/SendDialog.tsx` — add OTP step
+- `src/components/wallet/CashOutDialog.tsx` — add OTP step
+- `src/components/wallet/RevealKeysDialog.tsx` — add OTP step
+- `src/components/wallet/PasswordPrompt.tsx` — call `wallet-guard` to log failed unlocks; silent re-wrap on success
+- `src/pages/CustomerPortal.tsx` — wire "Forgot wallet password" entry point
+- `index.html` — CSP, Permissions-Policy, Referrer-Policy
 
-- Token (ERC-20 / SPL) transfers — only native ETH and SOL.
-- Multi-account / multiple addresses per user.
-- Hardware wallet connect.
-- Auto-funding, gas sponsorship, fiat on-ramp.
-- Transaction history beyond the most recent send confirmation toast (we can add a paginated history later).
+---
+
+## What we will still NOT match vs Privy
+
+Even after this we won't have:
+- TEE-isolated signing (keys always touch the browser process)
+- MPC / Shamir split keys
+- Per-transaction policy engine
+
+Honest framing for users: "comparable to a hardened browser wallet with 2FA," not "comparable to a custodial MPC service." If matching Privy fully matters later, the right move is to swap in Privy's SDK rather than rebuild their TEE.
