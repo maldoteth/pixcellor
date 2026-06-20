@@ -31,8 +31,10 @@ import {
   Plus,
   Sparkles,
   Users,
+  Wallet,
 } from "lucide-react";
 import AffiliateCrmPanel from "@/components/portal/AffiliateCrmPanel";
+import CashoutDialog from "@/components/portal/CashoutDialog";
 import PortalScheduleAdminGrid from "@/components/portal/PortalScheduleAdminGrid";
 import PortalMyJobs from "@/components/portal/PortalMyJobs";
 import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
@@ -318,6 +320,31 @@ export default function CustomerPortal() {
   const [myCandidateId, setMyCandidateId] = useState<string | null>(null);
   const [scheduleRefresh, setScheduleRefresh] = useState(0);
   const [welcome, setWelcome] = useState<{ show: boolean; firstJoin: boolean }>({ show: false, firstJoin: false });
+  const [affEarnedCents, setAffEarnedCents] = useState(0);
+  const [affReservedCents, setAffReservedCents] = useState(0);
+  const [affHasOpen, setAffHasOpen] = useState(false);
+  const [cashoutOpen, setCashoutOpen] = useState(false);
+
+  const loadAffiliateBalance = useCallback(async () => {
+    const [refRes, payRes] = await Promise.all([
+      supabase.from("affiliate_referrals").select("commission_cents,status"),
+      supabase.from("affiliate_payouts").select("amount_cents,status"),
+    ]);
+    const earned = (refRes.data ?? [])
+      .filter((r: { status: string | null }) => ["earned", "cleared", "approved", "paid"].includes(r.status ?? ""))
+      .reduce((s: number, r: { commission_cents: number | null }) => s + Number(r.commission_cents ?? 0), 0);
+    const reserved = (payRes.data ?? [])
+      .filter((p: { status: string }) => ["requested", "approved", "paid"].includes(p.status))
+      .reduce((s: number, p: { amount_cents: number }) => s + Number(p.amount_cents ?? 0), 0);
+    const hasOpen = (payRes.data ?? []).some((p: { status: string }) => p.status === "requested" || p.status === "approved");
+    setAffEarnedCents(earned);
+    setAffReservedCents(reserved);
+    setAffHasOpen(hasOpen);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "affiliate") void loadAffiliateBalance();
+  }, [activeTab, loadAffiliateBalance]);
 
   const loadCandidateAccess = useCallback(async () => {
     const [cid, ids] = await Promise.all([
@@ -635,41 +662,76 @@ export default function CustomerPortal() {
                   </div>
                 </div>
 
-                <Card className="border-border bg-card/70 backdrop-blur-xl">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Next action</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {nextOrder ? (
-                      (() => {
-                        const requirements = requirementsBySession.get(nextOrder.session_id);
-                        const stage = orderStage(nextOrder, Boolean(requirements));
-                        return (
-                          <>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between gap-2 text-sm">
-                                <span className="text-muted-foreground">{packageName(nextOrder)}</span>
-                                <span className="font-medium">{stage.label}</span>
-                              </div>
-                              <Progress value={stage.progress} className="h-2" />
+                {activeTab === "affiliate" ? (
+                  (() => {
+                    const availableCents = Math.max(0, affEarnedCents - affReservedCents);
+                    const fmt = (c: number) => new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(c / 100);
+                    return (
+                      <Card className="border-border bg-card/70 backdrop-blur-xl">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base">Affiliate earnings</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div>
+                            <div className="text-xs uppercase tracking-wider text-muted-foreground">Total earned</div>
+                            <div className="text-2xl font-semibold">{fmt(affEarnedCents)}</div>
+                            <div className="mt-1 text-[11px] text-muted-foreground">
+                              Available {fmt(availableCents)} · Reserved {fmt(affReservedCents)}
                             </div>
-                            {!requirements && nextOrder.order_code && nextOrder.requirements_token ? (
-                              <Button asChild variant="pricing" className="w-full gap-2">
-                                <Link to={`/project-requirements?order=${encodeURIComponent(nextOrder.order_code)}&token=${encodeURIComponent(nextOrder.requirements_token)}`}>
-                                  Submit project brief <ClipboardList className="h-4 w-4" />
-                                </Link>
-                              </Button>
-                            ) : (
-                              <p className="text-sm text-muted-foreground">Everything needed right now is up to date.</p>
-                            )}
-                          </>
-                        );
-                      })()
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No order history is attached to this account yet.</p>
-                    )}
-                  </CardContent>
-                </Card>
+                          </div>
+                          <Button
+                            variant="pricing"
+                            className="w-full gap-2"
+                            onClick={() => setCashoutOpen(true)}
+                            disabled={affHasOpen || availableCents < 2500}
+                          >
+                            <Wallet className="h-4 w-4" />
+                            {affHasOpen ? "Withdrawal pending" : "Cash out"}
+                          </Button>
+                          {availableCents < 2500 && !affHasOpen && (
+                            <p className="text-[11px] text-muted-foreground">Minimum withdrawal is £25.</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })()
+                ) : (
+                  <Card className="border-border bg-card/70 backdrop-blur-xl">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Next action</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {nextOrder ? (
+                        (() => {
+                          const requirements = requirementsBySession.get(nextOrder.session_id);
+                          const stage = orderStage(nextOrder, Boolean(requirements));
+                          return (
+                            <>
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between gap-2 text-sm">
+                                  <span className="text-muted-foreground">{packageName(nextOrder)}</span>
+                                  <span className="font-medium">{stage.label}</span>
+                                </div>
+                                <Progress value={stage.progress} className="h-2" />
+                              </div>
+                              {!requirements && nextOrder.order_code && nextOrder.requirements_token ? (
+                                <Button asChild variant="pricing" className="w-full gap-2">
+                                  <Link to={`/project-requirements?order=${encodeURIComponent(nextOrder.order_code)}&token=${encodeURIComponent(nextOrder.requirements_token)}`}>
+                                    Submit project brief <ClipboardList className="h-4 w-4" />
+                                  </Link>
+                                </Button>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">Everything needed right now is up to date.</p>
+                              )}
+                            </>
+                          );
+                        })()
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No order history is attached to this account yet.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PortalTab)} className="space-y-5">
@@ -1064,6 +1126,13 @@ export default function CustomerPortal() {
           <ChatBot isOpen={chatOpen} setIsOpen={setChatOpen} showToggle={false} mode="support" />
           <VisionGenerator hidden chatOpen={chatOpen} />
           <RequestChooserDialog open={findOpen} onOpenChange={setFindOpen} date={null} variant="find" />
+          <CashoutDialog
+            open={cashoutOpen}
+            onOpenChange={setCashoutOpen}
+            availableCents={Math.max(0, affEarnedCents - affReservedCents)}
+            hasOpenRequest={affHasOpen}
+            onSubmitted={() => { void loadAffiliateBalance(); }}
+          />
         </SidebarInset>
       </div>
     </SidebarProvider>
