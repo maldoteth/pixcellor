@@ -300,7 +300,7 @@ export default function AffiliateCrmPanel() {
             <UserPlus className="w-4 h-4 mr-2" /> Add Client
           </Button>
           <Button onClick={openCodes} variant="outline" className="h-9 shrink-0">
-            <Ticket className="w-4 h-4 mr-2" /> Generate Code
+            <Ticket className="w-4 h-4 mr-2" /> Codes
           </Button>
         </div>
       </div>
