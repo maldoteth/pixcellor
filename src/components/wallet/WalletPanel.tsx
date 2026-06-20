@@ -132,11 +132,22 @@ export function WalletPanel({ userId }: WalletPanelProps) {
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="rounded-md border bg-card/40 p-4">
+            <p className="text-xs text-muted-foreground">Total balance</p>
+            <p className="text-2xl font-semibold">
+              ${(Number(ethBalance) * prices.eth + Number(solBalance) * prices.sol).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}{" "}
+              <span className="text-sm font-normal text-muted-foreground">USDT</span>
+            </p>
+          </div>
           <ChainRow
             label="Ethereum"
             symbol="ETH"
             address={wallet.eth_address}
             balance={ethBalance}
+            usdValue={Number(ethBalance) * prices.eth}
             onCopy={() => copy(wallet.eth_address, "Address")}
             onReceive={() => setReceiveOpen("ETH")}
           />
@@ -145,6 +156,7 @@ export function WalletPanel({ userId }: WalletPanelProps) {
             symbol="SOL"
             address={wallet.sol_address}
             balance={solBalance}
+            usdValue={Number(solBalance) * prices.sol}
             onCopy={() => copy(wallet.sol_address, "Address")}
             onReceive={() => setReceiveOpen("SOL")}
           />
@@ -188,11 +200,12 @@ interface ChainRowProps {
   symbol: string;
   address: string;
   balance: string;
+  usdValue: number;
   onCopy: () => void;
   onReceive: () => void;
 }
 
-function ChainRow({ label, symbol, address, balance, onCopy, onReceive }: ChainRowProps) {
+function ChainRow({ label, symbol, address, balance, usdValue, onCopy, onReceive }: ChainRowProps) {
   return (
     <div className="flex flex-col gap-2 rounded-md border bg-card/40 p-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
@@ -200,6 +213,9 @@ function ChainRow({ label, symbol, address, balance, onCopy, onReceive }: ChainR
         <p className="text-xs text-muted-foreground">{shorten(address)}</p>
         <p className="text-sm mt-1">
           {Number(balance).toLocaleString(undefined, { maximumFractionDigits: 6 })} {symbol}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          ≈ ${usdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT
         </p>
       </div>
       <div className="flex gap-2">
