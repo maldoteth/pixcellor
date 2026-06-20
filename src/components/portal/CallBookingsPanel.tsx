@@ -97,6 +97,17 @@ export default function CallBookingsPanel() {
     return () => clearInterval(id);
   }, [fetchBookings]);
 
+  useEffect(() => {
+    (async () => {
+      const { count } = await supabase
+        .from("call_recordings")
+        .select("id", { count: "exact", head: true });
+      setRecordingsCount(count || 0);
+      // Campaigns: no dedicated table yet — stays at 0 until CSV uploads are wired up.
+      setCampaignsCount(0);
+    })();
+  }, []);
+
   const { upcoming, past, stats } = useMemo(() => {
     const now = Date.now();
     const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
