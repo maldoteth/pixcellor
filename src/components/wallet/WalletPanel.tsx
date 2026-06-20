@@ -2,13 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet as WalletIcon, Send, QrCode, Eye, Copy, RefreshCw } from "lucide-react";
+import { Wallet as WalletIcon, Send, QrCode, Eye, Copy, RefreshCw, Landmark } from "lucide-react";
 import { toast } from "sonner";
 import { getEthBalance, getSolBalance, getGbpPrices, type GbpPrices } from "@/lib/wallet/rpc";
 import { CreateWalletDialog } from "./CreateWalletDialog";
 import { ReceiveDialog } from "./ReceiveDialog";
 import { SendDialog } from "./SendDialog";
 import { RevealKeysDialog } from "./RevealKeysDialog";
+import { CashOutDialog } from "./CashOutDialog";
 import type { EncryptedPayload } from "@/lib/wallet/crypto";
 
 interface WalletRow {
@@ -39,6 +40,7 @@ export function WalletPanel({ userId }: WalletPanelProps) {
   const [receiveOpen, setReceiveOpen] = useState<"ETH" | "SOL" | null>(null);
   const [sendOpen, setSendOpen] = useState(false);
   const [revealOpen, setRevealOpen] = useState(false);
+  const [cashOutOpen, setCashOutOpen] = useState(false);
 
   const loadWallet = useCallback(async () => {
     setLoading(true);
@@ -165,6 +167,9 @@ export function WalletPanel({ userId }: WalletPanelProps) {
             <Button onClick={() => setSendOpen(true)}>
               <Send className="w-4 h-4 mr-2" /> Send
             </Button>
+            <Button variant="secondary" onClick={() => setCashOutOpen(true)}>
+              <Landmark className="w-4 h-4 mr-2" /> Cash out
+            </Button>
             <Button variant="outline" onClick={() => setRevealOpen(true)}>
               <Eye className="w-4 h-4 mr-2" /> Reveal keys
             </Button>
@@ -190,6 +195,15 @@ export function WalletPanel({ userId }: WalletPanelProps) {
         onOpenChange={(o) => !o && setReceiveOpen(null)}
         chain={receiveOpen ?? "ETH"}
         address={receiveOpen === "SOL" ? wallet.sol_address : wallet.eth_address}
+      />
+      <CashOutDialog
+        open={cashOutOpen}
+        onOpenChange={setCashOutOpen}
+        userId={userId}
+        ethBalance={ethBalance}
+        solBalance={solBalance}
+        ethGbp={prices.eth}
+        solGbp={prices.sol}
       />
     </div>
   );
