@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { CalendarClock, Copy, Loader2, Phone, RefreshCw, Video, XCircle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { CalendarClock, Copy, Loader2, Phone, RefreshCw, Video, XCircle, CheckCircle2, ChevronDown, ChevronUp, Megaphone, Mic, CalendarClock as CalIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
