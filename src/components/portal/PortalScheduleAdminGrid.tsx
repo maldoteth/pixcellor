@@ -15,7 +15,7 @@ import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
-  CalendarDays, ChevronLeft, ChevronRight, Clipboard, Copy, ClipboardPaste, Trash2, Loader2,
+  CalendarDays, ChevronLeft, ChevronRight, Clipboard, Copy, ClipboardPaste, Trash2, Loader2, Plus, Pencil,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import RequestChooserDialog from "@/components/portal/RequestChooserDialog";
@@ -49,6 +49,14 @@ type Availability = {
   status: "available" | "unavailable" | "tentative";
   start_time: string | null;
   finish_time: string | null;
+  note: string | null;
+};
+type PersonalEvent = {
+  id: string;
+  event_date: string;
+  start_time: string | null;
+  finish_time: string | null;
+  title: string;
   note: string | null;
 };
 
@@ -96,6 +104,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [shifts, setShifts] = useState<Record<string, Record<number, Record<string, Shift>>>>({});
   const [availability, setAvailability] = useState<Record<string, Availability>>({});
+  const [personalEvents, setPersonalEvents] = useState<Record<string, PersonalEvent[]>>({});
   const [loading, setLoading] = useState(false);
   const [clip, setClip] = useState<ClipAvail | null>(null);
 
@@ -137,17 +146,39 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
     setAvailability(m);
   }, [fromKey, toKey]);
 
+  const loadPersonalEvents = useCallback(async () => {
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes?.user?.id;
+    if (!uid) { setPersonalEvents({}); return; }
+    const { data, error } = await supabase
+      .from("personal_schedule_events")
+      .select("id, event_date, start_time, finish_time, title, note")
+      .eq("user_id", uid)
+      .gte("event_date", fromKey)
+      .lte("event_date", toKey)
+      .order("start_time", { ascending: true, nullsFirst: true });
+    if (error) { return; }
+    const m: Record<string, PersonalEvent[]> = {};
+    ((data as PersonalEvent[] | null) ?? []).forEach((e) => {
+      if (!m[e.event_date]) m[e.event_date] = [];
+      m[e.event_date].push(e);
+    });
+    setPersonalEvents(m);
+  }, [fromKey, toKey]);
+
   const reload = useCallback(async () => {
     setLoading(true);
     try {
       await loadVacancies();
       await loadAvailability();
+      await loadPersonalEvents();
     } finally { setLoading(false); }
-  }, [loadVacancies, loadAvailability]);
+  }, [loadVacancies, loadAvailability, loadPersonalEvents]);
 
   useEffect(() => { void reload(); }, [reload]);
   useEffect(() => { void loadShifts(vacancies); }, [vacancies, loadShifts]);
   useEffect(() => { void loadAvailability(); }, [loadAvailability]);
+  useEffect(() => { void loadPersonalEvents(); }, [loadPersonalEvents]);
 
   // Booked shifts per date that belong to me
   const bookedByDate = useMemo(() => {
@@ -223,6 +254,51 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
     await loadAvailability();
   };
 
+  // Personal events editor
+  const [eventEditor, setEventEditor] = useState<{ id: string | null; date: string; title: string; start: string; finish: string; note: string } | null>(null);
+
+  const openNewEvent = (date: string) => {
+    setEventEditor({ id: null, date, title: "", start: "", finish: "", note: "" });
+  };
+  const openEditEvent = (e: PersonalEvent) => {
+    setEventEditor({
+      id: e.id,
+      date: e.event_date,
+      title: e.title,
+      start: e.start_time ? e.start_time.slice(0, 5) : "",
+      finish: e.finish_time ? e.finish_time.slice(0, 5) : "",
+      note: e.note ?? "",
+    });
+  };
+  const savePersonalEvent = async () => {
+    if (!eventEditor) return;
+    const title = eventEditor.title.trim();
+    if (!title) { toast({ title: "Title required", variant: "destructive" }); return; }
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes?.user?.id;
+    if (!uid) { toast({ title: "Sign in required", variant: "destructive" }); return; }
+    const payload = {
+      user_id: uid,
+      event_date: eventEditor.date,
+      title,
+      start_time: eventEditor.start || null,
+      finish_time: eventEditor.finish || null,
+      note: eventEditor.note?.trim() || null,
+    };
+    const { error } = eventEditor.id
+      ? await supabase.from("personal_schedule_events").update(payload).eq("id", eventEditor.id)
+      : await supabase.from("personal_schedule_events").insert(payload);
+    if (error) { toast({ title: "Could not save event", description: error.message, variant: "destructive" }); return; }
+    setEventEditor(null);
+    await loadPersonalEvents();
+    toast({ title: eventEditor.id ? "Event updated" : "Event added" });
+  };
+  const deletePersonalEvent = async (id: string) => {
+    const { error } = await supabase.from("personal_schedule_events").delete().eq("id", id);
+    if (error) { toast({ title: "Could not delete", description: error.message, variant: "destructive" }); return; }
+    await loadPersonalEvents();
+  };
+
   const weekLabel = `${weekStart.toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${weekDates[weekDates.length - 1].toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
   const gridTemplate = `repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
   const minGridW = dayMinW * daysShown;
@@ -286,13 +362,15 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
               const isToday = dk === todayKey;
               const bookings = bookedByDate[dk] ?? [];
               const a = availability[dk];
+              const events = personalEvents[dk] ?? [];
+              const hasEvents = events.length > 0;
               return (
                 <ContextMenu key={dk}>
                   <ContextMenuTrigger asChild>
                     <button
                       type="button"
                       onClick={() => handleCellClick(dk)}
-                      className={`relative min-h-[90px] border-b border-r p-1 text-left transition hover:bg-muted/40 ${isToday ? "bg-primary/5" : "bg-background"}`}
+                      className={`relative min-h-[90px] border-b border-r p-1 text-left transition hover:bg-muted/40 ${hasEvents ? "bg-red-500/10" : isToday ? "bg-primary/5" : "bg-background"}`}
                     >
                       <div className="flex h-full w-full flex-col gap-1">
                         {/* Booked shifts (read-only, click still opens availability) */}
@@ -316,6 +394,27 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
                           );
                         })}
 
+                        {/* Personal events */}
+                        {events.map((e) => (
+                          <div
+                            key={e.id}
+                            role="button"
+                            tabIndex={0}
+                            onClick={(ev) => { ev.stopPropagation(); openEditEvent(e); }}
+                            onKeyDown={(ev) => { if (ev.key === "Enter") { ev.stopPropagation(); openEditEvent(e); } }}
+                            className="rounded border border-red-500/50 bg-red-500/15 px-1.5 py-1 text-red-700 dark:text-red-300 hover:bg-red-500/25 cursor-pointer"
+                            title={`${e.title}${e.start_time ? `\n${to12h(e.start_time)}${e.finish_time ? ` – ${to12h(e.finish_time)}` : ""}` : ""}${e.note ? `\n${e.note}` : ""}`}
+                          >
+                            <div className="text-[11px] font-semibold leading-tight truncate">{e.title}</div>
+                            {(e.start_time || e.finish_time) && (
+                              <div className="text-[10px] leading-tight opacity-80">
+                                {to12h(e.start_time)}{e.finish_time ? ` – ${to12h(e.finish_time)}` : ""}
+                              </div>
+                            )}
+                            {e.note && <div className="text-[9px] leading-tight opacity-80 truncate">{e.note}</div>}
+                          </div>
+                        ))}
+
                         {/* Availability chip */}
                         {a && (
                           <div className={`rounded border px-1.5 py-1 ${STATUS_STYLE[a.status]}`}>
@@ -330,7 +429,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
                         )}
 
                         {/* Empty hint */}
-                        {bookings.length === 0 && !a && (
+                        {bookings.length === 0 && !a && !hasEvents && (
                           <div className="flex h-full w-full flex-1 items-center justify-center rounded border border-dashed border-border/40 text-[10px] text-muted-foreground/60">
                             Request
                           </div>
@@ -338,7 +437,25 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
                       </div>
                     </button>
                   </ContextMenuTrigger>
-                  <ContextMenuContent className="w-52">
+                  <ContextMenuContent className="w-56">
+                    <ContextMenuItem onSelect={() => openNewEvent(dk)}>
+                      <Plus className="h-3.5 w-3.5 mr-2" />Add event
+                    </ContextMenuItem>
+                    {events.map((e) => (
+                      <ContextMenuItem key={`edit-${e.id}`} onSelect={() => openEditEvent(e)}>
+                        <Pencil className="h-3.5 w-3.5 mr-2" />Edit "{e.title.length > 18 ? e.title.slice(0, 18) + "…" : e.title}"
+                      </ContextMenuItem>
+                    ))}
+                    {events.map((e) => (
+                      <ContextMenuItem
+                        key={`del-${e.id}`}
+                        onSelect={() => void deletePersonalEvent(e.id)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-2" />Delete "{e.title.length > 16 ? e.title.slice(0, 16) + "…" : e.title}"
+                      </ContextMenuItem>
+                    ))}
+                    <ContextMenuSeparator />
                     <ContextMenuItem onSelect={() => openEditor(dk)}>
                       <CalendarDays className="h-3.5 w-3.5 mr-2" />Edit availability
                     </ContextMenuItem>
@@ -360,7 +477,7 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
                       onSelect={() => void deleteAvailability(dk)}
                       className="text-destructive focus:text-destructive"
                     >
-                      <Trash2 className="h-3.5 w-3.5 mr-2" />Clear
+                      <Trash2 className="h-3.5 w-3.5 mr-2" />Clear availability
                     </ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
@@ -432,6 +549,52 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
         onOpenChange={(o) => { if (!o) setRequestDate(null); }}
         date={requestDate}
       />
+
+      {/* Personal Event Dialog */}
+      <Dialog open={!!eventEditor} onOpenChange={(o) => !o && setEventEditor(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {eventEditor?.id ? "Edit event" : "Add event"} · {eventEditor && new Date(eventEditor.date + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}
+            </DialogTitle>
+          </DialogHeader>
+          {eventEditor && (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Title</label>
+                <Input value={eventEditor.title} onChange={(e) => setEventEditor({ ...eventEditor, title: e.target.value })} placeholder="e.g. Dentist appointment" autoFocus />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">From (optional)</label>
+                  <Input type="time" value={eventEditor.start} onChange={(e) => setEventEditor({ ...eventEditor, start: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Until (optional)</label>
+                  <Input type="time" value={eventEditor.finish} onChange={(e) => setEventEditor({ ...eventEditor, finish: e.target.value })} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Note (optional)</label>
+                <Textarea rows={2} value={eventEditor.note} onChange={(e) => setEventEditor({ ...eventEditor, note: e.target.value })} placeholder="Details, location, reminders…" />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-2">
+            {eventEditor?.id && (
+              <Button
+                variant="ghost"
+                className="text-destructive hover:text-destructive mr-auto"
+                onClick={async () => { if (eventEditor.id) { await deletePersonalEvent(eventEditor.id); setEventEditor(null); } }}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1" />Delete
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setEventEditor(null)}>Cancel</Button>
+            <Button onClick={savePersonalEvent}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
