@@ -155,7 +155,7 @@ const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
   },
 ] as const;
 
-type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls" | "sites" | "affiliate";
+type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls" | "sites" | "affiliate" | "wallet";
 
 type CustomerOrder = {
   id: string;
@@ -324,6 +324,7 @@ export default function CustomerPortal() {
   const [affReservedCents, setAffReservedCents] = useState(0);
   const [affHasOpen, setAffHasOpen] = useState(false);
   const [cashoutOpen, setCashoutOpen] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const loadAffiliateBalance = useCallback(async () => {
     const [refRes, payRes] = await Promise.all([
@@ -397,6 +398,7 @@ export default function CustomerPortal() {
     }
 
     setIsAdmin(Boolean(adminRole));
+    setUserId(sessionData.session.user.id);
     setData(portalData as CustomerPortalData);
     setSubscription((subRow as CustomerSubscription | null) ?? null);
     setLoading(false);
@@ -492,6 +494,7 @@ export default function CustomerPortal() {
     { title: "Leads", value: "leads" as const, icon: Inbox },
     ...(isAdmin ? [{ title: "Calls", value: "calls" as const, icon: Phone }] : []),
     { title: "Affiliate", value: "affiliate" as const, icon: Users },
+    { title: "Wallet", value: "wallet" as const, icon: Wallet },
   ];
 
   const handleSignOut = async () => {
