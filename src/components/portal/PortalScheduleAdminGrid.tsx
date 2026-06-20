@@ -254,6 +254,51 @@ export default function PortalScheduleAdminGrid({ myCandidateId, onNeedRegister,
     await loadAvailability();
   };
 
+  // Personal events editor
+  const [eventEditor, setEventEditor] = useState<{ id: string | null; date: string; title: string; start: string; finish: string; note: string } | null>(null);
+
+  const openNewEvent = (date: string) => {
+    setEventEditor({ id: null, date, title: "", start: "", finish: "", note: "" });
+  };
+  const openEditEvent = (e: PersonalEvent) => {
+    setEventEditor({
+      id: e.id,
+      date: e.event_date,
+      title: e.title,
+      start: e.start_time ? e.start_time.slice(0, 5) : "",
+      finish: e.finish_time ? e.finish_time.slice(0, 5) : "",
+      note: e.note ?? "",
+    });
+  };
+  const savePersonalEvent = async () => {
+    if (!eventEditor) return;
+    const title = eventEditor.title.trim();
+    if (!title) { toast({ title: "Title required", variant: "destructive" }); return; }
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes?.user?.id;
+    if (!uid) { toast({ title: "Sign in required", variant: "destructive" }); return; }
+    const payload = {
+      user_id: uid,
+      event_date: eventEditor.date,
+      title,
+      start_time: eventEditor.start || null,
+      finish_time: eventEditor.finish || null,
+      note: eventEditor.note?.trim() || null,
+    };
+    const { error } = eventEditor.id
+      ? await supabase.from("personal_schedule_events").update(payload).eq("id", eventEditor.id)
+      : await supabase.from("personal_schedule_events").insert(payload);
+    if (error) { toast({ title: "Could not save event", description: error.message, variant: "destructive" }); return; }
+    setEventEditor(null);
+    await loadPersonalEvents();
+    toast({ title: eventEditor.id ? "Event updated" : "Event added" });
+  };
+  const deletePersonalEvent = async (id: string) => {
+    const { error } = await supabase.from("personal_schedule_events").delete().eq("id", id);
+    if (error) { toast({ title: "Could not delete", description: error.message, variant: "destructive" }); return; }
+    await loadPersonalEvents();
+  };
+
   const weekLabel = `${weekStart.toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${weekDates[weekDates.length - 1].toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
   const gridTemplate = `repeat(${daysShown}, minmax(${dayMinW}px, 1fr))`;
   const minGridW = dayMinW * daysShown;
