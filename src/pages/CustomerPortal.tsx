@@ -31,8 +31,10 @@ import {
   Plus,
   Sparkles,
   Users,
+  Wallet,
 } from "lucide-react";
 import AffiliateCrmPanel from "@/components/portal/AffiliateCrmPanel";
+import CashoutDialog from "@/components/portal/CashoutDialog";
 import PortalScheduleAdminGrid from "@/components/portal/PortalScheduleAdminGrid";
 import PortalMyJobs from "@/components/portal/PortalMyJobs";
 import PortalClientVacancies from "@/components/portal/PortalClientVacancies";
