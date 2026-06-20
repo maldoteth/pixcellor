@@ -7,6 +7,7 @@ import { decryptString, type EncryptedPayload } from "@/lib/wallet/crypto";
 import { deriveFromMnemonic, type DerivedWallet } from "@/lib/wallet/derive";
 import { AlertTriangle, Copy } from "lucide-react";
 import { toast } from "sonner";
+import { OtpPrompt } from "./OtpPrompt";
 
 interface RevealKeysDialogProps {
   open: boolean;
@@ -22,6 +23,7 @@ export function RevealKeysDialog({ open, onOpenChange, encrypted }: RevealKeysDi
   const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<DerivedWallet | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [otpVerified, setOtpVerified] = useState(false);
 
   useEffect(() => {
     if (!revealed) return;
@@ -44,11 +46,16 @@ export function RevealKeysDialog({ open, onOpenChange, encrypted }: RevealKeysDi
       setPassword("");
       setError(null);
       setRevealed(null);
+      setOtpVerified(false);
     }
   }, [open]);
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!otpVerified) {
+      setError("Confirm the emailed code before revealing keys");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -84,12 +91,13 @@ export function RevealKeysDialog({ open, onOpenChange, encrypted }: RevealKeysDi
               <Label htmlFor="pw">Wallet password</Label>
               <Input id="pw" type="password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
+            <OtpPrompt purpose="reveal" onVerified={() => setOtpVerified(true)} />
             {error && <p className="text-sm text-destructive">{error}</p>}
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={busy || !password}>
+              <Button type="submit" disabled={busy || !password || !otpVerified}>
                 {busy ? "Unlocking…" : "Reveal"}
               </Button>
             </DialogFooter>
