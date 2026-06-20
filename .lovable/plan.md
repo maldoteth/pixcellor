@@ -1,45 +1,93 @@
-## Goal
+# Embedded Wallets (ETH + SOL)
 
-Add an **Affiliate** tab to the customer portal sidebar that gives any logged-in user the same Clients/CRM experience admins have in `src/pages/Portal.tsx` (the "profiles" tab) — but scoped strictly to contacts they themselves created. Plus: prevent adding a duplicate client, and as the user types a name (>3 chars) show a dropdown of close matches from their own CRM.
+Per-user ETH + Solana wallets generated and encrypted **in the browser**. The server stores only ciphertext + public addresses — it physically cannot sign. Users unlock signing/reveal actions by entering a wallet password they set on creation.
 
-## Scope of the copy
+## How keys are protected
 
-The admin Clients tab in `Portal.tsx` is ~1,500 lines tightly coupled to dozens of admin-only states (orders, profiles_q, contact_events, lead scoring, media uploads, duplicate panel, CSV import, etc.). A literal copy-paste into `CustomerPortal.tsx` would drag in admin-only data and break.
+- Keys are generated client-side using audited libraries (`ethers` for ETH, `@solana/web3.js` + `bip39` for SOL).
+- A single BIP-39 seed phrase backs both wallets (ETH derivation path `m/44'/60'/0'/0/0`, SOL path `m/44'/501'/0'/0'`).
+- The seed phrase is encrypted with **AES-256-GCM** via the browser's WebCrypto API.
+- The AES key is derived from the user's **wallet password** with **PBKDF2-SHA256, 310,000 iterations**, using a per-user random 16-byte salt.
+- Ciphertext, salt, IV, and the two public addresses are stored in `public.user_wallets` under RLS scoped to `auth.uid()`. The plaintext key never leaves the browser and is never sent over the network.
 
-Two realistic options — please pick one before I build:
+### Wallet password ≠ login password
 
-### Option A — Faithful clone (recommended, larger change)
-Extract the existing Clients tab into a reusable `<ClientsCrmPanel mode="admin" | "affiliate" userId={...} />` component. Use it unchanged in Portal.tsx and mount it under the new Affiliate tab in CustomerPortal.tsx. Affiliate mode hides admin-only controls (CSV import to global pool, duplicate-merge across all users, lead scoring batch jobs) and filters every query to `created_by_user_id = auth.uid()`.
+Decoupling avoids the "user reset their login password and lost their wallet" footgun. On wallet creation the user:
+1. Sets a wallet password (min 10 chars).
+2. Is shown the 12-word seed phrase **once**, must tick "I've saved this" before continuing.
+3. Can download an encrypted JSON backup.
 
-- Pros: pixel-identical UI, single source of truth going forward.
-- Cons: ~1-2 days of careful refactor; risk of regressions in the admin Clients tab while extracting.
+If they forget the password, recovery = import the seed phrase + set a new password.
 
-### Option B — Lean affiliate CRM (fast)
-Build a new, smaller `AffiliateCrmPanel` that reuses the same visual styles (cards, table rows, status chips, search bar) but only the core fields: name, contact_name, email, phone, website, industry, status, notes, plus a simple events/notes timeline. No CSV import, no lead-score batch, no media uploads.
+## Database
 
-- Pros: ships today, no risk to admin tab.
-- Cons: not literally the same code — visually matches, feature set is the subset that makes sense for one user's own pipeline.
+New table `public.user_wallets`:
 
-## Database changes (same for both options)
+- `user_id` (PK, FK → auth.users)
+- `eth_address`, `sol_address` (text, public)
+- `encrypted_seed` (text, base64 AES-GCM ciphertext of the BIP-39 mnemonic)
+- `salt`, `iv` (text, base64)
+- `kdf_iterations` (int, default 310000) — future-proofing
+- `created_at`, `updated_at`
 
-1. Add RLS policies so authenticated users can `SELECT/INSERT/UPDATE/DELETE` rows in `public.contacts`, `public.contact_events`, `public.contact_persons` **only where `created_by_user_id = auth.uid()`**. Admin policies stay as-is.
-2. Trigger on `contacts` insert: if `created_by_user_id` is null, set it to `auth.uid()`.
-3. Duplicate prevention: unique partial index on `(created_by_user_id, lower(name))` and on `(created_by_user_id, lower(email)) where email is not null`. App-side check runs first and surfaces a friendly error before insert.
+RLS: each user can select/insert/update/delete only their own row. Grants to `authenticated` + `service_role`. No `anon`.
 
-## Duplicate detection + live match dropdown
+## UI — new "Wallet" tab in CustomerPortal
 
-- On the "Add client" form, debounce the `name` input. When length ≥ 3, query the user's own contacts: `name ILIKE %q%` ordered by similarity (use `pg_trgm` `similarity()` if available, else simple `ILIKE` + length sort), limit 8.
-- Render a dropdown under the input. Clicking a match opens that contact instead of creating a new one.
-- On submit, re-check for exact case-insensitive name or email match in the user's own contacts; block with toast "You already have a client called X".
+```text
+┌───────────────────────────────────────────────┐
+│  Wallet                                       │
+│                                               │
+│  Ethereum            0x7a…3b9   [Copy] [QR]  │
+│  Balance: 0.0421 ETH ($142.18)                │
+│                                               │
+│  Solana              5Fc…uPq    [Copy] [QR]  │
+│  Balance: 1.204 SOL ($186.07)                 │
+│                                               │
+│  [ Send ]   [ Receive ]   [ Reveal keys ]    │
+└───────────────────────────────────────────────┘
+```
 
-## Frontend wiring
+### Flows
+- **First visit / no wallet row** → "Create wallet" wizard: set password → show seed → confirm saved → encrypt + persist.
+- **Receive** → modal with address + QR (lib: `qrcode`).
+- **Send** → choose chain → recipient + amount → enter wallet password → decrypt seed in-memory → sign + broadcast via public RPC → discard plaintext immediately. Shows tx hash + explorer link.
+- **Reveal keys** → re-prompt password → display seed phrase + private keys with a 30-second auto-hide, plus "copy" buttons.
+- **Import existing seed** → on the create screen, "I already have a seed phrase" option.
 
-- `src/pages/CustomerPortal.tsx`:
-  - Add `"affiliate"` to the `PortalTab` union.
-  - Add `{ title: "Affiliate", value: "affiliate", icon: Users }` to `navItems` (position: TBD — end of list unless you want it elsewhere).
-  - Add matching `<TabsContent value="affiliate">` rendering the panel from the chosen option.
+### Balances + RPC
+- ETH: public Cloudflare endpoint `https://cloudflare-eth.com` via `ethers.JsonRpcProvider`.
+- SOL: `https://api.mainnet-beta.solana.com` via `@solana/web3.js`. (Easy to swap to a paid RPC later if rate-limited.)
 
-## What I need from you
+## Files
 
-1. **Option A or Option B?** (A = literal clone via refactor; B = same look, lean feature set, ships now.)
-2. Where should the **Affiliate** tab sit in the sidebar — at the end, or right after a specific item?
+- `supabase/migrations/<ts>_user_wallets.sql` — table + GRANTs + RLS + updated_at trigger.
+- `src/lib/wallet/crypto.ts` — PBKDF2 + AES-GCM helpers.
+- `src/lib/wallet/derive.ts` — mnemonic → ETH + SOL keypairs.
+- `src/lib/wallet/rpc.ts` — balance + send helpers for both chains.
+- `src/components/wallet/WalletPanel.tsx` — main tab view.
+- `src/components/wallet/CreateWalletDialog.tsx`
+- `src/components/wallet/SendDialog.tsx`
+- `src/components/wallet/ReceiveDialog.tsx`
+- `src/components/wallet/RevealKeysDialog.tsx`
+- `src/components/wallet/PasswordPrompt.tsx`
+- `src/pages/CustomerPortal.tsx` — add "Wallet" tab entry.
+
+## Dependencies
+
+`bun add ethers @solana/web3.js bip39 ed25519-hd-key qrcode` (+ `@types/qrcode`).
+
+## Security boundaries (what this does and does not protect)
+
+- Server compromise → attacker gets ciphertext only; brute-forcing PBKDF2(310k) on a strong password is infeasible.
+- Weak wallet password → vulnerable to offline brute force once ciphertext leaks. The UI enforces min length + strength meter.
+- Malicious browser extension or XSS on our domain → can scrape the plaintext seed during unlock. Standard CSP is already in place; no further mitigation in v1.
+- This is **not** MPC / TEE security. For institutional-grade guarantees, Option C (Privy/Turnkey) remains the upgrade path and the data model here is compatible with migrating addresses out.
+
+## Out of scope (v1)
+
+- Token (ERC-20 / SPL) transfers — only native ETH and SOL.
+- Multi-account / multiple addresses per user.
+- Hardware wallet connect.
+- Auto-funding, gas sponsorship, fiat on-ramp.
+- Transaction history beyond the most recent send confirmation toast (we can add a paginated history later).
