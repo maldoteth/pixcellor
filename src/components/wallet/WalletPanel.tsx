@@ -10,6 +10,7 @@ import { ReceiveDialog } from "./ReceiveDialog";
 import { SendDialog } from "./SendDialog";
 import { RevealKeysDialog } from "./RevealKeysDialog";
 import { CashOutDialog } from "./CashOutDialog";
+import { RecoverWalletDialog } from "./RecoverWalletDialog";
 import type { EncryptedPayload } from "@/lib/wallet/crypto";
 
 interface WalletRow {
@@ -41,6 +42,7 @@ export function WalletPanel({ userId }: WalletPanelProps) {
   const [sendOpen, setSendOpen] = useState(false);
   const [revealOpen, setRevealOpen] = useState(false);
   const [cashOutOpen, setCashOutOpen] = useState(false);
+  const [recoverOpen, setRecoverOpen] = useState(false);
 
   const loadWallet = useCallback(async () => {
     setLoading(true);
@@ -174,8 +176,16 @@ export function WalletPanel({ userId }: WalletPanelProps) {
               <Eye className="w-4 h-4 mr-2" /> Reveal keys
             </Button>
           </div>
+          <button
+            type="button"
+            onClick={() => setRecoverOpen(true)}
+            className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+          >
+            Forgot wallet password?
+          </button>
         </CardContent>
       </Card>
+
 
       {encrypted && (
         <>
@@ -204,6 +214,12 @@ export function WalletPanel({ userId }: WalletPanelProps) {
         solBalance={solBalance}
         ethGbp={prices.eth}
         solGbp={prices.sol}
+      />
+      <RecoverWalletDialog
+        open={recoverOpen}
+        onOpenChange={setRecoverOpen}
+        userId={userId}
+        onRecovered={loadWallet}
       />
     </div>
   );

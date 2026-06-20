@@ -16,6 +16,7 @@ import {
 } from "@/lib/wallet/rpc";
 import { toast } from "sonner";
 import { ExternalLink } from "lucide-react";
+import { OtpPrompt } from "./OtpPrompt";
 
 interface SendDialogProps {
   open: boolean;
@@ -34,6 +35,7 @@ export function SendDialog({ open, onOpenChange, encrypted, onSent }: SendDialog
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [otpVerified, setOtpVerified] = useState(false);
 
   const reset = () => {
     setTo("");
@@ -41,6 +43,7 @@ export function SendDialog({ open, onOpenChange, encrypted, onSent }: SendDialog
     setPassword("");
     setError(null);
     setTxHash(null);
+    setOtpVerified(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,6 +51,10 @@ export function SendDialog({ open, onOpenChange, encrypted, onSent }: SendDialog
     setError(null);
     setTxHash(null);
 
+    if (!otpVerified) {
+      setError("Confirm the emailed code before sending");
+      return;
+    }
     if (chain === "ETH" && !isValidEthAddress(to)) {
       setError("Invalid Ethereum address");
       return;
@@ -120,6 +127,7 @@ export function SendDialog({ open, onOpenChange, encrypted, onSent }: SendDialog
             <Label htmlFor="pw">Wallet password</Label>
             <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
+          <OtpPrompt purpose="send" onVerified={() => setOtpVerified(true)} />
           {error && <p className="text-sm text-destructive">{error}</p>}
           {txHash && (
             <a
@@ -135,7 +143,7 @@ export function SendDialog({ open, onOpenChange, encrypted, onSent }: SendDialog
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Close
             </Button>
-            <Button type="submit" disabled={busy}>
+            <Button type="submit" disabled={busy || !otpVerified}>
               {busy ? "Broadcasting…" : `Send ${chain}`}
             </Button>
           </DialogFooter>

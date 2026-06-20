@@ -1,7 +1,8 @@
 // AES-256-GCM + PBKDF2-SHA256 helpers backed by WebCrypto.
 // All ciphertext / salt / iv values are stored as base64 strings.
 
-const PBKDF2_ITERATIONS_DEFAULT = 310_000;
+// OWASP 2023 recommendation for PBKDF2-SHA256.
+const PBKDF2_ITERATIONS_DEFAULT = 600_000;
 const SALT_BYTES = 16;
 const IV_BYTES = 12;
 
@@ -81,6 +82,15 @@ export async function decryptString(payload: EncryptedPayload, password: string)
   } catch {
     throw new Error("Incorrect password or corrupted data");
   }
+}
+
+/**
+ * Re-encrypt an already-decrypted secret under the same password with the
+ * current default iteration count, producing a fresh salt + IV. Used to
+ * silently upgrade old wallets to the current KDF strength on next unlock.
+ */
+export async function reEncryptString(plaintext: string, password: string): Promise<EncryptedPayload> {
+  return encryptString(plaintext, password, PBKDF2_ITERATIONS_DEFAULT);
 }
 
 export const DEFAULT_PBKDF2_ITERATIONS = PBKDF2_ITERATIONS_DEFAULT;

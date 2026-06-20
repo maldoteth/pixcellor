@@ -36,6 +36,7 @@ import { template as vacancyInvitation } from './vacancy-invitation.tsx'
 import { template as vacancyConfirmed } from './vacancy-confirmed.tsx'
 import { template as vacancyPositionFilled } from './vacancy-position-filled.tsx'
 import { template as callBookingConfirmation } from './call-booking-confirmation.tsx'
+import { template as walletTransactionOtp } from './wallet-transaction-otp.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'full-works-order-confirmation': fullWorksOrderConfirmation,
@@ -63,4 +64,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'vacancy-confirmed': vacancyConfirmed,
   'vacancy-position-filled': vacancyPositionFilled,
   'call-booking-confirmation': callBookingConfirmation,
+  'wallet-transaction-otp': walletTransactionOtp,
 }

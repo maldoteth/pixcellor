@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Landmark } from "lucide-react";
+import { OtpPrompt } from "./OtpPrompt";
 
 interface CashOutDialogProps {
   open: boolean;
@@ -35,6 +36,11 @@ export function CashOutDialog({
   const [bankName, setBankName] = useState("");
   const [chain, setChain] = useState<"ETH" | "SOL">("ETH");
   const [amount, setAmount] = useState("");
+  const [otpVerified, setOtpVerified] = useState(false);
+
+  useEffect(() => {
+    if (!open) setOtpVerified(false);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -100,6 +106,7 @@ export function CashOutDialog({
     const max = chain === "ETH" ? Number(ethBalance) : Number(solBalance);
     if (!amt || amt <= 0) return toast.error("Enter an amount greater than 0");
     if (amt > max) return toast.error(`Amount exceeds your ${chain} balance`);
+    if (!otpVerified) return toast.error("Confirm the emailed code first");
 
     const ok = await saveBankDetails();
     if (!ok) return;
@@ -205,11 +212,13 @@ export function CashOutDialog({
               )}
             </div>
 
+            <OtpPrompt purpose="cash_out" onVerified={() => setOtpVerified(true)} />
+
             <div className="flex gap-2 justify-end pt-2">
               <Button variant="outline" onClick={saveBankDetails} disabled={saving}>
                 Save details
               </Button>
-              <Button onClick={requestCashOut} disabled={saving}>
+              <Button onClick={requestCashOut} disabled={saving || !otpVerified}>
                 {saving ? "Submitting…" : "Request cash out"}
               </Button>
             </div>
