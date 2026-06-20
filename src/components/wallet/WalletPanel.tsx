@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Wallet as WalletIcon, Send, QrCode, Eye, Copy, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { getEthBalance, getSolBalance, getUsdPrices, type UsdPrices } from "@/lib/wallet/rpc";
+import { getEthBalance, getSolBalance, getGbpPrices, type GbpPrices } from "@/lib/wallet/rpc";
 import { CreateWalletDialog } from "./CreateWalletDialog";
 import { ReceiveDialog } from "./ReceiveDialog";
 import { SendDialog } from "./SendDialog";
@@ -32,7 +32,7 @@ export function WalletPanel({ userId }: WalletPanelProps) {
   const [loading, setLoading] = useState(true);
   const [ethBalance, setEthBalance] = useState<string>("0");
   const [solBalance, setSolBalance] = useState<string>("0");
-  const [prices, setPrices] = useState<UsdPrices>({ eth: 0, sol: 0 });
+  const [prices, setPrices] = useState<GbpPrices>({ eth: 0, sol: 0 });
   const [refreshing, setRefreshing] = useState(false);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -64,7 +64,7 @@ export function WalletPanel({ userId }: WalletPanelProps) {
     const [eth, sol, px] = await Promise.all([
       getEthBalance(wallet.eth_address),
       getSolBalance(wallet.sol_address),
-      getUsdPrices(),
+      getGbpPrices(),
     ]);
     setEthBalance(eth);
     setSolBalance(sol);
@@ -135,11 +135,11 @@ export function WalletPanel({ userId }: WalletPanelProps) {
           <div className="rounded-md border bg-card/40 p-4">
             <p className="text-xs text-muted-foreground">Total balance</p>
             <p className="text-2xl font-semibold">
-              ${(Number(ethBalance) * prices.eth + Number(solBalance) * prices.sol).toLocaleString(undefined, {
+              £{(Number(ethBalance) * prices.eth + Number(solBalance) * prices.sol).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}{" "}
-              <span className="text-sm font-normal text-muted-foreground">USDT</span>
+              <span className="text-sm font-normal text-muted-foreground">GBP</span>
             </p>
           </div>
           <ChainRow
@@ -147,7 +147,7 @@ export function WalletPanel({ userId }: WalletPanelProps) {
             symbol="ETH"
             address={wallet.eth_address}
             balance={ethBalance}
-            usdValue={Number(ethBalance) * prices.eth}
+            gbpValue={Number(ethBalance) * prices.eth}
             onCopy={() => copy(wallet.eth_address, "Address")}
             onReceive={() => setReceiveOpen("ETH")}
           />
@@ -156,7 +156,7 @@ export function WalletPanel({ userId }: WalletPanelProps) {
             symbol="SOL"
             address={wallet.sol_address}
             balance={solBalance}
-            usdValue={Number(solBalance) * prices.sol}
+            gbpValue={Number(solBalance) * prices.sol}
             onCopy={() => copy(wallet.sol_address, "Address")}
             onReceive={() => setReceiveOpen("SOL")}
           />
@@ -200,12 +200,12 @@ interface ChainRowProps {
   symbol: string;
   address: string;
   balance: string;
-  usdValue: number;
+  gbpValue: number;
   onCopy: () => void;
   onReceive: () => void;
 }
 
-function ChainRow({ label, symbol, address, balance, usdValue, onCopy, onReceive }: ChainRowProps) {
+function ChainRow({ label, symbol, address, balance, gbpValue, onCopy, onReceive }: ChainRowProps) {
   return (
     <div className="flex flex-col gap-2 rounded-md border bg-card/40 p-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
@@ -215,7 +215,7 @@ function ChainRow({ label, symbol, address, balance, usdValue, onCopy, onReceive
           {Number(balance).toLocaleString(undefined, { maximumFractionDigits: 6 })} {symbol}
         </p>
         <p className="text-xs text-muted-foreground">
-          ≈ ${usdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT
+          ≈ £{gbpValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} GBP
         </p>
       </div>
       <div className="flex gap-2">
