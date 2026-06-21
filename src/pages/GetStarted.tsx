@@ -329,8 +329,8 @@ const GetStarted = () => {
               <span className="block text-white/60">built in days, not months.</span>
             </h1>
             <p className="mt-5 text-base sm:text-lg text-white/70 max-w-xl">
-              From a polished Full Works site at <span className="text-white">£150</span> (RRP £375)
-              to flagship Elite builds with unlimited revisions at <span className="text-white">£500</span> (RRP £1,500),
+              From a polished Full Works site at <span className="text-white">£150</span>
+              to flagship Elite builds with unlimited revisions at <span className="text-white">£500</span>,
               or an always-on retainer from <span className="text-white">£100/mo</span>.
               Book a free 15-minute call and we&apos;ll show you exactly what we&apos;d build.
             </p>
