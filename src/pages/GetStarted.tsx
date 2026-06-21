@@ -118,7 +118,7 @@ const FAQ = [
   },
   {
     q: "How much does it cost?",
-    a: "One-off builds: Full Works £150 (RRP £375) or Elite £500 (RRP £1,500). Retainers: Growth £100/mo, Scale £500/mo, Enterprise £2,500/mo — all cancel-anytime, with up to £10K/yr saved on annual. Add-ons (extra pages, copy, brand kit, migration, 3D hero, multilingual) are fixed price.",
+    a: "One-off builds: Full Works £150 or Elite £500. Retainers: Growth £100/mo, Scale £500/mo, Enterprise £2,500/mo — all cancel-anytime, with up to £10K/yr saved on annual. Add-ons (extra pages, copy, brand kit, migration, 3D hero, multilingual) are fixed price.",
   },
   {
     q: "Do I really own the site?",
