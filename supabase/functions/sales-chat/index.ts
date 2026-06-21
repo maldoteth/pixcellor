@@ -2516,7 +2516,7 @@ Deno.serve(async (req) => {
                 billing,
                 name: pkg.name,
                 price,
-                rrp: pkg.rrp,
+                rrp: undefined,
                 features: pkg.features,
                 priceId,
                 mode,
