@@ -30,16 +30,8 @@ const Index = () => {
   const [visionGenOpen, setVisionGenOpen] = useState(false);
   const [customerAccessOpen, setCustomerAccessOpen] = useState(false);
 
-  // If already logged in, jump straight to the portal on refresh / revisit.
-  useEffect(() => {
-    let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!cancelled && data.session) {
-        navigate("/customer-portal", { replace: true });
-      }
-    });
-    return () => { cancelled = true; };
-  }, [navigate]);
+  // First-load only redirect to portal is handled centrally in AuthRedirectHandler (App.tsx).
+  // Do NOT force-redirect here, otherwise clicking "Home" from the portal would bounce back.
 
 
   useEffect(() => {
