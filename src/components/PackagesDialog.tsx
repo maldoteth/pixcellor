@@ -24,7 +24,6 @@ const PACKAGES = {
   fullWorks: {
     name: "Full Works",
     price: "£150",
-    rrp: "£375",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment" as const,
     features: ["Industry leading website", "Lifetime warranty", "Base animations ", "Up to 3 pages", "All inclusive service"],
@@ -32,7 +31,6 @@ const PACKAGES = {
   elite: {
     name: "Elite Build",
     price: "£500",
-    rrp: "£1,500",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     mode: "payment" as const,
     featured: true,
