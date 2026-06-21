@@ -108,6 +108,15 @@ export const RETAINER_TIERS = {
   },
 } as const;
 
+// Sub-tier for the Enterprise retainer card: Small (default) and Medium businesses.
+// Small mirrors the original Enterprise pricing; Medium is a higher tier handled via sales.
+export const ENTERPRISE_SIZES = {
+  small: { key: "small" as const, name: "Small", monthly: 2500, yearly: 20000, monthlyLabel: "£2,500/mo", yearlyLabel: "£20,000/yr" },
+  medium: { key: "medium" as const, name: "Medium", monthly: 5000, yearly: 40000, monthlyLabel: "£5,000/mo", yearlyLabel: "£40,000/yr" },
+} as const;
+type EnterpriseSizeKey = keyof typeof ENTERPRISE_SIZES;
+const ENTERPRISE_SIZE_ORDER: EnterpriseSizeKey[] = ["small", "medium"];
+
 type RetainerTierKey = keyof typeof RETAINER_TIERS;
 const RETAINER_TIER_ORDER: RetainerTierKey[] = ["growth", "scale", "enterprise"];
 
