@@ -81,7 +81,7 @@ Visitors fall into one of two buckets. Detect intent EARLY:
 ## Key Selling Points:
 - Future-proof, AI-powered development that scales
 - Fast turnaround - from 1-day websites to enterprise solutions
-- High-end quality at massively discounted rates
+- High-end quality at competitive rates
 - Cross-sector expertise including crypto, fintech, healthcare, retail, and more
 - Full-service: design, development, hosting, and ongoing support
 
