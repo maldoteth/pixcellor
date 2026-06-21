@@ -918,11 +918,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
-        <div className="mb-1 flex items-baseline gap-2">
+        <div className="mb-4 flex items-baseline gap-2">
           <div className="text-3xl font-extrabold text-foreground">£150</div>
-          <span className="text-muted-foreground text-sm">or £375</span>
         </div>
-        <IntroductoryOfferText discount="60%" />
         <ul className="mb-4 space-y-2 text-base text-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
