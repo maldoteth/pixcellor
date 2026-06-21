@@ -1691,7 +1691,7 @@ function MobileCards() {
                       style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(3px)" : "translateX(70px)"}` }}
                     />
                     <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${enterpriseSize === "small" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
-                      {enterpriseSize === "small" ? "Small" : "Medium"}
+                      {enterpriseSize === "small" ? "Small" : "Large"}
                     </span>
                   </button>
                 )}
