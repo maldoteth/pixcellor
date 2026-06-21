@@ -99,14 +99,17 @@ export default function CallBookingsPanel() {
 
   useEffect(() => {
     (async () => {
+      // Only count CSV-uploaded recordings. In-call host/guest captures are excluded.
       const { count } = await supabase
         .from("call_recordings")
-        .select("id", { count: "exact", head: true });
+        .select("id", { count: "exact", head: true })
+        .eq("recorded_by", "csv");
       setRecordingsCount(count || 0);
       // Campaigns: no dedicated table yet — stays at 0 until CSV uploads are wired up.
       setCampaignsCount(0);
     })();
   }, []);
+
 
   const { upcoming, past, stats } = useMemo(() => {
     const now = Date.now();
