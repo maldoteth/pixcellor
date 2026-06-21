@@ -762,9 +762,6 @@ const GetStarted = () => {
                   <p className="mt-2 text-sm text-white/65">{p.tagline}</p>
                   <div className="mt-5 flex items-baseline gap-3">
                     <span className="text-4xl font-semibold">{p.price}</span>
-                    {p.rrp && (
-                      <span className="text-white/40 line-through text-base">{p.rrp}</span>
-                    )}
                   </div>
                   <p className="text-[11px] uppercase tracking-[0.14em] text-white/40 mt-1">{p.billing}</p>
                   <ul className="mt-5 space-y-2 text-sm text-white/80">
