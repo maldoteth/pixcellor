@@ -950,15 +950,21 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-[404px] translate-y-[277px] z-30 -rotate-[18deg]" />
         <motion.div
           animate={{ boxShadow: [
-            "0 0 0px 0px hsl(var(--foreground) / 0)",
-            "0 0 14px 2px hsl(var(--foreground) / 0.35)",
-            "0 0 0px 0px hsl(var(--foreground) / 0)",
+            "0 0 0px 0px rgba(212,165,74,0)",
+            "0 0 14px 2px rgba(212,165,74,0.45)",
+            "0 0 0px 0px rgba(212,165,74,0)",
           ] }}
           transition={{ repeat: Infinity, duration: 2.6, ease: "easeInOut" }}
-          className="absolute top-2 right-2 rounded-sm border border-foreground/30 bg-foreground px-3 text-[10px] font-extrabold text-background z-20 uppercase tracking-wider py-[2px]"
+          className="absolute top-2 right-2 rounded-sm border border-[#a8802a]/60 px-3 text-[10px] font-extrabold z-20 uppercase tracking-wider py-[2px]"
+          style={{
+            background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
+            color: "#2a1d05",
+            textShadow: "0 1px 0 rgba(255,236,179,0.4)",
+          }}
         >
           MOST POPULAR
         </motion.div>
+
         <div className="relative z-10 -mt-28">
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
         <div className="mb-4 flex items-start gap-1">
@@ -1519,10 +1525,20 @@ function MobileCards() {
         <div className="lava-blob lava-blob-featured-2" />
         <div className="lava-blob lava-blob-featured-3" />
         <div className="relative z-10 flex flex-col flex-1">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-2">
-          MOST POPULAR
-        </span>
-        <h3 className="text-lg font-bold text-foreground">Elite</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-bold text-foreground">Elite</h3>
+          <span
+            className="rounded-sm border border-[#a8802a]/60 px-2 py-[2px] text-[10px] font-extrabold uppercase tracking-wider"
+            style={{
+              background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
+              color: "#2a1d05",
+              textShadow: "0 1px 0 rgba(255,236,179,0.4)",
+            }}
+          >
+            MOST POPULAR
+          </span>
+        </div>
+
         <div className="mt-3 mb-4 flex items-start gap-1">
           <span className="text-3xl font-extrabold text-foreground">£500</span>
           <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5 -ml-[3.5px]">+VAT</span>
