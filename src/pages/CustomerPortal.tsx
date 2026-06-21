@@ -78,8 +78,6 @@ type BuyAgainPackage = {
   key: string;
   name: string;
   price: string;
-  rrp?: string;
-  discount?: string;
   priceId: string;
   mode: "payment" | "subscription";
   billing: string;
