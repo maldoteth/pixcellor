@@ -1611,10 +1611,22 @@ function MobileCards() {
                 </div>
               </div>
 
+              {(() => {
+                const isEnt = retainerTier === "enterprise";
+                const tier = RETAINER_TIERS[retainerTier];
+                const ent = ENTERPRISE_SIZES[enterpriseSize];
+                const monthly = isEnt ? ent.monthly : tier.monthly;
+                const yearly = isEnt ? ent.yearly : tier.yearly;
+                const monthlyLabel = isEnt ? ent.monthlyLabel : tier.monthlyLabel;
+                const yearlyLabel = isEnt ? ent.yearlyLabel : tier.yearlyLabel;
+                const savings = (monthly * 12 - yearly).toLocaleString();
+                const isMediumEnt = isEnt && enterpriseSize === "medium";
+                return (
+                  <>
               <div className="mb-1 flex items-center gap-3 justify-between">
                 <div className="flex items-baseline gap-2">
                   <div className="text-3xl font-extrabold text-foreground">
-                    {retainerBilling === "monthly" ? RETAINER_TIERS[retainerTier].monthlyLabel : RETAINER_TIERS[retainerTier].yearlyLabel}
+                    {retainerBilling === "monthly" ? monthlyLabel : yearlyLabel}
                   </div>
                 </div>
                 <button
@@ -1647,10 +1659,42 @@ function MobileCards() {
                 </button>
 
               </div>
-              <div className="text-xs text-muted-foreground mb-2">
-                {retainerBilling === "yearly"
-                  ? `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} vs monthly`
-                  : `Save £${(RETAINER_TIERS[retainerTier].monthly * 12 - RETAINER_TIERS[retainerTier].yearly).toLocaleString()} with yearly`}
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="text-xs text-muted-foreground">
+                  {retainerBilling === "yearly"
+                    ? `Save £${savings} vs monthly`
+                    : `Save £${savings} with yearly`}
+                </div>
+                {isEnt && (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={enterpriseSize === "medium"}
+                    aria-label={`Switch enterprise size to ${enterpriseSize === "small" ? "medium" : "small"} business`}
+                    onPointerDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      stopRetainerAutoFlip();
+                      setEnterpriseSize((s) => (s === "small" ? "medium" : "small"));
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        stopRetainerAutoFlip();
+                        setEnterpriseSize((s) => (s === "small" ? "medium" : "small"));
+                      }
+                    }}
+                    className="relative h-5 w-[88px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                  >
+                    <span
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out"
+                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(3px)" : "translateX(70px)"}` }}
+                    />
+                    <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${enterpriseSize === "small" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
+                      {enterpriseSize === "small" ? "Small" : "Medium"}
+                    </span>
+                  </button>
+                )}
               </div>
               <ul className="space-y-2 flex-1 mb-3">
                 {RETAINER_TIERS[retainerTier].features.map((f) => (
@@ -1661,7 +1705,11 @@ function MobileCards() {
                 ))}
               </ul>
               <GlassBuyButton
-                onClick={() =>
+                onClick={() => {
+                  if (isMediumEnt) {
+                    setEnterpriseOpen(true);
+                    return;
+                  }
                   buy(
                     retainerBilling === "monthly"
                       ? RETAINER_TIERS[retainerTier].monthlyPriceId
@@ -1670,12 +1718,15 @@ function MobileCards() {
                     `retainer-${retainerTier}`,
                     `${RETAINER_TIERS[retainerTier].name} Retainer`,
                     retainerBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
-                  )
-                }
+                  );
+                }}
                 disabled={!!loading}
                 loading={loading === `retainer-${retainerTier}`}
                 label="Subscribe"
               />
+                  </>
+                );
+              })()}
             </div>
 
           </div>
