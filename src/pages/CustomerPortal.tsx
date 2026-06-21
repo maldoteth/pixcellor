@@ -78,8 +78,6 @@ type BuyAgainPackage = {
   key: string;
   name: string;
   price: string;
-  rrp?: string;
-  discount?: string;
   priceId: string;
   mode: "payment" | "subscription";
   billing: string;
@@ -96,8 +94,6 @@ const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
     key: "fullWorks",
     name: "Full Works",
     price: "£150",
-    rrp: "RRP £375",
-    discount: "60% off",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment",
     billing: "One-time payment",
@@ -107,8 +103,6 @@ const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
     key: "elite",
     name: "Elite",
     price: "£500",
-    rrp: "RRP £1,500",
-    discount: "67% off",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     mode: "payment",
     billing: "One-time payment",
@@ -995,16 +989,11 @@ export default function CustomerPortal() {
                               <h3 className="text-xl font-semibold">{plan.name}</h3>
                               <div className="flex items-baseline gap-2">
                                 <span className="text-3xl font-bold">{displayPrice}</span>
-                                {plan.rrp && !useYearly && (
-                                  <span className="text-muted-foreground text-sm">or {plan.rrp.replace(/^RRP\s*/i, "")}</span>
-                                )}
                               </div>
                               <p className="text-xs font-semibold text-foreground">
-                                {plan.discount
-                                  ? `Pixcellor private SME grant — ${plan.discount}`
-                                  : useYearly && plan.yearlySavings
-                                    ? plan.yearlySavings
-                                    : displayBilling}
+                                {useYearly && plan.yearlySavings
+                                  ? plan.yearlySavings
+                                  : displayBilling}
                               </p>
                             </div>
                             <ul className="my-5 flex-1 space-y-2 text-sm text-muted-foreground">

@@ -12,7 +12,6 @@ const PACKAGES = {
   fullWorks: {
     name: "Full Works",
     price: "£150",
-    rrp: "£500",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment",
     features: ["Industry leading website", "Lifetime guarantee", "Custom design", "Up to 3 pages"],
@@ -20,7 +19,6 @@ const PACKAGES = {
   elite: {
     name: "Elite",
     price: "£500 one-time or £60/mo",
-    rrp: "£2,500 (or £250/mo)",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
     mode: "payment",
@@ -29,7 +27,6 @@ const PACKAGES = {
   retainer: {
     name: "Retainer",
     price: "£2,500/mo or £20,000/yr",
-    rrp: "£4,000/mo (or £40,000/yr)",
     monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription",
@@ -65,15 +62,12 @@ Visitors fall into one of two buckets. Detect intent EARLY:
 6. **Custom Software** - Bespoke solutions for any industry or use case
 
 ## Our Packages (mapped to project size):
-- **Full Works — £150** (standard price £500): Standard website, up to 3 pages, custom design, lifetime guarantee. → For clients who just need a normal website.
-- **Elite — £500 one-time or £60/mo** (standard price £2,500 / £250/mo): Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, lifetime guarantee. → For clients with bigger sites (4–10 pages). Our most popular package.
-- **Retainer — £2,500/mo or £20,000/yr** (standard price £4,000/mo): Your own tech department — websites or full apps, daily turnarounds. → For large-scale projects, web apps, or ongoing development.
+- **Full Works — £150**: Standard website, up to 3 pages, custom design, lifetime guarantee. → For clients who just need a normal website.
+- **Elite — £500 one-time or £60/mo**: Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, lifetime guarantee. → For clients with bigger sites (4–10 pages). Our most popular package.
+- **Retainer — £2,500/mo or £20,000/yr**: Your own tech department — websites or full apps, daily turnarounds. → For large-scale projects, web apps, or ongoing development.
 
-## Pixcellor Private SME Grant (how to talk about discounts):
-- The discount on every package is funded by **Pixcellor's private SME grant** — a privately funded discount programme backed by a consortium of blockchain/technology entrepreneurs, with £250,000 GBP in the initial pool.
-- Always say "Pixcellor's private SME grant" (or "our private SME grant") — never just "grant" on its own.
-- Always clarify, when relevant: "privately funded by Pixcellor, not a government grant".
-- Eligibility: UK SMEs only (fewer than 250 employees, turnover ≤ £36m). Don't promise allocation — say "subject to eligibility".
+## Pricing guidance:
+- All listed prices are our standard prices. Do not refer to discounts, grants, RRPs, or "introductory offers".
 
 ## Extra Page Pricing (IMPORTANT — quote this when clients want more pages than included):
 - **Full Works**: includes up to 3 pages. Each additional page is **+£50**.
@@ -87,7 +81,7 @@ Visitors fall into one of two buckets. Detect intent EARLY:
 ## Key Selling Points:
 - Future-proof, AI-powered development that scales
 - Fast turnaround - from 1-day websites to enterprise solutions
-- High-end quality at massively discounted rates
+- High-end quality at competitive rates
 - Cross-sector expertise including crypto, fintech, healthcare, retail, and more
 - Full-service: design, development, hosting, and ongoing support
 
@@ -2016,7 +2010,7 @@ async function devRecommendPackage(args: Record<string, unknown>) {
   else if (pages > 10 || subscription) pick = "elite";
   const pkg = PACKAGES[pick];
   const summary = [
-    `Recommended: **${pkg.name}** (${pkg.price})${pkg.rrp ? ` — standard price ${pkg.rrp}` : ""}`,
+    `Recommended: **${pkg.name}** (${pkg.price})`,
     industry ? `Tailored for ${industry}.` : "",
     pages ? `Built for around ${pages} pages.` : "",
     `Includes: ${pkg.features.slice(0, 4).join("; ")}.`,
@@ -2462,7 +2456,7 @@ Deno.serve(async (req) => {
       billing: string;
       name: string;
       price: string;
-      rrp: string;
+      rrp?: string;
       features: string[];
       priceId: string;
       mode: string;
@@ -2522,7 +2516,7 @@ Deno.serve(async (req) => {
                 billing,
                 name: pkg.name,
                 price,
-                rrp: pkg.rrp,
+                rrp: undefined,
                 features: pkg.features,
                 priceId,
                 mode,

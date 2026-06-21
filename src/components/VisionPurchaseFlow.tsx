@@ -29,7 +29,7 @@ type PackageOption = {
   key: string;
   name: string;
   price: string;
-  rrp: string;
+  
   pages: string;
   priceId: string;
   bullets: string[];
@@ -41,7 +41,6 @@ const PACKAGE_OPTIONS: PackageOption[] = [
     key: "fullWorks",
     name: "Full Works",
     price: "£150",
-    rrp: "£375",
     pages: "Up to 3 pages",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     bullets: ["Industry-leading website", "Lifetime warranty", "Base animations", "All inclusive service"],
@@ -50,7 +49,6 @@ const PACKAGE_OPTIONS: PackageOption[] = [
     key: "elite",
     name: "Elite",
     price: "£500",
-    rrp: "£1,500",
     pages: "10 pages — 3D animated",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     bullets: ["Sites or web apps", "Unlimited revisions", "SEO & AEO optimisation", "4-7 day turnaround"],
@@ -165,7 +163,6 @@ export default function VisionPurchaseFlow() {
             </div>
             <div className="mt-1 flex items-baseline gap-2">
               <span className="text-foreground text-xl font-bold">{p.price}</span>
-              <span className="text-foreground/50 text-xs">Standard {p.rrp.replace(/^RRP\s*/i, "")}</span>
             </div>
             <p className="text-foreground/80 text-sm mt-1 font-medium">{p.pages}</p>
             <ul className="mt-2 space-y-1">

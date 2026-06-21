@@ -24,7 +24,6 @@ const PACKAGES = {
   fullWorks: {
     name: "Full Works",
     price: "£150",
-    rrp: "£375",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment" as const,
     features: ["Industry leading website", "Lifetime warranty", "Base animations ", "Up to 3 pages", "All inclusive service"],
@@ -32,7 +31,6 @@ const PACKAGES = {
   elite: {
     name: "Elite Build",
     price: "£500",
-    rrp: "£1,500",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     mode: "payment" as const,
     featured: true,
@@ -419,28 +417,6 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
   );
 }
 
-function IntroductoryOfferText({ discount }: { discount: string }) {
-  return (
-    <div className="mb-4 my-[4px] flex items-center gap-1.5">
-      <p className="text-xs font-semibold text-foreground">Introductory offer — {discount} off</p>
-      <Popover>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            aria-label="More info"
-            className="inline-flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Info className="h-3.5 w-3.5" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent side="top" className="w-auto p-3 text-xs font-medium z-[10020]">
-          Annual renewal fees apply
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
-}
 
 function SnakeFlipButton({
   label,
