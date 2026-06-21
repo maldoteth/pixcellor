@@ -1128,9 +1128,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   >
                     <span
                       className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out"
-                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(3px)" : "translateX(54px)"}` }}
+                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(54px)" : "translateX(3px)"}` }}
                     />
-                    <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${enterpriseSize === "small" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
+                    <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${enterpriseSize === "small" ? "left-1.5 right-6" : "left-6 right-1.5"}`}>
                       {enterpriseSize === "small" ? "Small" : "Large"}
                     </span>
                   </button>
@@ -1662,9 +1662,9 @@ function MobileCards() {
                   >
                     <span
                       className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out"
-                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(3px)" : "translateX(54px)"}` }}
+                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(54px)" : "translateX(3px)"}` }}
                     />
-                    <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${enterpriseSize === "small" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
+                    <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${enterpriseSize === "small" ? "left-1.5 right-6" : "left-6 right-1.5"}`}>
                       {enterpriseSize === "small" ? "Small" : "Large"}
                     </span>
                   </button>
