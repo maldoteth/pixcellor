@@ -896,7 +896,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-4 flex items-start gap-1">
           <div className="text-3xl font-extrabold text-foreground">£150</div>
-          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5">+VAT</span>
+          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5 -ml-[3.5px]">+VAT</span>
         </div>
         <ul className="mb-4 space-y-2 text-base text-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
@@ -963,7 +963,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
         <div className="mb-4 flex items-start gap-1">
           <div className="text-5xl font-black text-foreground">£500</div>
-          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-1">+VAT</span>
+          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-1 -ml-[3.5px]">+VAT</span>
         </div>
         <ul className="mb-4 space-y-1.5 text-base text-foreground">
           {PACKAGES.elite.features.map((f) => (
@@ -1067,7 +1067,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   <div className="text-3xl font-extrabold text-foreground">
                     {retainerBilling === "monthly" ? monthlyLabel : yearlyLabel}
                   </div>
-                  <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5">+VAT</span>
+                  <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5 -ml-[3.5px]">+VAT</span>
                 </div>
                 <button
                   type="button"
@@ -1494,7 +1494,7 @@ function MobileCards() {
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-4 flex items-start gap-1">
           <span className="text-3xl font-extrabold text-foreground">£150</span>
-          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5">+VAT</span>
+          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5 -ml-[3.5px]">+VAT</span>
         </div>
         <ul className="space-y-2 flex-1 mb-3">
           {PACKAGES.fullWorks.features.map((f) => (
@@ -1525,7 +1525,7 @@ function MobileCards() {
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
         <div className="mt-3 mb-4 flex items-start gap-1">
           <span className="text-3xl font-extrabold text-foreground">£500</span>
-          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5">+VAT</span>
+          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5 -ml-[3.5px]">+VAT</span>
         </div>
         <ul className="space-y-2 flex-1 mb-3">
           {PACKAGES.elite.features.map((f) => (
@@ -1601,7 +1601,7 @@ function MobileCards() {
                   <div className="text-3xl font-extrabold text-foreground">
                     {retainerBilling === "monthly" ? monthlyLabel : yearlyLabel}
                   </div>
-                  <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5">+VAT</span>
+                  <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5 -ml-[3.5px]">+VAT</span>
                 </div>
                 <button
                   type="button"
