@@ -820,6 +820,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [retainerTier, setRetainerTier] = useState<RetainerTierKey>("enterprise");
+  const [enterpriseSize, setEnterpriseSize] = useState<EnterpriseSizeKey>("small");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
@@ -1411,6 +1412,7 @@ function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [retainerTier, setRetainerTier] = useState<RetainerTierKey>("enterprise");
+  const [enterpriseSize, setEnterpriseSize] = useState<EnterpriseSizeKey>("small");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
   const [retainerAutoFlipStopped, setRetainerAutoFlipStopped] = useState(false);
