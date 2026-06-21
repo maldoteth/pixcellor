@@ -795,7 +795,7 @@ type ServiceAction = "pricing" | "sales";
 function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFlipped?: boolean; onServiceAction?: (action: ServiceAction) => void }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
-  const [retainerTier, setRetainerTier] = useState<RetainerTierKey>("enterprise");
+  const [retainerTier, setRetainerTier] = useState<RetainerTierKey>("growth");
   const [enterpriseSize, setEnterpriseSize] = useState<EnterpriseSizeKey>("small");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
@@ -1437,7 +1437,7 @@ function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
 function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
-  const [retainerTier, setRetainerTier] = useState<RetainerTierKey>("enterprise");
+  const [retainerTier, setRetainerTier] = useState<RetainerTierKey>("growth");
   const [enterpriseSize, setEnterpriseSize] = useState<EnterpriseSizeKey>("small");
   const [enterpriseOpen, setEnterpriseOpen] = useState(false);
   const [retainerFlipped, setRetainerFlipped] = useState(false);
