@@ -12,7 +12,6 @@ const PACKAGES = {
   fullWorks: {
     name: "Full Works",
     price: "£150",
-    rrp: "£500",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment",
     features: ["Industry leading website", "Lifetime guarantee", "Custom design", "Up to 3 pages"],
@@ -20,7 +19,6 @@ const PACKAGES = {
   elite: {
     name: "Elite",
     price: "£500 one-time or £60/mo",
-    rrp: "£2,500 (or £250/mo)",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
     mode: "payment",
@@ -29,7 +27,6 @@ const PACKAGES = {
   retainer: {
     name: "Retainer",
     price: "£2,500/mo or £20,000/yr",
-    rrp: "£4,000/mo (or £40,000/yr)",
     monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription",
