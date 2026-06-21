@@ -25,7 +25,7 @@ interface PackageCard {
   billing: string;
   name: string;
   price: string;
-  rrp: string;
+  rrp?: string;
   features: string[];
   priceId: string;
   mode: string;
