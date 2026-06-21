@@ -101,7 +101,7 @@ const FEATURES = [
   },
 ];
 
-// Pulled live from packages.ts so prices/RRPs/billing stay in sync.
+// Pulled live from packages.ts so prices/billing stay in sync.
 const ONE_OFFS = ["full-works", "elite"] as const;
 const RETAINERS = ["retainer-growth", "retainer-scale", "retainer-enterprise"] as const;
 
