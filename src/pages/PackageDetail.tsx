@@ -294,9 +294,6 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
                 </div>
               )}
             </div>
-            {pkg.rrp && (
-              <div className="text-sm text-foreground/50 line-through">RRP {pkg.rrp}</div>
-            )}
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
