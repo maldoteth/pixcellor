@@ -984,11 +984,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         </motion.div>
         <div className="relative z-10 -mt-28">
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
-        <div className="mb-1 flex items-baseline gap-2">
+        <div className="mb-4 flex items-baseline gap-2">
           <div className="text-5xl font-black text-foreground">£500</div>
-          <span className="text-muted-foreground text-sm">or £1,500</span>
         </div>
-        <IntroductoryOfferText discount="67%" />
         <ul className="mb-4 space-y-1.5 text-base text-foreground">
           {PACKAGES.elite.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
