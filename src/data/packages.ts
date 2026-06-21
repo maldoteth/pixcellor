@@ -182,7 +182,6 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     blurb:
       "Our top-tier one-off build. Cinema-grade animations, SEO/AEO baked in, and unlimited revisions until it's exactly what you want. Sites or full web apps.",
     price: "£500",
-    rrp: "£1,500",
     billing: "One-time payment",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     mode: "payment",
