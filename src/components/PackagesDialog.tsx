@@ -1112,13 +1112,13 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                       setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
                     }
                   }}
-                  className="relative ml-auto h-7 w-[96px] rounded-[5px] bg-secondary border-2 border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                  className="relative ml-auto h-5 w-[88px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
-                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-5 w-5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
-                    style={{ transform: `translateY(-50%) ${retainerBilling === "yearly" ? "translateX(3px)" : "translateX(68px)"}` }}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+                    style={{ transform: `translateY(-50%) ${retainerBilling === "yearly" ? "translateX(3px)" : "translateX(70px)"}` }}
                   />
-                  <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[10px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-8 right-2" : "left-2 right-8"}`}>
+                  <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
                     {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
                   </span>
                 </button>
