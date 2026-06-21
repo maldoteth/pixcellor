@@ -51,6 +51,7 @@ export type PackageDetail = {
   tagline: string;
   blurb: string;
   price: string;
+  /** @deprecated No longer used — pricing is standard. */
   rrp?: string;
   billing: string;
   priceId?: string;
