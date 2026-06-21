@@ -1513,11 +1513,9 @@ function MobileCards() {
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
-        <div className="mt-3 mb-1 flex items-baseline gap-2">
+        <div className="mt-3 mb-4 flex items-baseline gap-2">
           <span className="text-3xl font-extrabold text-foreground">£150</span>
-          <span className="text-muted-foreground text-sm">or £375</span>
         </div>
-        <IntroductoryOfferText discount="60%" />
         <ul className="space-y-2 flex-1 mb-3">
           {PACKAGES.fullWorks.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-foreground">
