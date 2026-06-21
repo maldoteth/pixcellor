@@ -894,8 +894,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
-        <div className="mb-4 flex items-baseline gap-2">
+        <div className="mb-4 flex items-start gap-1">
           <div className="text-3xl font-extrabold text-foreground">£150</div>
+          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5">+VAT</span>
         </div>
         <ul className="mb-4 space-y-2 text-base text-foreground">
           {PACKAGES.fullWorks.features.map((f) => (
@@ -960,8 +961,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         </motion.div>
         <div className="relative z-10 -mt-28">
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
-        <div className="mb-4 flex items-baseline gap-2">
+        <div className="mb-4 flex items-start gap-1">
           <div className="text-5xl font-black text-foreground">£500</div>
+          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-1">+VAT</span>
         </div>
         <ul className="mb-4 space-y-1.5 text-base text-foreground">
           {PACKAGES.elite.features.map((f) => (
@@ -1060,11 +1062,12 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                 const isMediumEnt = isEnt && enterpriseSize === "medium";
                 return (
                   <>
-              <div className="mb-1 flex items-center gap-3 justify-between">
-                <div className="flex items-baseline gap-2">
+              <div className="mb-1 flex items-center gap-2 justify-between">
+                <div className="flex items-start gap-1">
                   <div className="text-3xl font-extrabold text-foreground">
                     {retainerBilling === "monthly" ? monthlyLabel : yearlyLabel}
                   </div>
+                  <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5">+VAT</span>
                 </div>
                 <button
                   type="button"
@@ -1084,11 +1087,11 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                       setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
                     }
                   }}
-                  className="relative ml-auto h-5 w-[88px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                  className="relative ml-auto h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
                     className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
-                    style={{ transform: `translateY(-50%) ${retainerBilling === "yearly" ? "translateX(3px)" : "translateX(70px)"}` }}
+                    style={{ transform: `translateY(-50%) ${retainerBilling === "yearly" ? "translateX(3px)" : "translateX(54px)"}` }}
                   />
                   <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
                     {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
@@ -1121,11 +1124,11 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                         setEnterpriseSize((s) => (s === "small" ? "medium" : "small"));
                       }
                     }}
-                    className="relative h-5 w-[88px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                    className="relative h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                   >
                     <span
                       className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out"
-                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(3px)" : "translateX(70px)"}` }}
+                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(3px)" : "translateX(54px)"}` }}
                     />
                     <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${enterpriseSize === "small" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
                       {enterpriseSize === "small" ? "Small" : "Large"}
@@ -1489,8 +1492,9 @@ function MobileCards() {
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
-        <div className="mt-3 mb-4 flex items-baseline gap-2">
+        <div className="mt-3 mb-4 flex items-start gap-1">
           <span className="text-3xl font-extrabold text-foreground">£150</span>
+          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5">+VAT</span>
         </div>
         <ul className="space-y-2 flex-1 mb-3">
           {PACKAGES.fullWorks.features.map((f) => (
@@ -1519,8 +1523,9 @@ function MobileCards() {
           MOST POPULAR
         </span>
         <h3 className="text-lg font-bold text-foreground">Elite</h3>
-        <div className="mt-3 mb-4 flex items-baseline gap-2">
+        <div className="mt-3 mb-4 flex items-start gap-1">
           <span className="text-3xl font-extrabold text-foreground">£500</span>
+          <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5">+VAT</span>
         </div>
         <ul className="space-y-2 flex-1 mb-3">
           {PACKAGES.elite.features.map((f) => (
@@ -1591,11 +1596,12 @@ function MobileCards() {
                 const isMediumEnt = isEnt && enterpriseSize === "medium";
                 return (
                   <>
-              <div className="mb-1 flex items-center gap-3 justify-between">
-                <div className="flex items-baseline gap-2">
+              <div className="mb-1 flex items-center gap-2 justify-between">
+                <div className="flex items-start gap-1">
                   <div className="text-3xl font-extrabold text-foreground">
                     {retainerBilling === "monthly" ? monthlyLabel : yearlyLabel}
                   </div>
+                  <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5">+VAT</span>
                 </div>
                 <button
                   type="button"
@@ -1615,11 +1621,11 @@ function MobileCards() {
                       setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
                     }
                   }}
-                  className="relative ml-auto h-5 w-[88px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                  className="relative ml-auto h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                 >
                   <span
                     className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
-                    style={{ transform: `translateY(-50%) ${retainerBilling === "yearly" ? "translateX(3px)" : "translateX(70px)"}` }}
+                    style={{ transform: `translateY(-50%) ${retainerBilling === "yearly" ? "translateX(3px)" : "translateX(54px)"}` }}
                   />
                   <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
                     {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
@@ -1652,11 +1658,11 @@ function MobileCards() {
                         setEnterpriseSize((s) => (s === "small" ? "medium" : "small"));
                       }
                     }}
-                    className="relative h-5 w-[88px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                    className="relative h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                   >
                     <span
                       className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out"
-                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(3px)" : "translateX(70px)"}` }}
+                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(3px)" : "translateX(54px)"}` }}
                     />
                     <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${enterpriseSize === "small" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
                       {enterpriseSize === "small" ? "Small" : "Large"}
