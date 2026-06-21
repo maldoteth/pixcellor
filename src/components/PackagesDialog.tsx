@@ -419,28 +419,6 @@ function FreeSamplesBadge({ className = "" }: { className?: string }) {
   );
 }
 
-function IntroductoryOfferText({ discount }: { discount: string }) {
-  return (
-    <div className="mb-4 my-[4px] flex items-center gap-1.5">
-      <p className="text-xs font-semibold text-foreground">Introductory offer — {discount} off</p>
-      <Popover>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            aria-label="More info"
-            className="inline-flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Info className="h-3.5 w-3.5" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent side="top" className="w-auto p-3 text-xs font-medium z-[10020]">
-          Annual renewal fees apply
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
-}
 
 function SnakeFlipButton({
   label,
