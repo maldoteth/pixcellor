@@ -29,7 +29,7 @@ type PackageOption = {
   key: string;
   name: string;
   price: string;
-  rrp: string;
+  
   pages: string;
   priceId: string;
   bullets: string[];
