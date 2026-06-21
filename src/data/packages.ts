@@ -106,7 +106,6 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     blurb:
       "The fastest, lowest-risk way to get a polished website live. We design, build, host and maintain it so you can focus on running your business.",
     price: "£150",
-    rrp: "£375",
     billing: "One-time payment",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment",
