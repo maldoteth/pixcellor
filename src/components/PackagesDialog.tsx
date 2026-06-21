@@ -102,7 +102,7 @@ export const RETAINER_TIERS = {
       "Fractional CTO, CMO & CRO",
       "Dedicated dev & ops team",
       "Bi-Weekly MVP sprints",
-      "Daily updates",
+      "Daily progress updates",
       "24/7 priority support",
     ],
   },
