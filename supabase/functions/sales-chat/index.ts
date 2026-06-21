@@ -2010,7 +2010,7 @@ async function devRecommendPackage(args: Record<string, unknown>) {
   else if (pages > 10 || subscription) pick = "elite";
   const pkg = PACKAGES[pick];
   const summary = [
-    `Recommended: **${pkg.name}** (${pkg.price})${pkg.rrp ? ` — standard price ${pkg.rrp}` : ""}`,
+    `Recommended: **${pkg.name}** (${pkg.price})`,
     industry ? `Tailored for ${industry}.` : "",
     pages ? `Built for around ${pages} pages.` : "",
     `Includes: ${pkg.features.slice(0, 4).join("; ")}.`,
