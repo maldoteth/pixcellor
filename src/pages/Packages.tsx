@@ -66,7 +66,6 @@ export default function PackagesPage() {
               <div className="text-[10px] uppercase tracking-[0.22em] text-foreground/50 mb-2">From</div>
               <div className="flex items-baseline gap-2">
                 <div className="text-3xl md:text-4xl font-bold">{pkg.price}</div>
-                {pkg.rrp && <div className="text-xs text-foreground/40 line-through">RRP {pkg.rrp}</div>}
               </div>
               <div className="text-xs text-foreground/60 mt-1">{pkg.billing}</div>
 
