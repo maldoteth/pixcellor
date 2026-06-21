@@ -1525,10 +1525,20 @@ function MobileCards() {
         <div className="lava-blob lava-blob-featured-2" />
         <div className="lava-blob lava-blob-featured-3" />
         <div className="relative z-10 flex flex-col flex-1">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-2">
-          MOST POPULAR
-        </span>
-        <h3 className="text-lg font-bold text-foreground">Elite</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-bold text-foreground">Elite</h3>
+          <span
+            className="rounded-sm border border-[#a8802a]/60 px-2 py-[2px] text-[10px] font-extrabold uppercase tracking-wider"
+            style={{
+              background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
+              color: "#2a1d05",
+              textShadow: "0 1px 0 rgba(255,236,179,0.4)",
+            }}
+          >
+            MOST POPULAR
+          </span>
+        </div>
+
         <div className="mt-3 mb-4 flex items-start gap-1">
           <span className="text-3xl font-extrabold text-foreground">£500</span>
           <span className="text-[10px] font-medium tracking-wide text-muted-foreground mt-0.5 -ml-[3.5px]">+VAT</span>
