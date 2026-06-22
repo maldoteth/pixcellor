@@ -61,18 +61,10 @@ export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelecte
       const reqId = ++chReqId.current;
       setChLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke("companies-house-search", {
-          method: "GET" as any,
-          body: undefined,
-          // pass query via URL
-          headers: {},
-        } as any);
-        // supabase-js doesn't support query params on invoke; use direct fetch:
         const projectRef = (import.meta as any).env.VITE_SUPABASE_PROJECT_ID;
+        const anon = (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const url = `https://${projectRef}.supabase.co/functions/v1/companies-house-search?q=${encodeURIComponent(term)}`;
-        const r = await fetch(url, {
-          headers: { Authorization: `Bearer ${(import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-        });
+        const r = await fetch(url, { headers: { Authorization: `Bearer ${anon}`, apikey: anon } });
         const json = await r.json();
         if (reqId !== chReqId.current) return;
         setChHits(json.items ?? []);
