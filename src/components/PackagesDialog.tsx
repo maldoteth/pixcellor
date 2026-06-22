@@ -1499,7 +1499,7 @@ function MobileCards() {
         <div className="relative z-10 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-4 flex items-start gap-1">
-          <span className="text-3xl font-extrabold text-foreground">£150</span>
+          <span className="text-3xl font-extrabold text-foreground">£150<span className="text-sm font-bold align-top">.00</span></span>
           
         </div>
         <ul className="space-y-2 flex-1 mb-3">
