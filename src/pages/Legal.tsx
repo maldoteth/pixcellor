@@ -66,7 +66,7 @@ const TERMS: Section[] = [
           Statement of Work which forms part of these Terms.
         </li>
         <li>
-          All prices are in GBP and exclusive of VAT unless stated. We may change prices at any time with
+          All prices are in GBP. We may change prices at any time with
           effect for new orders and renewals; existing fixed-price commitments are honoured.
         </li>
       </ul>
