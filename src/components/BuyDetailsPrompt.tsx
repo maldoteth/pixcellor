@@ -423,12 +423,19 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
   const visionToSend = () =>
     visionBrief && (visionBrief.imageUrl || visionBrief.prompt) ? visionBrief : undefined;
 
+  const buyerPayload = (): BuyerDetails => ({
+    company: values.company.trim(),
+    name: values.name.trim(),
+    email: values.email.trim(),
+    phone: values.phone.trim(),
+    address_line1: values.address_line1?.trim() || undefined,
+    city: values.city?.trim() || undefined,
+    postcode: values.postcode?.trim() || undefined,
+    country: values.country?.trim() || undefined,
+  });
+
   const handlePayByCard = async () => {
-    await onConfirm(
-      { company: values.company.trim(), name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim() },
-      undefined,
-      visionToSend(),
-    );
+    await onConfirm(buyerPayload(), undefined, visionToSend());
   };
 
   const handlePayByInvoice = async () => {
@@ -437,10 +444,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
       await handlePayByCard();
       return;
     }
-    await onInvoice(
-      { company: values.company.trim(), name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim() },
-      visionToSend(),
-    );
+    await onInvoice(buyerPayload(), visionToSend());
   };
 
   // Progress
