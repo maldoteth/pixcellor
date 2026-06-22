@@ -2041,6 +2041,12 @@ export default function Portal() {
   };
 
   const markOrderDelivered = async (order: StripeSession) => {
+    if (isInvoiceOrder(order)) {
+      const url = (order.metadata as { hosted_url?: string } | null)?.hosted_url;
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      else toast.info("Open the invoice on the Invoices page to mark it paid.");
+      return;
+    }
     if (!order.customer_email) {
       toast.error("This order does not have a customer email.");
       return;
