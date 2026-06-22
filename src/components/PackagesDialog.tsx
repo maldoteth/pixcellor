@@ -281,9 +281,16 @@ async function handleCheckout(priceId: string, mode: string, packageName: string
   const { data, error } = await supabase.functions.invoke("create-checkout", {
     body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined, buyer, ...domainPayload, ...visionPayload },
   });
-  if (error) throw error;
+  if (error || data?.error || !data?.url) {
+    const message =
+      (data && typeof data.error === "string" && data.error) ||
+      (error && (error as { message?: string }).message) ||
+      "Couldn't start checkout. Please try again or contact support.";
+    console.error("create-checkout failed:", { error, data });
+    throw new Error(message);
+  }
   if (data?.sessionId) updateCheckoutPendingSessionId(data.sessionId);
-  if (data?.url) window.location.href = data.url;
+  window.location.href = data.url;
 }
 
 function PaymentMethodIcons() {
