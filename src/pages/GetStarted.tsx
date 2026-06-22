@@ -118,7 +118,7 @@ const FAQ = [
   },
   {
     q: "How much does it cost?",
-    a: "One-off builds: Full Works £150 or Elite £500. Retainers: Growth £100/mo, Scale £500/mo, Enterprise £2,500/mo — all cancel-anytime, with up to £10K/yr saved on annual. Add-ons (extra pages, copy, brand kit, migration, 3D hero, multilingual) are fixed price.",
+    a: "One-off builds: Full Works £169 or Elite £500. Retainers: Growth £89/mo, Scale £479/mo, Enterprise £2,469/mo — all cancel-anytime, with up to £4,938/yr saved on annual. Add-ons (extra pages, copy, brand kit, migration, 3D hero, multilingual) are fixed price.",
   },
   {
     q: "Do I really own the site?",
@@ -329,9 +329,9 @@ const GetStarted = () => {
               <span className="block text-white/60">built in days, not months.</span>
             </h1>
             <p className="mt-5 text-base sm:text-lg text-white/70 max-w-xl">
-              From a polished Full Works site at <span className="text-white">£150</span>
-              to flagship Elite builds with unlimited revisions at <span className="text-white">£500</span>,
-              or an always-on retainer from <span className="text-white">£100/mo</span>.
+              From a polished Full Works site at <span className="text-white">£169</span>
+              to flagship Elite builds with unlimited revisions at <span className="text-white">£479</span>,
+              or an always-on retainer from <span className="text-white">£89/mo</span>.
               Book a free 15-minute call and we&apos;ll show you exactly what we&apos;d build.
             </p>
 

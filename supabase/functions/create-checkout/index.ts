@@ -40,16 +40,16 @@ const getClientIp = (req: Request) => req.headers.get("x-forwarded-for")?.split(
 // price IDs in the Stripe account.
 const ALLOWED_PRICE_IDS = new Set<string>([
   // Vision / starter
-  "price_1TQzD5BtUjwejeUwG4CFjskt",
-  "price_1TJrT7BtUjwejeUwQ47tCkiv",
+  "price_1Tkw9XBtUjwejeUwEQlAv42p",
+  "price_1Tkw9YBtUjwejeUwrSxZXLl6",
   "price_1TJrTNBtUjwejeUw3ihfpz98",
   // Growth / Scale / Enterprise (monthly + yearly)
-  "price_1TcfyPBtUjwejeUwJmEbSWtN",
-  "price_1Tcg03BtUjwejeUwr7mYzuUb",
-  "price_1Tcg07BtUjwejeUwfGGDhftV",
-  "price_1Tcg0ABtUjwejeUwLc5nw8nX",
-  "price_1TSmB8BtUjwejeUw8UXRTbBQ",
-  "price_1TSmBtBtUjwejeUwb8xPSvvf",
+  "price_1Tkw9ZBtUjwejeUwzikiU5cp",
+  "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
+  "price_1Tkw9bBtUjwejeUwFNkRNrjx",
+  "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
+  "price_1Tkw9cBtUjwejeUwitF4y9sg",
+  "price_1Tkw9dBtUjwejeUwOG2jdnoV",
   // BYOW subscription tiers
   "price_1TiUpGBtUjwejeUwWVs10yfp",
   "price_1TiUpHBtUjwejeUwhjdoDCvI",

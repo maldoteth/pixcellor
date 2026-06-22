@@ -67,7 +67,7 @@ export const template = {
     customerEmail: 'client@example.com',
     orderId: 'cs_test_123',
     packageName: 'Full Works',
-    amount: '£150.00',
+    amount: '£169.00',
     billing: 'One-time payment',
   },
 } satisfies TemplateEntry

@@ -40,7 +40,7 @@ const PACKAGE_OPTIONS: PackageOption[] = [
   {
     key: "fullWorks",
     name: "Full Works",
-    price: "£150",
+    price: "£169",
     pages: "Up to 3 pages",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     bullets: ["Industry-leading website", "Lifetime warranty", "Base animations", "All inclusive service"],
@@ -48,7 +48,7 @@ const PACKAGE_OPTIONS: PackageOption[] = [
   {
     key: "elite",
     name: "Elite",
-    price: "£500",
+    price: "£479",
     pages: "10 pages — 3D animated",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     bullets: ["Sites or web apps", "Unlimited revisions", "SEO & AEO optimisation", "4-7 day turnaround"],

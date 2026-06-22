@@ -38,16 +38,16 @@ const TERMS: Section[] = [
     body: (
       <ul className="list-disc pl-5 space-y-2">
         <li>
-          <strong>Full Works (£150):</strong> The £150 fee is an <strong>annual</strong> subscription
+          <strong>Full Works (£169):</strong> The £169 fee is an <strong>annual</strong> subscription
           covering build, hosting, domain management and maintenance. Customers who purchased before any
-          price change keep the £150/year rate for the lifetime of the active subscription, provided
+          price change keep the £169/year rate for the lifetime of the active subscription, provided
           payments remain current and the service is not cancelled. Lapsed subscriptions revert to the
           then-current rate. Annual renewal pricing is <strong>reviewed each year with your consultant</strong>
           and may be adjusted based on actual usage, scope changes and third-party costs; any change is
           agreed in writing before renewal and never applied retroactively.
         </li>
         <li>
-          <strong>Elite (£500):</strong> One-time build fee. An <strong>annual renewal fee</strong>
+          <strong>Elite (£479):</strong> One-time build fee. An <strong>annual renewal fee</strong>
           applies thereafter for domain hosting, management, and ongoing maintenance. The renewal amount
           is <strong>not fixed</strong> — it is reviewed in an annual consultation with your consultant
           and quoted based on the actual hosting, domain, bandwidth and maintenance requirements for the

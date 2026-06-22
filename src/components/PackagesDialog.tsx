@@ -23,23 +23,23 @@ import ServiceSalesView from "@/components/services/ServiceSalesView";
 const PACKAGES = {
   fullWorks: {
     name: "Full Works",
-    price: "£150",
-    priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
+    price: "£169",
+    priceId: "price_1Tkw9XBtUjwejeUwEQlAv42p",
     mode: "payment" as const,
     features: ["Industry leading website", "Lifetime warranty", "Base animations ", "Up to 3 pages", "All inclusive service"],
   },
   elite: {
     name: "Elite Build",
-    price: "£500",
-    priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
+    price: "£479",
+    priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
     mode: "payment" as const,
     featured: true,
     features: ["Smart site or web app", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages - 3D animated", "Agentic self-improving systems\u00a0"],
   },
   retainer: {
     name: "Custom",
-    monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
-    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
+    monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
+    yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
     mode: "subscription" as const,
     features: ["Fractional CTO, CMO & CRO", "Development & operations", "Consultancy & execution", "Monthly MVP sprints", "Daily updates"],
   },
@@ -53,12 +53,12 @@ export const RETAINER_TIERS = {
   growth: {
     key: "growth" as const,
     name: "Growth",
-    monthly: 100,
-    yearly: 1000,
-    monthlyLabel: "£100/mo",
-    yearlyLabel: "£1,000/yr",
-    monthlyPriceId: "price_1TcfyPBtUjwejeUwJmEbSWtN",
-    yearlyPriceId: "price_1Tcg03BtUjwejeUwr7mYzuUb",
+    monthly: 89,
+    yearly: 890,
+    monthlyLabel: "£89/mo",
+    yearlyLabel: "£890/yr",
+    monthlyPriceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
+    yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
     features: [
       "Agentic self-improving site",
       "Custom CRM access",
@@ -71,12 +71,12 @@ export const RETAINER_TIERS = {
   scale: {
     key: "scale" as const,
     name: "Scale",
-    monthly: 500,
-    yearly: 5000,
-    monthlyLabel: "£500/mo",
-    yearlyLabel: "£5,000/yr",
-    monthlyPriceId: "price_1Tcg07BtUjwejeUwfGGDhftV",
-    yearlyPriceId: "price_1Tcg0ABtUjwejeUwLc5nw8nX",
+    monthly: 479,
+    yearly: 4790,
+    monthlyLabel: "£479/mo",
+    yearlyLabel: "£4,790/yr",
+    monthlyPriceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
+    yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
     features: [
       "Agentic self-improving site",
       "Unlimited seats & users",
@@ -89,12 +89,12 @@ export const RETAINER_TIERS = {
   enterprise: {
     key: "enterprise" as const,
     name: "Enterprise",
-    monthly: 2500,
-    yearly: 20000,
-    monthlyLabel: "£2,500/mo",
-    yearlyLabel: "£20,000/yr",
-    monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
-    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
+    monthly: 2469,
+    yearly: 24690,
+    monthlyLabel: "£2,469/mo",
+    yearlyLabel: "£24,690/yr",
+    monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
+    yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
     features: [
       "Agentic self-improving stack",
       "Fractional CTO, CMO & CRO",
@@ -109,8 +109,8 @@ export const RETAINER_TIERS = {
 // Sub-tier for the Enterprise retainer card: Small (default) and Medium businesses.
 // Small mirrors the original Enterprise pricing; Medium is a higher tier handled via sales.
 export const ENTERPRISE_SIZES = {
-  small: { key: "small" as const, name: "Small", monthly: 2500, yearly: 20000, monthlyLabel: "£2,500/mo", yearlyLabel: "£20,000/yr" },
-  medium: { key: "medium" as const, name: "Medium", monthly: 5000, yearly: 40000, monthlyLabel: "£5,000/mo", yearlyLabel: "£40,000/yr" },
+  small: { key: "small" as const, name: "Small", monthly: 2469, yearly: 24690, monthlyLabel: "£2,469/mo", yearlyLabel: "£24,690/yr" },
+  medium: { key: "medium" as const, name: "Medium", monthly: 4690, yearly: 46900, monthlyLabel: "£4,690/mo", yearlyLabel: "£46,900/yr" },
 } as const;
 type EnterpriseSizeKey = keyof typeof ENTERPRISE_SIZES;
 const ENTERPRISE_SIZE_ORDER: EnterpriseSizeKey[] = ["small", "medium"];
@@ -142,7 +142,7 @@ const SERVICE_BACKS = {
     action: "pricing" as const,
     items: [
       { name: "Smart sites & apps", info: "Self-improving websites and full-stack apps with built-in AI support agents that handle customers, refunds and disputes — 24/7, fairly, by the book." },
-      { name: "Animated & Interactive 3JS", info: "£10K websites last year are now £500 websites if you speak to the right people — we are the right people." },
+      { name: "Animated & Interactive 3JS", info: "£10K websites last year are now £479 websites if you speak to the right people — we are the right people." },
       { name: "Landing pages", info: "Save time and have our team take care of all your landing page needs." },
       { name: "Internal tools", info: "Custom systems, automations, agentic flows and more saving you potentially tens of thousands a year." },
       { name: "CRM systems", info: "Want a CRM that suits your exact needs powered by a swarm of AI agents that work to your will, saving you and your staff time and money while ensuring nothing is ever missed? Look no further." },
@@ -895,7 +895,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-4 flex items-start gap-1">
-          <div className="text-3xl font-extrabold text-foreground">£150<span className="text-sm font-bold align-baseline">.00</span></div>
+          <div className="text-3xl font-extrabold text-foreground">£169<span className="text-sm font-bold align-baseline">.00</span></div>
           
         </div>
         <ul className="mb-4 space-y-2 text-base text-foreground">
@@ -968,7 +968,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="relative z-10 -mt-28">
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
         <div className="mb-4 flex items-start gap-1">
-          <div className="text-5xl font-black text-foreground">£500<span className="text-lg font-bold align-baseline">.00</span></div>
+          <div className="text-5xl font-black text-foreground">£479<span className="text-lg font-bold align-baseline">.00</span></div>
           
         </div>
         <ul className="mb-4 space-y-1.5 text-base text-foreground">
@@ -1499,7 +1499,7 @@ function MobileCards() {
         <div className="relative z-10 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-foreground">Full Works</h3>
         <div className="mt-3 mb-4 flex items-start gap-1">
-          <span className="text-3xl font-extrabold text-foreground">£150<span className="text-sm font-bold align-baseline">.00</span></span>
+          <span className="text-3xl font-extrabold text-foreground">£169<span className="text-sm font-bold align-baseline">.00</span></span>
           
         </div>
         <ul className="space-y-2 flex-1 mb-3">
@@ -1540,7 +1540,7 @@ function MobileCards() {
         </div>
 
         <div className="mt-3 mb-4 flex items-start gap-1">
-          <span className="text-3xl font-extrabold text-foreground">£500<span className="text-sm font-bold align-baseline">.00</span></span>
+          <span className="text-3xl font-extrabold text-foreground">£479<span className="text-sm font-bold align-baseline">.00</span></span>
           
         </div>
         <ul className="space-y-2 flex-1 mb-3">
