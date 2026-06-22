@@ -676,7 +676,7 @@ function DesktopShell({ spinIn, initialServices = false }: { spinIn: boolean; in
           servicesFlipped={servicesFlipped}
           onServiceAction={(action) => {
             if (action === "pricing") setServicesFlipped(false);
-            else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+            else window.location.href = "/get-started";
           }}
         />
       </motion.div>
@@ -1249,7 +1249,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                   </li>
                 ))}
               </ul>
-              <GlassBuyButton onClick={() => setEnterpriseOpen(true)} disabled={false} loading={false} label="Talk to sales" />
+              <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
             </div>
           </div>
         </motion.div>
@@ -1437,7 +1437,7 @@ function MobileServicesList({ onShowPricing }: { onShowPricing: () => void }) {
   const groups = [SERVICE_BACKS.elite, SERVICE_BACKS.fullWorks, SERVICE_BACKS.retainer];
   const handleAction = (action: ServiceAction) => {
     if (action === "pricing") onShowPricing();
-    else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+    else window.location.href = "/get-started";
   };
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -1802,7 +1802,7 @@ function MobileCards() {
                   </li>
                 ))}
               </ul>
-              <GlassBuyButton onClick={() => setEnterpriseOpen(true)} disabled={false} loading={false} label="Talk to sales" />
+              <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
             </div>
           </div>
         </motion.div>

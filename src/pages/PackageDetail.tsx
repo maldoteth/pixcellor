@@ -26,10 +26,12 @@ import AuroraBackdrop from "@/components/AuroraBackdrop";
 const SITE_ORIGIN = "https://pixcellor.com";
 
 function dispatchCta(action: PackageCta) {
+  if (action === "sales") {
+    window.location.href = "/get-started";
+    return;
+  }
   setTimeout(() => {
-    if (action === "sales") {
-      window.dispatchEvent(new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "sales" } }));
-    } else if (action === "buy" || action === "packages") {
+    if (action === "buy" || action === "packages") {
       window.dispatchEvent(new CustomEvent("pixcellor:open-packages"));
     }
   }, 60);
