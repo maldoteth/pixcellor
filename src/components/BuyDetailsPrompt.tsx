@@ -441,13 +441,74 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     await onConfirm(buyerPayload(), undefined, visionToSend());
   };
 
+  // Invoice (bank transfer) state — when packageSlug is provided we render the form inline.
+  const [invoiceExtra, setInvoiceExtra] = useState<{ address_line1: string; city: string; postcode: string; country: string; po_reference: string }>({
+    address_line1: "", city: "", postcode: "", country: "United Kingdom", po_reference: "",
+  });
+  const [invoiceSubmitting, setInvoiceSubmitting] = useState(false);
+  const [invoiceResult, setInvoiceResult] = useState<{ hosted_url: string; invoice_number: string } | null>(null);
+
+  // Sync invoice address fields with autofilled buyer values whenever entering the form step.
+  useEffect(() => {
+    if (step !== "invoice-form") return;
+    setInvoiceExtra((p) => ({
+      ...p,
+      address_line1: p.address_line1 || values.address_line1 || "",
+      city: p.city || values.city || "",
+      postcode: p.postcode || values.postcode || "",
+      country: p.country || values.country || p.country,
+    }));
+  }, [step, values.address_line1, values.city, values.postcode, values.country]);
+
   const handlePayByInvoice = async () => {
+    if (packageSlug) {
+      setError(null);
+      setStep("invoice-form");
+      return;
+    }
     if (!onInvoice) {
       // Fallback — just confirm as a card flow
       await handlePayByCard();
       return;
     }
     await onInvoice(buyerPayload(), visionToSend());
+  };
+
+  const submitInvoice = async () => {
+    if (!packageSlug) return;
+    if (!values.name.trim() || !values.email.trim()) {
+      toast.error("Please add your name and email");
+      return;
+    }
+    setInvoiceSubmitting(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("create-invoice", {
+        body: {
+          package_slug: packageSlug,
+          billing: {
+            name: values.name.trim(),
+            email: values.email.trim(),
+            company: values.company.trim(),
+            phone: values.phone.trim(),
+            address_line1: invoiceExtra.address_line1.trim(),
+            city: invoiceExtra.city.trim(),
+            postcode: invoiceExtra.postcode.trim(),
+            country: invoiceExtra.country,
+            po_reference: invoiceExtra.po_reference.trim(),
+          },
+          source: "public_checkout",
+        },
+      });
+      if (fnError) throw fnError;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setInvoiceResult({ hosted_url: (data as any).hosted_url, invoice_number: (data as any).invoice_number });
+      setStep("invoice-success");
+      toast.success("Invoice sent");
+    } catch (e: any) {
+      toast.error(e?.message || "Could not create invoice");
+    } finally {
+      setInvoiceSubmitting(false);
+    }
   };
 
   // Progress
