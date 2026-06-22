@@ -101,10 +101,6 @@ export default function CyberSecurityHero() {
       renderer.render(scene, camera);
       animationId = requestAnimationFrame(animate);
     };
-      camera.lookAt(scene.position);
-      renderer.render(scene, camera);
-      animationId = requestAnimationFrame(animate);
-    };
     animate();
 
     const ro = new ResizeObserver(() => {
