@@ -850,7 +850,7 @@ const GetStarted = () => {
                 Full packages page <ArrowRight className="w-3 h-3 inline" />
               </Link>
             </div>
-            <PackageCompareTable />
+            <PackageCompareTable billing={billing} />
           </div>
         </div>
       </section>
