@@ -470,7 +470,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     yearlyPrice: "£24,690/yr",
     yearlyBilling: "Billed annually · save £4,938",
     yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
-    yearlySavings: "Save £4,938/yr",
+    yearlySavings: "£4,938/yr",
     scheduleCallUrl: CAL_URL,
     sampleWork: [
       { title: "MVP sprint", tag: "2-week launches", note: "Fully working product every fortnight.", image: imgMvpSprint },
