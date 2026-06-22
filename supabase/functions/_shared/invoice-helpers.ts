@@ -24,31 +24,53 @@ export async function upsertContactForInvoice(opts: {
   name: string;
   phone?: string | null;
   company?: string | null;
+  address_line1?: string | null;
+  city?: string | null;
+  postcode?: string | null;
+  country?: string | null;
 }) {
   const supabase = getServiceClient();
   const email = opts.email.trim().toLowerCase();
+  const company = opts.company?.trim() || "";
+  const personName = opts.name?.trim() || "";
+  // The CRM card title (`contacts.name`) is the COMPANY where available, with the
+  // person stored in `contact_name`. Falls back to the person's name then email
+  // when no company was supplied.
+  const displayName = company || personName || email;
+  const contactPerson = personName || null;
+  const locationParts = [opts.address_line1, opts.city, opts.postcode, opts.country]
+    .map((s) => (typeof s === "string" ? s.trim() : ""))
+    .filter(Boolean);
+  const location = locationParts.length ? locationParts.join(", ") : null;
+
   // Look up by email (case-insensitive)
   const { data: existing } = await supabase
     .from("contacts")
-    .select("id, status, source")
+    .select("id, status, name, contact_name, location, phone")
     .ilike("email", email)
     .limit(1)
     .maybeSingle();
 
   if (existing?.id) {
-    // Bump to at least "warm" if cold
-    if (existing.status === "cold") {
-      await supabase.from("contacts").update({ status: "warm" }).eq("id", existing.id);
+    const update: Record<string, unknown> = {};
+    if (company) update.name = displayName; // prefer company as the card title
+    if (contactPerson && !existing.contact_name) update.contact_name = contactPerson;
+    if (location && !existing.location) update.location = location;
+    if (opts.phone && !existing.phone) update.phone = opts.phone;
+    if (existing.status === "cold") update.status = "warm";
+    if (Object.keys(update).length > 0) {
+      await supabase.from("contacts").update(update).eq("id", existing.id);
     }
     return existing.id as string;
   }
   const { data: inserted, error } = await supabase
     .from("contacts")
     .insert({
-      name: opts.name || email,
+      name: displayName,
       email,
       phone: opts.phone ?? null,
-      contact_name: opts.company ?? null,
+      contact_name: contactPerson,
+      location,
       source: "invoice",
       status: "warm",
       industry: "general",
