@@ -291,7 +291,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     yearlyPrice: "£890/yr",
     yearlyBilling: "Billed annually · save £178",
     yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
-    yearlySavings: "Save £178/yr",
+    yearlySavings: "£178/yr",
     sampleWork: [
       { title: "Always-on brochure site", tag: "Unlimited edits", note: "Live updates on demand, no developer required.", image: imgAlwaysOnBrochure },
       { title: "CRM + lead bot", tag: "AI assistant", note: "Captures and qualifies inbound leads 24/7.", image: imgCrmLeadBot },
