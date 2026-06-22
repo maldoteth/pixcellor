@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
+import RoutePrefetcher from "@/components/RoutePrefetcher";
+
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -100,7 +102,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthRedirectHandler />
+          <RoutePrefetcher />
           <Suspense fallback={<RouteFallback />}>
+
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<Admin />} />
