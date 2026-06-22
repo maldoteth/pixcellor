@@ -347,6 +347,14 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
           </div>
         </motion.section>
 
+        {/* COMPARISON TABLE — moved up so prospects can compare early */}
+        <motion.section {...fadeUp} className="mb-12 md:mb-16">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">Compare all packages</h2>
+          <PackageCompareTable highlightSlug={pkg.slug} />
+        </motion.section>
+
+
+
         {/* AGENTIC SELF-IMPROVING SYSTEMS — flagship sales section */}
         {(pkg.slug === "elite" || pkg.slug.startsWith("retainer-")) && (
           <motion.section {...fadeUp} className="mb-12 md:mb-16">
