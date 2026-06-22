@@ -849,15 +849,10 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   }, []);
 
   const [paymentChoice, setPaymentChoice] = useState<PaymentChoiceContext | null>(null);
+  const [invoicePrefill, setInvoicePrefill] = useState<{ name?: string; email?: string; company?: string; phone?: string } | null>(null);
   const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
-    const slug = PACKAGE_KEY_TO_SLUG[key];
-    if (slug) {
-      // Surface the payment-method choice (card vs invoice/bank transfer) first.
-      setPaymentChoice({ packageSlug: slug, packageName, billing });
-      // Stash the card flow so accepting "card" reuses the existing buyer-details prompt
-      (window as any).__pixPendingCardCheckout = { priceId, mode, key, packageName, billing };
-      return;
-    }
+    // Always go through the full BuyDetailsPrompt wizard — the payment-method choice
+    // (card vs invoice) happens at the END of the flow, with buyer details prefilled.
     setPending({ priceId, mode, key, packageName, billing });
   };
 
@@ -874,6 +869,19 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       setSubmittingBuyer(false);
       setLoading(null);
     }
+  };
+
+  const handleInvoiceFromPrompt = async (buyer: BuyerDetails, _vision?: VisionBrief) => {
+    if (!pending) return;
+    const slug = PACKAGE_KEY_TO_SLUG[pending.key];
+    if (!slug) {
+      // No slug in the public allowlist (e.g. enterprise) — fall back to card flow
+      await confirmBuy(buyer, undefined, _vision);
+      return;
+    }
+    setPaymentChoice({ packageSlug: slug, packageName: pending.packageName, billing: pending.billing });
+    setInvoicePrefill({ name: buyer.name, email: buyer.email, company: buyer.company, phone: buyer.phone });
+    setPending(null);
   };
 
   return (
@@ -1273,6 +1281,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       open={!!pending}
       onOpenChange={(o) => { if (!o) setPending(null); }}
       onConfirm={confirmBuy}
+      onInvoice={handleInvoiceFromPrompt}
       title={pending ? `Confirm – ${pending.packageName}` : "Confirm details"}
       submitting={submittingBuyer}
       showDomainStep={pending?.mode === "payment"}
@@ -1281,14 +1290,13 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     />
     <PaymentMethodDialog
       open={!!paymentChoice}
-      onOpenChange={(o) => { if (!o) setPaymentChoice(null); }}
+      onOpenChange={(o) => { if (!o) { setPaymentChoice(null); setInvoicePrefill(null); } }}
       context={paymentChoice}
-      onCardSelected={() => {
-        const stash = (window as any).__pixPendingCardCheckout;
-        setPaymentChoice(null);
-        if (stash) setPending(stash);
-      }}
+      initialStep="form"
+      initialBuyer={invoicePrefill ?? undefined}
+      onCardSelected={() => { setPaymentChoice(null); setInvoicePrefill(null); }}
     />
+
 
     </>
   );
@@ -1503,13 +1511,8 @@ function MobileCards() {
 
 
   const [paymentChoice, setPaymentChoice] = useState<PaymentChoiceContext | null>(null);
+  const [invoicePrefill, setInvoicePrefill] = useState<{ name?: string; email?: string; company?: string; phone?: string } | null>(null);
   const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
-    const slug = PACKAGE_KEY_TO_SLUG[key];
-    if (slug) {
-      setPaymentChoice({ packageSlug: slug, packageName, billing });
-      (window as any).__pixPendingCardCheckout = { priceId, mode, key, packageName, billing };
-      return;
-    }
     setPending({ priceId, mode, key, packageName, billing });
   };
 
@@ -1526,6 +1529,18 @@ function MobileCards() {
       setSubmittingBuyer(false);
       setLoading(null);
     }
+  };
+
+  const handleInvoiceFromPrompt = async (buyer: BuyerDetails, _vision?: VisionBrief) => {
+    if (!pending) return;
+    const slug = PACKAGE_KEY_TO_SLUG[pending.key];
+    if (!slug) {
+      await confirmBuy(buyer, undefined, _vision);
+      return;
+    }
+    setPaymentChoice({ packageSlug: slug, packageName: pending.packageName, billing: pending.billing });
+    setInvoicePrefill({ name: buyer.name, email: buyer.email, company: buyer.company, phone: buyer.phone });
+    setPending(null);
   };
 
   return (
@@ -1793,6 +1808,7 @@ function MobileCards() {
       open={!!pending}
       onOpenChange={(o) => { if (!o) setPending(null); }}
       onConfirm={confirmBuy}
+      onInvoice={handleInvoiceFromPrompt}
       title={pending ? `Confirm – ${pending.packageName}` : "Confirm details"}
       submitting={submittingBuyer}
       showDomainStep={pending?.mode === "payment"}
@@ -1801,13 +1817,11 @@ function MobileCards() {
     />
     <PaymentMethodDialog
       open={!!paymentChoice}
-      onOpenChange={(o) => { if (!o) setPaymentChoice(null); }}
+      onOpenChange={(o) => { if (!o) { setPaymentChoice(null); setInvoicePrefill(null); } }}
       context={paymentChoice}
-      onCardSelected={() => {
-        const stash = (window as any).__pixPendingCardCheckout;
-        setPaymentChoice(null);
-        if (stash) setPending(stash);
-      }}
+      initialStep="form"
+      initialBuyer={invoicePrefill ?? undefined}
+      onCardSelected={() => { setPaymentChoice(null); setInvoicePrefill(null); }}
     />
 
     </>

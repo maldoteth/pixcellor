@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2, CreditCard, Building2 } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
 import BrandKit from "@/components/BrandKit";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import DomainPicker, { DomainChoice } from "@/components/DomainPicker";
+import { DomainChoice } from "@/components/DomainPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext } from "@/lib/checkoutTracking";
 import { SUGGESTIONS as VISION_SUGGESTIONS } from "@/components/VisionGenerator";
@@ -51,7 +51,7 @@ type VisionStep =
   | "vision-generating"
   | "vision-result"
   | "vision-refine";
-type Step = FieldStep | VisionStep | "domain";
+type Step = FieldStep | VisionStep | "payment";
 
 const FIELD_STEPS: FieldStep[] = ["company", "name", "email", "phone"];
 
@@ -86,11 +86,13 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (details: BuyerDetails, domain?: BuyerDomainChoice, vision?: VisionBrief) => Promise<void> | void;
+  /** Called when the user picks "Pay by bank transfer (invoice)" at the final step. */
+  onInvoice?: (details: BuyerDetails, vision?: VisionBrief) => Promise<void> | void;
   title?: string;
   submitting?: boolean;
-  /** When false (subscriptions), skip the domain + vision step entirely. Defaults to true. */
+  /** When false (subscriptions), skip the payment-choice + vision step entirely. Defaults to true. */
   showDomainStep?: boolean;
-  /** Package name for tracking visitors who reach the domain step. */
+  /** Package name for tracking visitors who reach the payment step. */
   packageName?: string;
   billing?: string;
   /** Optional pre-filled buyer details — filled fields are skipped in the wizard. */
@@ -99,7 +101,7 @@ interface Props {
   initialVision?: VisionBrief | null;
 }
 
-const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = false, packageName, billing, initialValues, initialVision }: Props) => {
+const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "Confirm details", submitting = false, showDomainStep = false, packageName, billing, initialValues, initialVision }: Props) => {
   const isMobile = useIsMobileOrTablet();
 
   const computeInitial = (): { values: BuyerDetails; step: Step; vision: VisionBrief | null } => {
@@ -177,7 +179,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
 
   // Track visitors who reach the domain step
   useEffect(() => {
-    if (step !== "domain") return;
+    if (step !== "payment") return;
     const email = values.email.trim().toLowerCase();
     const phone = values.phone.trim();
     if (!email && !phone) return;
@@ -220,7 +222,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     const brief = buildBrief(answers);
     if (brief.length < 5) {
       // Nothing entered — just skip to domain
-      setStep("domain");
+      setStep("payment");
       return;
     }
     setStep("vision-generating");
@@ -359,21 +361,36 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     setStep(VISION_QUESTIONS[visionIdx - 1].step);
   };
 
-  const handleDomainChoice = async (choice: BuyerDomainChoice) => {
+  const visionToSend = () =>
+    visionBrief && (visionBrief.imageUrl || visionBrief.prompt) ? visionBrief : undefined;
+
+  const handlePayByCard = async () => {
     await onConfirm(
       { company: values.company.trim(), name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim() },
-      choice,
-      visionBrief && (visionBrief.imageUrl || visionBrief.prompt) ? visionBrief : undefined,
+      undefined,
+      visionToSend(),
+    );
+  };
+
+  const handlePayByInvoice = async () => {
+    if (!onInvoice) {
+      // Fallback — just confirm as a card flow
+      await handlePayByCard();
+      return;
+    }
+    await onInvoice(
+      { company: values.company.trim(), name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim() },
+      visionToSend(),
     );
   };
 
   // Progress
   const progressSteps: Step[] = showDomainStep
-    ? [...FIELD_STEPS, "vision-intro", "domain"]
+    ? [...FIELD_STEPS, "vision-intro", "payment"]
     : [...FIELD_STEPS];
   let progressIdx = progressSteps.indexOf(step);
   if (progressIdx < 0) {
-    if (step === "domain") progressIdx = progressSteps.length - 1;
+    if (step === "payment") progressIdx = progressSteps.length - 1;
     else progressIdx = FIELD_STEPS.length; // any vision step
   }
   const progressPct = ((progressIdx + 1) / progressSteps.length) * 100;
@@ -421,7 +438,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
         Answer a few quick questions to generate a style guide we can work to.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-        <Button type="button" variant="outline" onClick={() => setStep("domain")} className="h-12 font-semibold">
+        <Button type="button" variant="outline" onClick={() => setStep("payment")} className="h-12 font-semibold">
           Skip — go to checkout
         </Button>
         <Button type="button" variant="pricing" onClick={() => setStep(VISION_QUESTIONS[0].step)} className="h-12 font-semibold gap-2">
@@ -532,7 +549,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
         <button type="button" onClick={visionSkip} className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1 self-center">
           Skip this step
         </button>
-        <button type="button" onClick={() => setStep("domain")} className="text-[11px] text-foreground/50 hover:text-foreground/80 underline-offset-4 hover:underline self-center">
+        <button type="button" onClick={() => setStep("payment")} className="text-[11px] text-foreground/50 hover:text-foreground/80 underline-offset-4 hover:underline self-center">
           Skip preview entirely — go to checkout
         </button>
       </>
@@ -566,7 +583,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
         <Button type="button" variant="outline" onClick={() => { setError(null); setStep("vision-refine"); }} disabled={!visionBrief?.imageUrl} className="h-12 font-semibold gap-2">
           <Wand2 className="w-4 h-4" /> Tweak / re-prompt
         </Button>
-        <Button type="button" variant="pricing" onClick={() => { void trackApprovedSample(); setStep("domain"); }} className="h-12 font-semibold">
+        <Button type="button" variant="pricing" onClick={() => { void trackApprovedSample(); setStep("payment"); }} className="h-12 font-semibold">
           Looks great → Continue
         </Button>
       </div>
@@ -602,9 +619,50 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm deta
     </>
   );
 
+  const renderPayment = () => (
+    <>
+      <p className="text-foreground text-base font-semibold">How would you like to pay?</p>
+      <p className="text-foreground/60 text-xs">
+        {packageName ? `${packageName}${billing ? ` · ${billing}` : ""}` : "Choose your preferred payment method."}
+      </p>
+      <div className="grid gap-2 mt-1">
+        <button
+          type="button"
+          onClick={handlePayByCard}
+          disabled={submitting}
+          className="flex items-center gap-4 rounded-lg border border-foreground/15 bg-foreground/5 hover:bg-foreground/10 p-4 text-left transition disabled:opacity-60"
+        >
+          <CreditCard className="h-6 w-6 shrink-0" />
+          <div>
+            <div className="font-bold text-foreground">Pay by card</div>
+            <div className="text-xs text-foreground/60">Secure Stripe checkout · instant access</div>
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={handlePayByInvoice}
+          disabled={submitting}
+          className="flex items-center gap-4 rounded-lg border border-foreground/15 bg-foreground/5 hover:bg-foreground/10 p-4 text-left transition disabled:opacity-60"
+        >
+          <Building2 className="h-6 w-6 shrink-0" />
+          <div>
+            <div className="font-bold text-foreground">Pay by bank transfer (invoice)</div>
+            <div className="text-xs text-foreground/60">PDF invoice emailed · 28 days to pay</div>
+          </div>
+        </button>
+      </div>
+      <div className="flex gap-2 mt-2">
+        <Button type="button" variant="outline" onClick={() => setStep(visionBrief?.imageUrl ? "vision-result" : "vision-intro")} disabled={submitting} className="flex-1 h-11 font-semibold">
+          Back
+        </Button>
+      </div>
+      {submitting && <p className="text-xs text-foreground/60 text-center mt-1 inline-flex items-center gap-2 justify-center"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing…</p>}
+    </>
+  );
+
   const renderBody = () => {
-    if (step === "domain") {
-      return <DomainPicker onChoose={handleDomainChoice} onBack={() => setStep(showDomainStep ? "vision-intro" : "phone")} submitting={submitting} />;
+    if (step === "payment") {
+      return renderPayment();
     }
     if (isField(step)) return renderField();
     if (step === "vision-intro") return renderVisionIntro();
