@@ -103,13 +103,15 @@ interface Props {
   /** Package name for tracking visitors who reach the payment step. */
   packageName?: string;
   billing?: string;
+  /** Package slug for invoice creation via edge function (e.g. "full_works"). When provided, the invoice form is rendered inline in this dialog. */
+  packageSlug?: string;
   /** Optional pre-filled buyer details — filled fields are skipped in the wizard. */
   initialValues?: Partial<BuyerDetails>;
   /** Optional pre-filled vision brief from the free-sample flow. */
   initialVision?: VisionBrief | null;
 }
 
-const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "Confirm details", submitting = false, showDomainStep = false, packageName, billing, initialValues, initialVision }: Props) => {
+const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "Confirm details", submitting = false, showDomainStep = false, packageName, billing, packageSlug, initialValues, initialVision }: Props) => {
   const isMobile = useIsMobileOrTablet();
 
   const computeInitial = (): { values: BuyerDetails; step: Step; vision: VisionBrief | null } => {
