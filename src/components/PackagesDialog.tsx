@@ -1576,6 +1576,9 @@ function MobileCards() {
           loading={loading === "fullWorks"}
           label="Order Now"
         />
+        <Link to="/packages/full-works" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
         </div>
       </div>
 
@@ -1625,6 +1628,9 @@ function MobileCards() {
           loading={loading === "elite"}
           label="Order Now"
         />
+        <Link to="/packages/elite" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
         </div>
       </div>
 
