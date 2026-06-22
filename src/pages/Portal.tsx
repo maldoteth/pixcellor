@@ -4036,7 +4036,8 @@ export default function Portal() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>{o.payment_status ?? "pending"}</Badge>
-                    <Badge variant="outline">Orders</Badge>
+                    <Badge variant="outline">
+</Badge>
                     <Badge variant={requirements ? "default" : "outline"}>{requirements ? "Requirements received" : "Needs requirements"}</Badge>
                     {emailStatus?.reminderSent && <Badge variant="secondary">Reminder sent</Badge>}
                   </div>
@@ -4081,7 +4082,7 @@ export default function Portal() {
           </Button>
           <Button variant={showNewOrderDialog || activeTab === "orders" ? "default" : "ghost"} size="sm" onClick={openMobileOrders} className="h-14 flex-col gap-1 px-1 text-[10px]">
             <ShoppingBag className="h-4 w-4" />
-            Orders
+            Add Order
           </Button>
 
         </div>
