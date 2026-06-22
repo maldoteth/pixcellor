@@ -164,6 +164,7 @@ const GetStarted = () => {
   const [confirmedLabel, setConfirmedLabel] = useState<string>("");
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const { honeypotValue, setHoneypotValue, isHuman } = useAntiSpam();
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
 
   useEffect(() => {
     // Smooth scroll for in-page anchors
