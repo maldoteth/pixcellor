@@ -326,7 +326,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         ],
       },
       {
-        title: "Agentic Self-Improving Website",
+        title: "Self-improving agentic flows",
         items: [
           "Your site evolves on its own — no rebuild, no waiting",
           "Auto-upgraded the moment a better AI model is released",
