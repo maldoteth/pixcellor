@@ -686,7 +686,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     feature: "AI lead-gen runs",
     values: {
       "full-works": "—",
-      elite: "—",
+      elite: "150 total",
       "retainer-growth": "250 / mo",
       "retainer-scale": "1,000 / mo",
       "retainer-enterprise": "10,000 / mo",
