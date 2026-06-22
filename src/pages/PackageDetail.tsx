@@ -207,13 +207,9 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
             </li>
             <li><ChevronRight className="h-3 w-3" /></li>
             <li>
-              <button
-                type="button"
-                onClick={() => dispatchCta("packages")}
-                className="hover:text-foreground"
-              >
+              <Link to="/packages" className="hover:text-foreground">
                 Packages
-              </button>
+              </Link>
             </li>
             <li><ChevronRight className="h-3 w-3" /></li>
             <li className="text-foreground/90">{pkg.name}</li>
