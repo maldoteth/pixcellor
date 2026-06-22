@@ -2614,6 +2614,58 @@ Deno.serve(async (req) => {
             console.error("Error in create_custom_payment:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_payment_failed" }) });
           }
+        } else if (toolCall.function.name === "create_invoice") {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+            const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+            const resp = await fetch(`${supabaseUrl}/functions/v1/create-invoice`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceKey}` },
+              body: JSON.stringify({
+                source: isDevMode ? "alex_chat" : "alex_chat",
+                package_slug: args.package_slug,
+                line_items: Array.isArray(args.line_items) ? args.line_items : undefined,
+                due_days: args.due_days,
+                internal_note: args.internal_note,
+                billing: {
+                  name: args.billing_name,
+                  email: args.billing_email,
+                  company: args.billing_company,
+                  phone: args.billing_phone,
+                  address_line1: args.billing_address_line1,
+                  city: args.billing_city,
+                  postcode: args.billing_postcode,
+                  country: args.billing_country ?? "United Kingdom",
+                  po_reference: args.po_reference,
+                },
+              }),
+            });
+            const body = await resp.json();
+            if (!resp.ok || body?.error) {
+              aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: body?.error || `http_${resp.status}` }) });
+            } else {
+              aiMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: JSON.stringify({
+                  ok: true,
+                  invoice_number: body.invoice_number,
+                  hosted_url: body.hosted_url,
+                  total_pence: body.total_pence,
+                  due_at: body.due_at,
+                  bank_details: { payee: "Delabs Ltd", sort_code: "60-84-64", account_number: "86111053", reference: body.invoice_number },
+                  note: "Show the hosted_url as a markdown link. Tell the client they've been emailed the invoice + PDF, payment terms are 28 days, and quote the invoice number as their bank-transfer reference.",
+                }),
+              });
+            }
+          } catch (e) {
+            console.error("Error in create_invoice:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_invoice_failed" }) });
+          }
+
         } else if (toolCall.function.name === "extract_screenshot_contact") {
           needsFollowUp = true;
           try {
