@@ -792,7 +792,7 @@ export const SERVICES: Service[] = [
 
   {
     slug: "internal-tools",
-    name: "Internal tools",
+    name: "Internal tools & Cyber-security\u00a0",
     category: "tech",
     info: "Custom systems, automations, agentic flows and more saving you potentially tens of thousands a year.",
     tagline: "Replace spreadsheets and SaaS subscriptions with tools built for you.",
@@ -1764,7 +1764,7 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Animated & Interactive 3JS": "animated-sites",
   "Full web apps": "full-web-apps",
   "Smart sites & apps": "full-web-apps",
-  "Internal tools": "internal-tools",
+  "Internal tools & Cyber-security\u00a0": "internal-tools",
   "CRM systems": "crm-systems",
   "E-commerce stores": "ecommerce-stores",
   "Blockchain integrations": "blockchain-integrations",
