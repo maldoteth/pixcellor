@@ -280,7 +280,7 @@ const tools = [
     type: "function" as const,
     function: {
       name: "lookup_customer",
-      description: "Look up an existing customer's orders, contact submissions, and chat history by email. Use ONLY when the user has provided their email and wants info about their own account, order, payment, or project status.",
+      description: "Look up an existing customer's Stripe orders, bank-transfer invoices, contact submissions, and chat history by email. Returns an `invoices` array (with status / paid / amount / due_at / hosted_url / invoice_number) alongside `orders`. Use ONLY when the user has provided their email and wants info about their own account, order, invoice, payment, or project status.",
       parameters: {
         type: "object",
         properties: {
