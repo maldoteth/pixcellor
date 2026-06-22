@@ -1130,7 +1130,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
                         setEnterpriseSize((s) => (s === "small" ? "medium" : "small"));
                       }
                     }}
-                    className="relative h-5 w-[72px] translate-x-[4px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                    className="relative h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
                   >
                     <span
                       className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out"
