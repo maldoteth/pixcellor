@@ -176,6 +176,10 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
         ...p,
         company: json?.company_name || p.company,
         name: p.name?.trim() ? p.name : (director || p.name),
+        address_line1: json?.address?.address_line1 || p.address_line1,
+        city: json?.address?.city || p.city,
+        postcode: json?.address?.postcode || p.postcode,
+        country: json?.address?.country || p.country,
       }));
     } catch { /* silent */ }
   };
