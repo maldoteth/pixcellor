@@ -278,7 +278,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
 
   "retainer-growth": {
     slug: "retainer-growth",
-    name: "Growth Retainer",
+    name: "Growth\u00a0",
     tagline: "Your always-on web team for £89/month.",
     blurb:
       "Everything a small business needs to run online — website with unlimited edits, CRM, hosting, AI bots and analytics — bundled into one predictable monthly fee.",
@@ -371,7 +371,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
 
   "retainer-scale": {
     slug: "retainer-scale",
-    name: "Scale Retainer",
+    name: "Scale\u00a0",
     tagline: "A full digital department for growing teams — £479/month.",
     blurb:
       "Everything in Growth plus unlimited users, priority SLA, monthly strategy and the AI agents & automations to scale operations without scaling headcount.",
@@ -457,7 +457,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
 
   "retainer-enterprise": {
     slug: "retainer-enterprise",
-    name: "Enterprise Retainer",
+    name: "Enterprise\u00a0",
     tagline: "Fractional C-suite, dedicated team, MVP sprints — £2,469/month.",
     blurb:
       "The full Pixcellor force on your side. Fractional CTO, CMO and CRO, a dedicated dev & ops squad, 2-week MVP sprints and 24/7 priority support.",
