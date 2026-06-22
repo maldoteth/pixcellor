@@ -16,16 +16,10 @@ export default function CyberSecurityHero() {
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    const getTheme = () =>
-      document.documentElement.classList.contains("dark") ? "dark" : "light";
-
-    const getBg = (theme: string) =>
-      theme === "dark" ? new THREE.Color(0x000000) : new THREE.Color(0xffffff);
-
-    const getParticleColor = (theme: string) =>
-      theme === "dark"
-        ? new THREE.Vector3(1.0, 1.0, 1.0)
-        : new THREE.Vector3(0.0, 0.0, 0.0);
+    // Banner card sits on the always-dark service hero surface,
+    // so we hard-code a black background with silvery-white particles.
+    const bgColor = new THREE.Color(0x000000);
+    const particleColor = new THREE.Vector3(0.92, 0.94, 0.98);
 
     const particleVertex = /* glsl */ `
       attribute float scale;
