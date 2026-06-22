@@ -667,7 +667,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     feature: "Auto-adopts new AI models",
     values: {
       "full-works": "—",
-      elite: "Yes",
+      elite: "Some",
       "retainer-growth": "Yes",
       "retainer-scale": "Yes — day zero",
       "retainer-enterprise": "Yes — frontier first",
