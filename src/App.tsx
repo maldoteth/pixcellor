@@ -39,6 +39,8 @@ const ByowLanding = lazy(() => import("./pages/ByowLanding"));
 const PublicSite = lazy(() => import("./pages/PublicSite"));
 const ByowGeneratedEditor = lazy(() => import("./pages/ByowGeneratedEditor"));
 const Work = lazy(() => import("./pages/Work"));
+const InvoiceView = lazy(() => import("./pages/InvoiceView"));
+const InvoicesAdmin = lazy(() => import("./pages/InvoicesAdmin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -131,6 +133,10 @@ const App = () => (
               <Route path="/byow/edit/:ref" element={<ByowGeneratedEditor />} />
               <Route path="/s/:ref" element={<PublicSite />} />
               <Route path="/work" element={<Work />} />
+              <Route path="/invoice/:token" element={<InvoiceView />} />
+              <Route path="/invoices-admin" element={<InvoicesAdmin />} />
+
+
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

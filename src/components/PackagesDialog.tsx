@@ -19,6 +19,17 @@ import HoneypotField from "@/components/HoneypotField";
 import { useAntiSpam } from "@/lib/anti-spam";
 import { getServiceByName } from "@/data/services";
 import ServiceSalesView from "@/components/services/ServiceSalesView";
+import { PaymentMethodDialog, type PaymentChoiceContext } from "@/components/PaymentMethodDialog";
+
+const PACKAGE_KEY_TO_SLUG: Record<string, string> = {
+  fullWorks: "full-works",
+  elite: "elite",
+  growth: "retainer-growth",
+  scale: "retainer-scale",
+  enterprise: "retainer-enterprise",
+};
+
+
 
 const PACKAGES = {
   fullWorks: {
@@ -837,9 +848,19 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     e.currentTarget.style.setProperty("--mouse-y", "0");
   }, []);
 
+  const [paymentChoice, setPaymentChoice] = useState<PaymentChoiceContext | null>(null);
   const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
+    const slug = PACKAGE_KEY_TO_SLUG[key];
+    if (slug) {
+      // Surface the payment-method choice (card vs invoice/bank transfer) first.
+      setPaymentChoice({ packageSlug: slug, packageName, billing });
+      // Stash the card flow so accepting "card" reuses the existing buyer-details prompt
+      (window as any).__pixPendingCardCheckout = { priceId, mode, key, packageName, billing };
+      return;
+    }
     setPending({ priceId, mode, key, packageName, billing });
   };
+
 
   const confirmBuy = async (buyer: BuyerDetails, domainChoice?: BuyerDomainChoice, vision?: VisionBrief) => {
     if (!pending) return;
@@ -1258,6 +1279,17 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       packageName={pending?.packageName}
       billing={pending?.billing}
     />
+    <PaymentMethodDialog
+      open={!!paymentChoice}
+      onOpenChange={(o) => { if (!o) setPaymentChoice(null); }}
+      context={paymentChoice}
+      onCardSelected={() => {
+        const stash = (window as any).__pixPendingCardCheckout;
+        setPaymentChoice(null);
+        if (stash) setPending(stash);
+      }}
+    />
+
     </>
   );
 }
@@ -1470,9 +1502,17 @@ function MobileCards() {
   };
 
 
+  const [paymentChoice, setPaymentChoice] = useState<PaymentChoiceContext | null>(null);
   const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
+    const slug = PACKAGE_KEY_TO_SLUG[key];
+    if (slug) {
+      setPaymentChoice({ packageSlug: slug, packageName, billing });
+      (window as any).__pixPendingCardCheckout = { priceId, mode, key, packageName, billing };
+      return;
+    }
     setPending({ priceId, mode, key, packageName, billing });
   };
+
 
   const confirmBuy = async (buyer: BuyerDetails, domainChoice?: BuyerDomainChoice, vision?: VisionBrief) => {
     if (!pending) return;
@@ -1759,6 +1799,17 @@ function MobileCards() {
       packageName={pending?.packageName}
       billing={pending?.billing}
     />
+    <PaymentMethodDialog
+      open={!!paymentChoice}
+      onOpenChange={(o) => { if (!o) setPaymentChoice(null); }}
+      context={paymentChoice}
+      onCardSelected={() => {
+        const stash = (window as any).__pixPendingCardCheckout;
+        setPaymentChoice(null);
+        if (stash) setPending(stash);
+      }}
+    />
+
     </>
   );
 }

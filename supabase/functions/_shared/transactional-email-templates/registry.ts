@@ -37,6 +37,9 @@ import { template as vacancyConfirmed } from './vacancy-confirmed.tsx'
 import { template as vacancyPositionFilled } from './vacancy-position-filled.tsx'
 import { template as callBookingConfirmation } from './call-booking-confirmation.tsx'
 import { template as walletTransactionOtp } from './wallet-transaction-otp.tsx'
+import { template as invoiceIssued } from './invoice-issued.tsx'
+import { template as invoiceReminder } from './invoice-reminder.tsx'
+import { template as invoicePaidReceipt } from './invoice-paid-receipt.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'full-works-order-confirmation': fullWorksOrderConfirmation,
@@ -65,4 +68,8 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'vacancy-position-filled': vacancyPositionFilled,
   'call-booking-confirmation': callBookingConfirmation,
   'wallet-transaction-otp': walletTransactionOtp,
+  'invoice-issued': invoiceIssued,
+  'invoice-reminder': invoiceReminder,
+  'invoice-paid-receipt': invoicePaidReceipt,
 }
+

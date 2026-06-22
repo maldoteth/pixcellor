@@ -125,6 +125,8 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
    c. Then reply briefly confirming you've saved their details — do NOT ask them to retype the info you can already see, and do NOT promise a callback unless they actually asked for one.
     d. If extraction returns nothing usable, politely ask the visitor to type their name and phone/email so you can save them properly.
 9. **CUSTOM PAYMENTS — "Pay" QUICK ACTION:** If the visitor uses the "Pay" quick action OR asks to "pay an amount", "pay a deposit", "settle a balance", "pay an invoice", "make a custom payment" — collect TWO things: (a) the amount in GBP (e.g. £250), (b) a short reason/description (e.g. "Deposit for Acme website", "Final balance — invoice INV-203"). Once you have BOTH, call **create_custom_payment** with amount_gbp and description. If the visitor has already shared an email, pass it as client_email so we can track the payment. Reply with the Stripe link returned (the link itself is enough — visitor can click it to pay). Do NOT make up amounts. If amount is unclear or below £1, ask once for clarification.
+10. **BANK-TRANSFER INVOICES — "Pay by invoice":** When closing a deal or sending a payment option, ALWAYS offer two ways to pay: (1) a Stripe card link via `create_payment_link` / `create_custom_payment`, OR (2) a proper bank-transfer invoice via `create_invoice`. If the client asks for an invoice, says they'd "rather pay by bank transfer", needs something for accounts/PO processing, is a business buyer, or you're issuing a custom invoice for any work — call **create_invoice**. Collect billing name + email + line items (description + GBP price) as a minimum; ask for company / billing address / PO ref if it's clearly a business. Default payment terms are 28 days — do not change unless explicitly requested. The system emails a PDF + hosted link automatically, auto-creates the CRM contact, and chases reminders. Never invent prices or line items.
+
 
 ## CRITICAL Rules — Qualifying Questions:
 - DO NOT list or recommend all three packages at once. That overwhelms clients.
@@ -867,7 +869,47 @@ const devTools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_invoice",
+      description: "Create a PROPER bank-transfer invoice (PDF emailed to client, hosted invoice page, 28-day payment terms, auto reminders). Use when the customer wants to pay by bank transfer instead of card, OR when issuing a custom invoice for any work. Auto-creates / links a CRM contact for the client. NEVER invent line items or amounts — only use values the customer explicitly confirmed. Returns invoice_number and hosted_url; show the hosted_url as a clickable markdown link.",
+      parameters: {
+        type: "object",
+        required: ["billing_name", "billing_email", "line_items"],
+        properties: {
+          billing_name: { type: "string", description: "Client's full name (required)." },
+          billing_email: { type: "string", description: "Client's email — invoice and reminders go here (required)." },
+          billing_company: { type: "string", description: "Client's company name." },
+          billing_phone: { type: "string" },
+          billing_address_line1: { type: "string" },
+          billing_city: { type: "string" },
+          billing_postcode: { type: "string" },
+          billing_country: { type: "string", description: "Defaults to 'United Kingdom'." },
+          po_reference: { type: "string", description: "Optional purchase-order reference." },
+          due_days: { type: "number", description: "Payment terms in days. Defaults to 28 — do not change unless the customer explicitly asks." },
+          line_items: {
+            type: "array",
+            minItems: 1,
+            description: "Invoice line items. Amounts MUST be in GBP pence (e.g. £250 = 25000). Quantities default to 1.",
+            items: {
+              type: "object",
+              required: ["description", "unit_amount_pence"],
+              properties: {
+                description: { type: "string" },
+                quantity: { type: "number" },
+                unit_amount_pence: { type: "number" },
+              },
+            },
+          },
+          package_slug: { type: "string", description: "Optional package slug ('full-works' | 'elite' | 'retainer-growth' | 'retainer-scale' | 'retainer-enterprise') — sets the line item automatically if provided alone." },
+          internal_note: { type: "string", description: "Private note for our records — not shown to client." },
+        },
+      },
+    },
+  },
 ];
+
 
 // Look up everything we know about a customer by email
 async function lookupCustomer(supabase: DbClient, rawEmail: string) {
@@ -2574,6 +2616,58 @@ Deno.serve(async (req) => {
             console.error("Error in create_custom_payment:", e);
             aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_payment_failed" }) });
           }
+        } else if (toolCall.function.name === "create_invoice") {
+          needsFollowUp = true;
+          actionTaken = true;
+          try {
+            const args = JSON.parse(toolCall.function.arguments);
+            const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+            const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+            const resp = await fetch(`${supabaseUrl}/functions/v1/create-invoice`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceKey}` },
+              body: JSON.stringify({
+                source: isDevMode ? "alex_chat" : "alex_chat",
+                package_slug: args.package_slug,
+                line_items: Array.isArray(args.line_items) ? args.line_items : undefined,
+                due_days: args.due_days,
+                internal_note: args.internal_note,
+                billing: {
+                  name: args.billing_name,
+                  email: args.billing_email,
+                  company: args.billing_company,
+                  phone: args.billing_phone,
+                  address_line1: args.billing_address_line1,
+                  city: args.billing_city,
+                  postcode: args.billing_postcode,
+                  country: args.billing_country ?? "United Kingdom",
+                  po_reference: args.po_reference,
+                },
+              }),
+            });
+            const body = await resp.json();
+            if (!resp.ok || body?.error) {
+              aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: body?.error || `http_${resp.status}` }) });
+            } else {
+              aiMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: JSON.stringify({
+                  ok: true,
+                  invoice_number: body.invoice_number,
+                  hosted_url: body.hosted_url,
+                  total_pence: body.total_pence,
+                  due_at: body.due_at,
+                  bank_details: { payee: "Delabs Ltd", sort_code: "60-84-64", account_number: "86111053", reference: body.invoice_number },
+                  note: "Show the hosted_url as a markdown link. Tell the client they've been emailed the invoice + PDF, payment terms are 28 days, and quote the invoice number as their bank-transfer reference.",
+                }),
+              });
+            }
+          } catch (e) {
+            console.error("Error in create_invoice:", e);
+            aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "create_invoice_failed" }) });
+          }
+
         } else if (toolCall.function.name === "extract_screenshot_contact") {
           needsFollowUp = true;
           try {

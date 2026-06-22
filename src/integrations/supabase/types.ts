@@ -1709,6 +1709,250 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_events: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          invoice_id: string
+          message: string | null
+          metadata: Json
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          invoice_id: string
+          message?: string | null
+          metadata?: Json
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          invoice_id?: string
+          message?: string | null
+          metadata?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_events_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_line_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          line_total_pence: number
+          quantity: number
+          sort_order: number
+          unit_amount_pence: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          line_total_pence: number
+          quantity?: number
+          sort_order?: number
+          unit_amount_pence: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          line_total_pence?: number
+          quantity?: number
+          sort_order?: number
+          unit_amount_pence?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount_paid_pence: number
+          billing_address_line1: string | null
+          billing_address_line2: string | null
+          billing_city: string | null
+          billing_company: string | null
+          billing_country: string | null
+          billing_email: string
+          billing_name: string
+          billing_phone: string | null
+          billing_postcode: string | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          contact_id: string | null
+          conversation_id: string | null
+          created_at: string
+          created_by_email: string | null
+          created_by_user_id: string | null
+          currency: string
+          due_at: string
+          first_viewed_at: string | null
+          id: string
+          internal_note: string | null
+          invoice_number: string
+          issued_at: string
+          last_reminder_at: string | null
+          last_viewed_at: string | null
+          marked_paid_by: string | null
+          package_slug: string | null
+          paid_at: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          payment_terms_days: number
+          payment_terms_label: string
+          pdf_generated_at: string | null
+          pdf_storage_path: string | null
+          po_reference: string | null
+          public_token: string
+          reminder_stage: string
+          reminders_paused: boolean
+          source: string
+          status: string
+          subtotal_pence: number
+          superseded_by_id: string | null
+          total_pence: number
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          amount_paid_pence?: number
+          billing_address_line1?: string | null
+          billing_address_line2?: string | null
+          billing_city?: string | null
+          billing_company?: string | null
+          billing_country?: string | null
+          billing_email: string
+          billing_name: string
+          billing_phone?: string | null
+          billing_postcode?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          contact_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          currency?: string
+          due_at?: string
+          first_viewed_at?: string | null
+          id?: string
+          internal_note?: string | null
+          invoice_number: string
+          issued_at?: string
+          last_reminder_at?: string | null
+          last_viewed_at?: string | null
+          marked_paid_by?: string | null
+          package_slug?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_terms_days?: number
+          payment_terms_label?: string
+          pdf_generated_at?: string | null
+          pdf_storage_path?: string | null
+          po_reference?: string | null
+          public_token?: string
+          reminder_stage?: string
+          reminders_paused?: boolean
+          source?: string
+          status?: string
+          subtotal_pence?: number
+          superseded_by_id?: string | null
+          total_pence?: number
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          amount_paid_pence?: number
+          billing_address_line1?: string | null
+          billing_address_line2?: string | null
+          billing_city?: string | null
+          billing_company?: string | null
+          billing_country?: string | null
+          billing_email?: string
+          billing_name?: string
+          billing_phone?: string | null
+          billing_postcode?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          contact_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          currency?: string
+          due_at?: string
+          first_viewed_at?: string | null
+          id?: string
+          internal_note?: string | null
+          invoice_number?: string
+          issued_at?: string
+          last_reminder_at?: string | null
+          last_viewed_at?: string | null
+          marked_paid_by?: string | null
+          package_slug?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_terms_days?: number
+          payment_terms_label?: string
+          pdf_generated_at?: string | null
+          pdf_storage_path?: string | null
+          po_reference?: string | null
+          public_token?: string
+          reminder_stage?: string
+          reminders_paused?: boolean
+          source?: string
+          status?: string
+          subtotal_pence?: number
+          superseded_by_id?: string | null
+          total_pence?: number
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_superseded_by_id_fkey"
+            columns: ["superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_search_history: {
         Row: {
           created_at: string
@@ -3548,6 +3792,7 @@ export type Database = {
           status: string
         }[]
       }
+      get_invoice_by_token: { Args: { _token: string }; Returns: Json }
       get_vision_preview_by_slug: {
         Args: { _slug: string }
         Returns: {
@@ -3589,6 +3834,7 @@ export type Database = {
         }
         Returns: number
       }
+      next_invoice_number: { Args: never; Returns: string }
       portal_add_candidate_document:
         | {
             Args: {

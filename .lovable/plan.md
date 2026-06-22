@@ -1,86 +1,78 @@
-## Goal
 
-Close the security gap with Privy across three fronts: stronger encryption, recoverable wallets, and a second factor on every outbound transaction.
+## Invoice payments — what gets built
 
----
+A complete bank-transfer / invoice payment path running alongside the existing Stripe card flow. Buyers can choose "Pay by bank transfer", get a proper PDF invoice with Delabs Ltd transfer instructions, view it on a branded page, and you (or Alex) can issue invoices manually from the CRM and chat. The system tracks status, chases overdue payment automatically, and you mark paid in one click.
 
-## 1. Harden what we have
+### 1. New "Pay by invoice" choice at checkout
+- Every Buy button in `PackagesDialog` (and Alex's package send-out) opens a small **payment-method dialog**:
+  - **Pay by card** → existing Stripe flow, unchanged.
+  - **Pay by bank transfer (invoice)** → opens an invoice form.
+- Invoice form collects: full name, company (optional), email, billing address (line 1, city, postcode, country), phone (optional), PO reference (optional).
+- On submit: creates the invoice + order in the database, generates the PDF, emails it, and redirects to the hosted invoice page.
 
-**Key derivation**
-- Bump PBKDF2 iterations from 310,000 → **600,000** (OWASP 2023 minimum for PBKDF2-SHA256).
-- Store the iteration count per-wallet (already do) so existing wallets keep working and new wallets use the higher count.
-- Add a one-time silent "re-wrap" on next successful unlock: re-encrypt the seed with 600k iterations and update the row. No user action required.
+### 2. Invoice data model
+New tables (all behind RLS, admin + service-role only; buyers access their invoice via a public token):
+- `invoices` — id, invoice_number (sequential `INV-2026-0001`), public_token, contact_id, order_session_id (links to `stripe_checkout_sessions`), package_slug, status (`draft|sent|partial|paid|overdue|cancelled|written_off`), issued_at, due_at (issued + 28 days), paid_at, total_amount_pence, currency, billing_name/company/email/address/phone, po_reference, internal_note, last_reminder_at, reminder_stage.
+- `invoice_line_items` — id, invoice_id, description, quantity, unit_amount_pence, line_total_pence, sort_order.
+- `invoice_events` — append-only audit log (issued, viewed, reminder_sent, marked_paid, cancelled, exported_pdf) — used for the activity feed on the hosted page and CRM.
 
-**Re-auth on every sensitive action**
-- Send, Reveal keys, Cash out — already prompt for password. Add a 60-second in-memory cache toggle so users aren't prompted twice in a row, but never persist the password.
-- Zero out decrypted seed/private key buffers immediately after use.
+Schema notes: no VAT columns, no VAT line items, no "VAT" wording anywhere — invoices read as standard commercial invoices. Sequential numbering is generated atomically inside the create function using a Postgres sequence.
 
-**Reduce XSS / supply-chain blast radius**
-- Add a strict Content Security Policy via `<meta http-equiv>` in `index.html`: no inline scripts, no `eval`, restrict `connect-src` to Lovable Cloud + the ETH/SOL RPCs + CoinGecko, restrict `img-src`/`style-src` tightly.
-- Add `Permissions-Policy` and `Referrer-Policy` meta tags.
+### 3. PDF generation + hosted invoice page
+- Edge function `generate-invoice-pdf` renders a clean, brand-consistent PDF using **pdf-lib** (pure JS, runs in Deno) — Delabs Ltd letterhead, line items, totals, "Payment terms: 28 days from issue", "Due by [date]", bank details (Payee: Delabs Ltd · Sort code: 60-84-64 · Account: 86111053 · Reference: INV-2026-0001), and footer with company contact info.
+- PDF stored in a new private Supabase Storage bucket `invoices/` keyed by `invoice_id.pdf`; signed URLs used for email attachment and download.
+- Hosted page at `/invoice/:token` (public, no auth) renders the same invoice in-page with: status badge, line items, totals, transfer instructions block with copy-to-clipboard chips, "Download PDF" button, "Pay by card instead" link (creates a Stripe checkout for the same amount), and reminder/activity timeline. Marks invoice as `viewed` on first load.
 
-**Rate limiting**
-- Add an edge function `wallet-guard` that rate-limits decryption attempts per user (e.g. 5 failed unlocks in 10 minutes → 15-minute cooldown), tracked in a small `wallet_unlock_attempts` table. Failed attempts are reported by the client after a decrypt error.
+### 4. Email flow
+Uses the existing Lovable Email infrastructure (already set up). New React Email templates in `_shared/transactional-email-templates/`:
+- `invoice-issued` — "Your invoice INV-2026-0001 from Delabs Ltd", embeds key details, "View invoice" link, bank transfer block, PDF attached.
+- `invoice-reminder-friendly` — day 14, polite nudge.
+- `invoice-reminder-second` — day 21, firmer.
+- `invoice-overdue` — day 28+, "Now overdue", restates terms.
+- `invoice-final-notice` — day 35.
+- `invoice-paid-receipt` — sent when you mark paid; thanks the client and confirms project kick-off / next steps.
+- All templates registered in `registry.ts`, deployed via `deploy_edge_functions`.
 
----
+### 5. Order confirmation & CRM auto-linking
+At invoice creation:
+1. Look up an existing `contacts` row by lowercased email; create one if missing (`source = 'invoice'`, status `warm`, name = billing name, plus phone/company/notes).
+2. Create a `stripe_checkout_sessions` row to represent the order — `payment_status = 'unpaid'`, `mode = 'payment'`, marked as `payment_method = 'bank_transfer'`, links to invoice_id and contact_id so the existing portal "Orders" view shows it natively as an outstanding bank-transfer order.
+3. Send `invoice-issued` email to client and an internal alert via the existing admin alert flow.
 
-## 2. Password recovery (encrypted backup)
+When you click **Mark paid** (see step 7), the same order row flips to `paid`, the `invoice-paid-receipt` fires, and the contact moves to `customer`.
 
-When the user creates a wallet (and as an opt-in for existing wallets), generate a **24-word recovery code** and encrypt the seed a second time with it. Store both encrypted blobs.
+### 6. Auto reminders (cron)
+- New edge function `send-invoice-reminders` runs daily via `pg_cron` at 09:30 UK time.
+- For every `sent` / `partial` / `overdue` invoice it picks the right template based on days since issue: 14 → friendly, 21 → second, 28 → overdue (also flips status to `overdue`), 35 → final notice. After day 35 it stops auto-chasing and surfaces in a CRM "Needs attention" filter.
+- Each send writes an `invoice_events` row and updates `last_reminder_at` / `reminder_stage`. Idempotent — re-running same day does nothing.
 
-- New table `user_wallet_recovery`: `user_id`, `encrypted_seed`, `salt`, `iv`, `kdf_iterations` (same shape as `user_wallets`, separate row).
-- Flow on create: after the user sets a password, show the recovery code **once** in a "Save this somewhere safe" modal with copy + download buttons and a "I've saved it" checkbox before continuing.
-- Flow on recovery: from the login screen, "Forgot wallet password" → user signs in normally with email/password → enters 24-word code → we decrypt the recovery blob, prompt for a new wallet password, re-encrypt the seed under it, overwrite `user_wallets` and `user_wallet_recovery`.
-- Recovery code is never sent to the server in plaintext — decryption happens entirely in the browser.
+### 7. Admin / portal additions
+- New "Invoices" tab in `Portal` (admin-only): list with filter chips (Outstanding / Overdue / Paid / All), search by number/email, click row → detail drawer with line items, activity feed, "Mark as paid" button (records `paid_at`, optional reference field for the bank ref / cheque no.), "Send reminder now", "Cancel invoice", "Download PDF", "Copy hosted link".
+- "Outstanding invoices" KPI added to dashboard summary.
 
-Trade-off: this is a recovery code (like Coinbase Wallet), not Privy's email-link recovery. We can't do Privy's flow without their MPC server share.
+### 8. Alex chatbot integration
+- New `create_invoice` tool added to `sales-chat`. Takes `client_email`, optional `client_name/company/address`, `line_items[]`, optional `due_days` (default 28), optional `po_reference`, optional `package_slug`. Reuses the same create-invoice edge function so behaviour is identical to the public flow. Returns the invoice number, total, hosted URL, and PDF link as a clean markdown reply.
+- Alex's system prompt updated:
+  - When closing a deal in chat, always offer **"card link or invoice (bank transfer)"** as the two payment options.
+  - "Invoice" path → ask for billing details if missing, then call `create_invoice`; never invent line items.
+  - When `create_custom_order` is called with `mark_paid=false`, Alex now also has the option to attach an invoice instead of a Stripe link if the client prefers bank transfer.
 
----
+### 9. Compliance & polish (no VAT mention anywhere)
+- Sequential invoice numbers (UK requirement), issue date, due date, supplier full legal name + registered address (Delabs Ltd) + company number, customer name + billing address, clear description of services, amount due, 28-day payment terms statement, bank details, "Please quote invoice number as payment reference" line.
+- All money handled in integer pence; display formatted GBP with `Intl.NumberFormat`.
+- PDF is the canonical record — once an invoice is `sent`, line items / amounts become read-only (can only cancel + reissue, which generates a new number and links back to the cancelled one).
+- All edits/cancellations recorded in `invoice_events` for an audit trail.
+- Public hosted page uses the random `public_token` (not the invoice id) so URLs aren't enumerable.
 
-## 3. Transaction MFA (email OTP)
+### Build order
+1. Migration: tables, sequence, RLS, GRANTs, storage bucket.
+2. Edge functions: `create-invoice`, `generate-invoice-pdf`, `mark-invoice-paid`, `send-invoice-reminders`.
+3. Email templates + register + deploy.
+4. Hosted `/invoice/:token` page.
+5. Payment-method dialog + invoice form in `PackagesDialog`.
+6. Portal "Invoices" tab + mark-paid UI.
+7. Cron schedule for reminders.
+8. Alex `create_invoice` tool + system-prompt update.
+9. End-to-end test: create invoice → email arrives with PDF → hosted page loads → mark paid → receipt email fires → CRM contact + order updated.
 
-Every Send and Cash out requires a 6-digit code emailed to the user's account email, in addition to the wallet password.
-
-- New table `wallet_tx_otps`: `user_id`, `code_hash`, `purpose` (`send` / `cash_out`), `chain`, `expires_at`, `consumed_at`, `attempts`.
-- New edge function `wallet-request-otp`: validates JWT, generates a 6-digit code, hashes it (SHA-256 + per-row salt), stores it with a 5-minute expiry, enqueues an email via the existing transactional email system. Rate-limited to 1 request per 30 seconds, max 5 per hour per user.
-- New edge function `wallet-verify-otp`: validates JWT, checks the code, increments `attempts`, marks `consumed_at`. Max 5 attempts before the code is invalidated. Returns a short-lived signed token (10 minutes) the client must present to proceed.
-- `SendDialog` and `CashOutDialog`: after the user enters amount + password, click "Send code", then enter the 6-digit code, then we sign and broadcast the transaction. The signed OTP token gates the action client-side and is logged server-side for audit.
-- Reveal keys also requires OTP (it's effectively a full wallet exfiltration).
-- Email template uses the existing transactional email infrastructure with a "You're authorizing a transaction" subject and clear warning copy.
-
-If the email domain is not yet set up, we'll set it up first (one-time prompt), since OTP emails won't deliver reliably otherwise.
-
----
-
-## Files to add / change
-
-**New**
-- `src/lib/wallet/recovery.ts` — generate recovery code, encrypt/decrypt seed under it
-- `src/components/wallet/RecoveryCodeDialog.tsx` — show-once modal during create
-- `src/components/wallet/RecoverWalletDialog.tsx` — recover with code, set new password
-- `src/components/wallet/OtpPrompt.tsx` — shared 6-digit OTP entry component
-- `supabase/functions/wallet-request-otp/index.ts`
-- `supabase/functions/wallet-verify-otp/index.ts`
-- `supabase/functions/wallet-guard/index.ts`
-- Migration: `user_wallet_recovery`, `wallet_tx_otps`, `wallet_unlock_attempts` (all RLS + GRANTs)
-
-**Changed**
-- `src/lib/wallet/crypto.ts` — `DEFAULT_PBKDF2_ITERATIONS = 600_000`, add `reEncrypt` helper, zero-out buffers
-- `src/components/wallet/CreateWalletDialog.tsx` — generate + display recovery code
-- `src/components/wallet/SendDialog.tsx` — add OTP step
-- `src/components/wallet/CashOutDialog.tsx` — add OTP step
-- `src/components/wallet/RevealKeysDialog.tsx` — add OTP step
-- `src/components/wallet/PasswordPrompt.tsx` — call `wallet-guard` to log failed unlocks; silent re-wrap on success
-- `src/pages/CustomerPortal.tsx` — wire "Forgot wallet password" entry point
-- `index.html` — CSP, Permissions-Policy, Referrer-Policy
-
----
-
-## What we will still NOT match vs Privy
-
-Even after this we won't have:
-- TEE-isolated signing (keys always touch the browser process)
-- MPC / Shamir split keys
-- Per-transaction policy engine
-
-Honest framing for users: "comparable to a hardened browser wallet with 2FA," not "comparable to a custodial MPC service." If matching Privy fully matters later, the right move is to swap in Privy's SDK rather than rebuild their TEE.
+Approve and I'll start with the migration and core edge functions.
