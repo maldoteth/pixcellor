@@ -213,6 +213,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
           "Email & CRM integrations",
           "Analytics & event tracking",
           "Third-party API connections",
+          "Up to 150 AI lead-gen runs total (upgrade to a retainer for monthly runs)",
         ],
       },
       {
@@ -686,7 +687,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     feature: "AI lead-gen runs",
     values: {
       "full-works": "—",
-      elite: "—",
+      elite: "150 total",
       "retainer-growth": "250 / mo",
       "retainer-scale": "1,000 / mo",
       "retainer-enterprise": "10,000 / mo",
