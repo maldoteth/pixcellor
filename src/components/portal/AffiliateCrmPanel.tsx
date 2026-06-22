@@ -404,11 +404,18 @@ export default function AffiliateCrmPanel() {
           <div className="space-y-3">
             <div className="relative">
               <Label className="text-xs">Company / client name *</Label>
-              <Input
+              <CompaniesHouseInput
                 value={form.name}
-                onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-                onFocus={() => { if (matches.length > 0) setShowMatches(true); }}
-                onBlur={() => { window.setTimeout(() => setShowMatches(false), 150); }}
+                onChange={(v) => setForm(f => ({ ...f, name: v }))}
+                onSelect={(sel) => {
+                  setForm(f => ({
+                    ...f,
+                    name: sel.company || f.name,
+                    contact_name: f.contact_name?.trim() ? f.contact_name : (sel.director || f.contact_name),
+                    location: f.location?.trim() ? f.location : (sel.location || f.location),
+                  }));
+                  setShowMatches(false);
+                }}
                 placeholder="Acme Ltd"
                 autoFocus
               />
