@@ -1932,6 +1932,8 @@ const NAME_TO_SLUG: Record<string, string> = {
 };
 
 export const getServiceByName = (name: string) => {
-  const slug = NAME_TO_SLUG[name];
+  const normalised = name.replace(/\u00a0/g, " ").trim();
+  const slug = NAME_TO_SLUG[name] ?? NAME_TO_SLUG[normalised];
   return slug ? getServiceBySlug(slug) : undefined;
 };
+
