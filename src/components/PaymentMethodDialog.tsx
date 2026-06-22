@@ -113,6 +113,10 @@ export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelecte
           email: initialBuyer.email?.trim() || f.email,
           company: initialBuyer.company?.trim() || f.company,
           phone: initialBuyer.phone?.trim() || f.phone,
+          address_line1: initialBuyer.address_line1?.trim() || f.address_line1,
+          city: initialBuyer.city?.trim() || f.city,
+          postcode: initialBuyer.postcode?.trim() || f.postcode,
+          country: initialBuyer.country?.trim() || f.country,
         }));
       }
     }
