@@ -82,6 +82,7 @@ export default function AdminPayoutsPanel() {
   useEffect(() => {
     load();
   }, [load]);
+  usePortalRefresh(load);
 
   const performUpdate = async (
     payout: Payout,
