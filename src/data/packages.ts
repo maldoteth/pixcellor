@@ -92,7 +92,7 @@ const DEFAULT_ADDONS: PackageAddOn[] = [
   { name: "Brand kit (logo + identity)", price: "£200", note: "Logo, palette, fonts, guidelines" },
   { name: "Migration from existing site", price: "£150", note: "Content + redirects + SEO equity" },
   { name: "Custom 3D / WebGL hero", price: "£250", note: "Bespoke animated hero scene" },
-  { name: "Multilingual (per language)", price: "£100", note: "Full content + SEO per locale" },
+  { name: "SEO Publications", price: "£100", note: "Full content + SEO per locale" },
 ];
 
 // Calendly/Cal.com placeholder — swap for real URL when available.
