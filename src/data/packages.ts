@@ -384,7 +384,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     yearlyPrice: "£4,790/yr",
     yearlyBilling: "Billed annually · save £958",
     yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
-    yearlySavings: "Save £890/yr",
+    yearlySavings: "£890/yr",
     scheduleCallUrl: CAL_URL,
     sampleWork: [
       { title: "AI sales agent", tag: "Voice + chat", note: "Books meetings 24/7 directly into the calendar.", image: imgAiSalesAgent },
