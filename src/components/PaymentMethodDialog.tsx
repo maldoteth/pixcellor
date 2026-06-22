@@ -143,7 +143,7 @@ export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelecte
                   <Input id="inv-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                 </div>
                 <div>
-                  <Label htmlFor="inv-company">Company</Label>
+                  <Label htmlFor="inv-company">Company Name</Label>
                   <Input id="inv-company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
                 </div>
               </div>
