@@ -503,7 +503,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
           "Full-stack web apps & SaaS",
           "AI / blockchain / web3 integrations",
           "Recruitment ATS & payroll tooling",
-          "Internal tools & Cyber-security\u00a0, dashboards & APIs",
+          "Internal tools, CRM & cyber-security, dashboards & APIs",
         ],
       },
       {

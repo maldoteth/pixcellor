@@ -794,12 +794,12 @@ export const SERVICES: Service[] = [
 
   {
     slug: "internal-tools",
-    name: "Internal tools & Cyber-security\u00a0",
+    name: "Internal tools",
     category: "tech",
     info: "Custom systems, automations, agentic flows and more saving you potentially tens of thousands a year.",
-    tagline: "Custom internal tools — and the security programme to defend them.",
+    tagline: "Custom internal tools built around how your team actually works.",
     heroBlurb:
-      "Every business runs on a tangle of spreadsheets, half-used SaaS subscriptions and tribal knowledge — and most of it is one phishing email away from a very bad week. We replace the chaos with custom internal tools built around how your team actually works, then the same team hardens and defends them. Enterprise-grade cyber-security normally reserved for firms with six-figure security budgets, delivered in clear tiers: foundational protection, 24/7 managed defence, or a full security programme run for you. Dashboards, automations, AI agents, MDR, pen testing, incident response — wired into your stack, owned by you.",
+      "Every business runs on a tangle of spreadsheets, half-used SaaS subscriptions and tribal knowledge. We replace the chaos with custom internal tools built around how your team actually works — dashboards, automations, AI agents and integrations wired into your stack and owned by you. SaaS subscriptions cut, hours reclaimed, mistakes engineered out.",
     features: [
       "Custom dashboards tailored to each team and role",
       "Automations and AI agents for the repetitive work nobody wants",
@@ -813,10 +813,6 @@ export const SERVICES: Service[] = [
       "Hosted and maintained on your infrastructure or ours",
       "Documentation and training built into the rollout",
       "Lifetime warranty on the build",
-      "24/7 managed detection & response (MDR) from our security operations centre",
-      "Penetration testing & red-team exercises",
-      "Incident response & digital forensics (DFIR) retainers",
-      "Compliance & audit support: ISO 27001, SOC 2, Cyber Essentials, PCI DSS, GDPR",
     ],
     process: [
       "Process audit — where does time leak, where does data fall through cracks?",
@@ -844,8 +840,85 @@ export const SERVICES: Service[] = [
       "One source of truth instead of seven spreadsheets and a Notion page",
       "Faster onboarding for new hires because the tool encodes the process",
       "Fewer mistakes because the system enforces the rules",
+    ],
+    faqs: [
+      {
+        q: "How do I know it'll save more than it costs?",
+        a: "The first thing we do is audit where time and money actually leak. If the numbers don't add up, we'll tell you on the call — not after invoicing.",
+      },
+      {
+        q: "Can my team edit it after launch without breaking it?",
+        a: "Yes — we build self-serve admin into anything our users will need to change (rules, workflows, fields). Structural changes stay protected.",
+      },
+      {
+        q: "Will it integrate with our existing CRM/accounting/whatever?",
+        a: "Almost certainly. We build to standard APIs and write custom connectors for anything that doesn't have one.",
+      },
+      {
+        q: "What if our process changes in 6 months?",
+        a: "The tool is built to flex. Major changes are quick to ship; minor changes your admin can do in the UI.",
+      },
+      {
+        q: "Do you host it or do we?",
+        a: "Your call. We can host and maintain on a retainer, or hand over to your team with full documentation.",
+      },
+    ],
+    primaryCta: salesCta,
+  },
+  {
+    slug: "cyber-security",
+    name: "Cyber-security",
+    category: "tech",
+    info: "Enterprise-grade cyber defence — audits, 24/7 MDR, pen testing, incident response and compliance — bundled into our retainers.",
+    tagline: "Enterprise-grade cyber defence, bundled into your retainer.",
+    heroBlurb:
+      "Most businesses are one phishing email, one unpatched server or one stolen laptop away from a very bad quarter. We bring the same security programme used by firms with six-figure security budgets — security audits, 24/7 managed detection & response, penetration testing, incident response and full compliance support — wired into our retainers so you stop choosing between 'do the work' and 'protect the work'. Cyber-security is included on Growth, Scale and Enterprise retainers at progressively deeper levels. Buy it as a standalone programme too — but on retainer it costs a fraction of hiring it in.",
+    features: [
+      "Security audits & risk assessments mapped to ISO 27001, SOC 2, Cyber Essentials, PCI DSS and GDPR",
+      "24/7 Managed Detection & Response (MDR) from our security operations centre",
+      "Endpoint detection & response (EDR) rollout and tuning across your fleet",
+      "SIEM / XDR log monitoring, threat hunting and curated threat intelligence",
+      "Penetration testing & red-team / purple-team exercises",
+      "Continuous vulnerability scanning & external attack-surface management",
+      "Phishing simulation & staff security-awareness training",
+      "Email security hardening: anti-phishing, SPF / DKIM / DMARC, BIMI",
+      "Multi-factor authentication, identity hardening, SSO / SAML",
+      "Cloud security posture management for AWS, Azure and GCP",
+      "Zero-trust architecture design & rollout",
+      "Incident response & digital forensics (DFIR) retainers — including ransomware support",
+      "Backup, disaster-recovery and business-continuity planning",
+      "Application security: secure SDLC, code review and dependency scanning",
+      "Third-party / supply-chain risk management",
+      "Virtual CISO (vCISO), tabletop exercises and board-level reporting",
+      "Security automation (SOAR) and custom defensive tooling",
+      "Readiness & audit support toward Cyber Essentials, Cyber Essentials Plus, ISO 27001, SOC 2 Type II, PCI DSS and GDPR / DPO",
+    ],
+    process: [
+      "Discovery & posture assessment — map your stack, data, users, risks and existing controls",
+      "Quick-wins sprint — MFA, EDR, email hardening, backups and the top 10 patches in week one",
+      "Programme design — pick the tier, define the SLAs, agree the reporting cadence",
+      "Rollout — deploy MDR, identity, cloud posture, vulnerability management and awareness training",
+      "Continuous defence — 24/7 monitoring, threat hunting, monthly reviews and quarterly testing",
+      "Incident readiness — runbooks, tabletop exercises and a tested IR retainer ready before you need it",
+      "Compliance & evidence — collect, organise and present the evidence your audits and insurers ask for",
+    ],
+    deliverables: [
+      "Written security audit with prioritised risk register and remediation plan",
+      "Live security dashboard with alerts, incidents and posture score",
+      "Monthly security report and quarterly programme review",
+      "Penetration test reports with severity-ranked findings and retest",
+      "Phishing simulation results and training completion records",
+      "Documented incident-response runbooks and tested escalation paths",
+      "Compliance evidence pack (ISO 27001 / SOC 2 / Cyber Essentials / PCI / GDPR)",
+      "Named account team with defined SLAs (Enterprise tier)",
+    ],
+    outcomes: [
       "Breaches caught and contained in minutes, not months",
-      "Audit- and insurer-ready security posture",
+      "An audit- and insurer-ready security posture without hiring a security team",
+      "Reduced cyber-insurance premiums thanks to documented controls",
+      "Fewer successful phishing attacks because staff are trained and email is locked down",
+      "Confidence to bid for enterprise contracts that demand ISO / SOC / Cyber Essentials evidence",
+      "A clear, written answer to 'what would we do if we got ransomwared on Friday afternoon?'",
     ],
     tiers: [
       {
@@ -866,7 +939,6 @@ export const SERVICES: Service[] = [
       {
         name: "Scale Retainer",
         tagline: "Always-on monitoring and response",
-        highlight: true,
         features: [
           "Everything in Growth Retainer",
           "24/7 Managed Detection & Response (MDR) from our SOC",
@@ -901,44 +973,49 @@ export const SERVICES: Service[] = [
     ],
     faqs: [
       {
-        q: "How do I know it'll save more than it costs?",
-        a: "The first thing we do is audit where time and money actually leak. If the numbers don't add up, we'll tell you on the call — not after invoicing.",
-      },
-      {
-        q: "Can my team edit it after launch without breaking it?",
-        a: "Yes — we build self-serve admin into anything our users will need to change (rules, workflows, fields). Structural changes stay protected.",
-      },
-      {
-        q: "Will it integrate with our existing CRM/accounting/whatever?",
-        a: "Almost certainly. We build to standard APIs and write custom connectors for anything that doesn't have one.",
-      },
-      {
-        q: "What if our process changes in 6 months?",
-        a: "The tool is built to flex. Major changes are quick to ship; minor changes your admin can do in the UI.",
-      },
-      {
-        q: "Do you host it or do we?",
-        a: "Your call. We can host and maintain on a retainer, or hand over to your team with full documentation.",
+        q: "Why is cyber-security bundled into the retainers?",
+        a: "Because security only works when it runs continuously. Bolting on a one-off audit and walking away leaves you exposed the day after we deliver it. Wiring defence into the same retainer that builds and runs your stack means patching, monitoring, training and response all happen together — and you pay a fraction of what hiring it in costs.",
       },
       {
         q: "Are you actually a security firm or web devs doing security?",
-        a: "Our security practice is run by senior operators with backgrounds in offensive security, SOC operations and GRC — the same engineers who build your internal tools work alongside them, so security is baked in from day one rather than bolted on. We're transparent about what we deliver in-house versus what we coordinate with specialist partners (e.g. CREST-accredited testers, certifying bodies for ISO/SOC audits).",
+        a: "Our security practice is run by senior operators with backgrounds in offensive security, SOC operations and GRC. The same engineers who build and maintain your stack work alongside them, so security is baked in from day one rather than bolted on. We're transparent about what we deliver in-house versus what we coordinate with specialist partners (e.g. CREST-accredited testers, certifying bodies for ISO / SOC audits).",
       },
       {
-        q: "What happens if we get breached?",
-        a: "On Scale Retainer and Enterprise Retainer, our SOC triages and contains in minutes — isolating endpoints, rotating credentials and cutting off the blast radius before it spreads. Enterprise Retainer includes a 24/7 incident-response retainer with full digital forensics, ransomware negotiation support, evidence preservation, regulator/insurer liaison and a written post-incident report so you know exactly what happened and how to stop it recurring.",
+        q: "Do you guarantee we won't get breached?",
+        a: "No serious security firm will. What we do guarantee is that you'll be far harder to breach than 99% of businesses your size, that breaches will be caught and contained in minutes instead of months, and that when something does go wrong there's a written, rehearsed playbook ready to run.",
+      },
+      {
+        q: "What happens if we do get breached?",
+        a: "On Scale Retainer and Enterprise Retainer our SOC triages and contains in minutes — isolating endpoints, rotating credentials and cutting off the blast radius before it spreads. Enterprise Retainer includes a 24/7 incident-response retainer with full digital forensics, ransomware negotiation support, evidence preservation, regulator / insurer liaison and a written post-incident report so you know exactly what happened and how to stop it recurring.",
+      },
+      {
+        q: "Can you help us pass an ISO 27001 / SOC 2 / Cyber Essentials audit?",
+        a: "Yes — we run the readiness programme, build the policies and controls, collect the evidence and sit alongside you for the audit itself. The certification is awarded by an independent body, not us — we make sure you walk in ready to pass it first time.",
+      },
+      {
+        q: "Will this satisfy our cyber-insurance underwriters?",
+        a: "Almost always — most cyber-insurance questionnaires map directly to the controls we deploy (MDR, EDR, MFA, backups, patching, training, IR plan). We can complete the questionnaire alongside you and provide evidence on request.",
+      },
+      {
+        q: "We're a small business — is this overkill?",
+        a: "It's the opposite. Small businesses are targeted disproportionately because attackers know their defences are thin and their downtime tolerance is zero. The Growth Retainer tier exists precisely so foundational protection is affordable for businesses that can't justify a full-time security hire.",
+      },
+      {
+        q: "Can we buy cyber-security on its own without a retainer?",
+        a: "Yes — speak to us about a standalone programme. It costs more than the retainer-bundled version, but if you've already got your build and ops sorted elsewhere we'll happily run defence in isolation.",
       },
     ],
     primaryCta: salesCta,
   },
+
   {
     slug: "crm-systems",
-    name: "CRM systems",
+    name: "Internal tools & CRM",
     category: "tech",
-    info: "A CRM that fits your exact workflow, powered by AI agents that work to your will — saving your team time and ensuring nothing is ever missed.",
-    tagline: "Your own CRM, with AI agents on staff.",
+    info: "Custom CRMs and internal tools built around your exact workflow, with AI agents handling the admin so nothing slips.",
+    tagline: "Your own CRM and internal tools, with AI agents on staff.",
     heroBlurb:
-      "Stop bending your business to fit Salesforce. We build CRMs around how you actually sell — your pipeline, your stages, your data — with AI agents handling enrichment, follow-up and admin so nothing slips. Your reps stop doing CRM hygiene and start closing. Your sales leader gets pipeline they can actually forecast against. And you stop paying per-seat for software your team half-uses.",
+      "Stop bending your business to fit Salesforce and stop bolting another SaaS subscription onto the stack. We build CRMs and internal tools around how you actually sell, ship and operate — your pipeline, your data, your workflows — with AI agents handling enrichment, follow-up, approvals and admin so nothing slips. Reps stop doing CRM hygiene and start closing. Ops stop juggling spreadsheets and start shipping. You stop paying per-seat for software your team half-uses.",
     features: [
       "Custom pipeline and data model — built around how you actually sell",
       "AI agents for enrichment, follow-up, scheduling and dead-lead reactivation",
@@ -1833,7 +1910,11 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Full web apps": "full-web-apps",
   "Smart sites & apps": "full-web-apps",
   "Internal tools & Cyber-security\u00a0": "internal-tools",
+  "Internal tools": "internal-tools",
+  "Cyber-security": "cyber-security",
+  "Cybersecurity": "cyber-security",
   "CRM systems": "crm-systems",
+  "Internal tools & CRM": "crm-systems",
   "E-commerce stores": "ecommerce-stores",
   "Blockchain integrations": "blockchain-integrations",
   "AI & blockchain integrations": "blockchain-integrations",

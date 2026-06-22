@@ -129,6 +129,11 @@ export const SERVICE_GALLERY: Record<string, GalleryItem[]> = {
     { src: internal2, alt: "Stacked glass dashboard panels showing operational metrics" },
     { src: internal3, alt: "Interlocking gear mechanism made of glowing code symbols" },
   ],
+  "cyber-security": [
+    { src: internal1, alt: "Cyber-defence operations dashboard with glowing threat-intelligence streams" },
+    { src: internal2, alt: "Layered security perimeter visualised as translucent glass shields" },
+    { src: internal3, alt: "Interlocking encryption keys and code symbols glowing in the dark" },
+  ],
   "crm-systems": [
     { src: crm1, alt: "Grid of glowing contact profile cards with an AI assistant aura" },
     { src: crm2, alt: "Floating sales pipeline kanban board on glass panels" },
