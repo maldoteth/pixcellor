@@ -2146,6 +2146,10 @@ export default function Portal() {
   };
 
   const markOrderUndelivered = async (sessionId: string) => {
+    if (sessionId.startsWith("inv_")) {
+      toast.info("Invoices are managed on the Invoices page.");
+      return;
+    }
     const confirmed = await confirmDialog({ title: "Re-open order?", description: "Move this order back to open so delivery can be redone.", confirmLabel: "Re-open" });
     if (!confirmed) return;
 
