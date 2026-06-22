@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { ArrowRight, Check, Minus } from "lucide-react";
+import { ArrowRight, Check, Minus, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { COMPARISON_ROWS, COMPARISON_SLUGS, PACKAGE_DETAILS } from "@/data/packages";
 
 const ENTERPRISE_SLUG = "retainer-enterprise";
 
 // Rows whose value triples when Enterprise is on the "Large" tier.
-const TRIPLED_FEATURES = new Set(["AI lead-gen runs", "Automated Outreach"]);
+const TRIPLED_FEATURES = new Set(["AI lead-gen runs", "Automated Outreach", "Hosting"]);
 
 // Triple a string like "10,000 / m" → "30,000 / m". Leaves other strings alone.
 function tripleLimit(val: string): string {
@@ -68,42 +68,34 @@ export default function PackageCompareTable({
                 return (
                   <th
                     key={slug}
-                    className={`px-3 py-4 align-bottom min-w-[140px] ${active ? "bg-foreground/[0.06]" : ""}`}
+                    className={`relative px-3 py-4 align-bottom min-w-[140px] ${active ? "bg-foreground/[0.06]" : ""}`}
                   >
+                    {isEnterprise && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setEnterpriseSize(isLarge ? "small" : "large");
+                        }}
+                        aria-label={isLarge ? "Switch to Small enterprise tier" : "Switch to Large enterprise tier"}
+                        aria-pressed={isLarge}
+                        className="absolute top-2 right-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-foreground/20 bg-foreground/[0.06] text-foreground/70 hover:text-foreground hover:bg-foreground/[0.12] transition-colors"
+                      >
+                        {isLarge ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                      </button>
+                    )}
                     <Link to={`/packages/${slug}`} className="block hover:opacity-90">
                       <div className={`text-[10px] uppercase tracking-[0.18em] mb-1 ${active ? "text-foreground/80" : "text-foreground/50"}`}>
                         {pkg.mode === "subscription" ? "Retainer" : "One-off"}
                       </div>
-                      <div className="text-sm font-semibold">{pkg.name}</div>
+                      <div className="text-sm font-semibold">
+                        {pkg.name}
+                        {isEnterprise && (
+                          <span className="ml-1 text-foreground/60 font-medium">({isLarge ? "L" : "S"})</span>
+                        )}
+                      </div>
                       <div className="mt-1 text-base font-bold">{priceLabel}</div>
                     </Link>
-
-                    {isEnterprise && (
-                      <div
-                        className="mt-2 inline-flex items-center gap-0.5 rounded-full border border-foreground/15 bg-foreground/[0.05] p-0.5"
-                        role="group"
-                        aria-label="Enterprise tier"
-                      >
-                        {(["small", "large"] as const).map((size) => (
-                          <button
-                            key={size}
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setEnterpriseSize(size);
-                            }}
-                            className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-semibold transition-colors ${
-                              enterpriseSize === size
-                                ? "bg-foreground text-background"
-                                : "text-foreground/60 hover:text-foreground"
-                            }`}
-                            aria-pressed={enterpriseSize === size}
-                          >
-                            {size === "small" ? "Small" : "Large"}
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </th>
                 );
               })}
