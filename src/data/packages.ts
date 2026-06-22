@@ -373,7 +373,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
   "retainer-scale": {
     slug: "retainer-scale",
     name: "Scale\u00a0",
-    tagline: "A full digital department for growing teams — £479/month.",
+    tagline: "Scale to new heights with a dedicated team",
     blurb:
       "Everything in Growth plus unlimited users, priority SLA, monthly strategy and the AI agents & automations to scale operations without scaling headcount.",
     price: "£479/mo",
