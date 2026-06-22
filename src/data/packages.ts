@@ -481,7 +481,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       {
         title: "Everything in Scale, plus",
         items: [
-          "Fractional CTO, CMO & CRO",
+          "Fractional CTO & CMO",
           "Dedicated dev & ops team",
           "2-week MVP sprints",
           "Daily updates & async standups",
@@ -720,7 +720,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       elite: "—",
       "retainer-growth": "—",
       "retainer-scale": "—",
-      "retainer-enterprise": "CTO + CMO + CRO",
+      "retainer-enterprise": "CTO + CMO",
     },
   },
   {
