@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { ArrowRight, Check, Minus } from "lucide-react";
+import { ArrowRight, Check, Minus, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { COMPARISON_ROWS, COMPARISON_SLUGS, PACKAGE_DETAILS } from "@/data/packages";
 
 const ENTERPRISE_SLUG = "retainer-enterprise";
 
 // Rows whose value triples when Enterprise is on the "Large" tier.
-const TRIPLED_FEATURES = new Set(["AI lead-gen runs", "Automated Outreach"]);
+const TRIPLED_FEATURES = new Set(["AI lead-gen runs", "Automated Outreach", "Hosting"]);
 
 // Triple a string like "10,000 / m" → "30,000 / m". Leaves other strings alone.
 function tripleLimit(val: string): string {
