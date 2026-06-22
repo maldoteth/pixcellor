@@ -780,8 +780,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         }
     );
 
-        }
-    );
+
 
 
 
