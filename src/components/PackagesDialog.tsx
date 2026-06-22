@@ -848,9 +848,19 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     e.currentTarget.style.setProperty("--mouse-y", "0");
   }, []);
 
+  const [paymentChoice, setPaymentChoice] = useState<PaymentChoiceContext | null>(null);
   const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
+    const slug = PACKAGE_KEY_TO_SLUG[key];
+    if (slug) {
+      // Surface the payment-method choice (card vs invoice/bank transfer) first.
+      setPaymentChoice({ packageSlug: slug, packageName, billing });
+      // Stash the card flow so accepting "card" reuses the existing buyer-details prompt
+      (window as any).__pixPendingCardCheckout = { priceId, mode, key, packageName, billing };
+      return;
+    }
     setPending({ priceId, mode, key, packageName, billing });
   };
+
 
   const confirmBuy = async (buyer: BuyerDetails, domainChoice?: BuyerDomainChoice, vision?: VisionBrief) => {
     if (!pending) return;
@@ -1481,9 +1491,17 @@ function MobileCards() {
   };
 
 
+  const [paymentChoice, setPaymentChoice] = useState<PaymentChoiceContext | null>(null);
   const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
+    const slug = PACKAGE_KEY_TO_SLUG[key];
+    if (slug) {
+      setPaymentChoice({ packageSlug: slug, packageName, billing });
+      (window as any).__pixPendingCardCheckout = { priceId, mode, key, packageName, billing };
+      return;
+    }
     setPending({ priceId, mode, key, packageName, billing });
   };
+
 
   const confirmBuy = async (buyer: BuyerDetails, domainChoice?: BuyerDomainChoice, vision?: VisionBrief) => {
     if (!pending) return;
