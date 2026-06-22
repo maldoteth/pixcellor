@@ -157,7 +157,7 @@ const SERVICE_BACKS = {
       { name: "Animated & Interactive 3JS", info: "£10K websites last year are now £479 websites if you speak to the right people — we are the right people." },
       { name: "Landing pages", info: "Save time and have our team take care of all your landing page needs." },
       { name: "Internal tools & Cyber-security\u00a0", info: "Custom systems, automations, agentic flows and more saving you potentially tens of thousands a year." },
-      { name: "CRM systems", info: "Want a CRM that suits your exact needs powered by a swarm of AI agents that work to your will, saving you and your staff time and money while ensuring nothing is ever missed? Look no further." },
+      { name: "Internal tools & CRM\u00a0", info: "Want a CRM that suits your exact needs powered by a swarm of AI agents that work to your will, saving you and your staff time and money while ensuring nothing is ever missed? Look no further." },
       { name: "E-commerce stores", info: "Our Shopify stores have scaled tens of thousands of sales on launch days and we're ready to help you get the same results." },
       { name: "AI & blockchain integrations", info: "Our team have scaled top 300 crypto projects and generated hundreds of millions in market cap, and millions in year 1 revenue for multiple projects, as well as numerous 7 figure fundraises." },
       { name: "Video & 3D animations", info: "Cinematic video, motion graphics and full 3D animations for product launches, ads, explainers and immersive web experiences." },
