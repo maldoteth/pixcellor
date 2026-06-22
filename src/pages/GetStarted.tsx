@@ -335,9 +335,9 @@ const GetStarted = () => {
             <ul className="mt-7 space-y-2 text-white/80">
               {[
                 "Free 15-min strategy call · no pitch, no obligation",
-                "AI-generated preview of your site before you pay",
+                "Fully built live preview of your site before you pay",
                 "Lifetime warranty on the build · you own the code",
-                "Unlimited revisions on Elite & retainers",
+                "Self-improving websites so you never get left behind",
               ].map((line) => (
                 <li key={line} className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" aria-hidden />
