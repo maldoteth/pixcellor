@@ -171,6 +171,7 @@ export default function CandidatesPanel() {
   }, [loadAllVacancies]);
 
   useEffect(() => { load(); }, [load]);
+  usePortalRefresh(useCallback(() => { void load(); void loadAllVacancies(); if (activeId) void loadEvents(activeId); }, [load, loadAllVacancies, activeId]));
 
   useEffect(() => {
     const ch = supabase
