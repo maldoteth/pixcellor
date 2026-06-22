@@ -4,7 +4,7 @@ import { ArrowRight, ChevronRight, Sparkles } from "lucide-react";
 import SeoHead from "@/components/SeoHead";
 import { PACKAGE_DETAILS } from "@/data/packages";
 import { OG_PACKAGES } from "@/data/ogImages";
-import { Component as EtherealShadow } from "@/components/ui/etheral-shadow";
+import AuroraBackdrop from "@/components/AuroraBackdrop";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
