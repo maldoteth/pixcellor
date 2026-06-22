@@ -729,7 +729,24 @@ export default function Portal() {
       emailLogs?: EmailLog[];
       counts?: Record<string, number>;
     };
-    setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && (isPaidOrder(order) || ((order.metadata as { source?: string } | null)?.source === "admin_manual"))));
+    const stripeOrders = (snapshot.orders ?? []).filter(
+      (order) =>
+        isSiteOrder(order) &&
+        (isPaidOrder(order) || ((order.metadata as { source?: string } | null)?.source === "admin_manual")),
+    );
+    // Pull invoices and surface them as orders too (unpaid → "new orders").
+    const { data: invoiceRows } = await supabase
+      .from("invoices")
+      .select("id, invoice_number, public_token, package_slug, status, issued_at, due_at, paid_at, total_pence, currency, billing_name, billing_company, billing_email, payment_method, created_at")
+      .order("created_at", { ascending: false })
+      .limit(250);
+    const invoiceOrders = ((invoiceRows ?? []) as InvoiceRow[])
+      .filter((inv) => inv.status !== "draft")
+      .map(invoiceToOrder);
+    const merged = [...stripeOrders, ...invoiceOrders].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+    setOrders(merged);
     setFalloffs(snapshot.falloffs ?? []);
     const convs = snapshot.conversations ?? [];
     const allMsgs = snapshot.messages ?? [];
