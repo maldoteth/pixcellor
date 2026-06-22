@@ -1603,7 +1603,7 @@ function MobileCards() {
           }
           disabled={!!loading}
           loading={loading === "elite"}
-          label="Buy Now"
+          label="Order Now"
         />
         </div>
       </div>
