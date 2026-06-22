@@ -51,6 +51,7 @@ import AdminPayoutsPanel from "@/components/portal/AdminPayoutsPanel";
 import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import ContactMatchingCandidates from "@/components/portal/ContactMatchingCandidates";
 import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPanel";
+import { emitPortalRefresh } from "@/hooks/usePortalRefresh";
 import FindLeadsButton from "@/components/portal/FindLeadsButton";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 import SeoHead from "@/components/SeoHead";
@@ -504,6 +505,25 @@ export default function Portal() {
   const [callbacksVisibleCount, setCallbacksVisibleCount] = useState(10);
   const [sectionCounts, setSectionCounts] = useState<Record<string, number>>({});
   const [loadingMore, setLoadingMore] = useState<Record<string, boolean>>({});
+  const [refreshingAll, setRefreshingAll] = useState(false);
+
+  const refreshAll = useCallback(async () => {
+    setRefreshingAll(true);
+    try {
+      // Broadcast first so child panels start refetching in parallel with the main snapshot.
+      emitPortalRefresh();
+      await loadPortalSnapshot();
+      toast.success("Portal refreshed");
+    } catch (err) {
+      console.error("portal refresh failed", err);
+      toast.error("Refresh failed");
+    } finally {
+      setRefreshingAll(false);
+    }
+    // loadPortalSnapshot is stable (useCallback with [] deps below)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [clientsSort, setClientsSort] = useState<"newest" | "oldest" | "latest_update" | "hot" | "cold">("newest");
   const [clientsStatusFilter, setClientsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [clientsRetainerOnly, setClientsRetainerOnly] = useState(false);
@@ -2411,8 +2431,8 @@ export default function Portal() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl md:text-3xl font-semibold">Portal</h1>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={loadPortalSnapshot} title="Refresh">
-              <RefreshCw className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={refreshAll} title="Refresh" disabled={refreshingAll}>
+              <RefreshCw className={`h-4 w-4 ${refreshingAll ? "animate-spin" : ""}`} />
             </Button>
           </div>
           <div className="flex shrink-0 items-center gap-2">

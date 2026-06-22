@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { usePortalRefresh } from "@/hooks/usePortalRefresh";
 
 interface QueueItem {
   id: string;
@@ -46,7 +47,7 @@ export default function ByowAdminPanel() {
   const [nsTier, setNsTier] = useState<"care" | "studio" | "agency">("care");
   const [nsCreating, setNsCreating] = useState(false);
 
-  const loadAll = async () => {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     const [{ data: q }, { data: ss }] = await Promise.all([
       supabase.from("byow_admin_queue").select("*").order("created_at", { ascending: false }).limit(100),
@@ -55,9 +56,11 @@ export default function ByowAdminPanel() {
     setQueue((q || []) as QueueItem[]);
     setSites((ss || []) as Site[]);
     setLoading(false);
-  };
+  }, []);
 
-  useEffect(() => { void loadAll(); }, []);
+  useEffect(() => { void loadAll(); }, [loadAll]);
+  usePortalRefresh(loadAll);
+
 
   const setStatus = async (id: string, status: string, notes?: string) => {
     const patch: any = { status };

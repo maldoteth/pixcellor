@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { usePortalRefresh } from "@/hooks/usePortalRefresh";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -189,6 +190,7 @@ export default function CandidatesPanel() {
   }, []);
 
   useEffect(() => { if (activeId) loadEvents(activeId); }, [activeId, loadEvents]);
+  usePortalRefresh(useCallback(() => { void load(); void loadAllVacancies(); if (activeId) void loadEvents(activeId); }, [load, loadAllVacancies, activeId, loadEvents]));
 
   const titleOptions = useMemo(() => {
     const set = new Set<string>();
