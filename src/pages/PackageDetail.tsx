@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import PackageCompareTable from "@/components/PackageCompareTable";
 import PackageReviews from "@/components/PackageReviews";
 import { PACKAGE_DETAILS, type PackageDetail, type PackageCta } from "@/data/packages";
-import { Component as EtherealShadow } from "@/components/ui/etheral-shadow";
+import AuroraBackdrop from "@/components/AuroraBackdrop";
 
 const SITE_ORIGIN = "https://pixcellor.com";
 
@@ -188,14 +188,8 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
   }, [slug]);
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
-      <EtherealShadow
-        className="fixed inset-0 z-0"
-        color="rgba(128, 128, 128, 1)"
-        animation={{ scale: 100, speed: 90 }}
-        noise={{ opacity: 1, scale: 1.2 }}
-        sizing="fill"
-      />
+    <div className="relative min-h-screen text-foreground overflow-hidden" style={{ background: "#000" }}>
+      <AuroraBackdrop className="!fixed inset-0 -z-10" />
       <SeoHead
         title={`${pkg.name} — ${pkg.price} | Pixcellor`}
         description={pkg.tagline}
