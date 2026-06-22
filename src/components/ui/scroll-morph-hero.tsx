@@ -770,14 +770,16 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const glowAlphaScale = useTransform(virtualScroll, [0, 400, 800], isSmallViewport ? [1, 1, 1] : [1, 0.9, 0.8]);
     const smoothGlowAlphaScale = useSpring(glowAlphaScale, { stiffness: 60, damping: 22 });
     const glowBg = useTransform(
-        [smoothGlowW, smoothGlowH, smoothGlowAlphaScale],
-        ([w, h, a]: number[]) => {
-            const center = glowBaseAlpha * a;
+        [smoothGlowW, smoothGlowH, smoothGlowAlphaScale, introFadeIn],
+        ([w, h, a, fadeIn]: number[]) => {
+            const center = glowBaseAlpha * a * fadeIn;
             // Narrower ellipse + smooth multi-stop fade so it reads as a soft gradient, not a bubble.
-            const scaledW = w * 0.42;
+            const scaledW = w * 0.357;
             const scaledH = h * 0.51;
-
             return `radial-gradient(ellipse ${scaledW}% ${scaledH}% at 50% 50%, hsla(0,0%,100%,${center}) 0%, hsla(0,0%,100%,${center * 0.75}) 25%, hsla(0,0%,100%,${center * 0.4}) 55%, hsla(0,0%,100%,${center * 0.15}) 80%, transparent 100%)`;
+        }
+    );
+
         }
     );
 
