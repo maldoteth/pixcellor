@@ -59,7 +59,7 @@ type VisionStep =
   | "vision-generating"
   | "vision-result"
   | "vision-refine";
-type Step = FieldStep | VisionStep | "payment";
+type Step = FieldStep | VisionStep | "payment" | "invoice-form" | "invoice-success";
 
 const FIELD_STEPS: FieldStep[] = ["company", "name", "email", "phone"];
 
