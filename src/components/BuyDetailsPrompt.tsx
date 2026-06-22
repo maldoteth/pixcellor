@@ -440,18 +440,56 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     return (
       <>
         <label className="text-foreground/70 text-xs uppercase tracking-wider">{meta.prompt(values.name)}</label>
-        <input
-          autoFocus
-          type={meta.type}
-          inputMode={meta.inputMode}
-          value={values[step as FieldStep]}
-          onChange={(e) => { setValues((p) => ({ ...p, [step]: e.target.value })); if (error) setError(null); }}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleFieldNext(); } }}
-          placeholder={meta.placeholder}
-          className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
-          maxLength={step === "phone" ? 30 : 200}
-          disabled={submitting}
-        />
+        {step === "company" ? (
+          <div className="relative">
+            <input
+              autoFocus
+              type="text"
+              value={values.company}
+              onChange={(e) => { setValues((p) => ({ ...p, company: e.target.value })); searchCompanies(e.target.value); if (error) setError(null); }}
+              onFocus={() => { if (chHits.length) setChOpen(true); }}
+              onBlur={() => { window.setTimeout(() => setChOpen(false), 150); }}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleFieldNext(); } }}
+              placeholder={meta.placeholder}
+              className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 pr-9 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+              maxLength={200}
+              disabled={submitting}
+              autoComplete="off"
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40">
+              {chLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            </div>
+            {chOpen && chHits.length > 0 && (
+              <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto rounded-md border border-foreground/15 bg-background shadow-lg">
+                {chHits.map((h) => (
+                  <button
+                    type="button"
+                    key={h.company_number}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => pickCompany(h)}
+                    className="w-full text-left px-3 py-2 hover:bg-foreground/10 border-b border-foreground/5 last:border-b-0"
+                  >
+                    <div className="text-sm text-foreground font-medium truncate">{h.title}</div>
+                    <div className="text-xs text-foreground/60 truncate">{h.address_snippet}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <input
+            autoFocus
+            type={meta.type}
+            inputMode={meta.inputMode}
+            value={values[step as FieldStep]}
+            onChange={(e) => { setValues((p) => ({ ...p, [step]: e.target.value })); if (error) setError(null); }}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleFieldNext(); } }}
+            placeholder={meta.placeholder}
+            className="w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-3 text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition"
+            maxLength={step === "phone" ? 30 : 200}
+            disabled={submitting}
+          />
+        )}
         {error && <p className="text-red-400 text-xs">{error}</p>}
         <div className="flex gap-2 mt-2">
           <Button type="button" variant="outline" onClick={handleFieldBack} disabled={submitting} className="flex-1 h-12 font-semibold">
