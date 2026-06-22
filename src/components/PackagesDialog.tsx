@@ -872,7 +872,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     try {
       await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer, domainChoice, vision);
     } catch (e) {
+      const msg = (e as Error)?.message || "Payment failed. Please try again.";
       console.error(e);
+      toast.error(msg);
     } finally {
       setSubmittingBuyer(false);
       setLoading(null);
