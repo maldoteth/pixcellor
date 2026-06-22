@@ -105,7 +105,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     tagline: "A professional, fast-loading website — done for you, end-to-end.",
     blurb:
       "The fastest, lowest-risk way to get a polished website live. We design, build, host and maintain it so you can focus on running your business.",
-    price: "£169",
+    price: "£169.00",
     billing: "One-time payment",
     priceId: "price_1Tkw9XBtUjwejeUwEQlAv42p",
     mode: "payment",
@@ -181,7 +181,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     tagline: "A flagship, animated site or web app with unlimited revisions.",
     blurb:
       "Our top-tier one-off build. Cinema-grade animations, SEO/AEO baked in, and unlimited revisions until it's exactly what you want. Sites or full web apps.",
-    price: "£479",
+    price: "£479.00",
     billing: "One-time payment",
     priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
     mode: "payment",
