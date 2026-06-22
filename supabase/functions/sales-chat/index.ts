@@ -11,14 +11,14 @@ const corsHeaders = {
 const PACKAGES = {
   fullWorks: {
     name: "Full Works",
-    price: "£150",
+    price: "£169",
     priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
     mode: "payment",
     features: ["Industry leading website", "Lifetime guarantee", "Custom design", "Up to 3 pages"],
   },
   elite: {
     name: "Elite",
-    price: "£500 one-time or £60/mo",
+    price: "£479 one-time or £60/mo",
     priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
     monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
     mode: "payment",
@@ -26,11 +26,11 @@ const PACKAGES = {
   },
   retainer: {
     name: "Retainer",
-    price: "£2,500/mo or £20,000/yr",
+    price: "£2,469/mo or £24,690/yr",
     monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
     yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription",
-    features: ["Your own tech department", "Websites or full apps", "Daily turnarounds (monthly) / Save £10,000 (yearly)"],
+    features: ["Your own tech department", "Websites or full apps", "Daily turnarounds (monthly) / Save £4,938 (yearly)"],
   },
 };
 
@@ -62,9 +62,9 @@ Visitors fall into one of two buckets. Detect intent EARLY:
 6. **Custom Software** - Bespoke solutions for any industry or use case
 
 ## Our Packages (mapped to project size):
-- **Full Works — £150**: Standard website, up to 3 pages, custom design, lifetime guarantee. → For clients who just need a normal website.
-- **Elite — £500 one-time or £60/mo**: Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, lifetime guarantee. → For clients with bigger sites (4–10 pages). Our most popular package.
-- **Retainer — £2,500/mo or £20,000/yr**: Your own tech department — websites or full apps, daily turnarounds. → For large-scale projects, web apps, or ongoing development.
+- **Full Works — £169**: Standard website, up to 3 pages, custom design, lifetime guarantee. → For clients who just need a normal website.
+- **Elite — £479 one-time or £60/mo**: Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, lifetime guarantee. → For clients with bigger sites (4–10 pages). Our most popular package.
+- **Retainer — £2,469/mo or £24,690/yr**: Your own tech department — websites or full apps, daily turnarounds. → For large-scale projects, web apps, or ongoing development.
 
 ## Pricing guidance:
 - All listed prices are our standard prices. Do not refer to discounts, grants, RRPs, or "introductory offers".
@@ -75,7 +75,7 @@ Visitors fall into one of two buckets. Detect intent EARLY:
 - **Elite**: includes up to 10 pages. Each additional page is **+£50**.
   • 11 pages = £550 one-time (or pro-rata on the monthly plan), 12 pages = £600, etc.
 - **Retainer**: unlimited pages — no per-page surcharge. If a client needs many pages or a full app, recommend Retainer instead of stacking extras.
-- Always do the maths for the client out loud (e.g. "5 pages on Full Works would be £150 + 2 × £50 = £250") so they see the value.
+- Always do the maths for the client out loud (e.g. "5 pages on Full Works would be £169 + 2 × £50 = £250") so they see the value.
 - If the client's page count pushes the price close to the next tier, mention that the next tier may be better value.
 
 ## Key Selling Points:
@@ -262,7 +262,7 @@ const tools = [
           package_id: {
             type: "string",
             enum: ["fullWorks", "elite", "retainer"],
-            description: "Which package to show: fullWorks (£150 website, up to 3 pages), elite (£500 or £60/mo, up to 10 pages, unlimited edits, SEO/AEO), or retainer (£2,500/mo or £20,000/yr tech department)",
+            description: "Which package to show: fullWorks (£169 website, up to 3 pages), elite (£500 or £60/mo, up to 10 pages, unlimited edits, SEO/AEO), or retainer (£2,469/mo or £24,690/yr tech department)",
           },
           billing: {
             type: "string",
@@ -2502,11 +2502,11 @@ Deno.serve(async (req) => {
               } else if (pkgId === "retainer") {
                 if (billing === "yearly") {
                   priceId = (pkg as any).yearlyPriceId;
-                  price = "£20,000/yr";
+                  price = "£24,690/yr";
                   mode = "subscription";
                 } else {
                   priceId = (pkg as any).monthlyPriceId;
-                  price = "£2,500/mo";
+                  price = "£2,469/mo";
                   mode = "subscription";
                 }
               }

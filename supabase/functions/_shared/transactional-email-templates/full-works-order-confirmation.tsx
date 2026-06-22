@@ -267,7 +267,7 @@ export const template = createOrderEmail({
     customerEmail: 'client@example.com',
     orderId: 'PXC-ABCD-1234',
     packageName: 'Full Works',
-    amount: '£150.00',
+    amount: '£169.00',
     billing: 'One-time payment',
   },
 })

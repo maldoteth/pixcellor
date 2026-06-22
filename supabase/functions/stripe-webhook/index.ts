@@ -724,7 +724,7 @@ serve(async (req) => {
       }
 
       // Decide which emails to send.
-      // - Subscriptions (Elite retainer, £150/yr renewals) → immediate confirmation as before.
+      // - Subscriptions (Elite retainer, £169/yr renewals) → immediate confirmation as before.
       // - One-off payments that ended up captured immediately (wallets / non-card) → immediate confirmation.
       // - One-off payments awaiting capture → DO NOT send confirmation yet. Capture handler will send it.
       if (event.type === "checkout.session.completed" && session.customer_details?.email && !mergedIntoManualId) {

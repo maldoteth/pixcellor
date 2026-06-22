@@ -93,7 +93,7 @@ const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
   {
     key: "fullWorks",
     name: "Full Works",
-    price: "£150",
+    price: "£169",
     priceId: "price_1Tkw9XBtUjwejeUwEQlAv42p",
     mode: "payment",
     billing: "One-time payment",
@@ -112,41 +112,41 @@ const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
   {
     key: "retainer-growth",
     name: "Growth Retainer",
-    price: "£100/mo",
+    price: "£89/mo",
     priceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
     mode: "subscription",
     billing: "Billed monthly · cancel anytime",
     features: ["Website + unlimited edits", "CRM + AI lead bot", "Hosting, SSL, domain", "Monthly performance report"],
-    yearlyPrice: "£1,000/yr",
-    yearlyBilling: "Billed annually · save £200",
+    yearlyPrice: "£890/yr",
+    yearlyBilling: "Billed annually · save £178",
     yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
-    yearlySavings: "Save £200/yr",
+    yearlySavings: "Save £178/yr",
   },
   {
     key: "retainer-scale",
     name: "Scale Retainer",
-    price: "£500/mo",
+    price: "£479/mo",
     priceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
     mode: "subscription",
     billing: "Billed monthly · cancel anytime",
     features: ["Everything in Growth", "Unlimited seats & edits", "Custom AI agents & automations", "Monthly strategy call"],
-    yearlyPrice: "£5,000/yr",
-    yearlyBilling: "Billed annually · save £1,000",
+    yearlyPrice: "£4,790/yr",
+    yearlyBilling: "Billed annually · save £958",
     yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
-    yearlySavings: "Save £1,000/yr",
+    yearlySavings: "Save £890/yr",
   },
   {
     key: "retainer-enterprise",
     name: "Enterprise Retainer",
-    price: "£2,500/mo",
+    price: "£2,469/mo",
     priceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
     mode: "subscription",
     billing: "Billed monthly · 30-day notice",
     features: ["Fractional CTO, CMO & CRO", "Dedicated dev & ops squad", "2-week MVP sprints", "24/7 priority support"],
-    yearlyPrice: "£20,000/yr",
+    yearlyPrice: "£24,690/yr",
     yearlyBilling: "Billed annually · 30-day notice",
     yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
-    yearlySavings: "Save £10,000/yr",
+    yearlySavings: "Save £4,938/yr",
   },
 ] as const;
 
@@ -952,7 +952,7 @@ export default function CustomerPortal() {
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card/60 px-4 py-3 backdrop-blur-xl">
                     <div>
                       <p className="text-sm font-semibold">Retainer billing cycle</p>
-                      <p className="text-xs text-muted-foreground">Switch monthly vs yearly for the retainer plans below. Save up to £10,000/yr on annual billing.</p>
+                      <p className="text-xs text-muted-foreground">Switch monthly vs yearly for the retainer plans below. Save up to £4,938/yr on annual billing.</p>
                     </div>
                     <div className="inline-flex rounded-md border border-border bg-background p-1">
                       <button

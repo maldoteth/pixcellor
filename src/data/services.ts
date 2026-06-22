@@ -641,7 +641,7 @@ export const SERVICES: Service[] = [
     slug: "animated-sites",
     name: "Animated & Interactive 3JS",
     category: "tech",
-    info: "£10K websites last year are now £500 websites if you speak to the right people — we are the right people.",
+    info: "£10K websites last year are now £479 websites if you speak to the right people — we are the right people.",
     tagline: "Award-grade animated websites at a fraction of the agency price.",
     heroBlurb:
       "The same calibre of motion design and interactivity you'd pay £10K+ for at a London agency — engineered to ship in days, not months. Scroll-driven sequences, 3D interactions, custom shaders, micro-interactions that actually serve the story. We don't bolt animation onto a template; we design and build it as one. And it stays 60fps on a mid-range Android — because slow animation is worse than no animation.",
@@ -696,7 +696,7 @@ export const SERVICES: Service[] = [
         a: "No — done properly, animated sites can hit better Core Web Vitals than bloated WordPress builds. We obsess over performance.",
       },
       {
-        q: "How is this £500 when agencies charge £10K?",
+        q: "How is this £479 when agencies charge £10K?",
         a: "Modern tooling, a tight in-house team and a lot of reusable shader/animation IP. The price is real and the warranty is in writing.",
       },
       {
