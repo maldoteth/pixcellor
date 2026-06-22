@@ -1013,7 +1013,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           }
           disabled={!!loading}
           loading={loading === "elite"}
-          label="Buy Now"
+          label="Order Now"
         />
         </div>
         <div className="mt-2.5"><StripeBadge /></div>
