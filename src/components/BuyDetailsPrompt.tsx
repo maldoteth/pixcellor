@@ -67,7 +67,7 @@ const schemas: Record<FieldStep, z.ZodString> = {
 };
 
 const labels: Record<FieldStep, { prompt: (name: string) => string; placeholder: string; type: string; inputMode: "text" | "email" | "tel" }> = {
-  company: { prompt: () => "Company or website name?", placeholder: "Enter name", type: "text", inputMode: "text" },
+  company: { prompt: () => "COMPANY NAME?", placeholder: "Enter name", type: "text", inputMode: "text" },
   name: { prompt: () => "Your full name?", placeholder: "Jane Doe", type: "text", inputMode: "text" },
   email: { prompt: (n) => `Hi ${n.split(" ")[0] || "there"}, what's your email?`, placeholder: "you@example.com", type: "email", inputMode: "email" },
   phone: { prompt: () => "Mobile number? (optional)", placeholder: "+44 7000 000000 (optional)", type: "tel", inputMode: "tel" },
