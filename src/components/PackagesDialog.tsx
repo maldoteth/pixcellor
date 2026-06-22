@@ -1554,7 +1554,7 @@ function MobileCards() {
           onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
           disabled={!!loading}
           loading={loading === "fullWorks"}
-          label="Buy Now"
+          label="Order Now"
         />
         </div>
       </div>
