@@ -444,7 +444,7 @@ const GetStarted = () => {
                                 {errors.name && <p className="text-xs text-red-400 mt-1">{errors.name}</p>}
                               </div>
                               <div>
-                                <Label htmlFor="gs-company" className="text-white/80">Company</Label>
+                                <Label htmlFor="gs-company" className="text-white/80">Company Name</Label>
                                 <Input
                                   id="gs-company"
                                   value={values.company}
