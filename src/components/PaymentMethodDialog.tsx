@@ -82,10 +82,9 @@ export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelecte
     setForm((f) => ({ ...f, company: hit.title }));
     try {
       const projectRef = (import.meta as any).env.VITE_SUPABASE_PROJECT_ID;
+      const anon = (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const url = `https://${projectRef}.supabase.co/functions/v1/companies-house-search?number=${encodeURIComponent(hit.company_number)}`;
-      const r = await fetch(url, {
-        headers: { Authorization: `Bearer ${(import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-      });
+      const r = await fetch(url, { headers: { Authorization: `Bearer ${anon}`, apikey: anon } });
       const json = await r.json();
       if (json?.address) {
         setForm((f) => ({
