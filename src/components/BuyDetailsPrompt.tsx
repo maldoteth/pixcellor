@@ -440,7 +440,13 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
   });
 
   const handlePayByCard = async () => {
-    await onConfirm(buyerPayload(), undefined, visionToSend());
+    try {
+      await onConfirm(buyerPayload(), undefined, visionToSend());
+    } catch (e) {
+      const msg = (e as Error)?.message || "Payment failed. Please try again.";
+      console.error("pay-by-card failed:", e);
+      toast.error(msg);
+    }
   };
 
   // Invoice (bank transfer) state — when packageSlug is provided we render the form inline.
