@@ -39,6 +39,7 @@ const ByowLanding = lazy(() => import("./pages/ByowLanding"));
 const PublicSite = lazy(() => import("./pages/PublicSite"));
 const ByowGeneratedEditor = lazy(() => import("./pages/ByowGeneratedEditor"));
 const Work = lazy(() => import("./pages/Work"));
+const InvoiceView = lazy(() => import("./pages/InvoiceView"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
