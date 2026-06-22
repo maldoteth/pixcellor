@@ -142,8 +142,11 @@ type VisitorFalloff = {
 // All legacy/external Stripe activity is excluded.
 const isSiteOrder = (o: StripeSession) => {
   const source = (o.metadata as { source?: string } | null)?.source;
-  return source === "pixcellor_site" || source === "admin_manual";
+  return source === "pixcellor_site" || source === "admin_manual" || source === "invoice";
 };
+
+const isInvoiceOrder = (o: StripeSession) =>
+  (o.metadata as { source?: string } | null)?.source === "invoice";
 
 const isPaidOrder = (o: StripeSession) => o.payment_status === "paid" || o.status === "complete" || o.status === "completed";
 
@@ -156,6 +159,63 @@ const isMonthlyRetainerOrder = (order: StripeSession) => {
   const packageName = getOrderMetadataText(order, "package_name").toLowerCase();
   const billing = getOrderMetadataText(order, "billing").toLowerCase();
   return packageName.includes("retainer") && billing.includes("monthly");
+};
+
+type InvoiceRow = {
+  id: string;
+  invoice_number: string;
+  public_token: string | null;
+  package_slug: string | null;
+  status: string;
+  issued_at: string | null;
+  due_at: string | null;
+  paid_at: string | null;
+  total_pence: number | null;
+  currency: string | null;
+  billing_name: string | null;
+  billing_company: string | null;
+  billing_email: string | null;
+  payment_method: string | null;
+  created_at: string;
+};
+
+// Convert an invoice row into a StripeSession-shaped "order" so it shows up
+// alongside Stripe orders in the portal. Unpaid invoices become "new orders".
+const invoiceToOrder = (inv: InvoiceRow): StripeSession => {
+  const paid = inv.status === "paid" || !!inv.paid_at;
+  const cancelled = inv.status === "cancelled" || inv.status === "void";
+  const friendlyPackage = (inv.package_slug && inv.package_slug.length)
+    ? inv.package_slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "Custom invoice";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const hostedUrl = inv.public_token ? `${origin}/invoice/${inv.public_token}` : null;
+  return {
+    session_id: `inv_${inv.id}`,
+    amount_total: inv.total_pence,
+    currency: inv.currency || "gbp",
+    payment_status: paid ? "paid" : cancelled ? "cancelled" : "unpaid",
+    status: paid ? "complete" : cancelled ? "cancelled" : "open",
+    order_status: paid ? "paid" : "awaiting_payment",
+    delivered_at: null,
+    delivered_domain: null,
+    customer_email: inv.billing_email,
+    mode: "invoice",
+    subscription_id: null,
+    created_at: inv.created_at,
+    metadata: {
+      source: "invoice",
+      package_name: friendlyPackage,
+      billing: "Bank transfer · invoice",
+      invoice_id: inv.id,
+      invoice_number: inv.invoice_number,
+      invoice_status: inv.status,
+      hosted_url: hostedUrl,
+      billing_name: inv.billing_name,
+      billing_company: inv.billing_company,
+      due_at: inv.due_at,
+      payment_method: inv.payment_method,
+    },
+  };
 };
 
 type Conversation = {
