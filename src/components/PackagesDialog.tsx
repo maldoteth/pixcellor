@@ -26,7 +26,7 @@ const PACKAGES = {
     price: "£169",
     priceId: "price_1Tkw9XBtUjwejeUwEQlAv42p",
     mode: "payment" as const,
-    features: ["Industry leading website", "Lifetime warranty", "Base animations ", "Up to 3 pages", "All inclusive service"],
+    features: ["Industry leading website", "First 25 leads included", "Lifetime warranty", "Base animations ", "Up to 3 pages"],
   },
   elite: {
     name: "Elite Build",
@@ -34,7 +34,7 @@ const PACKAGES = {
     priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
     mode: "payment" as const,
     featured: true,
-    features: ["Smart site or web app", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages - 3D animated", "Agentic self-improving systems\u00a0"],
+    features: ["Smart site or web app", "First 150 leads included", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages - 3D animated", "Agentic self-improving systems\u00a0"],
   },
   retainer: {
     name: "Custom",
