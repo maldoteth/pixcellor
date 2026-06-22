@@ -212,6 +212,8 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
       setRefineInstruction("");
       setError(null);
       setTrackedKey(null);
+      setInvoiceResult(null);
+      setInvoiceExtra({ address_line1: "", city: "", postcode: "", country: "United Kingdom", po_reference: "" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
