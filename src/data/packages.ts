@@ -189,7 +189,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     ogImage: ogElite,
     sampleWork: [
       { title: "Animated brand site", tag: "10 pages · WebGL hero", note: "Scroll-driven 3D, custom illustrations.", image: imgAnimatedBrandSite },
-      { title: "SaaS web app MVP", tag: "Auth · DB · Stripe", note: "Full-stack product launched in 10 days.", image: imgSaasMvp },
+      { title: "SaaS web app MVP", tag: "Auth · DB · Stripe", note: "Full-stack product launched in 3–10 days.", image: imgSaasMvp },
       { title: "E-commerce flagship", tag: "Catalog · cart · checkout", note: "Custom storefront with Stripe payments.", image: imgEcommerceFlagship },
     ],
     addOns: DEFAULT_ADDONS,
