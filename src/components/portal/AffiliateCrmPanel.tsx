@@ -161,6 +161,7 @@ export default function AffiliateCrmPanel() {
     })();
     return () => { alive = false; };
   }, [load]);
+  usePortalRefresh(load);
 
   // Live duplicate / close-match suggestions as user types name
   const matchTimer = useRef<number | null>(null);
