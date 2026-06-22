@@ -31,14 +31,14 @@ export default function PackageCompareTable({
     if (slug !== ENTERPRISE_SLUG || !isLarge) return raw;
     if (feature === "Fractional C-suite") return "⅓ CTO + CMO";
     if (TRIPLED_FEATURES.has(feature)) return tripleLimit(raw);
-    if (feature === "Price") return billing === "yearly" ? "£50,000/yr" : "£5,000/mo";
+    if (feature === "Price") return billing === "yearly" ? "£46,900/yr" : "£4,690/mo";
     return raw;
   };
 
   const enterprisePriceLabel = isLarge
     ? billing === "yearly"
-      ? "£50,000/yr"
-      : "£5,000/mo"
+      ? "£46,900/yr"
+      : "£4,690/mo"
     : billing === "yearly" && PACKAGE_DETAILS[ENTERPRISE_SLUG].yearlyPrice
       ? PACKAGE_DETAILS[ENTERPRISE_SLUG].yearlyPrice!
       : PACKAGE_DETAILS[ENTERPRISE_SLUG].price;
