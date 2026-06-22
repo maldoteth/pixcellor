@@ -100,7 +100,7 @@ export function Component({
 
       <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
         <defs>
-          <filter id={`${id}-filter}`} x="-20%" y="-20%" width="140%" height="140%">
+          <filter id={`${id}-filter`} x="-20%" y="-20%" width="140%" height="140%">
             <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="2" seed="2" result="noise" />
             <feColorMatrix ref={feColorMatrixRef} in="noise" type="hueRotate" values="180" result="rotated" />
             <feDisplacementMap in="SourceGraphic" in2="rotated" scale={displacementScale} />
