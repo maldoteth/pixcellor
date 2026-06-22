@@ -483,6 +483,8 @@ export default function ServiceSalesView({
                   <CrmSystemsHero />
                 ) : service.slug === "creative-branding-makeovers" ? (
                   <CreativeBrandingHero />
+                ) : service.slug === "cyber-security" ? (
+                  <CyberSecurityHero />
                 ) : (
                   <Wave />
                 )}
