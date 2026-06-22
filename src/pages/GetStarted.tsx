@@ -855,6 +855,67 @@ const GetStarted = () => {
         </div>
       </section>
 
+      {/* CYBER-SECURITY — bundled into retainers */}
+      <section className="border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
+          <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent p-6 sm:p-10 backdrop-blur-xl">
+            <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+            <div className="relative grid gap-10 lg:grid-cols-[1.1fr_1fr] items-start">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/90">
+                  <ShieldCheck className="h-3 w-3" />
+                  <span>Cyber-security · Included on every retainer</span>
+                </div>
+                <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-semibold leading-tight tracking-tight">
+                  Enterprise-grade cyber defence, bundled into your retainer.
+                </h2>
+                <p className="mt-4 text-sm sm:text-base text-white/75 leading-relaxed">
+                  Most businesses are one phishing email or one stolen laptop away from a very bad quarter.
+                  Every Pixcellor retainer includes the same security programme firms with six-figure security
+                  budgets pay specialists for — audits, MFA, EDR, backups, phishing simulation, MDR,
+                  pen testing, incident response and full compliance support — at a fraction of the cost of
+                  hiring it in.
+                </p>
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <Link
+                    to="/services/cyber-security"
+                    className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-wider text-white hover:bg-white/15"
+                  >
+                    See the full programme <ArrowRight className="h-3 w-3" />
+                  </Link>
+                  <span className="text-xs text-white/55">
+                    Standalone cyber engagements also available — ask on the call.
+                  </span>
+                </div>
+              </div>
+              <div className="grid gap-3">
+                {[
+                  {
+                    label: "Growth Retainer",
+                    body: "Audit, EDR, MFA, email hardening, backups, phishing training and Cyber Essentials readiness.",
+                  },
+                  {
+                    label: "Scale Retainer",
+                    body: "Adds 24/7 MDR, SIEM/XDR threat hunting, quarterly pen testing, cloud posture and ISO/SOC readiness.",
+                  },
+                  {
+                    label: "Enterprise Retainer",
+                    body: "Adds vCISO, red-teaming, 24/7 incident-response retainer with DFIR, zero-trust and full GRC.",
+                  },
+                ].map((t) => (
+                  <div key={t.label} className="rounded-xl border border-white/10 bg-black/30 p-4">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/55">{t.label}</div>
+                    <p className="mt-1 text-sm text-white/85 leading-relaxed">{t.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+
 
 
       {/* FAQ */}
