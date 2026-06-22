@@ -931,7 +931,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
           onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
           disabled={!!loading}
           loading={loading === "fullWorks"}
-          label="Buy Now"
+          label="Order Now"
         />
         <Link to="/packages/full-works" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
           See full details →
