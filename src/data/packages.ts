@@ -646,8 +646,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Turnaround",
     values: {
-      "full-works": "5–10 days",
-      elite: "10 days",
+      "full-works": "3–10 days",
+      elite: "3–10 days",
       "retainer-growth": "1–3 days/edit",
       "retainer-scale": "Weekly sprints",
       "retainer-enterprise": "Weekly MVPs",
