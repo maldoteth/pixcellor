@@ -928,6 +928,14 @@ async function lookupCustomer(supabase: DbClient, rawEmail: string) {
     .order("created_at", { ascending: false })
     .limit(20);
 
+  // Bank-transfer invoices (treated as orders in the CRM)
+  const { data: invoiceRows } = await supabase
+    .from("invoices")
+    .select("id, invoice_number, public_token, package_slug, status, issued_at, due_at, paid_at, total_pence, currency, billing_name, billing_company, billing_email, payment_method, created_at")
+    .ilike("billing_email", email)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
   // Contact form inquiries
   const { data: inquiries } = await supabase
     .from("contact_inquiries")
