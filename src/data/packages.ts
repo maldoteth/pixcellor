@@ -461,7 +461,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     name: "Enterprise\u00a0",
     tagline: "Fractional C-suite, dedicated team, MVP sprints — £2,469/month.",
     blurb:
-      "The full Pixcellor force on your side. Fractional CTO, CMO and CRO, a dedicated dev & ops squad, 2-week MVP sprints and 24/7 priority support.",
+      "The full Pixcellor force on your side. Fractional CTO and CMO, a dedicated dev & ops squad, 2-week MVP sprints and 24/7 priority support.",
     price: "£2,469/mo",
     billing: "Billed monthly · 30-day notice",
     priceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
@@ -481,7 +481,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       {
         title: "Everything in Scale, plus",
         items: [
-          "Fractional CTO, CMO & CRO",
+          "Fractional CTO & CMO",
           "Dedicated dev & ops team",
           "2-week MVP sprints",
           "Daily updates & async standups",
@@ -720,7 +720,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       elite: "—",
       "retainer-growth": "—",
       "retainer-scale": "—",
-      "retainer-enterprise": "CTO + CMO + CRO",
+      "retainer-enterprise": "CTO + CMO",
     },
   },
   {

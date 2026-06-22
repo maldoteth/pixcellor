@@ -53,7 +53,7 @@ const PACKAGES = {
     monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
     yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
     mode: "subscription" as const,
-    features: ["Fractional CTO, CMO & CRO", "Development & operations", "Consultancy & execution", "Monthly MVP sprints", "Daily updates"],
+    features: ["Fractional CTO & CMO", "Development & operations", "Consultancy & execution", "Monthly MVP sprints", "Daily updates"],
   },
   enterprise: {
     name: "Custom",
@@ -109,7 +109,7 @@ export const RETAINER_TIERS = {
     yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
     features: [
       "Agentic self-improving stack",
-      "Fractional CTO, CMO & CRO",
+      "Fractional CTO & CMO",
       "Dedicated dev & ops team",
       "Weekly MVP sprints",
       "Daily progress updates",
