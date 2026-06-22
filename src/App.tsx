@@ -102,7 +102,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthRedirectHandler />
+          <RoutePrefetcher />
           <Suspense fallback={<RouteFallback />}>
+
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<Admin />} />
