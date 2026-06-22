@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -114,20 +114,20 @@ export default function InvoiceView() {
     })();
   }, [token]);
 
+  useEffect(() => {
+    if (invoice) document.title = `Invoice ${invoice.invoice_number} — ${SUPPLIER_NAME}`;
+  }, [invoice]);
+
   const downloadPdf = async () => {
     if (!token) return;
     setPdfLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("get-invoice-pdf", {
-        body: undefined,
-      });
-      // The function uses query params via GET; fall back to direct fetch:
       const url = `${(import.meta as any).env.VITE_SUPABASE_URL}/functions/v1/get-invoice-pdf?token=${encodeURIComponent(token)}`;
       const res = await fetch(url, { headers: { apikey: (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY ?? (import.meta as any).env.VITE_SUPABASE_ANON_KEY ?? "" } });
       const json = await res.json();
       if (!res.ok || !json.url) throw new Error(json.error || "PDF unavailable");
       window.open(json.url, "_blank", "noopener,noreferrer");
-      void data; void error;
+
     } catch (e: any) {
       toast.error(e?.message || "Could not generate PDF");
     } finally {
