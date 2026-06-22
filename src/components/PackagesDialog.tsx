@@ -53,8 +53,8 @@ export const RETAINER_TIERS = {
   growth: {
     key: "growth" as const,
     name: "Growth",
-    monthly: 100,
-    yearly: 1000,
+    monthly: 89,
+    yearly: 890,
     monthlyLabel: "£89/mo",
     yearlyLabel: "£890/yr",
     monthlyPriceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
@@ -71,8 +71,8 @@ export const RETAINER_TIERS = {
   scale: {
     key: "scale" as const,
     name: "Scale",
-    monthly: 500,
-    yearly: 5000,
+    monthly: 479,
+    yearly: 4790,
     monthlyLabel: "£479/mo",
     yearlyLabel: "£4,790/yr",
     monthlyPriceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
@@ -89,8 +89,8 @@ export const RETAINER_TIERS = {
   enterprise: {
     key: "enterprise" as const,
     name: "Enterprise",
-    monthly: 2500,
-    yearly: 20000,
+    monthly: 2469,
+    yearly: 24690,
     monthlyLabel: "£2,469/mo",
     yearlyLabel: "£24,690/yr",
     monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
@@ -109,8 +109,8 @@ export const RETAINER_TIERS = {
 // Sub-tier for the Enterprise retainer card: Small (default) and Medium businesses.
 // Small mirrors the original Enterprise pricing; Medium is a higher tier handled via sales.
 export const ENTERPRISE_SIZES = {
-  small: { key: "small" as const, name: "Small", monthly: 2500, yearly: 20000, monthlyLabel: "£2,469/mo", yearlyLabel: "£24,690/yr" },
-  medium: { key: "medium" as const, name: "Medium", monthly: 5000, yearly: 40000, monthlyLabel: "£4,690/mo", yearlyLabel: "£46,900/yr" },
+  small: { key: "small" as const, name: "Small", monthly: 2469, yearly: 24690, monthlyLabel: "£2,469/mo", yearlyLabel: "£24,690/yr" },
+  medium: { key: "medium" as const, name: "Medium", monthly: 4690, yearly: 46900, monthlyLabel: "£4,690/mo", yearlyLabel: "£46,900/yr" },
 } as const;
 type EnterpriseSizeKey = keyof typeof ENTERPRISE_SIZES;
 const ENTERPRISE_SIZE_ORDER: EnterpriseSizeKey[] = ["small", "medium"];
