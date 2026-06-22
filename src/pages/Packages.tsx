@@ -17,14 +17,8 @@ export default function PackagesPage() {
   const packages = Object.values(PACKAGE_DETAILS);
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
-      <EtherealShadow
-        className="fixed inset-0 z-0"
-        color="rgba(128, 128, 128, 1)"
-        animation={{ scale: 100, speed: 90 }}
-        noise={{ opacity: 1, scale: 1.2 }}
-        sizing="fill"
-      />
+    <div className="relative min-h-screen text-foreground overflow-hidden" style={{ background: "#000" }}>
+      <AuroraBackdrop className="!fixed inset-0 -z-10" />
       <SeoHead
         title="Packages — Pixcellor"
         description="Choose a Pixcellor package — one-off builds and ongoing retainers for fast, premium websites."
