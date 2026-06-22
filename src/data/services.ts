@@ -1927,6 +1927,7 @@ const NAME_TO_SLUG: Record<string, string> = {
   "API & third-party support": "api-third-party",
   "Product/project management": "product-project-management",
   "Creative, branding and makeovers": "creative-branding-makeovers",
+  "Creative & branding": "creative-branding-makeovers",
   "Video & 3D animations": "video-3d-animations",
   "Documents and decks": "documents-and-decks",
 };
