@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Briefcase, Plus, Trash2, UserPlus, Search, Loader2 } from "lucide-react";
+import { usePortalRefresh } from "@/hooks/usePortalRefresh";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
