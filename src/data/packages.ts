@@ -459,7 +459,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
   "retainer-enterprise": {
     slug: "retainer-enterprise",
     name: "Enterprise\u00a0",
-    tagline: "Fractional C-suite, dedicated team, MVP sprints — £2,469/month.",
+    tagline: "A fractional CMO and CTO shipping weekly",
     blurb:
       "The full Pixcellor force on your side. Fractional CTO and CMO, a dedicated dev & ops squad, 2-week MVP sprints and 24/7 priority support.",
     price: "£2,469/mo",
