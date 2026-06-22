@@ -46,6 +46,70 @@ export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelecte
   });
   const [result, setResult] = useState<{ hosted_url: string; invoice_number: string } | null>(null);
 
+  // Companies House typeahead
+  const [chHits, setChHits] = useState<CHHit[]>([]);
+  const [chOpen, setChOpen] = useState(false);
+  const [chLoading, setChLoading] = useState(false);
+  const chTimer = useRef<number | null>(null);
+  const chReqId = useRef(0);
+
+  const searchCompanies = (q: string) => {
+    if (chTimer.current) window.clearTimeout(chTimer.current);
+    const term = q.trim();
+    if (term.length < 2) { setChHits([]); setChOpen(false); return; }
+    chTimer.current = window.setTimeout(async () => {
+      const reqId = ++chReqId.current;
+      setChLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("companies-house-search", {
+          method: "GET" as any,
+          body: undefined,
+          // pass query via URL
+          headers: {},
+        } as any);
+        // supabase-js doesn't support query params on invoke; use direct fetch:
+        const projectRef = (import.meta as any).env.VITE_SUPABASE_PROJECT_ID;
+        const url = `https://${projectRef}.supabase.co/functions/v1/companies-house-search?q=${encodeURIComponent(term)}`;
+        const r = await fetch(url, {
+          headers: { Authorization: `Bearer ${(import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        });
+        const json = await r.json();
+        if (reqId !== chReqId.current) return;
+        setChHits(json.items ?? []);
+        setChOpen(true);
+      } catch {
+        if (reqId === chReqId.current) { setChHits([]); }
+      } finally {
+        if (reqId === chReqId.current) setChLoading(false);
+      }
+    }, 280);
+  };
+
+  const pickCompany = async (hit: CHHit) => {
+    setChOpen(false);
+    setForm((f) => ({ ...f, company: hit.title }));
+    try {
+      const projectRef = (import.meta as any).env.VITE_SUPABASE_PROJECT_ID;
+      const url = `https://${projectRef}.supabase.co/functions/v1/companies-house-search?number=${encodeURIComponent(hit.company_number)}`;
+      const r = await fetch(url, {
+        headers: { Authorization: `Bearer ${(import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+      });
+      const json = await r.json();
+      if (json?.address) {
+        setForm((f) => ({
+          ...f,
+          company: json.company_name || hit.title,
+          address_line1: json.address.address_line1 || f.address_line1,
+          city: json.address.city || f.city,
+          postcode: json.address.postcode || f.postcode,
+          country: json.address.country || f.country,
+        }));
+      }
+    } catch {
+      // silent — user can fill manually
+    }
+  };
+
   useEffect(() => {
     if (open) {
       setStep(initialStep);
