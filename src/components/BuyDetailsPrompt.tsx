@@ -619,9 +619,50 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     </>
   );
 
+  const renderPayment = () => (
+    <>
+      <p className="text-foreground text-base font-semibold">How would you like to pay?</p>
+      <p className="text-foreground/60 text-xs">
+        {packageName ? `${packageName}${billing ? ` · ${billing}` : ""}` : "Choose your preferred payment method."}
+      </p>
+      <div className="grid gap-2 mt-1">
+        <button
+          type="button"
+          onClick={handlePayByCard}
+          disabled={submitting}
+          className="flex items-center gap-4 rounded-lg border border-foreground/15 bg-foreground/5 hover:bg-foreground/10 p-4 text-left transition disabled:opacity-60"
+        >
+          <CreditCard className="h-6 w-6 shrink-0" />
+          <div>
+            <div className="font-bold text-foreground">Pay by card</div>
+            <div className="text-xs text-foreground/60">Secure Stripe checkout · instant access</div>
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={handlePayByInvoice}
+          disabled={submitting}
+          className="flex items-center gap-4 rounded-lg border border-foreground/15 bg-foreground/5 hover:bg-foreground/10 p-4 text-left transition disabled:opacity-60"
+        >
+          <Building2 className="h-6 w-6 shrink-0" />
+          <div>
+            <div className="font-bold text-foreground">Pay by bank transfer (invoice)</div>
+            <div className="text-xs text-foreground/60">PDF invoice emailed · 28 days to pay</div>
+          </div>
+        </button>
+      </div>
+      <div className="flex gap-2 mt-2">
+        <Button type="button" variant="outline" onClick={() => setStep(visionBrief?.imageUrl ? "vision-result" : "vision-intro")} disabled={submitting} className="flex-1 h-11 font-semibold">
+          Back
+        </Button>
+      </div>
+      {submitting && <p className="text-xs text-foreground/60 text-center mt-1 inline-flex items-center gap-2 justify-center"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing…</p>}
+    </>
+  );
+
   const renderBody = () => {
     if (step === "payment") {
-      return <DomainPicker onChoose={handleDomainChoice} onBack={() => setStep(showDomainStep ? "vision-intro" : "phone")} submitting={submitting} />;
+      return renderPayment();
     }
     if (isField(step)) return renderField();
     if (step === "vision-intro") return renderVisionIntro();
