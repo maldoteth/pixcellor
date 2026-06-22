@@ -55,8 +55,7 @@ export default function CyberSecurityHero() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height, false);
 
-    let theme = getTheme();
-    renderer.setClearColor(getBg(theme));
+    renderer.setClearColor(bgColor);
 
     const gap = 0.3;
     const amountX = 200;
