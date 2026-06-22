@@ -781,9 +781,37 @@ const GetStarted = () => {
           </div>
 
           {/* Retainers */}
+          <div className="mt-10 flex justify-center">
+            <div className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.04] p-1 backdrop-blur-md">
+              {(["monthly", "yearly"] as const).map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  onClick={() => setBilling(b)}
+                  className={`relative rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                    billing === b ? "bg-white text-black" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  {b === "monthly" ? "Monthly" : "Yearly"}
+                  {b === "yearly" && (
+                    <span className={`ml-2 inline-block rounded-full px-2 py-0.5 text-[9px] tracking-wider ${
+                      billing === "yearly" ? "bg-black/20 text-black" : "bg-white/10 text-white/80"
+                    }`}>
+                      Save up to £4,938
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="mt-6 grid md:grid-cols-3 gap-5">
             {RETAINERS.map((slug) => {
               const p = PACKAGE_DETAILS[slug];
+              const hasYearly = Boolean(p.yearlyPrice);
+              const showYearly = billing === "yearly" && hasYearly;
+              const displayPrice = showYearly ? p.yearlyPrice! : p.price;
+              const displayBilling = showYearly ? p.yearlyBilling! : p.billing;
               return (
                 <div
                   key={slug}
@@ -794,12 +822,14 @@ const GetStarted = () => {
                     <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">Retainer</span>
                   </div>
                   <div className="mt-3 flex items-baseline gap-2">
-                    <span className="text-2xl font-semibold">{p.price}</span>
+                    <span className="text-2xl font-semibold">{displayPrice}</span>
                     {p.yearlySavings && (
-                      <span className="text-[11px] text-emerald-400">{p.yearlySavings}</span>
+                      <span className="text-[11px] text-emerald-400">
+                        {showYearly ? `Saving ${p.yearlySavings}` : `Save ${p.yearlySavings}`}
+                      </span>
                     )}
                   </div>
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-white/40 mt-1">{p.billing}</p>
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-white/40 mt-1">{displayBilling}</p>
                   <p className="mt-3 text-sm text-white/65 leading-relaxed">{p.tagline}</p>
                   <Link
                     to={`/packages/${slug}`}
