@@ -233,7 +233,14 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
             </div>
           )}
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
-            {pkg.name}
+            {isEnterpriseLarge ? (
+              <span className="inline-flex items-start">
+                <span>{pkg.name}</span>
+                <Plus className="h-4 w-4 md:h-6 md:w-6 mt-1 md:mt-2 text-foreground/70" strokeWidth={3} />
+              </span>
+            ) : (
+              pkg.name
+            )}
           </h1>
           <p className="mt-3 text-base md:text-xl text-foreground/70 max-w-3xl">{pkg.tagline}</p>
 
