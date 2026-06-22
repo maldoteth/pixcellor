@@ -1540,7 +1540,7 @@ function MobileCards() {
         </div>
 
         <div className="mt-3 mb-4 flex items-start gap-1">
-          <span className="text-3xl font-extrabold text-foreground">£500</span>
+          <span className="text-3xl font-extrabold text-foreground">£500<span className="text-sm font-bold align-top">.00</span></span>
           
         </div>
         <ul className="space-y-2 flex-1 mb-3">
