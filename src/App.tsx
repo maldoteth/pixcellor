@@ -132,6 +132,8 @@ const App = () => (
               <Route path="/byow/edit/:ref" element={<ByowGeneratedEditor />} />
               <Route path="/s/:ref" element={<PublicSite />} />
               <Route path="/work" element={<Work />} />
+              <Route path="/invoice/:token" element={<InvoiceView />} />
+
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
