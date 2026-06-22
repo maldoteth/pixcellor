@@ -361,11 +361,26 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     setStep(VISION_QUESTIONS[visionIdx - 1].step);
   };
 
-  const handleDomainChoice = async (choice: BuyerDomainChoice) => {
+  const visionToSend = () =>
+    visionBrief && (visionBrief.imageUrl || visionBrief.prompt) ? visionBrief : undefined;
+
+  const handlePayByCard = async () => {
     await onConfirm(
       { company: values.company.trim(), name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim() },
-      choice,
-      visionBrief && (visionBrief.imageUrl || visionBrief.prompt) ? visionBrief : undefined,
+      undefined,
+      visionToSend(),
+    );
+  };
+
+  const handlePayByInvoice = async () => {
+    if (!onInvoice) {
+      // Fallback — just confirm as a card flow
+      await handlePayByCard();
+      return;
+    }
+    await onInvoice(
+      { company: values.company.trim(), name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim() },
+      visionToSend(),
     );
   };
 
