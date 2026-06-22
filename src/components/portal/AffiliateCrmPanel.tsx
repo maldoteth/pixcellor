@@ -501,7 +501,17 @@ export default function AffiliateCrmPanel() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
                   <Label className="text-xs">Company / client name</Label>
-                  <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} />
+                  <CompaniesHouseInput
+                    value={editing.name}
+                    onChange={(v) => setEditing({ ...editing, name: v })}
+                    onSelect={(sel) => setEditing((prev) => prev ? ({
+                      ...prev,
+                      name: sel.company || prev.name,
+                      contact_name: prev.contact_name?.trim() ? prev.contact_name : (sel.director ?? prev.contact_name),
+                      location: prev.location?.trim() ? prev.location : (sel.location ?? prev.location),
+                    }) : prev)}
+                    placeholder="Acme Ltd"
+                  />
                 </div>
                 <div>
                   <Label className="text-xs">Contact name</Label>
