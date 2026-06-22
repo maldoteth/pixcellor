@@ -125,6 +125,43 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
   const [error, setError] = useState<string | null>(null);
   const [trackedKey, setTrackedKey] = useState<string | null>(null);
 
+  // Companies House typeahead (UK only — non-UK users can just keep typing)
+  type CHHit = { company_number: string; title: string; address_snippet: string; status?: string };
+  const [chHits, setChHits] = useState<CHHit[]>([]);
+  const [chOpen, setChOpen] = useState(false);
+  const [chLoading, setChLoading] = useState(false);
+  const chTimer = useRef<number | null>(null);
+  const chReqId = useRef(0);
+
+  const searchCompanies = (q: string) => {
+    if (chTimer.current) window.clearTimeout(chTimer.current);
+    const term = q.trim();
+    if (term.length < 2) { setChHits([]); setChOpen(false); return; }
+    chTimer.current = window.setTimeout(async () => {
+      const reqId = ++chReqId.current;
+      setChLoading(true);
+      try {
+        const projectRef = (import.meta as any).env.VITE_SUPABASE_PROJECT_ID;
+        const anon = (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const url = `https://${projectRef}.supabase.co/functions/v1/companies-house-search?q=${encodeURIComponent(term)}`;
+        const r = await fetch(url, { headers: { Authorization: `Bearer ${anon}`, apikey: anon } });
+        const json = await r.json();
+        if (reqId !== chReqId.current) return;
+        setChHits(json.items ?? []);
+        setChOpen(true);
+      } catch {
+        if (reqId === chReqId.current) setChHits([]);
+      } finally {
+        if (reqId === chReqId.current) setChLoading(false);
+      }
+    }, 280);
+  };
+
+  const pickCompany = (hit: CHHit) => {
+    setChOpen(false);
+    setValues((p) => ({ ...p, company: hit.title }));
+  };
+
   // Vision state
   const [visionAnswers, setVisionAnswers] = useState<Record<VisionAnswerKey, string>>({
     industry: "", vibe: "", colour: "", headline: "", sections: "",
