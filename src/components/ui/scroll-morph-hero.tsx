@@ -769,45 +769,14 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     // Desktop: fade glow ~20% softer as second page loads
     const glowAlphaScale = useTransform(virtualScroll, [0, 400, 800], isSmallViewport ? [1, 1, 1] : [1, 0.9, 0.8]);
     const smoothGlowAlphaScale = useSpring(glowAlphaScale, { stiffness: 60, damping: 22 });
-    // Cursor-follow drift for the center glow (desktop only). Light gently follows the pointer.
-    const glowOffsetX = useMotionValue(0);
-    const glowOffsetY = useMotionValue(0);
-    const smoothGlowOffsetX = useSpring(glowOffsetX, { stiffness: 50, damping: 20, mass: 0.6 });
-    const smoothGlowOffsetY = useSpring(glowOffsetY, { stiffness: 50, damping: 20, mass: 0.6 });
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        if (window.matchMedia("(pointer: coarse)").matches) return;
-        const el = containerRef.current;
-        if (!el) return;
-        const onMove = (e: PointerEvent) => {
-            const rect = el.getBoundingClientRect();
-            if (!rect.width || !rect.height) return;
-            const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2; // -1..1
-            const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-            // Subtle drift: ±5% horizontal, ±3.5% vertical
-            glowOffsetX.set(nx * 11);
-            glowOffsetY.set(ny * 7);
-        };
-        const onLeave = () => {
-            glowOffsetX.set(0);
-            glowOffsetY.set(0);
-        };
-        el.addEventListener("pointermove", onMove, { passive: true });
-        el.addEventListener("pointerleave", onLeave);
-        return () => {
-            el.removeEventListener("pointermove", onMove);
-            el.removeEventListener("pointerleave", onLeave);
-        };
-    }, [glowOffsetX, glowOffsetY]);
     const glowBg = useTransform(
-        [smoothGlowW, smoothGlowH, smoothGlowAlphaScale, smoothGlowOffsetX, smoothGlowOffsetY],
-        ([w, h, a, ox, oy]: number[]) => {
+        [smoothGlowW, smoothGlowH, smoothGlowAlphaScale],
+        ([w, h, a]: number[]) => {
             const center = glowBaseAlpha * a;
-            const cx = 50 + ox;
-            const cy = 50 + oy;
-            return `radial-gradient(ellipse ${w}% ${h}% at ${cx}% ${cy}%, hsla(0,0%,100%,${center}) 0%, hsla(0,0%,100%,${center * 0.5}) 35%, transparent ${glowFadeStop}%)`;
+            return `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,${center}) 0%, hsla(0,0%,100%,${center * 0.5}) 35%, transparent ${glowFadeStop}%)`;
         }
     );
+
 
     // Portfolio gallery items pulled from DB; rotation driven by hero virtual scroll
     const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
