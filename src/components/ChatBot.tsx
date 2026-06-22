@@ -200,7 +200,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
         }}
       >
         <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : card.mode === "subscription" ? "Subscribe" : "Buy Now"}
+        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : card.mode === "subscription" ? "Subscribe" : "Order Now"}
       </button>
     </motion.div>
   );
