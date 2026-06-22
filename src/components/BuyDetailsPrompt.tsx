@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { Loader2, Wand2, CreditCard, Building2, Search } from "lucide-react";
+import { Loader2, Wand2, CreditCard, Building2, Search, ArrowLeft, CheckCircle2, Copy } from "lucide-react";
+import { toast } from "sonner";
 import GenerationProgress from "./GenerationProgress";
 import BrandKit from "@/components/BrandKit";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -11,6 +12,8 @@ import { DomainChoice } from "@/components/DomainPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext } from "@/lib/checkoutTracking";
 import { SUGGESTIONS as VISION_SUGGESTIONS } from "@/components/VisionGenerator";
+
+const INVOICE_COUNTRIES = ["United Kingdom", "Ireland", "United States", "Other"];
 
 function useIsMobileOrTablet() {
   const [match, setMatch] = useState<boolean>(() =>
@@ -56,7 +59,7 @@ type VisionStep =
   | "vision-generating"
   | "vision-result"
   | "vision-refine";
-type Step = FieldStep | VisionStep | "payment";
+type Step = FieldStep | VisionStep | "payment" | "invoice-form" | "invoice-success";
 
 const FIELD_STEPS: FieldStep[] = ["company", "name", "email", "phone"];
 
@@ -100,13 +103,15 @@ interface Props {
   /** Package name for tracking visitors who reach the payment step. */
   packageName?: string;
   billing?: string;
+  /** Package slug for invoice creation via edge function (e.g. "full_works"). When provided, the invoice form is rendered inline in this dialog. */
+  packageSlug?: string;
   /** Optional pre-filled buyer details — filled fields are skipped in the wizard. */
   initialValues?: Partial<BuyerDetails>;
   /** Optional pre-filled vision brief from the free-sample flow. */
   initialVision?: VisionBrief | null;
 }
 
-const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "Confirm details", submitting = false, showDomainStep = false, packageName, billing, initialValues, initialVision }: Props) => {
+const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "Confirm details", submitting = false, showDomainStep = false, packageName, billing, packageSlug, initialValues, initialVision }: Props) => {
   const isMobile = useIsMobileOrTablet();
 
   const computeInitial = (): { values: BuyerDetails; step: Step; vision: VisionBrief | null } => {
@@ -207,6 +212,8 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
       setRefineInstruction("");
       setError(null);
       setTrackedKey(null);
+      setInvoiceResult(null);
+      setInvoiceExtra({ address_line1: "", city: "", postcode: "", country: "United Kingdom", po_reference: "" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -436,13 +443,74 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     await onConfirm(buyerPayload(), undefined, visionToSend());
   };
 
+  // Invoice (bank transfer) state — when packageSlug is provided we render the form inline.
+  const [invoiceExtra, setInvoiceExtra] = useState<{ address_line1: string; city: string; postcode: string; country: string; po_reference: string }>({
+    address_line1: "", city: "", postcode: "", country: "United Kingdom", po_reference: "",
+  });
+  const [invoiceSubmitting, setInvoiceSubmitting] = useState(false);
+  const [invoiceResult, setInvoiceResult] = useState<{ hosted_url: string; invoice_number: string } | null>(null);
+
+  // Sync invoice address fields with autofilled buyer values whenever entering the form step.
+  useEffect(() => {
+    if (step !== "invoice-form") return;
+    setInvoiceExtra((p) => ({
+      ...p,
+      address_line1: p.address_line1 || values.address_line1 || "",
+      city: p.city || values.city || "",
+      postcode: p.postcode || values.postcode || "",
+      country: p.country || values.country || p.country,
+    }));
+  }, [step, values.address_line1, values.city, values.postcode, values.country]);
+
   const handlePayByInvoice = async () => {
+    if (packageSlug) {
+      setError(null);
+      setStep("invoice-form");
+      return;
+    }
     if (!onInvoice) {
       // Fallback — just confirm as a card flow
       await handlePayByCard();
       return;
     }
     await onInvoice(buyerPayload(), visionToSend());
+  };
+
+  const submitInvoice = async () => {
+    if (!packageSlug) return;
+    if (!values.name.trim() || !values.email.trim()) {
+      toast.error("Please add your name and email");
+      return;
+    }
+    setInvoiceSubmitting(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("create-invoice", {
+        body: {
+          package_slug: packageSlug,
+          billing: {
+            name: values.name.trim(),
+            email: values.email.trim(),
+            company: values.company.trim(),
+            phone: values.phone.trim(),
+            address_line1: invoiceExtra.address_line1.trim(),
+            city: invoiceExtra.city.trim(),
+            postcode: invoiceExtra.postcode.trim(),
+            country: invoiceExtra.country,
+            po_reference: invoiceExtra.po_reference.trim(),
+          },
+          source: "public_checkout",
+        },
+      });
+      if (fnError) throw fnError;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setInvoiceResult({ hosted_url: (data as any).hosted_url, invoice_number: (data as any).invoice_number });
+      setStep("invoice-success");
+      toast.success("Invoice sent");
+    } catch (e: any) {
+      toast.error(e?.message || "Could not create invoice");
+    } finally {
+      setInvoiceSubmitting(false);
+    }
   };
 
   // Progress
@@ -759,10 +827,118 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     </>
   );
 
+  const renderInvoiceForm = () => {
+    const inputCls = "w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-2.5 text-sm text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition";
+    const labelCls = "text-foreground/70 text-[11px] uppercase tracking-wider";
+    return (
+      <>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => setStep("payment")} className="text-foreground/60 hover:text-foreground" aria-label="Back">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div>
+            <p className="text-foreground text-base font-semibold">Bank transfer — billing details</p>
+            <p className="text-foreground/60 text-xs">We'll email you a PDF invoice with our UK bank details.</p>
+          </div>
+        </div>
+        <div className="grid gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Full name *</label>
+              <input className={inputCls} value={values.name} onChange={(e) => setValues((p) => ({ ...p, name: e.target.value }))} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Company</label>
+              <input className={inputCls} value={values.company} onChange={(e) => setValues((p) => ({ ...p, company: e.target.value }))} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Email *</label>
+              <input type="email" className={inputCls} value={values.email} onChange={(e) => setValues((p) => ({ ...p, email: e.target.value }))} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Phone</label>
+              <input className={inputCls} value={values.phone} onChange={(e) => setValues((p) => ({ ...p, phone: e.target.value }))} />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className={labelCls}>Billing address</label>
+            <input className={inputCls} placeholder="Street address" value={invoiceExtra.address_line1} onChange={(e) => setInvoiceExtra((p) => ({ ...p, address_line1: e.target.value }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>City</label>
+              <input className={inputCls} value={invoiceExtra.city} onChange={(e) => setInvoiceExtra((p) => ({ ...p, city: e.target.value }))} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Postcode</label>
+              <input className={inputCls} value={invoiceExtra.postcode} onChange={(e) => setInvoiceExtra((p) => ({ ...p, postcode: e.target.value }))} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Country</label>
+              <select
+                value={invoiceExtra.country}
+                onChange={(e) => setInvoiceExtra((p) => ({ ...p, country: e.target.value }))}
+                className={inputCls}
+              >
+                {INVOICE_COUNTRIES.map((c) => <option key={c} className="bg-background text-foreground">{c}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>PO reference</label>
+              <input className={inputCls} value={invoiceExtra.po_reference} onChange={(e) => setInvoiceExtra((p) => ({ ...p, po_reference: e.target.value }))} />
+            </div>
+          </div>
+          <p className="text-[11px] text-foreground/50">By submitting you'll receive a PDF invoice with our bank details. Payment terms: 28 days.</p>
+        </div>
+        <div className="flex gap-2 mt-1">
+          <Button type="button" variant="outline" onClick={() => setStep("payment")} disabled={invoiceSubmitting} className="flex-1 h-12 font-semibold">Back</Button>
+          <Button type="button" variant="pricing" onClick={submitInvoice} disabled={invoiceSubmitting} className="flex-1 h-12 font-semibold gap-2">
+            {invoiceSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+            Send invoice
+          </Button>
+        </div>
+      </>
+    );
+  };
+
+  const renderInvoiceSuccess = () => (
+    <>
+      <div className="flex items-center gap-2">
+        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+        <p className="text-foreground text-base font-semibold">Invoice sent</p>
+      </div>
+      <p className="text-foreground/70 text-xs">
+        We've emailed {values.email || "you"} a copy of invoice {invoiceResult?.invoice_number} with the PDF and bank details attached.
+      </p>
+      {invoiceResult?.hosted_url && (
+        <div className="grid gap-2 mt-1">
+          <Button asChild variant="pricing" className="w-full h-12 font-semibold">
+            <a href={invoiceResult.hosted_url} target="_blank" rel="noopener noreferrer">View invoice page</a>
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full h-12 gap-2 font-semibold"
+            onClick={() => { navigator.clipboard.writeText(invoiceResult.hosted_url); toast.success("Link copied"); }}
+          >
+            <Copy className="h-4 w-4" /> Copy invoice link
+          </Button>
+        </div>
+      )}
+      <p className="text-[11px] text-foreground/50 text-center mt-1">Payment due within 28 days. We'll send friendly reminders if needed.</p>
+      <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="self-center text-xs text-foreground/60 hover:text-foreground">Close</Button>
+    </>
+  );
+
   const renderBody = () => {
     if (step === "payment") {
       return renderPayment();
     }
+    if (step === "invoice-form") return renderInvoiceForm();
+    if (step === "invoice-success") return renderInvoiceSuccess();
     if (isField(step)) return renderField();
     if (step === "vision-intro") return renderVisionIntro();
     if (step === "vision-generating") return renderGenerating();
@@ -810,7 +986,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto carousel-label-glass border-foreground/10 text-foreground z-[10041]">
+      <DialogContent className={`${step === "invoice-form" ? "sm:max-w-[620px]" : "sm:max-w-[520px]"} max-h-[90vh] overflow-y-auto carousel-label-glass border-foreground/10 text-foreground z-[10041]`}>
         <DialogHeader>
           <DialogTitle className="text-foreground">{title}</DialogTitle>
         </DialogHeader>
