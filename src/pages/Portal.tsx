@@ -2850,9 +2850,18 @@ export default function Portal() {
                              {o.order_status === "delivered" ? "Delivered" : "Orders"}
                            </Badge>
                          )}
-                          {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
-                            <Badge variant="secondary">Manual</Badge>
-                          )}
+                           {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
+                             <Badge variant="secondary">Manual</Badge>
+                           )}
+                           {(o.metadata as Record<string, unknown> | null)?.source === "invoice" && (() => {
+                             const meta = (o.metadata as Record<string, unknown> | null) ?? {};
+                             const num = typeof meta.invoice_number === "string" ? meta.invoice_number : null;
+                             return (
+                               <Badge className="bg-sky-500/20 text-sky-200 border border-sky-500/40">
+                                 Invoice{num ? ` · ${num}` : ""}
+                               </Badge>
+                             );
+                           })()}
                           {(() => {
                             const meta = (o.metadata as Record<string, unknown> | null) ?? {};
                             const via = typeof meta.created_via === "string" ? meta.created_via : null;
