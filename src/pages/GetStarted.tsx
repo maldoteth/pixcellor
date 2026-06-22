@@ -325,8 +325,8 @@ const GetStarted = () => {
               UK Studio · Booking calls this week
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.05] tracking-tight">
-              Websites, apps &amp; AI agents —
-              <span className="block text-white/60">built in days, not months.</span>
+              Smart sites &amp; apps
+              <span className="block text-white/60">built in days</span>
             </h1>
             <p className="mt-5 text-base sm:text-lg text-white/70 max-w-xl">
               Get your smart site today with automated sales, customer support and lead generation.
