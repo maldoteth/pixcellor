@@ -48,4 +48,13 @@ project_id = "rkgjkvghejcmostuqkgw"
     verify_jwt = false
   [functions.parse-cv]
     verify_jwt = false
+  [functions.create-invoice]
+    verify_jwt = false
+  [functions.get-invoice-pdf]
+    verify_jwt = false
+  [functions.mark-invoice-paid]
+    verify_jwt = true
+  [functions.send-invoice-reminders]
+    verify_jwt = false
+
 
