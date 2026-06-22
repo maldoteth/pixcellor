@@ -31,16 +31,35 @@ Deno.serve(async (req) => {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      const r = await fetch(`${BASE}/company/${encodeURIComponent(number)}`, {
-        headers: { Authorization: authHeader() },
-      });
-      if (!r.ok) {
-        return new Response(JSON.stringify({ error: `companies house ${r.status}` }), {
-          status: r.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      const [profileRes, officersRes] = await Promise.all([
+        fetch(`${BASE}/company/${encodeURIComponent(number)}`, { headers: { Authorization: authHeader() } }),
+        fetch(`${BASE}/company/${encodeURIComponent(number)}/officers?register_type=directors&order_by=appointed_on`, { headers: { Authorization: authHeader() } }),
+      ]);
+      if (!profileRes.ok) {
+        return new Response(JSON.stringify({ error: `companies house ${profileRes.status}` }), {
+          status: profileRes.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      const data = await r.json();
+      const data = await profileRes.json();
       const a = data.registered_office_address ?? {};
+
+      // Convert "SMITH, John" → "John Smith"
+      const formatName = (n: string) => {
+        if (!n) return '';
+        const parts = n.split(',').map((s) => s.trim()).filter(Boolean);
+        if (parts.length === 2) return `${parts[1]} ${parts[0]}`.replace(/\s+/g, ' ').trim();
+        return n.trim();
+      };
+
+      let directors: { name: string; role: string }[] = [];
+      if (officersRes.ok) {
+        const o = await officersRes.json();
+        directors = (o.items ?? [])
+          .filter((it: any) => !it.resigned_on && /director/i.test(it.officer_role ?? ''))
+          .map((it: any) => ({ name: formatName(it.name ?? ''), role: it.officer_role ?? '' }))
+          .filter((d: { name: string }) => d.name);
+      }
+
       return new Response(JSON.stringify({
         company_number: data.company_number,
         company_name: data.company_name,
@@ -53,6 +72,7 @@ Deno.serve(async (req) => {
           postcode: a.postal_code ?? '',
           country: a.country ?? 'United Kingdom',
         },
+        directors,
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
