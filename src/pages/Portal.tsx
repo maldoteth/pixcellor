@@ -2431,8 +2431,8 @@ export default function Portal() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl md:text-3xl font-semibold">Portal</h1>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={loadPortalSnapshot} title="Refresh">
-              <RefreshCw className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={refreshAll} title="Refresh" disabled={refreshingAll}>
+              <RefreshCw className={`h-4 w-4 ${refreshingAll ? "animate-spin" : ""}`} />
             </Button>
           </div>
           <div className="flex shrink-0 items-center gap-2">
