@@ -18,14 +18,18 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   context: PaymentChoiceContext | null;
   onCardSelected: () => void;
+  /** When provided, the dialog opens directly into the invoice form with these fields prefilled. */
+  initialBuyer?: { name?: string; email?: string; company?: string; phone?: string };
+  /** Skip the card/invoice choice screen and open straight at the invoice form. */
+  initialStep?: Step;
 };
 
 type Step = "choice" | "form" | "success";
 
 const COUNTRIES = ["United Kingdom", "Ireland", "United States", "Other"];
 
-export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelected }: Props) {
-  const [step, setStep] = useState<Step>("choice");
+export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelected, initialBuyer, initialStep = "choice" }: Props) {
+  const [step, setStep] = useState<Step>(initialStep);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -42,10 +46,19 @@ export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelecte
 
   useEffect(() => {
     if (open) {
-      setStep("choice");
+      setStep(initialStep);
       setResult(null);
+      if (initialBuyer) {
+        setForm((f) => ({
+          ...f,
+          name: initialBuyer.name?.trim() || f.name,
+          email: initialBuyer.email?.trim() || f.email,
+          company: initialBuyer.company?.trim() || f.company,
+          phone: initialBuyer.phone?.trim() || f.phone,
+        }));
+      }
     }
-  }, [open]);
+  }, [open, initialStep, initialBuyer]);
 
   const submit = async () => {
     if (!context) return;
