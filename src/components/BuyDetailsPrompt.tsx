@@ -157,9 +157,22 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     }, 280);
   };
 
-  const pickCompany = (hit: CHHit) => {
+  const pickCompany = async (hit: CHHit) => {
     setChOpen(false);
     setValues((p) => ({ ...p, company: hit.title }));
+    try {
+      const projectRef = (import.meta as any).env.VITE_SUPABASE_PROJECT_ID;
+      const anon = (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const url = `https://${projectRef}.supabase.co/functions/v1/companies-house-search?number=${encodeURIComponent(hit.company_number)}`;
+      const r = await fetch(url, { headers: { Authorization: `Bearer ${anon}`, apikey: anon } });
+      const json = await r.json();
+      const director = json?.directors?.[0]?.name as string | undefined;
+      setValues((p) => ({
+        ...p,
+        company: json?.company_name || p.company,
+        name: p.name?.trim() ? p.name : (director || p.name),
+      }));
+    } catch { /* silent */ }
   };
 
   // Vision state

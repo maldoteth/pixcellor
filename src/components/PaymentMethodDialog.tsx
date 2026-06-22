@@ -90,6 +90,7 @@ export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelecte
         setForm((f) => ({
           ...f,
           company: json.company_name || hit.title,
+          name: f.name?.trim() ? f.name : (json.directors?.[0]?.name || f.name),
           address_line1: json.address.address_line1 || f.address_line1,
           city: json.address.city || f.city,
           postcode: json.address.postcode || f.postcode,
