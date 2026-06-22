@@ -1799,6 +1799,17 @@ function MobileCards() {
       packageName={pending?.packageName}
       billing={pending?.billing}
     />
+    <PaymentMethodDialog
+      open={!!paymentChoice}
+      onOpenChange={(o) => { if (!o) setPaymentChoice(null); }}
+      context={paymentChoice}
+      onCardSelected={() => {
+        const stash = (window as any).__pixPendingCardCheckout;
+        setPaymentChoice(null);
+        if (stash) setPending(stash);
+      }}
+    />
+
     </>
   );
 }
