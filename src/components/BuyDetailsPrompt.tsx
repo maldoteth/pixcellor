@@ -383,9 +383,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
       else setStep("vision-intro");
     } else {
       // Subscription — confirm with no domain
-      await onConfirm(
-        { company: values.company.trim(), name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim() },
-      );
+      await onConfirm(buyerPayload());
     }
   };
 
