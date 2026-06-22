@@ -1554,7 +1554,7 @@ export default function Portal() {
 
   const openMobileOrders = () => {
     setActiveTab("orders");
-    setMobileOrdersDrawerOpen(true);
+    setShowNewOrderDialog(true);
   };
 
   const continueMobileContact = (skip = false) => {
@@ -4072,17 +4072,18 @@ export default function Portal() {
             Home
           </Button>
           <Button variant={mobileSalesDrawerOpen || showSalesEventForm ? "default" : "ghost"} size="sm" onClick={openMobileSalesEvent} className="h-14 flex-col gap-1 px-1 text-[10px]" disabled={contacts.length === 0}>
-            <Plus className="h-4 w-4" />
+            <TrendingUp className="h-4 w-4" />
             Sales event
           </Button>
           <Button variant={mobileContactDrawerOpen || showContactForm ? "default" : "ghost"} size="sm" onClick={openMobileContactForm} className="h-14 flex-col gap-1 px-1 text-[10px]">
             <UserPlus className="h-4 w-4" />
             Client
           </Button>
-          <Button variant={mobileOrdersDrawerOpen || activeTab === "orders" ? "default" : "ghost"} size="sm" onClick={openMobileOrders} className="h-14 flex-col gap-1 px-1 text-[10px]">
+          <Button variant={showNewOrderDialog || activeTab === "orders" ? "default" : "ghost"} size="sm" onClick={openMobileOrders} className="h-14 flex-col gap-1 px-1 text-[10px]">
             <ShoppingBag className="h-4 w-4" />
             Orders
           </Button>
+
         </div>
       </nav>
       {domainPromptDialog}
