@@ -28,6 +28,8 @@ export type Service = {
   teamFrom?: string[];
   primaryCta: { label: string; action: ServiceCtaAction };
   secondaryCta?: { label: string; action: ServiceCtaAction };
+  /** Optional service tiers (e.g. cyber-security packages) rendered as a 3-up grid. */
+  tiers?: { name: string; tagline: string; highlight?: boolean; features: string[] }[];
 };
 
 export type ServiceCategoryMeta = {
@@ -795,9 +797,9 @@ export const SERVICES: Service[] = [
     name: "Internal tools & Cyber-security\u00a0",
     category: "tech",
     info: "Custom systems, automations, agentic flows and more saving you potentially tens of thousands a year.",
-    tagline: "Replace spreadsheets and SaaS subscriptions with tools built for you.",
+    tagline: "Custom internal tools — and the security programme to defend them.",
     heroBlurb:
-      "Every business runs on a tangle of spreadsheets, half-used SaaS subscriptions and tribal knowledge. We replace it with one custom internal tool built around how your team actually works. Dashboards, automations, AI agents, integrations — wired into your stack, owned by you. Most engagements pay for themselves inside months in saved software fees and reclaimed hours.",
+      "Every business runs on a tangle of spreadsheets, half-used SaaS subscriptions and tribal knowledge — and most of it is one phishing email away from a very bad week. We replace the chaos with custom internal tools built around how your team actually works, then the same team hardens and defends them. Enterprise-grade cyber-security normally reserved for firms with six-figure security budgets, delivered in clear tiers: foundational protection, 24/7 managed defence, or a full security programme run for you. Dashboards, automations, AI agents, MDR, pen testing, incident response — wired into your stack, owned by you.",
     features: [
       "Custom dashboards tailored to each team and role",
       "Automations and AI agents for the repetitive work nobody wants",
@@ -811,6 +813,10 @@ export const SERVICES: Service[] = [
       "Hosted and maintained on your infrastructure or ours",
       "Documentation and training built into the rollout",
       "Lifetime warranty on the build",
+      "24/7 managed detection & response (MDR) from our security operations centre",
+      "Penetration testing & red-team exercises",
+      "Incident response & digital forensics (DFIR) retainers",
+      "Compliance & audit support: ISO 27001, SOC 2, Cyber Essentials, PCI DSS, GDPR",
     ],
     process: [
       "Process audit — where does time leak, where does data fall through cracks?",
@@ -838,6 +844,60 @@ export const SERVICES: Service[] = [
       "One source of truth instead of seven spreadsheets and a Notion page",
       "Faster onboarding for new hires because the tool encodes the process",
       "Fewer mistakes because the system enforces the rules",
+      "Breaches caught and contained in minutes, not months",
+      "Audit- and insurer-ready security posture",
+    ],
+    tiers: [
+      {
+        name: "Cyber Essentials",
+        tagline: "Foundational protection every business should have",
+        features: [
+          "Security audit & risk assessment",
+          "External vulnerability scan + prioritised fix plan",
+          "Endpoint detection & response (EDR) rollout",
+          "Multi-factor auth & identity hardening",
+          "Email security: anti-phishing, SPF/DKIM/DMARC",
+          "Backup & disaster-recovery setup",
+          "Staff security-awareness training + simulated phishing",
+          "Cyber Essentials certification readiness",
+          "Monthly security posture report",
+        ],
+      },
+      {
+        name: "Managed Defence",
+        tagline: "Always-on monitoring and response",
+        highlight: true,
+        features: [
+          "Everything in Cyber Essentials",
+          "24/7 Managed Detection & Response (MDR) from our SOC",
+          "SIEM/XDR log monitoring, alerting & threat hunting",
+          "Continuous vulnerability & attack-surface management",
+          "Quarterly penetration testing",
+          "Curated threat intelligence",
+          "Cloud security posture management (AWS, Azure, GCP)",
+          "Patch management",
+          "Incident response support (business hours)",
+          "ISO 27001 / SOC 2 / Cyber Essentials Plus readiness",
+          "Quarterly reviews + live security dashboard",
+        ],
+      },
+      {
+        name: "Enterprise Fortress",
+        tagline: "A full security programme, run for you",
+        features: [
+          "Everything in Managed Defence",
+          "Dedicated virtual CISO (vCISO) & security roadmap",
+          "Red teaming / adversary emulation & purple-team exercises",
+          "24/7 incident-response retainer with digital forensics (DFIR) & ransomware support",
+          "Zero-trust architecture design & rollout",
+          "Full GRC programme & audit support toward ISO 27001, SOC 2 Type II, PCI DSS & GDPR/DPO",
+          "Application security, secure SDLC & code review",
+          "Tabletop exercises & board-level reporting",
+          "Third-party / supply-chain risk management",
+          "Security automation (SOAR) & custom tooling",
+          "Named account team with SLAs",
+        ],
+      },
     ],
     faqs: [
       {
@@ -859,6 +919,14 @@ export const SERVICES: Service[] = [
       {
         q: "Do you host it or do we?",
         a: "Your call. We can host and maintain on a retainer, or hand over to your team with full documentation.",
+      },
+      {
+        q: "Are you actually a security firm or web devs doing security?",
+        a: "Our security practice is run by senior operators with backgrounds in offensive security, SOC operations and GRC — the same engineers who build your internal tools work alongside them, so security is baked in from day one rather than bolted on. We're transparent about what we deliver in-house versus what we coordinate with specialist partners (e.g. CREST-accredited testers, certifying bodies for ISO/SOC audits).",
+      },
+      {
+        q: "What happens if we get breached?",
+        a: "On Managed Defence and Enterprise Fortress, our SOC triages and contains in minutes — isolating endpoints, rotating credentials and cutting off the blast radius before it spreads. Enterprise Fortress includes a 24/7 incident-response retainer with full digital forensics, ransomware negotiation support, evidence preservation, regulator/insurer liaison and a written post-incident report so you know exactly what happened and how to stop it recurring.",
       },
     ],
     primaryCta: salesCta,

@@ -308,6 +308,54 @@ export default function ServiceSalesView({
         </motion.section>
       )}
 
+      {/* TIERS — e.g. cyber-security packages */}
+      {service.tiers && service.tiers.length > 0 && (
+        <motion.section {...fadeUp} className="mb-12 md:mb-16">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
+            Cyber-security tiers
+          </h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            {service.tiers.map((tier) => (
+              <div
+                key={tier.name}
+                className={`relative flex flex-col rounded-xl border bg-foreground/[0.03] p-5 backdrop-blur-md ${
+                  tier.highlight
+                    ? "border-foreground/40 ring-1 ring-foreground/30 bg-foreground/[0.06]"
+                    : "border-foreground/10"
+                }`}
+              >
+                {tier.highlight && (
+                  <div className="absolute -top-3 left-5 inline-flex items-center gap-1.5 rounded-full border border-foreground/30 bg-background px-2.5 py-0.5 text-[10px] uppercase tracking-[0.18em] text-foreground/90">
+                    <Sparkles className="h-3 w-3" />
+                    <span>Most popular</span>
+                  </div>
+                )}
+                <div className="text-base md:text-lg font-bold text-foreground">{tier.name}</div>
+                <p className="mt-1 text-xs md:text-sm text-foreground/65 leading-relaxed">
+                  {tier.tagline}
+                </p>
+                <ul className="mt-4 space-y-2">
+                  {tier.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-xs md:text-sm leading-relaxed text-foreground/85">
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-foreground" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs md:text-sm text-foreground/65">
+              All tiers are tailored to your environment — book a call for scoping and pricing.
+            </p>
+            <CtaButton label={service.primaryCta.label} action={service.primaryCta.action} onAction={onAction} />
+          </div>
+        </motion.section>
+      )}
+
+
+
       {/* PROCESS */}
       <motion.section {...fadeUp} className="mb-12 md:mb-16">
         <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
