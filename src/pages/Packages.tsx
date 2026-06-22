@@ -4,6 +4,7 @@ import { ArrowRight, ChevronRight, Sparkles } from "lucide-react";
 import SeoHead from "@/components/SeoHead";
 import { PACKAGE_DETAILS } from "@/data/packages";
 import { OG_PACKAGES } from "@/data/ogImages";
+import { Component as EtherealShadow } from "@/components/ui/etheral-shadow";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -16,7 +17,14 @@ export default function PackagesPage() {
   const packages = Object.values(PACKAGE_DETAILS);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
+      <EtherealShadow
+        className="fixed inset-0 z-0"
+        color="rgba(128, 128, 128, 1)"
+        animation={{ scale: 100, speed: 90 }}
+        noise={{ opacity: 1, scale: 1.2 }}
+        sizing="fill"
+      />
       <SeoHead
         title="Packages — Pixcellor"
         description="Choose a Pixcellor package — one-off builds and ongoing retainers for fast, premium websites."
@@ -24,7 +32,7 @@ export default function PackagesPage() {
         image={OG_PACKAGES}
       />
 
-      <div className="mx-auto w-full max-w-6xl px-5 py-10 md:px-10 md:py-16 pb-28 md:pb-16">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 py-10 md:px-10 md:py-16 pb-28 md:pb-16">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="mb-6 text-xs text-foreground/60">
           <ol className="flex items-center gap-1.5">
