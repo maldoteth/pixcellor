@@ -118,10 +118,7 @@ export default function TryBeforeBuyDrawer() {
   const openChat = () => {
     clearCheckoutPending();
     setVisible(false);
-    // Dispatch with mode so LetsTalkPrompt picks the right flow.
-    window.dispatchEvent(
-      new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }),
-    );
+    window.location.href = "/get-started";
   };
 
   return (
