@@ -316,7 +316,7 @@ export default function ServiceSalesView({
       {service.tiers && service.tiers.length > 0 && (
         <motion.section {...fadeUp} className="mb-12 md:mb-16">
           <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">
-            Cyber-security tiers
+            CYBER-SECURITY IS ONLY AVAILABLE ON RETAINER TIERS
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
             {service.tiers.map((tier) => (
