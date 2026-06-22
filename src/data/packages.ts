@@ -707,10 +707,10 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     feature: "Whitelabel delivery",
     values: {
       "full-works": "—",
-      elite: "Optional",
-      "retainer-growth": "250 / m",
-      "retainer-scale": "1,000 / m",
-      "retainer-enterprise": "10,000 / m",
+      elite: "No watermarks",
+      "retainer-growth": "No watermarks",
+      "retainer-scale": "Full whitelabel",
+      "retainer-enterprise": "Full whitelabel",
     },
   },
   {
