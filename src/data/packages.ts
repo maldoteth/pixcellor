@@ -606,10 +606,10 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Animations",
     values: {
-      "full-works": "Base motion",
+      "full-works": "Custom\u00a0",
       elite: "3D / WebGL",
-      "retainer-growth": "Base motion",
-      "retainer-scale": "Custom motion",
+      "retainer-growth": "Custom\u00a0",
+      "retainer-scale": "Custom\u00a0",
       "retainer-enterprise": "Cinema-grade",
     },
   },
