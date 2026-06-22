@@ -460,7 +460,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
               {chLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             </div>
             {chOpen && chHits.length > 0 && (
-              <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto rounded-md border border-foreground/15 bg-background shadow-lg">
+              <div className="relative z-50 mt-1 w-full max-h-64 overflow-y-auto rounded-md border border-foreground/15 bg-background shadow-lg">
                 {chHits.map((h) => (
                   <button
                     type="button"
