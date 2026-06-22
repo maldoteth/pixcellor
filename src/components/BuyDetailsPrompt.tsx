@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import GenerationProgress from "./GenerationProgress";
 import BrandKit from "@/components/BrandKit";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import AuroraBackdrop from "@/components/AuroraBackdrop";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { DomainChoice } from "@/components/DomainPicker";
