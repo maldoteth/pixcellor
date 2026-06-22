@@ -87,7 +87,7 @@ export default function CyberSecurityHero() {
       fragmentShader: particleFragment,
       uniforms: {
         uTime: { value: 0 },
-        uColor: { value: getParticleColor(theme) },
+        uColor: { value: particleColor },
       },
     });
 
