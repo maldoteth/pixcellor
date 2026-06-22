@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { Loader2, Wand2, CreditCard, Building2 } from "lucide-react";
+import { Loader2, Wand2, CreditCard, Building2, Search } from "lucide-react";
 import GenerationProgress from "./GenerationProgress";
 import BrandKit from "@/components/BrandKit";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
