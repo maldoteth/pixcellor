@@ -51,7 +51,7 @@ const CustomerLeadEmail = ({ customerWebsiteName, leadName, leadEmail, leadPhone
           </Row>
         </Section>
 
-        <Text style={footer}>This notification was sent automatically by Pixcellor on behalf of {customerWebsiteName || 'your website'}.</Text>
+        <Text style={footer}>This email was sent by Pixcellor. If you don't recognise it, you can unsubscribe below.</Text>
       </Container>
     </Body>
   </Html>
