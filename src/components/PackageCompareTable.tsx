@@ -1,8 +1,48 @@
+import { useState } from "react";
 import { ArrowRight, Check, Minus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { COMPARISON_ROWS, COMPARISON_SLUGS, PACKAGE_DETAILS } from "@/data/packages";
 
-export default function PackageCompareTable({ highlightSlug, billing = "monthly" }: { highlightSlug?: string; billing?: "monthly" | "yearly" }) {
+const ENTERPRISE_SLUG = "retainer-enterprise";
+
+// Rows whose value triples when Enterprise is on the "Large" tier.
+const TRIPLED_FEATURES = new Set(["AI lead-gen runs", "Automated Outreach"]);
+
+// Triple a string like "10,000 / m" → "30,000 / m". Leaves other strings alone.
+function tripleLimit(val: string): string {
+  const match = val.match(/^([\d,]+)(\s*\/\s*\w+)$/);
+  if (!match) return val;
+  const n = parseInt(match[1].replace(/,/g, ""), 10);
+  if (Number.isNaN(n)) return val;
+  return `${(n * 3).toLocaleString("en-GB")}${match[2]}`;
+}
+
+export default function PackageCompareTable({
+  highlightSlug,
+  billing = "monthly",
+}: {
+  highlightSlug?: string;
+  billing?: "monthly" | "yearly";
+}) {
+  const [enterpriseSize, setEnterpriseSize] = useState<"small" | "large">("small");
+  const isLarge = enterpriseSize === "large";
+
+  const valueForCell = (feature: string, slug: string, raw: string): string => {
+    if (slug !== ENTERPRISE_SLUG || !isLarge) return raw;
+    if (feature === "Fractional C-suite") return "⅓ CTO + CMO";
+    if (TRIPLED_FEATURES.has(feature)) return tripleLimit(raw);
+    if (feature === "Price") return billing === "yearly" ? "£50,000/yr" : "£5,000/mo";
+    return raw;
+  };
+
+  const enterprisePriceLabel = isLarge
+    ? billing === "yearly"
+      ? "£50,000/yr"
+      : "£5,000/mo"
+    : billing === "yearly" && PACKAGE_DETAILS[ENTERPRISE_SLUG].yearlyPrice
+      ? PACKAGE_DETAILS[ENTERPRISE_SLUG].yearlyPrice!
+      : PACKAGE_DETAILS[ENTERPRISE_SLUG].price;
+
   return (
     <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] backdrop-blur-md overflow-hidden">
       {/* Mobile note */}
@@ -19,21 +59,51 @@ export default function PackageCompareTable({ highlightSlug, billing = "monthly"
               {COMPARISON_SLUGS.map((slug) => {
                 const pkg = PACKAGE_DETAILS[slug];
                 const active = slug === highlightSlug;
+                const isEnterprise = slug === ENTERPRISE_SLUG;
+                const priceLabel = isEnterprise
+                  ? enterprisePriceLabel
+                  : billing === "yearly" && pkg.yearlyPrice
+                    ? pkg.yearlyPrice
+                    : pkg.price;
                 return (
                   <th
                     key={slug}
                     className={`px-3 py-4 align-bottom min-w-[140px] ${active ? "bg-foreground/[0.06]" : ""}`}
                   >
-                    <Link
-                      to={`/packages/${slug}`}
-                      className="block hover:opacity-90"
-                    >
+                    <Link to={`/packages/${slug}`} className="block hover:opacity-90">
                       <div className={`text-[10px] uppercase tracking-[0.18em] mb-1 ${active ? "text-foreground/80" : "text-foreground/50"}`}>
                         {pkg.mode === "subscription" ? "Retainer" : "One-off"}
                       </div>
                       <div className="text-sm font-semibold">{pkg.name}</div>
-                      <div className="mt-1 text-base font-bold">{billing === "yearly" && pkg.yearlyPrice ? pkg.yearlyPrice : pkg.price}</div>
+                      <div className="mt-1 text-base font-bold">{priceLabel}</div>
                     </Link>
+
+                    {isEnterprise && (
+                      <div
+                        className="mt-2 inline-flex items-center gap-0.5 rounded-full border border-foreground/15 bg-foreground/[0.05] p-0.5"
+                        role="group"
+                        aria-label="Enterprise tier"
+                      >
+                        {(["small", "large"] as const).map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setEnterpriseSize(size);
+                            }}
+                            className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-semibold transition-colors ${
+                              enterpriseSize === size
+                                ? "bg-foreground text-background"
+                                : "text-foreground/60 hover:text-foreground"
+                            }`}
+                            aria-pressed={enterpriseSize === size}
+                          >
+                            {size === "small" ? "Small" : "Large"}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </th>
                 );
               })}
@@ -46,7 +116,8 @@ export default function PackageCompareTable({ highlightSlug, billing = "monthly"
                   {row.feature}
                 </td>
                 {COMPARISON_SLUGS.map((slug) => {
-                  const val = row.values[slug];
+                  const raw = row.values[slug];
+                  const val = valueForCell(row.feature, slug, raw ?? "");
                   const active = slug === highlightSlug;
                   const isEmpty = val === "—" || !val;
                   return (
