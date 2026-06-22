@@ -657,7 +657,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     feature: "Self-improving agentic flows",
     values: {
       "full-works": "—",
-      elite: "Included",
+      elite: "Limited",
       "retainer-growth": "Continuous",
       "retainer-scale": "Continuous + A/B",
       "retainer-enterprise": "Estate-wide, autonomous",
