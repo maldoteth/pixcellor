@@ -90,8 +90,10 @@ export default function PackageCompareTable({
                       </div>
                       <div className="text-sm font-semibold">
                         {pkg.name}
-                        {isEnterprise && (
-                          <span className="ml-1 text-foreground/60 font-medium">({isLarge ? "L" : "S"})</span>
+                        {isEnterprise && isLarge && (
+                          <span className="ml-1 inline-flex items-center align-middle text-foreground/60">
+                            <Plus className="h-3 w-3" />
+                          </span>
                         )}
                       </div>
                       <div className="mt-1 text-base font-bold">{priceLabel}</div>
