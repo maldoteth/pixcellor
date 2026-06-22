@@ -16,16 +16,10 @@ export default function CyberSecurityHero() {
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    const getTheme = () =>
-      document.documentElement.classList.contains("dark") ? "dark" : "light";
-
-    const getBg = (theme: string) =>
-      theme === "dark" ? new THREE.Color(0x000000) : new THREE.Color(0xffffff);
-
-    const getParticleColor = (theme: string) =>
-      theme === "dark"
-        ? new THREE.Vector3(1.0, 1.0, 1.0)
-        : new THREE.Vector3(0.0, 0.0, 0.0);
+    // Banner card sits on the always-dark service hero surface,
+    // so we hard-code a black background with silvery-white particles.
+    const bgColor = new THREE.Color(0x000000);
+    const particleColor = new THREE.Vector3(0.92, 0.94, 0.98);
 
     const particleVertex = /* glsl */ `
       attribute float scale;
@@ -61,8 +55,7 @@ export default function CyberSecurityHero() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height, false);
 
-    let theme = getTheme();
-    renderer.setClearColor(getBg(theme));
+    renderer.setClearColor(bgColor);
 
     const gap = 0.3;
     const amountX = 200;
@@ -94,7 +87,7 @@ export default function CyberSecurityHero() {
       fragmentShader: particleFragment,
       uniforms: {
         uTime: { value: 0 },
-        uColor: { value: getParticleColor(theme) },
+        uColor: { value: particleColor },
       },
     });
 
@@ -104,12 +97,6 @@ export default function CyberSecurityHero() {
     let animationId: number | null = null;
     const animate = () => {
       material.uniforms.uTime.value += 0.05;
-      const nextTheme = getTheme();
-      if (nextTheme !== theme) {
-        theme = nextTheme;
-        renderer.setClearColor(getBg(theme));
-        material.uniforms.uColor.value = getParticleColor(theme);
-      }
       camera.lookAt(scene.position);
       renderer.render(scene, camera);
       animationId = requestAnimationFrame(animate);
