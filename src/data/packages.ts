@@ -674,7 +674,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "AI agents",
+    feature: "AI agent types",
     values: {
       "full-works": "—",
       elite: "Sales",
