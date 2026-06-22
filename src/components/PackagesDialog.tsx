@@ -30,7 +30,7 @@ const PACKAGES = {
   },
   elite: {
     name: "Elite Build",
-    price: "£500",
+    price: "£479",
     priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
     mode: "payment" as const,
     featured: true,
@@ -968,7 +968,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="relative z-10 -mt-28">
         <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
         <div className="mb-4 flex items-start gap-1">
-          <div className="text-5xl font-black text-foreground">£500<span className="text-lg font-bold align-baseline">.00</span></div>
+          <div className="text-5xl font-black text-foreground">£479<span className="text-lg font-bold align-baseline">.00</span></div>
           
         </div>
         <ul className="mb-4 space-y-1.5 text-base text-foreground">
@@ -1540,7 +1540,7 @@ function MobileCards() {
         </div>
 
         <div className="mt-3 mb-4 flex items-start gap-1">
-          <span className="text-3xl font-extrabold text-foreground">£500<span className="text-sm font-bold align-baseline">.00</span></span>
+          <span className="text-3xl font-extrabold text-foreground">£479<span className="text-sm font-bold align-baseline">.00</span></span>
           
         </div>
         <ul className="space-y-2 flex-1 mb-3">

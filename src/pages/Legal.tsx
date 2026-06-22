@@ -47,7 +47,7 @@ const TERMS: Section[] = [
           agreed in writing before renewal and never applied retroactively.
         </li>
         <li>
-          <strong>Elite (£500):</strong> One-time build fee. An <strong>annual renewal fee</strong>
+          <strong>Elite (£479):</strong> One-time build fee. An <strong>annual renewal fee</strong>
           applies thereafter for domain hosting, management, and ongoing maintenance. The renewal amount
           is <strong>not fixed</strong> — it is reviewed in an annual consultation with your consultant
           and quoted based on the actual hosting, domain, bandwidth and maintenance requirements for the

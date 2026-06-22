@@ -262,7 +262,7 @@ const tools = [
           package_id: {
             type: "string",
             enum: ["fullWorks", "elite", "retainer"],
-            description: "Which package to show: fullWorks (£169 website, up to 3 pages), elite (£500 or £60/mo, up to 10 pages, unlimited edits, SEO/AEO), or retainer (£2,469/mo or £24,690/yr tech department)",
+            description: "Which package to show: fullWorks (£169 website, up to 3 pages), elite (£479 or £60/mo, up to 10 pages, unlimited edits, SEO/AEO), or retainer (£2,469/mo or £24,690/yr tech department)",
           },
           billing: {
             type: "string",
@@ -2496,7 +2496,7 @@ Deno.serve(async (req) => {
                   mode = "subscription";
                 } else {
                   priceId = (pkg as any).priceId;
-                  price = "£500";
+                  price = "£479";
                   mode = "payment";
                 }
               } else if (pkgId === "retainer") {

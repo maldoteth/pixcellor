@@ -330,7 +330,7 @@ const GetStarted = () => {
             </h1>
             <p className="mt-5 text-base sm:text-lg text-white/70 max-w-xl">
               From a polished Full Works site at <span className="text-white">£169</span>
-              to flagship Elite builds with unlimited revisions at <span className="text-white">£500</span>,
+              to flagship Elite builds with unlimited revisions at <span className="text-white">£479</span>,
               or an always-on retainer from <span className="text-white">£89/mo</span>.
               Book a free 15-minute call and we&apos;ll show you exactly what we&apos;d build.
             </p>

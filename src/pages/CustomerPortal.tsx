@@ -102,7 +102,7 @@ const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
   {
     key: "elite",
     name: "Elite",
-    price: "£500",
+    price: "£479",
     priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
     mode: "payment",
     billing: "One-time payment",
