@@ -536,7 +536,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     process: [
       "Diagnostic — 2-week deep audit",
       "Strategy — fractional C-suite engaged",
-      "Sprint — 2-week MVPs, weekly releases",
+      "Sprint — Weekly MVPs, weekly releases",
       "Scale — quarterly board reviews & resets",
     ],
     bestFor: [
@@ -650,7 +650,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       elite: "10 days",
       "retainer-growth": "1–3 days/edit",
       "retainer-scale": "Weekly sprints",
-      "retainer-enterprise": "2-week MVPs",
+      "retainer-enterprise": "Weekly MVPs",
     },
   },
   {
