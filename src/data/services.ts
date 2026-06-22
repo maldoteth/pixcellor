@@ -1010,12 +1010,12 @@ export const SERVICES: Service[] = [
 
   {
     slug: "crm-systems",
-    name: "CRM systems",
+    name: "Internal tools & CRM",
     category: "tech",
-    info: "A CRM that fits your exact workflow, powered by AI agents that work to your will — saving your team time and ensuring nothing is ever missed.",
-    tagline: "Your own CRM, with AI agents on staff.",
+    info: "Custom CRMs and internal tools built around your exact workflow, with AI agents handling the admin so nothing slips.",
+    tagline: "Your own CRM and internal tools, with AI agents on staff.",
     heroBlurb:
-      "Stop bending your business to fit Salesforce. We build CRMs around how you actually sell — your pipeline, your stages, your data — with AI agents handling enrichment, follow-up and admin so nothing slips. Your reps stop doing CRM hygiene and start closing. Your sales leader gets pipeline they can actually forecast against. And you stop paying per-seat for software your team half-uses.",
+      "Stop bending your business to fit Salesforce and stop bolting another SaaS subscription onto the stack. We build CRMs and internal tools around how you actually sell, ship and operate — your pipeline, your data, your workflows — with AI agents handling enrichment, follow-up, approvals and admin so nothing slips. Reps stop doing CRM hygiene and start closing. Ops stop juggling spreadsheets and start shipping. You stop paying per-seat for software your team half-uses.",
     features: [
       "Custom pipeline and data model — built around how you actually sell",
       "AI agents for enrichment, follow-up, scheduling and dead-lead reactivation",
