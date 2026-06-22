@@ -97,12 +97,10 @@ export default function CyberSecurityHero() {
     let animationId: number | null = null;
     const animate = () => {
       material.uniforms.uTime.value += 0.05;
-      const nextTheme = getTheme();
-      if (nextTheme !== theme) {
-        theme = nextTheme;
-        renderer.setClearColor(getBg(theme));
-        material.uniforms.uColor.value = getParticleColor(theme);
-      }
+      camera.lookAt(scene.position);
+      renderer.render(scene, camera);
+      animationId = requestAnimationFrame(animate);
+    };
       camera.lookAt(scene.position);
       renderer.render(scene, camera);
       animationId = requestAnimationFrame(animate);
