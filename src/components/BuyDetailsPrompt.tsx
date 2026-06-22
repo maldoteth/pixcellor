@@ -31,6 +31,11 @@ export type BuyerDetails = {
   name: string;
   email: string;
   phone: string;
+  /** Optional address autofilled from Companies House when the user picked a UK company. */
+  address_line1?: string;
+  city?: string;
+  postcode?: string;
+  country?: string;
 };
 
 export type BuyerDomainChoice = DomainChoice;
@@ -171,6 +176,10 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
         ...p,
         company: json?.company_name || p.company,
         name: p.name?.trim() ? p.name : (director || p.name),
+        address_line1: json?.address?.address_line1 || p.address_line1,
+        city: json?.address?.city || p.city,
+        postcode: json?.address?.postcode || p.postcode,
+        country: json?.address?.country || p.country,
       }));
     } catch { /* silent */ }
   };
@@ -374,9 +383,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
       else setStep("vision-intro");
     } else {
       // Subscription — confirm with no domain
-      await onConfirm(
-        { company: values.company.trim(), name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim() },
-      );
+      await onConfirm(buyerPayload());
     }
   };
 
@@ -414,12 +421,19 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
   const visionToSend = () =>
     visionBrief && (visionBrief.imageUrl || visionBrief.prompt) ? visionBrief : undefined;
 
+  const buyerPayload = (): BuyerDetails => ({
+    company: values.company.trim(),
+    name: values.name.trim(),
+    email: values.email.trim(),
+    phone: values.phone.trim(),
+    address_line1: values.address_line1?.trim() || undefined,
+    city: values.city?.trim() || undefined,
+    postcode: values.postcode?.trim() || undefined,
+    country: values.country?.trim() || undefined,
+  });
+
   const handlePayByCard = async () => {
-    await onConfirm(
-      { company: values.company.trim(), name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim() },
-      undefined,
-      visionToSend(),
-    );
+    await onConfirm(buyerPayload(), undefined, visionToSend());
   };
 
   const handlePayByInvoice = async () => {
@@ -428,10 +442,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
       await handlePayByCard();
       return;
     }
-    await onInvoice(
-      { company: values.company.trim(), name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim() },
-      visionToSend(),
-    );
+    await onInvoice(buyerPayload(), visionToSend());
   };
 
   // Progress

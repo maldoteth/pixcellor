@@ -21,7 +21,7 @@ type Props = {
   context: PaymentChoiceContext | null;
   onCardSelected: () => void;
   /** When provided, the dialog opens directly into the invoice form with these fields prefilled. */
-  initialBuyer?: { name?: string; email?: string; company?: string; phone?: string };
+  initialBuyer?: { name?: string; email?: string; company?: string; phone?: string; address_line1?: string; city?: string; postcode?: string; country?: string };
   /** Skip the card/invoice choice screen and open straight at the invoice form. */
   initialStep?: Step;
 };
@@ -113,6 +113,10 @@ export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelecte
           email: initialBuyer.email?.trim() || f.email,
           company: initialBuyer.company?.trim() || f.company,
           phone: initialBuyer.phone?.trim() || f.phone,
+          address_line1: initialBuyer.address_line1?.trim() || f.address_line1,
+          city: initialBuyer.city?.trim() || f.city,
+          postcode: initialBuyer.postcode?.trim() || f.postcode,
+          country: initialBuyer.country?.trim() || f.country,
         }));
       }
     }
