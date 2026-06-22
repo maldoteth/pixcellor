@@ -363,7 +363,7 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
         {/* COMPARISON TABLE — moved up so prospects can compare early */}
         <motion.section {...fadeUp} className="mb-12 md:mb-16">
           <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">Compare all packages</h2>
-          <PackageCompareTable highlightSlug={pkg.slug} />
+          <PackageCompareTable highlightSlug={pkg.slug} billing={billing} enterpriseSize={enterpriseSize} onEnterpriseSizeChange={setEnterpriseSize} />
         </motion.section>
 
 
