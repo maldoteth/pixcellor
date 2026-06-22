@@ -986,7 +986,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto carousel-label-glass border-foreground/10 text-foreground z-[10041]">
+      <DialogContent className={`${step === "invoice-form" ? "sm:max-w-[620px]" : "sm:max-w-[520px]"} max-h-[90vh] overflow-y-auto carousel-label-glass border-foreground/10 text-foreground z-[10041]`}>
         <DialogHeader>
           <DialogTitle className="text-foreground">{title}</DialogTitle>
         </DialogHeader>
