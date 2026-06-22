@@ -737,9 +737,9 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     values: {
       "full-works": "Lifetime build",
       elite: "Lifetime build",
-      "retainer-growth": "Whilst active",
-      "retainer-scale": "Whilst active",
-      "retainer-enterprise": "Whilst active + SLA",
+      "retainer-growth": "Active services",
+      "retainer-scale": "Active services",
+      "retainer-enterprise": "Active services + SLA",
     },
   },
 ];
