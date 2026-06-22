@@ -849,7 +849,7 @@ export const SERVICES: Service[] = [
     ],
     tiers: [
       {
-        name: "Cyber Essentials",
+        name: "Full Works Essentials",
         tagline: "Foundational protection every business should have",
         features: [
           "Security audit & risk assessment",
@@ -864,11 +864,11 @@ export const SERVICES: Service[] = [
         ],
       },
       {
-        name: "Managed Defence",
+        name: "Elite Defence",
         tagline: "Always-on monitoring and response",
         highlight: true,
         features: [
-          "Everything in Cyber Essentials",
+          "Everything in Full Works Essentials",
           "24/7 Managed Detection & Response (MDR) from our SOC",
           "SIEM/XDR log monitoring, alerting & threat hunting",
           "Continuous vulnerability & attack-surface management",
@@ -882,10 +882,10 @@ export const SERVICES: Service[] = [
         ],
       },
       {
-        name: "Enterprise Fortress",
+        name: "Retainer Fortress",
         tagline: "A full security programme, run for you",
         features: [
-          "Everything in Managed Defence",
+          "Everything in Elite Defence",
           "Dedicated virtual CISO (vCISO) & security roadmap",
           "Red teaming / adversary emulation & purple-team exercises",
           "24/7 incident-response retainer with digital forensics (DFIR) & ransomware support",
@@ -926,7 +926,7 @@ export const SERVICES: Service[] = [
       },
       {
         q: "What happens if we get breached?",
-        a: "On Managed Defence and Enterprise Fortress, our SOC triages and contains in minutes — isolating endpoints, rotating credentials and cutting off the blast radius before it spreads. Enterprise Fortress includes a 24/7 incident-response retainer with full digital forensics, ransomware negotiation support, evidence preservation, regulator/insurer liaison and a written post-incident report so you know exactly what happened and how to stop it recurring.",
+        a: "On Elite Defence and Retainer Fortress, our SOC triages and contains in minutes — isolating endpoints, rotating credentials and cutting off the blast radius before it spreads. Retainer Fortress includes a 24/7 incident-response retainer with full digital forensics, ransomware negotiation support, evidence preservation, regulator/insurer liaison and a written post-incident report so you know exactly what happened and how to stop it recurring.",
       },
     ],
     primaryCta: salesCta,
