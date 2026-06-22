@@ -43,12 +43,14 @@ Deno.serve(async (req) => {
       const data = await profileRes.json();
       const a = data.registered_office_address ?? {};
 
-      // Convert "SMITH, John" → "John Smith"
+      // "SMITH, John" → "John Smith"; "Christopher John KENNEDY" → "Christopher John Kennedy"
+      const titleCase = (s: string) =>
+        s.toLowerCase().replace(/\b([a-z])/g, (m) => m.toUpperCase());
       const formatName = (n: string) => {
         if (!n) return '';
         const parts = n.split(',').map((s) => s.trim()).filter(Boolean);
-        if (parts.length === 2) return `${parts[1]} ${parts[0]}`.replace(/\s+/g, ' ').trim();
-        return n.trim();
+        const joined = parts.length === 2 ? `${parts[1]} ${parts[0]}` : n;
+        return titleCase(joined.replace(/\s+/g, ' ').trim());
       };
 
       let directors: { name: string; role: string }[] = [];
