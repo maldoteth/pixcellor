@@ -101,7 +101,7 @@ const CAL_URL = "https://cal.com/pixcellor/strategy";
 export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
   "full-works": {
     slug: "full-works",
-    name: "Full Works",
+    name: "Full Works\u00a0",
     tagline: "A professional, fast-loading website — done for you, end-to-end.",
     blurb:
       "The fastest, lowest-risk way to get a polished website live. We design, build, host and maintain it so you can focus on running your business.",
