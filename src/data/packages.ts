@@ -654,7 +654,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "Self-improving agentic flows",
+    feature: "Self-improving",
     values: {
       "full-works": "—",
       elite: "Limited",
@@ -664,7 +664,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "Auto-adopts new AI models",
+    feature: "Auto-adopts",
     values: {
       "full-works": "—",
       elite: "Some",
