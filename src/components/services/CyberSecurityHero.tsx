@@ -3,7 +3,8 @@ import * as THREE from "three";
 
 /**
  * Hero scene for the "Cyber-security" service.
- * A grid of shader-driven particles rippling like a defensive mesh.
+ * A grid of shader-driven particles rippling like a defensive mesh,
+ * with a strong cursor-driven shockwave on top of the ambient motion.
  * Container-scoped (not window-bound) so it sits inside the banner card
  * the same way every other service hero does.
  */
@@ -16,20 +17,31 @@ export default function CyberSecurityHero() {
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    // Banner card sits on the always-dark service hero surface,
-    // so we hard-code a black background with silvery-white particles.
     const bgColor = new THREE.Color(0x000000);
     const particleColor = new THREE.Vector3(0.92, 0.94, 0.98);
 
     const particleVertex = /* glsl */ `
       attribute float scale;
       uniform float uTime;
+      uniform vec2 uMouse;      // world-space xz position of cursor on ground plane
+      uniform float uMouseStrength; // 0..1 fade in/out when entering/leaving
       void main() {
         vec3 p = position;
         float s = scale;
-        p.y += (sin(p.x + uTime) * 0.5) + (cos(p.y + uTime) * 0.1) * 2.0;
-        p.x += (sin(p.y + uTime) * 0.5);
-        s += (sin(p.x + uTime) * 0.5) + (cos(p.y + uTime) * 0.1) * 2.0;
+
+        // Ambient ripple
+        p.y += (sin(p.x + uTime) * 0.5) + (cos(p.z + uTime) * 0.1) * 2.0;
+        p.x += (sin(p.z + uTime) * 0.5);
+        s += (sin(p.x + uTime) * 0.5) + (cos(p.z + uTime) * 0.1) * 2.0;
+
+        // Cursor-driven shockwave on the xz plane
+        vec2 toMouse = p.xz - uMouse;
+        float dist = length(toMouse);
+        float falloff = exp(-dist * 0.18);                  // radius of influence
+        float wave = sin(dist * 1.2 - uTime * 3.0);         // travelling ripple
+        p.y += wave * falloff * 3.5 * uMouseStrength;       // big vertical bump
+        s += falloff * 4.0 * uMouseStrength;                // make nearby points pop
+
         vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
         gl_PointSize = s * 15.0 * (1.0 / -mvPosition.z);
         gl_Position = projectionMatrix * mvPosition;
@@ -54,7 +66,6 @@ export default function CyberSecurityHero() {
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height, false);
-
     renderer.setClearColor(bgColor);
 
     const gap = 0.3;
@@ -88,15 +99,52 @@ export default function CyberSecurityHero() {
       uniforms: {
         uTime: { value: 0 },
         uColor: { value: particleColor },
+        uMouse: { value: new THREE.Vector2(0, 0) },
+        uMouseStrength: { value: 0 },
       },
     });
 
     const particles = new THREE.Points(geometry, material);
     scene.add(particles);
 
+    // Cursor raycasting onto y=0 plane to get world-space xz
+    const ndc = new THREE.Vector2(0, 0);
+    const raycaster = new THREE.Raycaster();
+    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const target = new THREE.Vector3();
+    const mouseTarget = new THREE.Vector2(0, 0);
+    const mouseCurrent = new THREE.Vector2(0, 0);
+    let strengthTarget = 0;
+
+    const updateMouseFromEvent = (e: PointerEvent) => {
+      const rect = container.getBoundingClientRect();
+      ndc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      ndc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(ndc, camera);
+      if (raycaster.ray.intersectPlane(groundPlane, target)) {
+        mouseTarget.set(target.x, target.z);
+      }
+      strengthTarget = 1;
+    };
+
+    const onLeave = () => {
+      strengthTarget = 0;
+    };
+
+    container.addEventListener("pointermove", updateMouseFromEvent);
+    container.addEventListener("pointerenter", updateMouseFromEvent);
+    container.addEventListener("pointerleave", onLeave);
+
     let animationId: number | null = null;
     const animate = () => {
       material.uniforms.uTime.value += 0.05;
+
+      // Smooth follow so the wave eases into place instead of snapping
+      mouseCurrent.lerp(mouseTarget, 0.15);
+      material.uniforms.uMouse.value.copy(mouseCurrent);
+      const s = material.uniforms.uMouseStrength.value as number;
+      material.uniforms.uMouseStrength.value = s + (strengthTarget - s) * 0.08;
+
       camera.lookAt(scene.position);
       renderer.render(scene, camera);
       animationId = requestAnimationFrame(animate);
@@ -115,6 +163,9 @@ export default function CyberSecurityHero() {
     return () => {
       if (animationId !== null) cancelAnimationFrame(animationId);
       ro.disconnect();
+      container.removeEventListener("pointermove", updateMouseFromEvent);
+      container.removeEventListener("pointerenter", updateMouseFromEvent);
+      container.removeEventListener("pointerleave", onLeave);
       scene.remove(particles);
       geometry.dispose();
       material.dispose();
