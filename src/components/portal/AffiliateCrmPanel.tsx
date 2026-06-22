@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet } from "lucide-react";
 import CashoutDialog from "@/components/portal/CashoutDialog";
+import CompaniesHouseInput from "@/components/CompaniesHouseInput";
 
 type ContactStatus = "cold" | "aware" | "hot" | "gold";
 
