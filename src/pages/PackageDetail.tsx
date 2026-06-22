@@ -421,6 +421,101 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
           </motion.section>
         )}
 
+        {/* CYBER-SECURITY — retainers only */}
+        {pkg.slug.startsWith("retainer-") && (() => {
+          const tier =
+            pkg.slug === "retainer-growth"
+              ? {
+                  label: "Growth Retainer",
+                  pitch:
+                    "Foundational protection every business should have — included in your monthly fee.",
+                  bullets: [
+                    "Security audit & risk assessment",
+                    "Endpoint detection & response (EDR) rollout",
+                    "Multi-factor auth & email hardening (SPF / DKIM / DMARC)",
+                    "Backups, disaster-recovery and external vulnerability scanning",
+                    "Staff phishing simulation + awareness training",
+                    "Cyber Essentials certification readiness",
+                  ],
+                }
+              : pkg.slug === "retainer-scale"
+              ? {
+                  label: "Scale Retainer",
+                  pitch:
+                    "Always-on monitoring and response — your stack is watched and defended 24/7.",
+                  bullets: [
+                    "Everything in the Growth tier, plus:",
+                    "24/7 Managed Detection & Response (MDR) from our SOC",
+                    "SIEM / XDR log monitoring, threat hunting and intelligence",
+                    "Continuous vulnerability & attack-surface management",
+                    "Quarterly penetration testing",
+                    "Cloud security posture management (AWS, Azure, GCP)",
+                    "ISO 27001 / SOC 2 / Cyber Essentials Plus readiness",
+                  ],
+                }
+              : {
+                  label: "Enterprise Retainer",
+                  pitch:
+                    "A full security programme, run for you — including a virtual CISO, red-teaming and a 24/7 incident-response retainer.",
+                  bullets: [
+                    "Everything in the Scale tier, plus:",
+                    "Dedicated virtual CISO (vCISO) & written security roadmap",
+                    "Red-team / purple-team exercises and adversary emulation",
+                    "24/7 incident-response retainer with DFIR & ransomware support",
+                    "Zero-trust architecture design & rollout",
+                    "Full GRC support toward ISO 27001, SOC 2 Type II, PCI DSS & GDPR / DPO",
+                    "Tabletop exercises, board-level reporting & supply-chain risk management",
+                  ],
+                };
+          return (
+            <motion.section {...fadeUp} className="mb-12 md:mb-16">
+              <div className="relative overflow-hidden rounded-2xl border border-foreground/15 bg-gradient-to-br from-foreground/[0.08] via-foreground/[0.03] to-transparent p-6 md:p-10 backdrop-blur-md">
+                <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-foreground/10 blur-3xl pointer-events-none" />
+                <div className="relative">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-foreground/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-foreground/90">
+                    <ShieldCheck className="h-3 w-3" />
+                    <span>Cyber-security · Included</span>
+                  </div>
+                  <h2 className="mt-4 text-2xl md:text-4xl font-extrabold leading-tight tracking-tight">
+                    Enterprise-grade cyber defence, bundled into your retainer.
+                  </h2>
+                  <p className="mt-4 max-w-3xl text-sm md:text-base text-foreground/80 leading-relaxed">
+                    Most businesses are one phishing email, one unpatched server or one stolen laptop away from
+                    a very bad quarter. Cyber-security is wired into every Pixcellor retainer at the{" "}
+                    <strong className="text-foreground">{tier.label}</strong> level — the same security
+                    programme firms with six-figure security budgets pay specialists for, at a fraction of the
+                    cost of hiring it in.
+                  </p>
+                  <p className="mt-3 max-w-3xl text-sm md:text-base text-foreground/75 leading-relaxed">{tier.pitch}</p>
+
+                  <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+                    {tier.bullets.map((b) => (
+                      <li
+                        key={b}
+                        className="flex items-start gap-2 rounded-lg border border-foreground/10 bg-background/30 p-3 text-sm text-foreground/85 leading-relaxed"
+                      >
+                        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-foreground/75" />
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-8 flex flex-wrap items-center gap-3">
+                    <CtaButton label={pkg.primaryCta.label} action={pkg.primaryCta.action} />
+                    <Link
+                      to="/services/cyber-security"
+                      className="text-xs uppercase tracking-wider text-foreground/70 hover:text-foreground underline-offset-4 hover:underline"
+                    >
+                      See the full cyber-security programme →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </motion.section>
+          );
+        })()}
+
+
         {/* SAMPLE WORK */}
         {pkg.sampleWork && pkg.sampleWork.length > 0 && (
           <motion.section {...fadeUp} className="mb-12 md:mb-16">
