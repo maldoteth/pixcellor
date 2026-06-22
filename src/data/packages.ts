@@ -166,7 +166,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       "Founders who want it done for them, not DIY",
     ],
     faqs: [
-      { q: "How long does it take?", a: "Typically 5–10 working days from brief to launch." },
+      { q: "How long does it take?", a: "Typically 3–10 working days from brief to launch." },
       { q: "Do I own the site?", a: "Yes — you own the code, content and domain." },
       { q: "What if I need more pages later?", a: "Add pages anytime, or upgrade to Elite for unlimited revisions." },
       { q: "Is hosting really free?", a: "Yes — included for the first 25 leads on our global CDN." },
@@ -189,7 +189,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     ogImage: ogElite,
     sampleWork: [
       { title: "Animated brand site", tag: "10 pages · WebGL hero", note: "Scroll-driven 3D, custom illustrations.", image: imgAnimatedBrandSite },
-      { title: "SaaS web app MVP", tag: "Auth · DB · Stripe", note: "Full-stack product launched in 10 days.", image: imgSaasMvp },
+      { title: "SaaS web app MVP", tag: "Auth · DB · Stripe", note: "Full-stack product launched in 3–10 days.", image: imgSaasMvp },
       { title: "E-commerce flagship", tag: "Catalog · cart · checkout", note: "Custom storefront with Stripe payments.", image: imgEcommerceFlagship },
     ],
     addOns: DEFAULT_ADDONS,
@@ -646,8 +646,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Turnaround",
     values: {
-      "full-works": "5–10 days",
-      elite: "10 days",
+      "full-works": "3–10 days",
+      elite: "3–10 days",
       "retainer-growth": "1–3 days/edit",
       "retainer-scale": "Weekly sprints",
       "retainer-enterprise": "Weekly MVPs",
