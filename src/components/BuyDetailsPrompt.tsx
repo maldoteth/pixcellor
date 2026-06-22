@@ -937,6 +937,17 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
         </div>
       )}
       <p className="text-[11px] text-foreground/50 text-center mt-1">Payment due within 28 days. We'll send friendly reminders if needed.</p>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full h-12 font-semibold"
+        onClick={() => {
+          onOpenChange(false);
+          window.dispatchEvent(new Event("pixcellor:open-login"));
+        }}
+      >
+        Log in
+      </Button>
       <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="self-center text-xs text-foreground/60 hover:text-foreground">Close</Button>
     </>
   );
