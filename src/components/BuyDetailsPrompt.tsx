@@ -825,10 +825,118 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     </>
   );
 
+  const renderInvoiceForm = () => {
+    const inputCls = "w-full bg-foreground/5 border border-foreground/15 rounded-md px-3 py-2.5 text-sm text-foreground placeholder:text-foreground/40 outline-none focus:border-foreground/40 transition";
+    const labelCls = "text-foreground/70 text-[11px] uppercase tracking-wider";
+    return (
+      <>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => setStep("payment")} className="text-foreground/60 hover:text-foreground" aria-label="Back">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div>
+            <p className="text-foreground text-base font-semibold">Bank transfer — billing details</p>
+            <p className="text-foreground/60 text-xs">We'll email you a PDF invoice with our UK bank details.</p>
+          </div>
+        </div>
+        <div className="grid gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Full name *</label>
+              <input className={inputCls} value={values.name} onChange={(e) => setValues((p) => ({ ...p, name: e.target.value }))} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Company</label>
+              <input className={inputCls} value={values.company} onChange={(e) => setValues((p) => ({ ...p, company: e.target.value }))} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Email *</label>
+              <input type="email" className={inputCls} value={values.email} onChange={(e) => setValues((p) => ({ ...p, email: e.target.value }))} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Phone</label>
+              <input className={inputCls} value={values.phone} onChange={(e) => setValues((p) => ({ ...p, phone: e.target.value }))} />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className={labelCls}>Billing address</label>
+            <input className={inputCls} placeholder="Street address" value={invoiceExtra.address_line1} onChange={(e) => setInvoiceExtra((p) => ({ ...p, address_line1: e.target.value }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>City</label>
+              <input className={inputCls} value={invoiceExtra.city} onChange={(e) => setInvoiceExtra((p) => ({ ...p, city: e.target.value }))} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Postcode</label>
+              <input className={inputCls} value={invoiceExtra.postcode} onChange={(e) => setInvoiceExtra((p) => ({ ...p, postcode: e.target.value }))} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Country</label>
+              <select
+                value={invoiceExtra.country}
+                onChange={(e) => setInvoiceExtra((p) => ({ ...p, country: e.target.value }))}
+                className={inputCls}
+              >
+                {INVOICE_COUNTRIES.map((c) => <option key={c} className="bg-background text-foreground">{c}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>PO reference</label>
+              <input className={inputCls} value={invoiceExtra.po_reference} onChange={(e) => setInvoiceExtra((p) => ({ ...p, po_reference: e.target.value }))} />
+            </div>
+          </div>
+          <p className="text-[11px] text-foreground/50">By submitting you'll receive a PDF invoice with our bank details. Payment terms: 28 days.</p>
+        </div>
+        <div className="flex gap-2 mt-1">
+          <Button type="button" variant="outline" onClick={() => setStep("payment")} disabled={invoiceSubmitting} className="flex-1 h-12 font-semibold">Back</Button>
+          <Button type="button" variant="pricing" onClick={submitInvoice} disabled={invoiceSubmitting} className="flex-1 h-12 font-semibold gap-2">
+            {invoiceSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+            Send invoice
+          </Button>
+        </div>
+      </>
+    );
+  };
+
+  const renderInvoiceSuccess = () => (
+    <>
+      <div className="flex items-center gap-2">
+        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+        <p className="text-foreground text-base font-semibold">Invoice sent</p>
+      </div>
+      <p className="text-foreground/70 text-xs">
+        We've emailed {values.email || "you"} a copy of invoice {invoiceResult?.invoice_number} with the PDF and bank details attached.
+      </p>
+      {invoiceResult?.hosted_url && (
+        <div className="grid gap-2 mt-1">
+          <Button asChild variant="pricing" className="w-full h-12 font-semibold">
+            <a href={invoiceResult.hosted_url} target="_blank" rel="noopener noreferrer">View invoice page</a>
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full h-12 gap-2 font-semibold"
+            onClick={() => { navigator.clipboard.writeText(invoiceResult.hosted_url); toast.success("Link copied"); }}
+          >
+            <Copy className="h-4 w-4" /> Copy invoice link
+          </Button>
+        </div>
+      )}
+      <p className="text-[11px] text-foreground/50 text-center mt-1">Payment due within 28 days. We'll send friendly reminders if needed.</p>
+      <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="self-center text-xs text-foreground/60 hover:text-foreground">Close</Button>
+    </>
+  );
+
   const renderBody = () => {
     if (step === "payment") {
       return renderPayment();
     }
+    if (step === "invoice-form") return renderInvoiceForm();
+    if (step === "invoice-success") return renderInvoiceSuccess();
     if (isField(step)) return renderField();
     if (step === "vision-intro") return renderVisionIntro();
     if (step === "vision-generating") return renderGenerating();
