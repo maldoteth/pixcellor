@@ -319,7 +319,16 @@ export default function ServiceSalesView({
             CYBER-SECURITY IS ONLY AVAILABLE ON RETAINER TIERS
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
-            {service.tiers.map((tier) => (
+            {service.tiers.map((tier) => {
+              const lowerName = tier.name.toLowerCase();
+              const tierSlug = lowerName.includes("growth")
+                ? "retainer-growth"
+                : lowerName.includes("scale")
+                ? "retainer-scale"
+                : lowerName.includes("enterprise")
+                ? "retainer-enterprise"
+                : null;
+              return (
               <div
                 key={tier.name}
                 className={`relative flex flex-col rounded-xl border bg-foreground/[0.03] p-5 backdrop-blur-md ${
@@ -334,7 +343,17 @@ export default function ServiceSalesView({
                     <span>Most popular</span>
                   </div>
                 )}
-                <div className="text-base md:text-lg font-bold text-foreground">{tier.name}</div>
+                {tierSlug ? (
+                  <Link
+                    to={`/packages/${tierSlug}`}
+                    className="text-base md:text-lg font-bold text-foreground hover:underline underline-offset-4 inline-flex items-center gap-1.5 group"
+                  >
+                    {tier.name}
+                    <ArrowRight className="h-3.5 w-3.5 opacity-60 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                ) : (
+                  <div className="text-base md:text-lg font-bold text-foreground">{tier.name}</div>
+                )}
                 <p className="mt-1 text-xs md:text-sm text-foreground/65 leading-relaxed">
                   {tier.tagline}
                 </p>
@@ -347,7 +366,8 @@ export default function ServiceSalesView({
                   ))}
                 </ul>
               </div>
-            ))}
+              );
+            })}
           </div>
           <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs md:text-sm text-foreground/65">
