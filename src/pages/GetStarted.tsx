@@ -322,7 +322,7 @@ const GetStarted = () => {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 border border-white/15 bg-white/[0.03] text-xs uppercase tracking-[0.2em] text-white/70 mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              UK Studio · Booking calls this week
+              LIMITED SLOTS AVAILABLE
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.05] tracking-tight">
               Smart sites &amp; apps
