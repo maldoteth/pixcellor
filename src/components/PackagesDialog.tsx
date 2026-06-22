@@ -19,6 +19,17 @@ import HoneypotField from "@/components/HoneypotField";
 import { useAntiSpam } from "@/lib/anti-spam";
 import { getServiceByName } from "@/data/services";
 import ServiceSalesView from "@/components/services/ServiceSalesView";
+import { PaymentMethodDialog, type PaymentChoiceContext } from "@/components/PaymentMethodDialog";
+
+const PACKAGE_KEY_TO_SLUG: Record<string, string> = {
+  fullWorks: "full-works",
+  elite: "elite",
+  growth: "retainer-growth",
+  scale: "retainer-scale",
+  enterprise: "retainer-enterprise",
+};
+
+
 
 const PACKAGES = {
   fullWorks: {
