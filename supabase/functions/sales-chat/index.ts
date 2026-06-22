@@ -1007,10 +1007,45 @@ async function lookupCustomer(supabase: DbClient, rawEmail: string) {
     date: s.created_at,
   }));
 
+  const invoicesFormatted = (invoiceRows ?? []).map((inv: {
+    id: string;
+    invoice_number: string;
+    public_token: string | null;
+    package_slug: string | null;
+    status: string;
+    issued_at: string | null;
+    due_at: string | null;
+    paid_at: string | null;
+    total_pence: number | null;
+    currency: string | null;
+    billing_name: string | null;
+    billing_company: string | null;
+    payment_method: string | null;
+    created_at: string;
+  }) => ({
+    invoice_id: inv.id,
+    invoice_number: inv.invoice_number,
+    status: inv.status, // draft | sent | viewed | paid | overdue | cancelled
+    paid: inv.status === "paid" || !!inv.paid_at,
+    amount: inv.total_pence != null && inv.currency
+      ? `${(inv.total_pence / 100).toFixed(2)} ${inv.currency.toUpperCase()}`
+      : null,
+    issued_at: inv.issued_at,
+    due_at: inv.due_at,
+    paid_at: inv.paid_at,
+    package_slug: inv.package_slug,
+    billing_name: inv.billing_name,
+    billing_company: inv.billing_company,
+    payment_method: inv.payment_method,
+    hosted_url: inv.public_token ? `https://pixcellor.com/invoice/${inv.public_token}` : null,
+    created_at: inv.created_at,
+  }));
+
   return {
-    found: ordersFormatted.length > 0 || (inquiries ?? []).length > 0 || priorChats.length > 0,
+    found: ordersFormatted.length > 0 || invoicesFormatted.length > 0 || (inquiries ?? []).length > 0 || priorChats.length > 0,
     email,
     orders: ordersFormatted,
+    invoices: invoicesFormatted,
     contact_inquiries: inquiries ?? [],
     prior_chats: priorChats,
   };
