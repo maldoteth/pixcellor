@@ -696,11 +696,11 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Export to any host",
     values: {
-      "full-works": "Yes",
-      elite: "Yes",
-      "retainer-growth": "Yes",
-      "retainer-scale": "Yes",
-      "retainer-enterprise": "Yes",
+      "full-works": "Unlimited",
+      elite: "Unlimited",
+      "retainer-growth": "Unlimited",
+      "retainer-scale": "Unlimited",
+      "retainer-enterprise": "Unlimited",
     },
   },
   {
