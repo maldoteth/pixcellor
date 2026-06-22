@@ -75,6 +75,7 @@ export const OG_SERVICE_BY_SLUG: Record<string, string> = {
   "animated-sites": toAbsolute(svcAnimated.url),
   "full-web-apps": toAbsolute(svcWebApps.url),
   "internal-tools": toAbsolute(svcInternal.url),
+  "cyber-security": toAbsolute(svcInternal.url),
   "crm-systems": toAbsolute(svcCrm.url),
   "ecommerce-stores": toAbsolute(svcEcom.url),
   "blockchain-integrations": toAbsolute(svcBlockchain.url),

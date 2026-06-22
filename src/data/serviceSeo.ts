@@ -128,12 +128,27 @@ export const SERVICE_SEO: Record<string, ServiceSeo> = {
       "operations tooling",
     ],
   },
-  "crm-systems": {
-    title: "Custom CRM Build with AI Agents | Pixcellor",
+  "cyber-security": {
+    title: "Managed Cyber-Security, MDR & Compliance | Pixcellor",
     description:
-      "Bespoke CRMs designed around how you actually sell, with AI agents handling enrichment, follow-up and admin so nothing slips.",
+      "Enterprise-grade cyber defence — 24/7 MDR, pen testing, incident response and ISO/SOC/Cyber Essentials readiness — bundled into our retainers.",
+    keywords: [
+      "managed cyber security UK",
+      "MDR managed detection response",
+      "penetration testing",
+      "incident response retainer",
+      "ISO 27001 readiness",
+      "Cyber Essentials certification support",
+      "vCISO",
+    ],
+  },
+  "crm-systems": {
+    title: "Custom CRM & Internal Tools with AI Agents | Pixcellor",
+    description:
+      "Bespoke CRMs and internal tools designed around how you actually sell and operate, with AI agents handling enrichment, follow-up and admin so nothing slips.",
     keywords: [
       "custom CRM development",
+      "internal tools CRM",
       "AI CRM agents",
       "Salesforce alternative",
       "sales pipeline software",

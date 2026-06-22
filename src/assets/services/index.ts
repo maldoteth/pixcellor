@@ -30,6 +30,7 @@ export const SERVICE_IMAGES: Record<string, string> = {
   "animated-sites": animatedSites,
   "full-web-apps": fullWebApps,
   "internal-tools": internalTools,
+  "cyber-security": internalTools,
   "crm-systems": crmSystems,
   "ecommerce-stores": ecommerceStores,
   "blockchain-integrations": blockchainIntegrations,
