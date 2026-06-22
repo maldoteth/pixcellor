@@ -626,7 +626,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Hosting + Domain",
     values: {
-      "full-works": "Static Site\u00a0",
+      "full-works": "First 20 Leads",
       elite: "First 150 Leads",
       "retainer-growth": "Included",
       "retainer-scale": "Included",
