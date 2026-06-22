@@ -1808,6 +1808,7 @@ function MobileCards() {
       open={!!pending}
       onOpenChange={(o) => { if (!o) setPending(null); }}
       onConfirm={confirmBuy}
+      onInvoice={handleInvoiceFromPrompt}
       title={pending ? `Confirm – ${pending.packageName}` : "Confirm details"}
       submitting={submittingBuyer}
       showDomainStep={pending?.mode === "payment"}
@@ -1816,13 +1817,11 @@ function MobileCards() {
     />
     <PaymentMethodDialog
       open={!!paymentChoice}
-      onOpenChange={(o) => { if (!o) setPaymentChoice(null); }}
+      onOpenChange={(o) => { if (!o) { setPaymentChoice(null); setInvoicePrefill(null); } }}
       context={paymentChoice}
-      onCardSelected={() => {
-        const stash = (window as any).__pixPendingCardCheckout;
-        setPaymentChoice(null);
-        if (stash) setPending(stash);
-      }}
+      initialStep="form"
+      initialBuyer={invoicePrefill ?? undefined}
+      onCardSelected={() => { setPaymentChoice(null); setInvoicePrefill(null); }}
     />
 
     </>
