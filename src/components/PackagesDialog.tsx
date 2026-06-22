@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, Lock, X, Code2, Megaphone, Briefcase, Info } from "lucide-react";
+import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLavaCursor } from "@/hooks/use-lava-cursor";
