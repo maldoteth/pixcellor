@@ -615,9 +615,9 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Web app / SaaS",
     values: {
-      "full-works": "—",
+      "full-works": "\n",
       elite: "Yes",
-      "retainer-growth": "—",
+      "retainer-growth": "\n",
       "retainer-scale": "Yes",
       "retainer-enterprise": "Yes, full-stack",
     },
@@ -655,7 +655,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Agentic self-improving site",
     values: {
-      "full-works": "—",
+      "full-works": "\n",
       elite: "Included",
       "retainer-growth": "Continuous",
       "retainer-scale": "Continuous + A/B",
@@ -665,7 +665,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Auto-adopts new AI models",
     values: {
-      "full-works": "—",
+      "full-works": "\n",
       elite: "Yes",
       "retainer-growth": "Yes",
       "retainer-scale": "Yes — day zero",
@@ -675,7 +675,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "AI agents",
     values: {
-      "full-works": "—",
+      "full-works": "\n",
       elite: "Optional",
       "retainer-growth": "Sales + Support",
       "retainer-scale": "Custom agents",
@@ -685,8 +685,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "AI lead-gen runs",
     values: {
-      "full-works": "—",
-      elite: "—",
+      "full-works": "\n",
+      elite: "\n",
       "retainer-growth": "250 / mo",
       "retainer-scale": "1,000 / mo",
       "retainer-enterprise": "10,000 / mo",
@@ -705,7 +705,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Whitelabel delivery",
     values: {
-      "full-works": "—",
+      "full-works": "\n",
       elite: "Optional",
       "retainer-growth": "Included",
       "retainer-scale": "Included",
@@ -715,18 +715,18 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Fractional C-suite",
     values: {
-      "full-works": "—",
-      elite: "—",
-      "retainer-growth": "—",
-      "retainer-scale": "—",
+      "full-works": "\n",
+      elite: "\n",
+      "retainer-growth": "\n",
+      "retainer-scale": "\n",
       "retainer-enterprise": "CTO + CMO + CRO",
     },
   },
   {
     feature: "Automated Outreach",
     values: {
-      "full-works": "—",
-      elite: "—",
+      "full-works": "\n",
+      elite: "\n",
       "retainer-growth": "Included",
       "retainer-scale": "Included",
       "retainer-enterprise": "Included",
