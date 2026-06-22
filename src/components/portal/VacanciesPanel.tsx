@@ -221,6 +221,7 @@ export default function VacanciesPanel() {
   }, [toast]);
 
   useEffect(() => { load(); }, [load]);
+  usePortalRefresh(load);
 
   // Load saved templates (snapshots of deleted vacancies) when dialog opens
   useEffect(() => {
