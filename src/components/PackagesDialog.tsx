@@ -46,7 +46,7 @@ const PACKAGES = {
     priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
     mode: "payment" as const,
     featured: true,
-    features: ["Smart site or web app", "First 150 leads included", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages - 3D animated", "Agentic self-improving systems\u00a0"],
+    features: ["Smart site or web app", "First 150 leads included", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages - 3D animated", "Self-improving agentic flows"],
   },
   retainer: {
     name: "Custom",
@@ -72,7 +72,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
     yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
     features: [
-      "Agentic self-improving site",
+      "Self-improving agentic flows",
       "Custom CRM access",
       "Hosting, domain & cloud",
       "AI lead generation bot",
@@ -90,7 +90,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
     yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
     features: [
-      "Agentic self-improving site",
+      "Self-improving agentic flows",
       "Unlimited seats & users",
       "Unlimited edits & revisions",
       "Priority support 24/7 365",
@@ -108,7 +108,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
     yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
     features: [
-      "Agentic self-improving stack",
+      "Self-improving agentic flows",
       "Fractional CTO & CMO",
       "Dedicated dev & ops team",
       "Weekly MVP sprints",
