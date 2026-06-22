@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wand2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { consumeCheckoutPending, clearCheckoutPending } from "@/lib/checkoutTracking";
-import { supabase } from "@/integrations/supabase/client";
+import { clearCheckoutPending, consumeCheckoutPending } from "@/lib/checkoutTracking";
 
-const SHOWN_KEY = "pixcellor_try_before_buy_shown";
+// Keys
+const SHOWN_SESSION_KEY = "pixcellor_try_before_buy_shown_session";
+const DISMISSED_UNTIL_KEY = "pixcellor_try_before_buy_dismissed_until";
+const RECENTLY_PAID_KEY = "pixcellor_recent_order_completed_at";
+
+const DISMISS_COOLDOWN_DAYS = 7;
+const RECENT_PAID_WINDOW_MS = 1000 * 60 * 60 * 24; // 24h
 
 const glassPanel = {
   background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
@@ -21,11 +26,36 @@ const glassButton = {
   boxShadow: "0 6px 20px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.25)",
 } as const;
 
-const MIN_DELAY_MS = 1500;
+function shouldSuppress(): boolean {
+  try {
+    if (sessionStorage.getItem(SHOWN_SESSION_KEY)) return true;
+    const until = Number(localStorage.getItem(DISMISSED_UNTIL_KEY) || 0);
+    if (until && Date.now() < until) return true;
+    const paidAt = Number(localStorage.getItem(RECENTLY_PAID_KEY) || 0);
+    if (paidAt && Date.now() - paidAt < RECENT_PAID_WINDOW_MS) return true;
+  } catch { /* ignore */ }
+  return false;
+}
+
+function markShown() {
+  try { sessionStorage.setItem(SHOWN_SESSION_KEY, "1"); } catch { /* ignore */ }
+}
+
+function cleanCanceledParam() {
+  try {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("payment") === "canceled") {
+      url.searchParams.delete("payment");
+      const search = url.searchParams.toString();
+      window.history.replaceState({}, "", url.pathname + (search ? `?${search}` : "") + url.hash);
+    }
+  } catch { /* ignore */ }
+}
 
 export default function TryBeforeBuyDrawer() {
   const [visible, setVisible] = useState(false);
   const isMobile = useIsMobile();
+  const shownRef = useRef(false);
 
   useEffect(() => {
     if (visible) {
@@ -35,60 +65,52 @@ export default function TryBeforeBuyDrawer() {
     }
   }, [visible]);
 
-  const shownRef = useRef(false);
+  const show = () => {
+    if (shownRef.current || shouldSuppress()) return;
+    shownRef.current = true;
+    markShown();
+    setVisible(true);
+  };
 
+  // Trigger 1: ?payment=canceled in URL (cancelled Stripe checkout)
   useEffect(() => {
-    try { if (sessionStorage.getItem(SHOWN_KEY)) shownRef.current = true; } catch { /* ignore */ }
-    let checking = false;
-    const check = async () => {
-      if (checking || shownRef.current) return;
-      const pending = consumeCheckoutPending();
-      if (!pending) return;
-      if (Date.now() - pending.startedAt < MIN_DELAY_MS) return;
-      checking = true;
-      try {
-        // If we have a Stripe session id, verify with backend whether it was paid
-        if (pending.sessionId) {
-          try {
-            const { data } = await supabase.functions.invoke("check-order-status", {
-              body: { sessionId: pending.sessionId },
-            });
-            if (data?.confirmed) {
-              clearCheckoutPending();
-              return;
-            }
-          } catch {
-            // network error: fall through and show drawer (better to ask than miss a lead)
-          }
-        }
-        if (shownRef.current) return;
-        shownRef.current = true;
-        try { sessionStorage.setItem(SHOWN_KEY, "1"); } catch { /* ignore */ }
-        setVisible(true);
-      } finally {
-        checking = false;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("payment") === "canceled") {
+        // Slight delay so the page settles
+        const t = window.setTimeout(() => {
+          cleanCanceledParam();
+          clearCheckoutPending();
+          show();
+        }, 600);
+        return () => window.clearTimeout(t);
       }
-    };
-
-    const onFocus = () => { void check(); };
-    const onVisibility = () => { if (document.visibilityState === "visible") void check(); };
-    const onPageShow = () => { void check(); };
-
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("pageshow", onPageShow);
-
-    const t = window.setTimeout(() => { void check(); }, 2000);
-
-    return () => {
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("pageshow", onPageShow);
-      window.clearTimeout(t);
-    };
+    } catch { /* ignore */ }
   }, []);
 
+  // Trigger 2: genuine exit-intent (desktop only) — pointer leaves the top of the viewport
+  // after the user has at least started a checkout in this session (pending exists).
+  useEffect(() => {
+    if (isMobile) return;
+    const onMouseOut = (e: MouseEvent) => {
+      // Pointer leaving toward the top of the window
+      if (e.relatedTarget || (e as MouseEvent).clientY > 4) return;
+      // Only fire if they actually started a checkout (so we don't ambush casual visitors)
+      const pending = consumeCheckoutPending();
+      if (!pending) return;
+      show();
+    };
+    window.addEventListener("mouseout", onMouseOut);
+    return () => window.removeEventListener("mouseout", onMouseOut);
+  }, [isMobile]);
+
   const dismiss = () => {
+    try {
+      localStorage.setItem(
+        DISMISSED_UNTIL_KEY,
+        String(Date.now() + DISMISS_COOLDOWN_DAYS * 24 * 60 * 60 * 1000),
+      );
+    } catch { /* ignore */ }
     clearCheckoutPending();
     setVisible(false);
   };
@@ -96,7 +118,10 @@ export default function TryBeforeBuyDrawer() {
   const openChat = () => {
     clearCheckoutPending();
     setVisible(false);
-    window.dispatchEvent(new Event("pixcellor:open-letstalk"));
+    // Dispatch with mode so LetsTalkPrompt picks the right flow.
+    window.dispatchEvent(
+      new CustomEvent("pixcellor:open-letstalk", { detail: { mode: "consultation" } }),
+    );
   };
 
   return (
@@ -123,6 +148,14 @@ export default function TryBeforeBuyDrawer() {
             }
             style={glassPanel}
           >
+            <button
+              type="button"
+              aria-label="Dismiss"
+              onClick={dismiss}
+              className="absolute top-3 right-3 h-8 w-8 rounded-full text-foreground/60 hover:text-foreground hover:bg-foreground/10 transition flex items-center justify-center"
+            >
+              <X className="h-4 w-4" />
+            </button>
             {isMobile ? (
               <>
                 <div>

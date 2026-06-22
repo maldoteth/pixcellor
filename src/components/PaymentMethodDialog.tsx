@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { CreditCard, Building2, Loader2, ArrowLeft, CheckCircle2, Copy, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import AuroraBackdrop from "@/components/AuroraBackdrop";
 
 type CHHit = { company_number: string; title: string; address_snippet: string; status?: string };
 
@@ -151,7 +152,8 @@ export function PaymentMethodDialog({ open, onOpenChange, context, onCardSelecte
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md relative overflow-hidden bg-transparent isolate border-foreground/10 text-foreground">
+        <AuroraBackdrop />
         {step === "choice" && (
           <>
             <DialogHeader>

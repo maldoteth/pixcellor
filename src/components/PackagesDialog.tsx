@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, Lock, X, Code2, Megaphone, Briefcase, Info } from "lucide-react";
+import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLavaCursor } from "@/hooks/use-lava-cursor";
@@ -280,9 +281,16 @@ async function handleCheckout(priceId: string, mode: string, packageName: string
   const { data, error } = await supabase.functions.invoke("create-checkout", {
     body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined, buyer, ...domainPayload, ...visionPayload },
   });
-  if (error) throw error;
+  if (error || data?.error || !data?.url) {
+    const message =
+      (data && typeof data.error === "string" && data.error) ||
+      (error && (error as { message?: string }).message) ||
+      "Couldn't start checkout. Please try again or contact support.";
+    console.error("create-checkout failed:", { error, data });
+    throw new Error(message);
+  }
   if (data?.sessionId) updateCheckoutPendingSessionId(data.sessionId);
-  if (data?.url) window.location.href = data.url;
+  window.location.href = data.url;
 }
 
 function PaymentMethodIcons() {
@@ -864,7 +872,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     try {
       await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer, domainChoice, vision);
     } catch (e) {
+      const msg = (e as Error)?.message || "Payment failed. Please try again.";
       console.error(e);
+      toast.error(msg);
     } finally {
       setSubmittingBuyer(false);
       setLoading(null);
@@ -1517,7 +1527,9 @@ function MobileCards() {
     try {
       await handleCheckout(pending.priceId, pending.mode, pending.packageName, pending.billing, buyer, domainChoice, vision);
     } catch (e) {
+      const msg = (e as Error)?.message || "Payment failed. Please try again.";
       console.error(e);
+      toast.error(msg);
     } finally {
       setSubmittingBuyer(false);
       setLoading(null);
