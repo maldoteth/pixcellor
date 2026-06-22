@@ -51,6 +51,7 @@ import AdminPayoutsPanel from "@/components/portal/AdminPayoutsPanel";
 import CsvImportDialog from "@/components/portal/CsvImportDialog";
 import ContactMatchingCandidates from "@/components/portal/ContactMatchingCandidates";
 import { DuplicateContactsPanel } from "@/components/portal/DuplicateContactsPanel";
+import { emitPortalRefresh } from "@/hooks/usePortalRefresh";
 import FindLeadsButton from "@/components/portal/FindLeadsButton";
 import { usePromptDialog, useConfirmDialog } from "@/components/ui/themed-dialogs";
 import SeoHead from "@/components/SeoHead";
