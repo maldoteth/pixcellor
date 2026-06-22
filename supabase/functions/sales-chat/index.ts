@@ -867,7 +867,47 @@ const devTools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_invoice",
+      description: "Create a PROPER bank-transfer invoice (PDF emailed to client, hosted invoice page, 28-day payment terms, auto reminders). Use when the customer wants to pay by bank transfer instead of card, OR when issuing a custom invoice for any work. Auto-creates / links a CRM contact for the client. NEVER invent line items or amounts — only use values the customer explicitly confirmed. Returns invoice_number and hosted_url; show the hosted_url as a clickable markdown link.",
+      parameters: {
+        type: "object",
+        required: ["billing_name", "billing_email", "line_items"],
+        properties: {
+          billing_name: { type: "string", description: "Client's full name (required)." },
+          billing_email: { type: "string", description: "Client's email — invoice and reminders go here (required)." },
+          billing_company: { type: "string", description: "Client's company name." },
+          billing_phone: { type: "string" },
+          billing_address_line1: { type: "string" },
+          billing_city: { type: "string" },
+          billing_postcode: { type: "string" },
+          billing_country: { type: "string", description: "Defaults to 'United Kingdom'." },
+          po_reference: { type: "string", description: "Optional purchase-order reference." },
+          due_days: { type: "number", description: "Payment terms in days. Defaults to 28 — do not change unless the customer explicitly asks." },
+          line_items: {
+            type: "array",
+            minItems: 1,
+            description: "Invoice line items. Amounts MUST be in GBP pence (e.g. £250 = 25000). Quantities default to 1.",
+            items: {
+              type: "object",
+              required: ["description", "unit_amount_pence"],
+              properties: {
+                description: { type: "string" },
+                quantity: { type: "number" },
+                unit_amount_pence: { type: "number" },
+              },
+            },
+          },
+          package_slug: { type: "string", description: "Optional package slug ('full-works' | 'elite' | 'retainer-growth' | 'retainer-scale' | 'retainer-enterprise') — sets the line item automatically if provided alone." },
+          internal_note: { type: "string", description: "Private note for our records — not shown to client." },
+        },
+      },
+    },
+  },
 ];
+
 
 // Look up everything we know about a customer by email
 async function lookupCustomer(supabase: DbClient, rawEmail: string) {
