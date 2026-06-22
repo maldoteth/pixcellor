@@ -129,7 +129,8 @@ export default function PackagesPage() {
                 View package <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
