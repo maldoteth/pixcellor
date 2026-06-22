@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CreditCard, Building2, Loader2, ArrowLeft, CheckCircle2, Copy } from "lucide-react";
+import { CreditCard, Building2, Loader2, ArrowLeft, CheckCircle2, Copy, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+type CHHit = { company_number: string; title: string; address_snippet: string; status?: string };
 
 export type PaymentChoiceContext = {
   packageSlug: string;
