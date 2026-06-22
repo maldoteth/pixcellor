@@ -146,6 +146,8 @@ export default function ServiceSalesView({
                   <CrmSystemsHero />
                 ) : service.slug === "creative-branding-makeovers" ? (
                   <CreativeBrandingHero />
+                ) : service.slug === "cyber-security" ? (
+                  <CyberSecurityHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
