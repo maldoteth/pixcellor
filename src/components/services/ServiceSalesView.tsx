@@ -119,6 +119,7 @@ export default function ServiceSalesView({
     service.slug === "ecommerce-stores" ||
     service.slug === "crm-systems" ||
     service.slug === "creative-branding-makeovers" ||
+    service.slug === "cyber-security" ||
     service.slug === "documents-and-decks";
 
   return (
