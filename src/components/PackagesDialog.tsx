@@ -849,7 +849,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   }, []);
 
   const [paymentChoice, setPaymentChoice] = useState<PaymentChoiceContext | null>(null);
-  const [invoicePrefill, setInvoicePrefill] = useState<{ name?: string; email?: string; company?: string; phone?: string } | null>(null);
+  const [invoicePrefill, setInvoicePrefill] = useState<{ name?: string; email?: string; company?: string; phone?: string; address_line1?: string; city?: string; postcode?: string; country?: string } | null>(null);
   const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
     // Always go through the full BuyDetailsPrompt wizard — the payment-method choice
     // (card vs invoice) happens at the END of the flow, with buyer details prefilled.
