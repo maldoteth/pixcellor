@@ -31,6 +31,11 @@ export type BuyerDetails = {
   name: string;
   email: string;
   phone: string;
+  /** Optional address autofilled from Companies House when the user picked a UK company. */
+  address_line1?: string;
+  city?: string;
+  postcode?: string;
+  country?: string;
 };
 
 export type BuyerDomainChoice = DomainChoice;
