@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { Loader2, Wand2, CreditCard, Building2, Search } from "lucide-react";
+import { Loader2, Wand2, CreditCard, Building2, Search, ArrowLeft, CheckCircle2, Copy } from "lucide-react";
+import { toast } from "sonner";
 import GenerationProgress from "./GenerationProgress";
 import BrandKit from "@/components/BrandKit";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -11,6 +12,8 @@ import { DomainChoice } from "@/components/DomainPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext } from "@/lib/checkoutTracking";
 import { SUGGESTIONS as VISION_SUGGESTIONS } from "@/components/VisionGenerator";
+
+const INVOICE_COUNTRIES = ["United Kingdom", "Ireland", "United States", "Other"];
 
 function useIsMobileOrTablet() {
   const [match, setMatch] = useState<boolean>(() =>
