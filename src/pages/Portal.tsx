@@ -505,6 +505,25 @@ export default function Portal() {
   const [callbacksVisibleCount, setCallbacksVisibleCount] = useState(10);
   const [sectionCounts, setSectionCounts] = useState<Record<string, number>>({});
   const [loadingMore, setLoadingMore] = useState<Record<string, boolean>>({});
+  const [refreshingAll, setRefreshingAll] = useState(false);
+
+  const refreshAll = useCallback(async () => {
+    setRefreshingAll(true);
+    try {
+      // Broadcast first so child panels start refetching in parallel with the main snapshot.
+      emitPortalRefresh();
+      await loadPortalSnapshot();
+      toast.success("Portal refreshed");
+    } catch (err) {
+      console.error("portal refresh failed", err);
+      toast.error("Refresh failed");
+    } finally {
+      setRefreshingAll(false);
+    }
+    // loadPortalSnapshot is stable (useCallback with [] deps below)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [clientsSort, setClientsSort] = useState<"newest" | "oldest" | "latest_update" | "hot" | "cold">("newest");
   const [clientsStatusFilter, setClientsStatusFilter] = useState<"all" | Contact["status"]>("all");
   const [clientsRetainerOnly, setClientsRetainerOnly] = useState(false);
