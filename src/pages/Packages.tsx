@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight, Sparkles } from "lucide-react";
@@ -15,6 +16,8 @@ const fadeUp = {
 
 export default function PackagesPage() {
   const packages = Object.values(PACKAGE_DETAILS);
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const hasAnyYearly = packages.some((p) => p.yearlyPrice);
 
   return (
     <div className="relative min-h-screen text-foreground overflow-hidden" style={{ background: "#000" }}>
@@ -51,8 +54,39 @@ export default function PackagesPage() {
           </p>
         </motion.header>
 
+        {hasAnyYearly && (
+          <div className="mb-6 flex justify-center">
+            <div className="inline-flex items-center gap-1 rounded-full border border-foreground/15 bg-foreground/[0.04] p-1 backdrop-blur-md">
+              {(["monthly", "yearly"] as const).map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  onClick={() => setBilling(b)}
+                  className={`relative rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                    billing === b ? "bg-foreground text-background" : "text-foreground/70 hover:text-foreground"
+                  }`}
+                >
+                  {b === "monthly" ? "Monthly" : "Yearly"}
+                  {b === "yearly" && (
+                    <span className={`ml-2 inline-block rounded-full px-2 py-0.5 text-[9px] tracking-wider ${
+                      billing === "yearly" ? "bg-background/20 text-background" : "bg-foreground/10 text-foreground/80"
+                    }`}>
+                      Save up to £4,938
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {packages.map((pkg) => (
+          {packages.map((pkg) => {
+            const hasYearly = Boolean(pkg.yearlyPrice);
+            const showYearly = billing === "yearly" && hasYearly;
+            const displayPrice = showYearly ? pkg.yearlyPrice! : pkg.price;
+            const displayBilling = showYearly ? pkg.yearlyBilling! : pkg.billing;
+            return (
             <motion.div
               key={pkg.slug}
               {...fadeUp}
@@ -67,9 +101,14 @@ export default function PackagesPage() {
               )}
               <div className="text-[10px] uppercase tracking-[0.22em] text-foreground/50 mb-2">From</div>
               <div className="flex items-baseline gap-2">
-                <div className="text-3xl md:text-4xl font-bold">{pkg.price}</div>
+                <div className="text-3xl md:text-4xl font-bold">{displayPrice}</div>
               </div>
-              <div className="text-xs text-foreground/60 mt-1">{pkg.billing}</div>
+              <div className="text-xs text-foreground/60 mt-1">{displayBilling}</div>
+              {hasYearly && pkg.yearlySavings && (
+                <div className="text-[11px] font-semibold text-emerald-500 mt-1">
+                  {showYearly ? `You're saving ${pkg.yearlySavings}` : `Save ${pkg.yearlySavings} with yearly`}
+                </div>
+              )}
 
               <h2 className="mt-5 text-xl font-semibold">{pkg.name}</h2>
               <p className="mt-2 text-sm text-foreground/70 leading-relaxed">{pkg.tagline}</p>
@@ -90,7 +129,8 @@ export default function PackagesPage() {
                 View package <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

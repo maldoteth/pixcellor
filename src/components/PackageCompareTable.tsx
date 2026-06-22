@@ -2,7 +2,7 @@ import { ArrowRight, Check, Minus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { COMPARISON_ROWS, COMPARISON_SLUGS, PACKAGE_DETAILS } from "@/data/packages";
 
-export default function PackageCompareTable({ highlightSlug }: { highlightSlug?: string }) {
+export default function PackageCompareTable({ highlightSlug, billing = "monthly" }: { highlightSlug?: string; billing?: "monthly" | "yearly" }) {
   return (
     <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] backdrop-blur-md overflow-hidden">
       {/* Mobile note */}
@@ -32,7 +32,7 @@ export default function PackageCompareTable({ highlightSlug }: { highlightSlug?:
                         {pkg.mode === "subscription" ? "Retainer" : "One-off"}
                       </div>
                       <div className="text-sm font-semibold">{pkg.name}</div>
-                      <div className="mt-1 text-base font-bold">{pkg.price}</div>
+                      <div className="mt-1 text-base font-bold">{billing === "yearly" && pkg.yearlyPrice ? pkg.yearlyPrice : pkg.price}</div>
                     </Link>
                   </th>
                 );
