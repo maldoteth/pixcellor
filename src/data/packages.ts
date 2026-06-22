@@ -213,6 +213,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
           "Email & CRM integrations",
           "Analytics & event tracking",
           "Third-party API connections",
+          "Up to 150 AI lead-gen runs total (upgrade to a retainer for monthly runs)",
         ],
       },
       {
