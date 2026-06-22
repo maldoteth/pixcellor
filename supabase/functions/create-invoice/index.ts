@@ -132,6 +132,10 @@ serve(async (req) => {
     name: body.billing.name,
     phone: body.billing.phone ?? undefined,
     company: body.billing.company ?? undefined,
+    address_line1: body.billing.address_line1 ?? undefined,
+    city: body.billing.city ?? undefined,
+    postcode: body.billing.postcode ?? undefined,
+    country: body.billing.country ?? undefined,
   });
 
   const dueDays = body.due_days ?? PAYMENT_TERMS_DAYS;
