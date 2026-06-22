@@ -529,7 +529,8 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     if (step === "payment") progressIdx = progressSteps.length - 1;
     else progressIdx = FIELD_STEPS.length; // any vision step
   }
-  const progressPct = ((progressIdx + 1) / progressSteps.length) * 100;
+  const isComplete = step === "invoice-success";
+  const progressPct = isComplete ? 100 : ((progressIdx + 1) / progressSteps.length) * 100;
 
   // Render content per step
   const renderField = () => {
