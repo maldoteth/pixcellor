@@ -28,6 +28,8 @@ export type Service = {
   teamFrom?: string[];
   primaryCta: { label: string; action: ServiceCtaAction };
   secondaryCta?: { label: string; action: ServiceCtaAction };
+  /** Optional service tiers (e.g. cyber-security packages) rendered as a 3-up grid. */
+  tiers?: { name: string; tagline: string; highlight?: boolean; features: string[] }[];
 };
 
 export type ServiceCategoryMeta = {
