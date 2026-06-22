@@ -637,8 +637,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     feature: "Support",
     values: {
       "full-works": "Email",
-      elite: "Priority email",
-      "retainer-growth": "Email + chat",
+      elite: "Priority",
+      "retainer-growth": "Priority",
       "retainer-scale": "Priority 24/7 365",
       "retainer-enterprise": "Dedicated team",
     },
