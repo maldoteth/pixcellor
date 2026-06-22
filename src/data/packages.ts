@@ -280,7 +280,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
   "retainer-growth": {
     slug: "retainer-growth",
     name: "Growth\u00a0",
-    tagline: "Your always-on web team for £89/month.",
+    tagline: "Grow your business with our solutions",
     blurb:
       "Everything a small business needs to run online — website with unlimited edits, CRM, hosting, AI bots and analytics — bundled into one predictable monthly fee.",
     price: "£89/mo",
