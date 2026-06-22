@@ -978,13 +978,14 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent
-          className="carousel-label-glass border-foreground/10 text-foreground max-h-[92vh] z-[10041]"
+          className="relative border-foreground/10 text-foreground max-h-[92vh] z-[10041] bg-transparent isolate overflow-hidden"
           overlayClassName="z-[10040]"
         >
+          <AuroraBackdrop />
           <DrawerHeader>
-            <DrawerTitle className="text-foreground text-center">{title}</DrawerTitle>
+            <DrawerTitle className="text-foreground text-center drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">{title}</DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pb-6 overflow-y-auto">{content}</div>
+          <div className="px-4 pb-6 overflow-y-auto relative">{content}</div>
         </DrawerContent>
       </Drawer>
     );
@@ -992,11 +993,12 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`${step === "invoice-form" ? "sm:max-w-[620px]" : "sm:max-w-[520px]"} max-h-[90vh] overflow-y-auto carousel-label-glass border-foreground/10 text-foreground z-[10041]`}>
+      <DialogContent className={`${step === "invoice-form" ? "sm:max-w-[620px]" : "sm:max-w-[520px]"} relative max-h-[90vh] overflow-hidden border-foreground/10 text-foreground z-[10041] bg-transparent isolate`}>
+        <AuroraBackdrop />
         <DialogHeader>
-          <DialogTitle className="text-foreground">{title}</DialogTitle>
+          <DialogTitle className="text-foreground drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">{title}</DialogTitle>
         </DialogHeader>
-        {content}
+        <div className="relative overflow-y-auto max-h-[80vh]">{content}</div>
       </DialogContent>
     </Dialog>
   );
