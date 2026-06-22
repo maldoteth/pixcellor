@@ -1511,13 +1511,8 @@ function MobileCards() {
 
 
   const [paymentChoice, setPaymentChoice] = useState<PaymentChoiceContext | null>(null);
+  const [invoicePrefill, setInvoicePrefill] = useState<{ name?: string; email?: string; company?: string; phone?: string } | null>(null);
   const buy = (priceId: string, mode: string, key: string, packageName: string, billing: string) => {
-    const slug = PACKAGE_KEY_TO_SLUG[key];
-    if (slug) {
-      setPaymentChoice({ packageSlug: slug, packageName, billing });
-      (window as any).__pixPendingCardCheckout = { priceId, mode, key, packageName, billing };
-      return;
-    }
     setPending({ priceId, mode, key, packageName, billing });
   };
 
@@ -1534,6 +1529,18 @@ function MobileCards() {
       setSubmittingBuyer(false);
       setLoading(null);
     }
+  };
+
+  const handleInvoiceFromPrompt = async (buyer: BuyerDetails, _vision?: VisionBrief) => {
+    if (!pending) return;
+    const slug = PACKAGE_KEY_TO_SLUG[pending.key];
+    if (!slug) {
+      await confirmBuy(buyer, undefined, _vision);
+      return;
+    }
+    setPaymentChoice({ packageSlug: slug, packageName: pending.packageName, billing: pending.billing });
+    setInvoicePrefill({ name: buyer.name, email: buyer.email, company: buyer.company, phone: buyer.phone });
+    setPending(null);
   };
 
   return (
