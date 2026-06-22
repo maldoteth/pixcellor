@@ -773,9 +773,13 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         [smoothGlowW, smoothGlowH, smoothGlowAlphaScale],
         ([w, h, a]: number[]) => {
             const center = glowBaseAlpha * a;
-            return `radial-gradient(ellipse ${w}% ${h}% at 50% 50%, hsla(0,0%,100%,${center}) 0%, hsla(0,0%,100%,${center * 0.5}) 35%, transparent ${glowFadeStop}%)`;
+            // Narrower ellipse + smooth multi-stop fade so it reads as a soft gradient, not a bubble.
+            const scaledW = w * 0.7;
+            const scaledH = h * 0.85;
+            return `radial-gradient(ellipse ${scaledW}% ${scaledH}% at 50% 50%, hsla(0,0%,100%,${center}) 0%, hsla(0,0%,100%,${center * 0.75}) 25%, hsla(0,0%,100%,${center * 0.4}) 55%, hsla(0,0%,100%,${center * 0.15}) 80%, transparent 100%)`;
         }
     );
+
 
 
     // Portfolio gallery items pulled from DB; rotation driven by hero virtual scroll
