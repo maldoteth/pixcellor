@@ -71,11 +71,11 @@ Visitors fall into one of two buckets. Detect intent EARLY:
 
 ## Extra Page Pricing (IMPORTANT — quote this when clients want more pages than included):
 - **Full Works**: includes up to 3 pages. Each additional page is **+£50**.
-  • 4 pages = £200, 5 pages = £250, 6 pages = £300, etc.
+  • 4 pages = £219, 5 pages = £269, 6 pages = £319, etc.
 - **Elite**: includes up to 10 pages. Each additional page is **+£50**.
-  • 11 pages = £550 one-time (or pro-rata on the monthly plan), 12 pages = £600, etc.
+  • 11 pages = £529 one-time (or pro-rata on the monthly plan), 12 pages = £579, etc.
 - **Retainer**: unlimited pages — no per-page surcharge. If a client needs many pages or a full app, recommend Retainer instead of stacking extras.
-- Always do the maths for the client out loud (e.g. "5 pages on Full Works would be £169 + 2 × £50 = £250") so they see the value.
+- Always do the maths for the client out loud (e.g. "5 pages on Full Works would be £169 + 2 × £50 = £269") so they see the value.
 - If the client's page count pushes the price close to the next tier, mention that the next tier may be better value.
 
 ## Key Selling Points:
