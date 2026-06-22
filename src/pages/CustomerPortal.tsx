@@ -648,7 +648,7 @@ export default function CustomerPortal() {
                   <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-3">
                       <Badge variant="outline" className="w-fit border-primary/30 bg-primary/10 text-primary">
-                        <ShieldCheck className="mr-1 h-3 w-3" /> Secure customer portal
+                        <ShieldCheck className="mr-1 h-3 w-3" />Secure customer portal
                       </Badge>
                       <div>
                         <h1 className="text-3xl font-semibold tracking-normal md:text-5xl">Project dashboard</h1>
