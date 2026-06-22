@@ -895,7 +895,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="relative z-10">
         <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
         <div className="mb-4 flex items-start gap-1">
-          <div className="text-3xl font-extrabold text-foreground">£150</div>
+          <div className="text-3xl font-extrabold text-foreground">£150<span className="text-sm font-bold align-top">.00</span></div>
           
         </div>
         <ul className="mb-4 space-y-2 text-base text-foreground">
