@@ -1807,14 +1807,7 @@ function MobileCards() {
       showDomainStep={pending?.mode === "payment"}
       packageName={pending?.packageName}
       billing={pending?.billing}
-    />
-    <PaymentMethodDialog
-      open={!!paymentChoice}
-      onOpenChange={(o) => { if (!o) { setPaymentChoice(null); setInvoicePrefill(null); } }}
-      context={paymentChoice}
-      initialStep="form"
-      initialBuyer={invoicePrefill ?? undefined}
-      onCardSelected={() => { setPaymentChoice(null); setInvoicePrefill(null); }}
+      packageSlug={pending ? PACKAGE_KEY_TO_SLUG[pending.key] : undefined}
     />
 
     </>
