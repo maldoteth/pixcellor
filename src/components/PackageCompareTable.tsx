@@ -89,11 +89,13 @@ export default function PackageCompareTable({
                         {pkg.mode === "subscription" ? "Retainer" : "One-off"}
                       </div>
                       <div className="text-sm font-semibold">
-                        {pkg.name}
-                        {isEnterprise && isLarge && (
-                          <span className="ml-1 inline-flex items-center align-middle text-foreground/60">
-                            <Plus className="h-3 w-3" />
+                        {isEnterprise && isLarge ? (
+                          <span className="inline-flex items-start">
+                            <span>{pkg.name}</span>
+                            <Plus className="h-2 w-2 -mt-0.5 text-foreground/70" strokeWidth={3} />
                           </span>
+                        ) : (
+                          pkg.name
                         )}
                       </div>
                       <div className="mt-1 text-base font-bold">{priceLabel}</div>
