@@ -157,10 +157,6 @@ export default function InvoiceView() {
 
   return (
     <div className="min-h-screen bg-background text-foreground py-10 px-4">
-      <Helmet>
-        <title>{`Invoice ${invoice.invoice_number} — ${SUPPLIER_NAME}`}</title>
-        <meta name="robots" content="noindex,nofollow" />
-      </Helmet>
 
       <div className="max-w-3xl mx-auto">
         <div className="flex items-start justify-between gap-4 mb-6">
