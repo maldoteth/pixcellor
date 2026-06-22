@@ -142,8 +142,11 @@ type VisitorFalloff = {
 // All legacy/external Stripe activity is excluded.
 const isSiteOrder = (o: StripeSession) => {
   const source = (o.metadata as { source?: string } | null)?.source;
-  return source === "pixcellor_site" || source === "admin_manual";
+  return source === "pixcellor_site" || source === "admin_manual" || source === "invoice";
 };
+
+const isInvoiceOrder = (o: StripeSession) =>
+  (o.metadata as { source?: string } | null)?.source === "invoice";
 
 const isPaidOrder = (o: StripeSession) => o.payment_status === "paid" || o.status === "complete" || o.status === "completed";
 
@@ -156,6 +159,63 @@ const isMonthlyRetainerOrder = (order: StripeSession) => {
   const packageName = getOrderMetadataText(order, "package_name").toLowerCase();
   const billing = getOrderMetadataText(order, "billing").toLowerCase();
   return packageName.includes("retainer") && billing.includes("monthly");
+};
+
+type InvoiceRow = {
+  id: string;
+  invoice_number: string;
+  public_token: string | null;
+  package_slug: string | null;
+  status: string;
+  issued_at: string | null;
+  due_at: string | null;
+  paid_at: string | null;
+  total_pence: number | null;
+  currency: string | null;
+  billing_name: string | null;
+  billing_company: string | null;
+  billing_email: string | null;
+  payment_method: string | null;
+  created_at: string;
+};
+
+// Convert an invoice row into a StripeSession-shaped "order" so it shows up
+// alongside Stripe orders in the portal. Unpaid invoices become "new orders".
+const invoiceToOrder = (inv: InvoiceRow): StripeSession => {
+  const paid = inv.status === "paid" || !!inv.paid_at;
+  const cancelled = inv.status === "cancelled" || inv.status === "void";
+  const friendlyPackage = (inv.package_slug && inv.package_slug.length)
+    ? inv.package_slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "Custom invoice";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const hostedUrl = inv.public_token ? `${origin}/invoice/${inv.public_token}` : null;
+  return {
+    session_id: `inv_${inv.id}`,
+    amount_total: inv.total_pence,
+    currency: inv.currency || "gbp",
+    payment_status: paid ? "paid" : cancelled ? "cancelled" : "unpaid",
+    status: paid ? "complete" : cancelled ? "cancelled" : "open",
+    order_status: paid ? "paid" : "awaiting_payment",
+    delivered_at: null,
+    delivered_domain: null,
+    customer_email: inv.billing_email,
+    mode: "invoice",
+    subscription_id: null,
+    created_at: inv.created_at,
+    metadata: {
+      source: "invoice",
+      package_name: friendlyPackage,
+      billing: "Bank transfer · invoice",
+      invoice_id: inv.id,
+      invoice_number: inv.invoice_number,
+      invoice_status: inv.status,
+      hosted_url: hostedUrl,
+      billing_name: inv.billing_name,
+      billing_company: inv.billing_company,
+      due_at: inv.due_at,
+      payment_method: inv.payment_method,
+    },
+  };
 };
 
 type Conversation = {
@@ -669,7 +729,24 @@ export default function Portal() {
       emailLogs?: EmailLog[];
       counts?: Record<string, number>;
     };
-    setOrders((snapshot.orders ?? []).filter((order) => isSiteOrder(order) && (isPaidOrder(order) || ((order.metadata as { source?: string } | null)?.source === "admin_manual"))));
+    const stripeOrders = (snapshot.orders ?? []).filter(
+      (order) =>
+        isSiteOrder(order) &&
+        (isPaidOrder(order) || ((order.metadata as { source?: string } | null)?.source === "admin_manual")),
+    );
+    // Pull invoices and surface them as orders too (unpaid → "new orders").
+    const { data: invoiceRows } = await supabase
+      .from("invoices")
+      .select("id, invoice_number, public_token, package_slug, status, issued_at, due_at, paid_at, total_pence, currency, billing_name, billing_company, billing_email, payment_method, created_at")
+      .order("created_at", { ascending: false })
+      .limit(250);
+    const invoiceOrders = ((invoiceRows ?? []) as InvoiceRow[])
+      .filter((inv) => inv.status !== "draft")
+      .map(invoiceToOrder);
+    const merged = [...stripeOrders, ...invoiceOrders].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+    setOrders(merged);
     setFalloffs(snapshot.falloffs ?? []);
     const convs = snapshot.conversations ?? [];
     const allMsgs = snapshot.messages ?? [];
@@ -800,6 +877,8 @@ export default function Portal() {
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_inquiries" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contacts" }, loadPortalSnapshot)
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_events" }, loadPortalSnapshot)
+      .on("postgres_changes", { event: "*", schema: "public", table: "invoices" }, loadPortalSnapshot)
+      
       
       .subscribe();
 
@@ -1962,6 +2041,12 @@ export default function Portal() {
   };
 
   const markOrderDelivered = async (order: StripeSession) => {
+    if (isInvoiceOrder(order)) {
+      const url = (order.metadata as { hosted_url?: string } | null)?.hosted_url;
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      else toast.info("Open the invoice on the Invoices page to mark it paid.");
+      return;
+    }
     if (!order.customer_email) {
       toast.error("This order does not have a customer email.");
       return;
@@ -2061,6 +2146,10 @@ export default function Portal() {
   };
 
   const markOrderUndelivered = async (sessionId: string) => {
+    if (sessionId.startsWith("inv_")) {
+      toast.info("Invoices are managed on the Invoices page.");
+      return;
+    }
     const confirmed = await confirmDialog({ title: "Re-open order?", description: "Move this order back to open so delivery can be redone.", confirmLabel: "Re-open" });
     if (!confirmed) return;
 
@@ -2761,9 +2850,18 @@ export default function Portal() {
                              {o.order_status === "delivered" ? "Delivered" : "Orders"}
                            </Badge>
                          )}
-                          {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
-                            <Badge variant="secondary">Manual</Badge>
-                          )}
+                           {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
+                             <Badge variant="secondary">Manual</Badge>
+                           )}
+                           {(o.metadata as Record<string, unknown> | null)?.source === "invoice" && (() => {
+                             const meta = (o.metadata as Record<string, unknown> | null) ?? {};
+                             const num = typeof meta.invoice_number === "string" ? meta.invoice_number : null;
+                             return (
+                               <Badge className="bg-sky-500/20 text-sky-200 border border-sky-500/40">
+                                 Invoice{num ? ` · ${num}` : ""}
+                               </Badge>
+                             );
+                           })()}
                           {(() => {
                             const meta = (o.metadata as Record<string, unknown> | null) ?? {};
                             const via = typeof meta.created_via === "string" ? meta.created_via : null;

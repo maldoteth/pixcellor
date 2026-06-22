@@ -125,7 +125,7 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
    c. Then reply briefly confirming you've saved their details — do NOT ask them to retype the info you can already see, and do NOT promise a callback unless they actually asked for one.
     d. If extraction returns nothing usable, politely ask the visitor to type their name and phone/email so you can save them properly.
 9. **CUSTOM PAYMENTS — "Pay" QUICK ACTION:** If the visitor uses the "Pay" quick action OR asks to "pay an amount", "pay a deposit", "settle a balance", "pay an invoice", "make a custom payment" — collect TWO things: (a) the amount in GBP (e.g. £250), (b) a short reason/description (e.g. "Deposit for Acme website", "Final balance — invoice INV-203"). Once you have BOTH, call **create_custom_payment** with amount_gbp and description. If the visitor has already shared an email, pass it as client_email so we can track the payment. Reply with the Stripe link returned (the link itself is enough — visitor can click it to pay). Do NOT make up amounts. If amount is unclear or below £1, ask once for clarification.
-10. **BANK-TRANSFER INVOICES — "Pay by invoice":** When closing a deal or sending a payment option, ALWAYS offer two ways to pay: (1) a Stripe card link via `create_payment_link` / `create_custom_payment`, OR (2) a proper bank-transfer invoice via `create_invoice`. If the client asks for an invoice, says they'd "rather pay by bank transfer", needs something for accounts/PO processing, is a business buyer, or you're issuing a custom invoice for any work — call **create_invoice**. Collect billing name + email + line items (description + GBP price) as a minimum; ask for company / billing address / PO ref if it's clearly a business. Default payment terms are 28 days — do not change unless explicitly requested. The system emails a PDF + hosted link automatically, auto-creates the CRM contact, and chases reminders. Never invent prices or line items.
+10. **BANK-TRANSFER INVOICES — "Pay by invoice":** When closing a deal or sending a payment option, ALWAYS offer two ways to pay: (1) a Stripe card link via \`create_payment_link\` / \`create_custom_payment\`, OR (2) a proper bank-transfer invoice via \`create_invoice\`. If the client asks for an invoice, says they'd "rather pay by bank transfer", needs something for accounts/PO processing, is a business buyer, or you're issuing a custom invoice for any work — call **create_invoice**. Collect billing name + email + line items (description + GBP price) as a minimum; ask for company / billing address / PO ref if it's clearly a business. Default payment terms are 28 days — do not change unless explicitly requested. The system emails a PDF + hosted link automatically, auto-creates the CRM contact, and chases reminders. Never invent prices or line items.
 
 
 ## CRITICAL Rules — Qualifying Questions:
@@ -280,7 +280,7 @@ const tools = [
     type: "function" as const,
     function: {
       name: "lookup_customer",
-      description: "Look up an existing customer's orders, contact submissions, and chat history by email. Use ONLY when the user has provided their email and wants info about their own account, order, payment, or project status.",
+      description: "Look up an existing customer's Stripe orders, bank-transfer invoices, contact submissions, and chat history by email. Returns an `invoices` array (with status / paid / amount / due_at / hosted_url / invoice_number) alongside `orders`. Use ONLY when the user has provided their email and wants info about their own account, order, invoice, payment, or project status.",
       parameters: {
         type: "object",
         properties: {
@@ -928,6 +928,14 @@ async function lookupCustomer(supabase: DbClient, rawEmail: string) {
     .order("created_at", { ascending: false })
     .limit(20);
 
+  // Bank-transfer invoices (treated as orders in the CRM)
+  const { data: invoiceRows } = await supabase
+    .from("invoices")
+    .select("id, invoice_number, public_token, package_slug, status, issued_at, due_at, paid_at, total_pence, currency, billing_name, billing_company, billing_email, payment_method, created_at")
+    .ilike("billing_email", email)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
   // Contact form inquiries
   const { data: inquiries } = await supabase
     .from("contact_inquiries")
@@ -999,10 +1007,45 @@ async function lookupCustomer(supabase: DbClient, rawEmail: string) {
     date: s.created_at,
   }));
 
+  const invoicesFormatted = (invoiceRows ?? []).map((inv: {
+    id: string;
+    invoice_number: string;
+    public_token: string | null;
+    package_slug: string | null;
+    status: string;
+    issued_at: string | null;
+    due_at: string | null;
+    paid_at: string | null;
+    total_pence: number | null;
+    currency: string | null;
+    billing_name: string | null;
+    billing_company: string | null;
+    payment_method: string | null;
+    created_at: string;
+  }) => ({
+    invoice_id: inv.id,
+    invoice_number: inv.invoice_number,
+    status: inv.status, // draft | sent | viewed | paid | overdue | cancelled
+    paid: inv.status === "paid" || !!inv.paid_at,
+    amount: inv.total_pence != null && inv.currency
+      ? `${(inv.total_pence / 100).toFixed(2)} ${inv.currency.toUpperCase()}`
+      : null,
+    issued_at: inv.issued_at,
+    due_at: inv.due_at,
+    paid_at: inv.paid_at,
+    package_slug: inv.package_slug,
+    billing_name: inv.billing_name,
+    billing_company: inv.billing_company,
+    payment_method: inv.payment_method,
+    hosted_url: inv.public_token ? `https://pixcellor.com/invoice/${inv.public_token}` : null,
+    created_at: inv.created_at,
+  }));
+
   return {
-    found: ordersFormatted.length > 0 || (inquiries ?? []).length > 0 || priorChats.length > 0,
+    found: ordersFormatted.length > 0 || invoicesFormatted.length > 0 || (inquiries ?? []).length > 0 || priorChats.length > 0,
     email,
     orders: ordersFormatted,
+    invoices: invoicesFormatted,
     contact_inquiries: inquiries ?? [],
     prior_chats: priorChats,
   };
