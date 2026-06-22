@@ -166,7 +166,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
       "Founders who want it done for them, not DIY",
     ],
     faqs: [
-      { q: "How long does it take?", a: "Typically 5–10 working days from brief to launch." },
+      { q: "How long does it take?", a: "Typically 3–10 working days from brief to launch." },
       { q: "Do I own the site?", a: "Yes — you own the code, content and domain." },
       { q: "What if I need more pages later?", a: "Add pages anytime, or upgrade to Elite for unlimited revisions." },
       { q: "Is hosting really free?", a: "Yes — included for the first 25 leads on our global CDN." },
