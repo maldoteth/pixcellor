@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Loader2, RefreshCw } from "lucide-react";
+import { usePortalRefresh } from "@/hooks/usePortalRefresh";
 
 type Payout = {
   id: string;
