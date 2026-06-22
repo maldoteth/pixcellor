@@ -291,7 +291,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     yearlyPrice: "£890/yr",
     yearlyBilling: "Billed annually · save £178",
     yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
-    yearlySavings: "Save £178/yr",
+    yearlySavings: "£178/yr",
     sampleWork: [
       { title: "Always-on brochure site", tag: "Unlimited edits", note: "Live updates on demand, no developer required.", image: imgAlwaysOnBrochure },
       { title: "CRM + lead bot", tag: "AI assistant", note: "Captures and qualifies inbound leads 24/7.", image: imgCrmLeadBot },
@@ -384,7 +384,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     yearlyPrice: "£4,790/yr",
     yearlyBilling: "Billed annually · save £958",
     yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
-    yearlySavings: "Save £890/yr",
+    yearlySavings: "£890/yr",
     scheduleCallUrl: CAL_URL,
     sampleWork: [
       { title: "AI sales agent", tag: "Voice + chat", note: "Books meetings 24/7 directly into the calendar.", image: imgAiSalesAgent },
@@ -470,7 +470,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
     yearlyPrice: "£24,690/yr",
     yearlyBilling: "Billed annually · save £4,938",
     yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
-    yearlySavings: "Save £4,938/yr",
+    yearlySavings: "£4,938/yr",
     scheduleCallUrl: CAL_URL,
     sampleWork: [
       { title: "MVP sprint", tag: "2-week launches", note: "Fully working product every fortnight.", image: imgMvpSprint },
