@@ -640,7 +640,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       elite: "Priority email",
       "retainer-growth": "Email + chat",
       "retainer-scale": "Priority 24/7 365",
-      "retainer-enterprise": "Dedicated team 24/7",
+      "retainer-enterprise": "Dedicated team",
     },
   },
   {
