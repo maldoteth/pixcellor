@@ -2853,15 +2853,27 @@ export default function Portal() {
                            {(o.metadata as Record<string, unknown> | null)?.source === "admin_manual" && (
                              <Badge variant="secondary">Manual</Badge>
                            )}
-                           {(o.metadata as Record<string, unknown> | null)?.source === "invoice" && (() => {
-                             const meta = (o.metadata as Record<string, unknown> | null) ?? {};
-                             const num = typeof meta.invoice_number === "string" ? meta.invoice_number : null;
-                             return (
-                               <Badge className="bg-sky-500/20 text-sky-200 border border-sky-500/40">
-                                 Invoice{num ? ` · ${num}` : ""}
-                               </Badge>
-                             );
-                           })()}
+                            {(o.metadata as Record<string, unknown> | null)?.source === "invoice" && (() => {
+                              const meta = (o.metadata as Record<string, unknown> | null) ?? {};
+                              const num = typeof meta.invoice_number === "string" ? meta.invoice_number : null;
+                              const hosted = typeof meta.hosted_url === "string" ? meta.hosted_url : null;
+                              const badge = (
+                                <Badge className="bg-sky-500/20 text-sky-200 border border-sky-500/40 hover:bg-sky-500/30 transition-colors cursor-pointer">
+                                  Invoice{num ? ` · ${num}` : ""}
+                                </Badge>
+                              );
+                              return hosted ? (
+                                <a
+                                  href={hosted}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="Open invoice"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {badge}
+                                </a>
+                              ) : badge;
+                            })()}
                           {(() => {
                             const meta = (o.metadata as Record<string, unknown> | null) ?? {};
                             const via = typeof meta.created_via === "string" ? meta.created_via : null;
