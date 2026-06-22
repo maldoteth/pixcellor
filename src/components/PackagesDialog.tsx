@@ -1802,7 +1802,7 @@ function MobileCards() {
                   </li>
                 ))}
               </ul>
-              <GlassBuyButton onClick={() => setEnterpriseOpen(true)} disabled={false} loading={false} label="Talk to sales" />
+              <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
             </div>
           </div>
         </motion.div>
