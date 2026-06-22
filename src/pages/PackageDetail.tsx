@@ -158,6 +158,7 @@ export default function PackageDetailPage() {
   const pkg = PACKAGE_DETAILS[slug];
 
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const [enterpriseSize, setEnterpriseSize] = useState<"small" | "large">("small");
 
   useEffect(() => {
     if (!pkg) navigate("/", { replace: true });
@@ -166,13 +167,18 @@ export default function PackageDetailPage() {
   if (!pkg) return null;
 
   const hasYearly = Boolean(pkg.yearlyPrice);
-  const displayPrice = billing === "yearly" && hasYearly ? pkg.yearlyPrice! : pkg.price;
+  const isEnterprise = pkg.slug === "retainer-enterprise";
+  const isEnterpriseLarge = isEnterprise && enterpriseSize === "large";
+  let displayPrice = billing === "yearly" && hasYearly ? pkg.yearlyPrice! : pkg.price;
   const displayBilling = billing === "yearly" && hasYearly ? pkg.yearlyBilling! : pkg.billing;
+  if (isEnterpriseLarge) {
+    displayPrice = billing === "yearly" ? "£46,900" : "£4,690";
+  }
 
-  return <PackageDetailInner slug={pkg.slug} pkg={pkg} billing={billing} setBilling={setBilling} hasYearly={hasYearly} displayPrice={displayPrice} displayBilling={displayBilling} />;
+  return <PackageDetailInner slug={pkg.slug} pkg={pkg} billing={billing} setBilling={setBilling} hasYearly={hasYearly} displayPrice={displayPrice} displayBilling={displayBilling} enterpriseSize={enterpriseSize} setEnterpriseSize={setEnterpriseSize} isEnterpriseLarge={isEnterpriseLarge} />;
 }
 
-function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, displayPrice, displayBilling }: { slug: string; pkg: PackageDetail; billing: "monthly" | "yearly"; setBilling: (b: "monthly" | "yearly") => void; hasYearly: boolean; displayPrice: string; displayBilling: string }) {
+function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, displayPrice, displayBilling, enterpriseSize, setEnterpriseSize, isEnterpriseLarge }: { slug: string; pkg: PackageDetail; billing: "monthly" | "yearly"; setBilling: (b: "monthly" | "yearly") => void; hasYearly: boolean; displayPrice: string; displayBilling: string; enterpriseSize: "small" | "large"; setEnterpriseSize: (s: "small" | "large") => void; isEnterpriseLarge: boolean }) {
   const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
@@ -227,7 +233,14 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
             </div>
           )}
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
-            {pkg.name}
+            {isEnterpriseLarge ? (
+              <span className="inline-flex items-start">
+                <span>{pkg.name}</span>
+                <Plus className="h-4 w-4 md:h-6 md:w-6 mt-1 md:mt-2 text-foreground/70" strokeWidth={3} />
+              </span>
+            ) : (
+              pkg.name
+            )}
           </h1>
           <p className="mt-3 text-base md:text-xl text-foreground/70 max-w-3xl">{pkg.tagline}</p>
 
@@ -350,7 +363,7 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
         {/* COMPARISON TABLE — moved up so prospects can compare early */}
         <motion.section {...fadeUp} className="mb-12 md:mb-16">
           <h2 className="text-xs uppercase tracking-[0.22em] text-foreground/50 mb-5">Compare all packages</h2>
-          <PackageCompareTable highlightSlug={pkg.slug} />
+          <PackageCompareTable highlightSlug={pkg.slug} billing={billing} enterpriseSize={enterpriseSize} onEnterpriseSizeChange={setEnterpriseSize} />
         </motion.section>
 
 

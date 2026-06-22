@@ -20,11 +20,20 @@ function tripleLimit(val: string): string {
 export default function PackageCompareTable({
   highlightSlug,
   billing = "monthly",
+  enterpriseSize: enterpriseSizeProp,
+  onEnterpriseSizeChange,
 }: {
   highlightSlug?: string;
   billing?: "monthly" | "yearly";
+  enterpriseSize?: "small" | "large";
+  onEnterpriseSizeChange?: (size: "small" | "large") => void;
 }) {
-  const [enterpriseSize, setEnterpriseSize] = useState<"small" | "large">("small");
+  const [enterpriseSizeLocal, setEnterpriseSizeLocal] = useState<"small" | "large">("small");
+  const enterpriseSize = enterpriseSizeProp ?? enterpriseSizeLocal;
+  const setEnterpriseSize = (size: "small" | "large") => {
+    setEnterpriseSizeLocal(size);
+    onEnterpriseSizeChange?.(size);
+  };
   const isLarge = enterpriseSize === "large";
 
   const valueForCell = (feature: string, slug: string, raw: string): string => {
