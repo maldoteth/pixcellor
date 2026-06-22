@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet } from "lucide-react";
 import CashoutDialog from "@/components/portal/CashoutDialog";
 import CompaniesHouseInput from "@/components/CompaniesHouseInput";
+import { usePortalRefresh } from "@/hooks/usePortalRefresh";
 
 type ContactStatus = "cold" | "aware" | "hot" | "gold";
 
