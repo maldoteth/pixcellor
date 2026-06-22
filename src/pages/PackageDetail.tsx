@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import PackageCompareTable from "@/components/PackageCompareTable";
 import PackageReviews from "@/components/PackageReviews";
 import { PACKAGE_DETAILS, type PackageDetail, type PackageCta } from "@/data/packages";
-import { Component as EtherealShadow } from "@/components/ui/etheral-shadow";
+import AuroraBackdrop from "@/components/AuroraBackdrop";
 
 const SITE_ORIGIN = "https://pixcellor.com";
 
