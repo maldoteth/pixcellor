@@ -128,7 +128,7 @@ export default function ByowPlansDialog({ siteId, open, onOpenChange, defaultTab
                 >
                   {loadingKey === `topup:${t.key}` ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : "Buy now"}
+                  ) : "Order Now"}
                 </Button>
               </div>
             ))}
