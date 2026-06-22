@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight, Sparkles } from "lucide-react";
@@ -15,6 +16,8 @@ const fadeUp = {
 
 export default function PackagesPage() {
   const packages = Object.values(PACKAGE_DETAILS);
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const hasAnyYearly = packages.some((p) => p.yearlyPrice);
 
   return (
     <div className="relative min-h-screen text-foreground overflow-hidden" style={{ background: "#000" }}>
