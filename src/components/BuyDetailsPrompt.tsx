@@ -179,7 +179,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
 
   // Track visitors who reach the domain step
   useEffect(() => {
-    if (step !== "domain") return;
+    if (step !== "payment") return;
     const email = values.email.trim().toLowerCase();
     const phone = values.phone.trim();
     if (!email && !phone) return;
@@ -222,7 +222,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
     const brief = buildBrief(answers);
     if (brief.length < 5) {
       // Nothing entered — just skip to domain
-      setStep("domain");
+      setStep("payment");
       return;
     }
     setStep("vision-generating");
@@ -371,11 +371,11 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
 
   // Progress
   const progressSteps: Step[] = showDomainStep
-    ? [...FIELD_STEPS, "vision-intro", "domain"]
+    ? [...FIELD_STEPS, "vision-intro", "payment"]
     : [...FIELD_STEPS];
   let progressIdx = progressSteps.indexOf(step);
   if (progressIdx < 0) {
-    if (step === "domain") progressIdx = progressSteps.length - 1;
+    if (step === "payment") progressIdx = progressSteps.length - 1;
     else progressIdx = FIELD_STEPS.length; // any vision step
   }
   const progressPct = ((progressIdx + 1) / progressSteps.length) * 100;
@@ -423,7 +423,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
         Answer a few quick questions to generate a style guide we can work to.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-        <Button type="button" variant="outline" onClick={() => setStep("domain")} className="h-12 font-semibold">
+        <Button type="button" variant="outline" onClick={() => setStep("payment")} className="h-12 font-semibold">
           Skip — go to checkout
         </Button>
         <Button type="button" variant="pricing" onClick={() => setStep(VISION_QUESTIONS[0].step)} className="h-12 font-semibold gap-2">
@@ -534,7 +534,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
         <button type="button" onClick={visionSkip} className="text-xs text-foreground/60 hover:text-foreground underline-offset-4 hover:underline mt-1 self-center">
           Skip this step
         </button>
-        <button type="button" onClick={() => setStep("domain")} className="text-[11px] text-foreground/50 hover:text-foreground/80 underline-offset-4 hover:underline self-center">
+        <button type="button" onClick={() => setStep("payment")} className="text-[11px] text-foreground/50 hover:text-foreground/80 underline-offset-4 hover:underline self-center">
           Skip preview entirely — go to checkout
         </button>
       </>
@@ -568,7 +568,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
         <Button type="button" variant="outline" onClick={() => { setError(null); setStep("vision-refine"); }} disabled={!visionBrief?.imageUrl} className="h-12 font-semibold gap-2">
           <Wand2 className="w-4 h-4" /> Tweak / re-prompt
         </Button>
-        <Button type="button" variant="pricing" onClick={() => { void trackApprovedSample(); setStep("domain"); }} className="h-12 font-semibold">
+        <Button type="button" variant="pricing" onClick={() => { void trackApprovedSample(); setStep("payment"); }} className="h-12 font-semibold">
           Looks great → Continue
         </Button>
       </div>
@@ -605,7 +605,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
   );
 
   const renderBody = () => {
-    if (step === "domain") {
+    if (step === "payment") {
       return <DomainPicker onChoose={handleDomainChoice} onBack={() => setStep(showDomainStep ? "vision-intro" : "phone")} submitting={submitting} />;
     }
     if (isField(step)) return renderField();
