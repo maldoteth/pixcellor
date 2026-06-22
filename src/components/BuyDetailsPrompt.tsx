@@ -51,7 +51,7 @@ type VisionStep =
   | "vision-generating"
   | "vision-result"
   | "vision-refine";
-type Step = FieldStep | VisionStep | "domain";
+type Step = FieldStep | VisionStep | "payment";
 
 const FIELD_STEPS: FieldStep[] = ["company", "name", "email", "phone"];
 
@@ -86,11 +86,13 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (details: BuyerDetails, domain?: BuyerDomainChoice, vision?: VisionBrief) => Promise<void> | void;
+  /** Called when the user picks "Pay by bank transfer (invoice)" at the final step. */
+  onInvoice?: (details: BuyerDetails, vision?: VisionBrief) => Promise<void> | void;
   title?: string;
   submitting?: boolean;
-  /** When false (subscriptions), skip the domain + vision step entirely. Defaults to true. */
+  /** When false (subscriptions), skip the payment-choice + vision step entirely. Defaults to true. */
   showDomainStep?: boolean;
-  /** Package name for tracking visitors who reach the domain step. */
+  /** Package name for tracking visitors who reach the payment step. */
   packageName?: string;
   billing?: string;
   /** Optional pre-filled buyer details — filled fields are skipped in the wizard. */
@@ -99,7 +101,7 @@ interface Props {
   initialVision?: VisionBrief | null;
 }
 
-const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, title = "Confirm details", submitting = false, showDomainStep = false, packageName, billing, initialValues, initialVision }: Props) => {
+const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "Confirm details", submitting = false, showDomainStep = false, packageName, billing, initialValues, initialVision }: Props) => {
   const isMobile = useIsMobileOrTablet();
 
   const computeInitial = (): { values: BuyerDetails; step: Step; vision: VisionBrief | null } => {
