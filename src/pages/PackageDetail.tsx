@@ -158,6 +158,7 @@ export default function PackageDetailPage() {
   const pkg = PACKAGE_DETAILS[slug];
 
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const [enterpriseSize, setEnterpriseSize] = useState<"small" | "large">("small");
 
   useEffect(() => {
     if (!pkg) navigate("/", { replace: true });
@@ -166,13 +167,18 @@ export default function PackageDetailPage() {
   if (!pkg) return null;
 
   const hasYearly = Boolean(pkg.yearlyPrice);
-  const displayPrice = billing === "yearly" && hasYearly ? pkg.yearlyPrice! : pkg.price;
+  const isEnterprise = pkg.slug === "retainer-enterprise";
+  const isEnterpriseLarge = isEnterprise && enterpriseSize === "large";
+  let displayPrice = billing === "yearly" && hasYearly ? pkg.yearlyPrice! : pkg.price;
   const displayBilling = billing === "yearly" && hasYearly ? pkg.yearlyBilling! : pkg.billing;
+  if (isEnterpriseLarge) {
+    displayPrice = billing === "yearly" ? "£46,900" : "£4,690";
+  }
 
-  return <PackageDetailInner slug={pkg.slug} pkg={pkg} billing={billing} setBilling={setBilling} hasYearly={hasYearly} displayPrice={displayPrice} displayBilling={displayBilling} />;
+  return <PackageDetailInner slug={pkg.slug} pkg={pkg} billing={billing} setBilling={setBilling} hasYearly={hasYearly} displayPrice={displayPrice} displayBilling={displayBilling} enterpriseSize={enterpriseSize} setEnterpriseSize={setEnterpriseSize} isEnterpriseLarge={isEnterpriseLarge} />;
 }
 
-function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, displayPrice, displayBilling }: { slug: string; pkg: PackageDetail; billing: "monthly" | "yearly"; setBilling: (b: "monthly" | "yearly") => void; hasYearly: boolean; displayPrice: string; displayBilling: string }) {
+function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, displayPrice, displayBilling, enterpriseSize, setEnterpriseSize, isEnterpriseLarge }: { slug: string; pkg: PackageDetail; billing: "monthly" | "yearly"; setBilling: (b: "monthly" | "yearly") => void; hasYearly: boolean; displayPrice: string; displayBilling: string; enterpriseSize: "small" | "large"; setEnterpriseSize: (s: "small" | "large") => void; isEnterpriseLarge: boolean }) {
   const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
