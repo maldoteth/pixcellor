@@ -735,8 +735,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Warranty",
     values: {
-      "full-works": "Lifetime build",
-      elite: "Lifetime build",
+      "full-works": "Lifetime\u00a0",
+      elite: "Lifetime\u00a0",
       "retainer-growth": "+ Active services",
       "retainer-scale": "+ Active services",
       "retainer-enterprise": "+ SLA",
