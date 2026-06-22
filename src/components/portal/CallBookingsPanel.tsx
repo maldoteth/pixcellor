@@ -97,6 +97,7 @@ export default function CallBookingsPanel() {
     const id = setInterval(() => fetchBookings(true), 60000);
     return () => clearInterval(id);
   }, [fetchBookings]);
+  usePortalRefresh(useCallback(() => { void fetchBookings(true); }, [fetchBookings]));
 
   useEffect(() => {
     (async () => {
