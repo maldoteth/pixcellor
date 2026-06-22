@@ -676,7 +676,7 @@ function DesktopShell({ spinIn, initialServices = false }: { spinIn: boolean; in
           servicesFlipped={servicesFlipped}
           onServiceAction={(action) => {
             if (action === "pricing") setServicesFlipped(false);
-            else window.dispatchEvent(new CustomEvent("pixcellor:open-chat", { detail: { action: "services" } }));
+            else window.location.href = "/get-started";
           }}
         />
       </motion.div>
