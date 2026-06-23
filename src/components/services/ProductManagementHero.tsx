@@ -97,6 +97,24 @@ export default function ProductManagementHero({
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
   const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetTop, setSheetTop] = useState(0);
+
+  // Keep the mobile sheet docked just below the banner while open.
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const update = () => {
+      const el = containerRef.current;
+      if (!el) return;
+      setSheetTop(el.getBoundingClientRect().bottom);
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [sheetOpen]);
 
   const [hue, setHue] = useState(initialHue);
   const [saturation, setSaturation] = useState(initialSaturation);
