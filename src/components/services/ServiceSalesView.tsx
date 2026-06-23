@@ -44,6 +44,7 @@ const SocialMediaAutomationHero = lazy(() => import("@/components/services/Socia
 const VisitorIntelHero = lazy(() => import("@/components/services/VisitorIntelHero"));
 const NebulaHero = lazy(() => import("@/components/services/NebulaHero"));
 const AnalyticsDashboardsHero = lazy(() => import("@/components/services/AnalyticsDashboardsHero"));
+const DocumentsDecksHero = lazy(() => import("@/components/services/DocumentsDecksHero"));
 const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
 
 // Lightweight placeholder shown while a banner chunk is loading.
@@ -192,6 +193,8 @@ export default function ServiceSalesView({
                   <NebulaHero />
                 ) : service.slug === "analytics-dashboards" ? (
                   <AnalyticsDashboardsHero />
+                ) : service.slug === "documents-and-decks" ? (
+                  <DocumentsDecksHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
@@ -571,6 +574,8 @@ export default function ServiceSalesView({
                   <NebulaHero />
                 ) : service.slug === "analytics-dashboards" ? (
                   <AnalyticsDashboardsHero />
+                ) : service.slug === "documents-and-decks" ? (
+                  <DocumentsDecksHero />
                 ) : (
                   <Wave />
                 )}
