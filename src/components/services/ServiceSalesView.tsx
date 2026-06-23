@@ -131,6 +131,7 @@ export default function ServiceSalesView({
     service.slug === "payroll-hr-tooling" ||
     service.slug === "product-project-management" ||
     service.slug === "gtm-lead-generation" ||
+    service.slug === "token-launches" ||
     service.slug === "documents-and-decks";
 
   return (
