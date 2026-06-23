@@ -7,6 +7,7 @@ interface ProductManagementHeroProps {
   warp?: number;
   zoom?: number;
   brightness?: number;
+  saturation?: number;
 }
 
 const VERT = `
@@ -24,6 +25,7 @@ uniform float uNoise;
 uniform float uWarp;
 uniform float uZoom;
 uniform float uBrightness;
+uniform float uSat;
 
 vec3 hsv2rgb(vec3 c) {
   vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
@@ -68,7 +70,7 @@ void main() {
   bands = smoothstep(0.4, 0.6, bands);
   float detail = snoise(uv * 10.0 + time) * 0.5 + 0.5;
   bands = mix(bands, bands + detail, uNoise);
-  vec3 baseColor = hsv2rgb(vec3(uHue / 360.0, 0.7, 1.0));
+  vec3 baseColor = hsv2rgb(vec3(uHue / 360.0, uSat, 1.0));
   vec3 color = baseColor * bands * uBrightness;
   gl_FragColor = vec4(color, 1.0);
 }
@@ -80,18 +82,20 @@ void main() {
  * position anywhere on the page. Container-scoped to the banner card.
  */
 export default function ProductManagementHero({
-  hue: initialHue = 200,
+  hue: initialHue = 0,
   speed: initialSpeed = 1,
   noise: initialNoise = 0.4,
   warp: initialWarp = 0.18,
   zoom: initialZoom = 1.6,
   brightness: initialBrightness = 1,
+  saturation: initialSaturation = 0,
 }: ProductManagementHeroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
 
   const [hue, setHue] = useState(initialHue);
+  const [saturation, setSaturation] = useState(initialSaturation);
   const [speed, setSpeed] = useState(initialSpeed);
   const [noise, setNoise] = useState(initialNoise);
   const [warp, setWarp] = useState(initialWarp);
@@ -100,8 +104,8 @@ export default function ProductManagementHero({
 
   // Uniforms are read from refs inside the animation loop so slider changes
   // apply instantly without reinitialising the WebGL program.
-  const paramsRef = useRef({ hue, speed, noise, warp, zoom, brightness });
-  paramsRef.current = { hue, speed, noise, warp, zoom, brightness };
+  const paramsRef = useRef({ hue, saturation, speed, noise, warp, zoom, brightness });
+  paramsRef.current = { hue, saturation, speed, noise, warp, zoom, brightness };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -157,6 +161,7 @@ export default function ProductManagementHero({
       uWarp: gl.getUniformLocation(program, "uWarp"),
       uZoom: gl.getUniformLocation(program, "uZoom"),
       uBrightness: gl.getUniformLocation(program, "uBrightness"),
+      uSat: gl.getUniformLocation(program, "uSat"),
     };
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -200,6 +205,7 @@ export default function ProductManagementHero({
       gl.uniform1f(u.uWarp, p.warp);
       gl.uniform1f(u.uZoom, p.zoom);
       gl.uniform1f(u.uBrightness, p.brightness);
+      gl.uniform1f(u.uSat, p.saturation);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       raf = requestAnimationFrame(animate);
     };
@@ -228,6 +234,7 @@ export default function ProductManagementHero({
     set: (v: number) => void;
   }[] = [
     { name: "Hue", value: hue, min: 0, max: 360, step: 1, set: setHue },
+    { name: "Color", value: saturation, min: 0, max: 1, step: 0.01, set: setSaturation },
     { name: "Speed", value: speed, min: 0, max: 2, step: 0.01, set: setSpeed },
     { name: "Noise", value: noise, min: 0, max: 1, step: 0.01, set: setNoise },
     { name: "Warp", value: warp, min: 0, max: 0.5, step: 0.01, set: setWarp },
@@ -239,7 +246,7 @@ export default function ProductManagementHero({
     <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-black">
       <canvas ref={canvasRef} className="block h-full w-full" />
 
-      <div className="absolute right-2 top-2 z-10 w-44 rounded-md border border-white/10 bg-black/55 p-2 text-white shadow-xl backdrop-blur-xl">
+      <div className="absolute bottom-2 left-2 z-10 w-44 rounded-md border border-white/10 bg-black/55 p-2 text-white shadow-xl backdrop-blur-xl">
         <div className="mb-1.5 text-[9px] font-semibold uppercase tracking-widest text-white/60">
           Liquid Crystal
         </div>
