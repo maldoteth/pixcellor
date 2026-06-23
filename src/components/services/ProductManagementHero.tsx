@@ -234,6 +234,7 @@ export default function ProductManagementHero({
     set: (v: number) => void;
   }[] = [
     { name: "Hue", value: hue, min: 0, max: 360, step: 1, set: setHue },
+    { name: "Color", value: saturation, min: 0, max: 1, step: 0.01, set: setSaturation },
     { name: "Speed", value: speed, min: 0, max: 2, step: 0.01, set: setSpeed },
     { name: "Noise", value: noise, min: 0, max: 1, step: 0.01, set: setNoise },
     { name: "Warp", value: warp, min: 0, max: 0.5, step: 0.01, set: setWarp },
