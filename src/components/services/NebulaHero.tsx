@@ -116,7 +116,7 @@ const NebulaHero: React.FC<Props> = ({ colorful = false }) => {
         container.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, [colorful]);
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-black">
