@@ -313,10 +313,8 @@ export default function ProductManagementHero({
             <div
               className="fixed left-0 right-0 z-[60] rounded-t-2xl border-t border-white/10 bg-black/85 px-4 pb-6 pt-3 text-white shadow-2xl backdrop-blur-2xl animate-in slide-in-from-bottom duration-200"
               style={{
-                top: containerRef.current
-                  ? containerRef.current.getBoundingClientRect().bottom
-                  : undefined,
-                maxHeight: "70vh",
+                top: sheetTop,
+                maxHeight: `calc(100vh - ${sheetTop}px)`,
                 overflowY: "auto",
               }}
             >
