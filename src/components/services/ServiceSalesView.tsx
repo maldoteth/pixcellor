@@ -192,7 +192,7 @@ export default function ServiceSalesView({
                 ) : service.slug === "consultations-audits" ? (
                   <NebulaHero />
                 ) : service.slug === "api-third-party" ? (
-                  <NebulaHero />
+                  <NebulaHero colorful />
                 ) : service.slug === "analytics-dashboards" ? (
                   <AnalyticsDashboardsHero />
                 ) : service.slug === "documents-and-decks" ? (
@@ -575,7 +575,7 @@ export default function ServiceSalesView({
                 ) : service.slug === "consultations-audits" ? (
                   <NebulaHero />
                 ) : service.slug === "api-third-party" ? (
-                  <NebulaHero />
+                  <NebulaHero colorful />
                 ) : service.slug === "analytics-dashboards" ? (
                   <AnalyticsDashboardsHero />
                 ) : service.slug === "documents-and-decks" ? (
