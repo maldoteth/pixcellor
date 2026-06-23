@@ -509,6 +509,8 @@ export default function ServiceSalesView({
                   <CreativeBrandingHero />
                 ) : service.slug === "cyber-security" ? (
                   <CyberSecurityHero />
+                ) : service.slug === "recruitment-ats" ? (
+                  <RecruitmentHero />
                 ) : (
                   <Wave />
                 )}
