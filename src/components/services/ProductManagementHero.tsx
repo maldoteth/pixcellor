@@ -1,4 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import { Sliders } from "lucide-react";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProductManagementHeroProps {
   hue?: number;
@@ -93,6 +102,7 @@ export default function ProductManagementHero({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
+  const isMobile = useIsMobile();
 
   const [hue, setHue] = useState(initialHue);
   const [saturation, setSaturation] = useState(initialSaturation);
@@ -242,35 +252,68 @@ export default function ProductManagementHero({
     { name: "Brightness", value: brightness, min: 0.1, max: 2, step: 0.01, set: setBrightness },
   ];
 
+  const sliderRows = (size: "sm" | "md" = "sm") => (
+    <>
+      {sliders.map((s) => (
+        <div key={s.name} className={size === "sm" ? "mb-1 last:mb-0" : "mb-3 last:mb-0"}>
+          <div
+            className={`flex items-center justify-between leading-tight text-white/70 ${
+              size === "sm" ? "text-[9px]" : "text-xs"
+            }`}
+          >
+            <span>{s.name}</span>
+            <span className="tabular-nums text-white/90">
+              {s.step < 1 ? s.value.toFixed(2) : s.value.toFixed(0)}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={s.min}
+            max={s.max}
+            step={s.step}
+            value={s.value}
+            onChange={(e) => s.set(parseFloat(e.target.value))}
+            className={`w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-white ${
+              size === "sm" ? "h-0.5" : "h-1.5 mt-1"
+            }`}
+          />
+        </div>
+      ))}
+    </>
+  );
+
   return (
     <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-black">
       <canvas ref={canvasRef} className="block h-full w-full" />
 
-      <div className="absolute bottom-2 left-2 z-10 w-44 rounded-md border border-white/10 bg-black/55 p-2 text-white shadow-xl backdrop-blur-xl">
-        <div className="mb-1.5 text-[9px] font-semibold uppercase tracking-widest text-white/60">
-          Liquid Crystal
-        </div>
-        {sliders.map((s) => (
-          <div key={s.name} className="mb-1 last:mb-0">
-            <div className="flex items-center justify-between text-[9px] leading-tight text-white/70">
-              <span>{s.name}</span>
-              <span className="tabular-nums text-white/90">
-                {s.step < 1 ? s.value.toFixed(2) : s.value.toFixed(0)}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={s.min}
-              max={s.max}
-              step={s.step}
-              value={s.value}
-              onChange={(e) => s.set(parseFloat(e.target.value))}
-              className="h-0.5 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-white"
-            />
+      {isMobile ? (
+        <Drawer>
+          <DrawerTrigger asChild>
+            <button
+              type="button"
+              aria-label="Open shader controls"
+              className="absolute bottom-2 left-2 z-10 flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-black/55 text-white/85 shadow-xl backdrop-blur-xl active:bg-black/70"
+            >
+              <Sliders className="h-4 w-4" />
+            </button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Liquid Crystal</DrawerTitle>
+            </DrawerHeader>
+            <div className="px-5 pb-8">{sliderRows("md")}</div>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <div className="absolute bottom-2 left-2 z-10 w-44 rounded-md border border-white/10 bg-black/55 p-2 text-white shadow-xl backdrop-blur-xl">
+          <div className="mb-1.5 text-[9px] font-semibold uppercase tracking-widest text-white/60">
+            Liquid Crystal
           </div>
-        ))}
-      </div>
+          {sliderRows("sm")}
+        </div>
+      )}
     </div>
   );
 }
+
 
