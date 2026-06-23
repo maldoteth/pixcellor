@@ -174,6 +174,8 @@ export default function ServiceSalesView({
                   <GtmLeadGenHero />
                 ) : service.slug === "token-launches" ? (
                   <TokenLaunchesHero />
+                ) : service.slug === "paid-ads-retargeting" ? (
+                  <PaidAdsHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
