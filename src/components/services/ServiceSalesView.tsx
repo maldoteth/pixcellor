@@ -37,6 +37,7 @@ const RecruitmentHero = lazy(() => import("@/components/services/RecruitmentHero
 const TelesalesHero = lazy(() => import("@/components/services/TelesalesHero"));
 const PayrollHero = lazy(() => import("@/components/services/PayrollHero"));
 const ProductManagementHero = lazy(() => import("@/components/services/ProductManagementHero"));
+const GtmLeadGenHero = lazy(() => import("@/components/services/GtmLeadGenHero"));
 const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
 
 // Lightweight placeholder shown while a banner chunk is loading.
