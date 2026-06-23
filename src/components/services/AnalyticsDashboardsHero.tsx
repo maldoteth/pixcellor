@@ -1,19 +1,18 @@
 import { useEffect, useRef } from "react";
 
 interface Props {
-  color?: string;
   trailOpacity?: number;
   particleCount?: number;
   speed?: number;
 }
 
 /**
- * Neural flow-field background — flowing particles with mouse repulsion and trails.
+ * Analytics Dashboards hero — neural flow-field, mostly black/white/grey,
+ * with sprinkled rainbow squares that energise around the cursor.
  */
 const AnalyticsDashboardsHero: React.FC<Props> = ({
-  color = "#6366f1",
-  trailOpacity = 0.15,
-  particleCount = 600,
+  trailOpacity = 0.12,
+  particleCount = 800,
   speed = 1,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,34 +29,52 @@ const AnalyticsDashboardsHero: React.FC<Props> = ({
     let height = container.clientHeight;
     let particles: Particle[] = [];
     let animationFrameId = 0;
-    const mouse = { x: -1000, y: -1000 };
+    const mouse = { x: -1000, y: -1000, active: false };
+
+    const hslToCss = (h: number, s: number, l: number) => `hsl(${h}, ${s}%, ${l}%)`;
 
     class Particle {
       x = 0; y = 0; vx = 0; vy = 0; age = 0; life = 0;
+      // Style: greyscale brightness OR rainbow hue (only used when colorful)
+      colorful = false;
+      hue = 0;
+      grey = 200;
+      size = 1.5;
       constructor() { this.reset(true); }
       reset(initial = false) {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
         this.vx = 0; this.vy = 0;
         this.age = initial ? Math.random() * 100 : 0;
-        this.life = Math.random() * 200 + 100;
+        this.life = Math.random() * 200 + 120;
+        // ~12% of particles are rainbow squares — the rest are B/W/grey.
+        this.colorful = Math.random() < 0.12;
+        this.hue = Math.random() * 360;
+        this.grey = Math.floor(140 + Math.random() * 115); // 140..255
+        this.size = this.colorful ? 2.2 : 1.5;
       }
       update() {
         const angle = (Math.cos(this.x * 0.005) + Math.sin(this.y * 0.005)) * Math.PI;
         this.vx += Math.cos(angle) * 0.2 * speed;
         this.vy += Math.sin(angle) * 0.2 * speed;
 
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const R = 150;
-        if (distance < R) {
-          const force = (R - distance) / R;
-          this.vx -= dx * force * 0.05;
-          this.vy -= dy * force * 0.05;
+        if (mouse.active) {
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const R = 240; // bigger interaction radius
+          if (distance < R) {
+            const force = (R - distance) / R;
+            // Stronger push + small swirl for more "alive" feel
+            this.vx -= dx * force * 0.18;
+            this.vy -= dy * force * 0.18;
+            this.vx += -dy * force * 0.04;
+            this.vy += dx * force * 0.04;
+          }
         }
+
         this.x += this.vx; this.y += this.vy;
-        this.vx *= 0.95; this.vy *= 0.95;
+        this.vx *= 0.92; this.vy *= 0.92;
         this.age++;
         if (this.age > this.life) this.reset();
         if (this.x < 0) this.x = width;
@@ -66,10 +83,24 @@ const AnalyticsDashboardsHero: React.FC<Props> = ({
         if (this.y > height) this.y = 0;
       }
       draw(c: CanvasRenderingContext2D) {
-        c.fillStyle = color;
         const alpha = 1 - Math.abs((this.age / this.life) - 0.5) * 2;
-        c.globalAlpha = Math.max(0, alpha);
-        c.fillRect(this.x, this.y, 1.5, 1.5);
+        // Boost when close to cursor → "pop"
+        let boost = 0;
+        if (mouse.active) {
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 180) boost = 1 - d / 180;
+        }
+        c.globalAlpha = Math.max(0, Math.min(1, alpha + boost * 0.3));
+        if (this.colorful) {
+          c.fillStyle = hslToCss(this.hue, 95, 55 + boost * 10);
+        } else {
+          const g = Math.min(255, this.grey + Math.floor(boost * 40));
+          c.fillStyle = `rgb(${g},${g},${g})`;
+        }
+        const s = this.size + boost * 1.6;
+        c.fillRect(this.x - s / 2, this.y - s / 2, s, s);
       }
     }
 
@@ -102,8 +133,16 @@ const AnalyticsDashboardsHero: React.FC<Props> = ({
       const rect = canvas.getBoundingClientRect();
       mouse.x = e.clientX - rect.left;
       mouse.y = e.clientY - rect.top;
+      mouse.active = true;
     };
-    const handleMouseLeave = () => { mouse.x = -1000; mouse.y = -1000; };
+    const handleMouseLeave = () => { mouse.active = false; mouse.x = -1000; mouse.y = -1000; };
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!e.touches.length) return;
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.touches[0].clientX - rect.left;
+      mouse.y = e.touches[0].clientY - rect.top;
+      mouse.active = true;
+    };
 
     init();
     animate();
@@ -112,6 +151,8 @@ const AnalyticsDashboardsHero: React.FC<Props> = ({
     window.addEventListener("resize", handleResize);
     container.addEventListener("mousemove", handleMouseMove);
     container.addEventListener("mouseleave", handleMouseLeave);
+    container.addEventListener("touchmove", handleTouchMove, { passive: true });
+    container.addEventListener("touchend", handleMouseLeave);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
@@ -119,8 +160,10 @@ const AnalyticsDashboardsHero: React.FC<Props> = ({
       window.removeEventListener("resize", handleResize);
       container.removeEventListener("mousemove", handleMouseMove);
       container.removeEventListener("mouseleave", handleMouseLeave);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("touchend", handleMouseLeave);
     };
-  }, [color, trailOpacity, particleCount, speed]);
+  }, [trailOpacity, particleCount, speed]);
 
   return (
     <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-black">
