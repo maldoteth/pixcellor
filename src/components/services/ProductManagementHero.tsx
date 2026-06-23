@@ -97,7 +97,6 @@ export default function ProductManagementHero({
   const [warp, setWarp] = useState(initialWarp);
   const [zoom, setZoom] = useState(initialZoom);
   const [brightness, setBrightness] = useState(initialBrightness);
-  const [panelOpen, setPanelOpen] = useState(false);
 
   // Uniforms are read from refs inside the animation loop so slider changes
   // apply instantly without reinitialising the WebGL program.
