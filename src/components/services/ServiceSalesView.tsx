@@ -125,6 +125,7 @@ export default function ServiceSalesView({
     service.slug === "cyber-security" ||
     service.slug === "recruitment-ats" ||
     service.slug === "telesales-campaigns" ||
+    service.slug === "payroll-hr-tooling" ||
     service.slug === "documents-and-decks";
 
   return (
