@@ -1,164 +1,167 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
-/**
- * Social Media Automation hero — animated 3D rotating cube with poem-style text.
- * Based on a CSS 3D cube animation. Self-contained: no external images required.
- */
-const POEM_HTML = `
-  <p>Post.</p>
-  <p>Schedule.</p>
-  <p>Engage.</p>
-  <p>Repeat.</p>
-  <p>Automated.</p>
-`;
+declare global {
+  interface Window {
+    p5: any;
+    gsap: any;
+  }
+}
 
 const SocialMediaAutomationHero: React.FC = () => {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sketchRef = useRef<any>(null);
 
   useEffect(() => {
-    const adjust = () => {
-      const wrap = wrapRef.current;
-      const content = contentRef.current;
-      if (!wrap || !content) return;
-      const { width, height } = wrap.getBoundingClientRect();
-      const scale = Math.min(width / 1000, height / 562);
-      content.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    let cancelled = false;
+
+    const loadScript = (src: string) =>
+      new Promise<void>((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
+        if (existing) {
+          if ((existing as any)._loaded) return resolve();
+          existing.addEventListener("load", () => resolve());
+          existing.addEventListener("error", () => reject());
+          return;
+        }
+        const s = document.createElement("script");
+        s.src = src;
+        s.async = true;
+        s.onload = () => {
+          (s as any)._loaded = true;
+          resolve();
+        };
+        s.onerror = () => reject();
+        document.head.appendChild(s);
+      });
+
+    const init = async () => {
+      try {
+        if (!window.p5) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js");
+        if (!window.gsap) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js");
+      } catch {
+        return;
+      }
+      if (cancelled || !containerRef.current || !window.p5 || !window.gsap) return;
+
+      const container = containerRef.current;
+
+      const sketch = (p: any) => {
+        const particles: any[] = [];
+        const getSize = () => {
+          const rect = container.getBoundingClientRect();
+          return { w: Math.max(1, rect.width), h: Math.max(1, rect.height) };
+        };
+        const amount = window.innerWidth < 600 || window.innerHeight < 600 ? 1000 : 2000;
+        const durationShrink = 8;
+        const durationGrow = 8;
+        const total = durationShrink + durationGrow;
+        const theme = ["#393e46", "#00adb5", "#393e46", "#00adb5", "#e6eeef"];
+        const proxy = { progress: 1, val: 0 };
+        let progress: any;
+        let interpolator: any;
+
+        class Particle {
+          i: number;
+          cos: number;
+          sin: number;
+          r: number;
+          offset: number;
+          color: string;
+          constructor(i: number) {
+            this.i = i;
+            this.cos = p.cos(i * p.TWO_PI);
+            this.sin = p.sin(i * p.TWO_PI);
+            this.r = p.floor(p.random(2, 8));
+            this.offset = p.pow(p.random(1, 2), 2.5) * p.random(-0.015, 0.015);
+            this.color = p.random(theme);
+          }
+          draw() {
+            interpolator.progress((proxy.progress + this.i) % 1);
+            const radius = Math.min(p.width, p.height) * (0.35 + proxy.val * this.offset);
+            const x = this.cos * radius + p.width / 2;
+            const y = this.sin * radius + p.height / 2;
+            p.fill(this.color);
+            // Square instead of circle
+            p.rect(x - this.r / 2, y - this.r / 2, this.r, this.r);
+          }
+        }
+
+        p.setup = () => {
+          const { w, h } = getSize();
+          const canvas = p.createCanvas(w, h);
+          canvas.parent(container);
+          p.noStroke();
+          if (navigator.userAgent.indexOf("Firefox") < 0) {
+            p.blendMode(p.SCREEN);
+          }
+          const gsap = window.gsap;
+          progress = gsap.to(proxy, { progress: 0, ease: "none", duration: total, repeat: -1 });
+          interpolator = gsap
+            .timeline({ paused: true, reverse: true })
+            .to(proxy, { val: 1, duration: durationShrink, ease: "elastic.in(1.5, 0.15)" })
+            .to(proxy, { val: 0, duration: durationGrow, ease: "back.in(3)" });
+          for (let i = 0; i < amount; i++) particles.push(new Particle(i / amount));
+        };
+
+        p.windowResized = () => {
+          const { w, h } = getSize();
+          p.resizeCanvas(w, h);
+        };
+
+        const onMove = (x: number, y: number) => {
+          let a = p.atan2(y - p.height / 2, x - p.width / 2);
+          a = a < 0 ? a + p.TWO_PI : a;
+          a = p.abs(a / p.TWO_PI) * total;
+          progress.time(a);
+        };
+
+        p.touchMoved = () => {
+          if (p.touches.length === 0) return;
+          onMove(p.touches[0].x, p.touches[0].y);
+        };
+        p.mouseMoved = () => onMove(p.mouseX, p.mouseY);
+
+        p.draw = () => {
+          p.clear();
+          particles.forEach((particle) => particle.draw());
+        };
+      };
+
+      sketchRef.current = new window.p5(sketch);
+
+      // Resize observer to keep canvas matched to container
+      const ro = new ResizeObserver(() => {
+        if (sketchRef.current?.windowResized) sketchRef.current.windowResized();
+      });
+      ro.observe(container);
+      (sketchRef.current as any)._ro = ro;
     };
-    adjust();
-    const ro = new ResizeObserver(adjust);
-    if (wrapRef.current) ro.observe(wrapRef.current);
-    window.addEventListener("resize", adjust);
+
+    init();
+
     return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", adjust);
+      cancelled = true;
+      if (sketchRef.current?._ro) sketchRef.current._ro.disconnect();
+      if (sketchRef.current) {
+        try { sketchRef.current.remove(); } catch {}
+        sketchRef.current = null;
+      }
     };
   }, []);
 
   return (
-    <div ref={wrapRef} className="absolute inset-0 overflow-hidden bg-black">
+    <div className="absolute inset-0 overflow-hidden bg-black">
+      <div
+        ref={containerRef}
+        className="absolute inset-0"
+        style={{ touchAction: "none" }}
+      />
       <style>{`
-        .sma-content {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 1000px;
-          height: 562px;
-          transform-origin: center center;
-          perspective: 1200px;
+        .sma-particles canvas {
+          display: block;
+          filter: drop-shadow(0px 0px 3px rgba(0, 228, 233, 0.7));
         }
-        .sma-full {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-        }
-        .sma-hue {
-          position: absolute;
-          inset: -10%;
-          background:
-            radial-gradient(circle at 30% 30%, rgba(255,80,180,0.35), transparent 55%),
-            radial-gradient(circle at 70% 60%, rgba(60,140,255,0.35), transparent 55%),
-            radial-gradient(circle at 50% 80%, rgba(150,80,255,0.30), transparent 60%);
-          filter: blur(40px) saturate(140%);
-          animation: sma-hue 14s linear infinite;
-        }
-        @keyframes sma-hue {
-          0% { filter: hue-rotate(0deg) blur(40px) saturate(140%); }
-          100% { filter: hue-rotate(360deg) blur(40px) saturate(140%); }
-        }
-        .sma-stage {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          perspective: 1600px;
-        }
-        .sma-reflect {
-          position: absolute;
-          left: 0; right: 0; bottom: -40%;
-          height: 80%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          perspective: 1600px;
-          transform: scaleY(-1);
-          opacity: 0.18;
-          filter: blur(2px);
-          mask-image: linear-gradient(to top, black, transparent 70%);
-          -webkit-mask-image: linear-gradient(to top, black, transparent 70%);
-        }
-        .sma-cube {
-          position: relative;
-          width: 260px;
-          height: 260px;
-          transform-style: preserve-3d;
-          animation: sma-spin 18s linear infinite;
-        }
-        @keyframes sma-spin {
-          from { transform: rotateX(-20deg) rotateY(0deg); }
-          to   { transform: rotateX(-20deg) rotateY(360deg); }
-        }
-        .sma-face {
-          position: absolute;
-          inset: 0;
-          border: 1px solid rgba(255,255,255,0.18);
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
-          box-shadow: 0 0 40px rgba(255,255,255,0.05) inset;
-        }
-        .sma-face.text {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          color: #fff;
-          font-family: ui-sans-serif, system-ui, sans-serif;
-          font-weight: 600;
-          font-size: 22px;
-          line-height: 1.5;
-          letter-spacing: 0.02em;
-          text-align: center;
-          padding: 18px;
-        }
-        .sma-face.text p { margin: 2px 0; }
-        .sma-face.top    { transform: rotateX( 90deg) translateZ(130px); }
-        .sma-face.bottom { transform: rotateX(-90deg) translateZ(130px); }
-        .sma-face.left   { transform: rotateY(-90deg) translateZ(130px); }
-        .sma-face.right  { transform: rotateY( 90deg) translateZ(130px); }
-        .sma-face.front  { transform: translateZ(130px); }
-        .sma-face.back   { transform: rotateY(180deg) translateZ(130px); }
       `}</style>
-
-      <div ref={contentRef} className="sma-content">
-        <div className="sma-full">
-          <div className="sma-hue" />
-
-          <div className="sma-stage">
-            <div className="sma-cube">
-              <div className="sma-face top" />
-              <div className="sma-face bottom" />
-              <div className="sma-face left text" dangerouslySetInnerHTML={{ __html: POEM_HTML }} />
-              <div className="sma-face right text" dangerouslySetInnerHTML={{ __html: POEM_HTML }} />
-              <div className="sma-face front" />
-              <div className="sma-face back text" dangerouslySetInnerHTML={{ __html: POEM_HTML }} />
-            </div>
-          </div>
-
-          <div className="sma-reflect">
-            <div className="sma-cube">
-              <div className="sma-face top" />
-              <div className="sma-face bottom" />
-              <div className="sma-face left text" dangerouslySetInnerHTML={{ __html: POEM_HTML }} />
-              <div className="sma-face right text" dangerouslySetInnerHTML={{ __html: POEM_HTML }} />
-              <div className="sma-face front" />
-              <div className="sma-face back text" dangerouslySetInnerHTML={{ __html: POEM_HTML }} />
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
