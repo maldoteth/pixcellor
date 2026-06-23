@@ -76,13 +76,29 @@ export default function RecruitmentHero({
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("touchmove", onTouchMove, { passive: true });
 
+    // Per-cell deterministic hue lookup for the rainbow accents.
+    const hslToRgb = (h: number, s: number, l: number) => {
+      const c = (1 - Math.abs(2 * l - 1)) * s;
+      const hp = (h % 360) / 60;
+      const x = c * (1 - Math.abs((hp % 2) - 1));
+      let r1 = 0, g1 = 0, b1 = 0;
+      if (hp < 1) { r1 = c; g1 = x; }
+      else if (hp < 2) { r1 = x; g1 = c; }
+      else if (hp < 3) { g1 = c; b1 = x; }
+      else if (hp < 4) { g1 = x; b1 = c; }
+      else if (hp < 5) { r1 = x; b1 = c; }
+      else { r1 = c; b1 = x; }
+      const m = l - c / 2;
+      return `rgb(${Math.round((r1 + m) * 255)},${Math.round((g1 + m) * 255)},${Math.round((b1 + m) * 255)})`;
+    };
+
     let raf = 0;
     const render = () => {
       const w = canvas.width / dpr;
       const h = canvas.height / dpr;
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = dotColor;
       const f = frameRef.current;
+      const diag = Math.max(1, Math.hypot(w, h));
       for (let ci = 0; ci < cols; ci++) {
         const px = ci * CIRCLE_DIST;
         for (let ri = 0; ri < rows; ri++) {
@@ -95,9 +111,17 @@ export default function RecruitmentHero({
           if (delta > greater / 2) delta = greater / 2;
           const size = ACTUAL_W - (delta / (greater / 2)) * (ACTUAL_W - MIN_W);
           if (size <= 0.2) continue;
-          ctx.beginPath();
-          ctx.arc(px, py, size / 2, 0, Math.PI * 2);
-          ctx.fill();
+
+          // Roughly 1 in 6 cells gets a rainbow hue based on grid position.
+          const colorful = noise(ci, ri, 0) < 0.18;
+          if (colorful) {
+            const hue = ((px + py) / diag) * 720;
+            ctx.fillStyle = hslToRgb(hue, 1, 0.6);
+          } else {
+            ctx.fillStyle = dotColor;
+          }
+          // Squares, not circles
+          ctx.fillRect(px - size / 2, py - size / 2, size, size);
         }
       }
       frameRef.current++;
