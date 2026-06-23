@@ -55,7 +55,11 @@ const SocialMediaAutomationHero: React.FC = () => {
         const durationShrink = 8;
         const durationGrow = 8;
         const total = durationShrink + durationGrow;
-        const theme = ["#393e46", "#00adb5", "#393e46", "#00adb5", "#e6eeef"];
+        // Full hue spectrum (rainbow accents)
+        const theme = [
+          "#ff3b3b", "#ff8a3b", "#ffd23b", "#5dff3b", "#3bffd2",
+          "#3b8aff", "#7a3bff", "#e23bff", "#ff3b8a", "#ffffff",
+        ];
         const proxy = { progress: 1, val: 0 };
         let progress: any;
         let interpolator: any;
@@ -159,7 +163,7 @@ const SocialMediaAutomationHero: React.FC = () => {
       <style>{`
         .sma-particles canvas {
           display: block;
-          filter: drop-shadow(0px 0px 3px rgba(0, 228, 233, 0.7));
+          filter: drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.35));
         }
       `}</style>
     </div>
