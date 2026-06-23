@@ -515,6 +515,8 @@ export default function ServiceSalesView({
                   <CyberSecurityHero />
                 ) : service.slug === "recruitment-ats" ? (
                   <RecruitmentHero />
+                ) : service.slug === "telesales-campaigns" ? (
+                  <TelesalesHero />
                 ) : (
                   <Wave />
                 )}
