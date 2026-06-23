@@ -87,18 +87,14 @@ export default function GtmLeadGenHero({
           const color = `hsl(${hue}, 80%, ${brightness}%)`;
           ctx.fillStyle = color;
           ctx.strokeStyle = color;
-          ctx.beginPath();
-          ctx.arc(d.x, d.y, dotRadius, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillRect(d.x - dotRadius, d.y - dotRadius, dotRadius * 2, dotRadius * 2);
           ctx.beginPath();
           ctx.moveTo(d.x, d.y);
           ctx.lineTo(mx, my);
           ctx.stroke();
         } else {
           ctx.fillStyle = "rgba(120, 120, 120, 0.35)";
-          ctx.beginPath();
-          ctx.arc(d.x, d.y, dotRadius, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillRect(d.x - dotRadius, d.y - dotRadius, dotRadius * 2, dotRadius * 2);
         }
       }
       raf = requestAnimationFrame(render);
