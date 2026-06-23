@@ -38,6 +38,7 @@ const TelesalesHero = lazy(() => import("@/components/services/TelesalesHero"));
 const PayrollHero = lazy(() => import("@/components/services/PayrollHero"));
 const ProductManagementHero = lazy(() => import("@/components/services/ProductManagementHero"));
 const GtmLeadGenHero = lazy(() => import("@/components/services/GtmLeadGenHero"));
+const TokenLaunchesHero = lazy(() => import("@/components/services/TokenLaunchesHero"));
 const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
 
 // Lightweight placeholder shown while a banner chunk is loading.
@@ -130,6 +131,7 @@ export default function ServiceSalesView({
     service.slug === "payroll-hr-tooling" ||
     service.slug === "product-project-management" ||
     service.slug === "gtm-lead-generation" ||
+    service.slug === "token-launches" ||
     service.slug === "documents-and-decks";
 
   return (
@@ -168,6 +170,8 @@ export default function ServiceSalesView({
                   <ProductManagementHero />
                 ) : service.slug === "gtm-lead-generation" ? (
                   <GtmLeadGenHero />
+                ) : service.slug === "token-launches" ? (
+                  <TokenLaunchesHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
@@ -535,6 +539,8 @@ export default function ServiceSalesView({
                   <ProductManagementHero />
                 ) : service.slug === "gtm-lead-generation" ? (
                   <GtmLeadGenHero />
+                ) : service.slug === "token-launches" ? (
+                  <TokenLaunchesHero />
                 ) : (
                   <Wave />
                 )}
