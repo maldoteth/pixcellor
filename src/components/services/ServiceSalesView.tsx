@@ -527,6 +527,8 @@ export default function ServiceSalesView({
                   <TelesalesHero />
                 ) : service.slug === "payroll-hr-tooling" ? (
                   <PayrollHero />
+                ) : service.slug === "product-project-management" ? (
+                  <ProductManagementHero />
                 ) : (
                   <Wave />
                 )}
