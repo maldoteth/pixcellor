@@ -43,6 +43,7 @@ const PaidAdsHero = lazy(() => import("@/components/services/PaidAdsHero"));
 const SocialMediaAutomationHero = lazy(() => import("@/components/services/SocialMediaAutomationHero"));
 const VisitorIntelHero = lazy(() => import("@/components/services/VisitorIntelHero"));
 const NebulaHero = lazy(() => import("@/components/services/NebulaHero"));
+const AnalyticsDashboardsHero = lazy(() => import("@/components/services/AnalyticsDashboardsHero"));
 const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
 
 // Lightweight placeholder shown while a banner chunk is loading.
@@ -140,6 +141,7 @@ export default function ServiceSalesView({
     service.slug === "social-media-automation" ||
     service.slug === "consultations-audits" ||
     service.slug === "api-third-party" ||
+    service.slug === "analytics-dashboards" ||
     service.slug === "documents-and-decks";
 
   return (
@@ -188,6 +190,8 @@ export default function ServiceSalesView({
                   <NebulaHero />
                 ) : service.slug === "api-third-party" ? (
                   <NebulaHero />
+                ) : service.slug === "analytics-dashboards" ? (
+                  <AnalyticsDashboardsHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
@@ -565,6 +569,8 @@ export default function ServiceSalesView({
                   <NebulaHero />
                 ) : service.slug === "api-third-party" ? (
                   <NebulaHero />
+                ) : service.slug === "analytics-dashboards" ? (
+                  <AnalyticsDashboardsHero />
                 ) : (
                   <Wave />
                 )}
