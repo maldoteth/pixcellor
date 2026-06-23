@@ -64,12 +64,17 @@ export default function RecruitmentHero({
       const rect = container.getBoundingClientRect();
       mousePos.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
     };
-    const onPointerLeave = () => {
-      mousePos.current = { x: -9999, y: -9999 };
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 0) return;
+      const rect = container.getBoundingClientRect();
+      mousePos.current = {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top,
+      };
     };
 
-    container.addEventListener("pointermove", onPointerMove);
-    container.addEventListener("pointerleave", onPointerLeave);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
 
     let raf = 0;
     const render = () => {
@@ -103,8 +108,8 @@ export default function RecruitmentHero({
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      container.removeEventListener("pointermove", onPointerMove);
-      container.removeEventListener("pointerleave", onPointerLeave);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("touchmove", onTouchMove);
     };
   }, [dotColor, dotSize]);
 
