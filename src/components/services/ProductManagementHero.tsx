@@ -205,6 +205,7 @@ export default function ProductManagementHero({
       gl.uniform1f(u.uWarp, p.warp);
       gl.uniform1f(u.uZoom, p.zoom);
       gl.uniform1f(u.uBrightness, p.brightness);
+      gl.uniform1f(u.uSat, p.saturation);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       raf = requestAnimationFrame(animate);
     };
