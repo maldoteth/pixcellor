@@ -193,14 +193,15 @@ export default function ProductManagementHero({
     const start = performance.now();
     let raf = 0;
     const animate = () => {
-      const t = ((performance.now() - start) / 1000) * speed;
+      const p = paramsRef.current;
+      const t = ((performance.now() - start) / 1000) * p.speed;
       gl.uniform1f(u.iTime, t);
       gl.uniform2f(u.iMouse, mouseRef.current.x, mouseRef.current.y);
-      gl.uniform1f(u.uHue, hue);
-      gl.uniform1f(u.uNoise, noise);
-      gl.uniform1f(u.uWarp, warp);
-      gl.uniform1f(u.uZoom, zoom);
-      gl.uniform1f(u.uBrightness, brightness);
+      gl.uniform1f(u.uHue, p.hue);
+      gl.uniform1f(u.uNoise, p.noise);
+      gl.uniform1f(u.uWarp, p.warp);
+      gl.uniform1f(u.uZoom, p.zoom);
+      gl.uniform1f(u.uBrightness, p.brightness);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       raf = requestAnimationFrame(animate);
     };
@@ -218,11 +219,65 @@ export default function ProductManagementHero({
         gl.deleteBuffer(buf);
       }
     };
-  }, [hue, speed, noise, warp, zoom, brightness]);
+  }, []);
+
+  const sliders: {
+    name: string;
+    value: number;
+    min: number;
+    max: number;
+    step: number;
+    set: (v: number) => void;
+  }[] = [
+    { name: "Hue", value: hue, min: 0, max: 360, step: 1, set: setHue },
+    { name: "Speed", value: speed, min: 0, max: 2, step: 0.01, set: setSpeed },
+    { name: "Noise", value: noise, min: 0, max: 1, step: 0.01, set: setNoise },
+    { name: "Warp", value: warp, min: 0, max: 0.5, step: 0.01, set: setWarp },
+    { name: "Zoom", value: zoom, min: 0.5, max: 5, step: 0.01, set: setZoom },
+    { name: "Brightness", value: brightness, min: 0.1, max: 2, step: 0.01, set: setBrightness },
+  ];
 
   return (
     <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-black">
       <canvas ref={canvasRef} className="block h-full w-full" />
+
+      {/* Settings toggle */}
+      <button
+        type="button"
+        onClick={() => setPanelOpen((o) => !o)}
+        aria-label={panelOpen ? "Close shader controls" : "Open shader controls"}
+        className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-md border border-white/15 bg-black/40 text-white/80 backdrop-blur-md transition hover:bg-black/60 hover:text-white"
+      >
+        {panelOpen ? <X className="h-3.5 w-3.5" /> : <Settings2 className="h-3.5 w-3.5" />}
+      </button>
+
+      {panelOpen && (
+        <div className="absolute right-2 top-11 z-10 w-56 rounded-lg border border-white/10 bg-black/60 p-3 text-white shadow-2xl backdrop-blur-xl">
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/60">
+            Liquid Crystal
+          </div>
+          {sliders.map((s) => (
+            <div key={s.name} className="mb-2 last:mb-0">
+              <div className="mb-1 flex items-center justify-between text-[10px] text-white/70">
+                <span>{s.name}</span>
+                <span className="tabular-nums text-white/90">
+                  {s.step < 1 ? s.value.toFixed(2) : s.value.toFixed(0)}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={s.min}
+                max={s.max}
+                step={s.step}
+                value={s.value}
+                onChange={(e) => s.set(parseFloat(e.target.value))}
+                className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-white"
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+
