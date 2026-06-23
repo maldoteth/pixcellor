@@ -521,6 +521,8 @@ export default function ServiceSalesView({
                   <RecruitmentHero />
                 ) : service.slug === "telesales-campaigns" ? (
                   <TelesalesHero />
+                ) : service.slug === "payroll-hr-tooling" ? (
+                  <PayrollHero />
                 ) : (
                   <Wave />
                 )}
