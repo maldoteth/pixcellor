@@ -108,8 +108,8 @@ export default function RecruitmentHero({
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      container.removeEventListener("pointermove", onPointerMove);
-      container.removeEventListener("pointerleave", onPointerLeave);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("touchmove", onTouchMove);
     };
   }, [dotColor, dotSize]);
 
