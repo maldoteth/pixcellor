@@ -533,6 +533,8 @@ export default function ServiceSalesView({
                   <PayrollHero />
                 ) : service.slug === "product-project-management" ? (
                   <ProductManagementHero />
+                ) : service.slug === "gtm-lead-generation" ? (
+                  <GtmLeadGenHero />
                 ) : (
                   <Wave />
                 )}
