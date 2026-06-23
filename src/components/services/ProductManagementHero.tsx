@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Sliders } from "lucide-react";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Sliders, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProductManagementHeroProps {
