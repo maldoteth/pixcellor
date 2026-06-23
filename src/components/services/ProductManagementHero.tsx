@@ -161,6 +161,7 @@ export default function ProductManagementHero({
       uWarp: gl.getUniformLocation(program, "uWarp"),
       uZoom: gl.getUniformLocation(program, "uZoom"),
       uBrightness: gl.getUniformLocation(program, "uBrightness"),
+      uSat: gl.getUniformLocation(program, "uSat"),
     };
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
