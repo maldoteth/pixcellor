@@ -246,7 +246,7 @@ export default function ProductManagementHero({
     <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-black">
       <canvas ref={canvasRef} className="block h-full w-full" />
 
-      <div className="absolute right-2 top-2 z-10 w-44 rounded-md border border-white/10 bg-black/55 p-2 text-white shadow-xl backdrop-blur-xl">
+      <div className="absolute bottom-2 left-2 z-10 w-44 rounded-md border border-white/10 bg-black/55 p-2 text-white shadow-xl backdrop-blur-xl">
         <div className="mb-1.5 text-[9px] font-semibold uppercase tracking-widest text-white/60">
           Liquid Crystal
         </div>
