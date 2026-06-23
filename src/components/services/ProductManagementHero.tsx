@@ -102,6 +102,7 @@ export default function ProductManagementHero({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
+  const isMobile = useIsMobile();
 
   const [hue, setHue] = useState(initialHue);
   const [saturation, setSaturation] = useState(initialSaturation);
