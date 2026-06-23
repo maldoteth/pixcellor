@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Sliders } from "lucide-react";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Sliders, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProductManagementHeroProps {
@@ -103,6 +96,25 @@ export default function ProductManagementHero({
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
   const isMobile = useIsMobile();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetTop, setSheetTop] = useState(0);
+
+  // Keep the mobile sheet docked just below the banner while open.
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const update = () => {
+      const el = containerRef.current;
+      if (!el) return;
+      setSheetTop(el.getBoundingClientRect().bottom);
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [sheetOpen]);
 
   const [hue, setHue] = useState(initialHue);
   const [saturation, setSaturation] = useState(initialSaturation);
@@ -287,23 +299,43 @@ export default function ProductManagementHero({
       <canvas ref={canvasRef} className="block h-full w-full" />
 
       {isMobile ? (
-        <Drawer>
-          <DrawerTrigger asChild>
-            <button
-              type="button"
-              aria-label="Open shader controls"
-              className="absolute bottom-2 left-2 z-10 flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-black/55 text-white/85 shadow-xl backdrop-blur-xl active:bg-black/70"
+        <>
+          <button
+            type="button"
+            onClick={() => setSheetOpen((o) => !o)}
+            aria-label={sheetOpen ? "Close shader controls" : "Open shader controls"}
+            className="absolute bottom-2 left-2 z-20 flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-black/55 text-white/85 shadow-xl backdrop-blur-xl active:bg-black/70"
+          >
+            {sheetOpen ? <X className="h-4 w-4" /> : <Sliders className="h-4 w-4" />}
+          </button>
+
+          {sheetOpen && (
+            <div
+              className="fixed left-0 right-0 z-[60] rounded-t-2xl border-t border-white/10 bg-black/85 px-4 pb-6 pt-3 text-white shadow-2xl backdrop-blur-2xl animate-in slide-in-from-bottom duration-200"
+              style={{
+                top: sheetTop,
+                maxHeight: `calc(100vh - ${sheetTop}px)`,
+                overflowY: "auto",
+              }}
             >
-              <Sliders className="h-4 w-4" />
-            </button>
-          </DrawerTrigger>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Liquid Crystal</DrawerTitle>
-            </DrawerHeader>
-            <div className="px-5 pb-8">{sliderRows("md")}</div>
-          </DrawerContent>
-        </Drawer>
+              <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-white/25" />
+              <div className="mb-3 flex items-center justify-between">
+                <div className="text-xs font-semibold uppercase tracking-widest text-white/70">
+                  Liquid Crystal
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSheetOpen(false)}
+                  aria-label="Close"
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-white/70 hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              {sliderRows("md")}
+            </div>
+          )}
+        </>
       ) : (
         <div className="absolute bottom-2 left-2 z-10 w-44 rounded-md border border-white/10 bg-black/55 p-2 text-white shadow-xl backdrop-blur-xl">
           <div className="mb-1.5 text-[9px] font-semibold uppercase tracking-widest text-white/60">
