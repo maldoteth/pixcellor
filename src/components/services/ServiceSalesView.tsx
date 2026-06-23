@@ -150,6 +150,8 @@ export default function ServiceSalesView({
                   <CreativeBrandingHero />
                 ) : service.slug === "cyber-security" ? (
                   <CyberSecurityHero />
+                ) : service.slug === "recruitment-ats" ? (
+                  <RecruitmentHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
