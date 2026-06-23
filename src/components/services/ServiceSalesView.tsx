@@ -539,6 +539,8 @@ export default function ServiceSalesView({
                   <ProductManagementHero />
                 ) : service.slug === "gtm-lead-generation" ? (
                   <GtmLeadGenHero />
+                ) : service.slug === "token-launches" ? (
+                  <TokenLaunchesHero />
                 ) : (
                   <Wave />
                 )}
