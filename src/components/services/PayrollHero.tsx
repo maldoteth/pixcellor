@@ -103,13 +103,14 @@ export default function PayrollHero({ pointCount = 150 }: PayrollHeroProps) {
           className="block h-full w-full"
         >
           <defs>
-            <linearGradient id="payroll_pink_red" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#FF7AA2" />
-              <stop offset="100%" stopColor="#B30753" />
+            <linearGradient id="payroll_silver_base" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3a3a3d" />
+              <stop offset="100%" stopColor="#0e0e10" />
             </linearGradient>
-            <linearGradient id="payroll_orange_red" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#FFB347" />
-              <stop offset="100%" stopColor="#FF3B2F" />
+            <linearGradient id="payroll_silver_hot" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f5f5f7" />
+              <stop offset="50%" stopColor="#c8ccd2" />
+              <stop offset="100%" stopColor="#6e7278" />
             </linearGradient>
           </defs>
           <g>
@@ -120,9 +121,9 @@ export default function PayrollHero({ pointCount = 150 }: PayrollHeroProps) {
               const isNeighbor = neighbors.has(i);
               const fill =
                 isHovered || isNeighbor
-                  ? "url(#payroll_orange_red)"
-                  : "url(#payroll_pink_red)";
-              const opacity = isNeighbor && !isHovered ? 0.5 : 1;
+                  ? "url(#payroll_silver_hot)"
+                  : "url(#payroll_silver_base)";
+              const opacity = isNeighbor && !isHovered ? 0.55 : 1;
               return (
                 <path
                   key={`poly-${i}`}
@@ -141,7 +142,7 @@ export default function PayrollHero({ pointCount = 150 }: PayrollHeroProps) {
                 cx={cx}
                 cy={cy}
                 r={2}
-                fill={i === hovered ? "fuchsia" : "#fff"}
+                fill={i === hovered ? "#ffffff" : "#d6d6d8"}
                 fillOpacity={0.85}
               />
             ))}
