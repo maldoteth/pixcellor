@@ -82,18 +82,20 @@ void main() {
  * position anywhere on the page. Container-scoped to the banner card.
  */
 export default function ProductManagementHero({
-  hue: initialHue = 200,
+  hue: initialHue = 0,
   speed: initialSpeed = 1,
   noise: initialNoise = 0.4,
   warp: initialWarp = 0.18,
   zoom: initialZoom = 1.6,
   brightness: initialBrightness = 1,
+  saturation: initialSaturation = 0,
 }: ProductManagementHeroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
 
   const [hue, setHue] = useState(initialHue);
+  const [saturation, setSaturation] = useState(initialSaturation);
   const [speed, setSpeed] = useState(initialSpeed);
   const [noise, setNoise] = useState(initialNoise);
   const [warp, setWarp] = useState(initialWarp);
@@ -102,8 +104,8 @@ export default function ProductManagementHero({
 
   // Uniforms are read from refs inside the animation loop so slider changes
   // apply instantly without reinitialising the WebGL program.
-  const paramsRef = useRef({ hue, speed, noise, warp, zoom, brightness });
-  paramsRef.current = { hue, speed, noise, warp, zoom, brightness };
+  const paramsRef = useRef({ hue, saturation, speed, noise, warp, zoom, brightness });
+  paramsRef.current = { hue, saturation, speed, noise, warp, zoom, brightness };
 
   useEffect(() => {
     const canvas = canvasRef.current;
