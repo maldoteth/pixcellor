@@ -166,6 +166,8 @@ export default function ServiceSalesView({
                   <PayrollHero />
                 ) : service.slug === "product-project-management" ? (
                   <ProductManagementHero />
+                ) : service.slug === "gtm-lead-generation" ? (
+                  <GtmLeadGenHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
