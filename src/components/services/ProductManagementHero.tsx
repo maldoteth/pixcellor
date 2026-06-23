@@ -69,7 +69,7 @@ void main() {
   bands = smoothstep(0.4, 0.6, bands);
   float detail = snoise(uv * 10.0 + time) * 0.5 + 0.5;
   bands = mix(bands, bands + detail, uNoise);
-  vec3 baseColor = hsv2rgb(vec3(uHue / 360.0, 0.7, 1.0));
+  vec3 baseColor = hsv2rgb(vec3(uHue / 360.0, uSat, 1.0));
   vec3 color = baseColor * bands * uBrightness;
   gl_FragColor = vec4(color, 1.0);
 }
