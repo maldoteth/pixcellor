@@ -7,6 +7,7 @@ interface ProductManagementHeroProps {
   warp?: number;
   zoom?: number;
   brightness?: number;
+  saturation?: number;
 }
 
 const VERT = `
