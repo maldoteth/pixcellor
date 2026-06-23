@@ -158,6 +158,8 @@ export default function ServiceSalesView({
                   <RecruitmentHero />
                 ) : service.slug === "telesales-campaigns" ? (
                   <TelesalesHero />
+                ) : service.slug === "payroll-hr-tooling" ? (
+                  <PayrollHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
