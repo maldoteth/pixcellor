@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Settings2, X } from "lucide-react";
 
 interface ProductManagementHeroProps {
   hue?: number;
