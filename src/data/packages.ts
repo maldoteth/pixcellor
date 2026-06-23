@@ -88,7 +88,7 @@ export type PackageDetail = {
 
 const DEFAULT_ADDONS: PackageAddOn[] = [
   { name: "Extra page", price: "£50", note: "Beyond included page count" },
-  { name: "Professional copywriting", price: "£100", note: "Per page, sales-trained" },
+  { name: "Unique copywriting", price: "£100", note: "Per page, sales-trained" },
   { name: "Brand kit (logo + identity)", price: "£200", note: "Logo, palette, fonts, guidelines" },
   { name: "Migration from existing site", price: "£150", note: "Content + redirects + SEO equity" },
   { name: "Custom 3D / WebGL hero", price: "£250", note: "Bespoke animated hero scene" },
