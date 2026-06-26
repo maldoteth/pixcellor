@@ -155,6 +155,7 @@ serve(async (req) => {
         domain_top_up_gbp: validDomain ? String(safeTopUpGbp) : "",
         vision_prompt: visionBrief && typeof visionBrief.prompt === "string" ? visionBrief.prompt.slice(0, 500) : "",
         vision_image_url: visionBrief && typeof visionBrief.imageUrl === "string" ? visionBrief.imageUrl.slice(0, 500) : "",
+        affiliate_ref: safeAffiliateRef,
       },
     };
 
