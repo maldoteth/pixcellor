@@ -8,6 +8,7 @@ if (typeof (globalThis as unknown as { global?: unknown }).global === "undefined
 }
 
 import { createRoot } from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 import { captureAffiliateRefFromUrl } from "./lib/affiliateRef";
@@ -15,4 +16,8 @@ import { captureAffiliateRefFromUrl } from "./lib/affiliateRef";
 // First-touch affiliate attribution: stamp ?ref=CODE into a 90-day cookie.
 captureAffiliateRefFromUrl();
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <HelmetProvider>
+    <App />
+  </HelmetProvider>
+);
