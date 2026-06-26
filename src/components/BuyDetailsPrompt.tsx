@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { DomainChoice } from "@/components/DomainPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext } from "@/lib/checkoutTracking";
+import { getAffiliateRef } from "@/lib/affiliateRef";
 import { SUGGESTIONS as VISION_SUGGESTIONS } from "@/components/VisionGenerator";
 
 const INVOICE_COUNTRIES = ["United Kingdom", "Ireland", "United States", "Other"];
@@ -1010,11 +1011,39 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
         <AuroraBackdrop />
         <DialogHeader>
           <DialogTitle className="text-foreground drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">{title}</DialogTitle>
+          <ReferralTrackedBadge />
         </DialogHeader>
         <div className="relative overflow-y-auto max-h-[80vh]">{content}</div>
       </DialogContent>
     </Dialog>
   );
 };
+
+function ReferralTrackedBadge() {
+  const [code, setCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  useEffect(() => { setCode(getAffiliateRef()); }, []);
+  if (!code) return null;
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* ignore */ }
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="mt-2 inline-flex items-center gap-2 self-start rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[11px] font-medium text-emerald-200 backdrop-blur-sm transition hover:bg-emerald-400/20"
+      title="Click to copy"
+    >
+      <CheckCircle2 className="h-3 w-3" />
+      <span>Referral tracked:</span>
+      <span className="font-mono tracking-wider text-emerald-100">{code}</span>
+      {copied ? <span className="text-emerald-300">✓</span> : <Copy className="h-3 w-3 opacity-60" />}
+    </button>
+  );
+}
 
 export default BuyDetailsPrompt;
