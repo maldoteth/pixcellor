@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsDesktop } from "@/hooks/use-desktop";
 import { useHeroReady } from "@/hooks/use-hero-ready";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending, updateCheckoutPendingSessionId } from "@/lib/checkoutTracking";
+import { getAffiliateRef } from "@/lib/affiliateRef";
 import {
   Drawer,
   DrawerContent,
