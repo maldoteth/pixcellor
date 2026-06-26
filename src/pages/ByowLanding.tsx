@@ -111,6 +111,7 @@ export default function ByowLanding() {
           lander: true,
           email: email.trim().toLowerCase(),
           display_name: siteName.trim(),
+          affiliateRef: getAffiliateRef() ?? undefined,
         },
       });
       if (error) throw error;
