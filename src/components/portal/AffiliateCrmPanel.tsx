@@ -628,15 +628,27 @@ export default function AffiliateCrmPanel() {
                 <p className="text-sm text-muted-foreground py-2">No codes yet — generate your first one.</p>
               ) : (
                 <div className="max-h-48 overflow-auto rounded-none border border-border/40 divide-y divide-border/40">
-                  {codes.map(c => (
-                    <div key={c.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <code className="font-mono text-base">{c.code}</code>
-                        <Badge variant="secondary" className="rounded-none">{c.buyer_discount_pct}% off · {c.affiliate_commission_pct}% to you</Badge>
+                  {codes.map(c => {
+                    const origin = (typeof window !== "undefined" ? window.location.origin : "https://pixcellor.com").replace(/\/$/, "");
+                    const link = `${origin}/?ref=${c.code}`;
+                    return (
+                      <div key={c.id} className="flex flex-col gap-2 px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-wrap items-center gap-2 min-w-0">
+                          <code className="font-mono text-base">{c.code}</code>
+                          <Badge variant="secondary" className="rounded-none">{c.buyer_discount_pct}% off · {c.affiliate_commission_pct}% to you</Badge>
+                          <span className="truncate text-xs text-muted-foreground font-mono" title={link}>{link}</span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button size="sm" variant="ghost" title="Copy code" onClick={() => copy(c.code)}>
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="sm" variant="ghost" title="Copy referral link" onClick={() => copy(link)}>
+                            <Link2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
-                      <Button size="sm" variant="ghost" onClick={() => copy(c.code)}><Copy className="h-3.5 w-3.5" /></Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
