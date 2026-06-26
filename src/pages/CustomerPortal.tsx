@@ -527,7 +527,7 @@ export default function CustomerPortal() {
       const priceId = useYearly ? plan.yearlyPriceId! : plan.priceId;
       const billing = useYearly ? plan.yearlyBilling || plan.billing : plan.billing;
       const { data: checkout, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId, mode: plan.mode, packageName: plan.name, billing },
+        body: { priceId, mode: plan.mode, packageName: plan.name, billing, affiliateRef: getAffiliateRef() ?? undefined },
       });
       if (error) throw error;
       if (checkout?.url) window.location.href = checkout.url;
