@@ -28,7 +28,7 @@ export default function ReferralLanding() {
     (async () => {
       const { data } = await supabase.rpc("get_affiliate_public" as never, { _code: code } as never);
       if (cancelled) return;
-      const row = Array.isArray(data) ? data[0] as { share_name?: string | null } | undefined : null;
+      const row = Array.isArray(data) ? (data[0] as { share_name?: string | null } | undefined) : null;
       if (row?.share_name) setInviter(row.share_name);
     })();
     // Auto-redirect after a brief moment so crawlers can read meta first.
