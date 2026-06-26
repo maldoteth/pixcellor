@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet } from "lucide-react";
+import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet, Link2 } from "lucide-react";
 import CashoutDialog from "@/components/portal/CashoutDialog";
 import CompaniesHouseInput from "@/components/CompaniesHouseInput";
 import { usePortalRefresh } from "@/hooks/usePortalRefresh";
@@ -577,8 +577,9 @@ export default function AffiliateCrmPanel() {
             <DialogTitle>Your affiliate codes</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm">
-              <p>Generate a unique code to share. Buyers get <strong>10% off</strong> at checkout, and you earn <strong>5%</strong> of every deal where your code is used.</p>
+            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm space-y-1">
+              <p>Share your code <strong>or</strong> your tracked referral link. Buyers get <strong>10% off</strong>, you earn <strong>5%</strong> of every deal.</p>
+              <p className="text-xs text-muted-foreground">Smart attribution: anyone who clicks your link gets a 90-day cookie. Even if they come back later and pay without entering the code, the sale is still credited to you.</p>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/60 bg-card/30 p-3">
               <div>
@@ -628,15 +629,27 @@ export default function AffiliateCrmPanel() {
                 <p className="text-sm text-muted-foreground py-2">No codes yet — generate your first one.</p>
               ) : (
                 <div className="max-h-48 overflow-auto rounded-none border border-border/40 divide-y divide-border/40">
-                  {codes.map(c => (
-                    <div key={c.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <code className="font-mono text-base">{c.code}</code>
-                        <Badge variant="secondary" className="rounded-none">{c.buyer_discount_pct}% off · {c.affiliate_commission_pct}% to you</Badge>
+                  {codes.map(c => {
+                    const origin = (typeof window !== "undefined" ? window.location.origin : "https://pixcellor.com").replace(/\/$/, "");
+                    const link = `${origin}/?ref=${c.code}`;
+                    return (
+                      <div key={c.id} className="flex flex-col gap-2 px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-wrap items-center gap-2 min-w-0">
+                          <code className="font-mono text-base">{c.code}</code>
+                          <Badge variant="secondary" className="rounded-none">{c.buyer_discount_pct}% off · {c.affiliate_commission_pct}% to you</Badge>
+                          <span className="truncate text-xs text-muted-foreground font-mono" title={link}>{link}</span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button size="sm" variant="ghost" title="Copy code" onClick={() => copy(c.code)}>
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="sm" variant="ghost" title="Copy referral link" onClick={() => copy(link)}>
+                            <Link2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
-                      <Button size="sm" variant="ghost" onClick={() => copy(c.code)}><Copy className="h-3.5 w-3.5" /></Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -28,14 +28,16 @@ serve(async (req) => {
     if (!stripeKey || !supabaseUrl || !anonKey || !serviceRole) throw new Error("Missing env");
 
     const body = await req.json();
-    const { site_id, kind, key, lander, email: bodyEmail, display_name } = body as {
+    const { site_id, kind, key, lander, email: bodyEmail, display_name, affiliateRef } = body as {
       site_id?: string;
       kind: "subscription" | "topup";
       key: string;
       lander?: boolean;
       email?: string;
       display_name?: string;
+      affiliateRef?: string;
     };
+    const safeAffiliateRef = typeof affiliateRef === "string" && /^[A-Za-z0-9_-]{3,40}$/.test(affiliateRef) ? affiliateRef.toUpperCase() : "";
     if (!kind || !key) throw new Error("Missing parameters");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -124,6 +126,7 @@ serve(async (req) => {
       site_id: siteId,
       user_id: userId,
       kind,
+      ...(safeAffiliateRef ? { affiliate_ref: safeAffiliateRef } : {}),
     };
 
     if (kind === "subscription") {

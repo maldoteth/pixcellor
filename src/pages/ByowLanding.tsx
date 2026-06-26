@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SeoHead from "@/components/SeoHead";
 import CreateSiteWizard from "@/components/byow/CreateSiteWizard";
+import { getAffiliateRef } from "@/lib/affiliateRef";
 
 const TIERS = [
   {
@@ -110,6 +111,7 @@ export default function ByowLanding() {
           lander: true,
           email: email.trim().toLowerCase(),
           display_name: siteName.trim(),
+          affiliateRef: getAffiliateRef() ?? undefined,
         },
       });
       if (error) throw error;

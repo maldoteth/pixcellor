@@ -14,6 +14,7 @@ import {
   recordFalloff,
   updateCheckoutPendingSessionId,
 } from "@/lib/checkoutTracking";
+import { getAffiliateRef } from "@/lib/affiliateRef";
 import BuyDetailsPrompt, { type BuyerDetails, type BuyerDomainChoice, type VisionBrief as DetailsVisionBrief } from "@/components/BuyDetailsPrompt";
 
 type VisionBrief = {
@@ -121,6 +122,7 @@ export default function VisionPurchaseFlow() {
           billing: "one_time",
           clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined,
           buyer,
+          affiliateRef: getAffiliateRef() ?? undefined,
           visionBrief: finalVision && (finalVision.imageUrl || finalVision.prompt)
             ? { prompt: finalVision.prompt, imageUrl: finalVision.imageUrl ?? null }
             : undefined,

@@ -20,6 +20,7 @@ const BodySchema = z.object({
   }).passthrough().optional(),
   domain: z.string().max(500).optional(),
   domainTopUpGbp: z.union([z.number(), z.string()]).optional(),
+  affiliateRef: z.string().max(64).optional(),
   visionBrief: z.object({
     prompt: z.string().max(20000).optional(),
     imageUrl: z.string().max(4000).optional(),
@@ -74,7 +75,8 @@ serve(async (req) => {
     if (!parsedBody.success) {
       return new Response(JSON.stringify({ error: "invalid_input", fields: parsedBody.error.flatten().fieldErrors }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp, visionBrief } = parsedBody.data;
+    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp, visionBrief, affiliateRef } = parsedBody.data;
+    const safeAffiliateRef = typeof affiliateRef === "string" && /^[A-Za-z0-9_-]{3,40}$/.test(affiliateRef) ? affiliateRef.toUpperCase() : "";
 
     if (!priceId) throw new Error("Missing priceId");
     if (!ALLOWED_PRICE_IDS.has(priceId)) {
@@ -153,6 +155,7 @@ serve(async (req) => {
         domain_top_up_gbp: validDomain ? String(safeTopUpGbp) : "",
         vision_prompt: visionBrief && typeof visionBrief.prompt === "string" ? visionBrief.prompt.slice(0, 500) : "",
         vision_image_url: visionBrief && typeof visionBrief.imageUrl === "string" ? visionBrief.imageUrl.slice(0, 500) : "",
+        affiliate_ref: safeAffiliateRef,
       },
     };
 
@@ -176,6 +179,7 @@ serve(async (req) => {
           price_id: priceId,
           buyer_email: buyerEmail,
           buyer_company: buyerCompany,
+          affiliate_ref: safeAffiliateRef,
         },
       };
     }

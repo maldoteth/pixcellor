@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsDesktop } from "@/hooks/use-desktop";
 import { useHeroReady } from "@/hooks/use-hero-ready";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending, updateCheckoutPendingSessionId } from "@/lib/checkoutTracking";
+import { getAffiliateRef } from "@/lib/affiliateRef";
 import {
   Drawer,
   DrawerContent,
@@ -155,7 +156,7 @@ function PackageCardUI({ card }: { card: PackageCard }) {
       await recordFalloff({ event: "chat_checkout_started", priceId: card.priceId, mode: card.mode, packageName: card.name, billing: card.billing });
       markCheckoutPending({ packageName: card.name, billing: card.billing });
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: card.priceId, mode: card.mode, packageName: card.name, billing: card.billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined },
+        body: { priceId: card.priceId, mode: card.mode, packageName: card.name, billing: card.billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined, affiliateRef: getAffiliateRef() ?? undefined },
       });
       if (error) throw error;
       if (data?.sessionId) updateCheckoutPendingSessionId(data.sessionId);

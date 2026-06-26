@@ -9,6 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useLavaCursor } from "@/hooks/use-lava-cursor";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext, hasFalloffConsent, recordFalloff, markCheckoutPending, updateCheckoutPendingSessionId } from "@/lib/checkoutTracking";
+import { getAffiliateRef } from "@/lib/affiliateRef";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
@@ -279,7 +280,7 @@ async function handleCheckout(priceId: string, mode: string, packageName: string
     ? { visionBrief: { prompt: vision.prompt, imageUrl: vision.imageUrl ?? null } }
     : {};
   const { data, error } = await supabase.functions.invoke("create-checkout", {
-    body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined, buyer, ...domainPayload, ...visionPayload },
+    body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined, buyer, affiliateRef: getAffiliateRef() ?? undefined, ...domainPayload, ...visionPayload },
   });
   if (error || data?.error || !data?.url) {
     const message =
