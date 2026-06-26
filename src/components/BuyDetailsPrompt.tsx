@@ -1019,4 +1019,31 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
   );
 };
 
+function ReferralTrackedBadge() {
+  const [code, setCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  useEffect(() => { setCode(getAffiliateRef()); }, []);
+  if (!code) return null;
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* ignore */ }
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="mt-2 inline-flex items-center gap-2 self-start rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[11px] font-medium text-emerald-200 backdrop-blur-sm transition hover:bg-emerald-400/20"
+      title="Click to copy"
+    >
+      <CheckCircle2 className="h-3 w-3" />
+      <span>Referral tracked:</span>
+      <span className="font-mono tracking-wider text-emerald-100">{code}</span>
+      {copied ? <span className="text-emerald-300">✓</span> : <Copy className="h-3 w-3 opacity-60" />}
+    </button>
+  );
+}
+
 export default BuyDetailsPrompt;
