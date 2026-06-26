@@ -10,5 +10,9 @@ if (typeof (globalThis as unknown as { global?: unknown }).global === "undefined
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { captureAffiliateRefFromUrl } from "./lib/affiliateRef";
+
+// First-touch affiliate attribution: stamp ?ref=CODE into a 90-day cookie.
+captureAffiliateRefFromUrl();
 
 createRoot(document.getElementById("root")!).render(<App />);
