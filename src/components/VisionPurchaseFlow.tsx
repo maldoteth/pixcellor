@@ -14,6 +14,7 @@ import {
   recordFalloff,
   updateCheckoutPendingSessionId,
 } from "@/lib/checkoutTracking";
+import { getAffiliateRef } from "@/lib/affiliateRef";
 import BuyDetailsPrompt, { type BuyerDetails, type BuyerDomainChoice, type VisionBrief as DetailsVisionBrief } from "@/components/BuyDetailsPrompt";
 
 type VisionBrief = {
