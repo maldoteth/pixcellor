@@ -2,8 +2,12 @@
 // Public endpoint, no auth — referenced from <meta og:image>.
 // URL: /affiliate-share-image?code=ABCDE
 //
-// Branded for Pixcellor™: pitch-black background, white wordmark,
-// rainbow accent gradient, prominent invite code, and a QR card.
+// Branded for Pixcellor Atelier:
+//   • Near-black canvas (#0B0B10) with faint cyan/magenta pixel sparkle.
+//   • Brushed-silver wordmark plate (structural neutral).
+//   • ONE rare gold element per screen — the invite code chip.
+//   • Geist family with a single Fraunces italic emotional word.
+//   • Hairline gold-sheen rule, glass QR card.
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -14,20 +18,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const BRAND_BG = "#000000";
-const BRAND_FG = "#ffffff";
+// ── Atelier tokens (from colors_and_type.css) ───────────────────────────────
+const BG_0 = "#0B0B10";
+const BG_1 = "#111118";
+const FG_0 = "#F4F4F2";
+const FG_2 = "#9A9A95";
+const SILVER_0 = "#F4F2EE";
+const SILVER_3 = "#8E8C86";
+const SILVER_4 = "#5A5854";
+const SILVER_5 = "#2E2D2A";
+const GOLD_0 = "#FBE8B0";
+const GOLD_1 = "#ECC971";
+const GOLD_2 = "#C99B3F";
+const GOLD_3 = "#8E6620";
+const GOLD_TEXT = "#E2BC65";
+const PIX_CYAN = "#5FB8C9";
+const PIX_MAGENTA = "#C26BA0";
+
 const ORIGIN = "https://pixcellor.com";
 const WORDMARK_URL = `${ORIGIN}/pixcellor-wordmark-white.png`;
-
-// Brand rainbow accent (used across the site for highlights)
-const RAINBOW_STOPS = [
-  { o: "0%", c: "#ff3b8d" },
-  { o: "20%", c: "#ff8a3d" },
-  { o: "40%", c: "#ffd93d" },
-  { o: "60%", c: "#3dd68c" },
-  { o: "80%", c: "#3da8ff" },
-  { o: "100%", c: "#a070ff" },
-];
 
 function escapeXml(s: string) {
   return s.replace(/[<>&"']/g, (c) => ({
@@ -62,8 +71,6 @@ async function buildQrSvgPath(text: string, size: number): Promise<string> {
   return path;
 }
 
-// Fetch wordmark and inline as base64 so the SVG renders standalone in
-// every embedder (Slack/Discord/iMessage won't follow external <image href>).
 async function fetchWordmarkDataUri(): Promise<string | null> {
   try {
     const res = await fetch(WORDMARK_URL);
@@ -71,8 +78,7 @@ async function fetchWordmarkDataUri(): Promise<string | null> {
     const buf = new Uint8Array(await res.arrayBuffer());
     let bin = "";
     for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
-    const b64 = btoa(bin);
-    return `data:image/png;base64,${b64}`;
+    return `data:image/png;base64,${btoa(bin)}`;
   } catch {
     return null;
   }
@@ -88,7 +94,7 @@ function buildSvg(opts: {
 }): string {
   const W = 1200;
   const H = 630;
-  const qrPad = 18;
+  const qrPad = 16;
   const qrBoxSize = opts.qrSize + qrPad * 2;
   const qrX = W - qrBoxSize - 64;
   const qrY = H - qrBoxSize - 64;
@@ -96,78 +102,145 @@ function buildSvg(opts: {
   const code = escapeXml(opts.code);
   const url = escapeXml(opts.shareUrl.replace(/^https?:\/\//, ""));
 
-  const rainbowStops = RAINBOW_STOPS
-    .map((s) => `<stop offset="${s.o}" stop-color="${s.c}"/>`)
-    .join("");
-
-  // Wordmark — either real PNG or a clean text fallback.
-  const wordmarkH = 56;
-  const wordmarkW = 280;
+  const wordmarkH = 48;
+  const wordmarkW = 240;
   const wordmark = opts.wordmarkDataUri
     ? `<image href="${opts.wordmarkDataUri}" x="0" y="0" width="${wordmarkW}" height="${wordmarkH}" preserveAspectRatio="xMinYMid meet"/>`
-    : `<text x="0" y="42" fill="${BRAND_FG}" font-size="44" font-weight="800" letter-spacing="-1">Pixcellor<tspan font-size="22" dy="-18" dx="2">™</tspan></text>`;
+    : `<text x="0" y="36" fill="${FG_0}" font-size="36" font-weight="600" letter-spacing="-0.5">Pixcellor<tspan font-size="18" dy="-14" dx="2">™</tspan></text>`;
+
+  // Whisper pixel sparkle — six dots in spectrum colours, low opacity.
+  const sparkle = [
+    { x: 140, y: 92, c: PIX_CYAN },
+    { x: 1060, y: 130, c: PIX_MAGENTA },
+    { x: 980, y: 360, c: GOLD_1 },
+    { x: 96, y: 420, c: PIX_CYAN },
+    { x: 540, y: 80, c: PIX_MAGENTA },
+    { x: 720, y: 560, c: GOLD_0 },
+  ].map((d) => `<circle cx="${d.x}" cy="${d.y}" r="2.5" fill="${d.c}" fill-opacity="0.35"/>`).join("");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"
+     font-family="Geist, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Inter, sans-serif">
   <defs>
-    <linearGradient id="rainbow" x1="0" y1="0" x2="1" y2="0">${rainbowStops}</linearGradient>
-    <linearGradient id="rainbowDiag" x1="0" y1="0" x2="1" y2="1">${rainbowStops}</linearGradient>
-    <radialGradient id="glowL" cx="0%" cy="100%" r="80%">
-      <stop offset="0%" stop-color="#ff3b8d" stop-opacity="0.28"/>
-      <stop offset="60%" stop-color="#ff3b8d" stop-opacity="0"/>
+    <!-- Brushed silver, vertical -->
+    <linearGradient id="silverBrushed" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="${SILVER_5}"/>
+      <stop offset="14%" stop-color="#4A4844"/>
+      <stop offset="30%" stop-color="#7A7872"/>
+      <stop offset="48%" stop-color="#6E6C66"/>
+      <stop offset="64%" stop-color="#888680"/>
+      <stop offset="82%" stop-color="${SILVER_4}"/>
+      <stop offset="100%" stop-color="${SILVER_5}"/>
+    </linearGradient>
+
+    <!-- Gold conic shimmer (approximated as multi-stop linear for max compatibility) -->
+    <linearGradient id="goldShimmer" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="${GOLD_3}"/>
+      <stop offset="22%"  stop-color="${GOLD_2}"/>
+      <stop offset="48%"  stop-color="${GOLD_0}"/>
+      <stop offset="62%"  stop-color="${GOLD_1}"/>
+      <stop offset="82%"  stop-color="${GOLD_2}"/>
+      <stop offset="100%" stop-color="${GOLD_3}"/>
+    </linearGradient>
+
+    <linearGradient id="goldSheen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="${GOLD_3}" stop-opacity="0"/>
+      <stop offset="30%"  stop-color="${GOLD_2}"/>
+      <stop offset="55%"  stop-color="${GOLD_0}"/>
+      <stop offset="80%"  stop-color="${GOLD_2}"/>
+      <stop offset="100%" stop-color="${GOLD_3}" stop-opacity="0"/>
+    </linearGradient>
+
+    <radialGradient id="goldGlow" cx="85%" cy="100%" r="60%">
+      <stop offset="0%"  stop-color="${GOLD_TEXT}" stop-opacity="0.18"/>
+      <stop offset="60%" stop-color="${GOLD_TEXT}" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="glowR" cx="100%" cy="0%" r="80%">
-      <stop offset="0%" stop-color="#3da8ff" stop-opacity="0.28"/>
-      <stop offset="60%" stop-color="#3da8ff" stop-opacity="0"/>
+    <radialGradient id="cyanGlow" cx="10%" cy="0%" r="55%">
+      <stop offset="0%"  stop-color="${PIX_CYAN}" stop-opacity="0.10"/>
+      <stop offset="60%" stop-color="${PIX_CYAN}" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="codeStroke" x1="0" y1="0" x2="1" y2="0">${rainbowStops}</linearGradient>
+
+    <!-- 1px brushed grain -->
+    <pattern id="grain" width="2" height="2" patternUnits="userSpaceOnUse">
+      <rect width="2" height="1" fill="rgba(255,255,255,0.04)"/>
+    </pattern>
+
+    <!-- Glass surface for QR card -->
+    <linearGradient id="glassFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(244,244,242,0.10)"/>
+      <stop offset="100%" stop-color="rgba(244,244,242,0.02)"/>
+    </linearGradient>
   </defs>
 
-  <!-- Pitch-black brand background with subtle rainbow glow -->
-  <rect width="${W}" height="${H}" fill="${BRAND_BG}"/>
-  <rect width="${W}" height="${H}" fill="url(#glowL)"/>
-  <rect width="${W}" height="${H}" fill="url(#glowR)"/>
+  <!-- Velvet black canvas with diagonal corner glows -->
+  <rect width="${W}" height="${H}" fill="${BG_0}"/>
+  <rect width="${W}" height="${H}" fill="url(#cyanGlow)"/>
+  <rect width="${W}" height="${H}" fill="url(#goldGlow)"/>
 
-  <!-- Hairline grid -->
-  <g stroke="#ffffff" stroke-opacity="0.035">
+  <!-- 1px pixel-grid overlay -->
+  <g stroke="${FG_0}" stroke-opacity="0.03">
     ${Array.from({ length: 13 }, (_, i) => `<line x1="0" x2="${W}" y1="${(i + 1) * 48}" y2="${(i + 1) * 48}"/>`).join("")}
     ${Array.from({ length: 25 }, (_, i) => `<line y1="0" y2="${H}" x1="${(i + 1) * 48}" x2="${(i + 1) * 48}"/>`).join("")}
   </g>
 
-  <!-- Top rainbow hairline -->
-  <rect x="0" y="0" width="${W}" height="3" fill="url(#rainbow)"/>
+  <!-- Whisper pixel sparkle -->
+  ${sparkle}
 
-  <!-- Brand wordmark -->
-  <g transform="translate(64,60)">
+  <!-- Brushed-silver wordmark plate (structural neutral) -->
+  <g transform="translate(64,56)">
+    <rect x="-20" y="-16" width="${wordmarkW + 56}" height="${wordmarkH + 32}" rx="14" ry="14"
+          fill="url(#silverBrushed)"/>
+    <rect x="-20" y="-16" width="${wordmarkW + 56}" height="${wordmarkH + 32}" rx="14" ry="14"
+          fill="url(#grain)"/>
+    <rect x="-20" y="-16" width="${wordmarkW + 56}" height="${wordmarkH + 32}" rx="14" ry="14"
+          fill="none" stroke="${SILVER_0}" stroke-opacity="0.18" stroke-width="1"/>
     ${wordmark}
   </g>
 
-  <!-- Eyebrow + headline -->
-  <g transform="translate(64,210)">
-    <text x="0" y="0" fill="url(#rainbow)" font-size="22" font-weight="700" letter-spacing="6">YOU'RE INVITED</text>
-    <text x="0" y="78" fill="${BRAND_FG}" font-size="64" font-weight="800" letter-spacing="-1.5">${name}</text>
-    <text x="0" y="138" fill="${BRAND_FG}" fill-opacity="0.78" font-size="38" font-weight="500" letter-spacing="-0.5">invited you to Pixcellor™</text>
-    <text x="0" y="184" fill="${BRAND_FG}" fill-opacity="0.55" font-size="22" font-weight="500">Software · Growth · Design — 10% off your first project</text>
+  <!-- Eyebrow (pixel font feel via uppercase + mega tracking) -->
+  <g transform="translate(64,220)">
+    <text x="0" y="0" fill="${FG_2}" font-size="18" font-weight="600" letter-spacing="8"
+          font-family="'Pixelify Sans','Geist Mono',ui-monospace,monospace">AN  INVITATION</text>
+
+    <!-- Hairline gold-sheen rule (the one gold element… plus the chip — used as a single rule cluster) -->
+    <rect x="0" y="14" width="240" height="1" fill="url(#goldSheen)"/>
+
+    <!-- Headline — Geist with ONE Fraunces italic word -->
+    <text x="0" y="86" fill="${FG_0}" font-size="60" font-weight="600" letter-spacing="-1.5">${name}</text>
+    <text x="0" y="150" fill="${FG_0}" fill-opacity="0.86" font-size="40" font-weight="500" letter-spacing="-0.5">
+      <tspan>invites you to </tspan><tspan font-family="Fraunces, Georgia, serif" font-style="italic" font-weight="500">Pixcellor</tspan><tspan>™</tspan>
+    </text>
+    <text x="0" y="196" fill="${FG_2}" font-size="20" font-weight="500" letter-spacing="0.2">
+      Hand-built websites for serious operators — 10% off your first project.
+    </text>
   </g>
 
-  <!-- Invite code chip -->
+  <!-- Rare gold invite-code chip (the single gold jewel) -->
   <g transform="translate(64,470)">
-    <rect x="0" y="0" rx="16" ry="16" width="460" height="92" fill="#0a0a0a"/>
-    <rect x="0" y="0" rx="16" ry="16" width="460" height="92" fill="none" stroke="url(#codeStroke)" stroke-width="2"/>
-    <text x="24" y="32" fill="${BRAND_FG}" fill-opacity="0.55" font-size="13" font-weight="600" letter-spacing="4">INVITE CODE</text>
-    <text x="24" y="74" fill="${BRAND_FG}" font-size="40" font-weight="800" letter-spacing="8" font-family="ui-monospace,SFMono-Regular,Menlo,Monaco,monospace">${code}</text>
+    <!-- Outer 1px gold-sheen border via two layered rects -->
+    <rect x="-1.5" y="-1.5" width="463" height="95" rx="17" ry="17" fill="url(#goldShimmer)" opacity="0.95"/>
+    <rect x="0" y="0" width="460" height="92" rx="16" ry="16" fill="${BG_1}"/>
+    <rect x="0" y="0" width="460" height="92" rx="16" ry="16" fill="url(#grain)" opacity="0.5"/>
+    <text x="24" y="34" fill="${GOLD_TEXT}" font-size="12" font-weight="700" letter-spacing="6"
+          font-family="'Pixelify Sans','Geist Mono',ui-monospace,monospace">INVITE  CODE</text>
+    <text x="24" y="74" fill="url(#goldShimmer)" font-size="40" font-weight="700" letter-spacing="8"
+          font-family="'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace">${code}</text>
   </g>
 
-  <!-- QR card -->
+  <!-- Glass QR card -->
   <g transform="translate(${qrX},${qrY})">
-    <rect x="-6" y="-6" width="${qrBoxSize + 12}" height="${qrBoxSize + 12}" rx="24" ry="24" fill="url(#rainbowDiag)" opacity="0.9"/>
-    <rect x="0" y="0" width="${qrBoxSize}" height="${qrBoxSize}" rx="20" ry="20" fill="${BRAND_FG}"/>
-    <g transform="translate(${qrPad},${qrPad})" fill="${BRAND_BG}">
+    <rect x="0" y="0" width="${qrBoxSize}" height="${qrBoxSize}" rx="20" ry="20"
+          fill="url(#glassFill)" stroke="${FG_0}" stroke-opacity="0.12" stroke-width="1"/>
+    <rect x="${qrPad - 4}" y="${qrPad - 4}" width="${opts.qrSize + 8}" height="${opts.qrSize + 8}" rx="6" ry="6" fill="${SILVER_0}"/>
+    <g transform="translate(${qrPad},${qrPad})" fill="${BG_0}">
       <path d="${opts.qrPath}"/>
     </g>
   </g>
-  <text x="${qrX + qrBoxSize / 2}" y="${qrY - 18}" text-anchor="middle" fill="${BRAND_FG}" fill-opacity="0.7" font-size="14" font-weight="600" letter-spacing="3">SCAN TO JOIN</text>
-  <text x="${qrX + qrBoxSize / 2}" y="${qrY + qrBoxSize + 30}" text-anchor="middle" fill="${BRAND_FG}" fill-opacity="0.55" font-size="14">${url}</text>
+  <text x="${qrX + qrBoxSize / 2}" y="${qrY - 16}" text-anchor="middle" fill="${FG_2}"
+        font-size="12" font-weight="700" letter-spacing="6"
+        font-family="'Pixelify Sans','Geist Mono',ui-monospace,monospace">SCAN  TO  JOIN</text>
+  <text x="${qrX + qrBoxSize / 2}" y="${qrY + qrBoxSize + 30}" text-anchor="middle" fill="${FG_2}"
+        font-size="14" font-weight="500">${url}</text>
 </svg>`;
 }
 
