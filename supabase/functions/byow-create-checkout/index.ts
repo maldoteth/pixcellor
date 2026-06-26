@@ -126,6 +126,7 @@ serve(async (req) => {
       site_id: siteId,
       user_id: userId,
       kind,
+      ...(safeAffiliateRef ? { affiliate_ref: safeAffiliateRef } : {}),
     };
 
     if (kind === "subscription") {
