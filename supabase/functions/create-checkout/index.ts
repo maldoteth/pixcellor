@@ -179,6 +179,7 @@ serve(async (req) => {
           price_id: priceId,
           buyer_email: buyerEmail,
           buyer_company: buyerCompany,
+          affiliate_ref: safeAffiliateRef,
         },
       };
     }
