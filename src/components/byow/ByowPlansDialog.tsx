@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Check, Loader2 } from "lucide-react";
+import { getAffiliateRef } from "@/lib/affiliateRef";
 
 type SubOpt = { key: string; name: string; price: string; per: string; prompts: number; blurb: string; featured?: boolean };
 type TopupOpt = { key: string; name: string; price: string; per: string; prompts: number; rate: string; featured?: boolean };
