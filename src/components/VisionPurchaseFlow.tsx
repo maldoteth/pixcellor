@@ -122,6 +122,7 @@ export default function VisionPurchaseFlow() {
           billing: "one_time",
           clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined,
           buyer,
+          affiliateRef: getAffiliateRef() ?? undefined,
           visionBrief: finalVision && (finalVision.imageUrl || finalVision.prompt)
             ? { prompt: finalVision.prompt, imageUrl: finalVision.imageUrl ?? null }
             : undefined,
