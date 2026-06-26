@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Cards</title>
+<style>
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; align-items: stretch; }
+  .c { border-radius: var(--r-3); padding: 18px; border: 1px solid var(--line-2); background: var(--bg-2); box-shadow: var(--shadow-2); display: flex; flex-direction: column; gap: 10px; min-height: 160px; }
+  .c.glass-c { background: var(--glass-bg-hi); border-color: var(--glass-border); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-inner), var(--shadow-2); }
+  .c.featured { position: relative; }
+  .c.featured::before { content: ""; position: absolute; top: -1px; left: 18px; right: 18px; height: 1px; background: var(--gold-sheen); border-radius: 1px; }
+  .eb { font: var(--t-eyebrow); color: var(--fg-2); letter-spacing: var(--track-mega); text-transform: uppercase; }
+  .c h3 { font: var(--t-h3); color: var(--fg-0); margin: 0; letter-spacing: var(--track-tight); }
+  .c p { font: var(--t-body-sm); color: var(--fg-2); margin: 0; }
+  .feat-label { background: var(--gold-sheen); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Cards · solid · glass · featured</div>
+    <div class="grid">
+      <div class="c"><div class="eb">Full Works</div><h3>Turnkey site</h3><p>Modern, fast, lifetime guarantee. Ships in 7 days.</p></div>
+      <div class="c glass-c"><div class="eb">Retainer</div><h3>Your tech dept.</h3><p>We handle everything — server, SEO, updates, AEO.</p></div>
+      <div class="c featured"><div class="eb feat-label">★ Elite · featured</div><h3>Hand-built bespoke</h3><p>Operator-grade. Direct line to the studio.</p></div>
+    </div>
+  </div>
+</body>
+</html>

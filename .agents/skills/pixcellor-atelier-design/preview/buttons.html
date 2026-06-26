@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Buttons</title>
+<style>
+  .btn { font: 500 14px/1 var(--font-sans); padding: 12px 20px; border-radius: var(--r-2); border: 1px solid transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all var(--dur-base) var(--ease-out); }
+  .btn-gold { background: var(--gold-conic); color: var(--accent-on); border-color: rgba(142, 102, 32, 0.6); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(142,102,32,0.6), 0 6px 18px rgba(201,155,63,0.25); font-weight: 600; }
+  .btn-silver { background: var(--silver-brushed); color: var(--silver-0); border-color: rgba(0,0,0,0.35); box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.5), var(--shadow-1); }
+  .btn-glass { background: var(--glass-bg-hi); color: var(--fg-0); border-color: var(--glass-border-hi); backdrop-filter: var(--glass-blur-sm); box-shadow: var(--glass-inner); }
+  .btn-ghost { background: transparent; color: var(--fg-1); border-color: var(--line-2); }
+  .btn-ghost:hover { border-color: var(--line-3); color: var(--fg-0); }
+  .lbl { font: var(--t-code-sm); color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Buttons</div>
+    <div class="row" style="gap: 12px;">
+      <button class="btn btn-gold">★ Get started</button>
+      <button class="btn btn-silver">Book a call</button>
+      <button class="btn btn-glass">Learn more</button>
+      <button class="btn btn-ghost">Skip</button>
+    </div>
+    <div class="row" style="gap: 14px;">
+      <span class="lbl">gold (one per screen)</span>
+      <span class="lbl">silver (primary)</span>
+      <span class="lbl">glass</span>
+      <span class="lbl">ghost</span>
+    </div>
+  </div>
+</body>
+</html>

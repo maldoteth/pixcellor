@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Semantic</title>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .sem { border-radius: var(--r-2); border: 1px solid var(--line-2); background: var(--bg-2); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .sem .swatch { width: 100%; height: 36px; border-radius: var(--r-1); }
+  .sem .name { font: 500 13px/1 var(--font-sans); color: var(--fg-0); }
+  .sem .h { font: var(--t-code-sm); color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Semantic · system colors</div>
+    <div class="grid">
+      <div class="sem"><div class="swatch" style="background: var(--accent)"></div><div class="name">accent</div><div class="h">gold-text</div></div>
+      <div class="sem"><div class="swatch" style="background: var(--success)"></div><div class="name">success</div><div class="h">pix-lime</div></div>
+      <div class="sem"><div class="swatch" style="background: var(--warning)"></div><div class="name">warning</div><div class="h">gold-1</div></div>
+      <div class="sem"><div class="swatch" style="background: var(--danger)"></div><div class="name">danger</div><div class="h">pix-red</div></div>
+    </div>
+    <div class="hint">Info is <code style="font: var(--t-code-sm); color: var(--info);">--pix-cyan</code> · also used for focus rings.</div>
+  </div>
+</body>
+</html>

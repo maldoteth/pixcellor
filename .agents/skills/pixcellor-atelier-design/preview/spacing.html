@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Spacing</title>
+<style>
+  .scale { display: flex; align-items: flex-end; gap: 10px; height: 130px; }
+  .bar { background: var(--silver-brushed); border-radius: var(--r-1); width: 28px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; border: 1px solid var(--line-2); }
+  .bar .n { font: var(--t-code-sm); color: var(--silver-0); }
+  .lbl { font: var(--t-code-sm); color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Spacing · 8pt scale (s-0 → s-10)</div>
+    <div class="scale">
+      <div class="bar" style="height: 4px;"><span class="n"></span></div>
+      <div class="bar" style="height: 8px;"></div>
+      <div class="bar" style="height: 12px;"></div>
+      <div class="bar" style="height: 16px;"></div>
+      <div class="bar" style="height: 24px;"></div>
+      <div class="bar" style="height: 32px;"></div>
+      <div class="bar" style="height: 48px;"></div>
+      <div class="bar" style="height: 64px;"></div>
+      <div class="bar" style="height: 96px;"></div>
+      <div class="bar" style="height: 128px;"></div>
+    </div>
+    <div class="row" style="gap: 10px;">
+      <span class="lbl">s-1 4</span>
+      <span class="lbl">s-2 8</span>
+      <span class="lbl">s-3 12</span>
+      <span class="lbl">s-4 16</span>
+      <span class="lbl">s-5 24</span>
+      <span class="lbl">s-6 32</span>
+      <span class="lbl">s-7 48</span>
+      <span class="lbl">s-8 64</span>
+      <span class="lbl">s-9 96</span>
+      <span class="lbl">s-10 128</span>
+    </div>
+  </div>
+</body>
+</html>

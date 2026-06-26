@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pixcellor — 7-Day Calendar</title>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#0B0B10"/>
+  <text x="50" y="60" text-anchor="middle" font-family="serif" font-style="italic" font-size="40" font-weight="500" fill="url(#g)">7</text>
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBE8B0"/><stop offset="0.5" stop-color="#C99B3F"/><stop offset="1" stop-color="#FBE8B0"/></linearGradient></defs>
+</svg>
+</template>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Fraunces:ital,wght@1,400;1,500&family=Pixelify+Sans:wght@500;600&family=Geist+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --bg-0: #0B0B10; --bg-2: #18181F;
+    --fg-0: #F4F4F2; --fg-1: #DCDCD8; --fg-2: #9A9A95; --fg-3: #6A6A66;
+    --line-1: rgba(244,244,242,0.10); --line-2: rgba(244,244,242,0.08);
+    --gold-sheen: linear-gradient(135deg,#FBE8B0,#C99B3F 35%,#8E6620 55%,#ECC971 75%,#FBE8B0);
+    --gold-conic: conic-gradient(from 210deg at 50% 50%,#FBE8B0,#ECC971 60deg,#C99B3F 120deg,#8E6620 180deg,#C99B3F 240deg,#ECC971 300deg,#FBE8B0);
+    --p-red:#E84B5A; --p-orange:#ED8A3F; --p-yellow:#E8C46B; --p-lime:#8EC273;
+    --p-cyan:#5FB8C9; --p-blue:#5476B8; --p-violet:#8C70B8; --p-magenta:#C26BA0;
+    --silver-brushed: linear-gradient(180deg,#2E2D2A 0%,#4A4844 14%,#7A7872 30%,#6E6C66 48%,#888680 64%,#5C5A55 82%,#3A3835 100%);
+    --font-sans: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-display: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-pixel: "Pixelify Sans", ui-monospace, monospace;
+    --font-editorial: "Fraunces", "Times New Roman", serif;
+    --font-mono: "Geist Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:#000; color:var(--fg-0); font-family:var(--font-sans); -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  .frame { width:1080px; height:1350px; position:relative; overflow:hidden; background:var(--bg-0); page-break-after:always; break-after:page; margin:0 auto 40px; }
+  .head { position:absolute; top:56px; left:72px; right:72px; display:flex; justify-content:space-between; align-items:center; z-index:5; }
+  .head img { height:38px; display:block; }
+  /* day badge — silver plate pill */
+  .day-badge { display:flex; align-items:center; gap:14px; padding:11px 20px 11px 14px; border-radius:999px;
+    background:var(--silver-brushed); border:1px solid rgba(0,0,0,0.5);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.5); }
+  .day-badge .dnum { width:36px; height:36px; border-radius:50%; background:#0B0B10; display:flex; align-items:center; justify-content:center;
+    font:600 18px/1 var(--font-pixel); color:#F4F2EE; }
+  .day-badge .dtxt { font:500 19px/1 var(--font-pixel); letter-spacing:0.18em; text-transform:uppercase; color:#16140F; }
+  .foot { position:absolute; bottom:50px; left:72px; right:72px; display:flex; justify-content:space-between; align-items:center;
+    font:500 20px/1 var(--font-pixel); letter-spacing:0.08em; color:var(--fg-3); }
+  em.gold { font:500 italic 1em/1 var(--font-editorial); font-style:italic; background:var(--gold-sheen); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
+  .gold-text { background:var(--gold-sheen); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
+  .gold-rule { background:var(--gold-sheen); border-radius:1px; }
+  .pix-row { display:flex; gap:7px; }
+  .pix-row span { display:inline-block; width:11px; height:11px; opacity:0.7; }
+  .c0{background:var(--p-red)} .c1{background:var(--p-orange)} .c2{background:var(--p-yellow)} .c3{background:var(--p-lime)}
+  .c4{background:var(--p-cyan)} .c5{background:var(--p-blue)} .c6{background:var(--p-violet)} .c7{background:var(--p-magenta)}
+  .eyebrow { font:500 25px/1 var(--font-pixel); letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-2); }
+  .glass { background:rgba(244,244,242,0.05); border:1px solid rgba(244,244,242,0.12); backdrop-filter:blur(32px) saturate(160%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 18px 40px rgba(0,0,0,0.5); }
+</style>
+</head>
+<body>
+<section class="frame">
+  <div class="head">
+    <img src="assets/logo-wordmark-white.png" alt="Pixcellor">
+    <div class="day-badge"><span class="dnum">3</span><span class="dtxt">Wed</span></div>
+  </div>
+  <div style="position:absolute; top:260px; left:72px; display:flex; align-items:center; gap:27px;">
+    <span class="gold-rule" style="width:63px; height:2px;"></span>
+    <span class="eyebrow">The team behind the studio</span>
+  </div>
+  <div style="position:absolute; top:360px; left:72px; right:72px; display:flex; align-items:baseline; gap:10px;">
+    <span class="gold-text" style="font:600 110px/0.85 var(--font-display); align-self:flex-start; margin-top:40px;">$</span>
+    <span class="gold-text" style="font:600 360px/0.82 var(--font-display); letter-spacing:-0.05em; filter:drop-shadow(0 36px 60px rgba(201,155,63,0.25));">500</span>
+    <span style="font:600 130px/1 var(--font-display); color:var(--fg-2); align-self:center;">M+</span>
+  </div>
+  <div style="position:absolute; top:780px; left:72px; right:72px;">
+    <div style="font:600 48px/1.15 var(--font-display); letter-spacing:-0.02em; color:var(--fg-0);">In market cap, launched.</div>
+    <p style="margin:18px 0 0; font:400 30px/1.5 var(--font-sans); color:var(--fg-2); max-width:880px;">
+      A team that has collectively shipped multi-seven-figure GTM and Q1 revenue projects. You're not hiring a freelancer — you're hiring a track record.
+    </p>
+  </div>
+  <div class="pix-row" style="position:absolute; bottom:135px; left:72px;">
+    <span class="c0"></span><span class="c1"></span><span class="c2"></span><span class="c3"></span><span class="c4"></span><span class="c5"></span><span class="c6"></span><span class="c7"></span>
+  </div>
+  <div class="foot"><span>Day 3 · Track record</span><span>✕ proof</span></div>
+</section>
+</body>
+</html>

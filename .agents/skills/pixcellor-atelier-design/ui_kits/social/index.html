@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<title>Atelier — Social UI Kit</title>
+<style>
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(1400px 800px at 80% 0%, rgba(226, 188, 101, 0.08), transparent 65%),
+      radial-gradient(1000px 700px at 10% 90%, rgba(95, 184, 201, 0.05), transparent 65%),
+      var(--bg-0);
+    color: var(--fg-0);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    padding: 72px 80px 96px;
+    box-sizing: border-box;
+  }
+  header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 56px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--line-2);
+    position: relative;
+  }
+  header::after {
+    content: ""; position: absolute; bottom: -1px; left: 0;
+    width: 200px; height: 1px;
+    background: var(--gold-sheen);
+  }
+  header .left img { height: 32px; display: block; }
+  header .left .eb {
+    font: var(--t-eyebrow); letter-spacing: var(--track-mega); text-transform: uppercase;
+    color: var(--fg-2);
+    margin-top: 18px;
+  }
+  header h1 {
+    margin: 12px 0 0;
+    font: 600 56px/1.0 var(--font-display);
+    letter-spacing: -0.02em;
+    color: var(--fg-0);
+  }
+  header h1 em {
+    font: 500 italic 56px/1.0 var(--font-editorial);
+    background: var(--gold-sheen);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header .right {
+    text-align: right;
+    font: 500 13px/1.5 var(--font-sans);
+    color: var(--fg-3);
+    max-width: 320px;
+  }
+  header .right strong { color: var(--accent); font-weight: 500; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px 28px;
+  }
+
+  .post-card {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .post-frame {
+    width: 100%;
+    aspect-ratio: 1080 / 1350;
+    border-radius: var(--r-3);
+    overflow: hidden;
+    border: 1px solid var(--line-2);
+    box-shadow: var(--shadow-3);
+    background: var(--bg-0);
+    position: relative;
+  }
+  .post-frame iframe {
+    width: 1080px; height: 1350px;
+    border: 0;
+    transform-origin: top left;
+    /* scale set inline based on container width */
+  }
+  .post-meta { display: flex; align-items: baseline; gap: 14px; padding: 0 2px; }
+  .post-meta .num {
+    font: 500 11px/1 var(--font-pixel);
+    color: var(--fg-3);
+    letter-spacing: var(--track-mega);
+  }
+  .post-meta .name {
+    font: 500 17px/1.2 var(--font-display);
+    letter-spacing: -0.01em;
+    color: var(--fg-0);
+  }
+  .post-meta .gold-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold-conic);
+    margin-left: auto;
+  }
+  .post-desc {
+    font: 400 14px/1.45 var(--font-sans);
+    color: var(--fg-2);
+    padding: 0 2px;
+  }
+
+  .legend {
+    margin-top: 72px;
+    padding: 36px 40px;
+    border-radius: var(--r-3);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-inner), var(--shadow-2);
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 32px;
+  }
+  .legend h4 {
+    margin: 0 0 12px;
+    font: 600 12px/1 var(--font-sans);
+    letter-spacing: var(--track-mega);
+    text-transform: uppercase;
+    color: var(--fg-2);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .legend h4::before { content: "▦"; font-family: var(--font-pixel); color: var(--accent); }
+  .legend p {
+    font: 400 14px/1.55 var(--font-sans);
+    color: var(--fg-1);
+    margin: 0;
+  }
+  .legend ul { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .legend li {
+    font: 400 14px/1.4 var(--font-sans);
+    color: var(--fg-1);
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .legend li::before {
+    content: "✕"; font-family: var(--font-pixel); color: var(--accent);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="left">
+      <img src="../../assets/logo-wordmark-white.png" alt="Pixcellor">
+      <div class="eb">Atelier · Social UI kit · v0.1</div>
+      <h1>Content posts for <em>operators</em>.</h1>
+    </div>
+    <div class="right">
+      Five 1080×1350 templates. Brushed silver, rare gold, whisper pixels, signature glass.
+      Built on <strong>Pixcellor Atelier</strong> tokens.
+    </div>
+  </header>
+
+  <div class="grid">
+    <a class="post-card" href="post-hero.html" target="_blank" style="text-decoration: none; color: inherit;">
+      <div class="post-frame"><iframe src="post-hero.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="post-meta">
+        <span class="num">01</span><span class="name">Hero claim</span><span class="gold-dot"></span>
+      </div>
+      <p class="post-desc">Big display headline, italic editorial accent on the operative word, silver-plated phone mockup, gold CTA.</p>
+    </a>
+
+    <a class="post-card" href="post-price.html" target="_blank" style="text-decoration: none; color: inherit;">
+      <div class="post-frame"><iframe src="post-price.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="post-meta">
+        <span class="num">02</span><span class="name">Pricing</span><span class="gold-dot"></span>
+      </div>
+      <p class="post-desc">RRP strikethrough above a giant gold-conic price. Glass inclusion card below. Silver CTA.</p>
+    </a>
+
+    <a class="post-card" href="post-services.html" target="_blank" style="text-decoration: none; color: inherit;">
+      <div class="post-frame"><iframe src="post-services.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="post-meta">
+        <span class="num">03</span><span class="name">Services grid</span><span class="gold-dot"></span>
+      </div>
+      <p class="post-desc">Four glass tiles with silver-plate icons. One featured tile flips to gold — never more than one.</p>
+    </a>
+
+    <a class="post-card" href="post-quote.html" target="_blank" style="text-decoration: none; color: inherit;">
+      <div class="post-frame"><iframe src="post-quote.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="post-meta">
+        <span class="num">04</span><span class="name">Editorial quote</span><span class="gold-dot"></span>
+      </div>
+      <p class="post-desc">Studio note. Oversized gold quotation mark, single italic word, gold rule under the attribution.</p>
+    </a>
+
+    <a class="post-card" href="post-carousel.html" target="_blank" style="text-decoration: none; color: inherit;">
+      <div class="post-frame"><iframe src="post-carousel.html" scrolling="no" loading="lazy"></iframe></div>
+      <div class="post-meta">
+        <span class="num">05</span><span class="name">Carousel page</span><span class="gold-dot"></span>
+      </div>
+      <p class="post-desc">Numbered tip page. Pixel "02 / 05" numerals in gold, dot pager, glass swipe pill.</p>
+    </a>
+  </div>
+
+  <div class="legend">
+    <div>
+      <h4>The atelier rules</h4>
+      <p>Silver is the structure. Gold is the jewel — one per post, never two. Pixels whisper at the edges. Glass cards hover. Em-dashes set the rhythm — never commas.</p>
+    </div>
+    <div>
+      <h4>Type stack</h4>
+      <ul>
+        <li>Geist — display + UI</li>
+        <li>Fraunces italic — one word</li>
+        <li>Pixelify Sans — eyebrows</li>
+        <li>Geist Mono — IDs, prices</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Surfaces</h4>
+      <ul>
+        <li>.glass — default card</li>
+        <li>.silver-plate — premium badge</li>
+        <li>.gold-shimmer — THE accent</li>
+        <li>.pixel-sparkle — ambient</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Scale iframes to fit their container
+    function fit() {
+      document.querySelectorAll('.post-frame').forEach(frame => {
+        const iframe = frame.querySelector('iframe');
+        const w = frame.clientWidth;
+        const scale = w / 1080;
+        iframe.style.transform = `scale(${scale})`;
+        iframe.style.pointerEvents = 'none';
+      });
+    }
+    window.addEventListener('load', fit);
+    window.addEventListener('resize', fit);
+    fit();
+  </script>
+</body>
+</html>

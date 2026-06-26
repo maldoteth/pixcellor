@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Foregrounds</title>
+<style>
+  .row-fg { display: grid; grid-template-columns: 80px 1fr 120px; align-items: center; gap: 14px; padding: 6px 0; border-bottom: 1px solid var(--line-1); }
+  .row-fg:last-child { border-bottom: 0; }
+  .chip { width: 80px; height: 28px; border-radius: var(--r-1); border: 1px solid var(--line-2); }
+  .label-fg { font: var(--t-body-sm); }
+  .hex { font: var(--t-code-sm); color: var(--fg-3); text-align: right; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Foregrounds · Text scale</div>
+    <div>
+      <div class="row-fg"><div class="chip" style="background: var(--fg-0)"></div><div class="label-fg" style="color: var(--fg-0);">fg-0 · primary · titles, logos</div><div class="hex">#F4F4F2</div></div>
+      <div class="row-fg"><div class="chip" style="background: var(--fg-1)"></div><div class="label-fg" style="color: var(--fg-1);">fg-1 · body</div><div class="hex">#DCDCD8</div></div>
+      <div class="row-fg"><div class="chip" style="background: var(--fg-2)"></div><div class="label-fg" style="color: var(--fg-2);">fg-2 · secondary, labels</div><div class="hex">#9A9A95</div></div>
+      <div class="row-fg"><div class="chip" style="background: var(--fg-3)"></div><div class="label-fg" style="color: var(--fg-3);">fg-3 · tertiary, metadata</div><div class="hex">#6A6A66</div></div>
+      <div class="row-fg"><div class="chip" style="background: var(--fg-4)"></div><div class="label-fg" style="color: var(--fg-4);">fg-4 · disabled, dividers</div><div class="hex">#3A3A38</div></div>
+    </div>
+  </div>
+</body>
+</html>

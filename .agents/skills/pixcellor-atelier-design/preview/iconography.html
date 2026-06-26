@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<title>Iconography</title>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; }
+  .icon-cell { aspect-ratio: 1/1; border-radius: var(--r-2); border: 1px solid var(--line-2); background: var(--bg-2); display: flex; align-items: center; justify-content: center; color: var(--fg-1); }
+  .icon-cell.gold { background: var(--gold-conic); border-color: rgba(142,102,32,0.6); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); color: var(--accent-on); }
+  .icon-cell svg { width: 22px; height: 22px; stroke-width: 1.6; }
+  .pix-row { display: flex; gap: 14px; align-items: center; }
+  .pm { font: 600 26px/1 var(--font-pixel); color: var(--fg-1); }
+  .lbl { font: var(--t-code-sm); color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="spread">
+      <span class="tag">Iconography · Lucide 1.5px + pixel marks</span>
+      <span class="meta">+ rare gold treatment</span>
+    </div>
+    <div class="grid">
+      <div class="icon-cell"><i data-lucide="zap"></i></div>
+      <div class="icon-cell"><i data-lucide="layers"></i></div>
+      <div class="icon-cell"><i data-lucide="code-2"></i></div>
+      <div class="icon-cell"><i data-lucide="globe"></i></div>
+      <div class="icon-cell"><i data-lucide="cpu"></i></div>
+      <div class="icon-cell"><i data-lucide="sparkles"></i></div>
+      <div class="icon-cell"><i data-lucide="lock"></i></div>
+      <div class="icon-cell gold"><i data-lucide="award"></i></div>
+    </div>
+    <div class="pix-row">
+      <span class="pm">▦</span><span class="pm">▮</span><span class="pm">✕</span><span class="pm">✦</span><span class="pm">●</span>
+      <span class="lbl">— Pixel glyphs in --font-pixel · never emoji</span>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

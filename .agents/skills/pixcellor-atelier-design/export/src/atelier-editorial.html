@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Atelier — Editorial Posts</title>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#0B0B10"/>
+  <text x="50" y="48" text-anchor="middle" font-family="serif" font-style="italic"
+        font-size="44" font-weight="500"
+        fill="url(#g)">Æ</text>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FBE8B0"/>
+      <stop offset="0.5" stop-color="#C99B3F"/>
+      <stop offset="1" stop-color="#FBE8B0"/>
+    </linearGradient>
+  </defs>
+</svg>
+</template>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Fraunces:ital,wght@1,400;1,500&family=Pixelify+Sans:wght@500;600&family=Geist+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --bg-0: #0B0B10;
+    --fg-0: #F4F4F2;
+    --fg-1: #DCDCD8;
+    --fg-2: #9A9A95;
+    --fg-3: #6A6A66;
+    --line-1: rgba(244,244,242,0.10);
+    --line-2: rgba(244,244,242,0.08);
+    --gold-1: #FBE8B0;
+    --gold-2: #C99B3F;
+    --gold-3: #8E6620;
+    --gold-sheen: linear-gradient(135deg,#FBE8B0,#C99B3F 35%,#8E6620 55%,#ECC971 75%,#FBE8B0);
+    --p-red:#E84B5A; --p-orange:#ED8A3F; --p-yellow:#E8C46B; --p-lime:#8EC273;
+    --p-cyan:#5FB8C9; --p-blue:#5476B8; --p-violet:#8C70B8; --p-magenta:#C26BA0;
+    --silver-brushed: linear-gradient(180deg,#2E2D2A 0%,#4A4844 14%,#7A7872 30%,#6E6C66 48%,#888680 64%,#5C5A55 82%,#3A3835 100%);
+    --font-sans: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-display: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-pixel: "Pixelify Sans", ui-monospace, monospace;
+    --font-editorial: "Fraunces", "Times New Roman", serif;
+    --font-mono: "Geist Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: #000;
+    color: var(--fg-0); font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .frame {
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden;
+    background: var(--bg-0);
+    page-break-after: always;
+    break-after: page;
+    margin: 0 auto 40px;
+  }
+  .head {
+    position: absolute; top: 56px; left: 72px; right: 72px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .head img { height: 40px; display: block; }
+  .head .meta {
+    font: 500 20px/1 var(--font-pixel);
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-2);
+  }
+  .foot {
+    position: absolute; bottom: 50px; left: 72px; right: 72px;
+    display: flex; justify-content: space-between; align-items: center;
+    font: 500 20px/1 var(--font-pixel); letter-spacing: 0.08em;
+    color: var(--fg-3);
+  }
+  em.gold {
+    font: 500 italic 1em/1 var(--font-editorial);
+    font-style: italic;
+    background: var(--gold-sheen);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .gold-text {
+    background: var(--gold-sheen);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .gold-rule { background: var(--gold-sheen); border-radius: 1px; }
+  .pix-row { display: flex; gap: 7px; }
+  .pix-row span { display: inline-block; width: 11px; height: 11px; opacity: 0.7; }
+  .pix-row .c0 { background: var(--p-red); }
+  .pix-row .c1 { background: var(--p-orange); }
+  .pix-row .c2 { background: var(--p-yellow); }
+  .pix-row .c3 { background: var(--p-lime); }
+  .pix-row .c4 { background: var(--p-cyan); }
+  .pix-row .c5 { background: var(--p-blue); }
+  .pix-row .c6 { background: var(--p-violet); }
+  .pix-row .c7 { background: var(--p-magenta); }
+</style>
+</head>
+<body>
+
+<!-- ====== E1 · MANIFESTO ====== -->
+<section class="frame">
+  <div class="head">
+    <img src="assets/logo-wordmark-white.png" alt="Pixcellor">
+    <span class="meta">★ Studio notes · 022</span>
+  </div>
+  <div style="position:absolute; top:198px; left:72px; font:600 80px/0.6 var(--font-editorial); font-style:italic;" class="gold-text">“</div>
+  <h2 style="position:absolute; top:378px; left:72px; right:72px; margin:0; font:600 86px/1.05 var(--font-display); letter-spacing:-0.025em; color:var(--fg-0);">
+    We don't optimise<br>for engagement.<br>We optimise for <em class="gold">shipped</em>.
+  </h2>
+  <div class="gold-rule" style="position:absolute; top:945px; left:72px; width:135px; height:2px;"></div>
+  <div style="position:absolute; top:981px; left:72px;">
+    <div style="font:500 30px/1.2 var(--font-sans); color:var(--fg-0);">The studio manifesto</div>
+    <div style="font:500 20px/1 var(--font-pixel); letter-spacing:0.18em; text-transform:uppercase; color:var(--fg-2); margin-top:14px;">
+      From the atelier · vol. 02
+    </div>
+  </div>
+  <div class="pix-row" style="position:absolute; bottom:135px; left:72px;">
+    <span class="c0"></span><span class="c1"></span><span class="c2"></span><span class="c3"></span>
+    <span class="c4"></span><span class="c5"></span><span class="c6"></span><span class="c7"></span>
+  </div>
+  <div class="foot"><span>E1 · Manifesto</span><span>✕</span></div>
+</section>
+
+<!-- ====== E2 · STAT ====== -->
+<section class="frame">
+  <div class="head">
+    <img src="assets/logo-wordmark-white.png" alt="Pixcellor">
+    <span class="meta">▦ Build · benchmark</span>
+  </div>
+  <div style="position:absolute; top:225px; left:72px; display:flex; align-items:center; gap:27px; font:500 25px/1 var(--font-pixel); letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-2);">
+    <span class="gold-rule" style="width:63px; height:2px;"></span>
+    Every Atelier build
+  </div>
+  <div style="position:absolute; top:338px; left:72px; right:72px; display:flex; align-items:baseline; gap:14px;">
+    <span class="gold-text" style="font:600 520px/0.85 var(--font-display); letter-spacing:-0.05em; filter: drop-shadow(0 36px 60px rgba(201,155,63,0.25));">0.8</span>
+    <span style="font:600 180px/1 var(--font-display); color:var(--fg-2);">s</span>
+    <span style="width:9px; height:9px; background:var(--p-cyan); box-shadow:0 0 24px var(--p-cyan); margin-left:14px; align-self:center;"></span>
+  </div>
+  <div style="position:absolute; top:900px; left:72px; right:72px;">
+    <div style="font:600 40px/1.2 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0);">
+      LCP target. Hit, or we don't ship.
+    </div>
+    <p style="margin:18px 0 0; font:400 29px/1.5 var(--font-sans); color:var(--fg-2); max-width:855px;">
+      Largest contentful paint under 800&thinsp;ms — measured on a mid-tier device over 3G. No exceptions.
+    </p>
+  </div>
+  <div class="pix-row" style="position:absolute; bottom:135px; left:72px;">
+    <span class="c0"></span><span class="c1"></span><span class="c2"></span><span class="c3"></span>
+    <span class="c4"></span><span class="c5"></span><span class="c6"></span><span class="c7"></span>
+  </div>
+  <div class="foot"><span>E2 · Stat</span><span>✕ 0.8s</span></div>
+</section>
+
+<!-- ====== E3 · THEN / NOW ====== -->
+<section class="frame">
+  <div class="head">
+    <img src="assets/logo-wordmark-white.png" alt="Pixcellor">
+    <span class="meta">★ The studio · cadence</span>
+  </div>
+  <div style="position:absolute; top:198px; left:72px; font:500 25px/1 var(--font-pixel); letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-2);">
+    Then &nbsp;·&nbsp; Now
+  </div>
+  <!-- Then -->
+  <div style="position:absolute; top:338px; left:72px; right:72px; padding-bottom:59px; border-bottom:1px solid var(--line-1);">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; gap:27px;">
+      <em style="font:500 italic 54px/1 var(--font-editorial); color:var(--fg-3);">Then</em>
+      <span style="font:500 20px/1 var(--font-pixel); letter-spacing:0.18em; text-transform:uppercase; color:var(--fg-3);">2019 · agency era</span>
+    </div>
+    <div style="font:600 135px/1 var(--font-display); letter-spacing:-0.025em; color:var(--fg-2); margin-top:18px;">
+      6 weeks<span style="color:var(--fg-3);"> to launch.</span>
+    </div>
+    <div style="display:flex; gap:7px; margin-top:32px;">
+      <!-- 24 grey blocks -->
+      <span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span><span style="flex:1; height:9px; background:rgba(244,244,242,0.10);"></span>
+    </div>
+  </div>
+  <!-- Now -->
+  <div style="position:absolute; top:765px; left:72px; right:72px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; gap:27px;">
+      <em class="gold" style="font:500 italic 54px/1 var(--font-editorial);">Now</em>
+      <span style="font:500 20px/1 var(--font-pixel); letter-spacing:0.18em; text-transform:uppercase; color:var(--fg-2);">2026 · atelier</span>
+    </div>
+    <div style="font:600 135px/1 var(--font-display); letter-spacing:-0.025em; color:var(--fg-0); margin-top:18px;">
+      7 days<span style="color:var(--fg-2);"> to ship.</span>
+    </div>
+    <!-- spectrum bar 24 cells repeating 8 colors x 3 -->
+    <div style="display:flex; gap:7px; margin-top:32px;">
+      <span style="flex:1; height:9px; background:var(--p-red); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-orange); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-yellow); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-lime); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-cyan); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-blue); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-violet); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-magenta); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-red); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-orange); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-yellow); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-lime); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-cyan); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-blue); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-violet); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-magenta); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-red); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-orange); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-yellow); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-lime); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-cyan); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-blue); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-violet); opacity:0.85;"></span><span style="flex:1; height:9px; background:var(--p-magenta); opacity:0.85;"></span>
+    </div>
+  </div>
+  <div class="foot"><span>E3 · Then / Now</span><span>✕ 1/9 the time</span></div>
+</section>
+
+<!-- ====== E4 · TESTIMONIAL ====== -->
+<section class="frame">
+  <div class="head">
+    <img src="assets/logo-wordmark-white.png" alt="Pixcellor">
+    <span class="meta">★ Client note · 003</span>
+  </div>
+  <div class="gold-text" style="position:absolute; top:248px; left:72px; font:600 144px/0.6 var(--font-editorial); font-style:italic; opacity:0.9;">“</div>
+  <p style="position:absolute; top:383px; left:72px; right:72px; margin:0; font:500 58px/1.3 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0);">
+    They quoted £500. The site that came back<br>
+    was <em class="gold">better</em> than the £18&thinsp;000 one<br>
+    we'd been quoted elsewhere.
+  </p>
+  <div style="position:absolute; bottom:225px; left:72px; right:72px; display:flex; align-items:center; gap:32px;">
+    <div style="width:108px; height:108px; border-radius:27px; background:var(--silver-brushed); border:1px solid rgba(0,0,0,0.5); box-shadow: inset 0 2px 0 rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font:600 40px/1 var(--font-pixel); color:#F4F2EE;">R</div>
+    <div style="flex:1;">
+      <div style="font:600 32px/1.2 var(--font-sans); color:var(--fg-0);">Rohit — founder, DeHub</div>
+      <div style="display:flex; align-items:center; gap:18px; margin-top:14px;">
+        <span style="width:9px; height:9px; background:var(--p-red);"></span>
+        <span style="width:9px; height:9px; background:var(--p-lime);"></span>
+        <span style="width:9px; height:9px; background:var(--p-violet);"></span>
+        <span style="font:500 20px/1 var(--font-pixel); letter-spacing:0.18em; text-transform:uppercase; color:var(--fg-3); margin-left:9px;">
+          Verified · 14 Aug
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>E4 · Testimonial</span><span>✕</span></div>
+</section>
+
+<!-- ====== E5 · VOLUME COVER ====== -->
+<section class="frame">
+  <div class="head">
+    <img src="assets/logo-wordmark-white.png" alt="Pixcellor">
+    <span class="meta">★ The atelier · catalogue</span>
+  </div>
+  <div style="position:absolute; top:261px; left:72px;">
+    <div style="font:500 25px/1 var(--font-pixel); letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-2);">
+      A catalogue of work
+    </div>
+    <div style="margin-top:40px; font:600 450px/0.85 var(--font-display); letter-spacing:-0.05em; color:var(--fg-0);">Vol.</div>
+    <div class="gold-text" style="margin-top:-22px; font:600 450px/0.85 var(--font-display); letter-spacing:-0.05em; filter: drop-shadow(0 36px 60px rgba(201,155,63,0.2));">02</div>
+  </div>
+  <div style="position:absolute; bottom:200px; left:72px; right:72px;">
+    <div style="height:2px; background: linear-gradient(90deg,#FBE8B0,#C99B3F,#8E6620,transparent); margin-bottom:36px;"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font:600 30px/1.2 var(--font-display); color:var(--fg-0);">Twenty-six builds, one studio</div>
+        <div style="font:500 20px/1 var(--font-pixel); letter-spacing:0.18em; text-transform:uppercase; color:var(--fg-3); margin-top:14px;">2025–2026 · Pixcellor</div>
+      </div>
+      <div class="pix-row" style="opacity:0.6;">
+        <span class="c0"></span><span class="c1"></span><span class="c2"></span><span class="c3"></span>
+        <span class="c4"></span><span class="c5"></span><span class="c6"></span><span class="c7"></span>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>E5 · Volume</span><span>✕ cover</span></div>
+</section>
+
+<!-- ====== E6 · RULES ====== -->
+<section class="frame">
+  <div class="head">
+    <img src="assets/logo-wordmark-white.png" alt="Pixcellor">
+    <span class="meta">★ The atelier · rules</span>
+  </div>
+  <h2 style="position:absolute; top:198px; left:72px; right:72px; margin:0; font:600 86px/1.05 var(--font-display); letter-spacing:-0.025em; color:var(--fg-0);">
+    Five things<br>we <em class="gold">won't</em> do.
+  </h2>
+  <div style="position:absolute; top:495px; left:72px; right:72px;">
+    <div style="display:flex; align-items:center; gap:40px; padding:32px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:600 25px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3); width:72px;">01</span>
+      <span style="width:14px; height:14px; background:var(--p-orange); box-shadow:0 0 18px rgba(237,138,63,0.4);"></span>
+      <span style="font:500 45px/1.1 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0); flex:1;">We won't template.</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:40px; padding:32px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:600 25px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3); width:72px;">02</span>
+      <span style="width:14px; height:14px; background:var(--p-yellow); box-shadow:0 0 18px rgba(232,196,107,0.4);"></span>
+      <span style="font:500 45px/1.1 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0); flex:1;">We won't outsource.</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:40px; padding:32px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:600 25px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3); width:72px;">03</span>
+      <span style="width:14px; height:14px; background:var(--p-lime); box-shadow:0 0 18px rgba(142,194,115,0.4);"></span>
+      <span style="font:500 45px/1.1 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0); flex:1;">We won't ghost.</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:40px; padding:32px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:600 25px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3); width:72px;">04</span>
+      <span style="width:14px; height:14px; background:var(--p-cyan); box-shadow:0 0 18px rgba(95,184,201,0.4);"></span>
+      <span style="font:500 45px/1.1 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0); flex:1;">We won't pad timelines.</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:40px; padding:32px 0;">
+      <span style="font:600 25px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3); width:72px;">05</span>
+      <span style="width:14px; height:14px; background:var(--p-blue); box-shadow:0 0 18px rgba(84,118,184,0.4);"></span>
+      <span style="font:500 45px/1.1 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0); flex:1;">We won't ship slow.</span>
+    </div>
+  </div>
+  <div class="foot"><span>E6 · Rules</span><span>✕ five</span></div>
+</section>
+
+<!-- ====== E7 · CURSOR ====== -->
+<section class="frame">
+  <div class="head">
+    <img src="assets/logo-wordmark-white.png" alt="Pixcellor">
+    <span class="meta">★ Live from the studio</span>
+  </div>
+  <div style="position:absolute; top:383px; left:72px; right:72px;">
+    <div style="font:500 25px/1 var(--font-pixel); letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-2); margin-bottom:54px;">
+      Currently shipping —
+    </div>
+    <h1 style="margin:0; font:600 126px/1.0 var(--font-display); letter-spacing:-0.03em; color:var(--fg-0); display:inline;">
+      We make <em class="gold">websites</em>
+    </h1>
+    <span style="display:inline-block; width:18px; height:126px; margin-left:14px; vertical-align:-18px; background:var(--p-cyan); box-shadow:0 0 32px rgba(95,184,201,0.7);"></span>
+  </div>
+  <div style="position:absolute; bottom:293px; left:72px; right:72px;">
+    <div style="height:2px; background: var(--line-1);"></div>
+    <div style="display:flex; justify-content:space-between; margin-top:36px; align-items:center;">
+      <span style="font:500 27px/1.2 var(--font-sans); color:var(--fg-1);">3 builds shipping this week.</span>
+      <div style="display:flex; gap:9px;">
+        <span style="width:14px; height:14px; background:var(--p-lime);"></span>
+        <span style="width:14px; height:14px; background:var(--p-lime);"></span>
+        <span style="width:14px; height:14px; background:var(--p-lime);"></span>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>E7 · Cursor</span><span>✕ live</span></div>
+</section>
+
+<!-- ====== E8 · INDEX ====== -->
+<section class="frame">
+  <div class="head">
+    <img src="assets/logo-wordmark-white.png" alt="Pixcellor">
+    <span class="meta">★ Vol. 02 · index</span>
+  </div>
+  <div style="position:absolute; top:248px; left:72px; right:72px;">
+    <div style="font:500 25px/1 var(--font-pixel); letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-2);">
+      Inside this volume
+    </div>
+    <h2 style="margin:36px 0 0; font:600 86px/1.0 var(--font-display); letter-spacing:-0.025em; color:var(--fg-0);">
+      <em class="gold">Six</em> chapters.
+    </h2>
+  </div>
+  <div style="position:absolute; top:563px; left:72px; right:72px;">
+    <div style="display:grid; grid-template-columns:auto 28px 1fr auto; align-items:center; gap:32px; padding:27px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:500 22px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3);">01</span>
+      <span style="width:9px; height:9px; background:var(--p-red);"></span>
+      <span style="font:500 36px/1.2 var(--font-sans); color:var(--fg-0);">What we build</span>
+      <span style="font:500 25px/1 var(--font-mono); color:var(--fg-3);">002</span>
+    </div>
+    <div style="display:grid; grid-template-columns:auto 28px 1fr auto; align-items:center; gap:32px; padding:27px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:500 22px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3);">02</span>
+      <span style="width:9px; height:9px; background:var(--p-orange);"></span>
+      <span style="font:500 36px/1.2 var(--font-sans); color:var(--fg-0);">The studio cadence</span>
+      <span style="font:500 25px/1 var(--font-mono); color:var(--fg-3);">008</span>
+    </div>
+    <div style="display:grid; grid-template-columns:auto 28px 1fr auto; align-items:center; gap:32px; padding:27px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:500 22px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3);">03</span>
+      <span style="width:9px; height:9px; background:var(--p-yellow);"></span>
+      <span style="font:500 36px/1.2 var(--font-sans); color:var(--fg-0);">Pricing, plainly</span>
+      <span style="font:500 25px/1 var(--font-mono); color:var(--fg-3);">014</span>
+    </div>
+    <div style="display:grid; grid-template-columns:auto 28px 1fr auto; align-items:center; gap:32px; padding:27px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:500 22px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3);">04</span>
+      <span style="width:9px; height:9px; background:var(--p-lime);"></span>
+      <span style="font:500 36px/1.2 var(--font-sans); color:var(--fg-0);">Selected work</span>
+      <span style="font:500 25px/1 var(--font-mono); color:var(--fg-3);">022</span>
+    </div>
+    <div style="display:grid; grid-template-columns:auto 28px 1fr auto; align-items:center; gap:32px; padding:27px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:500 22px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3);">05</span>
+      <span style="width:9px; height:9px; background:var(--p-cyan);"></span>
+      <span style="font:500 36px/1.2 var(--font-sans); color:var(--fg-0);">Letters from clients</span>
+      <span style="font:500 25px/1 var(--font-mono); color:var(--fg-3);">036</span>
+    </div>
+    <div style="display:grid; grid-template-columns:auto 28px 1fr auto; align-items:center; gap:32px; padding:27px 0;">
+      <span style="font:500 22px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3);">06</span>
+      <span style="width:9px; height:9px; background:var(--p-blue);"></span>
+      <span style="font:500 36px/1.2 var(--font-sans); color:var(--fg-0);">The team behind it</span>
+      <span style="font:500 25px/1 var(--font-mono); color:var(--fg-3);">044</span>
+    </div>
+  </div>
+  <div class="foot"><span>E8 · Index</span><span>✕ 6 ch</span></div>
+</section>
+
+</body>
+</html>

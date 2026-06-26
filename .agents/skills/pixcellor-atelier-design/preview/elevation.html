@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Elevation</title>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; align-items: center; }
+  .el { aspect-ratio: 1/1; background: var(--bg-2); border: 1px solid var(--line-2); border-radius: var(--r-2); display: flex; align-items: center; justify-content: center; font: var(--t-code-sm); color: var(--fg-2); }
+  .lbl { font: var(--t-code-sm); color: var(--fg-3); text-align: center; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Elevation · shadows + glows</div>
+    <div class="grid">
+      <div class="el" style="box-shadow: var(--shadow-0);">s-0</div>
+      <div class="el" style="box-shadow: var(--shadow-1);">s-1</div>
+      <div class="el" style="box-shadow: var(--shadow-2);">s-2</div>
+      <div class="el" style="box-shadow: var(--shadow-3);">s-3</div>
+      <div class="el" style="box-shadow: var(--glow-gold);">glow-gold</div>
+      <div class="el" style="box-shadow: var(--glow-cyan);">glow-cyan</div>
+    </div>
+    <div class="hint">Never combine a hard shadow + glow on one element.</div>
+  </div>
+</body>
+</html>
