@@ -56,6 +56,7 @@ export type Database = {
           created_at: string
           id: string
           owner_user_id: string
+          share_name: string | null
           stripe_coupon_id: string | null
           stripe_promotion_code_id: string | null
           updated_at: string
@@ -68,6 +69,7 @@ export type Database = {
           created_at?: string
           id?: string
           owner_user_id: string
+          share_name?: string | null
           stripe_coupon_id?: string | null
           stripe_promotion_code_id?: string | null
           updated_at?: string
@@ -80,6 +82,7 @@ export type Database = {
           created_at?: string
           id?: string
           owner_user_id?: string
+          share_name?: string | null
           stripe_coupon_id?: string | null
           stripe_promotion_code_id?: string | null
           updated_at?: string

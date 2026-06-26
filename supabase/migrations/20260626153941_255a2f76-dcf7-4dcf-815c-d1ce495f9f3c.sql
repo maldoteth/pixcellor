@@ -1,0 +1,1 @@
+ALTER TABLE public.affiliate_codes ADD COLUMN IF NOT EXISTS share_name TEXT;
