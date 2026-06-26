@@ -280,7 +280,7 @@ async function handleCheckout(priceId: string, mode: string, packageName: string
     ? { visionBrief: { prompt: vision.prompt, imageUrl: vision.imageUrl ?? null } }
     : {};
   const { data, error } = await supabase.functions.invoke("create-checkout", {
-    body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined, buyer, ...domainPayload, ...visionPayload },
+    body: { priceId, mode, packageName, billing, clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined, buyer, affiliateRef: getAffiliateRef() ?? undefined, ...domainPayload, ...visionPayload },
   });
   if (error || data?.error || !data?.url) {
     const message =
