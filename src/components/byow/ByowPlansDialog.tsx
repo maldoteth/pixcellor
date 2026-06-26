@@ -38,7 +38,7 @@ export default function ByowPlansDialog({ siteId, open, onOpenChange, defaultTab
     setLoadingKey(`${kind}:${key}`);
     try {
       const { data, error } = await supabase.functions.invoke("byow-create-checkout", {
-        body: { site_id: siteId, kind, key },
+        body: { site_id: siteId, kind, key, affiliateRef: getAffiliateRef() ?? undefined },
       });
       if (error) throw error;
       if (!data?.url) throw new Error("No checkout URL returned");
