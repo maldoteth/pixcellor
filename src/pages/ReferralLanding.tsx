@@ -26,13 +26,10 @@ export default function ReferralLanding() {
     if (!valid) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("affiliate_codes")
-        .select("share_name")
-        .eq("code", code)
-        .maybeSingle();
+      const { data } = await supabase.rpc("get_affiliate_public" as never, { _code: code } as never);
       if (cancelled) return;
-      if (data?.share_name) setInviter(data.share_name);
+      const row = Array.isArray(data) ? data[0] as { share_name?: string | null } | undefined : null;
+      if (row?.share_name) setInviter(row.share_name);
     })();
     // Auto-redirect after a brief moment so crawlers can read meta first.
     const t = window.setTimeout(() => {
