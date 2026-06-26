@@ -577,8 +577,9 @@ export default function AffiliateCrmPanel() {
             <DialogTitle>Your affiliate codes</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm">
-              <p>Generate a unique code to share. Buyers get <strong>10% off</strong> at checkout, and you earn <strong>5%</strong> of every deal where your code is used.</p>
+            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm space-y-1">
+              <p>Share your code <strong>or</strong> your tracked referral link. Buyers get <strong>10% off</strong>, you earn <strong>5%</strong> of every deal.</p>
+              <p className="text-xs text-muted-foreground">Smart attribution: anyone who clicks your link gets a 90-day cookie. Even if they come back later and pay without entering the code, the sale is still credited to you.</p>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/60 bg-card/30 p-3">
               <div>
