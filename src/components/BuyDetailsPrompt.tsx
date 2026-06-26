@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { DomainChoice } from "@/components/DomainPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { getCheckoutContext } from "@/lib/checkoutTracking";
+import { getAffiliateRef } from "@/lib/affiliateRef";
 import { SUGGESTIONS as VISION_SUGGESTIONS } from "@/components/VisionGenerator";
 
 const INVOICE_COUNTRIES = ["United Kingdom", "Ireland", "United States", "Other"];
