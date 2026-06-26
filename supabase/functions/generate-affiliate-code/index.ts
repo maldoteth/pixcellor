@@ -46,13 +46,10 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
 
-    // derive a friendly prefix from email
-    const prefix = (userEmail.split("@")[0] || "AFF").replace(/[^A-Za-z0-9]/g, "").slice(0, 6).toUpperCase() || "AFF";
-
-    // try up to 5 times to find a non-colliding code
+    // try up to 8 times to find a non-colliding short code
     let code = "";
-    for (let i = 0; i < 5; i++) {
-      const candidate = randomCode(prefix);
+    for (let i = 0; i < 8; i++) {
+      const candidate = randomCode();
       const { data: existing } = await supabase.from("affiliate_codes").select("id").eq("code", candidate).maybeSingle();
       if (!existing) { code = candidate; break; }
     }
