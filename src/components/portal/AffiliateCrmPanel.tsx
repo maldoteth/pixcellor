@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet, LinkIcon } from "lucide-react";
+import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet, Link2 } from "lucide-react";
 import CashoutDialog from "@/components/portal/CashoutDialog";
 import CompaniesHouseInput from "@/components/CompaniesHouseInput";
 import { usePortalRefresh } from "@/hooks/usePortalRefresh";
