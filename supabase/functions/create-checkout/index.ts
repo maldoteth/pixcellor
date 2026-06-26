@@ -75,7 +75,8 @@ serve(async (req) => {
     if (!parsedBody.success) {
       return new Response(JSON.stringify({ error: "invalid_input", fields: parsedBody.error.flatten().fieldErrors }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp, visionBrief } = parsedBody.data;
+    const { priceId, mode, packageName, billing, clientContext, buyer, domain, domainTopUpGbp, visionBrief, affiliateRef } = parsedBody.data;
+    const safeAffiliateRef = typeof affiliateRef === "string" && /^[A-Za-z0-9_-]{3,40}$/.test(affiliateRef) ? affiliateRef.toUpperCase() : "";
 
     if (!priceId) throw new Error("Missing priceId");
     if (!ALLOWED_PRICE_IDS.has(priceId)) {
