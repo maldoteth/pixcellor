@@ -564,6 +564,7 @@ serve(async (req) => {
             expand: ["total_details.breakdown.discounts", "total_details.breakdown.discounts.discount.promotion_code"],
           });
           const discounts = (full.total_details as any)?.breakdown?.discounts ?? [];
+          let attributed = false;
           for (const d of discounts) {
             const promo = d?.discount?.promotion_code;
             const promoId = typeof promo === "string" ? promo : promo?.id;
@@ -589,6 +590,38 @@ serve(async (req) => {
               buyer_email: session.customer_details?.email ?? null,
               updated_at: new Date().toISOString(),
             }, { onConflict: "checkout_session_id" });
+            attributed = true;
+          }
+
+          // Cookie/link fallback: if no discount-code attribution happened but the
+          // buyer arrived via an affiliate link (cookie stamped at checkout creation),
+          // credit the affiliate anyway. First-touch wins thanks to the 90-day cookie.
+          if (!attributed) {
+            const refRaw = (session.metadata?.affiliate_ref || full.metadata?.affiliate_ref || "").toString().trim().toUpperCase();
+            if (refRaw && /^[A-Za-z0-9_-]{3,40}$/.test(refRaw)) {
+              const { data: codeRow } = await supabase
+                .from("affiliate_codes")
+                .select("id, code, owner_user_id, affiliate_commission_pct, active")
+                .eq("code", refRaw)
+                .maybeSingle();
+              if (codeRow && codeRow.active !== false) {
+                const subtotal = full.amount_subtotal ?? session.amount_total ?? 0;
+                const commissionCents = Math.round((subtotal * (codeRow.affiliate_commission_pct || 0)) / 100);
+                await supabase.from("affiliate_referrals").upsert({
+                  code_id: codeRow.id,
+                  code: codeRow.code,
+                  owner_user_id: codeRow.owner_user_id,
+                  checkout_session_id: session.id,
+                  amount_subtotal_cents: subtotal,
+                  amount_total_cents: session.amount_total ?? null,
+                  currency: session.currency ?? null,
+                  commission_cents: commissionCents,
+                  status: "earned",
+                  buyer_email: session.customer_details?.email ?? null,
+                  updated_at: new Date().toISOString(),
+                }, { onConflict: "checkout_session_id" });
+              }
+            }
           }
         } catch (err) {
           console.error("[affiliate] failed to record referral", err);
