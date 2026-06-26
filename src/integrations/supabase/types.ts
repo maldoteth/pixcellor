@@ -56,6 +56,7 @@ export type Database = {
           created_at: string
           id: string
           owner_user_id: string
+          share_name: string | null
           stripe_coupon_id: string | null
           stripe_promotion_code_id: string | null
           updated_at: string
@@ -68,6 +69,7 @@ export type Database = {
           created_at?: string
           id?: string
           owner_user_id: string
+          share_name?: string | null
           stripe_coupon_id?: string | null
           stripe_promotion_code_id?: string | null
           updated_at?: string
@@ -80,6 +82,7 @@ export type Database = {
           created_at?: string
           id?: string
           owner_user_id?: string
+          share_name?: string | null
           stripe_coupon_id?: string | null
           stripe_promotion_code_id?: string | null
           updated_at?: string
@@ -3782,6 +3785,13 @@ export type Database = {
       fetch_chat_history: { Args: { _client_id: string }; Returns: Json }
       gen_meeting_code: { Args: never; Returns: string }
       generate_order_code: { Args: never; Returns: string }
+      get_affiliate_public: {
+        Args: { _code: string }
+        Returns: {
+          code: string
+          share_name: string
+        }[]
+      }
       get_call_room: {
         Args: { p_booking: string; p_token: string }
         Returns: {
