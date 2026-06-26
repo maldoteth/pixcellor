@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Inputs</title>
+<style>
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .label { font: var(--t-label); color: var(--fg-2); }
+  .input { font: var(--t-body); color: var(--fg-0); padding: 12px 14px; border-radius: var(--r-2); border: 1px solid var(--line-2); background: var(--bg-2); outline: none; transition: all var(--dur-base) var(--ease-out); }
+  .input::placeholder { color: var(--fg-3); }
+  .input:hover { border-color: var(--line-3); }
+  .input.focus { border-color: var(--pix-cyan); box-shadow: 0 0 0 3px rgba(95, 184, 201, 0.18); }
+  .row-i { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .search { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--r-pill); border: 1px solid var(--line-2); background: var(--bg-2); }
+  .search input { background: transparent; border: 0; outline: 0; color: var(--fg-0); font: var(--t-body-sm); flex: 1; }
+  .icon { width: 16px; height: 16px; color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Inputs</div>
+    <div class="row-i">
+      <div class="field"><span class="label">Email</span><input class="input" placeholder="you@studio.com" value="hello@operator.com"></div>
+      <div class="field"><span class="label">Project name <span style="color: var(--accent);">★</span></span><input class="input focus" value="Atelier Mark II"></div>
+    </div>
+    <div class="search">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input placeholder="Search the studio…">
+    </div>
+  </div>
+</body>
+</html>

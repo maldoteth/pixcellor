@@ -1,0 +1,46 @@
+/* Shared card chrome for all preview/*.html files */
+@import url("../colors_and_type.css");
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-0);
+  color: var(--fg-1);
+  font: var(--t-body);
+  overflow: hidden;
+}
+
+.card {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  background:
+    radial-gradient(1000px 600px at 110% -10%, rgba(226, 188, 101, 0.07), transparent 60%),
+    radial-gradient(700px 500px at -10% 110%, rgba(95, 184, 201, 0.04), transparent 60%),
+    var(--bg-0);
+}
+
+.card.card-light {
+  background:
+    radial-gradient(1000px 600px at 110% -10%, rgba(168, 122, 40, 0.08), transparent 60%),
+    radial-gradient(700px 500px at -10% 110%, rgba(95, 184, 201, 0.03), transparent 60%),
+    #F6F4EF;
+}
+
+.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.col { display: flex; flex-direction: column; gap: 8px; }
+.spread { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.fill { flex: 1; }
+.tag {
+  font: var(--t-eyebrow);
+  letter-spacing: var(--track-mega);
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.meta { font: var(--t-code-sm); color: var(--fg-3); }
+.hint { font: var(--t-body-sm); color: var(--fg-2); }

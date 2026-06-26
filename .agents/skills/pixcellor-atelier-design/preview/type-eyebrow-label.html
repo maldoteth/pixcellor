@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Eyebrow / Label / Pixel</title>
+<style>
+  .eb { font: var(--t-eyebrow); color: var(--fg-2); letter-spacing: var(--track-mega); text-transform: uppercase; }
+  .eb-gold { font: var(--t-eyebrow); letter-spacing: var(--track-mega); text-transform: uppercase; background: var(--gold-sheen); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .label { font: var(--t-label); color: var(--fg-1); }
+  .pixmark { font: 600 22px/1 var(--font-pixel); color: var(--fg-1); }
+  .lbl { font: var(--t-code-sm); color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Eyebrows · Labels · Pixel marks</div>
+    <div class="col" style="gap: 14px;">
+      <div class="row" style="gap: 24px;">
+        <span class="eb">Atelier · Volume one</span>
+        <span class="eb-gold">★ Limited release</span>
+      </div>
+      <div class="row" style="gap: 18px; align-items: baseline;">
+        <span class="label">Sentence-case label</span>
+        <span class="lbl">--t-label · 13/1.4</span>
+      </div>
+      <div class="row" style="gap: 14px;">
+        <span class="pixmark">▦</span>
+        <span class="pixmark">▮</span>
+        <span class="pixmark">✕</span>
+        <span class="pixmark">✦</span>
+        <span class="pixmark">●</span>
+        <span class="lbl">Decorative pixel marks · --font-pixel</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

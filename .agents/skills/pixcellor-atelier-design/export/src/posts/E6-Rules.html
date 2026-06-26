@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Atelier — Editorial Posts</title>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#0B0B10"/>
+  <text x="50" y="48" text-anchor="middle" font-family="serif" font-style="italic"
+        font-size="44" font-weight="500"
+        fill="url(#g)">Æ</text>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FBE8B0"/>
+      <stop offset="0.5" stop-color="#C99B3F"/>
+      <stop offset="1" stop-color="#FBE8B0"/>
+    </linearGradient>
+  </defs>
+</svg>
+</template>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Fraunces:ital,wght@1,400;1,500&family=Pixelify+Sans:wght@500;600&family=Geist+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --bg-0: #0B0B10;
+    --fg-0: #F4F4F2;
+    --fg-1: #DCDCD8;
+    --fg-2: #9A9A95;
+    --fg-3: #6A6A66;
+    --line-1: rgba(244,244,242,0.10);
+    --line-2: rgba(244,244,242,0.08);
+    --gold-1: #FBE8B0;
+    --gold-2: #C99B3F;
+    --gold-3: #8E6620;
+    --gold-sheen: linear-gradient(135deg,#FBE8B0,#C99B3F 35%,#8E6620 55%,#ECC971 75%,#FBE8B0);
+    --p-red:#E84B5A; --p-orange:#ED8A3F; --p-yellow:#E8C46B; --p-lime:#8EC273;
+    --p-cyan:#5FB8C9; --p-blue:#5476B8; --p-violet:#8C70B8; --p-magenta:#C26BA0;
+    --silver-brushed: linear-gradient(180deg,#2E2D2A 0%,#4A4844 14%,#7A7872 30%,#6E6C66 48%,#888680 64%,#5C5A55 82%,#3A3835 100%);
+    --font-sans: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-display: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-pixel: "Pixelify Sans", ui-monospace, monospace;
+    --font-editorial: "Fraunces", "Times New Roman", serif;
+    --font-mono: "Geist Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: #000;
+    color: var(--fg-0); font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .frame {
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden;
+    background: var(--bg-0);
+    page-break-after: always;
+    break-after: page;
+    margin: 0 auto 40px;
+  }
+  .head {
+    position: absolute; top: 56px; left: 72px; right: 72px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .head img { height: 40px; display: block; }
+  .head .meta {
+    font: 500 20px/1 var(--font-pixel);
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-2);
+  }
+  .foot {
+    position: absolute; bottom: 50px; left: 72px; right: 72px;
+    display: flex; justify-content: space-between; align-items: center;
+    font: 500 20px/1 var(--font-pixel); letter-spacing: 0.08em;
+    color: var(--fg-3);
+  }
+  em.gold {
+    font: 500 italic 1em/1 var(--font-editorial);
+    font-style: italic;
+    background: var(--gold-sheen);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .gold-text {
+    background: var(--gold-sheen);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .gold-rule { background: var(--gold-sheen); border-radius: 1px; }
+  .pix-row { display: flex; gap: 7px; }
+  .pix-row span { display: inline-block; width: 11px; height: 11px; opacity: 0.7; }
+  .pix-row .c0 { background: var(--p-red); }
+  .pix-row .c1 { background: var(--p-orange); }
+  .pix-row .c2 { background: var(--p-yellow); }
+  .pix-row .c3 { background: var(--p-lime); }
+  .pix-row .c4 { background: var(--p-cyan); }
+  .pix-row .c5 { background: var(--p-blue); }
+  .pix-row .c6 { background: var(--p-violet); }
+  .pix-row .c7 { background: var(--p-magenta); }
+</style>
+</head>
+<body>
+<section class="frame">
+  <div class="head">
+    <img src="../assets/logo-wordmark-white.png" alt="Pixcellor">
+    <span class="meta">★ The atelier · rules</span>
+  </div>
+  <h2 style="position:absolute; top:198px; left:72px; right:72px; margin:0; font:600 86px/1.05 var(--font-display); letter-spacing:-0.025em; color:var(--fg-0);">
+    Five things<br>we <em class="gold">won't</em> do.
+  </h2>
+  <div style="position:absolute; top:495px; left:72px; right:72px;">
+    <div style="display:flex; align-items:center; gap:40px; padding:32px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:600 25px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3); width:72px;">01</span>
+      <span style="width:14px; height:14px; background:var(--p-orange); box-shadow:0 0 18px rgba(237,138,63,0.4);"></span>
+      <span style="font:500 45px/1.1 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0); flex:1;">We won't template.</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:40px; padding:32px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:600 25px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3); width:72px;">02</span>
+      <span style="width:14px; height:14px; background:var(--p-yellow); box-shadow:0 0 18px rgba(232,196,107,0.4);"></span>
+      <span style="font:500 45px/1.1 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0); flex:1;">We won't outsource.</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:40px; padding:32px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:600 25px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3); width:72px;">03</span>
+      <span style="width:14px; height:14px; background:var(--p-lime); box-shadow:0 0 18px rgba(142,194,115,0.4);"></span>
+      <span style="font:500 45px/1.1 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0); flex:1;">We won't ghost.</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:40px; padding:32px 0; border-bottom:1px solid var(--line-2);">
+      <span style="font:600 25px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3); width:72px;">04</span>
+      <span style="width:14px; height:14px; background:var(--p-cyan); box-shadow:0 0 18px rgba(95,184,201,0.4);"></span>
+      <span style="font:500 45px/1.1 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0); flex:1;">We won't pad timelines.</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:40px; padding:32px 0;">
+      <span style="font:600 25px/1 var(--font-pixel); letter-spacing:0.18em; color:var(--fg-3); width:72px;">05</span>
+      <span style="width:14px; height:14px; background:var(--p-blue); box-shadow:0 0 18px rgba(84,118,184,0.4);"></span>
+      <span style="font:500 45px/1.1 var(--font-display); letter-spacing:-0.015em; color:var(--fg-0); flex:1;">We won't ship slow.</span>
+    </div>
+  </div>
+  <div class="foot"><span>E6 · Rules</span><span>✕ five</span></div>
+</section>
+</body>
+</html>

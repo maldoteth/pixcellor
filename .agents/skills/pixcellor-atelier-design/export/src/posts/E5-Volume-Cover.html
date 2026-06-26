@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Atelier — Editorial Posts</title>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#0B0B10"/>
+  <text x="50" y="48" text-anchor="middle" font-family="serif" font-style="italic"
+        font-size="44" font-weight="500"
+        fill="url(#g)">Æ</text>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FBE8B0"/>
+      <stop offset="0.5" stop-color="#C99B3F"/>
+      <stop offset="1" stop-color="#FBE8B0"/>
+    </linearGradient>
+  </defs>
+</svg>
+</template>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Fraunces:ital,wght@1,400;1,500&family=Pixelify+Sans:wght@500;600&family=Geist+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --bg-0: #0B0B10;
+    --fg-0: #F4F4F2;
+    --fg-1: #DCDCD8;
+    --fg-2: #9A9A95;
+    --fg-3: #6A6A66;
+    --line-1: rgba(244,244,242,0.10);
+    --line-2: rgba(244,244,242,0.08);
+    --gold-1: #FBE8B0;
+    --gold-2: #C99B3F;
+    --gold-3: #8E6620;
+    --gold-sheen: linear-gradient(135deg,#FBE8B0,#C99B3F 35%,#8E6620 55%,#ECC971 75%,#FBE8B0);
+    --p-red:#E84B5A; --p-orange:#ED8A3F; --p-yellow:#E8C46B; --p-lime:#8EC273;
+    --p-cyan:#5FB8C9; --p-blue:#5476B8; --p-violet:#8C70B8; --p-magenta:#C26BA0;
+    --silver-brushed: linear-gradient(180deg,#2E2D2A 0%,#4A4844 14%,#7A7872 30%,#6E6C66 48%,#888680 64%,#5C5A55 82%,#3A3835 100%);
+    --font-sans: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-display: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-pixel: "Pixelify Sans", ui-monospace, monospace;
+    --font-editorial: "Fraunces", "Times New Roman", serif;
+    --font-mono: "Geist Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: #000;
+    color: var(--fg-0); font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .frame {
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden;
+    background: var(--bg-0);
+    page-break-after: always;
+    break-after: page;
+    margin: 0 auto 40px;
+  }
+  .head {
+    position: absolute; top: 56px; left: 72px; right: 72px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .head img { height: 40px; display: block; }
+  .head .meta {
+    font: 500 20px/1 var(--font-pixel);
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-2);
+  }
+  .foot {
+    position: absolute; bottom: 50px; left: 72px; right: 72px;
+    display: flex; justify-content: space-between; align-items: center;
+    font: 500 20px/1 var(--font-pixel); letter-spacing: 0.08em;
+    color: var(--fg-3);
+  }
+  em.gold {
+    font: 500 italic 1em/1 var(--font-editorial);
+    font-style: italic;
+    background: var(--gold-sheen);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .gold-text {
+    background: var(--gold-sheen);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .gold-rule { background: var(--gold-sheen); border-radius: 1px; }
+  .pix-row { display: flex; gap: 7px; }
+  .pix-row span { display: inline-block; width: 11px; height: 11px; opacity: 0.7; }
+  .pix-row .c0 { background: var(--p-red); }
+  .pix-row .c1 { background: var(--p-orange); }
+  .pix-row .c2 { background: var(--p-yellow); }
+  .pix-row .c3 { background: var(--p-lime); }
+  .pix-row .c4 { background: var(--p-cyan); }
+  .pix-row .c5 { background: var(--p-blue); }
+  .pix-row .c6 { background: var(--p-violet); }
+  .pix-row .c7 { background: var(--p-magenta); }
+</style>
+</head>
+<body>
+<section class="frame">
+  <div class="head">
+    <img src="../assets/logo-wordmark-white.png" alt="Pixcellor">
+    <span class="meta">★ The atelier · catalogue</span>
+  </div>
+  <div style="position:absolute; top:261px; left:72px;">
+    <div style="font:500 25px/1 var(--font-pixel); letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-2);">
+      A catalogue of work
+    </div>
+    <div style="margin-top:40px; font:600 450px/0.85 var(--font-display); letter-spacing:-0.05em; color:var(--fg-0);">Vol.</div>
+    <div class="gold-text" style="margin-top:-22px; font:600 450px/0.85 var(--font-display); letter-spacing:-0.05em; filter: drop-shadow(0 36px 60px rgba(201,155,63,0.2));">02</div>
+  </div>
+  <div style="position:absolute; bottom:200px; left:72px; right:72px;">
+    <div style="height:2px; background: linear-gradient(90deg,#FBE8B0,#C99B3F,#8E6620,transparent); margin-bottom:36px;"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font:600 30px/1.2 var(--font-display); color:var(--fg-0);">Twenty-six builds, one studio</div>
+        <div style="font:500 20px/1 var(--font-pixel); letter-spacing:0.18em; text-transform:uppercase; color:var(--fg-3); margin-top:14px;">2025–2026 · Pixcellor</div>
+      </div>
+      <div class="pix-row" style="opacity:0.6;">
+        <span class="c0"></span><span class="c1"></span><span class="c2"></span><span class="c3"></span>
+        <span class="c4"></span><span class="c5"></span><span class="c6"></span><span class="c7"></span>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>E5 · Volume</span><span>✕ cover</span></div>
+</section>
+</body>
+</html>

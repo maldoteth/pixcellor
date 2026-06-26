@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pixcellor — Share Images (1200×630)</title>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0B0B10"/><text x="50" y="62" text-anchor="middle" font-family="serif" font-style="italic" font-size="42" font-weight="500" fill="url(#g)">og</text><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBE8B0"/><stop offset="0.5" stop-color="#C99B3F"/><stop offset="1" stop-color="#FBE8B0"/></linearGradient></defs></svg>
+</template>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Fraunces:ital,wght@1,400;1,500&family=Pixelify+Sans:wght@500;600&family=Geist+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --bg-0:#0B0B10; --fg-0:#F4F4F2; --fg-1:#DCDCD8; --fg-2:#9A9A95; --fg-3:#6A6A66;
+    --line-2:rgba(244,244,242,0.08);
+    --gold-sheen:linear-gradient(135deg,#FBE8B0,#C99B3F 35%,#8E6620 55%,#ECC971 75%,#FBE8B0);
+    --gold-conic:conic-gradient(from 210deg at 50% 50%,#FBE8B0,#ECC971 60deg,#C99B3F 120deg,#8E6620 180deg,#C99B3F 240deg,#ECC971 300deg,#FBE8B0);
+    --silver-brushed:linear-gradient(180deg,#2E2D2A,#4A4844 14%,#7A7872 30%,#6E6C66 48%,#888680 64%,#5C5A55 82%,#3A3835);
+    --p-red:#E84B5A; --p-orange:#ED8A3F; --p-yellow:#E8C46B; --p-lime:#8EC273;
+    --p-cyan:#5FB8C9; --p-blue:#5476B8; --p-violet:#8C70B8; --p-magenta:#C26BA0;
+    --font-sans:"Geist",sans-serif; --font-pixel:"Pixelify Sans",monospace;
+    --font-editorial:"Fraunces",serif; --font-mono:"Geist Mono",monospace;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; padding:0; background:#08080C; }
+  .sframe {
+    width:1200px; height:630px; position:relative; overflow:hidden;
+    background: radial-gradient(900px 600px at 100% -20%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%), var(--bg-0);
+    color:var(--fg-0); font-family:var(--font-sans);
+    margin:0 auto 28px; display:block;
+  }
+  .s-pad { position:absolute; inset:0; padding:60px 72px; display:flex; flex-direction:column; justify-content:space-between; z-index:2; }
+  .s-top { display:flex; justify-content:space-between; align-items:center; }
+  .s-wm { height:32px; display:block; }
+  .s-cat { font:500 16px/1 var(--font-pixel); letter-spacing:0.18em; text-transform:uppercase; color:var(--fg-3); }
+  .s-mid { display:flex; flex-direction:column; gap:0; }
+  .s-eyebrow { display:flex; align-items:center; gap:18px; font:500 19px/1 var(--font-pixel); letter-spacing:0.2em; text-transform:uppercase; color:var(--fg-2); margin-bottom:24px; }
+  .s-rule { width:54px; height:2px; background:var(--gold-sheen); border-radius:1px; }
+  .s-title { margin:0; font:600 72px/1.0 var(--font-sans); letter-spacing:-0.03em; color:var(--fg-0); max-width:1000px; text-wrap:balance; }
+  .s-title.lg { font-size:88px; }
+  .s-title.sm { font-size:58px; }
+  .s-title em { font:500 italic 1em/1 var(--font-editorial); font-style:italic; background:var(--gold-sheen); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .s-sub { margin:22px 0 0; font:400 27px/1.4 var(--font-sans); color:var(--fg-2); max-width:840px; }
+  .s-chip { display:inline-flex; align-items:center; gap:10px; margin-top:26px; padding:11px 20px; border-radius:999px; width:fit-content;
+    background:var(--gold-conic); color:#1A1208; border:1px solid rgba(142,102,32,0.6);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.45); font:600 22px/1 var(--font-sans); }
+  .s-foot { display:flex; justify-content:space-between; align-items:center; }
+  .s-url { font:500 19px/1 var(--font-mono); color:var(--fg-3); letter-spacing:0.02em; }
+  .s-pix { display:flex; gap:14px; font:600 20px/1 var(--font-pixel); color:var(--fg-3); }
+  .dot { position:absolute; border-radius:1px; z-index:1; }
+</style>
+</head>
+<body>
+<div id="sheet"></div>
+<script>
+const PAGES = [
+  // ── CORE ──
+  { sec:"Core", file:"01-home", cat:"Pixcellor™", eyebrow:"The Digital Builders", title:'You dream it.<br>We <em>build</em> it.', sub:"Bespoke, fast-loading websites & full-stack apps for ambitious businesses.", url:"pixcellor.com", accent:"#5FB8C9", size:"lg" },
+  { sec:"Core", file:"02-get-started", cat:"Get started", eyebrow:"Ready when you are", title:"Start in the <em>chat</em>.", sub:"No forms. No sales calls. Message us and we'll scope your build today.", url:"pixcellor.com/get-started", accent:"#8EC273", size:"lg" },
+  { sec:"Core", file:"03-packages", cat:"Packages", eyebrow:"Plans that scale", title:"From a site<br>to a <em>department</em>.", sub:"One-off builds, always-on retainers, and a full fractional C-suite.", url:"pixcellor.com/packages", accent:"#E8C46B" },
+  { sec:"Core", file:"04-portfolio", cat:"Selected work", eyebrow:"Shipped & live", title:"The <em>portfolio</em>.", sub:"Bespoke sites and apps across tech, retail, hospitality and Web3.", url:"pixcellor.com/portfolio", accent:"#C26BA0", size:"lg" },
+  { sec:"Core", file:"05-services", cat:"Services", eyebrow:"Marketing · Tech · Business", title:"Everything,<br>in <em>house</em>.", sub:"From £22/hr telesales to AI agents that run your back office 24/7.", url:"pixcellor.com/services", accent:"#ED8A3F" },
+  { sec:"Core", file:"06-legal", cat:"Legal", eyebrow:"The fine print", title:"Legal & <em>policies</em>.", sub:"Terms of service, privacy, refunds and acceptable use.", url:"pixcellor.com/legal", accent:"#9A9A95", size:"sm" },
+
+  // ── PACKAGES (gold) ──
+  { sec:"Packages", file:"07-full-works", cat:"Package · Full Works", eyebrow:"One-off build", title:"Full Works.", sub:"A modern, super-fast site with lifetime warranty. Three pages, base animations.", url:"pixcellor.com/packages/full-works", accent:"#E8C46B", chip:"£150 one-off" },
+  { sec:"Packages", file:"08-elite", cat:"Package · Elite", eyebrow:"One-off build", title:"Elite.", sub:"Animated, interactive site or web app. Unlimited revisions, SEO/AEO, 10-day turnaround.", url:"pixcellor.com/packages/elite", accent:"#E8C46B", chip:"£500 one-off" },
+  { sec:"Packages", file:"09-retainer-growth", cat:"Retainer · Growth", eyebrow:"Always-on", title:"Growth Retainer.", sub:"An always-on web team — site, CRM, hosting, AI bots and analytics.", url:"pixcellor.com/packages/retainer-growth", accent:"#E8C46B", chip:"£100 / month" },
+  { sec:"Packages", file:"10-retainer-scale", cat:"Retainer · Scale", eyebrow:"Always-on", title:"Scale Retainer.", sub:"A full digital department — unlimited seats, AI agents, priority SLA, monthly strategy.", url:"pixcellor.com/packages/retainer-scale", accent:"#E8C46B", chip:"£500 / month" },
+  { sec:"Packages", file:"11-retainer-enterprise", cat:"Retainer · Enterprise", eyebrow:"Always-on", title:"Enterprise Retainer.", sub:"Fractional CTO/CMO/CRO, dedicated dev team, 2-week MVP sprints, 24/7 support.", url:"pixcellor.com/packages/retainer-enterprise", accent:"#E8C46B", chip:"£2,500 / month" },
+
+  // ── SERVICES · MARKETING ──
+  { sec:"Services · Marketing", file:"12-telesales-campaigns", cat:"Marketing Solutions", eyebrow:"Telesales campaigns", title:"Outbound that <em>converts</em>.", sub:"Veteran UK callers, every dial recorded to your CRM. £22 an hour.", url:"pixcellor.com/services/telesales-campaigns", accent:"#ED8A3F", size:"sm" },
+  { sec:"Services · Marketing", file:"13-gtm-lead-generation", cat:"Marketing Solutions", eyebrow:"GTM & Lead Generation", title:"Go-to-market,<br>by <em>operators</em>.", sub:"Built by founders who've launched to 9-figure market caps.", url:"pixcellor.com/services/gtm-lead-generation", accent:"#ED8A3F" },
+  { sec:"Services · Marketing", file:"14-token-launches", cat:"Marketing Solutions", eyebrow:"Tokenization & launches", title:"Launch loud.<br>Launch <em>credible</em>.", sub:"Whitepaper to top-300 market cap — narrative, KOLs and launch-day execution.", url:"pixcellor.com/services/token-launches", accent:"#ED8A3F" },
+  { sec:"Services · Marketing", file:"15-seo-aeo-optimisation", cat:"Marketing Solutions", eyebrow:"SEO & AEO optimisation", title:"Rank on Google.<br>Get cited by <em>AI</em>.", sub:"Technical SEO, content and Answer Engine Optimisation for 2026.", url:"pixcellor.com/services/seo-aeo-optimisation", accent:"#ED8A3F" },
+  { sec:"Services · Marketing", file:"16-social-media-automation", cat:"Marketing Solutions", eyebrow:"Social media automation", title:"An always-on <em>social</em> team.", sub:"Automated content, scheduling and engagement — for a fraction of the headcount.", url:"pixcellor.com/services/social-media-automation", accent:"#ED8A3F", size:"sm" },
+  { sec:"Services · Marketing", file:"17-paid-ads-retargeting", cat:"Marketing Solutions", eyebrow:"Paid ads & retargeting", title:"Spend less.<br>Convert <em>more</em>.", sub:"Performance media across Meta, Google, TikTok and LinkedIn — done right.", url:"pixcellor.com/services/paid-ads-retargeting", accent:"#ED8A3F" },
+  { sec:"Services · Marketing", file:"18-creative-branding-makeovers", cat:"Marketing Solutions", eyebrow:"Creative & branding", title:"Brands that <em>land</em>.", sub:"Identity systems, rebrands and campaign creative from senior designers.", url:"pixcellor.com/services/creative-branding-makeovers", accent:"#ED8A3F" },
+
+  // ── SERVICES · TECH ──
+  { sec:"Services · Tech", file:"19-landing-pages", cat:"Tech Solutions", eyebrow:"Landing pages", title:"Pages that <em>convert</em>.", sub:"High-converting, fast landing pages — copy, design and build in days.", url:"pixcellor.com/services/landing-pages", accent:"#5FB8C9" },
+  { sec:"Services · Tech", file:"20-animated-sites", cat:"Tech Solutions", eyebrow:"Animated sites", title:"Award-grade <em>motion</em>.", sub:"£10K agency animation, engineered to ship in days — not months.", url:"pixcellor.com/services/animated-sites", accent:"#5FB8C9" },
+  { sec:"Services · Tech", file:"21-full-web-apps", cat:"Tech Solutions", eyebrow:"Full web apps", title:"Full-stack,<br>end to <em>end</em>.", sub:"MVP to enterprise platform — auth, data, payments, dashboards, real-time.", url:"pixcellor.com/services/full-web-apps", accent:"#5FB8C9" },
+  { sec:"Services · Tech", file:"22-internal-tools", cat:"Tech Solutions", eyebrow:"Internal tools", title:"Kill the <em>spreadsheets</em>.", sub:"Bespoke tools and automations that save £10K+/year in software and salary.", url:"pixcellor.com/services/internal-tools", accent:"#5FB8C9", size:"sm" },
+  { sec:"Services · Tech", file:"23-crm-systems", cat:"Tech Solutions", eyebrow:"CRM systems", title:"Your CRM, with<br>AI agents on <em>staff</em>.", sub:"Built around how you actually sell — enrichment and follow-up handled.", url:"pixcellor.com/services/crm-systems", accent:"#5FB8C9", size:"sm" },
+  { sec:"Services · Tech", file:"24-ecommerce-stores", cat:"Tech Solutions", eyebrow:"E-commerce stores", title:"Built for the <em>stampede</em>.", sub:"Stores that have handled tens of thousands of orders on launch day.", url:"pixcellor.com/services/ecommerce-stores", accent:"#5FB8C9", size:"sm" },
+  { sec:"Services · Tech", file:"25-blockchain-integrations", cat:"Tech Solutions", eyebrow:"Blockchain integrations", title:"Contracts, wallets, <em>dApps</em>.", sub:"Shipped by a team with hundreds of millions in market cap behind them.", url:"pixcellor.com/services/blockchain-integrations", accent:"#5FB8C9", size:"sm" },
+  { sec:"Services · Tech", file:"26-video-3d-animations", cat:"Tech Solutions", eyebrow:"Video & 3D animations", title:"Cinema-grade <em>motion</em>.", sub:"Product video, motion graphics and full 3D for screens, sites and launches.", url:"pixcellor.com/services/video-3d-animations", accent:"#5FB8C9" },
+
+  // ── SERVICES · BUSINESS ──
+  { sec:"Services · Business", file:"27-recruitment-ats", cat:"Business Solutions", eyebrow:"Recruitment & ATS", title:"Top-billers, or<br>your own <em>AI ATS</em>.", sub:"Senior recruiters across every sector — flat 5%, no middle-man fees.", url:"pixcellor.com/services/recruitment-ats", accent:"#8C70B8", size:"sm" },
+  { sec:"Services · Business", file:"28-payroll-hr-tooling", cat:"Business Solutions", eyebrow:"Payroll & HR tooling", title:"Same-day <em>payroll</em>.", sub:"Modern payroll and HR with one-day settlement. Zero faff.", url:"pixcellor.com/services/payroll-hr-tooling", accent:"#8C70B8" },
+  { sec:"Services · Business", file:"29-ai-integrations-agents", cat:"Business Solutions", eyebrow:"AI agents & integrations", title:"Agents that run it<br>while you <em>sleep</em>.", sub:"Bespoke AI agents wired into your tools — with guardrails and audit trails.", url:"pixcellor.com/services/ai-integrations-agents", accent:"#8C70B8", size:"sm" },
+  { sec:"Services · Business", file:"30-consultations-audits", cat:"Business Solutions", eyebrow:"Visitor intel & capture", title:"Name your <em>traffic</em>.", sub:"Turn anonymous visitors into named, qualified leads — automatically.", url:"pixcellor.com/services/consultations-audits", accent:"#8C70B8" },
+  { sec:"Services · Business", file:"31-analytics-dashboards", cat:"Business Solutions", eyebrow:"Analytics dashboards", title:"Your business,<br>one <em>screen</em>.", sub:"Unified dashboards across sales, ops, finance and marketing.", url:"pixcellor.com/services/analytics-dashboards", accent:"#8C70B8" },
+  { sec:"Services · Business", file:"32-api-third-party", cat:"Business Solutions", eyebrow:"API & integrations", title:"Make your stack <em>talk</em>.", sub:"Integrations, webhooks and middleware so your tools work together.", url:"pixcellor.com/services/api-third-party", accent:"#8C70B8", size:"sm" },
+  { sec:"Services · Business", file:"33-product-project-management", cat:"Business Solutions", eyebrow:"Product & project mgmt", title:"Shipped, on <em>time</em>.", sub:"Embedded senior PMs driving your build to launch — on scope, on brand.", url:"pixcellor.com/services/product-project-management", accent:"#8C70B8" },
+  { sec:"Services · Business", file:"34-documents-and-decks", cat:"Business Solutions", eyebrow:"Documents & decks", title:"Decks that get <em>signed</em>.", sub:"Investor decks, proposals and reports — strategy, copy and design in one.", url:"pixcellor.com/services/documents-and-decks", accent:"#8C70B8" },
+
+  // ── LEGAL ──
+  { sec:"Legal", file:"35-legal-terms", cat:"Legal", eyebrow:"Terms of service", title:"Terms of <em>service</em>.", sub:"The terms governing use of Pixcellor services.", url:"pixcellor.com/legal/terms", accent:"#9A9A95", size:"sm" },
+  { sec:"Legal", file:"36-legal-privacy", cat:"Legal", eyebrow:"Privacy policy", title:"Privacy <em>policy</em>.", sub:"How Pixcellor collects, uses and protects personal data.", url:"pixcellor.com/legal/privacy", accent:"#9A9A95", size:"sm" },
+  { sec:"Legal", file:"37-legal-refund", cat:"Legal", eyebrow:"Refund policy", title:"Refund <em>policy</em>.", sub:"Refund and cancellation terms for Pixcellor services.", url:"pixcellor.com/legal/refund", accent:"#9A9A95", size:"sm" },
+  { sec:"Legal", file:"38-legal-acceptable-use", cat:"Legal", eyebrow:"Acceptable use", title:"Acceptable <em>use</em>.", sub:"The acceptable use policy for Pixcellor services.", url:"pixcellor.com/legal/acceptable-use", accent:"#9A9A95", size:"sm" },
+];
+window.PAGES = PAGES;
+
+const SPEC = ["#E84B5A","#ED8A3F","#E8C46B","#8EC273","#5FB8C9","#5476B8","#8C70B8","#C26BA0"];
+function dots(accent){
+  // 3 ambient whisper pixels — accent + two spectrum, low opacity
+  const conf = [
+    {l:"86%", t:"30%", c:accent, s:7, o:0.6},
+    {l:"92%", t:"58%", c:SPEC[(SPEC.indexOf(accent)+3+8)%8]||"#5FB8C9", s:6, o:0.4},
+    {l:"79%", t:"76%", c:SPEC[(SPEC.indexOf(accent)+5+8)%8]||"#C26BA0", s:5, o:0.4},
+  ];
+  return conf.map(d=>`<span class="dot" style="left:${d.l};top:${d.t};width:${d.s}px;height:${d.s}px;background:${d.c};opacity:${d.o};box-shadow:0 0 18px ${d.c}">`+`</span>`).join("");
+}
+
+const sheet = document.getElementById("sheet");
+PAGES.forEach(p => {
+  const el = document.createElement("section");
+  el.className = "sframe";
+  el.dataset.file = p.file;
+  el.style.setProperty("--accent", p.accent);
+  const sizeCls = p.size ? " "+p.size : "";
+  el.innerHTML = `
+    ${dots(p.accent)}
+    <div class="s-pad">
+      <div class="s-top">
+        <img class="s-wm" src="assets/logo-wordmark-white.png" alt="Pixcellor">
+        <span class="s-cat">${p.cat}</span>
+      </div>
+      <div class="s-mid">
+        <div class="s-eyebrow"><span class="s-rule"></span> ${p.eyebrow}</div>
+        <h1 class="s-title${sizeCls}">${p.title}</h1>
+        <p class="s-sub">${p.sub}</p>
+        ${p.chip ? `<span class="s-chip">★ ${p.chip}</span>` : ""}
+      </div>
+      <div class="s-foot">
+        <span class="s-url">${p.url}</span>
+        <span class="s-pix">▦&nbsp;&nbsp;✕</span>
+      </div>
+    </div>`;
+  sheet.appendChild(el);
+});
+
+// Capture helper: isolate one frame at NATIVE 1200×630, top-left,
+// body clamped to exactly the frame size so the capture is pixel-exact.
+window.showOnly = function(i){
+  const frames = [...document.querySelectorAll(".sframe")];
+  frames.forEach((f,j)=>{ f.style.display = (j===i) ? "block" : "none"; });
+  const f = frames[i];
+  f.style.margin = "0";
+  f.style.position = "absolute"; f.style.left="0"; f.style.top="0";
+  const s = window.innerWidth / 1200;
+  f.style.transformOrigin = "top left";
+  f.style.transform = "scale(" + s + ")";
+  document.documentElement.style.width = window.innerWidth + "px";
+  document.documentElement.style.height = (630*s) + "px";
+  document.body.style.width = window.innerWidth + "px";
+  document.body.style.height = (630*s) + "px";
+  document.body.style.overflow = "hidden";
+  document.body.style.background = "#0B0B10";
+  window.scrollTo(0,0);
+  return frames[i].dataset.file;
+};
+window.showAll = function(){
+  const frames=[...document.querySelectorAll(".sframe")];
+  frames.forEach(f=>{ f.style.display="block"; f.style.position="relative"; f.style.transform="none"; f.style.margin="0 auto 28px"; });
+  document.body.style.height="auto"; document.body.style.overflow="auto";
+};
+</script>
+</body>
+</html>

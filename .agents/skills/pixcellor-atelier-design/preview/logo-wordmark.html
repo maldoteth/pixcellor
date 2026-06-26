@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Logo wordmark</title>
+<style>
+  .stage { display: flex; flex-direction: column; gap: 10px; padding: 6px 0; }
+  .panel { padding: 18px 22px; border-radius: var(--r-3); display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+  .panel.dark { background: var(--bg-1); border: 1px solid var(--line-2); }
+  .panel.light { background: #F6F4EF; border: 1px solid rgba(22,20,15,0.10); }
+  .panel.metal { background: var(--silver-brushed); border: 1px solid rgba(0,0,0,0.4); box-shadow: inset 0 1px 0 rgba(255,255,255,0.18); }
+  .panel img { height: 28px; }
+  .lbl { font: var(--t-code-sm); color: var(--fg-3); }
+  .panel.light .lbl { color: rgba(22,20,15,0.55); }
+  .panel.metal .lbl { color: rgba(244,242,238,0.6); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Logo · wordmark · Pixcellor™</div>
+    <div class="stage">
+      <div class="panel dark"><img src="../assets/logo-wordmark-white.png" alt="Pixcellor"><span class="lbl">white on dark</span></div>
+      <div class="panel light"><img src="../assets/logo-wordmark-black.png" alt="Pixcellor"><span class="lbl">black on paper</span></div>
+      <div class="panel metal"><img src="../assets/logo-wordmark-white.png" alt="Pixcellor"><span class="lbl">white on silver plate</span></div>
+    </div>
+  </div>
+</body>
+</html>

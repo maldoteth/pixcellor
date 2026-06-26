@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Radius</title>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .r-demo { aspect-ratio: 1/1; background: var(--silver-brushed); border: 1px solid var(--line-2); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; box-shadow: var(--shadow-1); }
+  .r-name { font: var(--t-code-sm); color: var(--silver-0); }
+  .lbl { font: var(--t-code-sm); color: var(--fg-3); text-align: center; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Radius · 0px pixel → 28px luxe</div>
+    <div class="grid">
+      <div class="r-demo" style="border-radius: var(--r-0);"><span class="r-name">0</span></div>
+      <div class="r-demo" style="border-radius: var(--r-1);"><span class="r-name">4</span></div>
+      <div class="r-demo" style="border-radius: var(--r-2);"><span class="r-name">10</span></div>
+      <div class="r-demo" style="border-radius: var(--r-3);"><span class="r-name">18</span></div>
+      <div class="r-demo" style="border-radius: var(--r-4);"><span class="r-name">28</span></div>
+      <div class="r-demo" style="border-radius: var(--r-pill);"><span class="r-name">pill</span></div>
+    </div>
+    <div class="grid" style="gap: 10px;">
+      <div class="lbl">--r-0<br>pixel</div>
+      <div class="lbl">--r-1<br>chip</div>
+      <div class="lbl">--r-2<br>button</div>
+      <div class="lbl">--r-3<br>card</div>
+      <div class="lbl">--r-4<br>hero</div>
+      <div class="lbl">--r-pill<br>capsule</div>
+    </div>
+  </div>
+</body>
+</html>

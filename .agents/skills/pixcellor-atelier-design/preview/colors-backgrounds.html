@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Canvas — dark</title>
+<style>
+  .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .sw { aspect-ratio: 1.4 / 1; border-radius: var(--r-2); border: 1px solid var(--line-1); display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; }
+  .sw .name { font: var(--t-code-sm); color: var(--fg-0); }
+  .sw .hex { font: var(--t-code-sm); color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="tag">Canvas · Dark mode</div>
+    <div class="swatches">
+      <div class="sw" style="background: var(--void)"><div class="name">void</div><div class="hex">#07070A</div></div>
+      <div class="sw" style="background: var(--bg-0)"><div class="name">bg-0</div><div class="hex">#0B0B10</div></div>
+      <div class="sw" style="background: var(--bg-1)"><div class="name">bg-1</div><div class="hex">#111118</div></div>
+      <div class="sw" style="background: var(--bg-2)"><div class="name">bg-2</div><div class="hex">#18181F</div></div>
+      <div class="sw" style="background: var(--bg-3)"><div class="name">bg-3</div><div class="hex">#21212B</div></div>
+      <div class="sw" style="background: var(--bg-4)"><div class="name">bg-4</div><div class="hex">#2B2B37</div></div>
+    </div>
+    <div class="hint">Lowest stops for canvases · highest for hover / pressed.</div>
+  </div>
+</body>
+</html>

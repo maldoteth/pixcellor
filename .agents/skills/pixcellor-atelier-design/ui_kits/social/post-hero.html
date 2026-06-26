@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<title>Atelier — Hero post</title>
+<style>
+  html, body { margin: 0; background: #000; }
+  .frame {
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(900px 600px at 80% 12%, rgba(226, 188, 101, 0.18), transparent 60%),
+      radial-gradient(700px 500px at 12% 90%, rgba(95, 184, 201, 0.10), transparent 60%),
+      var(--bg-0);
+    color: var(--fg-0);
+    font-family: var(--font-sans);
+  }
+  /* faint grid */
+  .frame::before {
+    content: ""; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(244,244,242,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(244,244,242,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+  .nav {
+    position: absolute; top: 56px; left: 64px; right: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 2;
+  }
+  .wordmark { height: 28px; }
+  .nav-meta {
+    font: var(--t-eyebrow);
+    letter-spacing: var(--track-mega); text-transform: uppercase;
+    color: var(--fg-2);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .pix-flag { font-family: var(--font-pixel); color: var(--accent); font-size: 14px; }
+
+  .headline {
+    position: absolute;
+    top: 200px;
+    left: 64px;
+    right: 64px;
+    z-index: 2;
+  }
+  .eyebrow {
+    font: var(--t-eyebrow); letter-spacing: var(--track-mega);
+    text-transform: uppercase; color: var(--fg-2);
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .eyebrow::before { content: ""; width: 28px; height: 1px; background: var(--gold-sheen); }
+  .hl {
+    font: 600 144px/0.92 var(--font-display);
+    letter-spacing: -0.03em;
+    color: var(--fg-0);
+    margin: 0;
+  }
+  .hl em {
+    font: 500 italic 144px/0.92 var(--font-editorial);
+    letter-spacing: -0.025em;
+    background: var(--gold-sheen);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-style: italic;
+  }
+  .sub {
+    font: 400 26px/1.4 var(--font-sans);
+    color: var(--fg-2);
+    margin-top: 28px;
+    max-width: 720px;
+  }
+
+  /* brushed silver phone mockup */
+  .phone-wrap {
+    position: absolute;
+    bottom: 80px; right: 64px;
+    z-index: 2;
+    transform: rotate(-6deg);
+    filter: drop-shadow(0 40px 60px rgba(0,0,0,0.6));
+  }
+  .phone {
+    width: 320px; height: 640px;
+    border-radius: 56px;
+    padding: 12px;
+    background: var(--silver-brushed);
+    background-image:
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 2px),
+      var(--silver-brushed);
+    border: 1px solid rgba(0,0,0,0.5);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.22),
+      inset 0 -1px 0 rgba(0,0,0,0.55);
+  }
+  .phone-screen {
+    width: 100%; height: 100%;
+    border-radius: 46px;
+    background:
+      radial-gradient(280px 220px at 50% 20%, rgba(226, 188, 101, 0.22), transparent 70%),
+      linear-gradient(180deg, #0B0B10, #18181F);
+    border: 1px solid rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 36px 22px;
+    box-sizing: border-box;
+    color: var(--fg-0);
+  }
+  .notch { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); width: 92px; height: 26px; border-radius: 13px; background: #000; }
+  .ph-status { display: flex; justify-content: space-between; font: 500 11px/1 var(--font-sans); color: var(--fg-1); padding-top: 8px; }
+  .ph-eb { font: var(--t-eyebrow); letter-spacing: var(--track-mega); text-transform: uppercase; color: var(--fg-2); margin-top: 30px; }
+  .ph-title { font: 600 28px/1.1 var(--font-display); letter-spacing: -0.02em; margin-top: 12px; }
+  .ph-card { margin-top: 22px; padding: 14px; border-radius: 12px; background: var(--glass-bg-hi); border: 1px solid var(--glass-border); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-inner); }
+  .ph-card .pl { font: 500 11px/1 var(--font-sans); color: var(--fg-3); letter-spacing: var(--track-mega); text-transform: uppercase; }
+  .ph-card .pp { font: 600 22px/1 var(--font-display); margin-top: 8px; background: var(--gold-sheen); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .ph-row { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+  .ph-chip { font: 500 10px/1 var(--font-sans); padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--fg-1); background: var(--bg-2); }
+
+  .foot {
+    position: absolute;
+    bottom: 64px; left: 64px;
+    z-index: 2;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .cta {
+    font: 600 18px/1 var(--font-sans);
+    padding: 18px 28px;
+    border-radius: var(--r-2);
+    background: var(--gold-conic);
+    color: var(--accent-on);
+    border: 1px solid rgba(142, 102, 32, 0.6);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(142,102,32,0.6), 0 8px 24px rgba(201,155,63,0.28);
+    cursor: pointer;
+  }
+  .arrow {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--silver-brushed);
+    border: 1px solid rgba(0,0,0,0.5);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--silver-0);
+  }
+</style>
+</head>
+<body>
+  <div class="frame pixel-sparkle">
+    <div class="nav">
+      <img class="wordmark" src="../../assets/logo-wordmark-white.png" alt="Pixcellor">
+      <div class="nav-meta"><span class="pix-flag">✕</span>Atelier · Volume one</div>
+    </div>
+
+    <div class="headline">
+      <div class="eyebrow">Hand-built · Lifetime guarantee</div>
+      <h1 class="hl">Hand-built sites<br>for serious <em>operators</em>.</h1>
+      <p class="sub">Studio-grade engineering, agency velocity. You dream it — we ship it. Forever.</p>
+    </div>
+
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="notch"></div>
+          <div class="ph-status"><span>9:41</span><span>●●●●</span></div>
+          <div class="ph-eb">★ Elite · case study</div>
+          <div class="ph-title">DeHub<br>0.8s LCP.</div>
+          <div class="ph-card">
+            <div class="pl">Shipped</div>
+            <div class="pp">7 days</div>
+          </div>
+          <div class="ph-row">
+            <span class="ph-chip">Next.js</span>
+            <span class="ph-chip">AEO</span>
+            <span class="ph-chip">Live</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="cta">Book the studio →</button>
+      <div class="arrow">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

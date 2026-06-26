@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Silver scale</title>
+<style>
+  .row1 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .sw { aspect-ratio: 1.2/1; border-radius: var(--r-1); border: 1px solid rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: flex-end; padding: 8px; }
+  .sw .n { font: var(--t-code-sm); color: #16140F; }
+  .sw .h { font: var(--t-code-sm); color: rgba(22,20,15,0.55); }
+  .sw.dark .n { color: #F4F2EE; }
+  .sw.dark .h { color: rgba(255,255,255,0.5); }
+  .plate { height: 70px; border-radius: var(--r-2); display: flex; align-items: center; justify-content: space-between; padding: 0 18px; }
+  .plate-label { font: 600 14px/1 var(--font-sans); letter-spacing: var(--track-mega); text-transform: uppercase; color: var(--silver-0); }
+  .plate-meta { font: var(--t-code-sm); color: rgba(244,242,238,0.65); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="spread">
+      <span class="tag">Silver · structural neutral</span>
+      <span class="meta">--silver-0…5 · --silver-brushed</span>
+    </div>
+    <div class="row1">
+      <div class="sw" style="background: var(--silver-0)"><div class="n">silver-0</div><div class="h">#F4F2EE</div></div>
+      <div class="sw" style="background: var(--silver-1)"><div class="n">silver-1</div><div class="h">#DEDCD6</div></div>
+      <div class="sw" style="background: var(--silver-2)"><div class="n">silver-2</div><div class="h">#BFBDB6</div></div>
+      <div class="sw dark" style="background: var(--silver-3)"><div class="n">silver-3</div><div class="h">#8E8C86</div></div>
+      <div class="sw dark" style="background: var(--silver-4)"><div class="n">silver-4</div><div class="h">#5A5854</div></div>
+      <div class="sw dark" style="background: var(--silver-5)"><div class="n">silver-5</div><div class="h">#2E2D2A</div></div>
+    </div>
+    <div class="silver-plate plate">
+      <span class="plate-label">▦  Brushed silver plate</span>
+      <span class="plate-meta">--silver-brushed · the signature</span>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Canvas — light</title>
+<style>
+  .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .sw { aspect-ratio: 1.4 / 1; border-radius: var(--r-2); border: 1px solid var(--line-2); display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; }
+  .sw .name { font: var(--t-code-sm); color: var(--fg-0); }
+  .sw .hex { font: var(--t-code-sm); color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <div class="card card-light">
+    <div class="tag">Canvas · Light mode · data-theme="light"</div>
+    <div class="swatches">
+      <div class="sw" style="background: #FFFFFF"><div class="name">void</div><div class="hex">#FFFFFF</div></div>
+      <div class="sw" style="background: #F6F4EF"><div class="name">bg-0</div><div class="hex">#F6F4EF</div></div>
+      <div class="sw" style="background: #EFECE5"><div class="name">bg-1</div><div class="hex">#EFECE5</div></div>
+      <div class="sw" style="background: #FFFFFF; border-color: rgba(22,20,15,0.18)"><div class="name">bg-2</div><div class="hex">#FFFFFF</div></div>
+      <div class="sw" style="background: #F2EFE8"><div class="name">bg-3</div><div class="hex">#F2EFE8</div></div>
+      <div class="sw" style="background: #E5E1D7"><div class="name">bg-4</div><div class="hex">#E5E1D7</div></div>
+    </div>
+    <div class="hint">Warm-paper canvas. bg-2 is pure white for cards on bg-0.</div>
+  </div>
+</body>
+</html>

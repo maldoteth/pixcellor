@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<title>Atelier — Carousel page</title>
+<style>
+  html, body { margin: 0; background: #000; }
+  .frame {
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(800px 600px at 14% 14%, rgba(226, 188, 101, 0.12), transparent 60%),
+      var(--bg-0);
+    color: var(--fg-0);
+    font-family: var(--font-sans);
+  }
+  .nav { position: absolute; top: 56px; left: 64px; right: 64px; display: flex; justify-content: space-between; align-items: center; }
+  .nav img { height: 28px; }
+  .nav-meta { font: var(--t-eyebrow); letter-spacing: var(--track-mega); text-transform: uppercase; color: var(--fg-2); }
+
+  .pager {
+    position: absolute;
+    top: 200px; left: 64px;
+    display: flex; align-items: baseline; gap: 20px;
+  }
+  .pager .now {
+    font: 600 200px/0.85 var(--font-pixel);
+    letter-spacing: -0.02em;
+    background: var(--gold-sheen);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .pager .of {
+    font: 600 60px/1 var(--font-pixel);
+    color: var(--fg-3);
+  }
+
+  .eb {
+    position: absolute;
+    top: 460px; left: 64px;
+    font: var(--t-eyebrow); letter-spacing: var(--track-mega); text-transform: uppercase;
+    color: var(--fg-2);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eb::before { content: ""; width: 28px; height: 1px; background: var(--gold-sheen); }
+
+  .tip {
+    position: absolute;
+    top: 510px; left: 64px; right: 64px;
+    font: 600 108px/1.0 var(--font-display);
+    letter-spacing: -0.03em;
+    color: var(--fg-0);
+  }
+  .tip em {
+    font: 500 italic 108px/1.0 var(--font-editorial);
+    background: var(--gold-sheen);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .body {
+    position: absolute;
+    top: 880px; left: 64px; right: 280px;
+    font: 400 28px/1.5 var(--font-sans);
+    color: var(--fg-1);
+  }
+  .body strong { color: var(--accent); font-weight: 500; }
+
+  /* dot pager */
+  .dots {
+    position: absolute;
+    bottom: 140px; left: 64px;
+    display: flex; gap: 10px;
+  }
+  .dot { width: 36px; height: 4px; border-radius: 2px; background: var(--fg-4); }
+  .dot.on { background: var(--gold-sheen); }
+
+  .foot {
+    position: absolute;
+    bottom: 64px; left: 64px; right: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .pix { font: 500 14px/1 var(--font-pixel); color: var(--fg-3); letter-spacing: var(--track-wide); }
+  .swipe {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 22px;
+    border-radius: var(--r-pill);
+    background: var(--glass-bg-hi);
+    border: 1px solid var(--glass-border-hi);
+    backdrop-filter: var(--glass-blur-sm);
+    box-shadow: var(--glass-inner);
+    color: var(--fg-0);
+    font: 500 16px/1 var(--font-sans);
+  }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="nav">
+      <img src="../../assets/logo-wordmark-white.png" alt="Pixcellor">
+      <span class="nav-meta">▦ Five rules for shipping</span>
+    </div>
+
+    <div class="pager">
+      <span class="now">02</span>
+      <span class="of">/ 05</span>
+    </div>
+
+    <div class="eb">Rule two</div>
+    <h2 class="tip">Plan less.<br>Ship <em>weekly</em>.</h2>
+
+    <p class="body">A week is the longest a website should be in private. Past that, you're optimising for an audience that doesn't exist yet. <strong>Ship. Then learn.</strong></p>
+
+    <div class="dots">
+      <div class="dot"></div>
+      <div class="dot on"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+
+    <div class="foot">
+      <span class="pix">PXR ✕ Atelier · Carousel</span>
+      <div class="swipe">
+        Swipe →
+      </div>
+    </div>
+  </div>
+</body>
+</html>

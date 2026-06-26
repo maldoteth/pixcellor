@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Glass surfaces</title>
+<style>
+  .stage {
+    position: relative;
+    height: 220px;
+    border-radius: var(--r-3);
+    overflow: hidden;
+    background:
+      radial-gradient(360px 240px at 20% 30%, rgba(226, 188, 101, 0.45), transparent 60%),
+      radial-gradient(360px 240px at 80% 70%, rgba(95, 184, 201, 0.30), transparent 60%),
+      radial-gradient(280px 180px at 60% 20%, rgba(194, 107, 160, 0.30), transparent 60%),
+      #15151B;
+  }
+  .pane {
+    position: absolute;
+    padding: 14px 18px;
+    border-radius: var(--r-3);
+    color: var(--fg-0);
+    font: 500 14px/1.3 var(--font-sans);
+  }
+  .pane .h { font: var(--t-code-sm); color: var(--fg-2); display: block; margin-bottom: 4px; }
+  .a { top: 24px; left: 28px; width: 200px; background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); box-shadow: var(--glass-inner), var(--shadow-2); }
+  .b { top: 90px; left: 200px; width: 220px; background: var(--glass-bg-hi); border: 1px solid var(--glass-border-hi); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); box-shadow: var(--glass-inner), var(--shadow-3); }
+  .c { bottom: 22px; right: 28px; width: 180px; background: var(--glass-bg-lo); border: 1px solid var(--glass-border); backdrop-filter: var(--glass-blur-sm); -webkit-backdrop-filter: var(--glass-blur-sm); box-shadow: var(--glass-inner), var(--shadow-1); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="spread">
+      <span class="tag">Liquid glass · signature surface</span>
+      <span class="meta">.glass · blur(32px) saturate(160%)</span>
+    </div>
+    <div class="stage">
+      <div class="pane a"><span class="h">glass · default</span>blur 32px · 0.045</div>
+      <div class="pane b"><span class="h">glass · hi</span>border-hi · 0.085 fill</div>
+      <div class="pane c"><span class="h">glass · lo</span>blur 14px · 0.025</div>
+    </div>
+  </div>
+</body>
+</html>

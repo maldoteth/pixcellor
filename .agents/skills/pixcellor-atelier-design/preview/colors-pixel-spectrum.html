@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<title>Pixel spectrum — whisper</title>
+<style>
+  .pix-row { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+  .pix { aspect-ratio: 1/1; border-radius: var(--r-0); }
+  .pix-name { font: var(--t-code-sm); color: var(--fg-3); margin-top: 4px; }
+  .sparkle-demo { height: 56px; border-radius: var(--r-2); background: var(--bg-2); border: 1px solid var(--line-2); display: flex; align-items: center; padding: 0 18px; }
+  .sparkle-demo .label { font: 500 14px/1 var(--font-sans); color: var(--fg-1); position: relative; z-index: 2; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="spread">
+      <span class="tag">Pixel spectrum · whisper accent</span>
+      <span class="meta">muted vs Pixcellor neon</span>
+    </div>
+    <div>
+      <div class="pix-row">
+        <div class="pix" style="background: var(--pix-red)"></div>
+        <div class="pix" style="background: var(--pix-orange)"></div>
+        <div class="pix" style="background: var(--pix-yellow)"></div>
+        <div class="pix" style="background: var(--pix-lime)"></div>
+        <div class="pix" style="background: var(--pix-cyan)"></div>
+        <div class="pix" style="background: var(--pix-blue)"></div>
+        <div class="pix" style="background: var(--pix-violet)"></div>
+        <div class="pix" style="background: var(--pix-magenta)"></div>
+      </div>
+      <div class="pix-row" style="margin-top: 4px;">
+        <div class="pix-name">red</div>
+        <div class="pix-name">orange</div>
+        <div class="pix-name">yellow</div>
+        <div class="pix-name">lime</div>
+        <div class="pix-name">cyan</div>
+        <div class="pix-name">blue</div>
+        <div class="pix-name">violet</div>
+        <div class="pix-name">magenta</div>
+      </div>
+    </div>
+    <div class="sparkle-demo pixel-sparkle">
+      <span class="label">Ambient sparkle · .pixel-sparkle overlay</span>
+    </div>
+  </div>
+</body>
+</html>
