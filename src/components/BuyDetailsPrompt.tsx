@@ -1011,6 +1011,7 @@ const BuyDetailsPrompt = ({ open, onOpenChange, onConfirm, onInvoice, title = "C
         <AuroraBackdrop />
         <DialogHeader>
           <DialogTitle className="text-foreground drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">{title}</DialogTitle>
+          <ReferralTrackedBadge />
         </DialogHeader>
         <div className="relative overflow-y-auto max-h-[80vh]">{content}</div>
       </DialogContent>
