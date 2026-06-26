@@ -20,6 +20,7 @@ const BodySchema = z.object({
   }).passthrough().optional(),
   domain: z.string().max(500).optional(),
   domainTopUpGbp: z.union([z.number(), z.string()]).optional(),
+  affiliateRef: z.string().max(64).optional(),
   visionBrief: z.object({
     prompt: z.string().max(20000).optional(),
     imageUrl: z.string().max(4000).optional(),
