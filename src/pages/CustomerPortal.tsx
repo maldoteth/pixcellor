@@ -326,9 +326,10 @@ export default function CustomerPortal() {
   const [firstAffCode, setFirstAffCode] = useState<string | null>(null);
 
   const loadAffiliateBalance = useCallback(async () => {
-    const [refRes, payRes] = await Promise.all([
+    const [refRes, payRes, codeRes] = await Promise.all([
       supabase.from("affiliate_referrals").select("commission_cents,status"),
       supabase.from("affiliate_payouts").select("amount_cents,status"),
+      supabase.from("affiliate_codes").select("code,created_at").order("created_at", { ascending: false }).limit(1),
     ]);
     const earned = (refRes.data ?? [])
       .filter((r: { status: string | null }) => ["earned", "cleared", "approved", "paid"].includes(r.status ?? ""))
@@ -340,6 +341,7 @@ export default function CustomerPortal() {
     setAffEarnedCents(earned);
     setAffReservedCents(reserved);
     setAffHasOpen(hasOpen);
+    setFirstAffCode(((codeRes.data ?? [])[0] as { code?: string } | undefined)?.code ?? null);
   }, []);
 
   useEffect(() => {
