@@ -573,7 +573,7 @@ export default function AffiliateCrmPanel() {
 
       {/* Affiliate codes dialog */}
       <Dialog open={codesOpen} onOpenChange={setCodesOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl w-[calc(100%-1rem)] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Your affiliate codes</DialogTitle>
           </DialogHeader>
