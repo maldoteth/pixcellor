@@ -673,8 +673,35 @@ export default function CustomerPortal() {
                     return (
                       <Card className="border-border bg-card/70 backdrop-blur-xl">
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-base">Affiliate earnings</CardTitle>
+                          <div className="flex items-start justify-between gap-2">
+                            <CardTitle className="text-base">Affiliate earnings</CardTitle>
+                            {firstAffCode && (
+                              <div className="flex shrink-0 items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => { navigator.clipboard.writeText(firstAffCode); toast.success("Code copied"); }}
+                                  className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[11px] font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
+                                  title="Copy your affiliate code"
+                                >
+                                  <Copy className="h-3 w-3" /> Code
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const origin = (typeof window !== "undefined" ? window.location.origin : "https://pixcellor.com").replace(/\/$/, "");
+                                    navigator.clipboard.writeText(`${origin}/r/${firstAffCode}`);
+                                    toast.success("Link copied");
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[11px] font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
+                                  title="Copy your invite link"
+                                >
+                                  <Link2 className="h-3 w-3" /> Link
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </CardHeader>
+
                         <CardContent className="space-y-4">
                           <div>
                             <div className="text-xs uppercase tracking-wider text-muted-foreground">Total earned</div>
