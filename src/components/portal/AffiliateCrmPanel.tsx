@@ -574,13 +574,9 @@ export default function AffiliateCrmPanel() {
         </DialogContent>
       </Dialog>
 
-      {/* Affiliate codes dialog */}
-      <Dialog open={codesOpen && !isMobile} onOpenChange={(o) => !isMobile && setCodesOpen(o)}>
-        <DialogContent className="left-[50%] top-[50%] max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl translate-x-[-50%] translate-y-[-50%] overflow-x-hidden overflow-y-auto p-6">
-          <DialogHeader>
-
-            <DialogTitle>Your affiliate codes</DialogTitle>
-          </DialogHeader>
+      {/* Affiliate codes body (shared between Dialog on desktop and Drawer on mobile) */}
+      {(() => {
+        const codesBody = (
           <div className="w-full max-w-full min-w-0 space-y-4 overflow-x-hidden">
             <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm space-y-1 break-words">
               <p>Share your <strong>invite link</strong> — each one has its own preview image, QR code, and 10% off code. You earn <strong>5%</strong> of every sale that comes through it.</p>
@@ -730,11 +726,37 @@ export default function AffiliateCrmPanel() {
               )}
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCodesOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        );
+
+        return isMobile ? (
+          <Drawer open={codesOpen} onOpenChange={setCodesOpen}>
+            <DrawerContent className="max-h-[92vh]">
+              <DrawerHeader className="text-left">
+                <DrawerTitle>Your affiliate codes</DrawerTitle>
+              </DrawerHeader>
+              <div className="overflow-y-auto overflow-x-hidden px-4 pb-2">
+                {codesBody}
+              </div>
+              <DrawerFooter>
+                <Button variant="outline" onClick={() => setCodesOpen(false)}>Close</Button>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        ) : (
+          <Dialog open={codesOpen} onOpenChange={setCodesOpen}>
+            <DialogContent className="left-[50%] top-[50%] max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl translate-x-[-50%] translate-y-[-50%] overflow-x-hidden overflow-y-auto p-6">
+              <DialogHeader>
+                <DialogTitle>Your affiliate codes</DialogTitle>
+              </DialogHeader>
+              {codesBody}
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setCodesOpen(false)}>Close</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
+
 
       <CashoutDialog
         open={cashoutOpen}
