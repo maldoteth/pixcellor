@@ -32,6 +32,8 @@ import {
   Sparkles,
   Users,
   Wallet,
+  Copy,
+  Link2,
 } from "lucide-react";
 import AffiliateCrmPanel from "@/components/portal/AffiliateCrmPanel";
 import CashoutDialog from "@/components/portal/CashoutDialog";
