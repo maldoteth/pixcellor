@@ -633,7 +633,7 @@ export default function AffiliateCrmPanel() {
                     const origin = (typeof window !== "undefined" ? window.location.origin : "https://pixcellor.com").replace(/\/$/, "");
                     const link = `${origin}/r/${c.code}`;
                     const projectRef = (import.meta.env.VITE_SUPABASE_PROJECT_ID as string) || "rkgjkvghejcmostuqkgw";
-                    const previewImg = `https://${projectRef}.supabase.co/functions/v1/affiliate-share-image?code=${c.code}`;
+                    const previewImg = `https://${projectRef}.supabase.co/functions/v1/affiliate-share-image?code=${c.code}&v=3`;
                     return (
                       <div key={c.id} className="rounded-md border border-border/40 bg-card/30 p-3 space-y-3">
                         <div className="flex flex-wrap items-center gap-2">
