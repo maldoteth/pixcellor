@@ -638,7 +638,7 @@ export default function AffiliateCrmPanel() {
                     return (
                       <div key={c.id} className="max-w-full overflow-hidden rounded-md border border-border/40 bg-card/30 p-2 space-y-3 sm:p-3">
                         <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2 overflow-hidden">
-                          <code className="min-w-0 max-w-full overflow-wrap-anywhere break-all font-mono text-sm font-bold tracking-[0.08em] sm:text-lg sm:tracking-[0.2em]">{c.code}</code>
+                          <code className="min-w-0 max-w-full break-all font-mono text-sm font-bold tracking-[0.08em] [overflow-wrap:anywhere] sm:text-lg sm:tracking-[0.2em]">{c.code}</code>
                           <Badge variant="secondary" className="rounded-none text-[10px] sm:text-xs">{c.buyer_discount_pct}% off · {c.affiliate_commission_pct}% to you</Badge>
                           <Button size="sm" variant="ghost" className="px-2" title="Copy code" onClick={() => copy(c.code)}>
                             <Copy className="h-3.5 w-3.5 mr-1" /> Code
