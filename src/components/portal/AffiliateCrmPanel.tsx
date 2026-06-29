@@ -646,17 +646,18 @@ export default function AffiliateCrmPanel() {
                             <Link2 className="h-3.5 w-3.5 mr-1" /> Link
                           </Button>
                         </div>
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                          <a href={link} target="_blank" rel="noreferrer" className="block w-full sm:w-1/2 overflow-hidden rounded-md border border-border/40 bg-black">
+                        <div className="flex flex-col gap-3">
+                          <a href={previewImg} target="_blank" rel="noreferrer" className="block w-full overflow-hidden rounded-md border border-border/40 bg-black" title="Open full-size share image">
                             <img
                               src={previewImg}
                               alt={`Share preview for ${c.code}`}
                               width={1200}
                               height={630}
-                              className="w-full h-auto block"
+                              className="w-full h-auto block aspect-[1200/630]"
                               loading="lazy"
                             />
                           </a>
+
                           <div className="flex-1 space-y-2">
                             <div>
                               <Label htmlFor={`sn-${c.id}`} className="text-xs uppercase tracking-wider text-muted-foreground">Your name on the preview</Label>
