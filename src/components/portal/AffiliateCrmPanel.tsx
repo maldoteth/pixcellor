@@ -637,9 +637,9 @@ export default function AffiliateCrmPanel() {
                     const previewImg = `https://${projectRef}.supabase.co/functions/v1/affiliate-share-image?code=${c.code}&v=6&t=${previewBust[c.id] ?? 0}`;
                     return (
                       <div key={c.id} className="rounded-md border border-border/40 bg-card/30 p-3 space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <code className="font-mono text-lg tracking-[0.3em] font-bold">{c.code}</code>
-                          <Badge variant="secondary" className="rounded-none">{c.buyer_discount_pct}% off · {c.affiliate_commission_pct}% to you</Badge>
+                        <div className="flex flex-wrap items-center gap-2 min-w-0">
+                          <code className="font-mono text-base sm:text-lg tracking-[0.2em] font-bold break-all">{c.code}</code>
+                          <Badge variant="secondary" className="rounded-none text-[10px] sm:text-xs">{c.buyer_discount_pct}% off · {c.affiliate_commission_pct}% to you</Badge>
                           <Button size="sm" variant="ghost" title="Copy code" onClick={() => copy(c.code)}>
                             <Copy className="h-3.5 w-3.5 mr-1" /> Code
                           </Button>
