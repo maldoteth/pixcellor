@@ -575,9 +575,10 @@ export default function AffiliateCrmPanel() {
       </Dialog>
 
       {/* Affiliate codes dialog */}
-      <Dialog open={codesOpen} onOpenChange={setCodesOpen}>
-        <DialogContent className="left-2 right-2 top-2 bottom-2 max-h-none w-auto max-w-none translate-x-0 translate-y-0 overflow-x-hidden overflow-y-auto p-3 sm:left-[50%] sm:right-auto sm:top-[50%] sm:bottom-auto sm:max-h-[90vh] sm:w-[calc(100%-1rem)] sm:max-w-2xl sm:translate-x-[-50%] sm:translate-y-[-50%] sm:p-6">
+      <Dialog open={codesOpen && !isMobile} onOpenChange={(o) => !isMobile && setCodesOpen(o)}>
+        <DialogContent className="left-[50%] top-[50%] max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl translate-x-[-50%] translate-y-[-50%] overflow-x-hidden overflow-y-auto p-6">
           <DialogHeader>
+
             <DialogTitle>Your affiliate codes</DialogTitle>
           </DialogHeader>
           <div className="w-full max-w-full min-w-0 space-y-4 overflow-x-hidden">
