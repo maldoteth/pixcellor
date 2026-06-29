@@ -288,9 +288,9 @@ export default function AffiliateCrmPanel() {
   };
 
   return (
-    <div className="min-w-0 space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[220px] md:max-w-[65%]">
+    <div className="w-full max-w-full min-w-0 space-y-2 overflow-x-hidden">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
+        <div className="relative min-w-0 flex-1 sm:min-w-[220px] md:max-w-[65%]">
           <Search className="pointer-events-none absolute left-3 top-[calc(50%+1px)] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
@@ -299,17 +299,17 @@ export default function AffiliateCrmPanel() {
             className="pl-9"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={openAdd} className="h-9 shrink-0">
+        <div className="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:items-center">
+          <Button onClick={openAdd} className="h-9 min-w-0 px-2 sm:px-3">
             <UserPlus className="w-4 h-4 mr-2" /> Add Client
           </Button>
-          <Button onClick={openCodes} variant="outline" className="h-9 shrink-0">
+          <Button onClick={openCodes} variant="outline" className="h-9 min-w-0 px-2 sm:px-3">
             <Ticket className="w-4 h-4 mr-2" /> Codes
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 pt-1">
+      <div className="flex max-w-full flex-wrap items-center gap-2 pt-1 overflow-hidden">
         <span className="text-muted-foreground text-slate-50 bg-white/0 text-xs">Sort:</span>
         {([
           { value: "newest", label: "Newest" },
@@ -325,7 +325,7 @@ export default function AffiliateCrmPanel() {
             {opt.label}
           </button>
         ))}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <span className="text-muted-foreground text-slate-50 bg-white/0 text-xs md:ml-2">Type:</span>
           <button
             type="button"
@@ -573,30 +573,30 @@ export default function AffiliateCrmPanel() {
 
       {/* Affiliate codes dialog */}
       <Dialog open={codesOpen} onOpenChange={setCodesOpen}>
-        <DialogContent className="max-w-2xl w-[calc(100%-1rem)] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent className="left-2 right-2 top-2 bottom-2 max-h-none w-auto max-w-none translate-x-0 translate-y-0 overflow-x-hidden overflow-y-auto p-3 sm:left-[50%] sm:right-auto sm:top-[50%] sm:bottom-auto sm:max-h-[90vh] sm:w-[calc(100%-1rem)] sm:max-w-2xl sm:translate-x-[-50%] sm:translate-y-[-50%] sm:p-6">
           <DialogHeader>
             <DialogTitle>Your affiliate codes</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm space-y-1">
+          <div className="w-full max-w-full min-w-0 space-y-4 overflow-x-hidden">
+            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm space-y-1 break-words">
               <p>Share your <strong>invite link</strong> — each one has its own preview image, QR code, and 10% off code. You earn <strong>5%</strong> of every sale that comes through it.</p>
               <p className="text-xs text-muted-foreground">Smart attribution: anyone who opens your link gets a 90-day cookie. Even if they come back later and pay without entering the code, the sale is still credited to you.</p>
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/60 bg-card/30 p-3">
-              <div>
+            <div className="grid min-w-0 grid-cols-1 gap-3 rounded-md border border-border/60 bg-card/30 p-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">Available to cash out</div>
                 <div className="text-xl font-semibold">{fmtMoney(availableCents, "gbp")}</div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="break-words text-[11px] text-muted-foreground">
                   Earned {fmtMoney(totalEarned, "gbp")} · Reserved {fmtMoney(reservedByPayouts, "gbp")}
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button onClick={() => setCashoutOpen(true)} disabled={hasOpenPayout || availableCents < 2500} variant="default">
+              <div className="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                <Button onClick={() => setCashoutOpen(true)} disabled={hasOpenPayout || availableCents < 2500} variant="default" className="min-w-0 px-2 sm:px-3">
                   <Wallet className="h-4 w-4 mr-2" /> Cash out
                 </Button>
-                <Button onClick={handleGenerate} disabled={generating} variant="outline">
+                <Button onClick={handleGenerate} disabled={generating} variant="outline" className="min-w-0 px-2 text-xs sm:px-3 sm:text-sm">
                   {generating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Ticket className="h-4 w-4 mr-2" />}
-                  Generate new code
+                  <span className="truncate">Generate code</span>
                 </Button>
               </div>
             </div>
@@ -629,25 +629,25 @@ export default function AffiliateCrmPanel() {
               ) : codes.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-2">No codes yet — generate your first one.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="max-w-full space-y-3 overflow-x-hidden">
                   {codes.map(c => {
                     const origin = (typeof window !== "undefined" ? window.location.origin : "https://pixcellor.com").replace(/\/$/, "");
                     const link = `${origin}/r/${c.code}`;
                     const projectRef = (import.meta.env.VITE_SUPABASE_PROJECT_ID as string) || "rkgjkvghejcmostuqkgw";
                     const previewImg = `https://${projectRef}.supabase.co/functions/v1/affiliate-share-image?code=${c.code}&v=6&t=${previewBust[c.id] ?? 0}`;
                     return (
-                      <div key={c.id} className="rounded-md border border-border/40 bg-card/30 p-3 space-y-3">
-                        <div className="flex flex-wrap items-center gap-2 min-w-0">
-                          <code className="font-mono text-base sm:text-lg tracking-[0.2em] font-bold break-all">{c.code}</code>
+                      <div key={c.id} className="max-w-full overflow-hidden rounded-md border border-border/40 bg-card/30 p-2 space-y-3 sm:p-3">
+                        <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2 overflow-hidden">
+                          <code className="min-w-0 max-w-full break-all font-mono text-sm font-bold tracking-[0.08em] [overflow-wrap:anywhere] sm:text-lg sm:tracking-[0.2em]">{c.code}</code>
                           <Badge variant="secondary" className="rounded-none text-[10px] sm:text-xs">{c.buyer_discount_pct}% off · {c.affiliate_commission_pct}% to you</Badge>
-                          <Button size="sm" variant="ghost" title="Copy code" onClick={() => copy(c.code)}>
+                          <Button size="sm" variant="ghost" className="px-2" title="Copy code" onClick={() => copy(c.code)}>
                             <Copy className="h-3.5 w-3.5 mr-1" /> Code
                           </Button>
-                          <Button size="sm" variant="ghost" title="Copy invite link" onClick={() => copy(link)}>
+                          <Button size="sm" variant="ghost" className="px-2" title="Copy invite link" onClick={() => copy(link)}>
                             <Link2 className="h-3.5 w-3.5 mr-1" /> Link
                           </Button>
                         </div>
-                        <div className="flex flex-col gap-3">
+                        <div className="flex max-w-full min-w-0 flex-col gap-3 overflow-hidden">
                           <a href={previewImg} target="_blank" rel="noreferrer" className="block w-full overflow-hidden rounded-md border border-border/40 bg-black" title="Open full-size share image">
                             <img
                               src={previewImg}
@@ -659,7 +659,7 @@ export default function AffiliateCrmPanel() {
                             />
                           </a>
 
-                          <div className="flex-1 space-y-2">
+                          <div className="min-w-0 flex-1 space-y-2">
                             <div>
                               <Label htmlFor={`sn-${c.id}`} className="text-xs uppercase tracking-wider text-muted-foreground">Your name on the preview</Label>
                               <div className="flex gap-2 mt-1">
