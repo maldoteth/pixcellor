@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet, Link2, RefreshCw } from "lucide-react";
 import CashoutDialog from "@/components/portal/CashoutDialog";
@@ -80,6 +82,7 @@ export default function AffiliateCrmPanel() {
   type Referral = { id: string; code: string; amount_subtotal_cents: number | null; commission_cents: number | null; currency: string | null; status: string; buyer_email: string | null; created_at: string };
   type Payout = { id: string; amount_cents: number; currency: string; status: string; method: string; created_at: string };
   const [codesOpen, setCodesOpen] = useState(false);
+  const isMobile = useIsMobile();
   const [codes, setCodes] = useState<AffCode[]>([]);
   const [previewBust, setPreviewBust] = useState<Record<string, number>>({});
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -571,12 +574,9 @@ export default function AffiliateCrmPanel() {
         </DialogContent>
       </Dialog>
 
-      {/* Affiliate codes dialog */}
-      <Dialog open={codesOpen} onOpenChange={setCodesOpen}>
-        <DialogContent className="left-2 right-2 top-2 bottom-2 max-h-none w-auto max-w-none translate-x-0 translate-y-0 overflow-x-hidden overflow-y-auto p-3 sm:left-[50%] sm:right-auto sm:top-[50%] sm:bottom-auto sm:max-h-[90vh] sm:w-[calc(100%-1rem)] sm:max-w-2xl sm:translate-x-[-50%] sm:translate-y-[-50%] sm:p-6">
-          <DialogHeader>
-            <DialogTitle>Your affiliate codes</DialogTitle>
-          </DialogHeader>
+      {/* Affiliate codes body (shared between Dialog on desktop and Drawer on mobile) */}
+      {(() => {
+        const codesBody = (
           <div className="w-full max-w-full min-w-0 space-y-4 overflow-x-hidden">
             <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm space-y-1 break-words">
               <p>Share your <strong>invite link</strong> — each one has its own preview image, QR code, and 10% off code. You earn <strong>5%</strong> of every sale that comes through it.</p>
@@ -726,11 +726,37 @@ export default function AffiliateCrmPanel() {
               )}
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCodesOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        );
+
+        return isMobile ? (
+          <Drawer open={codesOpen} onOpenChange={setCodesOpen}>
+            <DrawerContent className="max-h-[92vh]">
+              <DrawerHeader className="text-left">
+                <DrawerTitle>Your affiliate codes</DrawerTitle>
+              </DrawerHeader>
+              <div className="overflow-y-auto overflow-x-hidden px-4 pb-2">
+                {codesBody}
+              </div>
+              <DrawerFooter>
+                <Button variant="outline" onClick={() => setCodesOpen(false)}>Close</Button>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        ) : (
+          <Dialog open={codesOpen} onOpenChange={setCodesOpen}>
+            <DialogContent className="left-[50%] top-[50%] max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl translate-x-[-50%] translate-y-[-50%] overflow-x-hidden overflow-y-auto p-6">
+              <DialogHeader>
+                <DialogTitle>Your affiliate codes</DialogTitle>
+              </DialogHeader>
+              {codesBody}
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setCodesOpen(false)}>Close</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
+
 
       <CashoutDialog
         open={cashoutOpen}
