@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet, Link2, RefreshCw } from "lucide-react";
 import CashoutDialog from "@/components/portal/CashoutDialog";
