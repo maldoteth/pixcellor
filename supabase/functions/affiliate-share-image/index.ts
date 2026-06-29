@@ -126,8 +126,8 @@ function buildSvg(opts: { name: string; code: string; shareUrl: string; qrPath: 
   <!-- Whisper pixel sparkle -->
   ${sparkle}
 
-  <!-- Actual Pixcellor wordmark asset. Positioned to compensate for transparent padding in the source PNG. -->
-  <image href="${logoHref}" x="58" y="7" width="200" height="104" opacity="0.96" preserveAspectRatio="xMidYMid meet"/>
+  <!-- Actual Pixcellor wordmark asset. Negative Y compensates for transparent padding in the source PNG. -->
+  <image href="${logoHref}" x="56" y="-18" width="240" height="126" opacity="0.96" preserveAspectRatio="xMidYMid meet"/>
 
   <!-- Eyebrow: gold hairline + uppercase tagline -->
   <g transform="translate(64,176)">
