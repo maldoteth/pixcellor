@@ -323,6 +323,7 @@ export default function CustomerPortal() {
   const [affHasOpen, setAffHasOpen] = useState(false);
   const [cashoutOpen, setCashoutOpen] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [firstAffCode, setFirstAffCode] = useState<string | null>(null);
 
   const loadAffiliateBalance = useCallback(async () => {
     const [refRes, payRes] = await Promise.all([
