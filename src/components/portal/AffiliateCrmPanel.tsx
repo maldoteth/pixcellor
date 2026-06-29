@@ -82,6 +82,7 @@ export default function AffiliateCrmPanel() {
   type Referral = { id: string; code: string; amount_subtotal_cents: number | null; commission_cents: number | null; currency: string | null; status: string; buyer_email: string | null; created_at: string };
   type Payout = { id: string; amount_cents: number; currency: string; status: string; method: string; created_at: string };
   const [codesOpen, setCodesOpen] = useState(false);
+  const isMobile = useIsMobile();
   const [codes, setCodes] = useState<AffCode[]>([]);
   const [previewBust, setPreviewBust] = useState<Record<string, number>>({});
   const [referrals, setReferrals] = useState<Referral[]>([]);
