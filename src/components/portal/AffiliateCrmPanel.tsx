@@ -686,9 +686,10 @@ export default function AffiliateCrmPanel() {
                                   size="sm"
                                   variant="outline"
                                   title="Refresh preview image"
+                                  className="shrink-0 px-2 sm:px-3"
                                   onClick={() => setPreviewBust(prev => ({ ...prev, [c.id]: Date.now() }))}
                                 >
-                                  <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
+                                  <RefreshCw className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Refresh</span>
                                 </Button>
                               </div>
                               <p className="text-[11px] text-muted-foreground mt-1">Shown as "{c.share_name || "your email name"} wants you on Pixcellor". Blank = your email username.</p>
