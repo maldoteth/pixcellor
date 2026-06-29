@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet, Link2 } from "lucide-react";
+import { Search, UserPlus, Loader2, Trash2, Ticket, Copy, Wallet, Link2, RefreshCw } from "lucide-react";
 import CashoutDialog from "@/components/portal/CashoutDialog";
 import CompaniesHouseInput from "@/components/CompaniesHouseInput";
 import { usePortalRefresh } from "@/hooks/usePortalRefresh";
@@ -81,6 +81,7 @@ export default function AffiliateCrmPanel() {
   type Payout = { id: string; amount_cents: number; currency: string; status: string; method: string; created_at: string };
   const [codesOpen, setCodesOpen] = useState(false);
   const [codes, setCodes] = useState<AffCode[]>([]);
+  const [previewBust, setPreviewBust] = useState<Record<string, number>>({});
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [codesLoading, setCodesLoading] = useState(false);
@@ -633,7 +634,7 @@ export default function AffiliateCrmPanel() {
                     const origin = (typeof window !== "undefined" ? window.location.origin : "https://pixcellor.com").replace(/\/$/, "");
                     const link = `${origin}/r/${c.code}`;
                     const projectRef = (import.meta.env.VITE_SUPABASE_PROJECT_ID as string) || "rkgjkvghejcmostuqkgw";
-                    const previewImg = `https://${projectRef}.supabase.co/functions/v1/affiliate-share-image?code=${c.code}&v=5`;
+                    const previewImg = `https://${projectRef}.supabase.co/functions/v1/affiliate-share-image?code=${c.code}&v=6&t=${previewBust[c.id] ?? 0}`;
                     return (
                       <div key={c.id} className="rounded-md border border-border/40 bg-card/30 p-3 space-y-3">
                         <div className="flex flex-wrap items-center gap-2">
@@ -667,6 +668,7 @@ export default function AffiliateCrmPanel() {
                                   defaultValue={c.share_name ?? ""}
                                   maxLength={40}
                                   placeholder="e.g. Alex from Pixcellor"
+                                  className="flex-1 min-w-0"
                                   onBlur={async (e) => {
                                     const next = e.target.value.trim();
                                     if ((c.share_name ?? "") === next) return;
@@ -676,8 +678,18 @@ export default function AffiliateCrmPanel() {
                                     if (error) { toast.error(error.message); return; }
                                     toast.success("Preview updated");
                                     setCodes(prev => prev.map(x => x.id === c.id ? { ...x, share_name: next || null } : x));
+                                    setPreviewBust(prev => ({ ...prev, [c.id]: Date.now() }));
                                   }}
                                 />
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  title="Refresh preview image"
+                                  onClick={() => setPreviewBust(prev => ({ ...prev, [c.id]: Date.now() }))}
+                                >
+                                  <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
+                                </Button>
                               </div>
                               <p className="text-[11px] text-muted-foreground mt-1">Shown as "{c.share_name || "your email name"} wants you on Pixcellor". Blank = your email username.</p>
                             </div>

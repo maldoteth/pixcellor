@@ -126,29 +126,31 @@ function buildSvg(opts: { name: string; code: string; shareUrl: string; qrPath: 
   <!-- Whisper pixel sparkle -->
   ${sparkle}
 
-  <!-- Actual Pixcellor wordmark asset. Negative Y compensates for transparent padding in the source PNG. -->
-  <image href="${logoHref}" x="56" y="-18" width="240" height="126" opacity="0.96" preserveAspectRatio="xMidYMid meet"/>
+  <!-- Actual Pixcellor wordmark asset. Top padding matches side padding (~56px). -->
+  <image href="${logoHref}" x="56" y="38" width="240" height="126" opacity="0.96" preserveAspectRatio="xMidYMid meet"/>
+
+  <!-- Top-right domain -->
+  <text x="${W - 64}" y="92" text-anchor="end" fill="${FG_MUTED}" font-size="18" font-weight="500" letter-spacing="0.5">pixcellor.com</text>
 
   <!-- Eyebrow: gold hairline + uppercase tagline -->
-  <g transform="translate(64,176)">
+  <g transform="translate(64,236)">
     <rect x="0" y="-5" width="78" height="1.5" fill="url(#goldSheen)"/>
     <text x="96" y="0" fill="${FG_MUTED}" font-size="15" font-weight="600" letter-spacing="6">AN  INVITATION</text>
   </g>
 
   <!-- Headline: big, with ONE Fraunces italic gold word -->
-  <text x="64" y="296" fill="${FG}" font-size="78" font-weight="700" letter-spacing="-2.5">${name}</text>
-  <text x="64" y="386" fill="${FG}" font-size="78" font-weight="700" letter-spacing="-2.5">
+  <text x="64" y="336" fill="${FG}" font-size="78" font-weight="700" letter-spacing="-2.5">${name}</text>
+  <text x="64" y="426" fill="${FG}" font-size="78" font-weight="700" letter-spacing="-2.5">
     <tspan>invites you to </tspan><tspan fill="url(#goldShimmer)" font-family="Fraunces, Georgia, serif" font-style="italic" font-weight="600">join</tspan><tspan>.</tspan>
   </text>
 
   <!-- Subtitle -->
-  <text x="64" y="450" fill="${FG_MUTED}" font-size="24" font-weight="400" letter-spacing="-0.2">
+  <text x="64" y="486" fill="${FG_MUTED}" font-size="24" font-weight="400" letter-spacing="-0.2">
     Bespoke websites &amp; full-stack apps — 10% off your first project.
   </text>
 
-  <!-- Footer: pixcellor.com + invite code chip -->
-  <text x="64" y="566" fill="${FG_DIM}" font-size="18" font-weight="500">pixcellor.com</text>
-  <g transform="translate(220,540)">
+  <!-- Footer: invite code chip -->
+  <g transform="translate(64,540)">
     <text x="0" y="20" fill="${FG_MUTED}" font-size="11" font-weight="700" letter-spacing="4"
           font-family="'Geist Mono',ui-monospace,monospace">INVITE  CODE</text>
     <text x="0" y="56" fill="url(#goldShimmer)" font-size="32" font-weight="700" letter-spacing="8"
