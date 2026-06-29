@@ -4,7 +4,7 @@
 //
 // Designed to mirror the Pixcellor home OG card:
 //   • Pitch-black canvas with faint pixel sparkle.
-//   • Small "Pixcellor" top-left + "PIXCELLOR™" top-right.
+//   • Actual Pixcellor wordmark asset in the top-left — no fake text lockups.
 //   • Gold hairline rule + uppercase eyebrow.
 //   • Big headline with ONE Fraunces italic gold word.
 //   • Muted subtitle, footer with domain + code, small QR bottom-right.
@@ -32,6 +32,7 @@ const PIX_CYAN = "#5FB8C9";
 const PIX_MAGENTA = "#C26BA0";
 
 const ORIGIN = "https://pixcellor.com";
+const LOGO_URL = `${ORIGIN}/pixcellor-wordmark-white.png`;
 
 function escapeXml(s: string) {
   return s.replace(/[<>&"']/g, (c) => ({ "<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;","'":"&apos;" }[c] as string));
@@ -39,6 +40,24 @@ function escapeXml(s: string) {
 function titleCase(s: string) {
   return s.replace(/[._-]+/g, " ").trim().split(/\s+/)
     .map((w) => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : "").join(" ");
+}
+
+async function fetchLogoHref(): Promise<string> {
+  try {
+    const response = await fetch(LOGO_URL);
+    if (!response.ok) return LOGO_URL;
+
+    const contentType = response.headers.get("content-type") || "image/png";
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+    return `data:${contentType};base64,${btoa(binary)}`;
+  } catch (_error) {
+    return LOGO_URL;
+  }
 }
 
 async function buildQrSvgPath(text: string, size: number): Promise<string> {
@@ -57,10 +76,11 @@ async function buildQrSvgPath(text: string, size: number): Promise<string> {
   return path;
 }
 
-function buildSvg(opts: { name: string; code: string; shareUrl: string; qrPath: string; qrSize: number }): string {
+function buildSvg(opts: { name: string; code: string; shareUrl: string; qrPath: string; qrSize: number; logoHref: string }): string {
   const W = 1200, H = 630;
   const name = escapeXml(opts.name);
   const code = escapeXml(opts.code);
+  const logoHref = escapeXml(opts.logoHref);
 
   const qrPad = 10;
   const qrBox = opts.qrSize + qrPad * 2;
@@ -106,11 +126,8 @@ function buildSvg(opts: { name: string; code: string; shareUrl: string; qrPath: 
   <!-- Whisper pixel sparkle -->
   ${sparkle}
 
-  <!-- Top-left wordmark text -->
-  <text x="64" y="68" fill="${FG}" fill-opacity="0.92" font-size="22" font-weight="600" letter-spacing="-0.2">Pixcellor</text>
-
-  <!-- Top-right wordmark with tracking -->
-  <text x="${W - 64}" y="68" text-anchor="end" fill="${FG_MUTED}" font-size="14" font-weight="600" letter-spacing="3">PIXCELLOR<tspan font-size="9" dy="-4">™</tspan></text>
+  <!-- Actual Pixcellor wordmark asset. Negative Y compensates for transparent padding in the source PNG. -->
+  <image href="${logoHref}" x="56" y="-18" width="240" height="126" opacity="0.96" preserveAspectRatio="xMidYMid meet"/>
 
   <!-- Eyebrow: gold hairline + uppercase tagline -->
   <g transform="translate(64,176)">
@@ -182,8 +199,11 @@ serve(async (req) => {
 
     const shareUrl = `${ORIGIN}/r/${rawCode}`;
     const qrSize = 140;
-    const qrPath = await buildQrSvgPath(shareUrl, qrSize);
-    const svg = buildSvg({ name: displayName, code: rawCode, shareUrl, qrPath, qrSize });
+    const [qrPath, logoHref] = await Promise.all([
+      buildQrSvgPath(shareUrl, qrSize),
+      fetchLogoHref(),
+    ]);
+    const svg = buildSvg({ name: displayName, code: rawCode, shareUrl, qrPath, qrSize, logoHref });
 
     return new Response(svg, {
       status: 200,
