@@ -668,6 +668,7 @@ export default function AffiliateCrmPanel() {
                                   defaultValue={c.share_name ?? ""}
                                   maxLength={40}
                                   placeholder="e.g. Alex from Pixcellor"
+                                  className="flex-1 min-w-0"
                                   onBlur={async (e) => {
                                     const next = e.target.value.trim();
                                     if ((c.share_name ?? "") === next) return;
@@ -677,8 +678,18 @@ export default function AffiliateCrmPanel() {
                                     if (error) { toast.error(error.message); return; }
                                     toast.success("Preview updated");
                                     setCodes(prev => prev.map(x => x.id === c.id ? { ...x, share_name: next || null } : x));
+                                    setPreviewBust(prev => ({ ...prev, [c.id]: Date.now() }));
                                   }}
                                 />
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  title="Refresh preview image"
+                                  onClick={() => setPreviewBust(prev => ({ ...prev, [c.id]: Date.now() }))}
+                                >
+                                  <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
+                                </Button>
                               </div>
                               <p className="text-[11px] text-muted-foreground mt-1">Shown as "{c.share_name || "your email name"} wants you on Pixcellor". Blank = your email username.</p>
                             </div>
