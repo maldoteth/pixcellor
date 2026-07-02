@@ -496,6 +496,7 @@ export default function CustomerPortal() {
     { title: "Leads", value: "leads" as const, icon: Inbox },
     ...(isAdmin ? [{ title: "Calls", value: "calls" as const, icon: Phone }] : []),
     { title: "Affiliate", value: "affiliate" as const, icon: Users },
+    { title: "Email", value: "email" as const, icon: Mail },
     { title: "Wallet", value: "wallet" as const, icon: Wallet },
   ];
 
