@@ -45,6 +45,7 @@ import CallBookingsPanel from "@/components/portal/CallBookingsPanel";
 import ByowSitesTab from "@/components/byow/ByowSitesTab";
 import RequestChooserDialog from "@/components/portal/RequestChooserDialog";
 import { WalletPanel } from "@/components/wallet/WalletPanel";
+import BroadcastPanel from "@/components/portal/BroadcastPanel";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
