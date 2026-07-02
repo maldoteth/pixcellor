@@ -1094,6 +1094,554 @@ export type Database = {
           },
         ]
       }
+      client_campaign_events: {
+        Row: {
+          campaign_id: string
+          event_type: string
+          id: string
+          ip_hash: string | null
+          occurred_at: string
+          send_id: string
+          url: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          event_type: string
+          id?: string
+          ip_hash?: string | null
+          occurred_at?: string
+          send_id: string
+          url?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          event_type?: string
+          id?: string
+          ip_hash?: string | null
+          occurred_at?: string
+          send_id?: string
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_campaign_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_campaign_events_send_id_fkey"
+            columns: ["send_id"]
+            isOneToOne: false
+            referencedRelation: "client_campaign_sends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_campaign_sends: {
+        Row: {
+          ab_variant: string | null
+          bounce_reason: string | null
+          bounced_at: string | null
+          campaign_id: string
+          click_count: number
+          contact_id: string | null
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          first_click_at: string | null
+          id: string
+          message_id: string | null
+          open_count: number
+          opened_at: string | null
+          recipient_email: string
+          sent_at: string | null
+          status: Database["public"]["Enums"]["broadcast_send_status"]
+          unsubscribed_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ab_variant?: string | null
+          bounce_reason?: string | null
+          bounced_at?: string | null
+          campaign_id: string
+          click_count?: number
+          contact_id?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          first_click_at?: string | null
+          id?: string
+          message_id?: string | null
+          open_count?: number
+          opened_at?: string | null
+          recipient_email: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["broadcast_send_status"]
+          unsubscribed_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ab_variant?: string | null
+          bounce_reason?: string | null
+          bounced_at?: string | null
+          campaign_id?: string
+          click_count?: number
+          contact_id?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          first_click_at?: string | null
+          id?: string
+          message_id?: string | null
+          open_count?: number
+          opened_at?: string | null
+          recipient_email?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["broadcast_send_status"]
+          unsubscribed_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_campaign_sends_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_campaign_sends_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "client_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_campaigns: {
+        Row: {
+          ab_split_pct: number
+          ab_subject_b: string | null
+          ab_test_enabled: boolean
+          created_at: string
+          domain_id: string | null
+          from_email: string
+          from_name: string
+          id: string
+          list_id: string | null
+          name: string
+          plain_text: string | null
+          preheader: string | null
+          reply_to: string | null
+          scheduled_for: string | null
+          sending_started_at: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["broadcast_campaign_status"]
+          subject: string
+          template_html: string
+          template_json: Json | null
+          total_bounced: number
+          total_clicked: number
+          total_delivered: number
+          total_opened: number
+          total_recipients: number
+          total_sent: number
+          total_unsubscribed: number
+          track_clicks: boolean
+          track_opens: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ab_split_pct?: number
+          ab_subject_b?: string | null
+          ab_test_enabled?: boolean
+          created_at?: string
+          domain_id?: string | null
+          from_email?: string
+          from_name?: string
+          id?: string
+          list_id?: string | null
+          name: string
+          plain_text?: string | null
+          preheader?: string | null
+          reply_to?: string | null
+          scheduled_for?: string | null
+          sending_started_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["broadcast_campaign_status"]
+          subject?: string
+          template_html?: string
+          template_json?: Json | null
+          total_bounced?: number
+          total_clicked?: number
+          total_delivered?: number
+          total_opened?: number
+          total_recipients?: number
+          total_sent?: number
+          total_unsubscribed?: number
+          track_clicks?: boolean
+          track_opens?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ab_split_pct?: number
+          ab_subject_b?: string | null
+          ab_test_enabled?: boolean
+          created_at?: string
+          domain_id?: string | null
+          from_email?: string
+          from_name?: string
+          id?: string
+          list_id?: string | null
+          name?: string
+          plain_text?: string | null
+          preheader?: string | null
+          reply_to?: string | null
+          scheduled_for?: string | null
+          sending_started_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["broadcast_campaign_status"]
+          subject?: string
+          template_html?: string
+          template_json?: Json | null
+          total_bounced?: number
+          total_clicked?: number
+          total_delivered?: number
+          total_opened?: number
+          total_recipients?: number
+          total_sent?: number
+          total_unsubscribed?: number
+          track_clicks?: boolean
+          track_opens?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_campaigns_domain_id_fkey"
+            columns: ["domain_id"]
+            isOneToOne: false
+            referencedRelation: "client_email_domains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_campaigns_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "client_contact_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_contact_lists: {
+        Row: {
+          contact_count: number
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          subscribed_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          subscribed_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          subscribed_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      client_contacts: {
+        Row: {
+          bounce_reason: string | null
+          consent_source: string | null
+          created_at: string
+          custom_fields: Json
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          last_opened_hour: number | null
+          list_id: string | null
+          status: Database["public"]["Enums"]["broadcast_contact_status"]
+          subscribed_at: string
+          unsubscribed_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bounce_reason?: string | null
+          consent_source?: string | null
+          created_at?: string
+          custom_fields?: Json
+          email: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          last_opened_hour?: number | null
+          list_id?: string | null
+          status?: Database["public"]["Enums"]["broadcast_contact_status"]
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bounce_reason?: string | null
+          consent_source?: string | null
+          created_at?: string
+          custom_fields?: Json
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          last_opened_hour?: number | null
+          list_id?: string | null
+          status?: Database["public"]["Enums"]["broadcast_contact_status"]
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_contacts_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "client_contact_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_email_addon: {
+        Row: {
+          active: boolean
+          company_name: string | null
+          created_at: string
+          id: string
+          max_contacts: number
+          max_domains: number
+          monthly_send_quota: number
+          period_ends_at: string | null
+          period_started_at: string | null
+          plan: Database["public"]["Enums"]["broadcast_plan"]
+          postal_address: string | null
+          sent_this_period: number
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          max_contacts?: number
+          max_domains?: number
+          monthly_send_quota?: number
+          period_ends_at?: string | null
+          period_started_at?: string | null
+          plan?: Database["public"]["Enums"]["broadcast_plan"]
+          postal_address?: string | null
+          sent_this_period?: number
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          max_contacts?: number
+          max_domains?: number
+          monthly_send_quota?: number
+          period_ends_at?: string | null
+          period_started_at?: string | null
+          plan?: Database["public"]["Enums"]["broadcast_plan"]
+          postal_address?: string | null
+          sent_this_period?: number
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      client_email_domains: {
+        Row: {
+          created_at: string
+          dkim_ok: boolean
+          dkim_private_key: string | null
+          dkim_public_key: string | null
+          dkim_selector: string
+          dmarc_ok: boolean
+          domain: string
+          id: string
+          last_checked_at: string | null
+          mx_ok: boolean
+          spf_ok: boolean
+          status: Database["public"]["Enums"]["broadcast_domain_status"]
+          updated_at: string
+          user_id: string
+          verification_token: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          dkim_ok?: boolean
+          dkim_private_key?: string | null
+          dkim_public_key?: string | null
+          dkim_selector?: string
+          dmarc_ok?: boolean
+          domain: string
+          id?: string
+          last_checked_at?: string | null
+          mx_ok?: boolean
+          spf_ok?: boolean
+          status?: Database["public"]["Enums"]["broadcast_domain_status"]
+          updated_at?: string
+          user_id: string
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          dkim_ok?: boolean
+          dkim_private_key?: string | null
+          dkim_public_key?: string | null
+          dkim_selector?: string
+          dmarc_ok?: boolean
+          domain?: string
+          id?: string
+          last_checked_at?: string | null
+          mx_ok?: boolean
+          spf_ok?: boolean
+          status?: Database["public"]["Enums"]["broadcast_domain_status"]
+          updated_at?: string
+          user_id?: string
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
+      client_email_replies: {
+        Row: {
+          body_html: string | null
+          body_text: string | null
+          campaign_id: string | null
+          created_at: string
+          from_email: string
+          from_name: string | null
+          handled: boolean
+          id: string
+          in_reply_to: string | null
+          provider_message_id: string | null
+          received_at: string
+          send_id: string | null
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          body_html?: string | null
+          body_text?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          from_email: string
+          from_name?: string | null
+          handled?: boolean
+          id?: string
+          in_reply_to?: string | null
+          provider_message_id?: string | null
+          received_at?: string
+          send_id?: string | null
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          body_html?: string | null
+          body_text?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          from_email?: string
+          from_name?: string | null
+          handled?: boolean
+          id?: string
+          in_reply_to?: string | null
+          provider_message_id?: string | null
+          received_at?: string
+          send_id?: string | null
+          subject?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_email_replies_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_email_replies_send_id_fkey"
+            columns: ["send_id"]
+            isOneToOne: false
+            referencedRelation: "client_campaign_sends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_email_suppressions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       client_profiles: {
         Row: {
           brand_colours: string | null
@@ -4403,6 +4951,10 @@ export type Database = {
         Args: { _vacancy_id: string }
         Returns: undefined
       }
+      refresh_contact_list_counts: {
+        Args: { _list_id: string }
+        Returns: undefined
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       vacancy_invitation_respond: {
@@ -4412,6 +4964,27 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      broadcast_campaign_status:
+        | "draft"
+        | "scheduled"
+        | "sending"
+        | "sent"
+        | "paused"
+        | "failed"
+      broadcast_contact_status:
+        | "subscribed"
+        | "unsubscribed"
+        | "bounced"
+        | "complained"
+      broadcast_domain_status: "pending" | "partial" | "verified" | "failed"
+      broadcast_plan: "starter" | "growth" | "scale"
+      broadcast_send_status:
+        | "pending"
+        | "sent"
+        | "delivered"
+        | "bounced"
+        | "failed"
+        | "suppressed"
       candidate_arrangement: "onsite" | "hybrid" | "remote" | "any"
       candidate_right_to_work:
         | "uk_citizen"
@@ -4600,6 +5173,30 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      broadcast_campaign_status: [
+        "draft",
+        "scheduled",
+        "sending",
+        "sent",
+        "paused",
+        "failed",
+      ],
+      broadcast_contact_status: [
+        "subscribed",
+        "unsubscribed",
+        "bounced",
+        "complained",
+      ],
+      broadcast_domain_status: ["pending", "partial", "verified", "failed"],
+      broadcast_plan: ["starter", "growth", "scale"],
+      broadcast_send_status: [
+        "pending",
+        "sent",
+        "delivered",
+        "bounced",
+        "failed",
+        "suppressed",
+      ],
       candidate_arrangement: ["onsite", "hybrid", "remote", "any"],
       candidate_right_to_work: [
         "uk_citizen",
