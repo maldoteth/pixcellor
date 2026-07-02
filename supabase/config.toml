@@ -60,6 +60,12 @@ project_id = "rkgjkvghejcmostuqkgw"
     verify_jwt = false
   [functions.update-affiliate-share-name]
     verify_jwt = true
+  [functions.verify-client-domain]
+    verify_jwt = true
+  [functions.broadcast-send]
+    verify_jwt = true
+  [functions.broadcast-track]
+    verify_jwt = false
 
 
 
