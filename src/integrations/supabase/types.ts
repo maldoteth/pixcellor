@@ -4376,6 +4376,11 @@ export type Database = {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
+      increment_campaign_stat: {
+        Args: { _campaign_id: string; _field: string }
+        Returns: undefined
+      }
+      increment_send_opens: { Args: { _send_id: string }; Returns: undefined }
       match_manual_order_to_stripe: {
         Args: { _real_session_id: string }
         Returns: string
