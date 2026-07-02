@@ -700,7 +700,17 @@ function CampaignEditor({ campaign, userId, addon, onClose }: { campaign: Campai
         </div>
 
         <div className="space-y-3">
-          <EmailPreview subject={form.subject} bodyHtml={form.template_html} preheader={form.preheader ?? undefined} />
+          <EmailPreview
+            subject={form.subject}
+            bodyHtml={form.template_html}
+            preheader={form.preheader ?? undefined}
+            branding={{
+              senderName: form.from_name || "Your brand",
+              senderEmail: form.from_email || (selectedDomain ? `hello@${selectedDomain.domain}` : ""),
+              domain: selectedDomain?.domain ?? "",
+            }}
+          />
+
           <SpamHints subject={form.subject} html={form.template_html} />
         </div>
       </div>
