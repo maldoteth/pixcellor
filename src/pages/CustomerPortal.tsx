@@ -154,7 +154,7 @@ const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
   },
 ] as const;
 
-type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls" | "sites" | "affiliate" | "wallet";
+type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls" | "sites" | "affiliate" | "wallet" | "email";
 
 type CustomerOrder = {
   id: string;
