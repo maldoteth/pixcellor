@@ -45,6 +45,7 @@ import CallBookingsPanel from "@/components/portal/CallBookingsPanel";
 import ByowSitesTab from "@/components/byow/ByowSitesTab";
 import RequestChooserDialog from "@/components/portal/RequestChooserDialog";
 import { WalletPanel } from "@/components/wallet/WalletPanel";
+import BroadcastPanel from "@/components/portal/BroadcastPanel";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -153,7 +154,7 @@ const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
   },
 ] as const;
 
-type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls" | "sites" | "affiliate" | "wallet";
+type PortalTab = "overview" | "schedule" | "myjobs" | "vacancies" | "orders" | "briefs" | "delivered" | "activity" | "payments" | "leads" | "calls" | "sites" | "affiliate" | "wallet" | "email";
 
 type CustomerOrder = {
   id: string;
@@ -495,6 +496,7 @@ export default function CustomerPortal() {
     { title: "Leads", value: "leads" as const, icon: Inbox },
     ...(isAdmin ? [{ title: "Calls", value: "calls" as const, icon: Phone }] : []),
     { title: "Affiliate", value: "affiliate" as const, icon: Users },
+    { title: "Email", value: "email" as const, icon: Mail },
     { title: "Wallet", value: "wallet" as const, icon: Wallet },
   ];
 
@@ -1146,6 +1148,10 @@ export default function CustomerPortal() {
 
                 <TabsContent value="wallet" className="space-y-4">
                   {userId ? <WalletPanel userId={userId} /> : null}
+                </TabsContent>
+
+                <TabsContent value="email" className="space-y-4">
+                  {userId ? <BroadcastPanel userId={userId} /> : null}
                 </TabsContent>
 
 
