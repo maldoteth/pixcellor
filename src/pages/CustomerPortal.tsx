@@ -1150,6 +1150,10 @@ export default function CustomerPortal() {
                   {userId ? <WalletPanel userId={userId} /> : null}
                 </TabsContent>
 
+                <TabsContent value="email" className="space-y-4">
+                  {userId ? <BroadcastPanel userId={userId} /> : null}
+                </TabsContent>
+
 
 
               </Tabs>
