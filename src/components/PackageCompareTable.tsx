@@ -6,7 +6,7 @@ import { COMPARISON_ROWS, COMPARISON_SLUGS, PACKAGE_DETAILS } from "@/data/packa
 const ENTERPRISE_SLUG = "retainer-enterprise";
 
 // Rows whose value triples when Enterprise is on the "Large" tier.
-const TRIPLED_FEATURES = new Set(["AI lead-gen runs", "Automated Outreach", "Hosting"]);
+const TRIPLED_FEATURES = new Set(["AI lead-gen runs", "Outbound Emails", "Hosting"]);
 
 // Triple a string like "10,000 / m" → "30,000 / m". Leaves other strings alone.
 function tripleLimit(val: string): string {
