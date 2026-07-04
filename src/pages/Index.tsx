@@ -143,15 +143,14 @@ const Index = () => {
     <div className="w-full">
       <SeoHead
         title="Pixcellor - Digital Services"
-        description="AI powered business solutions by a team who have collectively launched over $500,000,000 in market cap and multi 7 figure GTM/Q1 revenue projects."
+        description="AI-powered business solutions from a team that's driven $500M+ in market cap across multiple 7-figure launches."
         path="/"
         image={OG_HOME}
       />
       {/* Crawlable semantic heading — visually hidden, surfaces the page topic for SEO/AEO */}
       <h1 className="sr-only">Pixcellor — AI Powered Business Solutions</h1>
       <p className="sr-only">
-        Pixcellor is a team of AI-powered business solution specialists who have collectively launched
-        over $500,000,000 in market cap and multi 7 figure GTM/Q1 revenue projects.
+        AI-powered business solutions from a team that's driven $500M+ in market cap across multiple 7-figure launches.
       </p>
       <div className="relative overflow-hidden" style={{ height: "var(--pixcellor-viewport-height, 100dvh)" }}>
         <IntroAnimation
