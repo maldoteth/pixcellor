@@ -724,7 +724,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "Automated Outreach",
+    feature: "Outbound Emails",
     values: {
       "full-works": "—",
       elite: "—",
