@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "pixcellor-mcp",
+      "version": "0.1.0",
+      "title": "Pixcellor"
+    },
+    "tools": [
+      {
+        "name": "list_services",
+        "title": "List Pixcellor services",
+        "description": "List Pixcellor's services (marketing, tech, business) with a one-line description of each. Optionally filter by category.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "enum": [
+                "marketing",
+                "tech",
+                "business"
+              ],
+              "description": "Filter by service category."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_packages",
+        "title": "List Pixcellor packages",
+        "description": "List Pixcellor's public packages (one-off builds and monthly retainers) with price and short description.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "billing": {
+              "type": "string",
+              "enum": [
+                "one-off",
+                "monthly"
+              ],
+              "description": "Filter by billing type."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "book_sales_call",
+        "title": "Get sales call booking link",
+        "description": "Returns the Pixcellor sales call booking URL so a user can schedule an intro call with the team.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "description": "What the user wants to discuss (service, package, or custom project)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
