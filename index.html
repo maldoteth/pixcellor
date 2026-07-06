@@ -6,6 +6,9 @@
     <meta name="theme-color" content="#000000" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(self), payment=(self)" />
+    <!-- Baseline CSP hardening: blocks object embeds, foreign <base>, clickjacking,
+         and cross-origin form posts. Inline scripts stay allowed for gtag and JSON-LD. -->
+    <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests" />
     <meta name="google-site-verification" content="NixeNHGSBDkQQYfM6IDZ7BI843d5eBqBTZsjeu1dMb8" />
     
     <title>Pixcellor - Digital Services</title>
