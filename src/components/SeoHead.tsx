@@ -10,7 +10,7 @@ type SeoHeadProps = {
 };
 
 const SITE_ORIGIN = "https://pixcellor.com";
-const DEFAULT_IMAGE = "https://pixcellor.com/pixcellor-email-logo.png";
+const DEFAULT_IMAGE = "https://pixcellor.com/__l5e/assets-v1/597b8c9d-3a38-48f3-ac7a-afbeec971967/og-default.png";
 
 const upsertMeta = (selector: string, attrs: Record<string, string>) => {
   let el = document.head.querySelector<HTMLMetaElement>(selector);
