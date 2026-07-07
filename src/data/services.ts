@@ -563,6 +563,85 @@ export const SERVICES: Service[] = [
     ],
     primaryCta: salesCta,
   },
+  {
+    slug: "email-marketing",
+    name: "Email marketing",
+    category: "marketing",
+    info: "Owned-audience email programmes — lifecycle, broadcast, automation and deliverability, built to convert without burning your list.",
+    tagline: "The one channel you actually own — run like a growth engine, not a newsletter.",
+    heroBlurb:
+      "Email is still the highest-ROI channel in marketing — but only when it's run properly. We build full lifecycle programmes: welcome flows, nurture sequences, cart and browse recovery, win-back, and revenue-driving broadcasts. Custom-designed templates, tight segmentation, deliverability tuned to the inbox, and every send measured against revenue — not opens. Whether you're on Klaviyo, HubSpot, Mailchimp, Customer.io, Brevo or a custom SES/Resend stack, we plug in, clean up and scale it.",
+    features: [
+      "Full lifecycle programme design — welcome, nurture, purchase, retention, win-back",
+      "Automated flows: abandoned cart, browse abandonment, post-purchase, reviews, replenishment",
+      "Weekly / bi-weekly broadcast campaigns written, designed and scheduled for you",
+      "Segmentation strategy based on behaviour, spend, lifecycle stage and engagement",
+      "Custom-designed on-brand templates in your ESP (Klaviyo, HubSpot, Mailchimp, Brevo, Customer.io, SES/Resend)",
+      "Deliverability audit — SPF, DKIM, DMARC, BIMI, warm-up, list hygiene",
+      "Popups, embeds and lead-magnet capture that actually grow the list",
+      "A/B testing on subject lines, creative, offers and send times",
+      "AI-personalised subject lines and product recommendations where supported",
+      "Revenue attribution dashboards — flow revenue vs campaign revenue vs total",
+      "Suppression, consent and GDPR/CAN-SPAM compliance built in",
+      "Optional cold outbound / sales sequences with dedicated warm-up infrastructure",
+    ],
+    process: [
+      "Audit — current ESP, flows, list health, deliverability, revenue mix",
+      "Strategy — lifecycle map, segmentation plan, campaign calendar, KPIs",
+      "Design system — reusable on-brand template modules in your ESP",
+      "Foundation flows — welcome, cart, browse, post-purchase, win-back",
+      "Campaign engine — weekly broadcast rhythm with themes, offers and stories",
+      "Deliverability tune-up — auth records, warm-up, engagement segments, sunset rules",
+      "Test, iterate, report — monthly review against revenue and list growth",
+      "Ongoing optimisation retainer or handover with SOPs",
+    ],
+    deliverables: [
+      "Lifecycle map and 90-day campaign calendar",
+      "Core automated flows built and live in your ESP",
+      "Reusable branded template library (modular blocks)",
+      "Segmentation and suppression strategy documented",
+      "Deliverability report with fixes applied (SPF/DKIM/DMARC/BIMI)",
+      "Weekly / bi-weekly broadcast campaigns produced end-to-end",
+      "Monthly performance report — revenue, engagement, list growth, deliverability",
+      "SOPs and Loom walkthroughs for in-house handover",
+    ],
+    outcomes: [
+      "Email becomes 20–40% of ecommerce revenue (industry benchmark for well-run programmes)",
+      "Automated flows earning revenue while you sleep — set once, optimised monthly",
+      "Cleaner list, better inbox placement, fewer sends to spam",
+      "Consistent brand experience from first signup to loyal repeat buyer",
+      "A programme your in-house team can actually run without you eventually",
+    ],
+    faqs: [
+      {
+        q: "Which email platforms do you work with?",
+        a: "All the major ones — Klaviyo, HubSpot, Mailchimp, Brevo, Customer.io, ActiveCampaign, Iterable, Braze — plus custom stacks on Amazon SES, Resend or Postmark. If you're on it, we can run it.",
+      },
+      {
+        q: "Do you write the copy and design the emails?",
+        a: "Yes — end-to-end. Strategy, copy, design, build, QA, schedule, send, report. You review and approve; we do the rest.",
+      },
+      {
+        q: "How fast until email starts driving real revenue?",
+        a: "Foundation flows (welcome, cart, post-purchase) typically go live in 3–4 weeks and start earning immediately. Broadcast revenue lift usually shows within the first 30–60 days once cadence and segmentation kick in.",
+      },
+      {
+        q: "What about deliverability — my emails go to spam?",
+        a: "That's almost always fixable. We audit authentication (SPF/DKIM/DMARC), sending reputation, list hygiene and engagement segments, then apply a warm-up and sunset plan. Most clients see inbox placement recover within 2–4 weeks.",
+      },
+      {
+        q: "Do you do cold outbound / sales email too?",
+        a: "Yes — but on a completely separate, dedicated sending infrastructure so it never touches your marketing domain's reputation. Ask about our GTM & Lead Generation service for full cold-outbound programmes.",
+      },
+      {
+        q: "Will this be GDPR / CAN-SPAM compliant?",
+        a: "Yes — consent capture, suppression, unsubscribe handling, preference centres and data retention are built into every programme by default.",
+      },
+    ],
+    primaryCta: salesCta,
+  },
+
+
 
   // ────────────── TECH ──────────────
   {
