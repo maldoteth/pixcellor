@@ -1009,7 +1009,7 @@ export default function CustomerPortal() {
                       const useYearly = billingCycle === "yearly" && plan.yearlyPriceId;
                       const displayPrice = useYearly ? plan.yearlyPrice! : plan.price;
                       const displayBilling = useYearly ? plan.yearlyBilling || plan.billing : plan.billing;
-                      const buttonLabel = hasBoughtPlan ? "Buy again" : plan.mode === "subscription" ? "Subscribe" : "Order Now";
+                      const buttonLabel = hasBoughtPlan ? "Buy again" : plan.mode === "subscription" ? "Subscribe" : "Subscribe";
 
                       return (
                         <Card key={plan.key} className={`relative overflow-hidden border-border bg-card/70 backdrop-blur-xl ${plan.featured ? "border-primary/40" : ""}`}>
