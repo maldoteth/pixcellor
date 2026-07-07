@@ -1042,7 +1042,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                             className="pricing-button text-foreground transition h-11 w-[144px] flex items-center justify-center gap-2 text-sm font-semibold rounded-md"
                         >
                             <Phone className="w-4 h-4" />
-                            Let's Talk
+                            Call Back
                         </motion.button>
                     </div>
                 </div>
