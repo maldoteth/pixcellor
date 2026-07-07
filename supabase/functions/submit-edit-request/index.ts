@@ -21,12 +21,8 @@ const EditRequestSchema = z.object({
 });
 
 const normalizePackage = (value: unknown) => (typeof value === "string" ? value.trim().toLowerCase() : "");
-const requestLimitForPackage = (packageName: string) => {
-  const normalized = normalizePackage(packageName);
-  if (normalized.includes("elite")) return null;
-  if (normalized.includes("full works")) return 3;
-  return undefined;
-};
+// All active packages are retainers with unlimited edits. Returning null means "no cap".
+const requestLimitForPackage = (_packageName: string): number | null => null;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
