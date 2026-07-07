@@ -61,9 +61,6 @@ serve(async (req) => {
     const metadata = order.metadata && typeof order.metadata === "object" ? order.metadata as Record<string, unknown> : {};
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "";
     const requestLimit = requestLimitForPackage(packageName);
-    if (requestLimit === undefined) {
-      return json({ error: "Edit requests are available for Full Works and Elite orders only." }, 403);
-    }
 
     const { count, error: countError } = await supabase
       .from("edit_requests")
@@ -73,7 +70,7 @@ serve(async (req) => {
     if (countError) throw countError;
     const usedRequests = count ?? 0;
     if (requestLimit !== null && usedRequests >= requestLimit) {
-      return json({ error: "This Full Works order has used all 3 edit requests." }, 403);
+      return json({ error: "This order has used all available edit requests." }, 403);
     }
 
     const requestNumber = usedRequests + 1;
