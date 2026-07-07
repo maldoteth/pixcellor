@@ -1325,8 +1325,8 @@ function ServiceBackCard({
   return (
     <motion.div data-lava-card
       className={`relative ${isCenter ? "z-20 w-[370px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[332px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
-      initial={{ rotate, y: isCenter ? -20 : 0, scale: isCenter ? 1.1 : 1 }}
-      animate={{ rotate, y: isCenter ? -20 : 0, scale: isCenter ? 1.1 : 1 }}
+      initial={{ rotate, y: isCenter ? -20 : -60, scale: isCenter ? 1.1 : 1 }}
+      animate={{ rotate, y: isCenter ? -20 : -60, scale: isCenter ? 1.1 : 1 }}
       whileHover={{ scale: isCenter ? 1.12 : 1.05 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
       style={{ boxShadow: shadow, willChange: "transform" }}
