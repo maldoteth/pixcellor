@@ -123,10 +123,10 @@ export const RETAINER_TIERS = {
 // Small mirrors the original Enterprise pricing; Medium is a higher tier handled via sales.
 export const ENTERPRISE_SIZES = {
   small: { key: "small" as const, name: "Small", monthly: 2469, yearly: 24690, monthlyLabel: "£2,469/mo", yearlyLabel: "£24,690/yr" },
-  medium: { key: "medium" as const, name: "Medium", monthly: 4690, yearly: 46900, monthlyLabel: "£4,690/mo", yearlyLabel: "£46,900/yr" },
+  large: { key: "large" as const, name: "Large", monthly: 4690, yearly: 46900, monthlyLabel: "£4,690/mo", yearlyLabel: "£46,900/yr" },
 } as const;
 type EnterpriseSizeKey = keyof typeof ENTERPRISE_SIZES;
-const ENTERPRISE_SIZE_ORDER: EnterpriseSizeKey[] = ["small", "medium"];
+const ENTERPRISE_SIZE_ORDER: EnterpriseSizeKey[] = ["small", "large"];
 
 type RetainerTierKey = keyof typeof RETAINER_TIERS;
 const RETAINER_TIER_ORDER: RetainerTierKey[] = ["growth", "scale", "enterprise"];
