@@ -8,14 +8,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type PackageKey = "fullWorks" | "elite" | "retainerMonthly" | "retainerYearly" | "custom";
+type PackageKey = "growth" | "scale" | "enterprise" | "retainerYearly" | "custom";
 type Step = "email" | "name" | "package" | "custom" | "type" | "notes" | "confirm" | "done";
 
 const PACKAGES: Record<Exclude<PackageKey, "custom">, { label: string; pricePence: number; billing: string }> = {
-  fullWorks: { label: "Full Works", pricePence: 15000, billing: "one-time" },
-  elite: { label: "Elite", pricePence: 50000, billing: "one-time" },
-  retainerMonthly: { label: "Retainer (monthly)", pricePence: 50000, billing: "monthly" },
-  retainerYearly: { label: "Retainer (yearly)", pricePence: 500000, billing: "yearly" },
+  growth: { label: "Growth Retainer", pricePence: 8900, billing: "monthly" },
+  scale: { label: "Scale Retainer", pricePence: 47900, billing: "monthly" },
+  enterprise: { label: "Enterprise Retainer", pricePence: 246900, billing: "monthly" },
+  retainerYearly: { label: "Enterprise Retainer (yearly)", pricePence: 2469000, billing: "yearly" },
 };
 
 const isEmail = (v: string) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(v.trim());
