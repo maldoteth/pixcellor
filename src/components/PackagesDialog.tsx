@@ -795,6 +795,175 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
 }
 
 type ServiceAction = "pricing" | "sales";
+
+function TierCard({
+  tierKey,
+  featured = false,
+  rotate = 0,
+  loading,
+  onBuy,
+  onTalkToSales,
+  isMobile = false,
+}: {
+  tierKey: RetainerTierKey;
+  featured?: boolean;
+  rotate?: number;
+  loading: string | null;
+  onBuy: (priceId: string, mode: string, key: string, packageName: string, billing: string) => void;
+  onTalkToSales: () => void;
+  isMobile?: boolean;
+}) {
+  const tier = RETAINER_TIERS[tierKey];
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const [size, setSize] = useState<EnterpriseSizeKey>("small");
+  const isEnt = tierKey === "enterprise";
+  const ent = ENTERPRISE_SIZES[size];
+  const monthly = isEnt ? ent.monthly : tier.monthly;
+  const yearly = isEnt ? ent.yearly : tier.yearly;
+  const monthlyLabel = isEnt ? ent.monthlyLabel : tier.monthlyLabel;
+  const yearlyLabel = isEnt ? ent.yearlyLabel : tier.yearlyLabel;
+  const savings = (monthly * 12 - yearly).toLocaleString();
+  const isMediumEnt = isEnt && size === "medium";
+
+  const shadow = featured
+    ? `0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.08), inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 1px rgba(0,0,0,0.1)`
+    : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
+
+  const widthClass = isMobile ? "w-full" : featured ? "w-[370px]" : "w-[332px]";
+  const borderClass = featured ? "border-2 border-foreground/30 bg-background/80" : "border border-border/40 bg-background";
+  const paddingClass = featured ? "px-8 pt-8 pb-5" : "px-7 py-8";
+
+  const card = (
+    <div
+      data-lava-card
+      className={`relative ${widthClass} ${borderClass} ${paddingClass} rounded-none overflow-hidden`}
+      style={{ boxShadow: shadow }}
+    >
+      <div className={`lava-blob ${featured ? "lava-blob-featured-1" : "lava-blob-1"}`} />
+      <div className={`lava-blob ${featured ? "lava-blob-featured-2" : "lava-blob-2"}`} />
+      <div className={`lava-blob ${featured ? "lava-blob-featured-3" : "lava-blob-3"}`} />
+      <div className="relative z-10 flex flex-col">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="text-lg font-bold text-foreground">{tier.name}</div>
+          {featured && (
+            <span className="inline-flex items-center rounded-full border border-foreground/30 bg-foreground/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-foreground">
+              Most popular
+            </span>
+          )}
+        </div>
+        <div className="mb-1 flex items-center gap-2 justify-between">
+          <div className="text-3xl font-extrabold text-foreground">
+            {billing === "monthly" ? monthlyLabel : yearlyLabel}
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={billing === "yearly"}
+            aria-label={`Switch to ${billing === "monthly" ? "yearly" : "monthly"} billing`}
+            onPointerDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setBilling((b) => (b === "monthly" ? "yearly" : "monthly"));
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setBilling((b) => (b === "monthly" ? "yearly" : "monthly"));
+              }
+            }}
+            className="relative ml-auto h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+          >
+            <span
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+              style={{ transform: `translateY(-50%) ${billing === "yearly" ? "translateX(3px)" : "translateX(54px)"}` }}
+            />
+            <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${billing === "yearly" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
+              {billing === "yearly" ? "Yearly" : "Monthly"}
+            </span>
+          </button>
+        </div>
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div className="text-xs text-muted-foreground">
+            {billing === "yearly" ? `Save £${savings} vs monthly` : `Save £${savings} with yearly`}
+          </div>
+          {isEnt && (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={size === "medium"}
+              aria-label={`Switch enterprise size to ${size === "small" ? "medium" : "small"} business`}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setSize((s) => (s === "small" ? "medium" : "small"));
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setSize((s) => (s === "small" ? "medium" : "small"));
+                }
+              }}
+              className="relative h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+            >
+              <span
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out"
+                style={{ transform: `translateY(-50%) ${size === "small" ? "translateX(54px)" : "translateX(3px)"}` }}
+              />
+              <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${size === "small" ? "left-1.5 right-6" : "left-6 right-1.5"}`}>
+                {size === "small" ? "Small" : "Large"}
+              </span>
+            </button>
+          )}
+        </div>
+        <ul className="mb-4 space-y-2 text-base text-foreground">
+          {tier.features.map((f, i) => (
+            <li key={`${f}-${i}`} className="flex items-start gap-2">
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+              <span>{f}</span>
+            </li>
+          ))}
+        </ul>
+        <GlassBuyButton
+          onClick={() => {
+            if (isMediumEnt) {
+              onTalkToSales();
+              return;
+            }
+            onBuy(
+              billing === "monthly" ? tier.monthlyPriceId : tier.yearlyPriceId,
+              "subscription",
+              `retainer-${tierKey}`,
+              `${tier.name} Retainer`,
+              billing === "monthly" ? "Monthly subscription" : "Yearly subscription"
+            );
+          }}
+          disabled={!!loading}
+          loading={loading === `retainer-${tierKey}`}
+          label={isMediumEnt ? "Talk to sales" : "Subscribe"}
+        />
+        <Link to={`/packages/retainer-${tierKey}`} className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
+      </div>
+    </div>
+  );
+
+  if (isMobile) return card;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40, rotate, scale: featured ? 1.05 : 1 }}
+      animate={{ opacity: 1, y: featured ? -14 : 0, rotate, scale: featured ? 1.08 : 1 }}
+      whileHover={{ scale: featured ? 1.12 : 1.05 }}
+      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: featured ? 0.15 : 0.3 }}
+      style={{ willChange: "transform" }}
+      className={featured ? "relative z-20" : "relative z-10"}
+    >
+      {card}
+    </motion.div>
+  );
+}
+
 function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFlipped?: boolean; onServiceAction?: (action: ServiceAction) => void }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
