@@ -32,7 +32,7 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [pkg, setPkg] = useState<PackageKey>("fullWorks");
+  const [pkg, setPkg] = useState<PackageKey>("growth");
   const [customLabel, setCustomLabel] = useState("");
   const [customAmount, setCustomAmount] = useState("");
   const [orderType, setOrderType] = useState<"paid" | "draft">("paid");
@@ -48,7 +48,7 @@ export default function NewOrderDialog({ open, onOpenChange, onCreated }: Props)
   useEffect(() => {
     if (open) {
       setStep("email");
-      setEmail(""); setName(""); setPkg("fullWorks");
+      setEmail(""); setName(""); setPkg("growth");
       setCustomLabel(""); setCustomAmount(""); setOrderType("paid");
       setNotes(""); setSendEmail(true); setError(null); setSuggestions([]);
       setPaymentLinkUrl(null);
