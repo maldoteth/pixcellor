@@ -9,28 +9,29 @@ const corsHeaders = {
 };
 
 const PACKAGES = {
-  fullWorks: {
-    name: "Full Works",
-    price: "£169",
-    priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
-    mode: "payment",
-    features: ["Industry leading website", "Lifetime guarantee", "Custom design", "Up to 3 pages"],
-  },
-  elite: {
-    name: "Elite",
-    price: "£479 one-time or £60/mo",
-    priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
-    monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
-    mode: "payment",
-    features: ["Cutting edge website", "Lifetime guarantee", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
-  },
-  retainer: {
-    name: "Retainer",
-    price: "£2,469/mo or £24,690/yr",
-    monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
-    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
+  growth: {
+    name: "Growth",
+    price: "£89/mo or £890/yr",
+    monthlyPriceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
+    yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
     mode: "subscription",
-    features: ["Your own tech department", "Websites or full apps", "Daily turnarounds (monthly) / Save £4,938 (yearly)"],
+    features: ["Website + unlimited edits", "CRM + AI lead/support bots", "Hosting, SSL, domain", "Monthly performance report"],
+  },
+  scale: {
+    name: "Scale",
+    price: "£479/mo or £4,790/yr",
+    monthlyPriceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
+    yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
+    mode: "subscription",
+    features: ["Everything in Growth", "Unlimited seats & edits", "Priority 24/7 365 support", "Custom AI agents & automations", "Monthly strategy call"],
+  },
+  enterprise: {
+    name: "Enterprise",
+    price: "£2,469/mo or £24,690/yr",
+    monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
+    yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
+    mode: "subscription",
+    features: ["Fractional CTO & CMO", "Dedicated dev & ops team", "Weekly MVP sprints", "24/7 priority support", "Save £4,938/yr on annual"],
   },
 };
 
