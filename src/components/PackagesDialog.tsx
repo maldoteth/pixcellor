@@ -1437,12 +1437,12 @@ function MobileCards() {
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10 flex flex-col flex-1">
-        <h3 className="text-lg font-bold text-foreground">Growth</h3>
-        <div className="mt-3 mb-1 flex items-center gap-2 justify-between">
-          <span className="text-3xl font-extrabold text-foreground">
-            {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
-          </span>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-lg font-bold text-foreground">Growth</h3>
           <BillingToggle value={growthBilling} onChange={setGrowthBilling} />
+        </div>
+        <div className="mt-3 mb-1 text-3xl font-extrabold text-foreground">
+          {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
         </div>
         <div className="mb-3 text-xs text-muted-foreground">
           {growthBilling === "yearly"
