@@ -418,7 +418,46 @@ const tools = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "create_invoice",
+      description: "Create a PROPER bank-transfer invoice for the visitor (PDF emailed to them, hosted invoice page, 28-day payment terms, auto reminders). Use when the visitor wants to pay by bank transfer instead of card, needs an invoice for accounts/PO, is a business buyer, or explicitly asks for an invoice. NEVER invent line items or amounts — only use values the visitor explicitly confirmed (or a package_slug they picked). Returns invoice_number and hosted_url; show the hosted_url as a clickable markdown link and tell them they've been emailed the PDF, bank details are on the invoice, and to quote the invoice number as their payment reference.",
+      parameters: {
+        type: "object",
+        required: ["billing_name", "billing_email"],
+        properties: {
+          billing_name: { type: "string", description: "Client's full name (required)." },
+          billing_email: { type: "string", description: "Client's email — invoice and reminders go here (required)." },
+          billing_company: { type: "string" },
+          billing_phone: { type: "string" },
+          billing_address_line1: { type: "string" },
+          billing_city: { type: "string" },
+          billing_postcode: { type: "string" },
+          billing_country: { type: "string", description: "Defaults to 'United Kingdom'." },
+          po_reference: { type: "string" },
+          due_days: { type: "number", description: "Payment terms in days. Defaults to 28 — do not change unless the client explicitly asks." },
+          line_items: {
+            type: "array",
+            minItems: 1,
+            description: "Invoice line items. Amounts MUST be in GBP pence (e.g. £250 = 25000). Quantities default to 1. Provide EITHER line_items OR package_slug.",
+            items: {
+              type: "object",
+              required: ["description", "unit_amount_pence"],
+              properties: {
+                description: { type: "string" },
+                quantity: { type: "number" },
+                unit_amount_pence: { type: "number" },
+              },
+            },
+          },
+          package_slug: { type: "string", description: "Optional package slug ('full-works' | 'elite' | 'retainer-growth' | 'retainer-scale' | 'retainer-enterprise') — sets the line item automatically if provided instead of line_items." },
+        },
+      },
+    },
+  },
 ];
+
 
 
 const devTools = [
