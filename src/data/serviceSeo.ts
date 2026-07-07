@@ -263,6 +263,18 @@ export const SERVICE_SEO: Record<string, ServiceSeo> = {
       "sprint planning",
     ],
   },
+  "email-marketing": {
+    title: "Email Marketing Agency — Lifecycle, Broadcast & Deliverability | Pixcellor",
+    description:
+      "Full-service email marketing on Klaviyo, HubSpot, Mailchimp, Brevo and custom stacks. Lifecycle flows, broadcasts, deliverability and revenue-driven programmes.",
+    keywords: [
+      "email marketing agency",
+      "Klaviyo agency",
+      "lifecycle email marketing",
+      "email deliverability",
+      "email automation",
+    ],
+  },
   "creative-branding-makeovers": {
     title: "Creative & Branding — Identity & Rebrands | Pixcellor",
     description:

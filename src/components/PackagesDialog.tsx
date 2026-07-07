@@ -147,6 +147,7 @@ const SERVICE_BACKS = {
       { name: "Social media automation", info: "Generate leads while you sleep with automated social media management and save 90% on SMM salaries." },
       { name: "Paid ads & retargeting", info: "Leverage the latest techniques and strategies to maximise ROI with our advertising services." },
       { name: "Creative & branding", info: "Full brand identities, rebrands and creative makeovers — logos, guidelines, campaign assets and packaging from senior designers." },
+      { name: "Email marketing", info: "Lifecycle flows, broadcasts, deliverability and revenue-driven email programmes on Klaviyo, HubSpot, Mailchimp, Brevo or custom stacks." },
     ],
   },
   elite: {
