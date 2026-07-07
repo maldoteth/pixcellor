@@ -905,7 +905,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       className="relative"
     >
     <div
-      className="relative flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.745] min-[880px]:max-lg:scale-[0.84] min-[960px]:max-lg:scale-[0.955] md:max-lg:origin-center lg:scale-100"
+      className="relative flex items-end justify-center gap-6 h-full w-full md:max-lg:scale-[0.745] min-[880px]:max-lg:scale-[0.84] min-[960px]:max-lg:scale-[0.955] md:max-lg:origin-bottom lg:scale-100"
       style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
     >
       
@@ -965,9 +965,9 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       <motion.div data-lava-card
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        initial={{ opacity: 0, y: 40, rotate: 0, scale: 1.06 }}
-        animate={{ opacity: 1, y: 0, rotate: 0, scale: 1.06 }}
-        whileHover={{ scale: 1.08 }}
+        initial={{ opacity: 0, y: 40, rotate: 0, scale: 1.1 }}
+        animate={{ opacity: 1, y: -20, rotate: 0, scale: 1.1 }}
+        whileHover={{ scale: 1.12 }}
         transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
         className="relative z-20 w-[370px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-3 pb-5 shadow-xl"
         style={{
