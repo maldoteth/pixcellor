@@ -1483,25 +1483,25 @@ function MobileCards() {
         <div className="lava-blob lava-blob-featured-2" />
         <div className="lava-blob lava-blob-featured-3" />
         <div className="relative z-10 flex flex-col flex-1">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-bold text-foreground">Scale</h3>
-          <span
-            className="rounded-sm border border-[#a8802a]/60 px-2 py-[2px] text-[10px] font-extrabold uppercase tracking-wider"
-            style={{
-              background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
-              color: "#2a1d05",
-              textShadow: "0 1px 0 rgba(255,236,179,0.4)",
-            }}
-          >
-            MOST POPULAR
-          </span>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold text-foreground">Scale</h3>
+            <span
+              className="rounded-sm border border-[#a8802a]/60 px-2 py-[2px] text-[10px] font-extrabold uppercase tracking-wider"
+              style={{
+                background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
+                color: "#2a1d05",
+                textShadow: "0 1px 0 rgba(255,236,179,0.4)",
+              }}
+            >
+              MOST POPULAR
+            </span>
+          </div>
+          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
         </div>
 
-        <div className="mt-3 mb-1 flex items-center gap-2 justify-between">
-          <span className="text-3xl font-extrabold text-foreground">
-            {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
-          </span>
-          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
+        <div className="mt-3 mb-1 text-3xl font-extrabold text-foreground">
+          {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
         </div>
         <div className="mb-3 text-xs text-muted-foreground">
           {scaleBilling === "yearly"
