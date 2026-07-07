@@ -123,10 +123,10 @@ export const RETAINER_TIERS = {
 // Small mirrors the original Enterprise pricing; Medium is a higher tier handled via sales.
 export const ENTERPRISE_SIZES = {
   small: { key: "small" as const, name: "Small", monthly: 2469, yearly: 24690, monthlyLabel: "£2,469/mo", yearlyLabel: "£24,690/yr" },
-  medium: { key: "medium" as const, name: "Medium", monthly: 4690, yearly: 46900, monthlyLabel: "£4,690/mo", yearlyLabel: "£46,900/yr" },
+  large: { key: "large" as const, name: "Large", monthly: 4690, yearly: 46900, monthlyLabel: "£4,690/mo", yearlyLabel: "£46,900/yr" },
 } as const;
 type EnterpriseSizeKey = keyof typeof ENTERPRISE_SIZES;
-const ENTERPRISE_SIZE_ORDER: EnterpriseSizeKey[] = ["small", "medium"];
+const ENTERPRISE_SIZE_ORDER: EnterpriseSizeKey[] = ["small", "large"];
 
 type RetainerTierKey = keyof typeof RETAINER_TIERS;
 const RETAINER_TIER_ORDER: RetainerTierKey[] = ["growth", "scale", "enterprise"];
@@ -857,6 +857,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   const [loading, setLoading] = useState<string | null>(null);
   const [growthBilling, setGrowthBilling] = useState<"monthly" | "yearly">("monthly");
   const [scaleBilling, setScaleBilling] = useState<"monthly" | "yearly">("monthly");
+  const [enterpriseBilling, setEnterpriseBilling] = useState<"monthly" | "yearly">("monthly");
+  const [enterpriseSize, setEnterpriseSize] = useState<EnterpriseSizeKey>("small");
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
@@ -947,12 +949,12 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
-        <div className="mb-2 text-lg font-bold text-foreground">Growth</div>
-        <div className="mb-1 flex items-center gap-2 justify-between">
-          <div className="text-3xl font-extrabold text-foreground">
-            {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
-          </div>
-          <BillingToggle value={growthBilling} onChange={setGrowthBilling} className="ml-auto" />
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="text-lg font-bold text-foreground">Growth</div>
+          <BillingToggle value={growthBilling} onChange={setGrowthBilling} />
+        </div>
+        <div className="mb-1 text-3xl font-extrabold text-foreground">
+          {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
         </div>
         <div className="mb-2 text-xs text-muted-foreground">
           {growthBilling === "yearly"
@@ -1032,12 +1034,12 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         </motion.div>
 
         <div className="relative z-10 -mt-28">
-        <div className="mb-2 text-lg font-bold text-foreground">Scale</div>
-        <div className="mb-1 flex items-center gap-2 justify-between">
-          <div className="text-5xl font-black text-foreground">
-            {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
-          </div>
-          <BillingToggle value={scaleBilling} onChange={setScaleBilling} className="ml-auto" />
+        <div className="mb-2 flex items-center justify-between gap-2 pr-24">
+          <div className="text-lg font-bold text-foreground">Scale</div>
+          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
+        </div>
+        <div className="mb-1 text-5xl font-black text-foreground">
+          {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
         </div>
         <div className="mb-2 text-xs text-muted-foreground">
           {scaleBilling === "yearly"
@@ -1098,9 +1100,29 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
-          <div className="mb-2 text-lg font-bold text-foreground">Enterprise</div>
-          <div className="mb-1 text-3xl font-extrabold text-foreground">Custom</div>
-          <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 mb-4">Built around your operation</p>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="text-lg font-bold text-foreground">Enterprise</div>
+            <BillingToggle value={enterpriseBilling} onChange={setEnterpriseBilling} />
+          </div>
+          <div className="mb-2 inline-flex rounded-md border border-border overflow-hidden text-[10px] font-semibold uppercase tracking-wider">
+            {ENTERPRISE_SIZE_ORDER.map((k) => {
+              const active = enterpriseSize === k;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setEnterpriseSize(k)}
+                  className={`px-2.5 py-1 transition-colors ${active ? "bg-foreground text-background" : "bg-background text-foreground/70 hover:text-foreground"}`}
+                >
+                  {ENTERPRISE_SIZES[k].name}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mb-1 text-3xl font-extrabold text-foreground">
+            {enterpriseBilling === "monthly" ? ENTERPRISE_SIZES[enterpriseSize].monthlyLabel : ENTERPRISE_SIZES[enterpriseSize].yearlyLabel}
+          </div>
+          <p className="text-muted-foreground text-sm mb-4">Built around your operation</p>
           <ul className="mb-6 space-y-2 text-base text-foreground">
             {PACKAGES.enterprise.features.map((f) => (
               <li key={f} className="flex items-start gap-2">
@@ -1109,7 +1131,24 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
               </li>
             ))}
           </ul>
-          <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
+          {enterpriseSize === "small" ? (
+            <GlassBuyButton
+              onClick={() =>
+                buy(
+                  enterpriseBilling === "monthly" ? RETAINER_TIERS.enterprise.monthlyPriceId : RETAINER_TIERS.enterprise.yearlyPriceId,
+                  "subscription",
+                  "enterprise",
+                  "Enterprise",
+                  enterpriseBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
+                )
+              }
+              disabled={!!loading}
+              loading={loading === "enterprise"}
+              label="Subscribe"
+            />
+          ) : (
+            <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
+          )}
         </div>
       </motion.div>
       </div>
@@ -1347,6 +1386,8 @@ function MobileCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [growthBilling, setGrowthBilling] = useState<"monthly" | "yearly">("monthly");
   const [scaleBilling, setScaleBilling] = useState<"monthly" | "yearly">("monthly");
+  const [enterpriseBilling, setEnterpriseBilling] = useState<"monthly" | "yearly">("monthly");
+  const [enterpriseSize, setEnterpriseSize] = useState<EnterpriseSizeKey>("small");
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
@@ -1396,12 +1437,12 @@ function MobileCards() {
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10 flex flex-col flex-1">
-        <h3 className="text-lg font-bold text-foreground">Growth</h3>
-        <div className="mt-3 mb-1 flex items-center gap-2 justify-between">
-          <span className="text-3xl font-extrabold text-foreground">
-            {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
-          </span>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-lg font-bold text-foreground">Growth</h3>
           <BillingToggle value={growthBilling} onChange={setGrowthBilling} />
+        </div>
+        <div className="mt-3 mb-1 text-3xl font-extrabold text-foreground">
+          {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
         </div>
         <div className="mb-3 text-xs text-muted-foreground">
           {growthBilling === "yearly"
@@ -1442,25 +1483,25 @@ function MobileCards() {
         <div className="lava-blob lava-blob-featured-2" />
         <div className="lava-blob lava-blob-featured-3" />
         <div className="relative z-10 flex flex-col flex-1">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-bold text-foreground">Scale</h3>
-          <span
-            className="rounded-sm border border-[#a8802a]/60 px-2 py-[2px] text-[10px] font-extrabold uppercase tracking-wider"
-            style={{
-              background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
-              color: "#2a1d05",
-              textShadow: "0 1px 0 rgba(255,236,179,0.4)",
-            }}
-          >
-            MOST POPULAR
-          </span>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold text-foreground">Scale</h3>
+            <span
+              className="rounded-sm border border-[#a8802a]/60 px-2 py-[2px] text-[10px] font-extrabold uppercase tracking-wider"
+              style={{
+                background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
+                color: "#2a1d05",
+                textShadow: "0 1px 0 rgba(255,236,179,0.4)",
+              }}
+            >
+              MOST POPULAR
+            </span>
+          </div>
+          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
         </div>
 
-        <div className="mt-3 mb-1 flex items-center gap-2 justify-between">
-          <span className="text-3xl font-extrabold text-foreground">
-            {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
-          </span>
-          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
+        <div className="mt-3 mb-1 text-3xl font-extrabold text-foreground">
+          {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
         </div>
         <div className="mb-3 text-xs text-muted-foreground">
           {scaleBilling === "yearly"
@@ -1501,11 +1542,29 @@ function MobileCards() {
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10 flex flex-col flex-1">
-          <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
-          <div className="mt-3 mb-1">
-            <span className="text-3xl font-extrabold text-foreground">Custom</span>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
+            <BillingToggle value={enterpriseBilling} onChange={setEnterpriseBilling} />
           </div>
-          <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 mb-4">Built around your operation</p>
+          <div className="mt-2 mb-1 inline-flex w-fit rounded-md border border-border overflow-hidden text-[10px] font-semibold uppercase tracking-wider">
+            {ENTERPRISE_SIZE_ORDER.map((k) => {
+              const active = enterpriseSize === k;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setEnterpriseSize(k)}
+                  className={`px-2.5 py-1 transition-colors ${active ? "bg-foreground text-background" : "bg-background text-foreground/70 hover:text-foreground"}`}
+                >
+                  {ENTERPRISE_SIZES[k].name}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-2 mb-1 text-3xl font-extrabold text-foreground">
+            {enterpriseBilling === "monthly" ? ENTERPRISE_SIZES[enterpriseSize].monthlyLabel : ENTERPRISE_SIZES[enterpriseSize].yearlyLabel}
+          </div>
+          <p className="text-muted-foreground text-sm mb-4">Built around your operation</p>
           <ul className="space-y-2 flex-1 mb-4">
             {PACKAGES.enterprise.features.map((f) => (
               <li key={f} className="flex items-start gap-2 text-base text-foreground">
@@ -1514,7 +1573,24 @@ function MobileCards() {
               </li>
             ))}
           </ul>
-          <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
+          {enterpriseSize === "small" ? (
+            <GlassBuyButton
+              onClick={() =>
+                buy(
+                  enterpriseBilling === "monthly" ? RETAINER_TIERS.enterprise.monthlyPriceId : RETAINER_TIERS.enterprise.yearlyPriceId,
+                  "subscription",
+                  "enterprise",
+                  "Enterprise",
+                  enterpriseBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
+                )
+              }
+              disabled={!!loading}
+              loading={loading === "enterprise"}
+              label="Subscribe"
+            />
+          ) : (
+            <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
+          )}
         </div>
       </div>
     </div>
