@@ -947,12 +947,12 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
-        <div className="mb-2 text-lg font-bold text-foreground">Growth</div>
-        <div className="mb-1 flex items-center gap-2 justify-between">
-          <div className="text-3xl font-extrabold text-foreground">
-            {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
-          </div>
-          <BillingToggle value={growthBilling} onChange={setGrowthBilling} className="ml-auto" />
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="text-lg font-bold text-foreground">Growth</div>
+          <BillingToggle value={growthBilling} onChange={setGrowthBilling} />
+        </div>
+        <div className="mb-1 text-3xl font-extrabold text-foreground">
+          {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
         </div>
         <div className="mb-2 text-xs text-muted-foreground">
           {growthBilling === "yearly"
