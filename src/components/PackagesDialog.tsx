@@ -1032,12 +1032,12 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         </motion.div>
 
         <div className="relative z-10 -mt-28">
-        <div className="mb-2 text-lg font-bold text-foreground">Scale</div>
-        <div className="mb-1 flex items-center gap-2 justify-between">
-          <div className="text-5xl font-black text-foreground">
-            {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
-          </div>
-          <BillingToggle value={scaleBilling} onChange={setScaleBilling} className="ml-auto" />
+        <div className="mb-2 flex items-center justify-between gap-2 pr-24">
+          <div className="text-lg font-bold text-foreground">Scale</div>
+          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
+        </div>
+        <div className="mb-1 text-5xl font-black text-foreground">
+          {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
         </div>
         <div className="mb-2 text-xs text-muted-foreground">
           {scaleBilling === "yearly"
