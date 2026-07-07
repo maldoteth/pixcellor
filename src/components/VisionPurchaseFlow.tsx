@@ -39,21 +39,29 @@ type PackageOption = {
 
 const PACKAGE_OPTIONS: PackageOption[] = [
   {
-    key: "fullWorks",
-    name: "Full Works",
-    price: "£169",
-    pages: "Up to 3 pages",
-    priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
-    bullets: ["Industry-leading website", "Lifetime warranty", "Base animations", "All inclusive service"],
+    key: "retainer-growth",
+    name: "Growth",
+    price: "£89/mo",
+    pages: "Website + unlimited edits",
+    priceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
+    bullets: ["Unlimited edits", "AI lead/support bots", "Hosting, SSL, domain", "Monthly analytics report"],
   },
   {
-    key: "elite",
-    name: "Elite",
-    price: "£479",
-    pages: "10 pages — 3D animated",
-    priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
-    bullets: ["Sites or web apps", "Unlimited revisions", "SEO & AEO optimisation", "4-7 day turnaround"],
+    key: "retainer-scale",
+    name: "Scale",
+    price: "£479/mo",
+    pages: "Everything in Growth, plus",
+    priceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
+    bullets: ["Unlimited seats & users", "Priority 24/7 support", "Custom AI agents & automations", "Monthly strategy call"],
     featured: true,
+  },
+  {
+    key: "retainer-enterprise",
+    name: "Enterprise",
+    price: "£2,469/mo",
+    pages: "Fractional CTO + CMO",
+    priceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
+    bullets: ["Dedicated dev & ops team", "Weekly MVP sprints", "24/7 priority support", "Board-ready reporting"],
   },
 ];
 
@@ -104,11 +112,11 @@ export default function VisionPurchaseFlow() {
       await recordFalloff({
         event: "checkout_started",
         priceId: selected.priceId,
-        mode: "payment",
+        mode: "subscription",
         packageName: selected.name,
-        billing: "one_time",
+        billing: "monthly",
       });
-      markCheckoutPending({ packageName: selected.name, billing: "one_time" });
+      markCheckoutPending({ packageName: selected.name, billing: "monthly" });
       const domainPayload =
         domain && domain.kind === "buy"
           ? { domain: domain.domain, domainTopUpGbp: domain.topUpGbp }
@@ -117,9 +125,9 @@ export default function VisionPurchaseFlow() {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
           priceId: selected.priceId,
-          mode: "payment",
+          mode: "subscription",
           packageName: selected.name,
-          billing: "one_time",
+          billing: "monthly",
           clientContext: hasFalloffConsent() ? getCheckoutContext() : undefined,
           buyer,
           affiliateRef: getAffiliateRef() ?? undefined,

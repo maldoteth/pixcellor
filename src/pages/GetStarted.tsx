@@ -71,18 +71,18 @@ const PAST_CLIENTS = [
 const FEATURES = [
   {
     icon: Gauge,
-    title: "5–10 day turnaround",
-    body: "Full Works sites ship in 5–10 working days. Elite builds (10 pages, apps, animations) in 10 days. Edits on retainer are 1–3 days.",
+    title: "Weekly shipping cadence",
+    body: "Retainers ship edits in 1–3 days and new features every week. Urgent fixes same-day. No waiting on external agencies.",
   },
   {
     icon: ShieldCheck,
     title: "Lifetime build warranty",
-    body: "One-off builds carry a lifetime warranty on defects. Retainers cover everything for as long as you're active. Own your code, no lock-in.",
+    body: "Every retainer covers your site, apps and integrations for as long as you're active. Own your code, no lock-in.",
   },
   {
     icon: InfinityIcon,
-    title: "Unlimited revisions on Elite",
-    body: "Any visual or copy change during the build cycle — no per-edit fees. Growth and Scale retainers ship unlimited edits each month.",
+    title: "Unlimited revisions",
+    body: "Growth, Scale and Enterprise retainers all ship unlimited edits each month — any visual or copy change, no per-edit fees.",
   },
   {
     icon: Bot,
@@ -102,7 +102,6 @@ const FEATURES = [
 ];
 
 // Pulled live from packages.ts so prices/billing stay in sync.
-const ONE_OFFS = ["full-works", "elite"] as const;
 const RETAINERS = ["retainer-growth", "retainer-scale", "retainer-enterprise"] as const;
 
 const CATEGORY_META: Record<ServiceCategory, { Icon: typeof Megaphone; blurb: string }> = {
@@ -114,23 +113,23 @@ const CATEGORY_META: Record<ServiceCategory, { Icon: typeof Megaphone; blurb: st
 const FAQ = [
   {
     q: "How fast can you launch my site?",
-    a: "Fast track sites can be live in hours, generally Full Works sites typically go live 5–10 working days from a signed-off brief. Elite builds (up to 10 pages, animations, apps) are a 10-day turnaround. Retainer edits are 1–3 days; urgent fixes same-day.",
+    a: "Retainers include a full site build in the first 5–10 working days from a signed-off brief. Fast-track launches can be live in hours. Ongoing edits are 1–3 days; urgent fixes same-day.",
   },
   {
     q: "How much does it cost?",
-    a: "One-off builds: Full Works £169 or Elite £500. Retainers: Growth £89/mo, Scale £479/mo, Enterprise £2,469/mo — all cancel-anytime, with up to £4,938/yr saved on annual. Add-ons (extra pages, copy, brand kit, migration, 3D hero, multilingual) are fixed price.",
+    a: "Three retainers: Growth £89/mo, Scale £479/mo, Enterprise £2,469/mo — all cancel-anytime, with up to £4,938/yr saved on annual. Add-ons (extra pages, copy, brand kit, migration, 3D hero, multilingual) are fixed price.",
   },
   {
     q: "Do I really own the site?",
-    a: "Yes — you own the code, content and domain outright. We can host it for you on our global CDN (free with the build) or hand it over to your developer with logins and docs.",
+    a: "Yes — you own the code, content and domain outright. We can host it for you on our global CDN (included in every retainer) or hand it over to your developer with logins and docs.",
   },
   {
     q: "What if I don't like the first draft?",
-    a: "Full Works includes 1 revision round pre-launch. Elite includes unlimited revisions during the build — any visual or copy change, no per-edit fees. Retainers ship unlimited edits each month.",
+    a: "Every retainer ships unlimited revisions each month — any visual or copy change, no per-edit fees. We iterate weekly until it's exactly right.",
   },
   {
     q: "Can you build a full web app or SaaS?",
-    a: "Yes. Elite and the Scale/Enterprise retainers cover full-stack: React + TypeScript front-end, Postgres + edge-function back-end, auth, Stripe payments, file storage, real-time, admin dashboards and PWAs. We've shipped CRMs, ATSs, marketplaces and dApps.",
+    a: "Yes. The Scale and Enterprise retainers cover full-stack: React + TypeScript front-end, Postgres + edge-function back-end, auth, Stripe payments, file storage, real-time, admin dashboards and PWAs. We've shipped CRMs, ATSs, marketplaces and dApps.",
   },
   {
     q: "Can you integrate with Stripe, HubSpot, Salesforce, Twilio, Cal.com, WhatsApp…?",
@@ -142,7 +141,7 @@ const FAQ = [
   },
   {
     q: "What about SEO and getting cited by ChatGPT?",
-    a: "Elite includes full technical SEO + AEO (Answer Engine Optimisation), JSON-LD schema, llms.txt and AI discoverability. Retainers add ongoing tuning, content briefs, link building and monthly ranking + AI-citation reports.",
+    a: "Every retainer includes full technical SEO + AEO (Answer Engine Optimisation), JSON-LD schema, llms.txt and AI discoverability, plus ongoing tuning, content briefs, link building and monthly ranking + AI-citation reports.",
   },
 ];
 
@@ -729,56 +728,10 @@ const GetStarted = () => {
               Fixed prices. Lifetime warranty. No contracts.
             </h2>
             <p className="mt-3 text-white/60 text-sm sm:text-base">
-              Two one-off builds and three retainers. Everything below is the real list price — no upsells on the call.
+              Three retainer packages. Everything below is the real list price — no upsells on the call.
             </p>
           </div>
 
-          {/* One-off packages */}
-          <div className="mt-10 grid md:grid-cols-2 gap-5">
-            {ONE_OFFS.map((slug) => {
-              const p = PACKAGE_DETAILS[slug];
-              return (
-                <motion.div
-                  key={slug}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-80px" }}
-                  transition={{ duration: 0.5 }}
-                  className={`relative backdrop-blur-xl border p-6 sm:p-8 ${
-                    p.featured ? "bg-white/[0.06] border-white/30" : "bg-white/[0.03] border-white/10"
-                  }`}
-                >
-                  {p.featured && (
-                    <span className="absolute -top-3 left-6 text-[10px] uppercase tracking-[0.18em] bg-white text-black px-2 py-1">
-                      Most popular
-                    </span>
-                  )}
-                  <div className="flex items-baseline justify-between">
-                    <h3 className="text-xl font-semibold">{p.name}</h3>
-                    <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">One-off</span>
-                  </div>
-                  <p className="mt-2 text-sm text-white/65">{p.tagline}</p>
-                  <div className="mt-5 flex items-baseline gap-3">
-                    <span className="text-4xl font-semibold">{p.price}</span>
-                  </div>
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-white/40 mt-1">{p.billing}</p>
-                  <ul className="mt-5 space-y-2 text-sm text-white/80">
-                    {p.includes[0].items.slice(0, 5).map((item) => (
-                      <li key={item} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" aria-hidden />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to={`/packages/${slug}`} className="mt-6 inline-block">
-                    <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                      See {p.name} details <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
 
           {/* Retainers */}
           <div className="mt-10 flex justify-center">
