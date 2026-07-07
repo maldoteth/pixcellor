@@ -2557,39 +2557,17 @@ Deno.serve(async (req) => {
           try {
             const args = JSON.parse(toolCall.function.arguments);
             const pkgId = args.package_id as keyof typeof PACKAGES;
-            const billing = args.billing || "one-time";
-            const pkg = PACKAGES[pkgId];
+            const pkgId = args.package_id as string;
+            const billing = args.billing || "monthly";
+            const pkg = (PACKAGES as any)[pkgId];
 
             if (pkg) {
-              let priceId = "";
-              let price = "";
-              let mode = "";
-
-              if (pkgId === "fullWorks") {
-                priceId = (pkg as any).priceId;
-                price = pkg.price;
-                mode = "payment";
-              } else if (pkgId === "elite") {
-                if (billing === "monthly") {
-                  priceId = (pkg as any).monthlyPriceId;
-                  price = "£60/mo";
-                  mode = "subscription";
-                } else {
-                  priceId = (pkg as any).priceId;
-                  price = "£479";
-                  mode = "payment";
-                }
-              } else if (pkgId === "retainer") {
-                if (billing === "yearly") {
-                  priceId = (pkg as any).yearlyPriceId;
-                  price = "£24,690/yr";
-                  mode = "subscription";
-                } else {
-                  priceId = (pkg as any).monthlyPriceId;
-                  price = "£2,469/mo";
-                  mode = "subscription";
-                }
-              }
+              const isYearly = billing === "yearly";
+              const priceId = isYearly ? pkg.yearlyPriceId : pkg.monthlyPriceId;
+              const price = isYearly
+                ? (pkgId === "growth" ? "£890/yr" : pkgId === "scale" ? "£4,790/yr" : "£24,690/yr")
+                : (pkgId === "growth" ? "£89/mo" : pkgId === "scale" ? "£479/mo" : "£2,469/mo");
+              const mode = "subscription";
 
               packageCards.push({
                 packageId: pkgId,
