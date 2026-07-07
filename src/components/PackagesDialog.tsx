@@ -857,6 +857,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
   const [loading, setLoading] = useState<string | null>(null);
   const [growthBilling, setGrowthBilling] = useState<"monthly" | "yearly">("monthly");
   const [scaleBilling, setScaleBilling] = useState<"monthly" | "yearly">("monthly");
+  const [enterpriseBilling, setEnterpriseBilling] = useState<"monthly" | "yearly">("monthly");
+  const [enterpriseSize, setEnterpriseSize] = useState<EnterpriseSizeKey>("small");
   const [pending, setPending] = useState<{ priceId: string; mode: string; key: string; packageName: string; billing: string } | null>(null);
   const [submittingBuyer, setSubmittingBuyer] = useState(false);
 
