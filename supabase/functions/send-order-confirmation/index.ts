@@ -30,11 +30,9 @@ const requireAdmin = async (req: Request) => {
   if (roleError || !isAdmin) throw new Error("Admin access required");
 };
 
-const templateForPackage = (packageName?: string | null) => {
-  const clean = (packageName ?? "").toLowerCase();
-  if (clean.includes("retainer")) return "retainer-order-confirmation";
-  if (clean.includes("elite")) return "elite-order-confirmation";
-  return "full-works-order-confirmation";
+const templateForPackage = (_packageName?: string | null) => {
+  // All active packages are retainers now — Full Works and Elite have been retired.
+  return "retainer-order-confirmation";
 };
 
 serve(async (req) => {
