@@ -915,7 +915,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: -6, scale: 1 }}
-        animate={{ opacity: 1, y: 0, rotate: -6, scale: 1 }}
+        animate={{ opacity: 1, y: -100, rotate: -6, scale: 1 }}
         whileHover={{ scale: 1.05 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
         className="relative z-10 w-[332px] rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
@@ -1048,7 +1048,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: 6, scale: 1 }}
-        animate={{ opacity: 1, y: 0, rotate: 6, scale: 1 }}
+        animate={{ opacity: 1, y: -100, rotate: 6, scale: 1 }}
         whileHover={{ scale: 1.05 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
         className="relative z-10 w-[332px] min-h-[420px]"
@@ -1325,8 +1325,8 @@ function ServiceBackCard({
   return (
     <motion.div data-lava-card
       className={`relative ${isCenter ? "z-20 w-[370px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[332px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
-      initial={{ rotate, y: isCenter ? -20 : 0, scale: isCenter ? 1.1 : 1 }}
-      animate={{ rotate, y: isCenter ? -20 : 0, scale: isCenter ? 1.1 : 1 }}
+      initial={{ rotate, y: isCenter ? -20 : -60, scale: isCenter ? 1.1 : 1 }}
+      animate={{ rotate, y: isCenter ? -20 : -60, scale: isCenter ? 1.1 : 1 }}
       whileHover={{ scale: isCenter ? 1.12 : 1.05 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
       style={{ boxShadow: shadow, willChange: "transform" }}
