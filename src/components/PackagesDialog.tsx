@@ -1145,7 +1145,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
     </div>
     </motion.div>
     </div>
-    <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
+
+
     <BuyDetailsPrompt
       open={!!pending}
       onOpenChange={(o) => { if (!o) setPending(null); }}
