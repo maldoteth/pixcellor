@@ -1100,9 +1100,29 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
-          <div className="mb-2 text-lg font-bold text-foreground">Enterprise</div>
-          <div className="mb-1 text-3xl font-extrabold text-foreground">Custom</div>
-          <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 mb-4">Built around your operation</p>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="text-lg font-bold text-foreground">Enterprise</div>
+            <BillingToggle value={enterpriseBilling} onChange={setEnterpriseBilling} />
+          </div>
+          <div className="mb-2 inline-flex rounded-md border border-border overflow-hidden text-[10px] font-semibold uppercase tracking-wider">
+            {ENTERPRISE_SIZE_ORDER.map((k) => {
+              const active = enterpriseSize === k;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setEnterpriseSize(k)}
+                  className={`px-2.5 py-1 transition-colors ${active ? "bg-foreground text-background" : "bg-background text-foreground/70 hover:text-foreground"}`}
+                >
+                  {ENTERPRISE_SIZES[k].name}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mb-1 text-3xl font-extrabold text-foreground">
+            {enterpriseBilling === "monthly" ? ENTERPRISE_SIZES[enterpriseSize].monthlyLabel : ENTERPRISE_SIZES[enterpriseSize].yearlyLabel}
+          </div>
+          <p className="text-muted-foreground text-sm mb-4">Built around your operation</p>
           <ul className="mb-6 space-y-2 text-base text-foreground">
             {PACKAGES.enterprise.features.map((f) => (
               <li key={f} className="flex items-start gap-2">
@@ -1111,7 +1131,24 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
               </li>
             ))}
           </ul>
-          <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
+          {enterpriseSize === "small" ? (
+            <GlassBuyButton
+              onClick={() =>
+                buy(
+                  enterpriseBilling === "monthly" ? RETAINER_TIERS.enterprise.monthlyPriceId : RETAINER_TIERS.enterprise.yearlyPriceId,
+                  "subscription",
+                  "enterprise",
+                  "Enterprise",
+                  enterpriseBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
+                )
+              }
+              disabled={!!loading}
+              loading={loading === "enterprise"}
+              label="Subscribe"
+            />
+          ) : (
+            <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
+          )}
         </div>
       </motion.div>
       </div>
