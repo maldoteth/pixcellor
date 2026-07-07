@@ -72,7 +72,7 @@ serve(async (req) => {
     const orderCode = typeof publicReference?.order_code === "string" ? publicReference.order_code : order.session_id;
     const requirementsToken = typeof publicReference?.requirements_token === "string" ? publicReference.requirements_token : null;
 
-    const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Full Works";
+    const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Pixcellor retainer";
     const customLabel = typeof metadata.custom_label === "string" ? metadata.custom_label : null;
     const billing = typeof metadata.billing === "string" ? metadata.billing : order.mode || "payment";
 
