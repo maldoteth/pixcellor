@@ -2007,6 +2007,7 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Product/project management": "product-project-management",
   "Creative, branding and makeovers": "creative-branding-makeovers",
   "Creative & branding": "creative-branding-makeovers",
+  "Email marketing": "email-marketing",
   "Video & 3D animations": "video-3d-animations",
   "Documents and decks": "documents-and-decks",
 };
