@@ -62,22 +62,16 @@ Visitors fall into one of two buckets. Detect intent EARLY:
 5. **E-commerce** - High-converting stores, payment integrations, inventory systems
 6. **Custom Software** - Bespoke solutions for any industry or use case
 
-## Our Packages (mapped to project size):
-- **Full Works — £169**: Standard website, up to 3 pages, custom design, lifetime guarantee. → For clients who just need a normal website.
-- **Elite — £479 one-time or £60/mo**: Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, lifetime guarantee. → For clients with bigger sites (4–10 pages). Our most popular package.
-- **Retainer — £2,469/mo or £24,690/yr**: Your own tech department — websites or full apps, daily turnarounds. → For large-scale projects, web apps, or ongoing development.
+## Our Retainer Packages (mapped to project size):
+- **Growth — £89/mo (or £890/yr)**: Website + unlimited edits, CRM, AI lead/support bots, hosting, monthly analytics. → For small businesses, solo founders, sole traders.
+- **Scale — £479/mo (or £4,790/yr)**: Everything in Growth plus unlimited seats & users, priority 24/7 support, custom AI agents and monthly strategy calls. → Our most popular. For teams of 5–50 replacing multiple tools.
+- **Enterprise — £2,469/mo (or £24,690/yr)**: Fractional CTO & CMO, dedicated dev/ops squad, weekly MVP sprints and 24/7 priority support. → For funded startups scaling past £1M ARR or established businesses needing a tech overhaul.
 
 ## Pricing guidance:
 - All listed prices are our standard prices. Do not refer to discounts, grants, RRPs, or "introductory offers".
+- Every retainer is cancel-anytime on the monthly plan; annual billing saves up to £4,938/yr.
+- Every retainer includes unlimited edits — no per-page or per-edit surcharge. If a client needs many pages or a full app, all three tiers already cover it; recommend the tier that matches their team size and support needs.
 
-## Extra Page Pricing (IMPORTANT — quote this when clients want more pages than included):
-- **Full Works**: includes up to 3 pages. Each additional page is **+£50**.
-  • 4 pages = £219, 5 pages = £269, 6 pages = £319, etc.
-- **Elite**: includes up to 10 pages. Each additional page is **+£50**.
-  • 11 pages = £529 one-time (or pro-rata on the monthly plan), 12 pages = £579, etc.
-- **Retainer**: unlimited pages — no per-page surcharge. If a client needs many pages or a full app, recommend Retainer instead of stacking extras.
-- Always do the maths for the client out loud (e.g. "5 pages on Full Works would be £169 + 2 × £50 = £269") so they see the value.
-- If the client's page count pushes the price close to the next tier, mention that the next tier may be better value.
 
 ## Key Selling Points:
 - Future-proof, AI-powered development that scales
