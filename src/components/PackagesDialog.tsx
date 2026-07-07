@@ -811,8 +811,49 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
   );
 }
 
+function BillingToggle({
+  value,
+  onChange,
+  className = "",
+}: {
+  value: "monthly" | "yearly";
+  onChange: (next: "monthly" | "yearly") => void;
+  className?: string;
+}) {
+  const toggle = () => onChange(value === "monthly" ? "yearly" : "monthly");
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={value === "yearly"}
+      aria-label={`Switch to ${value === "monthly" ? "yearly" : "monthly"} billing`}
+      onPointerDown={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        toggle();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          toggle();
+        }
+      }}
+      className={`relative h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)] ${className}`}
+    >
+      <span
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+        style={{ transform: `translateY(-50%) ${value === "yearly" ? "translateX(3px)" : "translateX(54px)"}` }}
+      />
+      <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${value === "yearly" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
+        {value === "yearly" ? "Yearly" : "Monthly"}
+      </span>
+    </button>
+  );
+}
+
 type ServiceAction = "pricing" | "sales";
 function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFlipped?: boolean; onServiceAction?: (action: ServiceAction) => void }) {
+
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
   const [retainerTier, setRetainerTier] = useState<RetainerTierKey>("growth");
