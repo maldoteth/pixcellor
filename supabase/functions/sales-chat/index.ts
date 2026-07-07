@@ -2085,9 +2085,9 @@ async function devRecommendPackage(args: Record<string, unknown>) {
   const pages = Number(args.page_count) || 0;
   const subscription = args.needs_subscription === true;
   const notes = cleanText(args.notes, 600);
-  let pick: "fullWorks" | "elite" | "retainer" = "fullWorks";
-  if (subscription || pages > 30) pick = "retainer";
-  else if (pages > 10 || subscription) pick = "elite";
+  let pick: "growth" | "scale" | "enterprise" = "growth";
+  if (subscription || pages > 30) pick = "enterprise";
+  else if (pages > 10) pick = "scale";
   const pkg = PACKAGES[pick];
   const summary = [
     `Recommended: **${pkg.name}** (${pkg.price})`,
