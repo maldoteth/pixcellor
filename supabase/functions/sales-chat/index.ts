@@ -258,13 +258,13 @@ const tools = [
         properties: {
           package_id: {
             type: "string",
-            enum: ["fullWorks", "elite", "retainer"],
-            description: "Which package to show: fullWorks (£169 website, up to 3 pages), elite (£479 or £60/mo, up to 10 pages, unlimited edits, SEO/AEO), or retainer (£2,469/mo or £24,690/yr tech department)",
+            enum: ["growth", "scale", "enterprise"],
+            description: "Which retainer to show: growth (£89/mo, site + unlimited edits, AI bots), scale (£479/mo, everything in Growth + unlimited seats + priority 24/7 + custom AI agents), or enterprise (£2,469/mo, fractional CTO & CMO + dedicated dev/ops squad + weekly MVP sprints).",
           },
           billing: {
             type: "string",
-            enum: ["one-time", "monthly", "yearly"],
-            description: "Billing option. fullWorks is always one-time. elite can be one-time or monthly. retainer can be monthly or yearly.",
+            enum: ["monthly", "yearly"],
+            description: "Billing option — all retainers can be monthly (cancel-anytime) or yearly (save up to £4,938/yr).",
           },
         },
         required: ["package_id"],
