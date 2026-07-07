@@ -1,15 +1,17 @@
 # Pixcellor™
 
-> Pixcellor is a UK digital agency that builds bespoke, fast-loading websites and full-stack web apps for businesses, delivered as monthly retainers from £89/month with lifetime guarantee, SEO/AEO, unlimited edits and a 2-week MVP sprint option.
+> Pixcellor is a UK digital agency that builds bespoke, fast-loading websites and full-stack web apps for small businesses, starting from £100, with lifetime guarantee, SEO/AEO, unlimited edits and a 2-week MVP sprint option.
 
-Pixcellor offers three retainer packages: Growth (£89/mo, website + unlimited edits, CRM, AI bots and hosting for small businesses), Scale (£479/mo, everything in Growth plus unlimited seats, priority 24/7 support, custom AI agents and monthly strategy calls), and Enterprise (£2,469/mo, fractional CTO & CMO with a dedicated dev/ops squad and weekly MVP sprints). Services include web design, web development, app development, full-stack development, SEO, AEO (Answer Engine Optimisation), Web3, blockchain and AI integration.
+Pixcellor offers three packages: Full Works (£100, modern fast site with lifetime guarantee), Elite (£500, animated interactive site with unlimited edits, SEO and AEO), and Retainer (£1,200/month, ongoing tech department covering sites, apps and integrations). Services include web design, web development, app development, full-stack development, SEO, AEO (Answer Engine Optimisation), Web3, blockchain and AI integration.
 
 ## Pages
 
 - [Home](/): Pixcellor overview, packages, portfolio and contact.
-- [Growth Retainer](/packages/retainer-growth): £89/mo always-on web team — site, CRM, hosting, AI bots, analytics.
-- [Scale Retainer](/packages/retainer-scale): £479/mo full digital department — unlimited seats, AI agents, priority SLA, monthly strategy.
-- [Enterprise Retainer](/packages/retainer-enterprise): £2,469/mo fractional CTO/CMO, dedicated dev team, weekly MVP sprints, 24/7 support.
+- [Full Works package](/packages/full-works): £150 one-off site, lifetime warranty, 3 pages, base animations.
+- [Elite package](/packages/elite): £500 one-off animated site or web app, unlimited revisions, SEO/AEO, 10-day turnaround.
+- [Growth Retainer](/packages/retainer-growth): £100/mo always-on web team — site, CRM, hosting, AI bots, analytics.
+- [Scale Retainer](/packages/retainer-scale): £500/mo full digital department — unlimited seats, AI agents, priority SLA, monthly strategy.
+- [Enterprise Retainer](/packages/retainer-enterprise): £2,500/mo fractional CTO/CMO/CRO, dedicated dev team, 2-week MVP sprints, 24/7 support.
 - [Legal](/legal): Index of legal documents.
 - [Terms of service](/legal/terms): Terms governing use of Pixcellor services.
 - [Privacy policy](/legal/privacy): How Pixcellor handles personal data.

@@ -38,11 +38,28 @@ const TERMS: Section[] = [
     body: (
       <ul className="list-disc pl-5 space-y-2">
         <li>
-          <strong>Retainers (Growth, Scale, Enterprise):</strong> Monthly or annual subscription covering
-          build, hosting, domain management, maintenance and all agreed scope. Monthly plans are
-          cancel-anytime; annual plans save up to £4,938/yr. Out-of-scope third-party costs (e.g. paid
-          ads, premium APIs, specialist tooling, domain purchases, premium hosting tiers) are passed
-          through to the client at cost.
+          <strong>Full Works (£169):</strong> The £169 fee is an <strong>annual</strong> subscription
+          covering build, hosting, domain management and maintenance. Customers who purchased before any
+          price change keep the £169/year rate for the lifetime of the active subscription, provided
+          payments remain current and the service is not cancelled. Lapsed subscriptions revert to the
+          then-current rate. Annual renewal pricing is <strong>reviewed each year with your consultant</strong>
+          and may be adjusted based on actual usage, scope changes and third-party costs; any change is
+          agreed in writing before renewal and never applied retroactively.
+        </li>
+        <li>
+          <strong>Elite (£479):</strong> One-time build fee. An <strong>annual renewal fee</strong>
+          applies thereafter for domain hosting, management, and ongoing maintenance. The renewal amount
+          is <strong>not fixed</strong> — it is reviewed in an annual consultation with your consultant
+          and quoted based on the actual hosting, domain, bandwidth and maintenance requirements for the
+          coming year. You will be quoted the renewal price in writing and must approve it before any
+          charge is taken. Failure to pay the agreed renewal may result in suspension of the domain,
+          hosting and related services.
+        </li>
+        <li>
+          <strong>Retainer:</strong> Monthly or annual subscription. Includes the agreed scope only. While
+          a retainer is active, we will not charge percentage fees on other services covered by the
+          retainer scope. Out-of-scope third-party costs (e.g. paid ads, premium APIs, specialist tooling,
+          domain purchases, premium hosting tiers) are passed through to the client at cost.
         </li>
         <li>
           <strong>Enterprise:</strong> Bespoke. Pricing, deliverables and timelines are agreed in a separate
@@ -448,7 +465,7 @@ const REFUND: Section[] = [
     heading: "1. 28-day satisfaction guarantee",
     body: (
       <>
-        Retainer packages include a 28-day satisfaction guarantee from delivery
+        Eligible build packages (Full Works, Elite) include a 28-day satisfaction guarantee from delivery
         of the initial build. If you are unhappy with the result, tell us in writing with specifics; if
         we cannot put it right within a reasonable revision cycle, we will refund the build fee, less any
         third-party costs already incurred on your behalf.

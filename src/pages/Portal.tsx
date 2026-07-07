@@ -1101,7 +1101,7 @@ export default function Portal() {
   }, [editRequests]);
 
   const orderEmailStatusBySession = useMemo(() => {
-    const confirmationTemplates = new Set(["retainer-order-confirmation"]);
+    const confirmationTemplates = new Set(["full-works-order-confirmation", "elite-order-confirmation", "retainer-order-confirmation"]);
     const map = new Map<string, { confirmationSent: boolean; reminderSent: boolean; completionSent: boolean }>();
     for (const order of orders) map.set(order.session_id, { confirmationSent: false, reminderSent: false, completionSent: false });
     for (const log of emailLogs) {

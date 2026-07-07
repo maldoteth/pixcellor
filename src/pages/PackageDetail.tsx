@@ -369,7 +369,7 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
 
 
         {/* AGENTIC SELF-IMPROVING SYSTEMS — flagship sales section */}
-        {pkg.slug.startsWith("retainer-") && (
+        {(pkg.slug === "elite" || pkg.slug.startsWith("retainer-")) && (
           <motion.section {...fadeUp} className="mb-12 md:mb-16">
             <div className="relative overflow-hidden rounded-2xl border border-foreground/15 bg-gradient-to-br from-foreground/[0.08] via-foreground/[0.03] to-transparent p-6 md:p-10 backdrop-blur-md">
               <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-foreground/10 blur-3xl pointer-events-none" />
@@ -655,7 +655,7 @@ function PackageDetailInner({ slug, pkg, billing, setBilling, hasYearly, display
               <div>
                 <h2 className="text-base md:text-lg font-bold">Not happy? We make it right.</h2>
                 <p className="mt-2 text-sm text-foreground/80 leading-relaxed max-w-2xl">
-                  Every retainer includes a <strong>28-day satisfaction guarantee</strong> from delivery. If we can't get it right, we'll refund — minus any third-party costs already paid on your behalf. Monthly retainers are cancel-anytime with no lock-in.
+                  Eligible build packages (Full Works, Elite) include a <strong>28-day satisfaction guarantee</strong> from delivery. If we can't get it right, we'll refund — minus any third-party costs already paid on your behalf. Retainers are cancel-anytime (monthly) with no lock-in.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-foreground/70">
                   <span className="inline-flex items-center gap-1.5">

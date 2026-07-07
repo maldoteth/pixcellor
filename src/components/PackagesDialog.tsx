@@ -24,6 +24,8 @@ import ServiceSalesView from "@/components/services/ServiceSalesView";
 import { PaymentMethodDialog, type PaymentChoiceContext } from "@/components/PaymentMethodDialog";
 
 const PACKAGE_KEY_TO_SLUG: Record<string, string> = {
+  fullWorks: "full-works",
+  elite: "elite",
   growth: "retainer-growth",
   scale: "retainer-scale",
   enterprise: "retainer-enterprise",
@@ -32,6 +34,21 @@ const PACKAGE_KEY_TO_SLUG: Record<string, string> = {
 
 
 const PACKAGES = {
+  fullWorks: {
+    name: "Full Works",
+    price: "£169",
+    priceId: "price_1Tkw9XBtUjwejeUwEQlAv42p",
+    mode: "payment" as const,
+    features: ["Industry leading website", "First 25 leads included", "Lifetime warranty", "Base animations ", "Up to 3 pages"],
+  },
+  elite: {
+    name: "Elite Build",
+    price: "£479",
+    priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
+    mode: "payment" as const,
+    featured: true,
+    features: ["Smart site or web app", "First 150 leads included", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages - 3D animated", "Self-improving agentic flows"],
+  },
   retainer: {
     name: "Custom",
     monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
@@ -795,175 +812,6 @@ function EnterpriseDrawer({ open, onOpenChange }: { open: boolean; onOpenChange:
 }
 
 type ServiceAction = "pricing" | "sales";
-
-function TierCard({
-  tierKey,
-  featured = false,
-  rotate = 0,
-  loading,
-  onBuy,
-  onTalkToSales,
-  isMobile = false,
-}: {
-  tierKey: RetainerTierKey;
-  featured?: boolean;
-  rotate?: number;
-  loading: string | null;
-  onBuy: (priceId: string, mode: string, key: string, packageName: string, billing: string) => void;
-  onTalkToSales: () => void;
-  isMobile?: boolean;
-}) {
-  const tier = RETAINER_TIERS[tierKey];
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
-  const [size, setSize] = useState<EnterpriseSizeKey>("small");
-  const isEnt = tierKey === "enterprise";
-  const ent = ENTERPRISE_SIZES[size];
-  const monthly = isEnt ? ent.monthly : tier.monthly;
-  const yearly = isEnt ? ent.yearly : tier.yearly;
-  const monthlyLabel = isEnt ? ent.monthlyLabel : tier.monthlyLabel;
-  const yearlyLabel = isEnt ? ent.yearlyLabel : tier.yearlyLabel;
-  const savings = (monthly * 12 - yearly).toLocaleString();
-  const isMediumEnt = isEnt && size === "medium";
-
-  const shadow = featured
-    ? `0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.08), inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 1px rgba(0,0,0,0.1)`
-    : `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.1)`;
-
-  const widthClass = isMobile ? "w-full" : featured ? "w-[370px]" : "w-[332px]";
-  const borderClass = featured ? "border-2 border-foreground/30 bg-background/80" : "border border-border/40 bg-background";
-  const paddingClass = featured ? "px-8 pt-8 pb-5" : "px-7 py-8";
-
-  const card = (
-    <div
-      data-lava-card
-      className={`relative ${widthClass} ${borderClass} ${paddingClass} rounded-none overflow-hidden`}
-      style={{ boxShadow: shadow }}
-    >
-      <div className={`lava-blob ${featured ? "lava-blob-featured-1" : "lava-blob-1"}`} />
-      <div className={`lava-blob ${featured ? "lava-blob-featured-2" : "lava-blob-2"}`} />
-      <div className={`lava-blob ${featured ? "lava-blob-featured-3" : "lava-blob-3"}`} />
-      <div className="relative z-10 flex flex-col">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="text-lg font-bold text-foreground">{tier.name}</div>
-          {featured && (
-            <span className="inline-flex items-center rounded-full border border-foreground/30 bg-foreground/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-foreground">
-              Most popular
-            </span>
-          )}
-        </div>
-        <div className="mb-1 flex items-center gap-2 justify-between">
-          <div className="text-3xl font-extrabold text-foreground">
-            {billing === "monthly" ? monthlyLabel : yearlyLabel}
-          </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={billing === "yearly"}
-            aria-label={`Switch to ${billing === "monthly" ? "yearly" : "monthly"} billing`}
-            onPointerDown={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              setBilling((b) => (b === "monthly" ? "yearly" : "monthly"));
-            }}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                setBilling((b) => (b === "monthly" ? "yearly" : "monthly"));
-              }
-            }}
-            className="relative ml-auto h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
-          >
-            <span
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
-              style={{ transform: `translateY(-50%) ${billing === "yearly" ? "translateX(3px)" : "translateX(54px)"}` }}
-            />
-            <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${billing === "yearly" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
-              {billing === "yearly" ? "Yearly" : "Monthly"}
-            </span>
-          </button>
-        </div>
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <div className="text-xs text-muted-foreground">
-            {billing === "yearly" ? `Save £${savings} vs monthly` : `Save £${savings} with yearly`}
-          </div>
-          {isEnt && (
-            <button
-              type="button"
-              role="switch"
-              aria-checked={size === "medium"}
-              aria-label={`Switch enterprise size to ${size === "small" ? "medium" : "small"} business`}
-              onPointerDown={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                setSize((s) => (s === "small" ? "medium" : "small"));
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  setSize((s) => (s === "small" ? "medium" : "small"));
-                }
-              }}
-              className="relative h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
-            >
-              <span
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out"
-                style={{ transform: `translateY(-50%) ${size === "small" ? "translateX(54px)" : "translateX(3px)"}` }}
-              />
-              <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${size === "small" ? "left-1.5 right-6" : "left-6 right-1.5"}`}>
-                {size === "small" ? "Small" : "Large"}
-              </span>
-            </button>
-          )}
-        </div>
-        <ul className="mb-4 space-y-2 text-base text-foreground">
-          {tier.features.map((f, i) => (
-            <li key={`${f}-${i}`} className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-              <span>{f}</span>
-            </li>
-          ))}
-        </ul>
-        <GlassBuyButton
-          onClick={() => {
-            if (isMediumEnt) {
-              onTalkToSales();
-              return;
-            }
-            onBuy(
-              billing === "monthly" ? tier.monthlyPriceId : tier.yearlyPriceId,
-              "subscription",
-              `retainer-${tierKey}`,
-              `${tier.name} Retainer`,
-              billing === "monthly" ? "Monthly subscription" : "Yearly subscription"
-            );
-          }}
-          disabled={!!loading}
-          loading={loading === `retainer-${tierKey}`}
-          label={isMediumEnt ? "Talk to sales" : "Subscribe"}
-        />
-        <Link to={`/packages/retainer-${tierKey}`} className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
-          See full details →
-        </Link>
-      </div>
-    </div>
-  );
-
-  if (isMobile) return card;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40, rotate, scale: featured ? 1.05 : 1 }}
-      animate={{ opacity: 1, y: featured ? -14 : 0, rotate, scale: featured ? 1.08 : 1 }}
-      whileHover={{ scale: featured ? 1.12 : 1.05 }}
-      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: featured ? 0.15 : 0.3 }}
-      style={{ willChange: "transform" }}
-      className={featured ? "relative z-20" : "relative z-10"}
-    >
-      {card}
-    </motion.div>
-  );
-}
-
 function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFlipped?: boolean; onServiceAction?: (action: ServiceAction) => void }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [retainerBilling, setRetainerBilling] = useState<"monthly" | "yearly">("monthly");
@@ -1057,22 +905,358 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       className="relative"
     >
     <div
-      className="relative flex items-end justify-center gap-6 h-full w-full md:max-lg:scale-[0.745] min-[880px]:max-lg:scale-[0.84] min-[960px]:max-lg:scale-[0.955] md:max-lg:origin-center lg:scale-100"
+      className="relative flex items-center justify-center gap-6 h-full w-full md:max-lg:scale-[0.745] min-[880px]:max-lg:scale-[0.84] min-[960px]:max-lg:scale-[0.955] md:max-lg:origin-center lg:scale-100"
       style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
     >
-      {RETAINER_TIER_ORDER.map((k, idx) => (
-        <TierCard
-          key={k}
-          tierKey={k}
-          featured={k === "scale"}
-          rotate={idx === 0 ? -6 : idx === 2 ? 6 : 0}
-          loading={loading}
-          onBuy={buy}
-          onTalkToSales={() => setEnterpriseOpen(true)}
+      
+      {/* Full Works - tilted left */}
+      <div className="md:max-lg:translate-x-[16px]">
+      <motion.div data-lava-card
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        initial={{ opacity: 0, y: 40, rotate: -6, scale: 1 }}
+        animate={{ opacity: 1, y: 0, rotate: -6, scale: 1 }}
+        whileHover={{ scale: 1.05 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
+        className="relative z-10 w-[332px] rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
+        style={{
+          willChange: "transform",
+          boxShadow: `
+            0 8px 32px rgba(0,0,0,0.3),
+            inset 0 1px 1px rgba(255,255,255,0.15),
+            inset 0 -1px 1px rgba(0,0,0,0.1)
+          `,
+        }}
+      >
+        {/* Lava lamp blobs */}
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10">
+        <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
+        <div className="mb-4 flex items-start gap-1">
+          <div className="text-3xl font-extrabold text-foreground">£169<span className="text-sm font-bold align-baseline">.00</span></div>
+          
+        </div>
+        <ul className="mb-4 space-y-2 text-base text-foreground">
+          {PACKAGES.fullWorks.features.map((f) => (
+            <li key={f} className="flex items-start gap-2">
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
+        </ul>
+        <GlassBuyButton
+          onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
+          disabled={!!loading}
+          loading={loading === "fullWorks"}
+          label="Order Now"
         />
-      ))}
-    </div>
+        <Link to="/packages/full-works" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
+        </div>
+      </motion.div>
+      </div>
 
+
+
+      {/* Elite - center, elevated */}
+      <motion.div data-lava-card
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        initial={{ opacity: 0, y: 40, rotate: 0, scale: 1.06 }}
+        animate={{ opacity: 1, y: 0, rotate: 0, scale: 1.06 }}
+        whileHover={{ scale: 1.08 }}
+        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
+        className="relative z-20 w-[370px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-3 pb-5 shadow-xl"
+        style={{
+          willChange: "transform",
+          transformOrigin: "center bottom",
+          boxShadow: `
+            0 12px 40px rgba(0,0,0,0.4),
+            0 0 30px rgba(255,255,255,0.08),
+            inset 0 1px 2px rgba(255,255,255,0.2),
+            inset 0 -1px 1px rgba(0,0,0,0.1)
+          `,
+        }}
+      >
+        {/* Lava lamp blobs - featured (clipped to card) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="lava-blob lava-blob-featured-1" />
+          <div className="lava-blob lava-blob-featured-2" />
+          <div className="lava-blob lava-blob-featured-3" />
+        </div>
+        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-[414px] translate-y-[282px] z-30 -rotate-[18deg]" />
+        <motion.div
+          animate={{ boxShadow: [
+            "0 0 0px 0px rgba(212,165,74,0)",
+            "0 0 14px 2px rgba(212,165,74,0.45)",
+            "0 0 0px 0px rgba(212,165,74,0)",
+          ] }}
+          transition={{ repeat: Infinity, duration: 2.6, ease: "easeInOut" }}
+          className="absolute top-2 right-2 rounded-sm border border-[#a8802a]/60 px-3 text-[10px] font-extrabold z-20 uppercase tracking-wider py-[2px]"
+          style={{
+            background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
+            color: "#2a1d05",
+            textShadow: "0 1px 0 rgba(255,236,179,0.4)",
+          }}
+        >
+          MOST POPULAR
+        </motion.div>
+
+        <div className="relative z-10 -mt-28">
+        <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
+        <div className="mb-4 flex items-start gap-1">
+          <div className="text-5xl font-black text-foreground">£479<span className="text-lg font-bold align-baseline">.00</span></div>
+          
+        </div>
+        <ul className="mb-4 space-y-1.5 text-base text-foreground">
+          {PACKAGES.elite.features.map((f) => (
+            <li key={f} className="flex items-start gap-2">
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-3">
+        <GlassBuyButton
+          onClick={() =>
+            buy(
+              PACKAGES.elite.priceId,
+              PACKAGES.elite.mode,
+              "elite",
+              PACKAGES.elite.name,
+              "One-time payment"
+            )
+          }
+          disabled={!!loading}
+          loading={loading === "elite"}
+          label="Order Now"
+        />
+        </div>
+        <div className="mt-2.5"><StripeBadge /></div>
+        <Link to="/packages/elite" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
+        </div>{/* close relative z-10 wrapper */}
+      </motion.div>
+
+      {/* Retainer / Enterprise flip card */}
+      <div className="md:max-lg:-translate-x-[16px]">
+      <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        initial={{ opacity: 0, y: 40, rotate: 6, scale: 1 }}
+        animate={{ opacity: 1, y: 0, rotate: 6, scale: 1 }}
+        whileHover={{ scale: 1.05 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
+        className="relative z-10 w-[332px] min-h-[420px]"
+        style={{ willChange: "transform", perspective: "1200px" }}
+      >
+        <motion.div
+          animate={{ rotateY: retainerFlipped ? 180 : 0 }}
+          transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="relative min-h-[420px] rounded-none"
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          <div data-lava-card
+            onPointerEnter={stopRetainerAutoFlip}
+            onFocusCapture={stopRetainerAutoFlip}
+            className={`absolute inset-0 rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`}
+            style={{
+              backfaceVisibility: "hidden",
+              boxShadow: `
+                0 8px 32px rgba(0,0,0,0.3),
+                inset 0 1px 1px rgba(255,255,255,0.15),
+                inset 0 -1px 1px rgba(0,0,0,0.1)
+              `,
+            }}
+          >
+            <div className="lava-blob lava-blob-1" />
+            <div className="lava-blob lava-blob-2" />
+            <div className="lava-blob lava-blob-3" />
+            <div className="relative z-10">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="text-lg font-bold text-foreground">Retainer</div>
+                <div className="flex items-center gap-1.5">
+                  {RETAINER_TIER_ORDER.map((k) => (
+                    <button
+                      key={k}
+                      onClick={() => setRetainerTier(k)}
+                      className={`text-[11px] px-2.5 py-1 rounded-full transition font-semibold ${
+                        retainerTier === k
+                          ? "bg-foreground text-background"
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {RETAINER_TIERS[k].name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(() => {
+                const isEnt = retainerTier === "enterprise";
+                const tier = RETAINER_TIERS[retainerTier];
+                const ent = ENTERPRISE_SIZES[enterpriseSize];
+                const monthly = isEnt ? ent.monthly : tier.monthly;
+                const yearly = isEnt ? ent.yearly : tier.yearly;
+                const monthlyLabel = isEnt ? ent.monthlyLabel : tier.monthlyLabel;
+                const yearlyLabel = isEnt ? ent.yearlyLabel : tier.yearlyLabel;
+                const savings = (monthly * 12 - yearly).toLocaleString();
+                const isMediumEnt = isEnt && enterpriseSize === "medium";
+                return (
+                  <>
+              <div className="mb-1 flex items-center gap-2 justify-between">
+                <div className="flex items-start gap-1">
+                  <div className="text-3xl font-extrabold text-foreground">
+                    {retainerBilling === "monthly" ? monthlyLabel : yearlyLabel}
+                  </div>
+                  
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={retainerBilling === "yearly"}
+                  aria-label={`Switch to ${retainerBilling === "monthly" ? "yearly" : "monthly"} billing`}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    stopRetainerAutoFlip();
+                    setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      stopRetainerAutoFlip();
+                      setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                    }
+                  }}
+                  className="relative ml-auto h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                >
+                  <span
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+                    style={{ transform: `translateY(-50%) ${retainerBilling === "yearly" ? "translateX(3px)" : "translateX(54px)"}` }}
+                  />
+                  <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
+                    {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
+                  </span>
+                </button>
+
+              </div>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="text-xs text-muted-foreground">
+                  {retainerBilling === "yearly"
+                    ? `Save £${savings} vs monthly`
+                    : `Save £${savings} with yearly`}
+                </div>
+                {isEnt && (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={enterpriseSize === "medium"}
+                    aria-label={`Switch enterprise size to ${enterpriseSize === "small" ? "medium" : "small"} business`}
+                    onPointerDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      stopRetainerAutoFlip();
+                      setEnterpriseSize((s) => (s === "small" ? "medium" : "small"));
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        stopRetainerAutoFlip();
+                        setEnterpriseSize((s) => (s === "small" ? "medium" : "small"));
+                      }
+                    }}
+                    className="relative h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                  >
+                    <span
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out"
+                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(54px)" : "translateX(3px)"}` }}
+                    />
+                    <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${enterpriseSize === "small" ? "left-1.5 right-6" : "left-6 right-1.5"}`}>
+                      {enterpriseSize === "small" ? "Small" : "Large"}
+                    </span>
+                  </button>
+                )}
+              </div>
+              <ul className="mb-4 space-y-2 text-base text-foreground">
+                {RETAINER_TIERS[retainerTier].features.map((f, i) => (
+                  <li key={`${f}-${i}`} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <GlassBuyButton
+                onClick={() => {
+                  if (isMediumEnt) {
+                    setEnterpriseOpen(true);
+                    return;
+                  }
+                  buy(
+                    retainerBilling === "monthly"
+                      ? RETAINER_TIERS[retainerTier].monthlyPriceId
+                      : RETAINER_TIERS[retainerTier].yearlyPriceId,
+                    "subscription",
+                    `retainer-${retainerTier}`,
+                    `${RETAINER_TIERS[retainerTier].name} Retainer`,
+                    retainerBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
+                  );
+                }}
+                disabled={!!loading}
+                loading={loading === `retainer-${retainerTier}`}
+                label="Subscribe"
+              />
+                  </>
+                );
+              })()}
+              <Link to={`/packages/retainer-${retainerTier}`} className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+                See full details →
+              </Link>
+            </div>
+          </div>
+
+
+          <div data-lava-card
+            className={`absolute inset-0 rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`}
+            style={{
+              backfaceVisibility: "hidden",
+              transform: "rotateY(180deg)",
+              boxShadow: `
+                0 8px 32px rgba(0,0,0,0.3),
+                inset 0 1px 1px rgba(255,255,255,0.15),
+                inset 0 -1px 1px rgba(0,0,0,0.1)
+              `,
+            }}
+          >
+            <div className="lava-blob lava-blob-1" />
+            <div className="lava-blob lava-blob-2" />
+            <div className="lava-blob lava-blob-3" />
+            <div className="relative z-10">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="text-lg font-bold text-foreground">Custom</div>
+                <SnakeFlipButton label="Retainer" sizeClass="h-7 px-2 text-[10px]" durationMs={10000} active={desktopAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
+              </div>
+              <div className="mb-1 text-3xl font-extrabold text-foreground">Solutions</div>
+              <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 mb-4">Built around your operation</p>
+              <ul className="mb-6 space-y-2 text-base text-foreground">
+                {PACKAGES.enterprise.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+      </div>
+    </div>
 
     {/* Services back side - absolutely positioned, rotated 180° */}
     <div
@@ -1368,19 +1552,269 @@ function MobileCards() {
   return (
     <>
     <div className="grid grid-cols-1 gap-4">
-      {RETAINER_TIER_ORDER.map((k) => (
-        <TierCard
-          key={k}
-          tierKey={k}
-          featured={k === "scale"}
-          loading={loading}
-          onBuy={buy}
-          onTalkToSales={() => setEnterpriseOpen(true)}
-          isMobile
+      {/* Full Works */}
+      <div data-lava-card className="rounded-none p-5 flex flex-col border border-border bg-background relative overflow-hidden">
+        <div className="lava-blob lava-blob-1" />
+        <div className="lava-blob lava-blob-2" />
+        <div className="lava-blob lava-blob-3" />
+        <div className="relative z-10 flex flex-col flex-1">
+        <h3 className="text-lg font-bold text-foreground">Full Works</h3>
+        <div className="mt-3 mb-4 flex items-start gap-1">
+          <span className="text-3xl font-extrabold text-foreground">£169<span className="text-sm font-bold align-baseline">.00</span></span>
+          
+        </div>
+        <ul className="space-y-2 flex-1 mb-3">
+          {PACKAGES.fullWorks.features.map((f) => (
+            <li key={f} className="flex items-start gap-2 text-base text-foreground">
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
+        </ul>
+        <GlassBuyButton
+          onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
+          disabled={!!loading}
+          loading={loading === "fullWorks"}
+          label="Order Now"
         />
-      ))}
-    </div>
+        <Link to="/packages/full-works" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
+        </div>
+      </div>
 
+      {/* Elite */}
+      <div data-lava-card className="rounded-none p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10 relative overflow-hidden">
+        <div className="lava-blob lava-blob-featured-1" />
+        <div className="lava-blob lava-blob-featured-2" />
+        <div className="lava-blob lava-blob-featured-3" />
+        <div className="relative z-10 flex flex-col flex-1">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-bold text-foreground">Elite</h3>
+          <span
+            className="rounded-sm border border-[#a8802a]/60 px-2 py-[2px] text-[10px] font-extrabold uppercase tracking-wider"
+            style={{
+              background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
+              color: "#2a1d05",
+              textShadow: "0 1px 0 rgba(255,236,179,0.4)",
+            }}
+          >
+            MOST POPULAR
+          </span>
+        </div>
+
+        <div className="mt-3 mb-4 flex items-start gap-1">
+          <span className="text-3xl font-extrabold text-foreground">£479<span className="text-sm font-bold align-baseline">.00</span></span>
+          
+        </div>
+        <ul className="space-y-2 flex-1 mb-3">
+          {PACKAGES.elite.features.map((f) => (
+            <li key={f} className="flex items-start gap-2 text-base text-foreground">
+              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
+        </ul>
+        <GlassBuyButton
+          onClick={() =>
+            buy(
+              PACKAGES.elite.priceId,
+              PACKAGES.elite.mode,
+              "elite",
+              PACKAGES.elite.name,
+              "One-time payment"
+            )
+          }
+          disabled={!!loading}
+          loading={loading === "elite"}
+          label="Order Now"
+        />
+        <Link to="/packages/elite" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
+          See full details →
+        </Link>
+        </div>
+      </div>
+
+      {/* Retainer / Enterprise flip card */}
+      <div className="relative min-h-[440px]" style={{ perspective: "1200px" }}>
+        <motion.div
+          animate={{ rotateY: retainerFlipped ? 180 : 0 }}
+          transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="relative min-h-[440px] rounded-none"
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          <div data-lava-card onPointerEnter={stopRetainerAutoFlip} onFocusCapture={stopRetainerAutoFlip} className={`absolute inset-0 rounded-none p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-none" : "pointer-events-auto"}`} style={{ backfaceVisibility: "hidden" }}>
+            <div className="lava-blob lava-blob-1" />
+            <div className="lava-blob lava-blob-2" />
+            <div className="lava-blob lava-blob-3" />
+            <div className="relative z-10 flex flex-col flex-1">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h3 className="text-lg font-bold text-foreground">Retainer</h3>
+                <div className="flex items-center gap-1.5">
+                  {RETAINER_TIER_ORDER.map((k) => (
+                    <button
+                      key={k}
+                      onClick={() => setRetainerTier(k)}
+                      className={`text-[11px] px-2.5 py-1 rounded-full transition font-semibold ${
+                        retainerTier === k
+                          ? "bg-foreground text-background"
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {RETAINER_TIERS[k].name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(() => {
+                const isEnt = retainerTier === "enterprise";
+                const tier = RETAINER_TIERS[retainerTier];
+                const ent = ENTERPRISE_SIZES[enterpriseSize];
+                const monthly = isEnt ? ent.monthly : tier.monthly;
+                const yearly = isEnt ? ent.yearly : tier.yearly;
+                const monthlyLabel = isEnt ? ent.monthlyLabel : tier.monthlyLabel;
+                const yearlyLabel = isEnt ? ent.yearlyLabel : tier.yearlyLabel;
+                const savings = (monthly * 12 - yearly).toLocaleString();
+                const isMediumEnt = isEnt && enterpriseSize === "medium";
+                return (
+                  <>
+              <div className="mb-1 flex items-center gap-2 justify-between">
+                <div className="flex items-start gap-1">
+                  <div className="text-3xl font-extrabold text-foreground">
+                    {retainerBilling === "monthly" ? monthlyLabel : yearlyLabel}
+                  </div>
+                  
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={retainerBilling === "yearly"}
+                  aria-label={`Switch to ${retainerBilling === "monthly" ? "yearly" : "monthly"} billing`}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    stopRetainerAutoFlip();
+                    setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      stopRetainerAutoFlip();
+                      setRetainerBilling((billing) => (billing === "monthly" ? "yearly" : "monthly"));
+                    }
+                  }}
+                  className="relative ml-auto h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                >
+                  <span
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
+                    style={{ transform: `translateY(-50%) ${retainerBilling === "yearly" ? "translateX(3px)" : "translateX(54px)"}` }}
+                  />
+                  <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${retainerBilling === "yearly" ? "left-6 right-1.5" : "left-1.5 right-6"}`}>
+                    {retainerBilling === "yearly" ? "Yearly" : "Monthly"}
+                  </span>
+                </button>
+
+              </div>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="text-xs text-muted-foreground">
+                  {retainerBilling === "yearly"
+                    ? `Save £${savings} vs monthly`
+                    : `Save £${savings} with yearly`}
+                </div>
+                {isEnt && (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={enterpriseSize === "medium"}
+                    aria-label={`Switch enterprise size to ${enterpriseSize === "small" ? "medium" : "small"} business`}
+                    onPointerDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      stopRetainerAutoFlip();
+                      setEnterpriseSize((s) => (s === "small" ? "medium" : "small"));
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        stopRetainerAutoFlip();
+                        setEnterpriseSize((s) => (s === "small" ? "medium" : "small"));
+                      }
+                    }}
+                    className="relative h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]"
+                  >
+                    <span
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out"
+                      style={{ transform: `translateY(-50%) ${enterpriseSize === "small" ? "translateX(54px)" : "translateX(3px)"}` }}
+                    />
+                    <span className={`absolute inset-y-0 z-20 flex items-center justify-center text-[9px] font-semibold uppercase text-foreground transition-all duration-200 ${enterpriseSize === "small" ? "left-1.5 right-6" : "left-6 right-1.5"}`}>
+                      {enterpriseSize === "small" ? "Small" : "Large"}
+                    </span>
+                  </button>
+                )}
+              </div>
+              <ul className="space-y-2 flex-1 mb-3">
+                {RETAINER_TIERS[retainerTier].features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-base text-foreground">
+                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <GlassBuyButton
+                onClick={() => {
+                  if (isMediumEnt) {
+                    setEnterpriseOpen(true);
+                    return;
+                  }
+                  buy(
+                    retainerBilling === "monthly"
+                      ? RETAINER_TIERS[retainerTier].monthlyPriceId
+                      : RETAINER_TIERS[retainerTier].yearlyPriceId,
+                    "subscription",
+                    `retainer-${retainerTier}`,
+                    `${RETAINER_TIERS[retainerTier].name} Retainer`,
+                    retainerBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
+                  );
+                }}
+                disabled={!!loading}
+                loading={loading === `retainer-${retainerTier}`}
+                label="Subscribe"
+              />
+                  </>
+                );
+              })()}
+            </div>
+
+          </div>
+
+          <div data-lava-card className={`absolute inset-0 rounded-none p-5 flex flex-col border border-border bg-background overflow-hidden ${retainerFlipped ? "pointer-events-auto" : "pointer-events-none"}`} style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
+            <div className="lava-blob lava-blob-1" />
+            <div className="lava-blob lava-blob-2" />
+            <div className="lava-blob lava-blob-3" />
+            <div className="relative z-10 flex flex-col flex-1">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <h3 className="text-lg font-bold text-foreground">Custom</h3>
+                <SnakeFlipButton label="Retainer" sizeClass="h-8 px-2 text-xs" durationMs={10000} active={mobileAutoActive && retainerFlipped} onComplete={flipRetainerAuto} onClick={flipRetainerManually} />
+              </div>
+              <div className="mt-3 mb-1">
+                <span className="text-3xl font-extrabold text-foreground">Solutions</span>
+              </div>
+              <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 mb-4">Built around your operation</p>
+              <ul className="space-y-2 flex-1 mb-4">
+                {PACKAGES.enterprise.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-base text-foreground">
+                    <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
     <EnterpriseDrawer open={enterpriseOpen} onOpenChange={setEnterpriseOpen} />
     <BuyDetailsPrompt
       open={!!pending}

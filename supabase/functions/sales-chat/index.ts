@@ -9,29 +9,28 @@ const corsHeaders = {
 };
 
 const PACKAGES = {
-  growth: {
-    name: "Growth",
-    price: "£89/mo or £890/yr",
-    monthlyPriceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
-    yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
-    mode: "subscription",
-    features: ["Website + unlimited edits", "CRM + AI lead/support bots", "Hosting, SSL, domain", "Monthly performance report"],
+  fullWorks: {
+    name: "Full Works",
+    price: "£169",
+    priceId: "price_1TQzD5BtUjwejeUwG4CFjskt",
+    mode: "payment",
+    features: ["Industry leading website", "Lifetime guarantee", "Custom design", "Up to 3 pages"],
   },
-  scale: {
-    name: "Scale",
-    price: "£479/mo or £4,790/yr",
-    monthlyPriceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
-    yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
-    mode: "subscription",
-    features: ["Everything in Growth", "Unlimited seats & edits", "Priority 24/7 365 support", "Custom AI agents & automations", "Monthly strategy call"],
+  elite: {
+    name: "Elite",
+    price: "£479 one-time or £60/mo",
+    priceId: "price_1TJrT7BtUjwejeUwQ47tCkiv",
+    monthlyPriceId: "price_1TJrTNBtUjwejeUw3ihfpz98",
+    mode: "payment",
+    features: ["Cutting edge website", "Lifetime guarantee", "Unlimited edit requests", "SEO & AEO optimisation", "Up to 10 pages"],
   },
-  enterprise: {
-    name: "Enterprise",
+  retainer: {
+    name: "Retainer",
     price: "£2,469/mo or £24,690/yr",
-    monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
-    yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
+    monthlyPriceId: "price_1TSmB8BtUjwejeUw8UXRTbBQ",
+    yearlyPriceId: "price_1TSmBtBtUjwejeUwb8xPSvvf",
     mode: "subscription",
-    features: ["Fractional CTO & CMO", "Dedicated dev & ops team", "Weekly MVP sprints", "24/7 priority support", "Save £4,938/yr on annual"],
+    features: ["Your own tech department", "Websites or full apps", "Daily turnarounds (monthly) / Save £4,938 (yearly)"],
   },
 };
 
@@ -62,16 +61,22 @@ Visitors fall into one of two buckets. Detect intent EARLY:
 5. **E-commerce** - High-converting stores, payment integrations, inventory systems
 6. **Custom Software** - Bespoke solutions for any industry or use case
 
-## Our Retainer Packages (mapped to project size):
-- **Growth — £89/mo (or £890/yr)**: Website + unlimited edits, CRM, AI lead/support bots, hosting, monthly analytics. → For small businesses, solo founders, sole traders.
-- **Scale — £479/mo (or £4,790/yr)**: Everything in Growth plus unlimited seats & users, priority 24/7 support, custom AI agents and monthly strategy calls. → Our most popular. For teams of 5–50 replacing multiple tools.
-- **Enterprise — £2,469/mo (or £24,690/yr)**: Fractional CTO & CMO, dedicated dev/ops squad, weekly MVP sprints and 24/7 priority support. → For funded startups scaling past £1M ARR or established businesses needing a tech overhaul.
+## Our Packages (mapped to project size):
+- **Full Works — £169**: Standard website, up to 3 pages, custom design, lifetime guarantee. → For clients who just need a normal website.
+- **Elite — £479 one-time or £60/mo**: Cutting edge website, up to 10 pages, unlimited edit requests, SEO & AEO optimisation, lifetime guarantee. → For clients with bigger sites (4–10 pages). Our most popular package.
+- **Retainer — £2,469/mo or £24,690/yr**: Your own tech department — websites or full apps, daily turnarounds. → For large-scale projects, web apps, or ongoing development.
 
 ## Pricing guidance:
 - All listed prices are our standard prices. Do not refer to discounts, grants, RRPs, or "introductory offers".
-- Every retainer is cancel-anytime on the monthly plan; annual billing saves up to £4,938/yr.
-- Every retainer includes unlimited edits — no per-page or per-edit surcharge. If a client needs many pages or a full app, all three tiers already cover it; recommend the tier that matches their team size and support needs.
 
+## Extra Page Pricing (IMPORTANT — quote this when clients want more pages than included):
+- **Full Works**: includes up to 3 pages. Each additional page is **+£50**.
+  • 4 pages = £219, 5 pages = £269, 6 pages = £319, etc.
+- **Elite**: includes up to 10 pages. Each additional page is **+£50**.
+  • 11 pages = £529 one-time (or pro-rata on the monthly plan), 12 pages = £579, etc.
+- **Retainer**: unlimited pages — no per-page surcharge. If a client needs many pages or a full app, recommend Retainer instead of stacking extras.
+- Always do the maths for the client out loud (e.g. "5 pages on Full Works would be £169 + 2 × £50 = £269") so they see the value.
+- If the client's page count pushes the price close to the next tier, mention that the next tier may be better value.
 
 ## Key Selling Points:
 - Future-proof, AI-powered development that scales
@@ -126,14 +131,14 @@ We've built everything from sleek brochure sites to full-scale Web3 apps and ent
 ## CRITICAL Rules — Qualifying Questions:
 - DO NOT list or recommend all three packages at once. That overwhelms clients.
 - When someone asks about pricing or wants to get started, FIRST ask qualifying questions to understand scope:
-  • "Roughly how big is the team you'd be running this through — solo, small team, or a company of 20+?"
-  • "Is this a brand-new build or ongoing work on something you already have?"
-  • "How hands-on do you want us — occasional edits, weekly shipping, or a dedicated squad?"
-- Only AFTER you understand their needs, recommend the SINGLE best-fit retainer using send_package.
+  • "What kind of project do you have in mind — a standard website, a larger site, or a full web app?"
+  • "Roughly how many pages are you thinking?"
+  • "Is this a one-off build or do you need ongoing development?"
+- Only AFTER you understand their needs, recommend the SINGLE best-fit package using send_package.
 - Mapping logic:
-  • Solo / small business / straightforward site with light monthly edits → recommend **Growth** only
-  • Team of 5–50 / replacing multiple tools / needs custom AI agents and 24/7 priority → recommend **Scale** only
-  • Funded startup or established business / needs fractional CTO/CMO / weekly MVPs → recommend **Enterprise** only
+  • Standard site / ~1–3 pages / simple brochure → recommend **Full Works** only
+  • Bigger site / 4–10 pages / needs SEO / wants edits → recommend **Elite** only
+  • Web app, large platform, ongoing work, or "I'm not sure how big it'll get" → recommend **Retainer** only
 - Only send multiple packages if the user EXPLICITLY asks to compare or see all options.
 
 ## Existing Customer Lookups (NEW — IMPORTANT):
@@ -148,7 +153,7 @@ How to use it:
 1. If you don't already have their email, ASK FOR IT first: "Sure — what's the email address you used at checkout?"
 2. Once they give you an email, call lookup_customer with that exact email
 3. The tool returns their orders (Stripe checkout sessions), past contact form submissions, and previous chat history
-4. Summarise what you find in a warm, human way — e.g. "Found you! You picked up the Scale retainer on 12 Apr — payment came through fine, and our team has it queued up. Anything specific you'd like an update on?"
+4. Summarise what you find in a warm, human way — e.g. "Found you! You picked up the Elite package on 12 Apr — payment came through fine, and our team has it queued up. Anything specific you'd like an update on?"
 5. If NOTHING is found for that email, gently say so: "Hmm, I can't see anything on file for that email — are you sure that's the one you used? Sometimes people checkout with a different address."
 
 Privacy rules:
@@ -258,13 +263,13 @@ const tools = [
         properties: {
           package_id: {
             type: "string",
-            enum: ["growth", "scale", "enterprise"],
-            description: "Which retainer to show: growth (£89/mo, site + unlimited edits, AI bots), scale (£479/mo, everything in Growth + unlimited seats + priority 24/7 + custom AI agents), or enterprise (£2,469/mo, fractional CTO & CMO + dedicated dev/ops squad + weekly MVP sprints).",
+            enum: ["fullWorks", "elite", "retainer"],
+            description: "Which package to show: fullWorks (£169 website, up to 3 pages), elite (£479 or £60/mo, up to 10 pages, unlimited edits, SEO/AEO), or retainer (£2,469/mo or £24,690/yr tech department)",
           },
           billing: {
             type: "string",
-            enum: ["monthly", "yearly"],
-            description: "Billing option — all retainers can be monthly (cancel-anytime) or yearly (save up to £4,938/yr).",
+            enum: ["one-time", "monthly", "yearly"],
+            description: "Billing option. fullWorks is always one-time. elite can be one-time or monthly. retainer can be monthly or yearly.",
           },
         },
         required: ["package_id"],
@@ -819,7 +824,7 @@ const devTools = [
         properties: {
           customer_email: { type: "string", description: "Buyer's email address (required)." },
           customer_name: { type: "string", description: "Buyer's name, optional." },
-          package_name: { type: "string", description: "Package label, e.g. 'Growth', 'Scale', 'Enterprise', 'Bespoke build'. Required." },
+          package_name: { type: "string", description: "Package label, e.g. 'Full Works', 'Elite', 'Bespoke build'. Required." },
           amount_gbp: { type: "number", description: "Amount in pounds (e.g. 750 for £750). Required, between 0.01 and 1,000,000." },
           mark_paid: { type: "boolean", description: "True ONLY if the dev explicitly stated the order is already paid (bank transfer, cash, invoice settled). Defaults to false (unpaid draft/quote). Never assume paid." },
           billing: { type: "string", enum: ["one-time", "monthly", "yearly"], description: "Defaults to one-time." },
@@ -897,7 +902,7 @@ const devTools = [
               },
             },
           },
-          package_slug: { type: "string", description: "Optional package slug ('retainer-growth' | 'retainer-scale' | 'retainer-enterprise') — sets the line item automatically if provided alone." },
+          package_slug: { type: "string", description: "Optional package slug ('full-works' | 'elite' | 'retainer-growth' | 'retainer-scale' | 'retainer-enterprise') — sets the line item automatically if provided alone." },
           internal_note: { type: "string", description: "Private note for our records — not shown to client." },
         },
       },
@@ -2085,9 +2090,9 @@ async function devRecommendPackage(args: Record<string, unknown>) {
   const pages = Number(args.page_count) || 0;
   const subscription = args.needs_subscription === true;
   const notes = cleanText(args.notes, 600);
-  let pick: "growth" | "scale" | "enterprise" = "growth";
-  if (subscription || pages > 30) pick = "enterprise";
-  else if (pages > 10) pick = "scale";
+  let pick: "fullWorks" | "elite" | "retainer" = "fullWorks";
+  if (subscription || pages > 30) pick = "retainer";
+  else if (pages > 10 || subscription) pick = "elite";
   const pkg = PACKAGES[pick];
   const summary = [
     `Recommended: **${pkg.name}** (${pkg.price})`,
@@ -2556,17 +2561,40 @@ Deno.serve(async (req) => {
         if (toolCall.function.name === "send_package") {
           try {
             const args = JSON.parse(toolCall.function.arguments);
-            const pkgId = args.package_id as string;
-            const billing = args.billing || "monthly";
-            const pkg = (PACKAGES as any)[pkgId];
+            const pkgId = args.package_id as keyof typeof PACKAGES;
+            const billing = args.billing || "one-time";
+            const pkg = PACKAGES[pkgId];
 
             if (pkg) {
-              const isYearly = billing === "yearly";
-              const priceId = isYearly ? pkg.yearlyPriceId : pkg.monthlyPriceId;
-              const price = isYearly
-                ? (pkgId === "growth" ? "£890/yr" : pkgId === "scale" ? "£4,790/yr" : "£24,690/yr")
-                : (pkgId === "growth" ? "£89/mo" : pkgId === "scale" ? "£479/mo" : "£2,469/mo");
-              const mode = "subscription";
+              let priceId = "";
+              let price = "";
+              let mode = "";
+
+              if (pkgId === "fullWorks") {
+                priceId = (pkg as any).priceId;
+                price = pkg.price;
+                mode = "payment";
+              } else if (pkgId === "elite") {
+                if (billing === "monthly") {
+                  priceId = (pkg as any).monthlyPriceId;
+                  price = "£60/mo";
+                  mode = "subscription";
+                } else {
+                  priceId = (pkg as any).priceId;
+                  price = "£479";
+                  mode = "payment";
+                }
+              } else if (pkgId === "retainer") {
+                if (billing === "yearly") {
+                  priceId = (pkg as any).yearlyPriceId;
+                  price = "£24,690/yr";
+                  mode = "subscription";
+                } else {
+                  priceId = (pkg as any).monthlyPriceId;
+                  price = "£2,469/mo";
+                  mode = "subscription";
+                }
+              }
 
               packageCards.push({
                 packageId: pkgId,

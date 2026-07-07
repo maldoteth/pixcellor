@@ -99,9 +99,8 @@ serve(async (req) => {
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Pixcellor package";
     const orderCode = typeof order.order_code === "string" ? order.order_code : order.session_id;
     const deliveredUrl = `https://${deliveredDomain}`;
-    // All active packages are retainers — edit requests are always available on a paid order.
-    const canRequestEdits = true;
-    void packageName;
+    const normalizedPackage = packageName.toLowerCase();
+    const canRequestEdits = normalizedPackage.includes("full works") || normalizedPackage.includes("elite");
     const editRequestUrl = canRequestEdits && order.order_code && order.requirements_token
       ? `${req.headers.get("origin") || "https://pixcellor.com"}/edit-request?order=${encodeURIComponent(order.order_code)}&token=${encodeURIComponent(order.requirements_token)}`
       : undefined;

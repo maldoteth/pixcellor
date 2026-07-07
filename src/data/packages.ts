@@ -1,10 +1,15 @@
 // Centralised package detail content for dedicated package pages.
 // Each entry powers `/packages/:slug`.
 
+import ogFullWorks from "@/assets/og-full-works.jpg";
+import ogElite from "@/assets/og-elite.jpg";
 import ogGrowth from "@/assets/og-retainer-growth.jpg";
 import ogScale from "@/assets/og-retainer-scale.jpg";
 import ogEnterprise from "@/assets/og-retainer-enterprise.jpg";
 
+import imgSalonBrochure from "@/assets/sample-work/salon-brochure.jpg";
+import imgConsultantLanding from "@/assets/sample-work/consultant-landing.jpg";
+import imgTradesPortfolio from "@/assets/sample-work/trades-portfolio.jpg";
 import imgAnimatedBrandSite from "@/assets/sample-work/animated-brand-site.jpg";
 import imgSaasMvp from "@/assets/sample-work/saas-mvp.jpg";
 import imgEcommerceFlagship from "@/assets/sample-work/ecommerce-flagship.jpg";
@@ -94,7 +99,183 @@ const DEFAULT_ADDONS: PackageAddOn[] = [
 const CAL_URL = "https://cal.com/pixcellor/strategy";
 
 export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
+  "full-works": {
+    slug: "full-works",
+    name: "Full Works\u00a0",
+    tagline: "A professional, fast-loading website — done for you, end-to-end.",
+    blurb:
+      "The fastest, lowest-risk way to get a polished website live. We design, build, host and maintain it so you can focus on running your business.",
+    price: "£169.00",
+    billing: "One-time payment",
+    priceId: "price_1Tkw9XBtUjwejeUwEQlAv42p",
+    mode: "payment",
+    ogImage: ogFullWorks,
+    sampleWork: [
+      { title: "Salon brochure site", tag: "3 pages · booking form", note: "Local service business, mobile-first.", image: imgSalonBrochure },
+      { title: "Consultant landing", tag: "1 page · lead capture", note: "Single-page site optimised for conversion.", image: imgConsultantLanding },
+      { title: "Trades portfolio", tag: "3 pages · gallery", note: "Photo-led showcase with contact CTA.", image: imgTradesPortfolio },
+    ],
+    addOns: DEFAULT_ADDONS,
+    includes: [
+      {
+        title: "Design & Build",
+        items: [
+          "Up to 3 fully designed pages",
+          "Mobile-first responsive layout",
+          "Base animations & micro-interactions",
+          "Custom branding integration (logo, fonts, palette)",
+          "Contact form with email delivery",
+          "Stock or AI-generated imagery",
+        ],
+      },
+      {
+        title: "Performance & SEO",
+        items: [
+          "Core Web Vitals tuned (90+ Lighthouse)",
+          "On-page SEO basics (titles, meta, sitemap)",
+          "Open Graph & social previews",
+          "Accessibility-aware semantic HTML",
+        ],
+      },
+      {
+        title: "Launch & Aftercare",
+        items: [
+          "Domain connection & DNS setup",
+          "Hosting for first 25 leads",
+          "SSL certificate included",
+          "Lifetime warranty on build defects",
+          "Email support",
+        ],
+      },
+    ],
+    deliverables: [
+      "Live website on your domain",
+      "Editable source & ownership",
+      "Logins & handover docs",
+      "1 round of revisions before launch",
+    ],
+    process: [
+      "Brief — 10-minute discovery call",
+      "Design — first preview within 72 hours",
+      "Build — revisions and approval",
+      "Launch — domain, DNS and go-live",
+    ],
+    bestFor: [
+      "Sole traders and small businesses needing a credible web presence",
+      "Anyone replacing a tired, slow or template-looking site",
+      "Founders who want it done for them, not DIY",
+    ],
+    faqs: [
+      { q: "How long does it take?", a: "Typically 3–10 working days from brief to launch." },
+      { q: "Do I own the site?", a: "Yes — you own the code, content and domain." },
+      { q: "What if I need more pages later?", a: "Add pages anytime, or upgrade to Elite for unlimited revisions." },
+      { q: "Is hosting really free?", a: "Yes — included for the first 25 leads on our global CDN." },
+    ],
+    primaryCta: { label: "Get Full Works", action: "packages" },
+    secondaryCta: { label: "Talk to sales", action: "sales" },
+  },
 
+  elite: {
+    slug: "elite",
+    name: "Elite Build",
+    tagline: "A flagship, animated site or web app with unlimited revisions.",
+    blurb:
+      "Our top-tier one-off build. Cinema-grade animations, SEO/AEO baked in, and unlimited revisions until it's exactly what you want. Sites or full web apps.",
+    price: "£479.00",
+    billing: "One-time payment",
+    priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
+    mode: "payment",
+    featured: true,
+    ogImage: ogElite,
+    sampleWork: [
+      { title: "Animated brand site", tag: "10 pages · WebGL hero", note: "Scroll-driven 3D, custom illustrations.", image: imgAnimatedBrandSite },
+      { title: "SaaS web app MVP", tag: "Auth · DB · Stripe", note: "Full-stack product launched in 3–10 days.", image: imgSaasMvp },
+      { title: "E-commerce flagship", tag: "Catalog · cart · checkout", note: "Custom storefront with Stripe payments.", image: imgEcommerceFlagship },
+    ],
+    addOns: DEFAULT_ADDONS,
+    includes: [
+      {
+        title: "Design & Build",
+        items: [
+          "Up to 10 fully designed pages",
+          "3D / WebGL / scroll-driven animations",
+          "Bespoke component system & design tokens",
+          "Custom illustrations or AI imagery",
+          "Forms, search, filters, integrations",
+          "CMS or admin panel if needed",
+        ],
+      },
+      {
+        title: "Apps & Integrations",
+        items: [
+          "Full-stack web app option (auth, DB, payments)",
+          "Stripe / payments integration",
+          "Email & CRM integrations",
+          "Analytics & event tracking",
+          "Third-party API connections",
+          "Up to 150 AI lead-gen runs total (upgrade to a retainer for monthly runs)",
+        ],
+      },
+      {
+        title: "SEO & AEO",
+        items: [
+          "Full technical SEO audit & implementation",
+          "Answer Engine Optimisation (AEO) for AI search",
+          "Schema/JSON-LD markup",
+          "Keyword & competitor research",
+          "llms.txt + AI discoverability",
+        ],
+      },
+      {
+        title: "Self-improving agentic flows",
+        items: [
+          "Your site learns from real visitor behaviour and rewrites itself",
+          "Auto-adopts the newest AI models the moment they ship — no rebuild",
+          "Continuous A/B testing on copy, layout and CTAs, 24/7",
+          "AI agents monitor SEO/AEO drift and patch rankings automatically",
+          "Self-healing components: broken links, slow pages and dead embeds fixed without you lifting a finger",
+          "Every advance in AI = a free upgrade to your website",
+        ],
+      },
+      {
+        title: "Launch & Aftercare",
+        items: [
+          "10-day delivery turnaround",
+          "Unlimited revisions during build",
+          "Lifetime warranty on build defects",
+          "Hosting for first 150 leads, SSL & domain setup",
+          "Priority email support",
+        ],
+      },
+    ],
+    deliverables: [
+      "Live production site / app",
+      "Full source code & ownership",
+      "Brand & design system handover",
+      "Analytics dashboard configured",
+      "Documentation & video walkthrough",
+    ],
+    process: [
+      "Discovery — strategy + scoping call",
+      "Design — moodboard, prototypes, approval",
+      "Build — agile sprints with daily previews",
+      "QA — cross-browser, performance, accessibility",
+      "Launch — staged rollout + monitoring",
+    ],
+    bestFor: [
+      "Brands wanting a wow-factor flagship presence",
+      "Startups launching MVPs or product sites",
+      "Businesses replacing multiple tools with a custom app",
+    ],
+    faqs: [
+      { q: "Is it really a 10-day turnaround?", a: "Yes — from approved designs. Complex apps may run longer by mutual agreement." },
+      { q: "What does 'unlimited revisions' mean?", a: "Any visual or copy change during the build cycle, no per-edit fees." },
+      { q: "Can you build a SaaS?", a: "Yes — Elite covers auth, database, payments, dashboards and more." },
+      { q: "Do you migrate from another platform?", a: "Yes — we'll migrate content, redirects and SEO equity." },
+    ],
+    primaryCta: { label: "Get Elite", action: "packages" },
+    secondaryCta: { label: "Talk to sales", action: "sales" },
+  },
 
   "retainer-growth": {
     slug: "retainer-growth",
@@ -385,6 +566,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Price",
     values: {
+      "full-works": "£169 one-off",
+      elite: "£479 one-off",
       "retainer-growth": "£89/mo",
       "retainer-scale": "£479/mo",
       "retainer-enterprise": "£2,469/mo",
@@ -393,6 +576,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Pages",
     values: {
+      "full-works": "Up to 3",
+      elite: "Up to 10",
       "retainer-growth": "Monthly edits",
       "retainer-scale": "Weekly edits",
       "retainer-enterprise": "Daily edits",
@@ -401,6 +586,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Edits / Revisions",
     values: {
+      "full-works": "1 round pre-launch",
+      elite: "Unlimited during build",
       "retainer-growth": "Unlimited",
       "retainer-scale": "Unlimited",
       "retainer-enterprise": "Unlimited",
@@ -409,6 +596,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "SEO / AEO",
     values: {
+      "full-works": "On-page basics",
+      elite: "Full SEO + AEO",
       "retainer-growth": "Ongoing\u00a0",
       "retainer-scale": "Constant",
       "retainer-enterprise": "Maximum",
@@ -417,6 +606,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Animations",
     values: {
+      "full-works": "2D / WebGL",
+      elite: "3D\u00a0",
       "retainer-growth": "2D / WebGL",
       "retainer-scale": "2D / WebGL",
       "retainer-enterprise": "Cinema-grade",
@@ -425,6 +616,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Web app / SaaS",
     values: {
+      "full-works": "—",
+      elite: "Template",
       "retainer-growth": "—",
       "retainer-scale": "Custom",
       "retainer-enterprise": "Custom",
@@ -433,6 +626,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Hosting",
     values: {
+      "full-works": "First 20 Leads",
+      elite: "First 150 Leads",
       "retainer-growth": "250 / m",
       "retainer-scale": "1,000 / m",
       "retainer-enterprise": "10,000 / m",
@@ -441,6 +636,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Support",
     values: {
+      "full-works": "Email",
+      elite: "Priority",
       "retainer-growth": "Priority",
       "retainer-scale": "Priority 24/7 365",
       "retainer-enterprise": "Dedicated team",
@@ -449,6 +646,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Turnaround",
     values: {
+      "full-works": "3–10 days",
+      elite: "3–10 days",
       "retainer-growth": "1–3 days/edit",
       "retainer-scale": "Weekly sprints",
       "retainer-enterprise": "Weekly MVPs",
@@ -457,6 +656,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Self-improving",
     values: {
+      "full-works": "—",
+      elite: "Limited",
       "retainer-growth": "Continuous",
       "retainer-scale": "Continuous",
       "retainer-enterprise": "Estate-wide",
@@ -465,6 +666,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Auto-adopts",
     values: {
+      "full-works": "—",
+      elite: "Some",
       "retainer-growth": "Some",
       "retainer-scale": "All",
       "retainer-enterprise": "First",
@@ -473,6 +676,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "AI agent types",
     values: {
+      "full-works": "—",
+      elite: "Sales",
       "retainer-growth": "Sales + Support",
       "retainer-scale": "Custom agents",
       "retainer-enterprise": "Full suite",
@@ -481,6 +686,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "AI lead-gen runs",
     values: {
+      "full-works": "—",
+      elite: "150 total",
       "retainer-growth": "250 / m",
       "retainer-scale": "1,000 / m",
       "retainer-enterprise": "10,000 / m",
@@ -489,6 +696,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Export to any host",
     values: {
+      "full-works": "Unlimited",
+      elite: "Unlimited",
       "retainer-growth": "Unlimited",
       "retainer-scale": "Unlimited",
       "retainer-enterprise": "Unlimited",
@@ -497,6 +706,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Whitelabel delivery",
     values: {
+      "full-works": "—",
+      elite: "No watermarks",
       "retainer-growth": "No watermarks",
       "retainer-scale": "Full whitelabel",
       "retainer-enterprise": "Full whitelabel",
@@ -505,6 +716,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Fractional C-suite",
     values: {
+      "full-works": "—",
+      elite: "—",
       "retainer-growth": "—",
       "retainer-scale": "—",
       "retainer-enterprise": "⅕ CTO + CMO",
@@ -513,6 +726,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Outbound Emails",
     values: {
+      "full-works": "—",
+      elite: "—",
       "retainer-growth": "250 / m",
       "retainer-scale": "1,000 / m",
       "retainer-enterprise": "10,000 / m",
@@ -521,6 +736,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Warranty",
     values: {
+      "full-works": "Lifetime\u00a0",
+      elite: "Lifetime\u00a0",
       "retainer-growth": "+ Active services",
       "retainer-scale": "+ Active services",
       "retainer-enterprise": "+ SLA",
@@ -529,6 +746,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
 ];
 
 export const COMPARISON_SLUGS: string[] = [
+  "full-works",
+  "elite",
   "retainer-growth",
   "retainer-scale",
   "retainer-enterprise",
