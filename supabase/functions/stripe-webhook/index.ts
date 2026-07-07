@@ -138,7 +138,7 @@ async function sendOrderConfirmationEmails(opts: {
   const orderCode = typeof publicReference?.order_code === "string" ? publicReference.order_code : session.id;
   const requirementsToken = typeof publicReference?.requirements_token === "string" ? publicReference.requirements_token : null;
   // Read package_name from our DB row first (source of truth — admins can edit it),
-  // then fall back to Stripe session metadata, then to "Full Works".
+  // then fall back to Stripe session metadata, then to a generic retainer label.
   const { data: dbRow } = await supabase
     .from("stripe_checkout_sessions")
     .select("metadata")
@@ -148,7 +148,7 @@ async function sendOrderConfirmationEmails(opts: {
   const packageName =
     (typeof dbMeta.package_name === "string" && dbMeta.package_name) ||
     session.metadata?.package_name ||
-    "Full Works";
+    "Pixcellor retainer";
   const requirementsUrl = requirementsToken
     ? `${SITE_URL}/project-requirements?order=${encodeURIComponent(orderCode)}&token=${encodeURIComponent(requirementsToken)}`
     : `${SITE_URL}/project-requirements`;
