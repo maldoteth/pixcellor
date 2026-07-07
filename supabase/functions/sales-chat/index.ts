@@ -2556,7 +2556,6 @@ Deno.serve(async (req) => {
         if (toolCall.function.name === "send_package") {
           try {
             const args = JSON.parse(toolCall.function.arguments);
-            const pkgId = args.package_id as keyof typeof PACKAGES;
             const pkgId = args.package_id as string;
             const billing = args.billing || "monthly";
             const pkg = (PACKAGES as any)[pkgId];
