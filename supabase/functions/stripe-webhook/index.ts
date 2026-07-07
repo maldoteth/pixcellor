@@ -117,11 +117,9 @@ async function logAdminAlert(opts: {
 const formatGBP = (amount: number | null | undefined) =>
   typeof amount === "number" ? `£${(amount / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}` : undefined;
 
-const templateForPackage = (packageName?: string | null) => {
-  const clean = (packageName ?? "").toLowerCase();
-  if (clean.includes("retainer")) return "retainer-order-confirmation";
-  if (clean.includes("elite")) return "elite-order-confirmation";
-  return "full-works-order-confirmation";
+const templateForPackage = (_packageName?: string | null) => {
+  // All active packages are retainers now — Full Works and Elite have been retired.
+  return "retainer-order-confirmation";
 };
 
 async function sendOrderConfirmationEmails(opts: {
