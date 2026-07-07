@@ -1542,11 +1542,29 @@ function MobileCards() {
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10 flex flex-col flex-1">
-          <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
-          <div className="mt-3 mb-1">
-            <span className="text-3xl font-extrabold text-foreground">Custom</span>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
+            <BillingToggle value={enterpriseBilling} onChange={setEnterpriseBilling} />
           </div>
-          <p className="text-muted-foreground text-lg text-slate-50 bg-white/0 mb-4">Built around your operation</p>
+          <div className="mt-2 mb-1 inline-flex w-fit rounded-md border border-border overflow-hidden text-[10px] font-semibold uppercase tracking-wider">
+            {ENTERPRISE_SIZE_ORDER.map((k) => {
+              const active = enterpriseSize === k;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setEnterpriseSize(k)}
+                  className={`px-2.5 py-1 transition-colors ${active ? "bg-foreground text-background" : "bg-background text-foreground/70 hover:text-foreground"}`}
+                >
+                  {ENTERPRISE_SIZES[k].name}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-2 mb-1 text-3xl font-extrabold text-foreground">
+            {enterpriseBilling === "monthly" ? ENTERPRISE_SIZES[enterpriseSize].monthlyLabel : ENTERPRISE_SIZES[enterpriseSize].yearlyLabel}
+          </div>
+          <p className="text-muted-foreground text-sm mb-4">Built around your operation</p>
           <ul className="space-y-2 flex-1 mb-4">
             {PACKAGES.enterprise.features.map((f) => (
               <li key={f} className="flex items-start gap-2 text-base text-foreground">
@@ -1555,7 +1573,24 @@ function MobileCards() {
               </li>
             ))}
           </ul>
-          <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
+          {enterpriseSize === "small" ? (
+            <GlassBuyButton
+              onClick={() =>
+                buy(
+                  enterpriseBilling === "monthly" ? RETAINER_TIERS.enterprise.monthlyPriceId : RETAINER_TIERS.enterprise.yearlyPriceId,
+                  "subscription",
+                  "enterprise",
+                  "Enterprise",
+                  enterpriseBilling === "monthly" ? "Monthly subscription" : "Yearly subscription"
+                )
+              }
+              disabled={!!loading}
+              loading={loading === "enterprise"}
+              label="Subscribe"
+            />
+          ) : (
+            <GlassBuyButton onClick={() => { window.location.href = "/get-started"; }} disabled={false} loading={false} label="Talk to sales" />
+          )}
         </div>
       </div>
     </div>
