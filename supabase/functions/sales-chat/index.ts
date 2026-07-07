@@ -897,7 +897,7 @@ const devTools = [
               },
             },
           },
-          package_slug: { type: "string", description: "Optional package slug ('full-works' | 'elite' | 'retainer-growth' | 'retainer-scale' | 'retainer-enterprise') — sets the line item automatically if provided alone." },
+          package_slug: { type: "string", description: "Optional package slug ('retainer-growth' | 'retainer-scale' | 'retainer-enterprise') — sets the line item automatically if provided alone." },
           internal_note: { type: "string", description: "Private note for our records — not shown to client." },
         },
       },
