@@ -8,8 +8,6 @@ import portfolio from "@/assets/og/04-portfolio.png.asset.json";
 import services from "@/assets/og/05-services.png.asset.json";
 import legal from "@/assets/og/06-legal.png.asset.json";
 
-import pkgFullWorks from "@/assets/og/07-full-works.png.asset.json";
-import pkgElite from "@/assets/og/08-elite.png.asset.json";
 import pkgRetainerGrowth from "@/assets/og/09-retainer-growth.png.asset.json";
 import pkgRetainerScale from "@/assets/og/10-retainer-scale.png.asset.json";
 import pkgRetainerEnterprise from "@/assets/og/11-retainer-enterprise.png.asset.json";
@@ -56,8 +54,6 @@ export const OG_SERVICES = toAbsolute(services.url);
 export const OG_LEGAL = toAbsolute(legal.url);
 
 export const OG_PACKAGE_BY_SLUG: Record<string, string> = {
-  "full-works": toAbsolute(pkgFullWorks.url),
-  elite: toAbsolute(pkgElite.url),
   "retainer-growth": toAbsolute(pkgRetainerGrowth.url),
   "retainer-scale": toAbsolute(pkgRetainerScale.url),
   "retainer-enterprise": toAbsolute(pkgRetainerEnterprise.url),

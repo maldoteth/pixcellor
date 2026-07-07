@@ -24,8 +24,6 @@ import ServiceSalesView from "@/components/services/ServiceSalesView";
 import { PaymentMethodDialog, type PaymentChoiceContext } from "@/components/PaymentMethodDialog";
 
 const PACKAGE_KEY_TO_SLUG: Record<string, string> = {
-  fullWorks: "full-works",
-  elite: "elite",
   growth: "retainer-growth",
   scale: "retainer-scale",
   enterprise: "retainer-enterprise",
@@ -34,21 +32,6 @@ const PACKAGE_KEY_TO_SLUG: Record<string, string> = {
 
 
 const PACKAGES = {
-  fullWorks: {
-    name: "Full Works",
-    price: "£169",
-    priceId: "price_1Tkw9XBtUjwejeUwEQlAv42p",
-    mode: "payment" as const,
-    features: ["Industry leading website", "First 25 leads included", "Lifetime warranty", "Base animations ", "Up to 3 pages"],
-  },
-  elite: {
-    name: "Elite Build",
-    price: "£479",
-    priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
-    mode: "payment" as const,
-    featured: true,
-    features: ["Smart site or web app", "First 150 leads included", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages - 3D animated", "Self-improving agentic flows"],
-  },
   retainer: {
     name: "Custom",
     monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
@@ -909,138 +892,8 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
       style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
     >
       
-      {/* Full Works - tilted left */}
-      <div className="md:max-lg:translate-x-[16px]">
-      <motion.div data-lava-card
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        initial={{ opacity: 0, y: 40, rotate: -6, scale: 1 }}
-        animate={{ opacity: 1, y: 0, rotate: -6, scale: 1 }}
-        whileHover={{ scale: 1.05 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
-        className="relative z-10 w-[332px] rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
-        style={{
-          willChange: "transform",
-          boxShadow: `
-            0 8px 32px rgba(0,0,0,0.3),
-            inset 0 1px 1px rgba(255,255,255,0.15),
-            inset 0 -1px 1px rgba(0,0,0,0.1)
-          `,
-        }}
-      >
-        {/* Lava lamp blobs */}
-        <div className="lava-blob lava-blob-1" />
-        <div className="lava-blob lava-blob-2" />
-        <div className="lava-blob lava-blob-3" />
-        <div className="relative z-10">
-        <div className="mb-2 text-lg font-bold text-foreground">Full Works</div>
-        <div className="mb-4 flex items-start gap-1">
-          <div className="text-3xl font-extrabold text-foreground">£169<span className="text-sm font-bold align-baseline">.00</span></div>
-          
-        </div>
-        <ul className="mb-4 space-y-2 text-base text-foreground">
-          {PACKAGES.fullWorks.features.map((f) => (
-            <li key={f} className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-              {f}
-            </li>
-          ))}
-        </ul>
-        <GlassBuyButton
-          onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
-          disabled={!!loading}
-          loading={loading === "fullWorks"}
-          label="Order Now"
-        />
-        <Link to="/packages/full-works" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
-          See full details →
-        </Link>
-        </div>
-      </motion.div>
-      </div>
 
 
-
-      {/* Elite - center, elevated */}
-      <motion.div data-lava-card
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        initial={{ opacity: 0, y: 40, rotate: 0, scale: 1.06 }}
-        animate={{ opacity: 1, y: 0, rotate: 0, scale: 1.06 }}
-        whileHover={{ scale: 1.08 }}
-        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
-        className="relative z-20 w-[370px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-3 pb-5 shadow-xl"
-        style={{
-          willChange: "transform",
-          transformOrigin: "center bottom",
-          boxShadow: `
-            0 12px 40px rgba(0,0,0,0.4),
-            0 0 30px rgba(255,255,255,0.08),
-            inset 0 1px 2px rgba(255,255,255,0.2),
-            inset 0 -1px 1px rgba(0,0,0,0.1)
-          `,
-        }}
-      >
-        {/* Lava lamp blobs - featured (clipped to card) */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="lava-blob lava-blob-featured-1" />
-          <div className="lava-blob lava-blob-featured-2" />
-          <div className="lava-blob lava-blob-featured-3" />
-        </div>
-        <FreeSamplesBadge className="pointer-events-auto absolute left-full top-full -translate-x-[414px] translate-y-[282px] z-30 -rotate-[18deg]" />
-        <motion.div
-          animate={{ boxShadow: [
-            "0 0 0px 0px rgba(212,165,74,0)",
-            "0 0 14px 2px rgba(212,165,74,0.45)",
-            "0 0 0px 0px rgba(212,165,74,0)",
-          ] }}
-          transition={{ repeat: Infinity, duration: 2.6, ease: "easeInOut" }}
-          className="absolute top-2 right-2 rounded-sm border border-[#a8802a]/60 px-3 text-[10px] font-extrabold z-20 uppercase tracking-wider py-[2px]"
-          style={{
-            background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
-            color: "#2a1d05",
-            textShadow: "0 1px 0 rgba(255,236,179,0.4)",
-          }}
-        >
-          MOST POPULAR
-        </motion.div>
-
-        <div className="relative z-10 -mt-28">
-        <div className="mb-2 text-lg font-bold text-foreground">Elite</div>
-        <div className="mb-4 flex items-start gap-1">
-          <div className="text-5xl font-black text-foreground">£479<span className="text-lg font-bold align-baseline">.00</span></div>
-          
-        </div>
-        <ul className="mb-4 space-y-1.5 text-base text-foreground">
-          {PACKAGES.elite.features.map((f) => (
-            <li key={f} className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-              {f}
-            </li>
-          ))}
-        </ul>
-        <div className="mt-3">
-        <GlassBuyButton
-          onClick={() =>
-            buy(
-              PACKAGES.elite.priceId,
-              PACKAGES.elite.mode,
-              "elite",
-              PACKAGES.elite.name,
-              "One-time payment"
-            )
-          }
-          disabled={!!loading}
-          loading={loading === "elite"}
-          label="Order Now"
-        />
-        </div>
-        <div className="mt-2.5"><StripeBadge /></div>
-        <Link to="/packages/elite" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
-          See full details →
-        </Link>
-        </div>{/* close relative z-10 wrapper */}
-      </motion.div>
 
       {/* Retainer / Enterprise flip card */}
       <div className="md:max-lg:-translate-x-[16px]">
@@ -1552,88 +1405,8 @@ function MobileCards() {
   return (
     <>
     <div className="grid grid-cols-1 gap-4">
-      {/* Full Works */}
-      <div data-lava-card className="rounded-none p-5 flex flex-col border border-border bg-background relative overflow-hidden">
-        <div className="lava-blob lava-blob-1" />
-        <div className="lava-blob lava-blob-2" />
-        <div className="lava-blob lava-blob-3" />
-        <div className="relative z-10 flex flex-col flex-1">
-        <h3 className="text-lg font-bold text-foreground">Full Works</h3>
-        <div className="mt-3 mb-4 flex items-start gap-1">
-          <span className="text-3xl font-extrabold text-foreground">£169<span className="text-sm font-bold align-baseline">.00</span></span>
-          
-        </div>
-        <ul className="space-y-2 flex-1 mb-3">
-          {PACKAGES.fullWorks.features.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-base text-foreground">
-              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-              {f}
-            </li>
-          ))}
-        </ul>
-        <GlassBuyButton
-          onClick={() => buy(PACKAGES.fullWorks.priceId, PACKAGES.fullWorks.mode, "fullWorks", PACKAGES.fullWorks.name, "One-time payment")}
-          disabled={!!loading}
-          loading={loading === "fullWorks"}
-          label="Order Now"
-        />
-        <Link to="/packages/full-works" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
-          See full details →
-        </Link>
-        </div>
-      </div>
 
-      {/* Elite */}
-      <div data-lava-card className="rounded-none p-5 flex flex-col border border-foreground/30 bg-background ring-1 ring-foreground/10 relative overflow-hidden">
-        <div className="lava-blob lava-blob-featured-1" />
-        <div className="lava-blob lava-blob-featured-2" />
-        <div className="lava-blob lava-blob-featured-3" />
-        <div className="relative z-10 flex flex-col flex-1">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-bold text-foreground">Elite</h3>
-          <span
-            className="rounded-sm border border-[#a8802a]/60 px-2 py-[2px] text-[10px] font-extrabold uppercase tracking-wider"
-            style={{
-              background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
-              color: "#2a1d05",
-              textShadow: "0 1px 0 rgba(255,236,179,0.4)",
-            }}
-          >
-            MOST POPULAR
-          </span>
-        </div>
 
-        <div className="mt-3 mb-4 flex items-start gap-1">
-          <span className="text-3xl font-extrabold text-foreground">£479<span className="text-sm font-bold align-baseline">.00</span></span>
-          
-        </div>
-        <ul className="space-y-2 flex-1 mb-3">
-          {PACKAGES.elite.features.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-base text-foreground">
-              <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-              {f}
-            </li>
-          ))}
-        </ul>
-        <GlassBuyButton
-          onClick={() =>
-            buy(
-              PACKAGES.elite.priceId,
-              PACKAGES.elite.mode,
-              "elite",
-              PACKAGES.elite.name,
-              "One-time payment"
-            )
-          }
-          disabled={!!loading}
-          loading={loading === "elite"}
-          label="Order Now"
-        />
-        <Link to="/packages/elite" className="mt-2 block text-center text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition">
-          See full details →
-        </Link>
-        </div>
-      </div>
 
       {/* Retainer / Enterprise flip card */}
       <div className="relative min-h-[440px]" style={{ perspective: "1200px" }}>

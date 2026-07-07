@@ -30,11 +30,9 @@ const requireAdmin = async (req: Request) => {
   if (roleError || !isAdmin) throw new Error("Admin access required");
 };
 
-const templateForPackage = (packageName?: string | null) => {
-  const clean = (packageName ?? "").toLowerCase();
-  if (clean.includes("retainer")) return "retainer-order-confirmation";
-  if (clean.includes("elite")) return "elite-order-confirmation";
-  return "full-works-order-confirmation";
+const templateForPackage = (_packageName?: string | null) => {
+  // All active packages are retainers now — Full Works and Elite have been retired.
+  return "retainer-order-confirmation";
 };
 
 serve(async (req) => {
@@ -74,7 +72,7 @@ serve(async (req) => {
     const orderCode = typeof publicReference?.order_code === "string" ? publicReference.order_code : order.session_id;
     const requirementsToken = typeof publicReference?.requirements_token === "string" ? publicReference.requirements_token : null;
 
-    const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Full Works";
+    const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "Pixcellor retainer";
     const customLabel = typeof metadata.custom_label === "string" ? metadata.custom_label : null;
     const billing = typeof metadata.billing === "string" ? metadata.billing : order.mode || "payment";
 

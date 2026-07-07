@@ -655,7 +655,7 @@ export const SERVICES: Service[] = [
       "60fps on mid-range Android (we test on real devices, not just MacBooks)",
       "Accessibility-aware — respects reduced-motion preferences",
       "Lifetime warranty on the build",
-      "Up to 10 pages on Elite tier with full animation system",
+      "Full animation system across every page on retainer plans",
       "10-day turnaround for standard animated builds",
       "Source code and editable components handed over",
       "Performance and SEO audit on delivery",

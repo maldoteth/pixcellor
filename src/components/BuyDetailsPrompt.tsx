@@ -105,7 +105,7 @@ interface Props {
   /** Package name for tracking visitors who reach the payment step. */
   packageName?: string;
   billing?: string;
-  /** Package slug for invoice creation via edge function (e.g. "full_works"). When provided, the invoice form is rendered inline in this dialog. */
+  /** Package slug for invoice creation via edge function (e.g. "retainer-growth"). When provided, the invoice form is rendered inline in this dialog. */
   packageSlug?: string;
   /** Optional pre-filled buyer details — filled fields are skipped in the wizard. */
   initialValues?: Partial<BuyerDetails>;

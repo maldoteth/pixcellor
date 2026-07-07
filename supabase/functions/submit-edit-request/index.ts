@@ -21,12 +21,8 @@ const EditRequestSchema = z.object({
 });
 
 const normalizePackage = (value: unknown) => (typeof value === "string" ? value.trim().toLowerCase() : "");
-const requestLimitForPackage = (packageName: string) => {
-  const normalized = normalizePackage(packageName);
-  if (normalized.includes("elite")) return null;
-  if (normalized.includes("full works")) return 3;
-  return undefined;
-};
+// All active packages are retainers with unlimited edits. Returning null means "no cap".
+const requestLimitForPackage = (_packageName: string): number | null => null;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -65,9 +61,6 @@ serve(async (req) => {
     const metadata = order.metadata && typeof order.metadata === "object" ? order.metadata as Record<string, unknown> : {};
     const packageName = typeof metadata.package_name === "string" ? metadata.package_name : "";
     const requestLimit = requestLimitForPackage(packageName);
-    if (requestLimit === undefined) {
-      return json({ error: "Edit requests are available for Full Works and Elite orders only." }, 403);
-    }
 
     const { count, error: countError } = await supabase
       .from("edit_requests")
@@ -77,7 +70,7 @@ serve(async (req) => {
     if (countError) throw countError;
     const usedRequests = count ?? 0;
     if (requestLimit !== null && usedRequests >= requestLimit) {
-      return json({ error: "This Full Works order has used all 3 edit requests." }, 403);
+      return json({ error: "This order has used all available edit requests." }, 403);
     }
 
     const requestNumber = usedRequests + 1;

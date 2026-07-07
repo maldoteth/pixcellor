@@ -95,25 +95,6 @@ type BuyAgainPackage = {
 
 const BUY_AGAIN_PACKAGES: readonly BuyAgainPackage[] = [
   {
-    key: "fullWorks",
-    name: "Full Works",
-    price: "£169",
-    priceId: "price_1Tkw9XBtUjwejeUwEQlAv42p",
-    mode: "payment",
-    billing: "One-time payment",
-    features: ["Industry leading website", "Lifetime warranty", "Custom design", "Up to 3 pages"],
-  },
-  {
-    key: "elite",
-    name: "Elite",
-    price: "£479",
-    priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
-    mode: "payment",
-    billing: "One-time payment",
-    featured: true,
-    features: ["Sites or web apps", "Unlimited revisions", "SEO & AEO optimisation", "Up to 10 pages"],
-  },
-  {
     key: "retainer-growth",
     name: "Growth Retainer",
     price: "£89/mo",
@@ -469,12 +450,7 @@ export default function CustomerPortal() {
   const leadEntitlement = useMemo(() => {
     const activeSub = subscription && ["active", "trialing", "past_due"].includes(subscription.status?.toLowerCase?.() ?? "");
     if (activeSub) return { max: Infinity, label: `${subscription?.tier || "Subscription"} plan` };
-    const paidOrders = orders.filter((o) => o.payment_status === "paid" || o.order_status === "delivered");
-    const names = paidOrders.map((o) => packageName(o).toLowerCase());
-    const hasElite = names.some((n) => n.includes("elite"));
-    const hasFullWorks = names.some((n) => n.includes("full works") || n.includes("fullworks"));
-    if (hasElite) return { max: 250, label: "Elite website" };
-    if (hasFullWorks) return { max: 10, label: "Full Works website" };
+    void orders;
     return { max: 10, label: "Free tier" };
   }, [subscription, orders]);
 

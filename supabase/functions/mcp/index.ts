@@ -54,43 +54,37 @@ var list_services_default = defineTool({
 
 // src/lib/mcp/tools/list-packages.ts
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.0";
-import { z as z2 } from "npm:zod@^3.25.76";
 var PACKAGES = [
-  { slug: "full-works", name: "Full Works", price: "\xA31,500", billing: "one-off", blurb: "Full brochure/marketing site with brand kit, up to 8 pages, animations, SEO baseline." },
-  { slug: "elite", name: "Elite", price: "\xA33,500", billing: "one-off", blurb: "Premium animated site or lightweight web app \u2014 bespoke design, custom components, deep SEO/AEO." },
-  { slug: "retainer-growth", name: "Retainer \u2014 Growth", price: "\xA31,500/mo", billing: "monthly", blurb: "Always-on dev + marketing sprints for small teams shipping weekly." },
-  { slug: "retainer-scale", name: "Retainer \u2014 Scale", price: "\xA33,500/mo", billing: "monthly", blurb: "Dedicated squad for scaling products: features, ads, CRO, and analytics." },
-  { slug: "retainer-enterprise", name: "Retainer \u2014 Enterprise", price: "\xA37,500/mo", billing: "monthly", blurb: "Full multi-discipline team embedded with your business, SLA-backed." }
+  { slug: "retainer-growth", name: "Growth", price: "\xA389/mo", billing: "monthly", blurb: "Website + unlimited edits, CRM, AI lead/support bots, hosting and monthly analytics \u2014 for small teams." },
+  { slug: "retainer-scale", name: "Scale", price: "\xA3479/mo", billing: "monthly", blurb: "Everything in Growth plus unlimited seats, priority 24/7 support, custom AI agents and monthly strategy calls." },
+  { slug: "retainer-enterprise", name: "Enterprise", price: "\xA32,469/mo", billing: "monthly", blurb: "Fractional CTO & CMO, dedicated dev/ops squad, weekly MVP sprints and 24/7 priority support." }
 ];
 var list_packages_default = defineTool2({
   name: "list_packages",
   title: "List Pixcellor packages",
-  description: "List Pixcellor's public packages (one-off builds and monthly retainers) with price and short description.",
-  inputSchema: {
-    billing: z2.enum(["one-off", "monthly"]).optional().describe("Filter by billing type.")
-  },
+  description: "List Pixcellor's public retainer packages (Growth, Scale, Enterprise) with price and short description.",
+  inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: ({ billing }) => {
-    const items = billing ? PACKAGES.filter((p) => p.billing === billing) : PACKAGES;
-    const text = items.map((p) => `\u2022 ${p.name} \u2014 ${p.price} (${p.billing})
+  handler: () => {
+    const text = PACKAGES.map((p) => `\u2022 ${p.name} \u2014 ${p.price} (${p.billing})
   ${p.blurb}
   https://pixcellor.com/packages/${p.slug}`).join("\n\n");
     return {
-      content: [{ type: "text", text: text || "No packages found." }],
-      structuredContent: { packages: items }
+      content: [{ type: "text", text }],
+      structuredContent: { packages: PACKAGES }
     };
   }
 });
 
 // src/lib/mcp/tools/book-sales-call.ts
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.0";
-import { z as z3 } from "npm:zod@^3.25.76";
+import { z as z2 } from "npm:zod@^3.25.76";
 var book_sales_call_default = defineTool3({
   name: "book_sales_call",
   title: "Get sales call booking link",
   description: "Returns the Pixcellor sales call booking URL so a user can schedule an intro call with the team.",
   inputSchema: {
-    topic: z3.string().optional().describe("What the user wants to discuss (service, package, or custom project).")
+    topic: z2.string().optional().describe("What the user wants to discuss (service, package, or custom project).")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: ({ topic }) => {
