@@ -721,9 +721,6 @@ export default function CustomerPortal() {
                             <Wallet className="h-4 w-4" />
                             {affHasOpen ? "Withdrawal pending" : "Cash out"}
                           </Button>
-                          {availableCents < 2500 && !affHasOpen && (
-                            <p className="text-[11px] text-muted-foreground">Minimum withdrawal is £25.</p>
-                          )}
                         </CardContent>
                       </Card>
                     );
