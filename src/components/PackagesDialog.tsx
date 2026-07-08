@@ -73,7 +73,6 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
     yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
     features: [
-      "Smart self improving website/app",
       "Bespoke CRM\u00a0",
       "Hosting, domain & cloud",
       "Customer chat bot",
@@ -91,7 +90,6 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
     yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
     features: [
-      "Smart self improving website/app",
       "Unlimited seats & users",
       "Unlimited edits & revisions",
       "Priority support 24/7 365",
@@ -109,7 +107,6 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
     yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
     features: [
-      "Smart self improving website/app",
       "Fractional CTO & CMO",
       "Dedicated dev & ops team",
       "Weekly MVP sprints",
@@ -963,6 +960,10 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             : `Save £${(growth.monthly * 12 - growth.yearly).toLocaleString()} with yearly`}
         </div>
         <ul className="mb-4 space-y-2 text-base text-foreground">
+          <li className="flex items-start gap-2">
+            <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+            Smart self improving website/app
+          </li>
           {growth.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -1050,6 +1051,10 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             : `Save £${(scale.monthly * 12 - scale.yearly).toLocaleString()} with yearly`}
         </div>
         <ul className="mb-4 space-y-1.5 text-base text-foreground">
+          <li className="flex items-start gap-2">
+            <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+            Smart self improving website/app
+          </li>
           {scale.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -1453,6 +1458,10 @@ function MobileCards() {
             : `Save £${(growth.monthly * 12 - growth.yearly).toLocaleString()} with yearly`}
         </div>
         <ul className="space-y-2 flex-1 mb-3">
+          <li className="flex items-start gap-2 text-base text-foreground">
+            <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+            Smart self improving website/app
+          </li>
           {growth.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
@@ -1514,6 +1523,10 @@ function MobileCards() {
             : `Save £${(scale.monthly * 12 - scale.yearly).toLocaleString()} with yearly`}
         </div>
         <ul className="space-y-2 flex-1 mb-3">
+          <li className="flex items-start gap-2 text-base text-foreground">
+            <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+            Smart self improving website/app
+          </li>
           {scale.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
