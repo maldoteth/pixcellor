@@ -1458,6 +1458,10 @@ function MobileCards() {
             : `Save £${(growth.monthly * 12 - growth.yearly).toLocaleString()} with yearly`}
         </div>
         <ul className="space-y-2 flex-1 mb-3">
+          <li className="flex items-start gap-2 text-base text-foreground">
+            <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
+            Smart self improving website/app
+          </li>
           {growth.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-base text-foreground">
               <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
