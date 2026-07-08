@@ -109,7 +109,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
     yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
     features: [
-      "Smart talking website",
+      "Smart website",
       "Fractional CTO & CMO",
       "Dedicated dev & ops team",
       "Weekly MVP sprints",
