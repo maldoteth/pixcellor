@@ -8,9 +8,9 @@ const ENTERPRISE_SLUG = "retainer-enterprise";
 // Rows whose value triples when Enterprise is on the "Large" tier.
 const TRIPLED_FEATURES = new Set(["AI lead-gen runs", "Outbound Emails", "Hosting"]);
 
-// Triple a string like "10,000 / m" → "30,000 / m". Leaves other strings alone.
+// Triple a string like "10,000 Leads per month" → "30,000 Leads per month". Leaves other strings alone.
 function tripleLimit(val: string): string {
-  const match = val.match(/^([\d,]+)(\s*\/\s*\w+)$/);
+  const match = val.match(/^([\d,]+)(.*)$/);
   if (!match) return val;
   const n = parseInt(match[1].replace(/,/g, ""), 10);
   if (Number.isNaN(n)) return val;
