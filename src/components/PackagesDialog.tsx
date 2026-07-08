@@ -1440,12 +1440,12 @@ function MobileCards() {
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10 flex flex-col flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-lg font-bold text-foreground">Growth</h3>
+        <h3 className="text-lg font-bold text-foreground">Growth</h3>
+        <div className="mt-3 mb-1 flex items-center justify-between gap-2">
+          <div className="text-3xl font-extrabold text-foreground">
+            {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
+          </div>
           <BillingToggle value={growthBilling} onChange={setGrowthBilling} />
-        </div>
-        <div className="mt-3 mb-1 text-3xl font-extrabold text-foreground">
-          {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
         </div>
         <div className="mb-3 text-xs text-muted-foreground">
           {growthBilling === "yearly"
@@ -1500,11 +1500,13 @@ function MobileCards() {
               MOST POPULAR
             </span>
           </div>
-          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
         </div>
 
-        <div className="mt-3 mb-1 text-3xl font-extrabold text-foreground">
-          {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
+        <div className="mt-3 mb-1 flex items-center justify-between gap-2">
+          <div className="text-3xl font-extrabold text-foreground">
+            {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
+          </div>
+          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
         </div>
         <div className="mb-3 text-xs text-muted-foreground">
           {scaleBilling === "yearly"
@@ -1545,10 +1547,7 @@ function MobileCards() {
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10 flex flex-col flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
-            <BillingToggle value={enterpriseBilling} onChange={setEnterpriseBilling} />
-          </div>
+          <h3 className="text-lg font-bold text-foreground">Enterprise</h3>
           <div className="mt-2 mb-1 inline-flex w-fit rounded-md border border-border overflow-hidden text-[10px] font-semibold uppercase tracking-wider">
             {ENTERPRISE_SIZE_ORDER.map((k) => {
               const active = enterpriseSize === k;
@@ -1564,8 +1563,11 @@ function MobileCards() {
               );
             })}
           </div>
-          <div className="mt-2 mb-1 text-3xl font-extrabold text-foreground">
-            {enterpriseBilling === "monthly" ? ENTERPRISE_SIZES[enterpriseSize].monthlyLabel : ENTERPRISE_SIZES[enterpriseSize].yearlyLabel}
+          <div className="mt-2 mb-1 flex items-center justify-between gap-2">
+            <div className="text-3xl font-extrabold text-foreground">
+              {enterpriseBilling === "monthly" ? ENTERPRISE_SIZES[enterpriseSize].monthlyLabel : ENTERPRISE_SIZES[enterpriseSize].yearlyLabel}
+            </div>
+            <BillingToggle value={enterpriseBilling} onChange={setEnterpriseBilling} />
           </div>
           <p className="text-muted-foreground text-sm mb-4">Built around your operation</p>
           <ul className="space-y-2 flex-1 mb-4">
