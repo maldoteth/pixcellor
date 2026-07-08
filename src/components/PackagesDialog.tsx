@@ -1130,7 +1130,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             </div>
             <BillingToggle value={enterpriseBilling} onChange={setEnterpriseBilling} />
           </div>
-          <p className="text-muted-foreground text-sm mb-4">Built around your operation</p>
+          <p className="text-muted-foreground text-sm mb-4">Save £5,000 with yearly</p>
           <ul className="mb-6 space-y-2 text-base text-foreground">
             {PACKAGES.enterprise.features.map((f) => (
               <li key={f} className="flex items-start gap-2">
@@ -1582,7 +1582,7 @@ function MobileCards() {
             </div>
             <BillingToggle value={enterpriseBilling} onChange={setEnterpriseBilling} />
           </div>
-          <p className="text-muted-foreground text-sm mb-4">Built around your operation</p>
+          <p className="text-muted-foreground text-sm mb-4">Save £5,000 with yearly</p>
           <ul className="space-y-2 flex-1 mb-4">
             {PACKAGES.enterprise.features.map((f) => (
               <li key={f} className="flex items-start gap-2 text-base text-foreground">
