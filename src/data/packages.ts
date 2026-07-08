@@ -227,7 +227,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         ],
       },
       {
-        title: "Self-improving agentic flows",
+        title: "Smart talking website",
         items: [
           "Your site learns from real visitor behaviour and rewrites itself",
           "Auto-adopts the newest AI models the moment they ship — no rebuild",
@@ -326,7 +326,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         ],
       },
       {
-        title: "Self-improving agentic flows",
+        title: "Smart talking website",
         items: [
           "Your site evolves on its own — no rebuild, no waiting",
           "Auto-upgraded the moment a better AI model is released",
@@ -420,7 +420,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         ],
       },
       {
-        title: "Self-improving agentic flows",
+        title: "Smart talking website",
         items: [
           "Site + app rewrite themselves based on real conversion data",
           "Automatic adoption of frontier AI models the day they release",
@@ -516,7 +516,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         ],
       },
       {
-        title: "Self-improving agentic flows",
+        title: "Smart talking website",
         items: [
           "Every public surface — site, app, dashboards — evolves autonomously",
           "Day-zero adoption of frontier AI: GPT, Claude, Gemini, open models",
