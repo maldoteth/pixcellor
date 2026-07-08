@@ -659,7 +659,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       "full-works": "—",
       elite: "Limited",
       "retainer-growth": "Limited audits and health checks",
-      "retainer-scale": "Continuous",
+      "retainer-scale": "Continuous improvements",
       "retainer-enterprise": "Estate-wide",
     },
   },
