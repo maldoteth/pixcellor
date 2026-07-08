@@ -58,7 +58,7 @@ const PACKAGES = {
   },
   enterprise: {
     name: "Custom",
-    features: ["Fractional CTO & CMO", "Hosting & managed services", "Infrastructure and ecosystems", "Quarterly & annual reviews", "Dedicated team 24/7 - 365"],
+    features: ["Fractional CTO & CMO", "Weekly MVP sprints", "Infrastructure and ecosystems", "Quarterly & annual reviews", "Dedicated team 24/7 - 365"],
   },
 };
 
