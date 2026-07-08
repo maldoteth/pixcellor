@@ -97,10 +97,7 @@ export default function PackageCompareTable({
                     )}
                     <Link to={`/packages/${slug}`} className="block hover:opacity-90">
                       <div className={`text-[10px] uppercase tracking-[0.18em] mb-1 ${active ? "text-foreground/80" : "text-foreground/50"}`}>
-                        {slug === "retainer-growth" ? '"SMART SITE" INCLUDED' : 
-                         slug === "retainer-scale" ? 'WEBSITES AND APPS' : 
-                         slug === "retainer-enterprise" ? 'FULL STACK PROTOCOLS' : 
-                         (pkg.mode === "subscription" ? "Retainer" : "One-off")}
+                        {pkg.mode === "subscription" ? "Retainer" : "One-off"}
                       </div>
                       <div className="text-sm font-semibold">
                         {isEnterprise && isLarge ? (
