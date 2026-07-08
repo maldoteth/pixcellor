@@ -933,7 +933,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: -6, scale: 1 }}
-        animate={{ opacity: 1, y: -100, rotate: -6, scale: 1 }}
+        animate={{ opacity: 1, y: -60, rotate: -6, scale: 1 }}
         whileHover={{ scale: 1.05 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
         className="relative z-10 w-[332px] rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
@@ -950,12 +950,12 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <div className="text-lg font-bold text-foreground">Growth</div>
+        <div className="mb-2 text-lg font-bold text-foreground">Growth</div>
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <div className="text-3xl font-extrabold text-foreground">
+            {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
+          </div>
           <BillingToggle value={growthBilling} onChange={setGrowthBilling} />
-        </div>
-        <div className="mb-1 text-3xl font-extrabold text-foreground">
-          {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
         </div>
         <div className="mb-2 text-xs text-muted-foreground">
           {growthBilling === "yearly"
@@ -996,7 +996,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: 0, scale: 1.1 }}
-        animate={{ opacity: 1, y: -20, rotate: 0, scale: 1.1 }}
+        animate={{ opacity: 1, y: -5, rotate: 0, scale: 1.1 }}
         whileHover={{ scale: 1.12 }}
         transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
         className="relative z-20 w-[370px] rounded-none border-2 border-foreground/30 bg-background/80 px-10 pt-3 pb-5 shadow-xl"
@@ -1037,10 +1037,12 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="relative z-10 -mt-28">
         <div className="mb-2 flex items-center justify-between gap-2 pr-24">
           <div className="text-lg font-bold text-foreground">Scale</div>
-          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
         </div>
-        <div className="mb-1 text-5xl font-black text-foreground">
-          {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <div className="text-5xl font-black text-foreground">
+            {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
+          </div>
+          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
         </div>
         <div className="mb-2 text-xs text-muted-foreground">
           {scaleBilling === "yearly"
@@ -1084,7 +1086,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40, rotate: 6, scale: 1 }}
-        animate={{ opacity: 1, y: -100, rotate: 6, scale: 1 }}
+        animate={{ opacity: 1, y: -60, rotate: 6, scale: 1 }}
         whileHover={{ scale: 1.05 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
         className="relative z-10 w-[332px] rounded-none border border-border/40 bg-background px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,.05)_inset] overflow-hidden"
@@ -1101,10 +1103,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <div className="text-lg font-bold text-foreground">Enterprise</div>
-            <BillingToggle value={enterpriseBilling} onChange={setEnterpriseBilling} />
-          </div>
+          <div className="mb-2 text-lg font-bold text-foreground">Enterprise</div>
           <div className="mb-2 inline-flex rounded-md border border-border overflow-hidden text-[10px] font-semibold uppercase tracking-wider">
             {ENTERPRISE_SIZE_ORDER.map((k) => {
               const active = enterpriseSize === k;
@@ -1120,8 +1119,11 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
               );
             })}
           </div>
-          <div className="mb-1 text-3xl font-extrabold text-foreground">
-            {enterpriseBilling === "monthly" ? ENTERPRISE_SIZES[enterpriseSize].monthlyLabel : ENTERPRISE_SIZES[enterpriseSize].yearlyLabel}
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <div className="text-3xl font-extrabold text-foreground">
+              {enterpriseBilling === "monthly" ? ENTERPRISE_SIZES[enterpriseSize].monthlyLabel : ENTERPRISE_SIZES[enterpriseSize].yearlyLabel}
+            </div>
+            <BillingToggle value={enterpriseBilling} onChange={setEnterpriseBilling} />
           </div>
           <p className="text-muted-foreground text-sm mb-4">Built around your operation</p>
           <ul className="mb-6 space-y-2 text-base text-foreground">
@@ -1224,8 +1226,8 @@ function ServiceBackCard({
   return (
     <motion.div data-lava-card
       className={`relative ${isCenter ? "z-20 w-[370px] border-2 border-foreground/30 bg-background/80 px-8 pt-8 pb-5" : "z-10 w-[332px] border border-border/40 bg-background px-7 py-10"} rounded-none overflow-hidden flex flex-col`}
-      initial={{ rotate, y: isCenter ? -20 : -60, scale: isCenter ? 1.1 : 1 }}
-      animate={{ rotate, y: isCenter ? -20 : -60, scale: isCenter ? 1.1 : 1 }}
+      initial={{ rotate, y: isCenter ? -5 : -20, scale: isCenter ? 1.1 : 1 }}
+      animate={{ rotate, y: isCenter ? -5 : -20, scale: isCenter ? 1.1 : 1 }}
       whileHover={{ scale: isCenter ? 1.12 : 1.05 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
       style={{ boxShadow: shadow, willChange: "transform" }}
