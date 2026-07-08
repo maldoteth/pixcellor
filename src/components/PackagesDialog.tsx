@@ -92,7 +92,7 @@ export const RETAINER_TIERS = {
     features: [
       "Unlimited seats & users",
       "Unlimited edits & revisions",
-      "Priority support 24/7 365",
+      "Priority support 24/7 - 365",
       "Monthly strategy calls",
       "Higher usage limits",
     ],
