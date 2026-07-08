@@ -91,7 +91,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
     yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
     features: [
-      "Smart talking website",
+      "Smart website",
       "Unlimited seats & users",
       "Unlimited edits & revisions",
       "Priority support 24/7 365",
