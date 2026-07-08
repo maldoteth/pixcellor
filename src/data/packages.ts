@@ -579,8 +579,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       "full-works": "—",
       elite: "Template",
       "retainer-growth": "Latest \"Smart Site\"",
-      "retainer-scale": "App or SAAS",
-      "retainer-enterprise": "App or SAAS",
+      "retainer-scale": "Custom stacks",
+      "retainer-enterprise": "Custom stacks",
     },
   },
   {
