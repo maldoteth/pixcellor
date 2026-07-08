@@ -614,13 +614,13 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "Web app / SaaS",
+    feature: "Includes",
     values: {
       "full-works": "—",
       elite: "Template",
       "retainer-growth": "—",
-      "retainer-scale": "Custom",
-      "retainer-enterprise": "Custom",
+      "retainer-scale": "App or SAAS",
+      "retainer-enterprise": "App or SAAS",
     },
   },
   {
