@@ -608,7 +608,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     values: {
       "full-works": "2D / WebGL",
       elite: "3D ",
-      "retainer-growth": "2D / WebGL",
+      "retainer-growth": "2D, 3D + WebGL",
       "retainer-scale": "Custom 3D",
       "retainer-enterprise": "Cinema-grade",
     },
