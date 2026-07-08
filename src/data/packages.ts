@@ -639,7 +639,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       "full-works": "Email",
       elite: "Priority",
       "retainer-growth": "Priority",
-      "retainer-scale": "Priority 24/7 365",
+      "retainer-scale": "Email or phone 24/7 365",
       "retainer-enterprise": "Dedicated team",
     },
   },
