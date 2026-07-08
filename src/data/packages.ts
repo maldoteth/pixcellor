@@ -644,11 +644,11 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "Turnaround",
+    feature: "Content",
     values: {
       "full-works": "3–10 days",
       elite: "3–10 days",
-      "retainer-growth": "1–7 days",
+      "retainer-growth": "Brand Assets & guidelines",
       "retainer-scale": "1-4 days",
       "retainer-enterprise": "Daily",
     },
