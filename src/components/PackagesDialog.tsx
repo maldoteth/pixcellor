@@ -73,7 +73,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
     yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
     features: [
-      "Smart website",
+      "Smart self improving website",
       "Bespoke CRM\u00a0",
       "Hosting, domain & cloud",
       "Customer chat bot",
@@ -91,7 +91,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
     yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
     features: [
-      "Smart website",
+      "Smart self improving website",
       "Unlimited seats & users",
       "Unlimited edits & revisions",
       "Priority support 24/7 365",
@@ -109,7 +109,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
     yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
     features: [
-      "Smart website",
+      "Smart self improving website",
       "Fractional CTO & CMO",
       "Dedicated dev & ops team",
       "Weekly MVP sprints",
