@@ -962,7 +962,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <ul className="mb-4 space-y-2 text-base text-foreground">
           <li className="flex items-start gap-2">
             <Check className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
-            Smart self improving website/app
+            Cutting edge "smart site"
           </li>
           {growth.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
