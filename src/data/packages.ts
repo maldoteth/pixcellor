@@ -649,8 +649,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       "full-works": "3–10 days",
       elite: "3–10 days",
       "retainer-growth": "Brand assets & guidelines",
-      "retainer-scale": "Social media templates",
-      "retainer-enterprise": "Daily",
+      "retainer-scale": "Social media manager",
+      "retainer-enterprise": "Social media manager",
     },
   },
   {
