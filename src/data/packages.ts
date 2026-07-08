@@ -746,8 +746,6 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
 ];
 
 export const COMPARISON_SLUGS: string[] = [
-  "full-works",
-  "elite",
   "retainer-growth",
   "retainer-scale",
   "retainer-enterprise",
