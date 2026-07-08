@@ -46,6 +46,7 @@ const NebulaHero = lazy(() => import("@/components/services/NebulaHero"));
 const AnalyticsDashboardsHero = lazy(() => import("@/components/services/AnalyticsDashboardsHero"));
 const DocumentsDecksHero = lazy(() => import("@/components/services/DocumentsDecksHero"));
 const SeoAeoHero = lazy(() => import("@/components/services/SeoAeoHero"));
+const EmailMarketingHero = lazy(() => import("@/components/services/EmailMarketingHero"));
 const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
 
 // Lightweight placeholder shown while a banner chunk is loading.
