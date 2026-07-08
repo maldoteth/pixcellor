@@ -46,6 +46,7 @@ const NebulaHero = lazy(() => import("@/components/services/NebulaHero"));
 const AnalyticsDashboardsHero = lazy(() => import("@/components/services/AnalyticsDashboardsHero"));
 const DocumentsDecksHero = lazy(() => import("@/components/services/DocumentsDecksHero"));
 const SeoAeoHero = lazy(() => import("@/components/services/SeoAeoHero"));
+const EmailMarketingHero = lazy(() => import("@/components/services/EmailMarketingHero"));
 const Wave = lazy(() => import("@/components/ui/wave").then((m) => ({ default: m.Wave })));
 
 // Lightweight placeholder shown while a banner chunk is loading.
@@ -145,7 +146,8 @@ export default function ServiceSalesView({
     service.slug === "api-third-party" ||
     service.slug === "analytics-dashboards" ||
     service.slug === "documents-and-decks" ||
-    service.slug === "seo-aeo-optimisation";
+    service.slug === "seo-aeo-optimisation" ||
+    service.slug === "email-marketing";
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
@@ -199,6 +201,8 @@ export default function ServiceSalesView({
                   <DocumentsDecksHero />
                 ) : service.slug === "seo-aeo-optimisation" ? (
                   <SeoAeoHero />
+                ) : service.slug === "email-marketing" ? (
+                  <EmailMarketingHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
@@ -582,6 +586,8 @@ export default function ServiceSalesView({
                   <DocumentsDecksHero />
                 ) : service.slug === "seo-aeo-optimisation" ? (
                   <SeoAeoHero />
+                ) : service.slug === "email-marketing" ? (
+                  <EmailMarketingHero />
                 ) : (
                   <Wave />
                 )}
