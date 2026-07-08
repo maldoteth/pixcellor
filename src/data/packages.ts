@@ -574,13 +574,13 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "Pages",
+    feature: "Revision windows",
     values: {
       "full-works": "Up to 3",
       elite: "Up to 10",
-      "retainer-growth": "Monthly edits",
-      "retainer-scale": "Weekly edits",
-      "retainer-enterprise": "Daily edits",
+      "retainer-growth": "Monthly\u00a0",
+      "retainer-scale": "Weekly\u00a0",
+      "retainer-enterprise": "Daily\u00a0",
     },
   },
   {
