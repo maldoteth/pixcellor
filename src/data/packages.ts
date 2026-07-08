@@ -574,7 +574,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "Includes",
+    feature: "Set up",
     values: {
       "full-works": "—",
       elite: "Template",
