@@ -669,7 +669,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       "full-works": "—",
       elite: "Some",
       "retainer-growth": "Some AI models",
-      "retainer-scale": "All",
+      "retainer-scale": "All available upgrades",
       "retainer-enterprise": "First",
     },
   },
