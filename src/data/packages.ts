@@ -728,9 +728,9 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     values: {
       "full-works": "—",
       elite: "—",
-      "retainer-growth": "250 Emails per month",
-      "retainer-scale": "1,000 Emails per month",
-      "retainer-enterprise": "10,000 Emails per month",
+      "retainer-growth": "1,000 Emails per month",
+      "retainer-scale": "3,000 Emails per month",
+      "retainer-enterprise": "50,000 Emails per month",
     },
   },
   {
