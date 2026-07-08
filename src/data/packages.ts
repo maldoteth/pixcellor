@@ -588,7 +588,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     values: {
       "full-works": "1 round pre-launch",
       elite: "Unlimited during build",
-      "retainer-growth": "1 per month",
+      "retainer-growth": "2 per month",
       "retainer-scale": "2 per week",
       "retainer-enterprise": "Unlimited",
     },
