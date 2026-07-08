@@ -516,7 +516,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         ],
       },
       {
-        title: "Smart talking website",
+        title: "Smart website",
         items: [
           "Every public surface — site, app, dashboards — evolves autonomously",
           "Day-zero adoption of frontier AI: GPT, Claude, Gemini, open models",
