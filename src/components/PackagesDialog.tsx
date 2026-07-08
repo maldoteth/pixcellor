@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import { useState, useCallback, useEffect, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
@@ -840,7 +839,7 @@ function BillingToggle({
           toggle();
         }
       }}
-      className={cn("relative h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)]", className)}
+      className={`relative h-5 w-[72px] rounded-[5px] bg-secondary border border-border overflow-hidden flex-shrink-0 shadow-[inset_0_1px_3px_hsl(var(--background)/0.8)] ${className}`}
     >
       <span
         className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3.5 w-3.5 rounded-[3px] bg-foreground transition-transform duration-200 ease-out shadow-[0_1px_8px_hsl(var(--background)/0.7),inset_0_1px_1px_hsl(var(--background)/0.18)]"
@@ -951,13 +950,13 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10">
-          <BillingToggle value={growthBilling} onChange={setGrowthBilling} className="absolute top-2 right-2 z-20" />
-          <div className="mb-2 text-lg font-bold text-foreground">Growth</div>
-          <div className="mb-1 flex items-center justify-between gap-2">
-            <div className="text-3xl font-extrabold text-foreground">
-              {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
-            </div>
+        <div className="mb-2 text-lg font-bold text-foreground">Growth</div>
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <div className="text-3xl font-extrabold text-foreground">
+            {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
           </div>
+          <BillingToggle value={growthBilling} onChange={setGrowthBilling} />
+        </div>
         <div className="mb-2 text-xs text-muted-foreground">
           {growthBilling === "yearly"
             ? `Save £${(growth.monthly * 12 - growth.yearly).toLocaleString()} vs monthly`
@@ -1025,7 +1024,7 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
             "0 0 0px 0px rgba(212,165,74,0)",
           ] }}
           transition={{ repeat: Infinity, duration: 2.6, ease: "easeInOut" }}
-          className="absolute top-2 left-2 rounded-sm border border-[#a8802a]/60 px-3 text-[10px] font-extrabold z-20 uppercase tracking-wider py-[2px]"
+          className="absolute top-2 right-2 rounded-sm border border-[#a8802a]/60 px-3 text-[10px] font-extrabold z-20 uppercase tracking-wider py-[2px]"
           style={{
             background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
             color: "#2a1d05",
@@ -1034,17 +1033,17 @@ function DesktopCards({ servicesFlipped = false, onServiceAction }: { servicesFl
         >
           MOST POPULAR
         </motion.div>
-        <BillingToggle value={scaleBilling} onChange={setScaleBilling} className="absolute top-2 right-2 z-20" />
 
         <div className="relative z-10 -mt-28">
-          <div className="mb-2 flex items-center justify-center gap-2 px-24">
-            <div className="text-lg font-bold text-foreground">Scale</div>
+        <div className="mb-2 flex items-center justify-between gap-2 pr-24">
+          <div className="text-lg font-bold text-foreground">Scale</div>
+        </div>
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <div className="text-5xl font-black text-foreground">
+            {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
           </div>
-          <div className="mb-1 flex items-center justify-between gap-2">
-            <div className="text-5xl font-black text-foreground">
-              {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
-            </div>
-          </div>
+          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
+        </div>
         <div className="mb-2 text-xs text-muted-foreground">
           {scaleBilling === "yearly"
             ? `Save £${(scale.monthly * 12 - scale.yearly).toLocaleString()} vs monthly`
@@ -1441,13 +1440,13 @@ function MobileCards() {
         <div className="lava-blob lava-blob-2" />
         <div className="lava-blob lava-blob-3" />
         <div className="relative z-10 flex flex-col flex-1">
-          <BillingToggle value={growthBilling} onChange={setGrowthBilling} className="absolute top-3 right-3 z-20" />
-          <h3 className="text-lg font-bold text-foreground">Growth</h3>
-          <div className="mt-3 mb-1 flex items-center justify-between gap-2">
-            <div className="text-3xl font-extrabold text-foreground">
-              {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
-            </div>
+        <h3 className="text-lg font-bold text-foreground">Growth</h3>
+        <div className="mt-3 mb-1 flex items-center justify-between gap-2">
+          <div className="text-3xl font-extrabold text-foreground">
+            {growthBilling === "monthly" ? growth.monthlyLabel : growth.yearlyLabel}
           </div>
+          <BillingToggle value={growthBilling} onChange={setGrowthBilling} />
+        </div>
         <div className="mb-3 text-xs text-muted-foreground">
           {growthBilling === "yearly"
             ? `Save £${(growth.monthly * 12 - growth.yearly).toLocaleString()} vs monthly`
@@ -1487,28 +1486,28 @@ function MobileCards() {
         <div className="lava-blob lava-blob-featured-2" />
         <div className="lava-blob lava-blob-featured-3" />
         <div className="relative z-10 flex flex-col flex-1">
-          <BillingToggle value={scaleBilling} onChange={setScaleBilling} className="absolute top-3 right-3 z-20" />
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-bold text-foreground">Scale</h3>
-              <span
-                className="rounded-sm border border-[#a8802a]/60 px-2 py-[2px] text-[10px] font-extrabold uppercase tracking-wider"
-                style={{
-                  background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
-                  color: "#2a1d05",
-                  textShadow: "0 1px 0 rgba(255,236,179,0.4)",
-                }}
-              >
-                MOST POPULAR
-              </span>
-            </div>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold text-foreground">Scale</h3>
+            <span
+              className="rounded-sm border border-[#a8802a]/60 px-2 py-[2px] text-[10px] font-extrabold uppercase tracking-wider"
+              style={{
+                background: "linear-gradient(135deg, #b8862a 0%, #f5d77a 35%, #e6b94a 55%, #a8732a 100%)",
+                color: "#2a1d05",
+                textShadow: "0 1px 0 rgba(255,236,179,0.4)",
+              }}
+            >
+              MOST POPULAR
+            </span>
           </div>
+        </div>
 
-          <div className="mt-3 mb-1 flex items-center justify-between gap-2">
-            <div className="text-3xl font-extrabold text-foreground">
-              {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
-            </div>
+        <div className="mt-3 mb-1 flex items-center justify-between gap-2">
+          <div className="text-3xl font-extrabold text-foreground">
+            {scaleBilling === "monthly" ? scale.monthlyLabel : scale.yearlyLabel}
           </div>
+          <BillingToggle value={scaleBilling} onChange={setScaleBilling} />
+        </div>
         <div className="mb-3 text-xs text-muted-foreground">
           {scaleBilling === "yearly"
             ? `Save £${(scale.monthly * 12 - scale.yearly).toLocaleString()} vs monthly`
