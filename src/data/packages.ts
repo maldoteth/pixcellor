@@ -584,12 +584,12 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
-    feature: "Edits / Revisions",
+    feature: "Revision limits",
     values: {
       "full-works": "1 round pre-launch",
       elite: "Unlimited during build",
-      "retainer-growth": "Unlimited",
-      "retainer-scale": "Unlimited",
+      "retainer-growth": "1 per month",
+      "retainer-scale": "2 per week",
       "retainer-enterprise": "Unlimited",
     },
   },
