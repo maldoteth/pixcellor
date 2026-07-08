@@ -68,8 +68,8 @@ export const RETAINER_TIERS = {
     name: "Growth",
     monthly: 89,
     yearly: 890,
-    monthlyLabel: "£89/mo",
-    yearlyLabel: "£890/yr",
+    monthlyLabel: "£89.00/mo",
+    yearlyLabel: "£890.00/yr",
     monthlyPriceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
     yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
     features: [
