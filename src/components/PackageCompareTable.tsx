@@ -40,6 +40,7 @@ export default function PackageCompareTable({
     if (slug !== ENTERPRISE_SLUG || !isLarge) return raw;
     if (feature === "Fractional C-suite") return "⅓ CTO + CMO";
     if (feature === "Outbound Emails") return "100,000 Emails per month";
+    if (feature === "Hosting") return "Custom scaling";
     if (TRIPLED_FEATURES.has(feature)) return tripleLimit(raw);
     if (feature === "Price") return billing === "yearly" ? "£46,900/yr" : "£4,690/mo";
     return raw;
