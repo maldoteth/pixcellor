@@ -574,6 +574,16 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
+    feature: "Includes",
+    values: {
+      "full-works": "—",
+      elite: "Template",
+      "retainer-growth": "Latest \"Smart Site\"",
+      "retainer-scale": "App or SAAS",
+      "retainer-enterprise": "App or SAAS",
+    },
+  },
+  {
     feature: "Revision windows",
     values: {
       "full-works": "Up to 3",
@@ -611,16 +621,6 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       "retainer-growth": "Icons & scroll",
       "retainer-scale": "Immersive",
       "retainer-enterprise": "Story telling",
-    },
-  },
-  {
-    feature: "Includes",
-    values: {
-      "full-works": "—",
-      elite: "Template",
-      "retainer-growth": "Latest \"Smart Site\"",
-      "retainer-scale": "App or SAAS",
-      "retainer-enterprise": "App or SAAS",
     },
   },
   {
