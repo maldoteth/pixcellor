@@ -47,7 +47,7 @@ const PACKAGES = {
     priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
     mode: "payment" as const,
     featured: true,
-    features: ["Smart self improving website", "First 150 leads included", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation"],
+    features: ["Smart self improving website/app", "First 150 leads included", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation"],
   },
   retainer: {
     name: "Custom",
