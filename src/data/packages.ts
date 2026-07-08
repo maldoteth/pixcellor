@@ -650,7 +650,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       elite: "3–10 days",
       "retainer-growth": "1–7 days",
       "retainer-scale": "1-4 days",
-      "retainer-enterprise": "Weekly MVPs",
+      "retainer-enterprise": "Daily",
     },
   },
   {
