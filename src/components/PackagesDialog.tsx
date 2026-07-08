@@ -47,7 +47,7 @@ const PACKAGES = {
     priceId: "price_1Tkw9YBtUjwejeUwrSxZXLl6",
     mode: "payment" as const,
     featured: true,
-    features: ["Smart self improving website", "First 150 leads included", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation"],
+    features: ["Smart self improving website/app", "First 150 leads included", "AI chat bot & lead generation", "Unlimited revisions", "SEO & AEO optimisation"],
   },
   retainer: {
     name: "Custom",
@@ -73,7 +73,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9ZBtUjwejeUwzikiU5cp",
     yearlyPriceId: "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
     features: [
-      "Smart self improving website",
+      "Smart self improving website/app",
       "Bespoke CRM\u00a0",
       "Hosting, domain & cloud",
       "Customer chat bot",
@@ -91,7 +91,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
     yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
     features: [
-      "Smart self improving website",
+      "Smart self improving website/app",
       "Unlimited seats & users",
       "Unlimited edits & revisions",
       "Priority support 24/7 365",
@@ -109,7 +109,7 @@ export const RETAINER_TIERS = {
     monthlyPriceId: "price_1Tkw9cBtUjwejeUwitF4y9sg",
     yearlyPriceId: "price_1Tkw9dBtUjwejeUwOG2jdnoV",
     features: [
-      "Smart self improving website",
+      "Smart self improving website/app",
       "Fractional CTO & CMO",
       "Dedicated dev & ops team",
       "Weekly MVP sprints",
