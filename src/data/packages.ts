@@ -420,7 +420,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         ],
       },
       {
-        title: "Smart talking website",
+        title: "Smart website",
         items: [
           "Site + app rewrite themselves based on real conversion data",
           "Automatic adoption of frontier AI models the day they release",
