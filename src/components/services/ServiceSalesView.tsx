@@ -146,7 +146,8 @@ export default function ServiceSalesView({
     service.slug === "api-third-party" ||
     service.slug === "analytics-dashboards" ||
     service.slug === "documents-and-decks" ||
-    service.slug === "seo-aeo-optimisation";
+    service.slug === "seo-aeo-optimisation" ||
+    service.slug === "email-marketing";
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-10 md:px-10 md:py-14 text-foreground">
