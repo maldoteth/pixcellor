@@ -201,6 +201,8 @@ export default function ServiceSalesView({
                   <DocumentsDecksHero />
                 ) : service.slug === "seo-aeo-optimisation" ? (
                   <SeoAeoHero />
+                ) : service.slug === "email-marketing" ? (
+                  <EmailMarketingHero />
                 ) : (
                   <div className="absolute inset-0 bg-black">
                     <Wave />
