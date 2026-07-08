@@ -584,6 +584,16 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
+    feature: "Hosting",
+    values: {
+      "full-works": "First 20 Leads",
+      elite: "First 150 Leads",
+      "retainer-growth": "Included",
+      "retainer-scale": "Included",
+      "retainer-enterprise": "Dedicated servers",
+    },
+  },
+  {
     feature: "Revision windows",
     values: {
       "full-works": "Up to 3",
@@ -621,16 +631,6 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       "retainer-growth": "Icons & scroll",
       "retainer-scale": "Immersive",
       "retainer-enterprise": "Story telling",
-    },
-  },
-  {
-    feature: "Hosting",
-    values: {
-      "full-works": "First 20 Leads",
-      elite: "First 150 Leads",
-      "retainer-growth": "Included",
-      "retainer-scale": "Included",
-      "retainer-enterprise": "Dedicated servers",
     },
   },
   {
