@@ -29,7 +29,7 @@ export async function loadPasskeys(userId: string): Promise<PasskeyEnvelope[]> {
 }
 
 export async function savePasskey(userId: string, env: PasskeyEnvelope): Promise<void> {
-  const { error } = await (supabase.from("user_wallet_passkeys") as any).insert({
+  const { error } = await (supabase as any).from("user_wallet_passkeys").insert({
     user_id: userId,
     credential_id: env.credentialId,
     transports: env.transports ? JSON.stringify(env.transports) : null,
