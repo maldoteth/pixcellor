@@ -9,10 +9,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { generateMnemonic12, deriveFromMnemonic, isValidMnemonic } from "@/lib/wallet/derive";
 import { encryptString } from "@/lib/wallet/crypto";
 import { generateRecoveryCode, encryptSeedWithRecoveryCode } from "@/lib/wallet/recovery";
+import { assessPassword, MIN_PASSWORD_LENGTH } from "@/lib/wallet/passwordStrength";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AlertTriangle, Copy } from "lucide-react";
 import { RecoveryCodeDialog } from "./RecoveryCodeDialog";
+import { PasswordStrengthMeter } from "./PasswordStrengthMeter";
 
 interface CreateWalletDialogProps {
   open: boolean;
@@ -47,16 +49,31 @@ export function CreateWalletDialog({ open, onOpenChange, userId, onCreated }: Cr
     setPendingRecoveryCode(null);
   };
 
-  const handlePasswordNext = () => {
+  const handlePasswordNext = async () => {
     setError(null);
-    if (password.length < 10) {
-      setError("Password must be at least 10 characters");
-      return;
-    }
     if (password !== confirm) {
       setError("Passwords don't match");
       return;
     }
+    setBusy(true);
+    try {
+      const assessment = await assessPassword(password);
+      if (!assessment.longEnough) {
+        setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+        return;
+      }
+      if (assessment.breached === true) {
+        setError("This password has appeared in a data breach — choose a different one");
+        return;
+      }
+      if (!assessment.acceptable) {
+        setError("Choose a stronger password (mix letters, numbers, and symbols)");
+        return;
+      }
+    } finally {
+      setBusy(false);
+    }
+
     if (mode === "new") {
       setMnemonic(generateMnemonic12());
       setStep("phrase");
@@ -165,8 +182,9 @@ export function CreateWalletDialog({ open, onOpenChange, userId, onCreated }: Cr
               </Tabs>
 
               <div className="space-y-2">
-                <Label htmlFor="pw">Wallet password (min 10 chars)</Label>
+                <Label htmlFor="pw">Wallet password (min 12 chars)</Label>
                 <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <PasswordStrengthMeter password={password} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="pwc">Confirm password</Label>

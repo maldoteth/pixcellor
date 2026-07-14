@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet as WalletIcon, Send, QrCode, Eye, Copy, RefreshCw, Landmark } from "lucide-react";
+import { Wallet as WalletIcon, Send, QrCode, Eye, Copy, RefreshCw, Landmark, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { getEthBalance, getSolBalance, getGbpPrices, type GbpPrices } from "@/lib/wallet/rpc";
 import { CreateWalletDialog } from "./CreateWalletDialog";
@@ -11,6 +11,9 @@ import { SendDialog } from "./SendDialog";
 import { RevealKeysDialog } from "./RevealKeysDialog";
 import { CashOutDialog } from "./CashOutDialog";
 import { RecoverWalletDialog } from "./RecoverWalletDialog";
+import { AddPasskeyDialog } from "./AddPasskeyDialog";
+import { hasPasskey } from "@/lib/wallet/passkeyStore";
+import { isPasskeySupported } from "@/lib/wallet/webauthn";
 import type { EncryptedPayload } from "@/lib/wallet/crypto";
 
 interface WalletRow {
@@ -43,6 +46,12 @@ export function WalletPanel({ userId }: WalletPanelProps) {
   const [revealOpen, setRevealOpen] = useState(false);
   const [cashOutOpen, setCashOutOpen] = useState(false);
   const [recoverOpen, setRecoverOpen] = useState(false);
+  const [addPasskeyOpen, setAddPasskeyOpen] = useState(false);
+  const [pkEnrolled, setPkEnrolled] = useState(false);
+
+  const refreshPasskeyState = useCallback(async () => {
+    setPkEnrolled(await hasPasskey(userId));
+  }, [userId]);
 
   const loadWallet = useCallback(async () => {
     setLoading(true);
@@ -55,8 +64,9 @@ export function WalletPanel({ userId }: WalletPanelProps) {
       toast.error("Failed to load wallet");
     }
     setWallet(data as WalletRow | null);
+    if (data) void refreshPasskeyState();
     setLoading(false);
-  }, [userId]);
+  }, [userId, refreshPasskeyState]);
 
   useEffect(() => {
     void loadWallet();
@@ -176,6 +186,21 @@ export function WalletPanel({ userId }: WalletPanelProps) {
               <Eye className="w-4 h-4 mr-2" /> Reveal keys
             </Button>
           </div>
+          {isPasskeySupported() && (
+            <div className="flex items-center justify-between rounded-md border bg-card/40 p-3">
+              <div className="flex items-center gap-2 text-sm">
+                <ShieldCheck className={`w-4 h-4 ${pkEnrolled ? "text-green-500" : "text-muted-foreground"}`} />
+                <span>
+                  {pkEnrolled
+                    ? "Passkey protection is on"
+                    : "Add a passkey so a leaked backup can't be brute-forced"}
+                </span>
+              </div>
+              <Button size="sm" variant={pkEnrolled ? "outline" : "secondary"} onClick={() => setAddPasskeyOpen(true)}>
+                {pkEnrolled ? "Add device" : "Protect with passkey"}
+              </Button>
+            </div>
+          )}
           <button
             type="button"
             onClick={() => setRecoverOpen(true)}
@@ -192,12 +217,25 @@ export function WalletPanel({ userId }: WalletPanelProps) {
           <SendDialog
             open={sendOpen}
             onOpenChange={setSendOpen}
+            userId={userId}
             encrypted={encrypted}
             ethAddress={wallet.eth_address}
             solAddress={wallet.sol_address}
             onSent={refreshBalances}
           />
-          <RevealKeysDialog open={revealOpen} onOpenChange={setRevealOpen} encrypted={encrypted} />
+          <RevealKeysDialog
+            open={revealOpen}
+            onOpenChange={setRevealOpen}
+            userId={userId}
+            encrypted={encrypted}
+          />
+          <AddPasskeyDialog
+            open={addPasskeyOpen}
+            onOpenChange={setAddPasskeyOpen}
+            userId={userId}
+            encrypted={encrypted}
+            onAdded={refreshPasskeyState}
+          />
         </>
       )}
       <ReceiveDialog

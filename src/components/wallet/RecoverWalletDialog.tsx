@@ -12,6 +12,8 @@ import {
   isValidRecoveryCode,
 } from "@/lib/wallet/recovery";
 import { encryptString, type EncryptedPayload } from "@/lib/wallet/crypto";
+import { assessPassword, MIN_PASSWORD_LENGTH } from "@/lib/wallet/passwordStrength";
+import { PasswordStrengthMeter } from "./PasswordStrengthMeter";
 
 interface RecoverWalletDialogProps {
   open: boolean;
@@ -73,16 +75,32 @@ export function RecoverWalletDialog({ open, onOpenChange, userId, onRecovered }:
 
   const handleSetPassword = async () => {
     setError(null);
-    if (newPassword.length < 10) {
-      setError("Password must be at least 10 characters");
-      return;
-    }
     if (newPassword !== confirm) {
       setError("Passwords don't match");
       return;
     }
     if (!seed) return;
     setBusy(true);
+    try {
+      const assessment = await assessPassword(newPassword);
+      if (!assessment.longEnough) {
+        setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+        setBusy(false);
+        return;
+      }
+      if (assessment.breached === true) {
+        setError("This password has appeared in a data breach — choose a different one");
+        setBusy(false);
+        return;
+      }
+      if (!assessment.acceptable) {
+        setError("Choose a stronger password (mix letters, numbers, and symbols)");
+        setBusy(false);
+        return;
+      }
+    } catch {
+      // fail open on assessment error — proceed with the password as entered
+    }
     try {
       const newSeedPayload = await encryptString(seed, newPassword);
       const { error: updErr } = await supabase
@@ -160,8 +178,9 @@ export function RecoverWalletDialog({ open, onOpenChange, userId, onRecovered }:
         {step === "password" && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="np">New wallet password (min 10 chars)</Label>
+              <Label htmlFor="np">New wallet password (min 12 chars)</Label>
               <Input id="np" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              <PasswordStrengthMeter password={newPassword} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="npc">Confirm new password</Label>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,19 +15,22 @@ import {
   solExplorer,
 } from "@/lib/wallet/rpc";
 import { toast } from "sonner";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Fingerprint } from "lucide-react";
 import { OtpPrompt } from "./OtpPrompt";
+import { loadPasskeys } from "@/lib/wallet/passkeyStore";
+import { decryptWithPasskey, isPasskeySupported, type PasskeyEnvelope } from "@/lib/wallet/webauthn";
 
 interface SendDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  userId: string;
   encrypted: EncryptedPayload;
   ethAddress: string;
   solAddress: string;
   onSent?: () => void;
 }
 
-export function SendDialog({ open, onOpenChange, encrypted, onSent }: SendDialogProps) {
+export function SendDialog({ open, onOpenChange, userId, encrypted, onSent }: SendDialogProps) {
   const [chain, setChain] = useState<"ETH" | "SOL">("ETH");
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
@@ -36,6 +39,22 @@ export function SendDialog({ open, onOpenChange, encrypted, onSent }: SendDialog
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [passkeys, setPasskeys] = useState<PasskeyEnvelope[]>([]);
+  const [usePasskey, setUsePasskey] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setPasskeys([]);
+      setUsePasskey(false);
+      return;
+    }
+    void loadPasskeys(userId).then((pks) => {
+      setPasskeys(pks);
+      setUsePasskey(pks.length > 0 && isPasskeySupported());
+    });
+  }, [open, userId]);
+
+  const canUsePasskey = passkeys.length > 0 && isPasskeySupported();
 
   const reset = () => {
     setTo("");
@@ -72,7 +91,9 @@ export function SendDialog({ open, onOpenChange, encrypted, onSent }: SendDialog
     setBusy(true);
     let mnemonic: string | null = null;
     try {
-      mnemonic = await decryptString(encrypted, password);
+      mnemonic = usePasskey
+        ? await decryptWithPasskey(passkeys[0])
+        : await decryptString(encrypted, password);
       const derived = await deriveFromMnemonic(mnemonic);
       const hash =
         chain === "ETH"
@@ -123,10 +144,34 @@ export function SendDialog({ open, onOpenChange, encrypted, onSent }: SendDialog
             <Label htmlFor="amount">Amount ({chain})</Label>
             <Input id="amount" type="number" step="any" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} required />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="pw">Wallet password</Label>
-            <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </div>
+          {usePasskey ? (
+            <div className="flex items-center justify-between rounded-md border bg-card/40 p-3 text-sm">
+              <span className="flex items-center gap-2">
+                <Fingerprint className="w-4 h-4" /> You'll confirm this transfer with your passkey
+              </span>
+              <button
+                type="button"
+                className="text-xs text-muted-foreground hover:text-foreground underline"
+                onClick={() => setUsePasskey(false)}
+              >
+                Use password
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="pw">Wallet password</Label>
+              <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              {canUsePasskey && (
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground hover:text-foreground underline"
+                  onClick={() => setUsePasskey(true)}
+                >
+                  Use passkey instead
+                </button>
+              )}
+            </div>
+          )}
           <OtpPrompt purpose="send" onVerified={() => setOtpVerified(true)} />
           {error && <p className="text-sm text-destructive">{error}</p>}
           {txHash && (
@@ -143,7 +188,7 @@ export function SendDialog({ open, onOpenChange, encrypted, onSent }: SendDialog
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Close
             </Button>
-            <Button type="submit" disabled={busy || !otpVerified}>
+            <Button type="submit" disabled={busy || !otpVerified || (!usePasskey && !password)}>
               {busy ? "Broadcasting…" : `Send ${chain}`}
             </Button>
           </DialogFooter>

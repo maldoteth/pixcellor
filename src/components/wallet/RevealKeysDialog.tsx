@@ -5,25 +5,29 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { decryptString, type EncryptedPayload } from "@/lib/wallet/crypto";
 import { deriveFromMnemonic, type DerivedWallet } from "@/lib/wallet/derive";
-import { AlertTriangle, Copy } from "lucide-react";
+import { AlertTriangle, Copy, Fingerprint } from "lucide-react";
 import { toast } from "sonner";
 import { OtpPrompt } from "./OtpPrompt";
+import { loadPasskeys } from "@/lib/wallet/passkeyStore";
+import { decryptWithPasskey, isPasskeySupported, type PasskeyEnvelope } from "@/lib/wallet/webauthn";
 
 interface RevealKeysDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  userId: string;
   encrypted: EncryptedPayload;
 }
 
 const AUTO_HIDE_MS = 30_000;
 
-export function RevealKeysDialog({ open, onOpenChange, encrypted }: RevealKeysDialogProps) {
+export function RevealKeysDialog({ open, onOpenChange, userId, encrypted }: RevealKeysDialogProps) {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<DerivedWallet | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [passkeys, setPasskeys] = useState<PasskeyEnvelope[]>([]);
 
   useEffect(() => {
     if (!revealed) return;
@@ -47,8 +51,19 @@ export function RevealKeysDialog({ open, onOpenChange, encrypted }: RevealKeysDi
       setError(null);
       setRevealed(null);
       setOtpVerified(false);
+      setPasskeys([]);
+      return;
     }
-  }, [open]);
+    void loadPasskeys(userId).then(setPasskeys);
+  }, [open, userId]);
+
+  const canUsePasskey = passkeys.length > 0 && isPasskeySupported();
+
+  const finishReveal = async (mnemonic: string) => {
+    const derived = await deriveFromMnemonic(mnemonic);
+    setRevealed(derived);
+    setPassword("");
+  };
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,11 +75,26 @@ export function RevealKeysDialog({ open, onOpenChange, encrypted }: RevealKeysDi
     setError(null);
     try {
       const mnemonic = await decryptString(encrypted, password);
-      const derived = await deriveFromMnemonic(mnemonic);
-      setRevealed(derived);
-      setPassword("");
+      await finishReveal(mnemonic);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handlePasskeyUnlock = async () => {
+    if (!otpVerified) {
+      setError("Confirm the emailed code before revealing keys");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const mnemonic = await decryptWithPasskey(passkeys[0]);
+      await finishReveal(mnemonic);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Passkey unlock failed");
     } finally {
       setBusy(false);
     }
@@ -87,9 +117,30 @@ export function RevealKeysDialog({ open, onOpenChange, encrypted }: RevealKeysDi
 
         {!revealed ? (
           <form onSubmit={handleUnlock} className="space-y-4">
+            {canUsePasskey && (
+              <>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
+                  disabled={busy || !otpVerified}
+                  onClick={handlePasskeyUnlock}
+                >
+                  <Fingerprint className="w-4 h-4 mr-2" /> Unlock with passkey
+                </Button>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">or password</span>
+                  </div>
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <Label htmlFor="pw">Wallet password</Label>
-              <Input id="pw" type="password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Input id="pw" type="password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <OtpPrompt purpose="reveal" onVerified={() => setOtpVerified(true)} />
             {error && <p className="text-sm text-destructive">{error}</p>}
