@@ -14,7 +14,6 @@ import { RecoverWalletDialog } from "./RecoverWalletDialog";
 import { AddPasskeyDialog } from "./AddPasskeyDialog";
 import { hasPasskey } from "@/lib/wallet/passkeyStore";
 import { isPasskeySupported } from "@/lib/wallet/webauthn";
-import type { EncryptedPayload } from "@/lib/wallet/crypto";
 
 interface WalletRow {
   user_id: string;
