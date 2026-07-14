@@ -684,6 +684,16 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     },
   },
   {
+    feature: "AI receptionist",
+    values: {
+      "full-works": "—",
+      elite: "—",
+      "retainer-growth": "—",
+      "retainer-scale": "Voice + chat answering",
+      "retainer-enterprise": "Custom-trained",
+    },
+  },
+  {
     feature: "AI lead-gen runs",
     values: {
       "full-works": "—",
