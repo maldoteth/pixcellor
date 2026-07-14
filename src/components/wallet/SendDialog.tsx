@@ -30,7 +30,7 @@ interface SendDialogProps {
   onSent?: () => void;
 }
 
-export function SendDialog({ open, onOpenChange, onSent }: SendDialogProps) {
+export function SendDialog({ open, onOpenChange, userId, onSent }: SendDialogProps) {
   const [chain, setChain] = useState<"ETH" | "SOL">("ETH");
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
