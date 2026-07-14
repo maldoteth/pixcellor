@@ -30,7 +30,6 @@ import svcEcom from "@/assets/og/24-ecommerce-stores.png.asset.json";
 import svcBlockchain from "@/assets/og/25-blockchain-integrations.png.asset.json";
 import svcVideo from "@/assets/og/26-video-3d-animations.png.asset.json";
 import svcRecruit from "@/assets/og/27-recruitment-ats.png.asset.json";
-import svcPayroll from "@/assets/og/28-payroll-hr-tooling.png.asset.json";
 import svcAi from "@/assets/og/29-ai-integrations-agents.png.asset.json";
 import svcConsult from "@/assets/og/30-consultations-audits.png.asset.json";
 import svcAnalytics from "@/assets/og/31-analytics-dashboards.png.asset.json";
@@ -81,7 +80,8 @@ export const OG_SERVICE_BY_SLUG: Record<string, string> = {
   "blockchain-integrations": toAbsolute(svcBlockchain.url),
   "video-3d-animations": toAbsolute(svcVideo.url),
   "recruitment-ats": toAbsolute(svcRecruit.url),
-  "payroll-hr-tooling": toAbsolute(svcPayroll.url),
+  // Refreshed OG card served from public/og (replaces the stale "same-day payroll" asset).
+  "payroll-hr-tooling": toAbsolute("/og/28-payroll-hr-tooling.png"),
   "ai-integrations-agents": toAbsolute(svcAi.url),
   "consultations-audits": toAbsolute(svcConsult.url),
   "analytics-dashboards": toAbsolute(svcAnalytics.url),

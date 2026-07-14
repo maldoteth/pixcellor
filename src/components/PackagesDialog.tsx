@@ -168,7 +168,7 @@ const SERVICE_BACKS = {
     action: "sales" as const,
     items: [
       { name: "Recruitment & ATS", info: "Our team come from senior roles at the largest agencies in the world, including award-winning annual top billers across multiple sectors such as tech, medical, crypto, construction, hospitality, education and more. Whether it's a quick hire or your own custom recruiting software with AI agent recruitment consultants that ensure you never have to pay hefty middle-man fees again." },
-      { name: "Payroll & HR tooling", info: "Access cutting-edge payroll and non-custodial solutions with instant one-day settlements and irreversible transactions." },
+      { name: "Payroll & HR tooling", info: "Specialist construction payroll: the payroll company becomes employer of record for full HMRC employment-status protection, you pay your subcontractor wage bill by credit card (zero fees), and earn 1% cashback on it every week — CIS and CITB handled." },
       { name: "AI agents and integrations", info: "Automate your entire business and workflow with highly secure and sophisticated agents that work 24/7, 365, custom built to maximise your ROI." },
       { name: "Visitor intel & fall off capture", info: "Speak to our team of expert senior consultants from some of the largest companies in the world, including start-up founders who scaled to half a billion market cap and multi 7 figure Q1 revenues." },
       { name: "Analytics dashboards", info: "View your business like never before with a custom analytics dashboard that maps your entire company activity and cashflow, giving you information a thousand men would take years to conclude." },

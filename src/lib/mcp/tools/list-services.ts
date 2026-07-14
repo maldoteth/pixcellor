@@ -20,7 +20,7 @@ const SERVICES = [
   { slug: "blockchain-integrations", category: "tech", name: "Blockchain integrations", info: "Web3, wallet, and smart contract integrations." },
   { slug: "video-3d-animations", category: "tech", name: "Video & 3D animations", info: "Product videos, explainers, 3D scenes." },
   { slug: "recruitment-ats", category: "business", name: "Recruitment / ATS", info: "Applicant tracking systems and portals." },
-  { slug: "payroll-hr-tooling", category: "business", name: "Payroll & HR tooling", info: "Timesheets, payroll, HR portals." },
+  { slug: "payroll-hr-tooling", category: "business", name: "Payroll & HR tooling", info: "Construction payroll: HMRC compliance, 1% wage-bill cashback, cash-flow boost." },
   { slug: "ai-integrations-agents", category: "business", name: "AI integrations & agents", info: "Custom AI agents wired into your stack." },
   { slug: "consultations-audits", category: "business", name: "Consultations & audits", info: "Technical/growth audits with actionable roadmap." },
   { slug: "analytics-dashboards", category: "business", name: "Analytics dashboards", info: "Unified BI dashboards across data sources." },
