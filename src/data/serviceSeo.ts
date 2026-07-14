@@ -192,15 +192,15 @@ export const SERVICE_SEO: Record<string, ServiceSeo> = {
     ],
   },
   "payroll-hr-tooling": {
-    title: "Modern Payroll & HR Tooling — Same-Day Settlement | Pixcellor",
+    title: "Construction Payroll — HMRC Compliance, 1% Cashback & Cash Flow | Pixcellor",
     description:
-      "Same-day payroll, multi-currency and crypto payouts, HR self-serve and accounting integrations. Built for teams past spreadsheets.",
+      "Specialist construction payroll: full employment-status protection, pay your subcontractor wage bill by credit card, and earn 1% cashback every week. CIS and CITB handled.",
     keywords: [
-      "payroll software",
-      "HR tooling",
-      "crypto payroll",
-      "same day payroll",
-      "non-custodial payroll",
+      "construction payroll",
+      "CIS payroll",
+      "subcontractor payroll",
+      "employment status protection",
+      "payroll cashback",
     ],
   },
   "ai-integrations-agents": {
