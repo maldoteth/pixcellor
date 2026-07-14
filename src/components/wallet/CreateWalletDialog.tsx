@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { generateMnemonic12, deriveFromMnemonic, isValidMnemonic } from "@/lib/wallet/derive";
 import { encryptString } from "@/lib/wallet/crypto";
 import { generateRecoveryCode, encryptSeedWithRecoveryCode } from "@/lib/wallet/recovery";
+import { copyThenClear } from "@/lib/wallet/clipboard";
 import { assessPassword, MIN_PASSWORD_LENGTH } from "@/lib/wallet/passwordStrength";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -99,6 +100,18 @@ export function CreateWalletDialog({ open, onOpenChange, userId, onCreated }: Cr
       const recoveryCode = generateRecoveryCode();
       const recoveryPayload = await encryptSeedWithRecoveryCode(phrase, recoveryCode);
 
+      // Save the recovery row FIRST and treat failure as fatal. This guarantees
+      // a wallet can never exist without a working reset path — the previous
+      // order could strand a user with a wallet and no recovery record.
+      const { error: recErr } = await supabase.from("user_wallet_recovery").upsert({
+        user_id: userId,
+        encrypted_seed: recoveryPayload.ciphertext,
+        salt: recoveryPayload.salt,
+        iv: recoveryPayload.iv,
+        kdf_iterations: recoveryPayload.iterations,
+      });
+      if (recErr) throw new Error("Couldn't set up wallet recovery — nothing was saved. Please try again.");
+
       const { error: insertErr } = await supabase.from("user_wallets").upsert({
         user_id: userId,
         eth_address: derived.ethAddress,
@@ -110,20 +123,8 @@ export function CreateWalletDialog({ open, onOpenChange, userId, onCreated }: Cr
       });
       if (insertErr) throw insertErr;
 
-      const { error: recErr } = await supabase.from("user_wallet_recovery").upsert({
-        user_id: userId,
-        encrypted_seed: recoveryPayload.ciphertext,
-        salt: recoveryPayload.salt,
-        iv: recoveryPayload.iv,
-        kdf_iterations: recoveryPayload.iterations,
-      });
-      if (recErr) {
-        // Non-fatal — log and warn, wallet itself is saved.
-        console.error("Failed to save recovery payload", recErr);
-        toast.warning("Wallet saved, but recovery setup failed. Contact support.");
-      }
-
-      // Surface the recovery code to the user (show-once).
+      // Surface the recovery code to the user (show-once). Only reached once
+      // BOTH rows are persisted.
       setPendingRecoveryCode(recoveryCode);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create wallet");
@@ -133,8 +134,8 @@ export function CreateWalletDialog({ open, onOpenChange, userId, onCreated }: Cr
   };
 
   const copyPhrase = async () => {
-    await navigator.clipboard.writeText(mnemonic);
-    toast.success("Recovery phrase copied");
+    await copyThenClear(mnemonic);
+    toast.success("Recovery phrase copied — clipboard clears in 30s");
   };
 
   const handleRecoveryAck = () => {

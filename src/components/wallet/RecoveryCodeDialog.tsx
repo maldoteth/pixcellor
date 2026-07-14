@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertTriangle, Copy, Download } from "lucide-react";
 import { toast } from "sonner";
+import { copyThenClear } from "@/lib/wallet/clipboard";
 
 interface RecoveryCodeDialogProps {
   open: boolean;
@@ -19,8 +20,8 @@ export function RecoveryCodeDialog({ open, recoveryCode, onAcknowledged }: Recov
   const [saved, setSaved] = useState(false);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(recoveryCode);
-    toast.success("Recovery code copied");
+    await copyThenClear(recoveryCode);
+    toast.success("Recovery code copied — clipboard clears in 30s");
   };
 
   const download = () => {

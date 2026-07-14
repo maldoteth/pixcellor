@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { OtpPrompt } from "./OtpPrompt";
 import { loadPasskeys } from "@/lib/wallet/passkeyStore";
 import { decryptWithPasskey, isPasskeySupported, type PasskeyEnvelope } from "@/lib/wallet/webauthn";
+import { copyThenClear } from "@/lib/wallet/clipboard";
 
 interface RevealKeysDialogProps {
   open: boolean;
@@ -57,6 +58,23 @@ export function RevealKeysDialog({ open, onOpenChange, userId, encrypted }: Reve
     void loadPasskeys(userId).then(setPasskeys);
   }, [open, userId]);
 
+  // Auto-lock: if the user switches tab/app or the window loses focus while
+  // keys are on screen, hide them immediately (defends against screen-share /
+  // shoulder-surfing / a background tab capturing the DOM).
+  useEffect(() => {
+    if (!revealed) return;
+    const hide = () => setRevealed(null);
+    const onVisibility = () => {
+      if (document.hidden) hide();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("blur", hide);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("blur", hide);
+    };
+  }, [revealed]);
+
   const canUsePasskey = passkeys.length > 0 && isPasskeySupported();
 
   const finishReveal = async (mnemonic: string) => {
@@ -101,8 +119,8 @@ export function RevealKeysDialog({ open, onOpenChange, userId, encrypted }: Reve
   };
 
   const copy = async (text: string, label: string) => {
-    await navigator.clipboard.writeText(text);
-    toast.success(`${label} copied`);
+    await copyThenClear(text);
+    toast.success(`${label} copied — clipboard clears in 30s`);
   };
 
   return (
