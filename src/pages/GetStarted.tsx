@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { trackAdsConversion } from "@/lib/ads-tracking";
 import CallBookingPicker, { type BookingSelection } from "@/components/CallBookingPicker";
 import PackageCompareTable from "@/components/PackageCompareTable";
+import AllInOneComparison from "@/components/AllInOneComparison";
 import { PACKAGE_DETAILS } from "@/data/packages";
 import { SERVICES, SERVICE_CATEGORIES, type ServiceCategory } from "@/data/services";
 
@@ -917,6 +918,32 @@ const GetStarted = () => {
 
 
 
+
+      {/* ALL-IN-ONE — one subscription replaces the whole stack */}
+      <section className="border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/90">
+              All-in-one
+            </div>
+            <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-semibold leading-tight tracking-tight">
+              One subscription replaces your entire stack.
+            </h2>
+            <p className="mt-4 text-sm sm:text-base text-white/75 leading-relaxed">
+              The tools below cost over {"£"}1,500 a month when you stitch them together —
+              and that&apos;s before the setup, the integrations that break, and the logins nobody
+              can find. With Pixcellor it&apos;s all one platform, included from {"£"}89 a month.
+            </p>
+          </div>
+          <div className="mt-8">
+            <AllInOneComparison />
+          </div>
+          <p className="mt-4 text-xs text-white/40">
+            Comparison prices are typical entry plans for each tool, converted to GBP. Brand names
+            are the property of their respective owners.
+          </p>
+        </div>
+      </section>
 
       {/* FAQ */}
       <section className="border-b border-white/10">
