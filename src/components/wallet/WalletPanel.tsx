@@ -202,32 +202,26 @@ export function WalletPanel({ userId }: WalletPanelProps) {
       </Card>
 
 
-      {encrypted && (
-        <>
-          <SendDialog
-            open={sendOpen}
-            onOpenChange={setSendOpen}
-            userId={userId}
-            encrypted={encrypted}
-            ethAddress={wallet.eth_address}
-            solAddress={wallet.sol_address}
-            onSent={refreshBalances}
-          />
-          <RevealKeysDialog
-            open={revealOpen}
-            onOpenChange={setRevealOpen}
-            userId={userId}
-            encrypted={encrypted}
-          />
-          <AddPasskeyDialog
-            open={addPasskeyOpen}
-            onOpenChange={setAddPasskeyOpen}
-            userId={userId}
-            encrypted={encrypted}
-            onAdded={refreshPasskeyState}
-          />
-        </>
-      )}
+      <SendDialog
+        open={sendOpen}
+        onOpenChange={setSendOpen}
+        userId={userId}
+        ethAddress={wallet.eth_address}
+        solAddress={wallet.sol_address}
+        onSent={refreshBalances}
+      />
+      <RevealKeysDialog
+        open={revealOpen}
+        onOpenChange={setRevealOpen}
+        userId={userId}
+      />
+      <AddPasskeyDialog
+        open={addPasskeyOpen}
+        onOpenChange={setAddPasskeyOpen}
+        userId={userId}
+        onAdded={refreshPasskeyState}
+      />
+
       <ReceiveDialog
         open={receiveOpen !== null}
         onOpenChange={(o) => !o && setReceiveOpen(null)}
