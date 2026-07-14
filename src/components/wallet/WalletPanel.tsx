@@ -90,14 +90,9 @@ export function WalletPanel({ userId }: WalletPanelProps) {
     toast.success(`${label} copied`);
   };
 
-  const encrypted: EncryptedPayload | null = wallet
-    ? {
-        ciphertext: wallet.encrypted_seed,
-        salt: wallet.salt,
-        iv: wallet.iv,
-        iterations: wallet.kdf_iterations,
-      }
-    : null;
+  // Encrypted seed is no longer selected in the browser — it is fetched via
+  // the wallet-unlock edge function after an OTP is verified server-side.
+
 
   if (loading) {
     return (
