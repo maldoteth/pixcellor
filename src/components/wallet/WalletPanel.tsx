@@ -19,10 +19,6 @@ interface WalletRow {
   user_id: string;
   eth_address: string;
   sol_address: string;
-  encrypted_seed: string;
-  salt: string;
-  iv: string;
-  kdf_iterations: number;
 }
 
 interface WalletPanelProps {
