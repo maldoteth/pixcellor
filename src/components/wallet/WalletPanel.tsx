@@ -52,7 +52,7 @@ export function WalletPanel({ userId }: WalletPanelProps) {
     setLoading(true);
     const { data, error } = await supabase
       .from("user_wallets")
-      .select("user_id, eth_address, sol_address, encrypted_seed, salt, iv, kdf_iterations")
+      .select("user_id, eth_address, sol_address")
       .eq("user_id", userId)
       .maybeSingle();
     if (error) {
