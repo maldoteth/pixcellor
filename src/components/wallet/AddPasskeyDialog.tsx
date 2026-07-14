@@ -12,24 +12,26 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
-import { decryptString, type EncryptedPayload } from "@/lib/wallet/crypto";
+import { decryptString } from "@/lib/wallet/crypto";
 import { enrollPasskey, isPasskeySupported } from "@/lib/wallet/webauthn";
 import { savePasskey } from "@/lib/wallet/passkeyStore";
+import { OtpCodeCapture } from "./OtpCodeCapture";
+import { unlockSeed } from "@/lib/wallet/unlock";
 
 interface AddPasskeyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string;
-  encrypted: EncryptedPayload;
   onAdded: () => void;
 }
 
 // Enrolls a passkey that can unlock the wallet without the (brute-forceable)
-// password. Requires the current password once, to decrypt the seed locally so
-// it can be re-wrapped under the passkey's PRF key. The seed never leaves the
-// browser and is discarded immediately after enrollment.
-export function AddPasskeyDialog({ open, onOpenChange, userId, encrypted, onAdded }: AddPasskeyDialogProps) {
+// password. Requires the current password + an emailed OTP so the encrypted
+// seed can be fetched via wallet-unlock and re-wrapped under the passkey's
+// PRF key. The seed never leaves the browser and is discarded immediately.
+export function AddPasskeyDialog({ open, onOpenChange, userId, onAdded }: AddPasskeyDialogProps) {
   const [password, setPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supported = isPasskeySupported();
@@ -37,16 +39,22 @@ export function AddPasskeyDialog({ open, onOpenChange, userId, encrypted, onAdde
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!/^\d{6}$/.test(otpCode)) {
+      setError("Enter the 6-digit emailed code");
+      return;
+    }
     setBusy(true);
     let seed: string | null = null;
     try {
-      seed = await decryptString(encrypted, password);
+      const payload = await unlockSeed("reveal", otpCode);
+      seed = await decryptString(payload, password);
       const env = await enrollPasskey({ userId, label: "Pixcellor wallet", seed });
       await savePasskey(userId, env);
       toast.success("Passkey added — you can now unlock with your device");
       onAdded();
       onOpenChange(false);
       setPassword("");
+      setOtpCode("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add passkey");
     } finally {
@@ -61,6 +69,7 @@ export function AddPasskeyDialog({ open, onOpenChange, userId, encrypted, onAdde
       onOpenChange={(o) => {
         if (!o) {
           setPassword("");
+          setOtpCode("");
           setError(null);
         }
         onOpenChange(o);
@@ -100,12 +109,13 @@ export function AddPasskeyDialog({ open, onOpenChange, userId, encrypted, onAdde
                 Needed once to unlock the wallet so it can be re-secured with your passkey.
               </p>
             </div>
+            <OtpCodeCapture purpose="reveal" onChange={setOtpCode} />
             {error && <p className="text-sm text-destructive">{error}</p>}
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={busy || !password}>
+              <Button type="submit" disabled={busy || !password || otpCode.length !== 6}>
                 {busy ? "Setting up…" : "Add passkey"}
               </Button>
             </DialogFooter>
