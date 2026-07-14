@@ -15,7 +15,7 @@ interface PasskeyRow {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function loadPasskeys(userId: string): Promise<PasskeyEnvelope[]> {
-  const { data, error } = await (supabase.from("user_wallet_passkeys") as any)
+  const { data, error } = await (supabase as any).from("user_wallet_passkeys")
     .select("credential_id, transports, prf_salt, ciphertext, iv")
     .eq("user_id", userId);
   if (error || !data) return [];
