@@ -30,7 +30,7 @@ export async function unlockSeed(purpose: OtpPurpose, code: string): Promise<Enc
     throw new Error(error.message);
   }
   if (!data || data.error) throw new Error(data?.error ?? "Unlock failed");
-  if (!data.ciphertext || !data.salt || !data.iv || !data.iterations) {
+  if (!data.ciphertext || !data.salt || !data.iv || typeof data.iterations !== "number") {
     throw new Error("Malformed unlock response");
   }
   return {
