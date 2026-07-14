@@ -1,81 +1,113 @@
-## Email Broadcasting for Customers
+## Confirmation of hard constraints
 
-A paid add-on inside the existing Customer Portal that lets clients send branded email campaigns from their own verified domains, manage contact lists, track opens/clicks, and view replies — powered by the Lovable Emails queue.
+- I will NOT create or apply any database migration in this step.
+- I will NOT modify any RLS policy or GRANT on any table (including `user_wallets`, `wallet_tx_otps`).
+- I will NOT alter any table/column permissions.
+- I will NOT publish or deploy to production; changes are preview-only (edge function auto-deploys to the preview project, no publish action).
+- The passkey unlock path (`decryptWithPasskey`), `RecoverWalletDialog`, and the cash-out `OtpPrompt` inside `CashOutDialog` will be left completely untouched.
 
-### 1. Database (migration)
+## Goal
 
-New tables (all with GRANTs + RLS scoped by `client_user_id = auth.uid()`):
+Stop the browser from reading `user_wallets.encrypted_seed` directly. Instead, gate the ciphertext behind a new `wallet-unlock` edge function that requires a fresh emailed 6-digit OTP. The client still decrypts locally with the user's password (or passkey — unchanged).
 
-- `client_email_domains` — one row per client-verified sender domain. Stores `domain`, `spf_status`, `dkim_status`, `dmarc_status`, DKIM public/private key pair (private encrypted via Vault), verification tokens, `verified_at`.
-- `client_contact_lists` — named lists per client (`name`, `description`, counts cached).
-- `client_contacts` — subscribers (`list_id`, `email`, `first_name`, `last_name`, `custom_fields jsonb`, `status: subscribed|unsubscribed|bounced|complained`, `subscribed_at`).
-- `client_campaigns` — `subject`, `preheader`, `from_name`, `from_email`, `reply_to`, `template_html`, `template_json` (editor state), `list_id`, `status: draft|scheduled|sending|sent|failed`, `scheduled_for`, `sent_at`, aggregate counts.
-- `client_campaign_sends` — per-recipient row (`campaign_id`, `contact_id`, `message_id`, `status`, `opened_at`, `first_click_at`, `bounce_reason`) — powers analytics without hitting `email_send_log`.
-- `client_campaign_events` — append-only open/click log (`type`, `url`, `user_agent`, `ip_hash`, `occurred_at`).
-- `client_email_replies` — inbound replies threaded to the originating campaign (from Mailgun inbound route).
-- `client_email_addon` — subscription state (`plan: starter|growth|scale`, `monthly_send_quota`, `sent_this_period`, `stripe_subscription_id`, `active`, `period_ends_at`).
+## Design
 
-Add `enqueue_broadcast_batch` RPC that inserts N rows into `client_campaign_sends` (status `pending`) and enqueues them into a new pgmq queue `broadcast_emails`.
+### A. New edge function `supabase/functions/wallet-unlock/index.ts`
 
-### 2. Sending infrastructure (edge functions)
+- `verify_jwt = true` (default for Lovable-managed functions — no `config.toml` change needed).
+- CORS via `import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'`, OPTIONS preflight, corsHeaders on every response.
+- Auth: read `Authorization: Bearer …`, call `supabase.auth.getClaims(token)` with the anon client to get `userId = claims.sub`. 401 on failure.
+- Input validation (zod):
+  ```
+  { purpose: 'send' | 'cash_out' | 'reveal', code: string (6 digits) }
+  ```
+  400 on invalid body.
+- OTP verification (service-role client, mirrors `wallet-otp` verify path exactly):
+  1. Select latest `wallet_tx_otps` row for `(user_id = userId, purpose)` where `consumed_at IS NULL` and `expires_at > now()`, ordered by `created_at desc`, limit 1.
+  2. If none → 400 `{ error: 'No active code' }`.
+  3. If `attempts >= 5` → 400 `{ error: 'Too many attempts' }`.
+  4. Compute `sha256(`${userId}:${code}`)` hex and compare to `code_hash`.
+  5. On mismatch: `update wallet_tx_otps set attempts = attempts + 1 where id = row.id`; return 400 `{ error: 'Invalid code' }`.
+  6. On match: `update wallet_tx_otps set consumed_at = now() where id = row.id`.
+- After success: service-role `select ciphertext:encrypted_seed, salt, iv, iterations:kdf_iterations from user_wallets where user_id = userId`. If missing → 404. Otherwise return `{ ciphertext, salt, iv, iterations }` with 200.
+- No SQL changes; only reads/writes rows using existing schema and existing policies (service role bypasses RLS, so no GRANT changes needed).
 
-- `broadcast-send` — validates ownership + quota, creates the campaign send-rows, chunks recipients and enqueues into `broadcast_emails`. Rewrites every `<a href>` through `/t/c/{sendId}/{urlHash}` and injects a 1×1 pixel `/t/o/{sendId}.gif`. Adds `List-Unsubscribe` and `List-Unsubscribe-Post` headers pointing at `handle-email-unsubscribe` (extended to accept campaign sends).
-- Extend `process-email-queue` to also drain `broadcast_emails` with lower priority than `auth_emails` and `transactional_emails`, respecting the client's domain in the `From` header and their per-plan rate limit.
-- `broadcast-track` — public GET endpoint for `/t/o/*` (open pixel) and `/t/c/*` (click redirect). Writes to `client_campaign_events` and rolls up onto `client_campaign_sends`.
-- `broadcast-inbound` — Mailgun inbound webhook. Matches `Reply-To`/`Message-Id` back to `client_campaigns` and inserts into `client_email_replies`.
-- `verify-client-domain` — checks DNS for SPF include, DKIM TXT record, DMARC, and MX (for replies). Called on demand and by a cron sweep every hour until verified.
-- `broadcast-scheduler` — cron every minute; picks `client_campaigns` where `status='scheduled'` and `scheduled_for <= now()` and invokes `broadcast-send`.
+### B. New client helper `src/lib/wallet/unlock.ts`
 
-Reuse existing `email_send_log` write path for deliverability logging; broadcast-specific metrics live in the new tables.
+```ts
+export async function unlockSeed(purpose: OtpPurpose, code: string): Promise<EncryptedPayload>
+```
+- Wraps `supabase.functions.invoke('wallet-unlock', { body: { purpose, code } })`.
+- Same error-unwrapping pattern as `src/lib/wallet/otp.ts` (read `error.context.json()` when supabase-js wraps a non-2xx).
+- Returns `{ ciphertext, salt, iv, iterations }` — exact shape `decryptString` consumes.
 
-### 3. Domain verification UX
+### C. `SendDialog.tsx` (password path only)
 
-New portal tab **Email → Domains**:
-- Add domain → generates DKIM keypair server-side, shows the exact DNS records to add (SPF `include:`, DKIM `TXT`, DMARC `TXT`, optional MX pointing at Mailgun inbound for replies).
-- "Check DNS" button calls `verify-client-domain`; status pills for each record.
-- Once fully green, domain becomes selectable as a `From` address.
+- Keep passkey branch (`usePasskey === true`) unchanged.
+- For password branch: replace the current `<OtpPrompt purpose="send" onVerified={…} />` + implicit re-use of the `encrypted` prop with an inline 6-digit code capture:
+  - "Email me a code" button → calls existing `requestWalletOtp('send')`.
+  - 6-digit `<input>` bound to local `code` state.
+  - Enable Send when password + 6-digit code are present.
+  - On submit (password path): `const payload = await unlockSeed('send', code); const mnemonic = await decryptString(payload, password);` then continue with existing derive + `sendEth`/`sendSol` logic.
+- Remove reliance on the `encrypted` prop for the password path (still accept the prop for now to keep the API stable; will drop from types when `WalletPanel` stops passing it — see E).
+- Drop the `otpVerified` two-step (unlock now consumes the code atomically in the function).
 
-### 4. Portal UI (all inside existing `/customer-portal`)
+### D. `RevealKeysDialog.tsx`
 
-Add a top-level **Email** tab, mobile-drawer-friendly, with sub-tabs:
+- Same swap as SendDialog but with `purpose: 'reveal'`:
+  - Add "Email me a code" + 6-digit input.
+  - `const payload = await unlockSeed('reveal', code); const mnemonic = await decryptString(payload, password);`
+  - Rest of reveal UI unchanged.
 
-- **Campaigns** — list + "New campaign" wizard: pick list → sender identity → subject/preheader → editor → review & send/schedule. Reuse `RichEmailEditor` and `emailTemplate.ts` shell; add merge-tag picker (`{{first_name}}`, `{{email}}`, custom fields), preview pane, send-test-to-me.
-- **Contacts** — list manager with CSV import (papaparse, dedupe on email, validate + preview first 20 rows), manual add, bulk delete, unsubscribed/bounced views. Suppression list is enforced globally per client.
-- **Domains** — described above.
-- **Replies** — grouped inbox of `client_email_replies` per campaign; simple read/mark-handled state.
-- **Analytics** — per-campaign dashboard: sent, delivered, open rate, click rate, unsubscribes, bounces, top links, hourly send timeline. Client-wide dashboard shows monthly usage vs quota.
+### E. `AddPasskeyDialog.tsx`
 
-### 5. Paid add-on gating
+- Add "Email me a code" + 6-digit input alongside the existing password confirm.
+- Replace `await decryptString(encrypted, password)` with:
+  ```
+  const payload = await unlockSeed('reveal', code);
+  const seed = await decryptString(payload, password);
+  ```
+- Rest (enroll passkey, save envelope) unchanged.
 
-- New Stripe products created via `stripe--create_stripe_product_and_price`:
-  - Starter — £29/mo, 2,500 sends, 1 domain, 1,000 contacts.
-  - Growth — £79/mo, 15,000 sends, 3 domains, 10,000 contacts.
-  - Scale — £199/mo, 75,000 sends, unlimited domains, 50,000 contacts.
-- Extend `stripe-webhook` to write to `client_email_addon` on `checkout.session.completed` / `customer.subscription.updated/deleted`.
-- Every broadcast entry point checks `client_email_addon.active` and quota; portal shows an upsell card when inactive with a checkout button.
-- Reset `sent_this_period` on `period_ends_at` rollover.
+### F. `WalletPanel.tsx`
 
-### 6. "World's best" quality bar — what's baked in from day one
+- Change the wallet fetch to select only: `user_id, eth_address, sol_address, created_at, updated_at`.
+- Drop the `encrypted` prop from `<SendDialog>`, `<RevealKeysDialog>`, `<AddPasskeyDialog>` and remove the `encrypted` `EncryptedPayload | null` memo.
+- Keep `userId` on all three.
+- Update the three dialogs' prop types to remove `encrypted` (make it optional in this step if there's any lingering reference, then delete once unused).
 
-- **Deliverability**: per-client DKIM keys (not shared), enforced SPF/DMARC checks before first send, warmup ramp for new domains (100 → 500 → 2k/day), automatic bounce+complaint suppression, one-click List-Unsubscribe, plain-text alternative auto-generated.
-- **Engagement**: per-recipient send-time optimization (store last-open hour, prefer sending near it within a 6-hour window), automatic link tracking with UTM injection toggle, subject-line A/B (split 10% test, winner to remaining 90% after 2h).
-- **Compliance**: mandatory physical postal address in footer (collected at addon signup), unsubscribe page + confirmation, GDPR consent field on contact import, per-client suppression list respected across all campaigns.
-- **Reputation**: dedicated IP pool tag per plan tier at the queue level (config only for now — Mailgun sub-account swap-in later); throttle per domain to protect shared reputation.
-- **UX**: live preview matching the existing `EmailPreview` component, mobile-view toggle, spam-score hint (simple heuristics: all-caps ratio, link count, missing text alt), send-test-to-me before every send.
+### G. Guardrail for later column lockdown
 
-### 7. Rollout order (build phases)
+- Audit `user_wallets` writes and ensure NO `.select()` is chained on `insert`/`update`/`upsert` so PostgREST doesn't need read privilege on the ciphertext columns.
+- Expected write sites to check: `CreateWalletDialog.tsx`, `RecoverWalletDialog.tsx`, anywhere in `src/lib/wallet/*`. Only change lines that currently chain `.select()` after a write — no other behavior changes.
 
-1. Migration + Stripe products + addon gating card in portal.
-2. Domains tab + `verify-client-domain` + DKIM keygen.
-3. Contacts tab + CSV import + unsubscribe handling extension.
-4. Campaigns wizard + `broadcast-send` + queue integration + tracking pixel/redirect.
-5. Analytics + Replies (inbound webhook).
-6. Optimizations: warmup ramp, send-time optimization, A/B, spam-score hint.
+### Cash-out OTP
 
-### Technical notes (for reference)
+- `CashOutDialog.tsx` and its `OtpPrompt` usage are OUT OF SCOPE and will not be touched.
 
-- Reuse `pgmq`, `process-email-queue`, `email_send_log`, `suppressed_emails`, `email_unsubscribe_tokens`.
-- New pgmq queue `broadcast_emails`; drain order: `auth_emails` → `transactional_emails` → `broadcast_emails`.
-- DKIM keypair generated with WebCrypto RSA-2048, private key encrypted with a project-level Vault secret.
-- Tracking endpoints live under a short path served by an edge function to keep URLs compact.
-- All new UI follows the existing Pixcellor black/glass aesthetic and mobile-drawer pattern used in `AffiliateCrmPanel`.
+## Exact file list
+
+New:
+- `supabase/functions/wallet-unlock/index.ts`
+- `src/lib/wallet/unlock.ts`
+
+Modified:
+- `src/components/wallet/SendDialog.tsx` — password path uses `unlockSeed`; inline code UI; drop `encrypted` usage.
+- `src/components/wallet/RevealKeysDialog.tsx` — same swap with `purpose: 'reveal'`.
+- `src/components/wallet/AddPasskeyDialog.tsx` — add code input; use `unlockSeed('reveal', code)` before password decrypt.
+- `src/components/wallet/WalletPanel.tsx` — narrow SELECT columns; stop passing `encrypted`.
+- Any file that chains `.select()` on a `user_wallets` insert/update/upsert (audit-only; edit only if found). Candidates to inspect: `src/components/wallet/CreateWalletDialog.tsx`, `src/components/wallet/RecoverWalletDialog.tsx`, `src/lib/wallet/recovery.ts`.
+
+Untouched:
+- `src/lib/wallet/webauthn.ts`, `src/lib/wallet/passkeyStore.ts`, `src/lib/wallet/crypto.ts`, `src/lib/wallet/derive.ts`, `src/lib/wallet/rpc.ts`.
+- `src/components/wallet/RecoverWalletDialog.tsx` recovery flow logic (only touched if it chains `.select()` on a write).
+- `src/components/wallet/CashOutDialog.tsx` and `src/components/wallet/OtpPrompt.tsx`.
+- Existing `supabase/functions/wallet-otp` function.
+- `supabase/config.toml`, all migrations, all RLS/GRANT.
+
+## Verification (preview only)
+
+- `tsgo` typecheck after edits.
+- Manual smoke on preview: Send (password), Reveal keys, Add passkey — each should now require the emailed code, then succeed with the correct password. Passkey unlock path should still work with no code prompt.
+
+Ready to switch to build mode when you approve.

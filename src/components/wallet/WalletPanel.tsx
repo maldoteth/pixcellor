@@ -14,16 +14,11 @@ import { RecoverWalletDialog } from "./RecoverWalletDialog";
 import { AddPasskeyDialog } from "./AddPasskeyDialog";
 import { hasPasskey } from "@/lib/wallet/passkeyStore";
 import { isPasskeySupported } from "@/lib/wallet/webauthn";
-import type { EncryptedPayload } from "@/lib/wallet/crypto";
 
 interface WalletRow {
   user_id: string;
   eth_address: string;
   sol_address: string;
-  encrypted_seed: string;
-  salt: string;
-  iv: string;
-  kdf_iterations: number;
 }
 
 interface WalletPanelProps {
@@ -57,7 +52,7 @@ export function WalletPanel({ userId }: WalletPanelProps) {
     setLoading(true);
     const { data, error } = await supabase
       .from("user_wallets")
-      .select("user_id, eth_address, sol_address, encrypted_seed, salt, iv, kdf_iterations")
+      .select("user_id, eth_address, sol_address")
       .eq("user_id", userId)
       .maybeSingle();
     if (error) {
@@ -95,14 +90,9 @@ export function WalletPanel({ userId }: WalletPanelProps) {
     toast.success(`${label} copied`);
   };
 
-  const encrypted: EncryptedPayload | null = wallet
-    ? {
-        ciphertext: wallet.encrypted_seed,
-        salt: wallet.salt,
-        iv: wallet.iv,
-        iterations: wallet.kdf_iterations,
-      }
-    : null;
+  // Encrypted seed is no longer selected in the browser — it is fetched via
+  // the wallet-unlock edge function after an OTP is verified server-side.
+
 
   if (loading) {
     return (
@@ -212,32 +202,26 @@ export function WalletPanel({ userId }: WalletPanelProps) {
       </Card>
 
 
-      {encrypted && (
-        <>
-          <SendDialog
-            open={sendOpen}
-            onOpenChange={setSendOpen}
-            userId={userId}
-            encrypted={encrypted}
-            ethAddress={wallet.eth_address}
-            solAddress={wallet.sol_address}
-            onSent={refreshBalances}
-          />
-          <RevealKeysDialog
-            open={revealOpen}
-            onOpenChange={setRevealOpen}
-            userId={userId}
-            encrypted={encrypted}
-          />
-          <AddPasskeyDialog
-            open={addPasskeyOpen}
-            onOpenChange={setAddPasskeyOpen}
-            userId={userId}
-            encrypted={encrypted}
-            onAdded={refreshPasskeyState}
-          />
-        </>
-      )}
+      <SendDialog
+        open={sendOpen}
+        onOpenChange={setSendOpen}
+        userId={userId}
+        ethAddress={wallet.eth_address}
+        solAddress={wallet.sol_address}
+        onSent={refreshBalances}
+      />
+      <RevealKeysDialog
+        open={revealOpen}
+        onOpenChange={setRevealOpen}
+        userId={userId}
+      />
+      <AddPasskeyDialog
+        open={addPasskeyOpen}
+        onOpenChange={setAddPasskeyOpen}
+        userId={userId}
+        onAdded={refreshPasskeyState}
+      />
+
       <ReceiveDialog
         open={receiveOpen !== null}
         onOpenChange={(o) => !o && setReceiveOpen(null)}

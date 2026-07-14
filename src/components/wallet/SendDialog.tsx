@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { decryptString, type EncryptedPayload } from "@/lib/wallet/crypto";
+import { decryptString } from "@/lib/wallet/crypto";
 import { deriveFromMnemonic } from "@/lib/wallet/derive";
 import {
   isValidEthAddress,
@@ -16,29 +16,29 @@ import {
 } from "@/lib/wallet/rpc";
 import { toast } from "sonner";
 import { ExternalLink, Fingerprint } from "lucide-react";
-import { OtpPrompt } from "./OtpPrompt";
+import { OtpCodeCapture } from "./OtpCodeCapture";
 import { loadPasskeys } from "@/lib/wallet/passkeyStore";
 import { decryptWithPasskey, isPasskeySupported, type PasskeyEnvelope } from "@/lib/wallet/webauthn";
+import { unlockSeed } from "@/lib/wallet/unlock";
 
 interface SendDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string;
-  encrypted: EncryptedPayload;
   ethAddress: string;
   solAddress: string;
   onSent?: () => void;
 }
 
-export function SendDialog({ open, onOpenChange, userId, encrypted, onSent }: SendDialogProps) {
+export function SendDialog({ open, onOpenChange, userId, onSent }: SendDialogProps) {
   const [chain, setChain] = useState<"ETH" | "SOL">("ETH");
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   const [password, setPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
-  const [otpVerified, setOtpVerified] = useState(false);
   const [passkeys, setPasskeys] = useState<PasskeyEnvelope[]>([]);
   const [usePasskey, setUsePasskey] = useState(false);
 
@@ -60,9 +60,9 @@ export function SendDialog({ open, onOpenChange, userId, encrypted, onSent }: Se
     setTo("");
     setAmount("");
     setPassword("");
+    setOtpCode("");
     setError(null);
     setTxHash(null);
-    setOtpVerified(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,10 +70,6 @@ export function SendDialog({ open, onOpenChange, userId, encrypted, onSent }: Se
     setError(null);
     setTxHash(null);
 
-    if (!otpVerified) {
-      setError("Confirm the emailed code before sending");
-      return;
-    }
     if (chain === "ETH" && !isValidEthAddress(to)) {
       setError("Invalid Ethereum address");
       return;
@@ -87,13 +83,20 @@ export function SendDialog({ open, onOpenChange, userId, encrypted, onSent }: Se
       setError("Enter a valid amount");
       return;
     }
+    if (!usePasskey && !/^\d{6}$/.test(otpCode)) {
+      setError("Enter the 6-digit emailed code");
+      return;
+    }
 
     setBusy(true);
     let mnemonic: string | null = null;
     try {
-      mnemonic = usePasskey
-        ? await decryptWithPasskey(passkeys[0])
-        : await decryptString(encrypted, password);
+      if (usePasskey) {
+        mnemonic = await decryptWithPasskey(passkeys[0]);
+      } else {
+        const payload = await unlockSeed("send", otpCode);
+        mnemonic = await decryptString(payload, password);
+      }
       const derived = await deriveFromMnemonic(mnemonic);
       const hash =
         chain === "ETH"
@@ -107,6 +110,7 @@ export function SendDialog({ open, onOpenChange, userId, encrypted, onSent }: Se
     } finally {
       mnemonic = null;
       setPassword("");
+      setOtpCode("");
       setBusy(false);
     }
   };
@@ -158,21 +162,23 @@ export function SendDialog({ open, onOpenChange, userId, encrypted, onSent }: Se
               </button>
             </div>
           ) : (
-            <div className="space-y-2">
-              <Label htmlFor="pw">Wallet password</Label>
-              <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              {canUsePasskey && (
-                <button
-                  type="button"
-                  className="text-xs text-muted-foreground hover:text-foreground underline"
-                  onClick={() => setUsePasskey(true)}
-                >
-                  Use passkey instead
-                </button>
-              )}
-            </div>
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="pw">Wallet password</Label>
+                <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                {canUsePasskey && (
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:text-foreground underline"
+                    onClick={() => setUsePasskey(true)}
+                  >
+                    Use passkey instead
+                  </button>
+                )}
+              </div>
+              <OtpCodeCapture purpose="send" onChange={setOtpCode} />
+            </>
           )}
-          <OtpPrompt purpose="send" onVerified={() => setOtpVerified(true)} />
           {error && <p className="text-sm text-destructive">{error}</p>}
           {txHash && (
             <a
@@ -188,7 +194,10 @@ export function SendDialog({ open, onOpenChange, userId, encrypted, onSent }: Se
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Close
             </Button>
-            <Button type="submit" disabled={busy || !otpVerified || (!usePasskey && !password)}>
+            <Button
+              type="submit"
+              disabled={busy || (!usePasskey && (!password || otpCode.length !== 6))}
+            >
               {busy ? "Broadcasting…" : `Send ${chain}`}
             </Button>
           </DialogFooter>
