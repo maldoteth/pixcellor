@@ -48,11 +48,11 @@ export function SendDialog({ open, onOpenChange, userId, onSent }: SendDialogPro
       setUsePasskey(false);
       return;
     }
-    void loadPasskeys("self").then((pks) => {
+    void loadPasskeys(userId).then((pks) => {
       setPasskeys(pks);
       setUsePasskey(pks.length > 0 && isPasskeySupported());
     });
-  }, [open]);
+  }, [open, userId]);
 
   const canUsePasskey = passkeys.length > 0 && isPasskeySupported();
 
