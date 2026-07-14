@@ -3,31 +3,31 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { decryptString, type EncryptedPayload } from "@/lib/wallet/crypto";
+import { decryptString } from "@/lib/wallet/crypto";
 import { deriveFromMnemonic, type DerivedWallet } from "@/lib/wallet/derive";
 import { AlertTriangle, Copy, Fingerprint } from "lucide-react";
 import { toast } from "sonner";
-import { OtpPrompt } from "./OtpPrompt";
+import { OtpCodeCapture } from "./OtpCodeCapture";
 import { loadPasskeys } from "@/lib/wallet/passkeyStore";
 import { decryptWithPasskey, isPasskeySupported, type PasskeyEnvelope } from "@/lib/wallet/webauthn";
 import { copyThenClear } from "@/lib/wallet/clipboard";
+import { unlockSeed } from "@/lib/wallet/unlock";
 
 interface RevealKeysDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string;
-  encrypted: EncryptedPayload;
 }
 
 const AUTO_HIDE_MS = 30_000;
 
-export function RevealKeysDialog({ open, onOpenChange, userId, encrypted }: RevealKeysDialogProps) {
+export function RevealKeysDialog({ open, onOpenChange, userId }: RevealKeysDialogProps) {
   const [password, setPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<DerivedWallet | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [otpVerified, setOtpVerified] = useState(false);
   const [passkeys, setPasskeys] = useState<PasskeyEnvelope[]>([]);
 
   useEffect(() => {
@@ -49,18 +49,15 @@ export function RevealKeysDialog({ open, onOpenChange, userId, encrypted }: Reve
   useEffect(() => {
     if (!open) {
       setPassword("");
+      setOtpCode("");
       setError(null);
       setRevealed(null);
-      setOtpVerified(false);
       setPasskeys([]);
       return;
     }
     void loadPasskeys(userId).then(setPasskeys);
   }, [open, userId]);
 
-  // Auto-lock: if the user switches tab/app or the window loses focus while
-  // keys are on screen, hide them immediately (defends against screen-share /
-  // shoulder-surfing / a background tab capturing the DOM).
   useEffect(() => {
     if (!revealed) return;
     const hide = () => setRevealed(null);
@@ -81,18 +78,20 @@ export function RevealKeysDialog({ open, onOpenChange, userId, encrypted }: Reve
     const derived = await deriveFromMnemonic(mnemonic);
     setRevealed(derived);
     setPassword("");
+    setOtpCode("");
   };
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!otpVerified) {
-      setError("Confirm the emailed code before revealing keys");
+    if (!/^\d{6}$/.test(otpCode)) {
+      setError("Enter the 6-digit emailed code");
       return;
     }
     setBusy(true);
     setError(null);
     try {
-      const mnemonic = await decryptString(encrypted, password);
+      const payload = await unlockSeed("reveal", otpCode);
+      const mnemonic = await decryptString(payload, password);
       await finishReveal(mnemonic);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed");
@@ -102,10 +101,6 @@ export function RevealKeysDialog({ open, onOpenChange, userId, encrypted }: Reve
   };
 
   const handlePasskeyUnlock = async () => {
-    if (!otpVerified) {
-      setError("Confirm the emailed code before revealing keys");
-      return;
-    }
     setBusy(true);
     setError(null);
     try {
@@ -141,7 +136,7 @@ export function RevealKeysDialog({ open, onOpenChange, userId, encrypted }: Reve
                   type="button"
                   variant="secondary"
                   className="w-full"
-                  disabled={busy || !otpVerified}
+                  disabled={busy}
                   onClick={handlePasskeyUnlock}
                 >
                   <Fingerprint className="w-4 h-4 mr-2" /> Unlock with passkey
@@ -160,13 +155,13 @@ export function RevealKeysDialog({ open, onOpenChange, userId, encrypted }: Reve
               <Label htmlFor="pw">Wallet password</Label>
               <Input id="pw" type="password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            <OtpPrompt purpose="reveal" onVerified={() => setOtpVerified(true)} />
+            <OtpCodeCapture purpose="reveal" onChange={setOtpCode} />
             {error && <p className="text-sm text-destructive">{error}</p>}
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={busy || !password || !otpVerified}>
+              <Button type="submit" disabled={busy || !password || otpCode.length !== 6}>
                 {busy ? "Unlocking…" : "Reveal"}
               </Button>
             </DialogFooter>
