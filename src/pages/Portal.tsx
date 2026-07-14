@@ -34,6 +34,16 @@ const SALES_SCRIPTS: { id: string; title: string; body: string }[] = [
     title: "Private SME Grant Script",
     body: `Hi, it's Alex from Pixcellor.\n\nI'm messaging regarding a SME grant (privately funded UK small and medium enterprise grants) to get local businesses online with a market leading AI powered website designed to grow revenue - with no upfront costs and a heavily subsidized annual fees for the first 5 years!\n\nThis is only available to small and medium enterprises. Reply YES to check eligibility and get your free sample pack.`,
   },
+  {
+    id: "qualifying-questions",
+    title: "Qualifying questions",
+    body: `Do you mind if I ask you a couple of questions to see if this service I'm providing is suitable?\n\n1) How many clients roughly are you losing due to missed calls or emails every month?\n\n2) What is your average client worth in revenue?\n\n[If they say "don't know"]\n\nOh, you don't know? That's a problem I can solve — with guaranteed ROI or you don't pay.`,
+  },
+  {
+    id: "guaranteed-roi",
+    title: "Guaranteed ROI pitch",
+    body: `I solve problems for businesses and generate guaranteed ROI or you pay nothing.\n\nFor example, how many clients are you losing a month due to missed calls or emails? And what's your web traffic conversion rate?\n\n[If they say "don't know"]\n\nOh, you don't know? Well, that's a problem in itself!`,
+  },
 ];
 import { toast } from "sonner";
 import ChatBot from "@/components/ChatBot";
