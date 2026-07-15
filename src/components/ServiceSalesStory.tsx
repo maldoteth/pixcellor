@@ -97,10 +97,10 @@ function getSceneRange(index: number) {
   const anchor = index / (SCENE_COUNT - 1);
   const last = index === SCENE_COUNT - 1;
   return {
-    start: index === 0 ? 0 : Math.max(0, anchor - 0.15),
+    start: index === 0 ? 0 : Math.max(0, anchor - 0.18),
     enterEnd: index === 0 ? 0.001 : anchor - 0.035,
     exitStart: last ? 1 : anchor + 0.035,
-    end: last ? 1 : Math.min(1, anchor + 0.15),
+    end: last ? 1 : Math.min(1, anchor + 0.18),
   };
 }
 
