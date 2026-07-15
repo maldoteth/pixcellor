@@ -94,35 +94,39 @@ const stories = [
 ];
 
 function getSceneRange(index: number) {
-  const anchor = index / SCENE_COUNT;
-  const nextAnchor = (index + 1) / SCENE_COUNT;
+  const anchor = index / (SCENE_COUNT - 1);
+  const last = index === SCENE_COUNT - 1;
   return {
-    start: index === 0 ? 0 : anchor - 0.025,
-    enterEnd: anchor + 0.02,
-    exitStart: nextAnchor - 0.025,
-    end: Math.min(nextAnchor + 0.02, 1),
+    start: index === 0 ? 0 : Math.max(0, anchor - 0.18),
+    enterEnd: index === 0 ? 0.001 : anchor - 0.035,
+    exitStart: last ? 1 : anchor + 0.035,
+    end: last ? 1 : Math.min(1, anchor + 0.18),
   };
 }
 
 function useSceneMotion(progress: MotionValue<number>, index: number, last = false) {
   const reduceMotion = useReducedMotion();
   const { start, enterEnd, exitStart, end } = getSceneRange(index);
+  const input = last ? [start, enterEnd, 1] : [start, enterEnd, exitStart, end];
+  const opacityOutput = last
+    ? [0, 1, 1]
+    : index === 0
+      ? [1, 1, 1, 0]
+      : [0, 1, 1, 0];
+  const yOutput = last
+    ? [24, 0, 0]
+    : index === 0
+      ? [0, 0, 0, -18]
+      : [24, 0, 0, -18];
+  const scaleOutput = last
+    ? [0.99, 1, 1]
+    : index === 0
+      ? [1, 1, 1, 0.995]
+      : [0.99, 1, 1, 0.995];
 
-  const opacity = useTransform(
-    progress,
-    last ? [start, enterEnd, 1] : [start, enterEnd, exitStart, end],
-    last ? [0, 1, 1] : [0, 1, 1, 0],
-  );
-  const y = useTransform(
-    progress,
-    last ? [start, enterEnd, 1] : [start, enterEnd, exitStart, end],
-    last ? [28, 0, 0] : [28, 0, 0, -22],
-  );
-  const scale = useTransform(
-    progress,
-    last ? [start, enterEnd, 1] : [start, enterEnd, exitStart, end],
-    last ? [0.985, 1, 1] : [0.985, 1, 1, 0.99],
-  );
+  const opacity = useTransform(progress, input, opacityOutput);
+  const y = useTransform(progress, input, yOutput);
+  const scale = useTransform(progress, input, scaleOutput);
 
   return reduceMotion ? { opacity, y: 0, scale: 1 } : { opacity, y, scale };
 }
@@ -140,16 +144,24 @@ function SalesScene({
   const scene = useSceneMotion(progress, index);
   const { start, enterEnd, exitStart, end } = getSceneRange(index);
   const imageDirection = story.imageOnLeft ? -1 : 1;
+  const last = index === SCENE_COUNT - 1;
+  const input = last ? [start, enterEnd, 1] : [start, enterEnd, exitStart, end];
+  const imageStart = index === 0 ? 0 : imageDirection * 72;
+  const copyStart = index === 0 ? 0 : imageDirection * -72;
 
   const imageX = useTransform(
     progress,
-    [start, enterEnd, exitStart, end],
-    [imageDirection * 72, 0, 0, imageDirection * -42],
+    input,
+    last
+      ? [imageDirection * 72, 0, 0]
+      : [imageStart, 0, 0, imageDirection * -38],
   );
   const copyX = useTransform(
     progress,
-    [start, enterEnd, exitStart, end],
-    [imageDirection * -72, 0, 0, imageDirection * 42],
+    input,
+    last
+      ? [imageDirection * -72, 0, 0]
+      : [copyStart, 0, 0, imageDirection * 38],
   );
 
   return (
@@ -182,7 +194,6 @@ function SalesScene({
         style={{ x: reduceMotion ? 0 : copyX }}
       >
         <div className="mb-3 flex items-center gap-3 text-[10px] font-semibold tracking-[0.2em] text-white/45 sm:text-xs">
-          <span>{String(index + 1).padStart(2, "0")}</span>
           <span className="h-px w-8 bg-white/25" aria-hidden="true" />
           <span>{story.label}</span>
         </div>
@@ -214,7 +225,7 @@ function SalesScene({
 
 function ContactScene({ progress }: { progress: MotionValue<number> }) {
   const scene = useSceneMotion(progress, 4, true);
-  const pointerEvents = useTransform(progress, [0.8, 0.835], ["none", "auto"]);
+  const pointerEvents = useTransform(progress, [0.9, 0.965], ["none", "auto"]);
 
   const actions = [
     {
