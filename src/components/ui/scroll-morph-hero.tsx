@@ -540,9 +540,11 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             if (usesAnchors) {
                 wheelGestureDeltaRef.current += scrollDelta;
 
+                const isSalesPageSettled =
+                    scrollRef.current >= SALES_STORY_SCROLL_START - 1;
                 if (
                     wheelGestureConsumedRef.current ||
-                    Math.abs(wheelGestureDeltaRef.current) < 8
+                    (!isSalesPageSettled && Math.abs(wheelGestureDeltaRef.current) < 8)
                 ) return;
 
                 wheelGestureConsumedRef.current = true;
