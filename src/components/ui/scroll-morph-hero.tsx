@@ -4,10 +4,9 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue, animate } from "framer-motion";
 import { ChevronDown, ChevronUp, X, BookOpen, ShoppingCart, Phone, Tag } from "lucide-react";
 
-import PackagesDialog from "@/components/PackagesDialog";
 import Footer from "@/components/Footer";
-import GrowthSystemsSection from "@/components/GrowthSystemsSection";
-import { recordFalloff, recordScrollDepth } from "@/lib/checkoutTracking";
+import ServiceSalesStory from "@/components/ServiceSalesStory";
+import { recordScrollDepth } from "@/lib/checkoutTracking";
 import { CircularGallery, type GalleryItem } from "@/components/ui/circular-gallery";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -193,8 +192,8 @@ function FlipCard({
                     onLoad={handleImgLoad}
                     crossOrigin="anonymous"
                     decoding="async"
-                    loading="eager"
-                    fetchPriority="high"
+                    loading={index < 6 ? "eager" : "lazy"}
+                    fetchPriority={index < 4 ? "high" : "low"}
                     className="h-full w-full object-cover"
                 />
                 <div
@@ -307,15 +306,14 @@ function ProximityWords({ text, className }: { text: string; className?: string 
 const TOTAL_IMAGES = 20;
 const HERO_MORPH_END = 600;
 const PORTFOLIO_SCROLL_END = HERO_MORPH_END + 3600;
-const SERVICES_SCROLL_START = PORTFOLIO_SCROLL_END - 520;
-const SERVICES_SCROLL_END = PORTFOLIO_SCROLL_END + 2400;
-const MAX_SCROLL = SERVICES_SCROLL_END;
+const SALES_STORY_SCROLL_START = PORTFOLIO_SCROLL_END - 420;
+const SALES_STORY_SCROLL_END = SALES_STORY_SCROLL_START + 6000;
+const MAX_SCROLL = SALES_STORY_SCROLL_END;
 const SCROLL_BREAK_DURATION = 650;
 const MOBILE_SCROLL_BOOST = 24;
 const TABLET_SCROLL_BOOST = 12;
 const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for ≥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
-const CAROUSEL_HINT_ROTATION_DEGREES = 90;
 
 // UI Template Images ordered around the colour wheel (red → orange → yellow →
 // green → blue → purple → magenta → back to red) so the rotating circle
@@ -327,31 +325,23 @@ const IMAGES = [
 
 interface IntroAnimationProps {
     onVirtualScrollChange?: (value: number) => void;
-    onPackagesOpenChange?: (open: boolean) => void;
     overlayOpen?: boolean;
 }
 
 // Helper for linear interpolation
 const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;
 
-export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenChange, overlayOpen }: IntroAnimationProps) {
+export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: IntroAnimationProps) {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
     const introPhaseRef = useRef<AnimationPhase>("scatter");
     const introTimersRef = useRef<number[]>([]);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-    const [packagesOpen, setPackagesOpen] = useState(false);
-    const dismissedAtEndRef = useRef(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const onVirtualScrollChangeRef = useRef(onVirtualScrollChange);
-    const onPackagesOpenChangeRef = useRef(onPackagesOpenChange);
 
     useEffect(() => {
         onVirtualScrollChangeRef.current = onVirtualScrollChange;
     }, [onVirtualScrollChange]);
-
-    useEffect(() => {
-        onPackagesOpenChangeRef.current = onPackagesOpenChange;
-    }, [onPackagesOpenChange]);
 
     // --- Container Size ---
     useEffect(() => {
@@ -395,7 +385,6 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const scrollBreakUntilRef = useRef(0);
     const touchNeedsReleaseRef = useRef(false);
     const arrowActivationRef = useRef(0);
-    const hintScrollControlsRef = useRef<{ stop: () => void } | null>(null);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -411,9 +400,6 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         };
 
         const applyVirtualScrollDelta = (delta: number, source: "wheel" | "touch") => {
-            hintScrollControlsRef.current?.stop();
-            hintScrollControlsRef.current = null;
-
             const currentScroll = scrollRef.current;
             const now = performance.now();
 
@@ -694,41 +680,14 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         window.dispatchEvent(new CustomEvent("pixcellor:hero-visible", { detail: { visible } }));
     }, [morphValue]);
 
-    // Auto-open behavior removed — packages dialog now only opens via user click.
-
-    // Desktop: listen for global open-packages event (e.g. from ServicesDialog "View Pricing")
-    useEffect(() => {
-        const handler = () => {
-            setPackagesOpen(true);
-            onPackagesOpenChangeRef.current?.(true);
-            window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: true } }));
-            void recordFalloff({ event: "pricing_opened" });
-        };
-        window.addEventListener("pixcellor:open-packages", handler);
-        return () => window.removeEventListener("pixcellor:open-packages", handler);
-    }, []);
-
-    const handlePackagesOpenChange = (open: boolean) => {
-        setPackagesOpen(open);
-        onPackagesOpenChangeRef.current?.(open);
-        // Notify Index so the top-of-screen buttons (AI chat, Login, Vision) hide while overlay is up
-        window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open } }));
-        if (open) void recordFalloff({ event: "pricing_opened" });
-        if (!open) {
-            // Mark dismissed and cancel any pending auto-open so it stays closed
-            // until user scrolls meaningfully back up
-            dismissedAtEndRef.current = true;
-        }
-    };
-
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
 
-    // Portfolio exit and services entrance share an overlap so the third page
+    // Portfolio exit and sales story entrance share an overlap so the next act
     // grows out of the existing scene instead of appearing as a hard cut.
     const portfolioExitProgress = useTransform(
         virtualScroll,
-        [SERVICES_SCROLL_START, PORTFOLIO_SCROLL_END + 360],
+        [SALES_STORY_SCROLL_START, PORTFOLIO_SCROLL_END + 260],
         [0, 1]
     );
     const smoothPortfolioExit = useSpring(portfolioExitProgress, { stiffness: 52, damping: 22 });
@@ -743,18 +702,18 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const heroCardsY = useTransform(smoothPortfolioExit, [0, 1], [0, -125]);
     const heroCardsScale = useTransform(smoothPortfolioExit, [0, 1], [1, 0.91]);
 
-    const servicesProgress = useTransform(
+    const salesStoryProgress = useTransform(
         virtualScroll,
-        [SERVICES_SCROLL_START, SERVICES_SCROLL_END],
+        [SALES_STORY_SCROLL_START, SALES_STORY_SCROLL_END],
         [0, 1]
     );
-    const smoothServicesProgress = useSpring(servicesProgress, { stiffness: 48, damping: 21 });
-    const servicesOpacity = useTransform(smoothServicesProgress, [0, 0.16, 1], [0, 1, 1]);
-    const servicesY = useTransform(smoothServicesProgress, [0, 0.2, 1], [110, 0, 0]);
-    const servicesScale = useTransform(smoothServicesProgress, [0, 0.2, 1], [0.965, 1, 1]);
-    const servicesPointerEvents = useTransform(
-        smoothServicesProgress,
-        [0, 0.17, 0.171, 1],
+    const smoothSalesStoryProgress = useSpring(salesStoryProgress, { stiffness: 54, damping: 24 });
+    const salesStoryOpacity = useTransform(smoothSalesStoryProgress, [0, 0.055, 1], [0, 1, 1]);
+    const salesStoryY = useTransform(smoothSalesStoryProgress, [0, 0.065, 1], [72, 0, 0]);
+    const salesStoryScale = useTransform(smoothSalesStoryProgress, [0, 0.065, 1], [0.98, 1, 1]);
+    const salesStoryPointerEvents = useTransform(
+        smoothSalesStoryProgress,
+        [0, 0.055, 0.056, 1],
         ["none", "none", "auto", "auto"]
     );
     // Hero intro elements: opacity tracks the morph spring directly so scroll-up
@@ -780,7 +739,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const ctaOpacity = useTransform([ctaFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.95);
     const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
     // Footer fades in/out smoothly with the morph progress (matches other hero elements)
-    const footerRevealProgress = useTransform(smoothServicesProgress, [0.76, 1], [0, 1]);
+    const footerRevealProgress = useTransform(smoothSalesStoryProgress, [0.94, 1], [0, 1]);
     const [footerInteractive, setFooterInteractive] = useState(false);
     useEffect(() => {
         const unsub = footerRevealProgress.on("change", (v) => setFooterInteractive(v > 0.5));
@@ -863,12 +822,19 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     };
 
     useEffect(() => {
-        (async () => {
+        let disposed = false;
+        let loadStarted = false;
+        let idleId: number | undefined;
+        let timeoutId: number | undefined;
+
+        const loadPortfolio = async () => {
+            if (disposed || loadStarted) return;
+            loadStarted = true;
             const { data } = await supabase
                 .from("portfolio_projects")
                 .select("name,url,category,description,image_url")
                 .order("display_order", { ascending: true });
-            if (!data) return;
+            if (!data || disposed) return;
             setGalleryItems(
                 data.map((p: { name: string; url: string; category: string | null; description: string | null; image_url: string | null }) => ({
                     common: p.name,
@@ -881,13 +847,32 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     },
                 }))
             );
-        })();
-    }, []);
-    const galleryRotation = useTransform(virtualScroll, [HERO_MORPH_END, PORTFOLIO_SCROLL_END], isSmallViewport ? [0, 270] : [0, 360]);
+        };
+
+        const startWhenNeeded = virtualScroll.on("change", (value) => {
+            if (value > HERO_MORPH_END * 0.4) void loadPortfolio();
+        });
+        const idleWindow = window as typeof window & {
+            requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+            cancelIdleCallback?: (id: number) => void;
+        };
+        if (idleWindow.requestIdleCallback) {
+            idleId = idleWindow.requestIdleCallback(() => void loadPortfolio(), { timeout: 1800 });
+        } else {
+            timeoutId = window.setTimeout(() => void loadPortfolio(), 900);
+        }
+
+        return () => {
+            disposed = true;
+            startWhenNeeded();
+            if (idleId !== undefined) idleWindow.cancelIdleCallback?.(idleId);
+            if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+        };
+    }, [virtualScroll]);
+    const galleryRotation = useTransform(virtualScroll, [HERO_MORPH_END, PORTFOLIO_SCROLL_END], [0, 360]);
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     const [portfolioInteractive, setPortfolioInteractive] = useState(false);
-    const hintPlayedRef = useRef(false);
     useEffect(() => {
         const unsub = smoothGalleryRotation.on("change", setGalleryRotationValue);
         return () => unsub();
@@ -898,45 +883,6 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         });
         return () => unsub();
     }, [virtualScroll]);
-    // One-time rotation hint is real scroll progress, not a visual-only offset.
-    // Skipped on iOS because the animation conflicts with in-progress touch
-    // gestures on iOS Safari and causes runaway spinning.
-    useEffect(() => {
-        const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
-        const isIOS = /iPad|iPhone|iPod/.test(ua) ||
-            (ua.includes("Mac") && typeof document !== "undefined" && "ontouchend" in document);
-        if (isIOS) return;
-
-        const playHint = (value: number) => {
-            if (value < 0.8 || hintPlayedRef.current) return;
-            hintPlayedRef.current = true;
-            const rotationRange = isSmallViewport ? 270 : 360;
-            const hintScrollOffset = ((PORTFOLIO_SCROLL_END - HERO_MORPH_END) * CAROUSEL_HINT_ROTATION_DEGREES) / rotationRange;
-            const start = Math.max(scrollRef.current, HERO_MORPH_END);
-            const end = Math.min(start + hintScrollOffset, MAX_SCROLL);
-
-            hintScrollControlsRef.current?.stop();
-            hintScrollControlsRef.current = animate(start, end, {
-                duration: 3.8,
-                ease: [0.16, 1, 0.3, 1],
-                onUpdate: (v) => {
-                    scrollRef.current = v;
-                    virtualScroll.set(v);
-                    onVirtualScrollChangeRef.current?.(v);
-                },
-                onComplete: () => {
-                    hintScrollControlsRef.current = null;
-                },
-            });
-        };
-        playHint(smoothMorph.get());
-        const unsub = smoothMorph.on("change", playHint);
-        return () => {
-            hintScrollControlsRef.current?.stop();
-            hintScrollControlsRef.current = null;
-            unsub();
-        };
-    }, [isSmallViewport, smoothMorph, virtualScroll]);
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
@@ -1142,7 +1088,6 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                         text="AI-powered business solutions from a team that's driven $500M+ in market cap across multiple 7-figure launches."
                         className="text-[17.2px] md:text-[19.4px] lg:text-[19.2px] text-muted-foreground max-w-lg md:max-w-3xl lg:max-w-2xl leading-relaxed mb-8"
                     />
-                    <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} hidden />
                 </motion.div>
 
                 {/* Circular Portfolio Gallery — stays mounted so images remain cached while scrolling */}
@@ -1166,17 +1111,17 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     </motion.div>
                 )}
 
-                {/* Growth systems — the final act of the same virtual-scroll scene */}
+                {/* Sales story: four service acts followed by the contact close */}
                 <motion.div
                     style={{
-                        opacity: servicesOpacity,
-                        y: servicesY,
-                        scale: servicesScale,
-                        pointerEvents: servicesPointerEvents,
+                        opacity: salesStoryOpacity,
+                        y: salesStoryY,
+                        scale: salesStoryScale,
+                        pointerEvents: salesStoryPointerEvents,
                     }}
                     className="absolute inset-0 z-[170] origin-center"
                 >
-                    <GrowthSystemsSection progress={smoothServicesProgress} />
+                    <ServiceSalesStory progress={smoothSalesStoryProgress} />
                 </motion.div>
 
                 {/* Main Container */}

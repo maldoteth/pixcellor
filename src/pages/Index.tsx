@@ -4,7 +4,6 @@ import IntroAnimation from "@/components/ui/scroll-morph-hero";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SeoHead from "@/components/SeoHead";
 import { OG_HOME } from "@/data/ogImages";
-import { supabase } from "@/integrations/supabase/client";
 
 // Lazy-loaded: large bundles or overlays that mount on user events.
 // Keeping these off the critical path shaves ~200KB of JS off first paint.
@@ -155,7 +154,6 @@ const Index = () => {
       <div className="relative overflow-hidden" style={{ height: "var(--pixcellor-viewport-height, 100dvh)" }}>
         <IntroAnimation
           onVirtualScrollChange={(value) => setHeroScrolled(value > 80)}
-          onPackagesOpenChange={setPackagesOpen}
           overlayOpen={overlayOpen}
         />
         <Suspense fallback={null}>

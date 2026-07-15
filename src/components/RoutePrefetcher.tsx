@@ -45,24 +45,11 @@ function extractInternalPath(target: EventTarget | null): string | null {
 }
 
 /**
- * Mounted once near the app root. Two strategies make navigation feel instant:
- *  1. On idle, warm the most-visited routes so first nav is free.
- *  2. On hover / focus / touchstart of any internal <a>, warm its chunk.
+ * Mounted once near the app root. On hover, focus, or touchstart of an
+ * internal link, warm only the route chunk the visitor is likely to use.
  */
 export function RoutePrefetcher() {
   useEffect(() => {
-    const idle = (cb: () => void) => {
-      if (typeof (window as unknown as { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback === "function") {
-        (window as unknown as { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(cb);
-      } else {
-        window.setTimeout(cb, 1200);
-      }
-    };
-
-    idle(() => {
-      ["/packages", "/portfolio", "/work", "/services", "/get-started"].forEach(prefetchPath);
-    });
-
     const onPointer = (e: Event) => {
       const path = extractInternalPath(e.target);
       if (path) prefetchPath(path);
