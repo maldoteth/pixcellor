@@ -318,10 +318,9 @@ const MOBILE_SCROLL_BOOST = 24;
 const TABLET_SCROLL_BOOST = 12;
 const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for ≥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
-// Continuous trackpad momentum stays latched to one anchor. A normal mouse-wheel
-// notch re-arms immediately, even when the pointer has not moved between pages.
-const WHEEL_GESTURE_QUIET_MS = 55;
-const DISCRETE_WHEEL_NOTCH_DELTA = 80;
+// One uninterrupted wheel or trackpad stream moves exactly one anchored page.
+// The controller re-arms after a short quiet gap, independent of pointer movement.
+const WHEEL_GESTURE_END_MS = 36;
 
 // UI Template Images ordered around the colour wheel (red → orange → yellow →
 // green → blue → purple → magenta → back to red) so the rotating circle
@@ -401,7 +400,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const salesLandingFrameRef = useRef<number | null>(null);
     const wheelGestureConsumedRef = useRef(false);
     const wheelGestureDeltaRef = useRef(0);
-    const lastWheelEventAtRef = useRef(0);
+    const wheelGestureEndTimerRef = useRef<number | null>(null);
     const touchSnapTriggeredRef = useRef(false);
     const snapSalesByDirectionRef = useRef<(direction: number) => void>(() => undefined);
 
@@ -526,6 +525,26 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             setVirtualScrollValue(currentScroll + delta);
         };
 
+        const finishWheelGesture = () => {
+            if (wheelGestureEndTimerRef.current !== null) {
+                window.clearTimeout(wheelGestureEndTimerRef.current);
+                wheelGestureEndTimerRef.current = null;
+            }
+            wheelGestureConsumedRef.current = false;
+            wheelGestureDeltaRef.current = 0;
+        };
+
+        const scheduleWheelGestureEnd = () => {
+            if (wheelGestureEndTimerRef.current !== null) {
+                window.clearTimeout(wheelGestureEndTimerRef.current);
+            }
+            wheelGestureEndTimerRef.current = window.setTimeout(() => {
+                wheelGestureEndTimerRef.current = null;
+                wheelGestureConsumedRef.current = false;
+                wheelGestureDeltaRef.current = 0;
+            }, WHEEL_GESTURE_END_MS);
+        };
+
         const handleWheel = (e: WheelEvent) => {
             e.preventDefault();
             forceCirclePhase();
@@ -534,17 +553,6 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : 1;
             const carouselMult = scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1;
             const scrollDelta = e.deltaY * boost * carouselMult;
-            const eventNow = performance.now();
-            const startsNewGesture =
-                Math.abs(e.deltaY) >= DISCRETE_WHEEL_NOTCH_DELTA ||
-                eventNow - lastWheelEventAtRef.current > WHEEL_GESTURE_QUIET_MS;
-            lastWheelEventAtRef.current = eventNow;
-
-            if (startsNewGesture) {
-                wheelGestureConsumedRef.current = false;
-                wheelGestureDeltaRef.current = 0;
-            }
-
             const usesAnchors =
                 scrollRef.current >= PORTFOLIO_SCROLL_END - 1 &&
                 !(
@@ -553,6 +561,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     !wheelGestureConsumedRef.current
                 );
             if (usesAnchors) {
+                scheduleWheelGestureEnd();
                 wheelGestureDeltaRef.current += scrollDelta;
 
                 const isSalesPageSettled =
@@ -714,6 +723,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     salesSnapGenerationRef.current += 1;
                     salesSnapInFlightRef.current = false;
                     pendingSalesDirectionsRef.current.length = 0;
+                    finishWheelGesture();
                     if (salesLandingFrameRef.current !== null) {
                         window.cancelAnimationFrame(salesLandingFrameRef.current);
                         salesLandingFrameRef.current = null;
@@ -762,9 +772,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 window.cancelAnimationFrame(salesLandingFrameRef.current);
                 salesLandingFrameRef.current = null;
             }
-            wheelGestureConsumedRef.current = false;
-            wheelGestureDeltaRef.current = 0;
-            lastWheelEventAtRef.current = 0;
+            finishWheelGesture();
             container.style.touchAction = previousTouchAction;
         };
     }, [virtualScroll]);
