@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, X, BookOpen, ShoppingCart, Phone, Tag } from "l
 
 import PackagesDialog from "@/components/PackagesDialog";
 import Footer from "@/components/Footer";
+import GrowthSystemsSection from "@/components/GrowthSystemsSection";
 import { recordFalloff, recordScrollDepth } from "@/lib/checkoutTracking";
 import { CircularGallery, type GalleryItem } from "@/components/ui/circular-gallery";
 import { supabase } from "@/integrations/supabase/client";
@@ -305,8 +306,10 @@ function ProximityWords({ text, className }: { text: string; className?: string 
 // --- Main Hero Component ---
 const TOTAL_IMAGES = 20;
 const HERO_MORPH_END = 600;
-const CAROUSEL_SCROLL_END = HERO_MORPH_END + 8000;
-const MAX_SCROLL = CAROUSEL_SCROLL_END;
+const PORTFOLIO_SCROLL_END = HERO_MORPH_END + 3600;
+const SERVICES_SCROLL_START = PORTFOLIO_SCROLL_END - 520;
+const SERVICES_SCROLL_END = PORTFOLIO_SCROLL_END + 2400;
+const MAX_SCROLL = SERVICES_SCROLL_END;
 const SCROLL_BREAK_DURATION = 650;
 const MOBILE_SCROLL_BOOST = 24;
 const TABLET_SCROLL_BOOST = 12;
@@ -720,8 +723,40 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
 
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
-    const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
-    const contentBlur = useTransform(smoothMorph, [0.8, 1], ["blur(10px)", "blur(0px)"]);
+
+    // Portfolio exit and services entrance share an overlap so the third page
+    // grows out of the existing scene instead of appearing as a hard cut.
+    const portfolioExitProgress = useTransform(
+        virtualScroll,
+        [SERVICES_SCROLL_START, PORTFOLIO_SCROLL_END + 360],
+        [0, 1]
+    );
+    const smoothPortfolioExit = useSpring(portfolioExitProgress, { stiffness: 52, damping: 22 });
+    const portfolioExitOpacity = useTransform(smoothPortfolioExit, [0, 1], [1, 0]);
+    const portfolioOpacity = useTransform(
+        [contentOpacity, portfolioExitOpacity],
+        ([enter, exit]: number[]) => enter * exit
+    );
+    const portfolioY = useTransform(smoothPortfolioExit, [0, 1], [0, -92]);
+    const portfolioScale = useTransform(smoothPortfolioExit, [0, 1], [1, 0.94]);
+    const heroCardsOpacity = useTransform(smoothPortfolioExit, [0, 0.82], [1, 0]);
+    const heroCardsY = useTransform(smoothPortfolioExit, [0, 1], [0, -125]);
+    const heroCardsScale = useTransform(smoothPortfolioExit, [0, 1], [1, 0.91]);
+
+    const servicesProgress = useTransform(
+        virtualScroll,
+        [SERVICES_SCROLL_START, SERVICES_SCROLL_END],
+        [0, 1]
+    );
+    const smoothServicesProgress = useSpring(servicesProgress, { stiffness: 48, damping: 21 });
+    const servicesOpacity = useTransform(smoothServicesProgress, [0, 0.16, 1], [0, 1, 1]);
+    const servicesY = useTransform(smoothServicesProgress, [0, 0.2, 1], [110, 0, 0]);
+    const servicesScale = useTransform(smoothServicesProgress, [0, 0.2, 1], [0.965, 1, 1]);
+    const servicesPointerEvents = useTransform(
+        smoothServicesProgress,
+        [0, 0.17, 0.171, 1],
+        ["none", "none", "auto", "auto"]
+    );
     // Hero intro elements: opacity tracks the morph spring directly so scroll-up
     // reveals them instantly (matching the circle/cards behavior) instead of
     // running a separate 1s tween via animate={}.
@@ -745,7 +780,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const ctaOpacity = useTransform([ctaFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.95);
     const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
     // Footer fades in/out smoothly with the morph progress (matches other hero elements)
-    const footerRevealProgress = useTransform(smoothMorph, [0.5, 1], [0, 1]);
+    const footerRevealProgress = useTransform(smoothServicesProgress, [0.76, 1], [0, 1]);
     const [footerInteractive, setFooterInteractive] = useState(false);
     useEffect(() => {
         const unsub = footerRevealProgress.on("change", (v) => setFooterInteractive(v > 0.5));
@@ -848,7 +883,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
             );
         })();
     }, []);
-    const galleryRotation = useTransform(virtualScroll, [HERO_MORPH_END, CAROUSEL_SCROLL_END], isSmallViewport ? [0, 360] : [0, 720]);
+    const galleryRotation = useTransform(virtualScroll, [HERO_MORPH_END, PORTFOLIO_SCROLL_END], isSmallViewport ? [0, 270] : [0, 360]);
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     const [portfolioInteractive, setPortfolioInteractive] = useState(false);
@@ -875,8 +910,8 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
         const playHint = (value: number) => {
             if (value < 0.8 || hintPlayedRef.current) return;
             hintPlayedRef.current = true;
-            const rotationRange = isSmallViewport ? 360 : 720;
-            const hintScrollOffset = ((CAROUSEL_SCROLL_END - HERO_MORPH_END) * CAROUSEL_HINT_ROTATION_DEGREES) / rotationRange;
+            const rotationRange = isSmallViewport ? 270 : 360;
+            const hintScrollOffset = ((PORTFOLIO_SCROLL_END - HERO_MORPH_END) * CAROUSEL_HINT_ROTATION_DEGREES) / rotationRange;
             const start = Math.max(scrollRef.current, HERO_MORPH_END);
             const end = Math.min(start + hintScrollOffset, MAX_SCROLL);
 
@@ -1097,7 +1132,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
 
                 {/* Arc Active Content (Fades in) */}
                 <motion.div
-                    style={{ opacity: contentOpacity, filter: contentBlur }}
+                    style={{ opacity: portfolioOpacity, y: portfolioY, scale: portfolioScale }}
                     className="absolute top-[5%] z-10 flex flex-col items-center justify-center text-center pointer-events-auto px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
@@ -1113,7 +1148,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                 {/* Circular Portfolio Gallery — stays mounted so images remain cached while scrolling */}
                 {galleryItems.length > 0 && (
                     <motion.div
-                        style={{ opacity: contentOpacity, filter: contentBlur, pointerEvents: portfolioInteractive ? "auto" : "none" }}
+                        style={{ opacity: portfolioOpacity, y: portfolioY, scale: portfolioScale, pointerEvents: portfolioInteractive ? "auto" : "none" }}
                         className="absolute inset-x-0 top-[calc(31%+11.9px)] md:top-[32%] bottom-[calc(15%+47.1px)] md:bottom-[18%] z-[100] md:scale-[0.85] origin-center"
                     >
                         <CircularGallery
@@ -1131,8 +1166,24 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                     </motion.div>
                 )}
 
+                {/* Growth systems — the final act of the same virtual-scroll scene */}
+                <motion.div
+                    style={{
+                        opacity: servicesOpacity,
+                        y: servicesY,
+                        scale: servicesScale,
+                        pointerEvents: servicesPointerEvents,
+                    }}
+                    className="absolute inset-0 z-[170] origin-center"
+                >
+                    <GrowthSystemsSection progress={smoothServicesProgress} />
+                </motion.div>
+
                 {/* Main Container */}
-                <div className="relative flex items-start md:items-center justify-center w-full h-full pt-[240px] md:pt-0">
+                <motion.div
+                    style={{ opacity: heroCardsOpacity, y: heroCardsY, scale: heroCardsScale }}
+                    className="relative flex items-start md:items-center justify-center w-full h-full pt-[240px] md:pt-0 origin-center"
+                >
                     {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
                         let target = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
                         let stackIndex = 0;
@@ -1210,7 +1261,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                             />
                         );
                     })}
-                </div>
+                </motion.div>
             </div>
 
             {/* Footer: anchored to bottom on every viewport, above carousel/cards */}
