@@ -393,6 +393,8 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const salesSnapGenerationRef = useRef(0);
     const salesSnapControlsRef = useRef<{ stop: () => void } | null>(null);
     const salesSnapInFlightRef = useRef(false);
+    const pendingSalesDirectionRef = useRef(0);
+    const salesLandingFrameRef = useRef<number | null>(null);
     const wheelGestureConsumedRef = useRef(false);
     const wheelGestureDeltaRef = useRef(0);
     const lastWheelEventAtRef = useRef(0);
@@ -421,7 +423,10 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         };
 
         const snapToSalesPage = (direction: number, requestedIndex?: number) => {
-            if (salesSnapInFlightRef.current) return;
+            if (salesSnapInFlightRef.current) {
+                pendingSalesDirectionRef.current = direction > 0 ? 1 : -1;
+                return;
+            }
 
             const currentIndex = salesSnapIndexRef.current;
             const nextIndex = requestedIndex ?? Math.min(
@@ -433,18 +438,29 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             const target = nextIndex < 0
                 ? PORTFOLIO_SCROLL_END
                 : SALES_STORY_SCROLL_START + nextIndex * SALES_SCENE_SCROLL_DISTANCE;
+            const enteringSalesStory = currentIndex === -1 && nextIndex === 0;
             salesSnapIndexRef.current = nextIndex;
             salesSnapInFlightRef.current = true;
             const generation = ++salesSnapGenerationRef.current;
             salesSnapControlsRef.current = animate(scrollRef.current, target, {
-                duration: nextIndex < 0 ? 0.3 : 0.26,
-                ease: [0.16, 1, 0.3, 1],
+                duration: enteringSalesStory ? 0.82 : nextIndex < 0 ? 0.42 : 0.26,
+                ease: enteringSalesStory ? [0.4, 0, 0.2, 1] : [0.16, 1, 0.3, 1],
                 onUpdate: setVirtualScrollValue,
                 onComplete: () => {
                     if (generation !== salesSnapGenerationRef.current) return;
                     setVirtualScrollValue(target);
                     salesSnapControlsRef.current = null;
-                    salesSnapInFlightRef.current = false;
+                    // Paint the exact anchor once before honoring a fresh gesture
+                    // received during the tween. This preserves the stop without
+                    // making the user move the wheel a second time.
+                    salesLandingFrameRef.current = window.requestAnimationFrame(() => {
+                        salesLandingFrameRef.current = null;
+                        if (generation !== salesSnapGenerationRef.current) return;
+                        salesSnapInFlightRef.current = false;
+                        const pendingDirection = pendingSalesDirectionRef.current;
+                        pendingSalesDirectionRef.current = 0;
+                        if (pendingDirection) snapToSalesPage(pendingDirection);
+                    });
                 },
             });
         };
@@ -453,7 +469,11 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         const applyVirtualScrollDelta = (delta: number, source: "wheel" | "touch") => {
             if (!delta) return;
             if (salesSnapInFlightRef.current) {
-                if (source === "touch") touchSnapTriggeredRef.current = true;
+                if (source === "touch") {
+                    if (touchSnapTriggeredRef.current) return;
+                    touchSnapTriggeredRef.current = true;
+                }
+                pendingSalesDirectionRef.current = delta > 0 ? 1 : -1;
                 return;
             }
             const currentScroll = scrollRef.current;
@@ -521,7 +541,6 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 wheelGestureDeltaRef.current += scrollDelta;
 
                 if (
-                    salesSnapInFlightRef.current ||
                     wheelGestureConsumedRef.current ||
                     Math.abs(wheelGestureDeltaRef.current) < 8
                 ) return;
@@ -677,6 +696,11 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     salesSnapControlsRef.current = null;
                     salesSnapGenerationRef.current += 1;
                     salesSnapInFlightRef.current = false;
+                    pendingSalesDirectionRef.current = 0;
+                    if (salesLandingFrameRef.current !== null) {
+                        window.cancelAnimationFrame(salesLandingFrameRef.current);
+                        salesLandingFrameRef.current = null;
+                    }
                     salesSnapIndexRef.current = -1;
                     setVirtualScrollValue(0);
                     return;
@@ -687,6 +711,11 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     salesSnapControlsRef.current = null;
                     salesSnapGenerationRef.current += 1;
                     salesSnapInFlightRef.current = false;
+                    pendingSalesDirectionRef.current = 0;
+                    if (salesLandingFrameRef.current !== null) {
+                        window.cancelAnimationFrame(salesLandingFrameRef.current);
+                        salesLandingFrameRef.current = null;
+                    }
                     salesSnapIndexRef.current = SALES_SCENE_COUNT - 1;
                     setVirtualScrollValue(MAX_SCROLL);
                     return;
@@ -711,6 +740,11 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             snapSalesByDirectionRef.current = () => undefined;
             salesSnapGenerationRef.current += 1;
             salesSnapInFlightRef.current = false;
+            pendingSalesDirectionRef.current = 0;
+            if (salesLandingFrameRef.current !== null) {
+                window.cancelAnimationFrame(salesLandingFrameRef.current);
+                salesLandingFrameRef.current = null;
+            }
             wheelGestureConsumedRef.current = false;
             wheelGestureDeltaRef.current = 0;
             lastWheelEventAtRef.current = 0;
