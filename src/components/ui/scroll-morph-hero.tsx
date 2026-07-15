@@ -318,6 +318,10 @@ const MOBILE_SCROLL_BOOST = 24;
 const TABLET_SCROLL_BOOST = 12;
 const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for ≥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
+// Continuous trackpad momentum stays latched to one anchor. A normal mouse-wheel
+// notch re-arms immediately, even when the pointer has not moved between pages.
+const WHEEL_GESTURE_QUIET_MS = 55;
+const DISCRETE_WHEEL_NOTCH_DELTA = 80;
 
 // UI Template Images ordered around the colour wheel (red → orange → yellow →
 // green → blue → purple → magenta → back to red) so the rotating circle
@@ -393,7 +397,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const salesSnapGenerationRef = useRef(0);
     const salesSnapControlsRef = useRef<{ stop: () => void } | null>(null);
     const salesSnapInFlightRef = useRef(false);
-    const pendingSalesDirectionRef = useRef(0);
+    const pendingSalesDirectionsRef = useRef<number[]>([]);
     const salesLandingFrameRef = useRef<number | null>(null);
     const wheelGestureConsumedRef = useRef(false);
     const wheelGestureDeltaRef = useRef(0);
@@ -422,9 +426,15 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             recordScrollDepth((bounded / MAX_SCROLL) * 100);
         };
 
+        const queueSalesDirection = (direction: number) => {
+            const queue = pendingSalesDirectionsRef.current;
+            if (queue.length >= SALES_SCENE_COUNT) return;
+            queue.push(direction > 0 ? 1 : -1);
+        };
+
         const snapToSalesPage = (direction: number, requestedIndex?: number) => {
             if (salesSnapInFlightRef.current) {
-                pendingSalesDirectionRef.current = direction > 0 ? 1 : -1;
+                queueSalesDirection(direction);
                 return;
             }
 
@@ -433,7 +443,11 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 SALES_SCENE_COUNT - 1,
                 Math.max(-1, currentIndex + (direction > 0 ? 1 : -1)),
             );
-            if (nextIndex === currentIndex) return;
+            if (nextIndex === currentIndex) {
+                const queuedDirection = pendingSalesDirectionsRef.current.shift();
+                if (queuedDirection) snapToSalesPage(queuedDirection);
+                return;
+            }
 
             const target = nextIndex < 0
                 ? PORTFOLIO_SCROLL_END
@@ -457,8 +471,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                         salesLandingFrameRef.current = null;
                         if (generation !== salesSnapGenerationRef.current) return;
                         salesSnapInFlightRef.current = false;
-                        const pendingDirection = pendingSalesDirectionRef.current;
-                        pendingSalesDirectionRef.current = 0;
+                        const pendingDirection = pendingSalesDirectionsRef.current.shift();
                         if (pendingDirection) snapToSalesPage(pendingDirection);
                     });
                 },
@@ -473,7 +486,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     if (touchSnapTriggeredRef.current) return;
                     touchSnapTriggeredRef.current = true;
                 }
-                pendingSalesDirectionRef.current = delta > 0 ? 1 : -1;
+                queueSalesDirection(delta);
                 return;
             }
             const currentScroll = scrollRef.current;
@@ -522,7 +535,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             const carouselMult = scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1;
             const scrollDelta = e.deltaY * boost * carouselMult;
             const eventNow = performance.now();
-            const startsNewGesture = eventNow - lastWheelEventAtRef.current > 55;
+            const startsNewGesture =
+                Math.abs(e.deltaY) >= DISCRETE_WHEEL_NOTCH_DELTA ||
+                eventNow - lastWheelEventAtRef.current > WHEEL_GESTURE_QUIET_MS;
             lastWheelEventAtRef.current = eventNow;
 
             if (startsNewGesture) {
@@ -698,7 +713,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     salesSnapControlsRef.current = null;
                     salesSnapGenerationRef.current += 1;
                     salesSnapInFlightRef.current = false;
-                    pendingSalesDirectionRef.current = 0;
+                    pendingSalesDirectionsRef.current.length = 0;
                     if (salesLandingFrameRef.current !== null) {
                         window.cancelAnimationFrame(salesLandingFrameRef.current);
                         salesLandingFrameRef.current = null;
@@ -713,7 +728,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     salesSnapControlsRef.current = null;
                     salesSnapGenerationRef.current += 1;
                     salesSnapInFlightRef.current = false;
-                    pendingSalesDirectionRef.current = 0;
+                    pendingSalesDirectionsRef.current.length = 0;
                     if (salesLandingFrameRef.current !== null) {
                         window.cancelAnimationFrame(salesLandingFrameRef.current);
                         salesLandingFrameRef.current = null;
@@ -742,7 +757,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             snapSalesByDirectionRef.current = () => undefined;
             salesSnapGenerationRef.current += 1;
             salesSnapInFlightRef.current = false;
-            pendingSalesDirectionRef.current = 0;
+            pendingSalesDirectionsRef.current.length = 0;
             if (salesLandingFrameRef.current !== null) {
                 window.cancelAnimationFrame(salesLandingFrameRef.current);
                 salesLandingFrameRef.current = null;
