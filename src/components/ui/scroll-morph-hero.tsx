@@ -443,8 +443,8 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             salesSnapInFlightRef.current = true;
             const generation = ++salesSnapGenerationRef.current;
             salesSnapControlsRef.current = animate(scrollRef.current, target, {
-                duration: enteringSalesStory ? 0.72 : nextIndex < 0 ? 0.42 : 0.26,
-                ease: [0.16, 1, 0.3, 1],
+                duration: enteringSalesStory ? 0.82 : nextIndex < 0 ? 0.42 : 0.26,
+                ease: enteringSalesStory ? [0.22, 0.7, 0.2, 1] : [0.16, 1, 0.3, 1],
                 onUpdate: setVirtualScrollValue,
                 onComplete: () => {
                     if (generation !== salesSnapGenerationRef.current) return;
