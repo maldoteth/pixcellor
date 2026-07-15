@@ -305,9 +305,13 @@ function ProximityWords({ text, className }: { text: string; className?: string 
 // --- Main Hero Component ---
 const TOTAL_IMAGES = 20;
 const HERO_MORPH_END = 600;
-const PORTFOLIO_SCROLL_END = HERO_MORPH_END + 3600;
-const SALES_STORY_SCROLL_START = PORTFOLIO_SCROLL_END - 420;
-const SALES_STORY_SCROLL_END = SALES_STORY_SCROLL_START + 6000;
+const PORTFOLIO_SCROLL_END = HERO_MORPH_END + 2400;
+const SALES_SCENE_COUNT = 5;
+const SALES_TRANSITION_DISTANCE = 700;
+const SALES_SCENE_SCROLL_DISTANCE = 1100;
+const SALES_STORY_SCROLL_START = PORTFOLIO_SCROLL_END + SALES_TRANSITION_DISTANCE;
+const SALES_STORY_SCROLL_END =
+    SALES_STORY_SCROLL_START + (SALES_SCENE_COUNT - 1) * SALES_SCENE_SCROLL_DISTANCE;
 const MAX_SCROLL = SALES_STORY_SCROLL_END;
 const SCROLL_BREAK_DURATION = 650;
 const MOBILE_SCROLL_BOOST = 24;
@@ -385,6 +389,13 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const scrollBreakUntilRef = useRef(0);
     const touchNeedsReleaseRef = useRef(false);
     const arrowActivationRef = useRef(0);
+    const salesSnapIndexRef = useRef(-1);
+    const salesSnapLockedRef = useRef(false);
+    const salesSnapControlsRef = useRef<{ stop: () => void } | null>(null);
+    const wheelGestureActiveRef = useRef(false);
+    const wheelGestureTimerRef = useRef<number | null>(null);
+    const touchSnapTriggeredRef = useRef(false);
+    const snapSalesByDirectionRef = useRef<(direction: number) => void>(() => undefined);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -399,20 +410,71 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             introTimersRef.current = [];
         };
 
+        const setVirtualScrollValue = (value: number) => {
+            const bounded = Math.min(Math.max(value, 0), MAX_SCROLL);
+            scrollRef.current = bounded;
+            virtualScroll.set(bounded);
+            onVirtualScrollChangeRef.current?.(bounded);
+            recordScrollDepth((bounded / MAX_SCROLL) * 100);
+        };
+
+        const snapToSalesPage = (direction: number, requestedIndex?: number) => {
+            if (salesSnapLockedRef.current) return;
+            const currentIndex = salesSnapIndexRef.current;
+            const nextIndex = requestedIndex ?? Math.min(
+                SALES_SCENE_COUNT - 1,
+                Math.max(-1, currentIndex + (direction > 0 ? 1 : -1)),
+            );
+            if (nextIndex === currentIndex) return;
+
+            const target = nextIndex < 0
+                ? PORTFOLIO_SCROLL_END
+                : SALES_STORY_SCROLL_START + nextIndex * SALES_SCENE_SCROLL_DISTANCE;
+            salesSnapIndexRef.current = nextIndex;
+            salesSnapLockedRef.current = true;
+            salesSnapControlsRef.current?.stop();
+            salesSnapControlsRef.current = animate(scrollRef.current, target, {
+                duration: nextIndex < 0 ? 0.82 : 0.92,
+                ease: [0.22, 1, 0.36, 1],
+                onUpdate: setVirtualScrollValue,
+                onComplete: () => {
+                    setVirtualScrollValue(target);
+                    salesSnapLockedRef.current = false;
+                    salesSnapControlsRef.current = null;
+                },
+            });
+        };
+        snapSalesByDirectionRef.current = snapToSalesPage;
+
         const applyVirtualScrollDelta = (delta: number, source: "wheel" | "touch") => {
+            if (!delta || salesSnapLockedRef.current) return;
             const currentScroll = scrollRef.current;
             const now = performance.now();
+            const direction = delta > 0 ? 1 : -1;
+            const atAnchoredFlow = currentScroll >= PORTFOLIO_SCROLL_END - 1;
+            const leavingPortfolioUp = salesSnapIndexRef.current === -1 && direction < 0;
+
+            if (atAnchoredFlow && !leavingPortfolioUp) {
+                if (source === "touch") {
+                    if (touchSnapTriggeredRef.current) return;
+                    touchSnapTriggeredRef.current = true;
+                }
+                snapToSalesPage(direction);
+                return;
+            }
 
             if (delta > 0) {
                 if (source === "touch" && touchNeedsReleaseRef.current) return;
                 if (currentScroll >= HERO_MORPH_END && currentScroll <= HERO_MORPH_END + 1 && now < scrollBreakUntilRef.current) return;
                 if (currentScroll < HERO_MORPH_END && currentScroll + delta > HERO_MORPH_END) {
-                    scrollRef.current = HERO_MORPH_END;
-                    virtualScroll.set(HERO_MORPH_END);
-                    onVirtualScrollChangeRef.current?.(HERO_MORPH_END);
-                    recordScrollDepth((HERO_MORPH_END / MAX_SCROLL) * 100);
+                    setVirtualScrollValue(HERO_MORPH_END);
                     scrollBreakUntilRef.current = now + SCROLL_BREAK_DURATION;
                     if (source === "touch") touchNeedsReleaseRef.current = true;
+                    return;
+                }
+                if (currentScroll < PORTFOLIO_SCROLL_END && currentScroll + delta >= PORTFOLIO_SCROLL_END) {
+                    setVirtualScrollValue(PORTFOLIO_SCROLL_END);
+                    salesSnapIndexRef.current = -1;
                     return;
                 }
             } else {
@@ -420,11 +482,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 touchNeedsReleaseRef.current = false;
             }
 
-            const newScroll = Math.min(Math.max(currentScroll + delta, 0), MAX_SCROLL);
-            scrollRef.current = newScroll;
-            virtualScroll.set(newScroll);
-            onVirtualScrollChangeRef.current?.(newScroll);
-            recordScrollDepth((newScroll / MAX_SCROLL) * 100);
+            setVirtualScrollValue(currentScroll + delta);
         };
 
         const handleWheel = (e: WheelEvent) => {
@@ -435,6 +493,20 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : 1;
             const carouselMult = scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1;
             const scrollDelta = e.deltaY * boost * carouselMult;
+            const usesAnchors =
+                scrollRef.current >= PORTFOLIO_SCROLL_END - 1 &&
+                !(salesSnapIndexRef.current === -1 && scrollDelta < 0);
+            if (usesAnchors) {
+                if (wheelGestureTimerRef.current !== null) {
+                    window.clearTimeout(wheelGestureTimerRef.current);
+                }
+                wheelGestureTimerRef.current = window.setTimeout(() => {
+                    wheelGestureActiveRef.current = false;
+                    wheelGestureTimerRef.current = null;
+                }, 220);
+                if (wheelGestureActiveRef.current) return;
+                wheelGestureActiveRef.current = true;
+            }
             applyVirtualScrollDelta(scrollDelta, "wheel");
         };
 
@@ -466,6 +538,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             touchStartY = e.touches[0].clientY;
             touchStartX = e.touches[0].clientX;
             gestureAxis = "none";
+            touchSnapTriggeredRef.current = false;
         };
         const handleTouchMove = (e: TouchEvent) => {
             if (isInsideOverlay(e)) return;
@@ -522,6 +595,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         };
         const handleTouchEnd = () => {
             touchNeedsReleaseRef.current = false;
+            touchSnapTriggeredRef.current = false;
         };
 
         // Lock native scroll/zoom on the hero so the browser doesn't waste the
@@ -573,12 +647,20 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 case "Home":
                     e.preventDefault();
                     forceCirclePhase();
-                    applyVirtualScrollDelta(-MAX_SCROLL, "wheel");
+                    salesSnapControlsRef.current?.stop();
+                    salesSnapControlsRef.current = null;
+                    salesSnapLockedRef.current = false;
+                    salesSnapIndexRef.current = -1;
+                    setVirtualScrollValue(0);
                     return;
                 case "End":
                     e.preventDefault();
                     forceCirclePhase();
-                    applyVirtualScrollDelta(MAX_SCROLL, "wheel");
+                    salesSnapControlsRef.current?.stop();
+                    salesSnapControlsRef.current = null;
+                    salesSnapLockedRef.current = false;
+                    salesSnapIndexRef.current = SALES_SCENE_COUNT - 1;
+                    setVirtualScrollValue(MAX_SCROLL);
                     return;
                 default:
                     return;
@@ -596,6 +678,13 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             touchTarget.removeEventListener("touchend", handleTouchEnd, touchListenerOptions);
             touchTarget.removeEventListener("touchcancel", handleTouchEnd, touchListenerOptions);
             window.removeEventListener("keydown", handleKeyDown);
+            salesSnapControlsRef.current?.stop();
+            salesSnapControlsRef.current = null;
+            snapSalesByDirectionRef.current = () => undefined;
+            if (wheelGestureTimerRef.current !== null) {
+                window.clearTimeout(wheelGestureTimerRef.current);
+                wheelGestureTimerRef.current = null;
+            }
             container.style.touchAction = previousTouchAction;
         };
     }, [virtualScroll]);
@@ -603,7 +692,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const morphProgress = useTransform(virtualScroll, [0, 600], [0, 1]);
     const smoothMorph = useSpring(morphProgress, { stiffness: 40, damping: 20 });
 
-    const scrollRotate = useTransform(virtualScroll, [600, 3000], [0, 360]);
+    const scrollRotate = useTransform(virtualScroll, [HERO_MORPH_END, PORTFOLIO_SCROLL_END], [0, 24]);
     const smoothScrollRotate = useSpring(scrollRotate, { stiffness: 40, damping: 20 });
 
     // --- Mouse Parallax ---
@@ -687,7 +776,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     // grows out of the existing scene instead of appearing as a hard cut.
     const portfolioExitProgress = useTransform(
         virtualScroll,
-        [SALES_STORY_SCROLL_START, PORTFOLIO_SCROLL_END + 260],
+        [PORTFOLIO_SCROLL_END, SALES_STORY_SCROLL_START],
         [0, 1]
     );
     const smoothPortfolioExit = useSpring(portfolioExitProgress, { stiffness: 52, damping: 22 });
@@ -707,13 +796,19 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         [SALES_STORY_SCROLL_START, SALES_STORY_SCROLL_END],
         [0, 1]
     );
-    const smoothSalesStoryProgress = useSpring(salesStoryProgress, { stiffness: 54, damping: 24 });
-    const salesStoryOpacity = useTransform(smoothSalesStoryProgress, [0, 0.055, 1], [0, 1, 1]);
-    const salesStoryY = useTransform(smoothSalesStoryProgress, [0, 0.065, 1], [72, 0, 0]);
-    const salesStoryScale = useTransform(smoothSalesStoryProgress, [0, 0.065, 1], [0.98, 1, 1]);
+    const smoothSalesStoryProgress = useSpring(salesStoryProgress, { stiffness: 58, damping: 25 });
+    const salesEntranceProgress = useTransform(
+        virtualScroll,
+        [PORTFOLIO_SCROLL_END, SALES_STORY_SCROLL_START],
+        [0, 1]
+    );
+    const smoothSalesEntrance = useSpring(salesEntranceProgress, { stiffness: 58, damping: 25 });
+    const salesStoryOpacity = useTransform(smoothSalesEntrance, [0, 1], [0, 1]);
+    const salesStoryY = useTransform(smoothSalesEntrance, [0, 1], [64, 0]);
+    const salesStoryScale = useTransform(smoothSalesEntrance, [0, 1], [0.985, 1]);
     const salesStoryPointerEvents = useTransform(
-        smoothSalesStoryProgress,
-        [0, 0.055, 0.056, 1],
+        smoothSalesEntrance,
+        [0, 0.98, 0.981, 1],
         ["none", "none", "auto", "auto"]
     );
     // Hero intro elements: opacity tracks the morph spring directly so scroll-up
@@ -805,6 +900,10 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         const now = performance.now();
         if (now - arrowActivationRef.current < 250) return;
         arrowActivationRef.current = now;
+        if (scrollRef.current >= PORTFOLIO_SCROLL_END - 1) {
+            snapSalesByDirectionRef.current(-1);
+            return;
+        }
         const start = scrollRef.current;
         const end = 0;
         const duration = 1200;
@@ -869,7 +968,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             if (timeoutId !== undefined) window.clearTimeout(timeoutId);
         };
     }, [virtualScroll]);
-    const galleryRotation = useTransform(virtualScroll, [HERO_MORPH_END, PORTFOLIO_SCROLL_END], [0, 360]);
+    const galleryRotation = useTransform(virtualScroll, [HERO_MORPH_END, PORTFOLIO_SCROLL_END], [0, 180]);
     const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
     const [galleryRotationValue, setGalleryRotationValue] = useState(0);
     const [portfolioInteractive, setPortfolioInteractive] = useState(false);
@@ -879,7 +978,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     }, [smoothGalleryRotation]);
     useEffect(() => {
         const unsub = virtualScroll.on("change", (value) => {
-            setPortfolioInteractive(value > HERO_MORPH_END + 120);
+            setPortfolioInteractive(
+                value > HERO_MORPH_END + 120 && value < SALES_STORY_SCROLL_START,
+            );
         });
         return () => unsub();
     }, [virtualScroll]);
