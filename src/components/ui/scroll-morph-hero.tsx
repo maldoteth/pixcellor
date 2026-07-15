@@ -390,11 +390,11 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const touchNeedsReleaseRef = useRef(false);
     const arrowActivationRef = useRef(0);
     const salesSnapIndexRef = useRef(-1);
-    const salesSnapLockedRef = useRef(false);
+    const salesSnapGenerationRef = useRef(0);
     const salesSnapControlsRef = useRef<{ stop: () => void } | null>(null);
-    const wheelGestureActiveRef = useRef(false);
     const wheelGestureDeltaRef = useRef(0);
-    const lastWheelEventAtRef = useRef(0);
+    const lastSalesStepAtRef = useRef(0);
+    const lastSalesDirectionRef = useRef(0);
     const touchSnapTriggeredRef = useRef(false);
     const snapSalesByDirectionRef = useRef<(direction: number) => void>(() => undefined);
 
@@ -420,7 +420,6 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         };
 
         const snapToSalesPage = (direction: number, requestedIndex?: number) => {
-            if (salesSnapLockedRef.current) return;
             const currentIndex = salesSnapIndexRef.current;
             const nextIndex = requestedIndex ?? Math.min(
                 SALES_SCENE_COUNT - 1,
@@ -432,15 +431,15 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 ? PORTFOLIO_SCROLL_END
                 : SALES_STORY_SCROLL_START + nextIndex * SALES_SCENE_SCROLL_DISTANCE;
             salesSnapIndexRef.current = nextIndex;
-            salesSnapLockedRef.current = true;
+            const generation = ++salesSnapGenerationRef.current;
             salesSnapControlsRef.current?.stop();
             salesSnapControlsRef.current = animate(scrollRef.current, target, {
-                duration: nextIndex < 0 ? 0.46 : 0.42,
+                duration: nextIndex < 0 ? 0.3 : 0.26,
                 ease: [0.16, 1, 0.3, 1],
                 onUpdate: setVirtualScrollValue,
                 onComplete: () => {
+                    if (generation !== salesSnapGenerationRef.current) return;
                     setVirtualScrollValue(target);
-                    salesSnapLockedRef.current = false;
                     salesSnapControlsRef.current = null;
                 },
             });
@@ -448,7 +447,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         snapSalesByDirectionRef.current = snapToSalesPage;
 
         const applyVirtualScrollDelta = (delta: number, source: "wheel" | "touch") => {
-            if (!delta || salesSnapLockedRef.current) return;
+            if (!delta) return;
             const currentScroll = scrollRef.current;
             const now = performance.now();
             const direction = delta > 0 ? 1 : -1;
@@ -499,19 +498,22 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 !(salesSnapIndexRef.current === -1 && scrollDelta < 0);
             if (usesAnchors) {
                 const eventNow = performance.now();
-                const startsNewGesture = eventNow - lastWheelEventAtRef.current > 90;
-                lastWheelEventAtRef.current = eventNow;
-                if (startsNewGesture) {
-                    wheelGestureActiveRef.current = false;
+                const direction = scrollDelta > 0 ? 1 : -1;
+                const directionChanged = direction !== lastSalesDirectionRef.current;
+
+                if (directionChanged) {
                     wheelGestureDeltaRef.current = 0;
                 }
-
                 wheelGestureDeltaRef.current += scrollDelta;
-                if (wheelGestureActiveRef.current) return;
-                if (Math.abs(wheelGestureDeltaRef.current) < 12) return;
 
-                wheelGestureActiveRef.current = true;
-                applyVirtualScrollDelta(wheelGestureDeltaRef.current, "wheel");
+                const canStep =
+                    directionChanged || eventNow - lastSalesStepAtRef.current >= 70;
+                if (!canStep || Math.abs(wheelGestureDeltaRef.current) < 8) return;
+
+                lastSalesStepAtRef.current = eventNow;
+                lastSalesDirectionRef.current = direction;
+                wheelGestureDeltaRef.current = 0;
+                applyVirtualScrollDelta(direction, "wheel");
                 return;
             }
             applyVirtualScrollDelta(scrollDelta, "wheel");
@@ -657,7 +659,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     forceCirclePhase();
                     salesSnapControlsRef.current?.stop();
                     salesSnapControlsRef.current = null;
-                    salesSnapLockedRef.current = false;
+                    salesSnapGenerationRef.current += 1;
                     salesSnapIndexRef.current = -1;
                     setVirtualScrollValue(0);
                     return;
@@ -666,7 +668,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     forceCirclePhase();
                     salesSnapControlsRef.current?.stop();
                     salesSnapControlsRef.current = null;
-                    salesSnapLockedRef.current = false;
+                    salesSnapGenerationRef.current += 1;
                     salesSnapIndexRef.current = SALES_SCENE_COUNT - 1;
                     setVirtualScrollValue(MAX_SCROLL);
                     return;
@@ -689,9 +691,10 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             salesSnapControlsRef.current?.stop();
             salesSnapControlsRef.current = null;
             snapSalesByDirectionRef.current = () => undefined;
-            wheelGestureActiveRef.current = false;
+            salesSnapGenerationRef.current += 1;
             wheelGestureDeltaRef.current = 0;
-            lastWheelEventAtRef.current = 0;
+            lastSalesStepAtRef.current = 0;
+            lastSalesDirectionRef.current = 0;
             container.style.touchAction = previousTouchAction;
         };
     }, [virtualScroll]);
