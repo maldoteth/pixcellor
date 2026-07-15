@@ -739,10 +739,6 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     );
     const portfolioY = useTransform(smoothPortfolioExit, [0, 1], [0, -92]);
     const portfolioScale = useTransform(smoothPortfolioExit, [0, 1], [1, 0.94]);
-    const portfolioFilter = useTransform(
-        [smoothMorph, smoothPortfolioExit],
-        ([morph, exit]: number[]) => `blur(${Math.max(0, (1 - morph) * 10) + exit * 16}px)`
-    );
     const heroCardsOpacity = useTransform(smoothPortfolioExit, [0, 0.82], [1, 0]);
     const heroCardsY = useTransform(smoothPortfolioExit, [0, 1], [0, -125]);
     const heroCardsScale = useTransform(smoothPortfolioExit, [0, 1], [1, 0.91]);
@@ -756,19 +752,11 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
     const servicesOpacity = useTransform(smoothServicesProgress, [0, 0.16, 1], [0, 1, 1]);
     const servicesY = useTransform(smoothServicesProgress, [0, 0.2, 1], [110, 0, 0]);
     const servicesScale = useTransform(smoothServicesProgress, [0, 0.2, 1], [0.965, 1, 1]);
-    const servicesBlur = useTransform(smoothServicesProgress, [0, 0.18, 1], ["blur(18px)", "blur(0px)", "blur(0px)"]);
-    const [servicesProgressValue, setServicesProgressValue] = useState(0);
-    const [servicesInteractive, setServicesInteractive] = useState(false);
-    useEffect(() => {
-        const unsubProgress = smoothServicesProgress.on("change", setServicesProgressValue);
-        const unsubScroll = virtualScroll.on("change", (value) => {
-            setServicesInteractive(value > SERVICES_SCROLL_START + 300);
-        });
-        return () => {
-            unsubProgress();
-            unsubScroll();
-        };
-    }, [smoothServicesProgress, virtualScroll]);
+    const servicesPointerEvents = useTransform(
+        smoothServicesProgress,
+        [0, 0.17, 0.171, 1],
+        ["none", "none", "auto", "auto"]
+    );
     // Hero intro elements: opacity tracks the morph spring directly so scroll-up
     // reveals them instantly (matching the circle/cards behavior) instead of
     // running a separate 1s tween via animate={}.
@@ -1144,7 +1132,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
 
                 {/* Arc Active Content (Fades in) */}
                 <motion.div
-                    style={{ opacity: portfolioOpacity, y: portfolioY, scale: portfolioScale, filter: portfolioFilter }}
+                    style={{ opacity: portfolioOpacity, y: portfolioY, scale: portfolioScale }}
                     className="absolute top-[5%] z-10 flex flex-col items-center justify-center text-center pointer-events-auto px-4"
                 >
                     <h2 className="text-3xl md:text-5xl font-semibold text-foreground tracking-tight mb-4">
@@ -1160,7 +1148,7 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                 {/* Circular Portfolio Gallery — stays mounted so images remain cached while scrolling */}
                 {galleryItems.length > 0 && (
                     <motion.div
-                        style={{ opacity: portfolioOpacity, y: portfolioY, scale: portfolioScale, filter: portfolioFilter, pointerEvents: portfolioInteractive ? "auto" : "none" }}
+                        style={{ opacity: portfolioOpacity, y: portfolioY, scale: portfolioScale, pointerEvents: portfolioInteractive ? "auto" : "none" }}
                         className="absolute inset-x-0 top-[calc(31%+11.9px)] md:top-[32%] bottom-[calc(15%+47.1px)] md:bottom-[18%] z-[100] md:scale-[0.85] origin-center"
                     >
                         <CircularGallery
@@ -1184,12 +1172,11 @@ export default function IntroAnimation({ onVirtualScrollChange, onPackagesOpenCh
                         opacity: servicesOpacity,
                         y: servicesY,
                         scale: servicesScale,
-                        filter: servicesBlur,
-                        pointerEvents: servicesInteractive ? "auto" : "none",
+                        pointerEvents: servicesPointerEvents,
                     }}
                     className="absolute inset-0 z-[170] origin-center"
                 >
-                    <GrowthSystemsSection progress={servicesProgressValue} />
+                    <GrowthSystemsSection progress={smoothServicesProgress} />
                 </motion.div>
 
                 {/* Main Container */}
