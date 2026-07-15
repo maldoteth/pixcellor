@@ -318,9 +318,13 @@ const MOBILE_SCROLL_BOOST = 24;
 const TABLET_SCROLL_BOOST = 12;
 const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for ≥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
-// One uninterrupted wheel or trackpad stream moves exactly one anchored page.
-// The controller re-arms after a short quiet gap, independent of pointer movement.
-const WHEEL_GESTURE_END_MS = 36;
+// A momentum stream emits events about once per frame. A new physical wheel
+// pulse has a wider gap or a clear acceleration rebound after the prior tail.
+// Detect that pulse on the event itself so pointer movement is never required.
+const WHEEL_PULSE_GAP_MS = 20;
+const WHEEL_TAIL_ARM_RATIO = 0.35;
+const WHEEL_REBOUND_RATIO = 1.65;
+const WHEEL_REBOUND_MIN_DELTA = 8;
 
 // UI Template Images ordered around the colour wheel (red → orange → yellow →
 // green → blue → purple → magenta → back to red) so the rotating circle
@@ -400,7 +404,11 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const salesLandingFrameRef = useRef<number | null>(null);
     const wheelGestureConsumedRef = useRef(false);
     const wheelGestureDeltaRef = useRef(0);
-    const wheelGestureEndTimerRef = useRef<number | null>(null);
+    const wheelLastEventAtRef = useRef(0);
+    const wheelLastMagnitudeRef = useRef(0);
+    const wheelPeakMagnitudeRef = useRef(0);
+    const wheelTailReadyRef = useRef(false);
+    const wheelDirectionRef = useRef(0);
     const touchSnapTriggeredRef = useRef(false);
     const snapSalesByDirectionRef = useRef<(direction: number) => void>(() => undefined);
 
@@ -526,23 +534,48 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         };
 
         const finishWheelGesture = () => {
-            if (wheelGestureEndTimerRef.current !== null) {
-                window.clearTimeout(wheelGestureEndTimerRef.current);
-                wheelGestureEndTimerRef.current = null;
-            }
             wheelGestureConsumedRef.current = false;
             wheelGestureDeltaRef.current = 0;
+            wheelLastEventAtRef.current = 0;
+            wheelLastMagnitudeRef.current = 0;
+            wheelPeakMagnitudeRef.current = 0;
+            wheelTailReadyRef.current = false;
+            wheelDirectionRef.current = 0;
         };
 
-        const scheduleWheelGestureEnd = () => {
-            if (wheelGestureEndTimerRef.current !== null) {
-                window.clearTimeout(wheelGestureEndTimerRef.current);
-            }
-            wheelGestureEndTimerRef.current = window.setTimeout(() => {
-                wheelGestureEndTimerRef.current = null;
+        const observeWheelPulse = (delta: number) => {
+            const now = performance.now();
+            const magnitude = Math.abs(delta);
+            const direction = delta > 0 ? 1 : -1;
+            const previousAt = wheelLastEventAtRef.current;
+            const previousMagnitude = wheelLastMagnitudeRef.current;
+            const previousDirection = wheelDirectionRef.current;
+            const gap = previousAt === 0 ? Number.POSITIVE_INFINITY : now - previousAt;
+            const startsAfterGap = gap > WHEEL_PULSE_GAP_MS;
+            const changesDirection = previousDirection !== 0 && direction !== previousDirection;
+            const reboundsAfterTail =
+                wheelTailReadyRef.current &&
+                magnitude >= WHEEL_REBOUND_MIN_DELTA &&
+                magnitude >= previousMagnitude * WHEEL_REBOUND_RATIO;
+
+            if (startsAfterGap || changesDirection || reboundsAfterTail) {
                 wheelGestureConsumedRef.current = false;
                 wheelGestureDeltaRef.current = 0;
-            }, WHEEL_GESTURE_END_MS);
+                wheelPeakMagnitudeRef.current = magnitude;
+                wheelTailReadyRef.current = false;
+            } else {
+                wheelPeakMagnitudeRef.current = Math.max(wheelPeakMagnitudeRef.current, magnitude);
+                if (
+                    wheelPeakMagnitudeRef.current >= WHEEL_REBOUND_MIN_DELTA &&
+                    magnitude <= wheelPeakMagnitudeRef.current * WHEEL_TAIL_ARM_RATIO
+                ) {
+                    wheelTailReadyRef.current = true;
+                }
+            }
+
+            wheelLastEventAtRef.current = now;
+            wheelLastMagnitudeRef.current = magnitude;
+            wheelDirectionRef.current = direction;
         };
 
         const handleWheel = (e: WheelEvent) => {
@@ -553,6 +586,10 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : 1;
             const carouselMult = scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1;
             const scrollDelta = e.deltaY * boost * carouselMult;
+            if (scrollRef.current >= PORTFOLIO_SCROLL_END - 1) {
+                observeWheelPulse(e.deltaY);
+            }
+
             const usesAnchors =
                 scrollRef.current >= PORTFOLIO_SCROLL_END - 1 &&
                 !(
@@ -561,7 +598,6 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     !wheelGestureConsumedRef.current
                 );
             if (usesAnchors) {
-                scheduleWheelGestureEnd();
                 wheelGestureDeltaRef.current += scrollDelta;
 
                 const isSalesPageSettled =
