@@ -394,7 +394,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const salesSnapControlsRef = useRef<{ stop: () => void } | null>(null);
     const wheelGestureActiveRef = useRef(false);
     const wheelGestureDeltaRef = useRef(0);
-    const wheelGestureTimerRef = useRef<number | null>(null);
+    const lastWheelEventAtRef = useRef(0);
     const touchSnapTriggeredRef = useRef(false);
     const snapSalesByDirectionRef = useRef<(direction: number) => void>(() => undefined);
 
@@ -435,8 +435,8 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             salesSnapLockedRef.current = true;
             salesSnapControlsRef.current?.stop();
             salesSnapControlsRef.current = animate(scrollRef.current, target, {
-                duration: nextIndex < 0 ? 0.82 : 0.92,
-                ease: [0.22, 1, 0.36, 1],
+                duration: nextIndex < 0 ? 0.46 : 0.42,
+                ease: [0.16, 1, 0.3, 1],
                 onUpdate: setVirtualScrollValue,
                 onComplete: () => {
                     setVirtualScrollValue(target);
@@ -498,17 +498,18 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 scrollRef.current >= PORTFOLIO_SCROLL_END - 1 &&
                 !(salesSnapIndexRef.current === -1 && scrollDelta < 0);
             if (usesAnchors) {
-                wheelGestureDeltaRef.current += scrollDelta;
-                if (wheelGestureTimerRef.current !== null) {
-                    window.clearTimeout(wheelGestureTimerRef.current);
-                }
-                wheelGestureTimerRef.current = window.setTimeout(() => {
+                const eventNow = performance.now();
+                const startsNewGesture = eventNow - lastWheelEventAtRef.current > 90;
+                lastWheelEventAtRef.current = eventNow;
+                if (startsNewGesture) {
                     wheelGestureActiveRef.current = false;
                     wheelGestureDeltaRef.current = 0;
-                    wheelGestureTimerRef.current = null;
-                }, 220);
+                }
+
+                wheelGestureDeltaRef.current += scrollDelta;
                 if (wheelGestureActiveRef.current) return;
-                if (Math.abs(wheelGestureDeltaRef.current) < 24) return;
+                if (Math.abs(wheelGestureDeltaRef.current) < 12) return;
+
                 wheelGestureActiveRef.current = true;
                 applyVirtualScrollDelta(wheelGestureDeltaRef.current, "wheel");
                 return;
@@ -688,12 +689,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             salesSnapControlsRef.current?.stop();
             salesSnapControlsRef.current = null;
             snapSalesByDirectionRef.current = () => undefined;
-            if (wheelGestureTimerRef.current !== null) {
-                window.clearTimeout(wheelGestureTimerRef.current);
-                wheelGestureTimerRef.current = null;
-            }
             wheelGestureActiveRef.current = false;
             wheelGestureDeltaRef.current = 0;
+            lastWheelEventAtRef.current = 0;
             container.style.touchAction = previousTouchAction;
         };
     }, [virtualScroll]);
@@ -788,7 +786,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         [PORTFOLIO_SCROLL_END, SALES_STORY_SCROLL_START],
         [0, 1]
     );
-    const smoothPortfolioExit = useSpring(portfolioExitProgress, { stiffness: 52, damping: 22 });
+    // The anchored virtual-scroll tween already supplies the easing. Avoid a
+    // second spring here so each page lands exactly when input unlocks.
+    const smoothPortfolioExit = portfolioExitProgress;
     const portfolioExitOpacity = useTransform(smoothPortfolioExit, [0, 1], [1, 0]);
     const portfolioOpacity = useTransform(
         [contentOpacity, portfolioExitOpacity],
@@ -805,13 +805,13 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         [SALES_STORY_SCROLL_START, SALES_STORY_SCROLL_END],
         [0, 1]
     );
-    const smoothSalesStoryProgress = useSpring(salesStoryProgress, { stiffness: 58, damping: 25 });
+    const smoothSalesStoryProgress = salesStoryProgress;
     const salesEntranceProgress = useTransform(
         virtualScroll,
         [PORTFOLIO_SCROLL_END, SALES_STORY_SCROLL_START],
         [0, 1]
     );
-    const smoothSalesEntrance = useSpring(salesEntranceProgress, { stiffness: 58, damping: 25 });
+    const smoothSalesEntrance = salesEntranceProgress;
     const salesStoryOpacity = useTransform(smoothSalesEntrance, [0, 1], [0, 1]);
     const salesStoryY = useTransform(smoothSalesEntrance, [0, 1], [64, 0]);
     const salesStoryScale = useTransform(smoothSalesEntrance, [0, 1], [0.985, 1]);
