@@ -393,6 +393,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const salesSnapLockedRef = useRef(false);
     const salesSnapControlsRef = useRef<{ stop: () => void } | null>(null);
     const wheelGestureActiveRef = useRef(false);
+    const wheelGestureDeltaRef = useRef(0);
     const wheelGestureTimerRef = useRef<number | null>(null);
     const touchSnapTriggeredRef = useRef(false);
     const snapSalesByDirectionRef = useRef<(direction: number) => void>(() => undefined);
@@ -497,15 +498,20 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 scrollRef.current >= PORTFOLIO_SCROLL_END - 1 &&
                 !(salesSnapIndexRef.current === -1 && scrollDelta < 0);
             if (usesAnchors) {
+                wheelGestureDeltaRef.current += scrollDelta;
                 if (wheelGestureTimerRef.current !== null) {
                     window.clearTimeout(wheelGestureTimerRef.current);
                 }
                 wheelGestureTimerRef.current = window.setTimeout(() => {
                     wheelGestureActiveRef.current = false;
+                    wheelGestureDeltaRef.current = 0;
                     wheelGestureTimerRef.current = null;
                 }, 220);
                 if (wheelGestureActiveRef.current) return;
+                if (Math.abs(wheelGestureDeltaRef.current) < 24) return;
                 wheelGestureActiveRef.current = true;
+                applyVirtualScrollDelta(wheelGestureDeltaRef.current, "wheel");
+                return;
             }
             applyVirtualScrollDelta(scrollDelta, "wheel");
         };
@@ -626,6 +632,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             }
             // Don't fight the browser when a modifier is held (e.g. Cmd+ArrowDown).
             if (e.metaKey || e.ctrlKey || e.altKey) return;
+            if (e.repeat && scrollRef.current >= PORTFOLIO_SCROLL_END - 1) return;
 
             const ARROW_STEP = 220;
             const PAGE_STEP = 900;
@@ -685,6 +692,8 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 window.clearTimeout(wheelGestureTimerRef.current);
                 wheelGestureTimerRef.current = null;
             }
+            wheelGestureActiveRef.current = false;
+            wheelGestureDeltaRef.current = 0;
             container.style.touchAction = previousTouchAction;
         };
     }, [virtualScroll]);
