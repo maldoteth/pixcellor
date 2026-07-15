@@ -93,12 +93,20 @@ const stories = [
   },
 ];
 
+function getSceneRange(index: number) {
+  const anchor = index / SCENE_COUNT;
+  const nextAnchor = (index + 1) / SCENE_COUNT;
+  return {
+    start: index === 0 ? 0 : anchor - 0.025,
+    enterEnd: anchor + 0.02,
+    exitStart: nextAnchor - 0.025,
+    end: Math.min(nextAnchor + 0.02, 1),
+  };
+}
+
 function useSceneMotion(progress: MotionValue<number>, index: number, last = false) {
   const reduceMotion = useReducedMotion();
-  const start = index / SCENE_COUNT;
-  const end = (index + 1) / SCENE_COUNT;
-  const enterEnd = start + 0.035;
-  const exitStart = end - 0.04;
+  const { start, enterEnd, exitStart, end } = getSceneRange(index);
 
   const opacity = useTransform(
     progress,
@@ -116,7 +124,7 @@ function useSceneMotion(progress: MotionValue<number>, index: number, last = fal
     last ? [0.985, 1, 1] : [0.985, 1, 1, 0.99],
   );
 
-  return reduceMotion ? { opacity: 1, y: 0, scale: 1 } : { opacity, y, scale };
+  return reduceMotion ? { opacity, y: 0, scale: 1 } : { opacity, y, scale };
 }
 
 function SalesScene({
@@ -130,10 +138,7 @@ function SalesScene({
 }) {
   const reduceMotion = useReducedMotion();
   const scene = useSceneMotion(progress, index);
-  const start = index / SCENE_COUNT;
-  const end = (index + 1) / SCENE_COUNT;
-  const enterEnd = start + 0.045;
-  const exitStart = end - 0.045;
+  const { start, enterEnd, exitStart, end } = getSceneRange(index);
   const imageDirection = story.imageOnLeft ? -1 : 1;
 
   const imageX = useTransform(
@@ -149,12 +154,12 @@ function SalesScene({
 
   return (
     <motion.article
-      className="pointer-events-none absolute inset-0 grid grid-cols-1 content-center gap-5 overflow-hidden px-5 pb-[4.75rem] pt-[4.5rem] sm:px-8 md:grid-cols-12 md:items-center md:gap-10 md:px-12 md:pb-[6.5rem] md:pt-[6.5rem] lg:gap-16 lg:px-[7vw]"
+      className="pointer-events-none absolute inset-0 grid grid-cols-1 content-center gap-4 overflow-hidden px-5 pb-[4.25rem] pt-[3.25rem] sm:gap-5 sm:px-8 md:grid-cols-12 md:items-center md:gap-10 md:px-12 md:pb-[6.5rem] md:pt-[6.5rem] lg:gap-16 lg:px-[7vw]"
       style={scene}
     >
       <motion.div
         className={[
-          "relative h-[32vh] min-h-[13rem] overflow-hidden border border-white/15 md:col-span-7 md:h-[min(64vh,44rem)]",
+          "relative h-[28vh] min-h-[9.5rem] overflow-hidden border border-white/15 md:col-span-7 md:h-[min(64vh,44rem)]",
           story.imageOnLeft ? "md:order-1" : "md:order-2",
         ].join(" ")}
         style={{ x: reduceMotion ? 0 : imageX }}
