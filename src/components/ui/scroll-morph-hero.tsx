@@ -1118,6 +1118,16 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     // --- Content Opacity ---
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
 
+    // As the portfolio carousel becomes the foreground, let the original site
+    // cards fall gently out of focus. Using the same entrance value keeps the
+    // depth change perfectly reversible and in step with the carousel fade.
+    const backgroundDefocusFilter = useTransform(
+        contentOpacity,
+        [0, 1],
+        ["blur(0px)", "blur(2px)"]
+    );
+    const backgroundShadeOpacity = useTransform(contentOpacity, [0, 1], [0, 0.1]);
+
     // Portfolio exit and sales story entrance share an overlap so the next act
     // grows out of the existing scene instead of appearing as a hard cut.
     const portfolioExitProgress = useTransform(
@@ -1575,7 +1585,13 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
 
                 {/* Main Container */}
                 <motion.div
-                    style={{ opacity: heroCardsOpacity, y: heroCardsY, scale: heroCardsScale }}
+                    data-hero-background-layer="true"
+                    style={{
+                        opacity: heroCardsOpacity,
+                        y: heroCardsY,
+                        scale: heroCardsScale,
+                        filter: backgroundDefocusFilter,
+                    }}
                     className="relative flex items-start md:items-center justify-center w-full h-full pt-[240px] md:pt-0 origin-center"
                 >
                     {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
@@ -1655,6 +1671,12 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                             />
                         );
                     })}
+                    <motion.div
+                        data-hero-depth-shade="true"
+                        aria-hidden="true"
+                        className="absolute inset-0 z-[90] bg-black pointer-events-none"
+                        style={{ opacity: backgroundShadeOpacity }}
+                    />
                 </motion.div>
             </div>
 
