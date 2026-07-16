@@ -330,7 +330,6 @@ const WHEEL_REBOUND_MIN_DELTA = 8;
 const WHEEL_REBOUND_MIN_RISE = 3;
 const WHEEL_TAIL_FALL_EVENTS = 2;
 const WHEEL_REBOUND_RISE_EVENTS = 2;
-const SALES_ENTRY_WHEEL_RELEASE_MS = 140;
 
 // UI Template Images ordered around the colour wheel (red â†’ orange â†’ yellow â†’
 // green â†’ blue â†’ purple â†’ magenta â†’ back to red) so the rotating circle
@@ -410,9 +409,6 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const salesLandingFrameRef = useRef<number | null>(null);
     const salesSurfaceSyncingRef = useRef(false);
     const salesSurfaceSyncFrameRef = useRef<number | null>(null);
-    const salesPortfolioExitArmedRef = useRef(false);
-    const salesEntryWheelReleasedRef = useRef(true);
-    const salesEntryWheelReleaseTimerRef = useRef<number | null>(null);
     const wheelGestureConsumedRef = useRef(false);
     const wheelGestureDeltaRef = useRef(0);
     const wheelLastEventAtRef = useRef(0);
@@ -438,26 +434,6 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             window.dispatchEvent(new CustomEvent("pixcellor:hero-circle"));
             introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
             introTimersRef.current = [];
-        };
-
-        const finishSalesEntryWheelHold = () => {
-            if (salesEntryWheelReleaseTimerRef.current !== null) {
-                window.clearTimeout(salesEntryWheelReleaseTimerRef.current);
-                salesEntryWheelReleaseTimerRef.current = null;
-            }
-            salesEntryWheelReleasedRef.current = true;
-        };
-
-        const holdSalesEntryUntilWheelRelease = () => {
-            salesEntryWheelReleasedRef.current = false;
-            if (salesEntryWheelReleaseTimerRef.current !== null) {
-                window.clearTimeout(salesEntryWheelReleaseTimerRef.current);
-            }
-            salesEntryWheelReleaseTimerRef.current = window.setTimeout(() => {
-                salesEntryWheelReleaseTimerRef.current = null;
-                if (salesSnapInFlightRef.current) return;
-                salesEntryWheelReleasedRef.current = true;
-            }, SALES_ENTRY_WHEEL_RELEASE_MS);
         };
 
         const setVirtualScrollValue = (value: number, syncSalesSurface = true) => {
@@ -520,29 +496,12 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 return;
             }
 
-            // Once the sales story is open, let the browser's native snap engine
-            // arbitrate each move. It has the device gesture boundaries that
-            // WheelEvent does not expose, and snap-stop: always guarantees that a
-            // forceful swipe cannot pass over an intermediate sales scene.
-            if (currentIndex >= 0 && nextIndex >= 0 && container.clientHeight > 0) {
-                salesSnapIndexRef.current = nextIndex;
-                salesPortfolioExitArmedRef.current = false;
-                container.scrollTo({
-                    top: nextIndex * container.clientHeight,
-                    behavior: "smooth",
-                });
-                return;
-            }
-
             const target = nextIndex < 0
                 ? PORTFOLIO_SCROLL_END
                 : SALES_STORY_SCROLL_START + nextIndex * SALES_SCENE_SCROLL_DISTANCE;
             const enteringSalesStory = currentIndex === -1 && nextIndex === 0;
             if (enteringSalesStory || nextIndex < 0) {
                 pendingSalesDirectionsRef.current.length = 0;
-            }
-            if (nextIndex < 0) {
-                finishSalesEntryWheelHold();
             }
             salesSnapIndexRef.current = nextIndex;
             salesSnapInFlightRef.current = true;
@@ -562,11 +521,6 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                         salesLandingFrameRef.current = null;
                         if (generation !== salesSnapGenerationRef.current) return;
                         salesSnapInFlightRef.current = false;
-                        if (!salesEntryWheelReleasedRef.current && nextIndex === 0) {
-                            holdSalesEntryUntilWheelRelease();
-                        }
-                        salesPortfolioExitArmedRef.current =
-                            nextIndex === 0 && container.scrollTop <= 1;
                         const pendingDirection = pendingSalesDirectionsRef.current.shift();
                         if (pendingDirection) snapToSalesPage(pendingDirection);
                     });
@@ -595,9 +549,6 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 if (source === "touch") {
                     if (touchSnapTriggeredRef.current) return;
                     touchSnapTriggeredRef.current = true;
-                }
-                if (source === "wheel" && salesSnapIndexRef.current === -1 && direction > 0) {
-                    holdSalesEntryUntilWheelRelease();
                 }
                 snapToSalesPage(direction);
                 return;
@@ -717,50 +668,35 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         };
 
         const handleWheel = (e: WheelEvent) => {
-            const nativeSalesReady =
-                salesSnapIndexRef.current >= 0 &&
-                !salesSnapInFlightRef.current &&
-                salesEntryWheelReleasedRef.current &&
-                scrollRef.current >= SALES_STORY_SCROLL_START - 1;
+            if (!e.deltaY) return;
 
-            if (nativeSalesReady) {
-                forceCirclePhase();
+            const inAnchoredFlow =
+                scrollRef.current >= PORTFOLIO_SCROLL_END - 1 ||
+                salesSnapIndexRef.current >= 0 ||
+                salesSnapInFlightRef.current;
+            if (inAnchoredFlow) observeWheelPulse(e.deltaY);
 
-                // The first upward gesture at sales scene zero returns through the
-                // existing portfolio blend. Every internal sales gesture remains
-                // native and therefore never depends on pointer movement or a timer.
-                if (salesPortfolioExitArmedRef.current && container.scrollTop <= 1 && e.deltaY < 0) {
-                    e.preventDefault();
-                    finishWheelGesture();
-                    salesPortfolioExitArmedRef.current = false;
-                    snapToSalesPage(-1, -1);
-                }
-                return;
-            }
-
-            // The portfolio handoff is longer than some high-momentum wheel tails.
-            // Keep only the first sales anchor closed until that initiating wheel
-            // stream has actually gone quiet; internal sales anchors stay native.
-            const waitingForSalesEntryWheelRelease =
-                salesSnapIndexRef.current === 0 &&
-                scrollRef.current >= SALES_STORY_SCROLL_START - 1 &&
-                !salesEntryWheelReleasedRef.current;
-            if (waitingForSalesEntryWheelRelease) {
-                e.preventDefault();
-                forceCirclePhase();
-                holdSalesEntryUntilWheelRelease();
-                return;
-            }
-
-            // Entry/exit uses the existing cinematic tween. Residual events from
-            // that same physical gesture must never be queued as future sales-page
-            // moves; internal sales navigation is native once the tween settles.
+            // Every new wheel pulse is one intent, even while an anchor tween is
+            // finishing. Queue that intent once so rapid notches stay responsive,
+            // while the rest of the same high-momentum pulse is discarded.
             if (salesSnapInFlightRef.current) {
                 e.preventDefault();
                 forceCirclePhase();
-                if (!salesEntryWheelReleasedRef.current) {
-                    holdSalesEntryUntilWheelRelease();
-                }
+                if (wheelGestureConsumedRef.current) return;
+                wheelGestureConsumedRef.current = true;
+                queueSalesDirection(e.deltaY);
+                return;
+            }
+
+            const atSalesAnchor =
+                salesSnapIndexRef.current >= 0 &&
+                scrollRef.current >= SALES_STORY_SCROLL_START - 1;
+            if (atSalesAnchor) {
+                e.preventDefault();
+                forceCirclePhase();
+                if (wheelGestureConsumedRef.current) return;
+                wheelGestureConsumedRef.current = true;
+                applyVirtualScrollDelta(e.deltaY > 0 ? 1 : -1, "wheel");
                 return;
             }
 
@@ -771,9 +707,6 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : 1;
             const carouselMult = scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1;
             const scrollDelta = e.deltaY * boost * carouselMult;
-            if (scrollRef.current >= PORTFOLIO_SCROLL_END - 1) {
-                observeWheelPulse(e.deltaY);
-            }
 
             const usesAnchors =
                 scrollRef.current >= PORTFOLIO_SCROLL_END - 1 &&
@@ -898,36 +831,16 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
 
         const touchListenerOptions: AddEventListenerOptions = { passive: false, capture: true };
         const handleSalesSurfaceScroll = () => {
-            if (
-                salesSurfaceSyncingRef.current ||
-                salesSnapInFlightRef.current ||
-                salesSnapIndexRef.current < 0 ||
-                container.clientHeight <= 0
-            ) return;
-
-            salesPortfolioExitArmedRef.current = false;
-            const salesOffset = Math.min(
-                SALES_SCENE_COUNT - 1,
-                Math.max(0, container.scrollTop / container.clientHeight),
-            );
-            salesSnapIndexRef.current = Math.round(salesOffset);
-            setVirtualScrollValue(
-                SALES_STORY_SCROLL_START + salesOffset * SALES_SCENE_SCROLL_DISTANCE,
-                false,
-            );
-        };
-
-        const handleSalesSurfaceScrollEnd = () => {
-            salesPortfolioExitArmedRef.current =
-                !salesSnapInFlightRef.current &&
-                salesSnapIndexRef.current === 0 &&
-                container.scrollTop <= 1;
+            if (!salesSurfaceSyncingRef.current) {
+                // Virtual scroll owns the lower anchors. Correct any native scroll
+                // chaining without changing the active sales page.
+                setVirtualScrollValue(scrollRef.current);
+            }
         };
         container.addEventListener("wheel", handleWheel, { passive: false });
         container.addEventListener("scroll", handleSalesSurfaceScroll, { passive: true });
         // Non-passive touchstart commits the gesture to JS immediately, so the
         // first swipe registers instead of being eaten by the scroll heuristic.
-        container.addEventListener("scrollend", handleSalesSurfaceScrollEnd);
         touchTarget.addEventListener("touchstart", handleTouchStart, touchListenerOptions);
         touchTarget.addEventListener("touchmove", handleTouchMove, touchListenerOptions);
         touchTarget.addEventListener("touchend", handleTouchEnd, touchListenerOptions);
@@ -1010,7 +923,6 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             touchTarget.removeEventListener("touchmove", handleTouchMove, touchListenerOptions);
             touchTarget.removeEventListener("touchend", handleTouchEnd, touchListenerOptions);
             touchTarget.removeEventListener("touchcancel", handleTouchEnd, touchListenerOptions);
-            container.removeEventListener("scrollend", handleSalesSurfaceScrollEnd);
             window.removeEventListener("keydown", handleKeyDown);
             salesSnapControlsRef.current?.stop();
             salesSnapControlsRef.current = null;
@@ -1028,10 +940,8 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 salesSurfaceSyncFrameRef.current = null;
             }
             salesSurfaceSyncingRef.current = false;
-            finishSalesEntryWheelHold();
             finishWheelGesture();
             container.style.touchAction = previousTouchAction;
-            salesPortfolioExitArmedRef.current = false;
         };
     }, [virtualScroll]);
 
