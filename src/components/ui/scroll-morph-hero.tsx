@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, X, BookOpen, ShoppingCart, Phone, Tag } from "l
 import Footer from "@/components/Footer";
 import ServiceSalesStory from "@/components/ServiceSalesStory";
 import { recordScrollDepth } from "@/lib/checkoutTracking";
+import { advanceWheelPulse, createWheelPulseState } from "@/lib/wheel-pulse";
 import { CircularGallery, type GalleryItem } from "@/components/ui/circular-gallery";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -318,18 +319,6 @@ const MOBILE_SCROLL_BOOST = 24;
 const TABLET_SCROLL_BOOST = 12;
 const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for â‰¥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
-// Track the shape of each wheel pulse: accelerate, peak, then decay. A new
-// same-direction swipe is the next acceleration after that decay. WheelEvent
-// exposes no gesture-phase flag, so this valley detector is what lets a fresh
-// swipe react immediately without treating one swipe's momentum as four pages.
-const WHEEL_PULSE_GAP_MS = 20;
-const WHEEL_TAIL_ARM_RATIO = 0.72;
-const WHEEL_DEEP_TAIL_RATIO = 0.5;
-const WHEEL_REBOUND_RATIO = 1.08;
-const WHEEL_REBOUND_MIN_DELTA = 8;
-const WHEEL_REBOUND_MIN_RISE = 3;
-const WHEEL_TAIL_FALL_EVENTS = 2;
-const WHEEL_REBOUND_RISE_EVENTS = 2;
 
 // UI Template Images ordered around the colour wheel (red â†’ orange â†’ yellow â†’
 // green â†’ blue â†’ purple â†’ magenta â†’ back to red) so the rotating circle
@@ -411,14 +400,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const salesSurfaceSyncFrameRef = useRef<number | null>(null);
     const wheelGestureConsumedRef = useRef(false);
     const wheelGestureDeltaRef = useRef(0);
-    const wheelLastEventAtRef = useRef(0);
-    const wheelLastMagnitudeRef = useRef(0);
-    const wheelPeakMagnitudeRef = useRef(0);
-    const wheelTailReadyRef = useRef(false);
-    const wheelDeepTailReadyRef = useRef(false);
-    const wheelFallingEventsRef = useRef(0);
-    const wheelRisingEventsRef = useRef(0);
-    const wheelDirectionRef = useRef(0);
+    const wheelPulseStateRef = useRef(createWheelPulseState());
     const touchSnapTriggeredRef = useRef(false);
     const snapSalesByDirectionRef = useRef<(direction: number) => void>(() => undefined);
     const setVirtualScrollDriverRef = useRef<(value: number) => void>(() => undefined);
@@ -579,92 +561,23 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         const finishWheelGesture = () => {
             wheelGestureConsumedRef.current = false;
             wheelGestureDeltaRef.current = 0;
-            wheelLastEventAtRef.current = 0;
-            wheelLastMagnitudeRef.current = 0;
-            wheelPeakMagnitudeRef.current = 0;
-            wheelTailReadyRef.current = false;
-            wheelDeepTailReadyRef.current = false;
-            wheelFallingEventsRef.current = 0;
-            wheelRisingEventsRef.current = 0;
-            wheelDirectionRef.current = 0;
+            wheelPulseStateRef.current = createWheelPulseState();
         };
 
         const observeWheelPulse = (delta: number) => {
-            const now = performance.now();
-            const magnitude = Math.abs(delta);
-            const direction = delta > 0 ? 1 : -1;
-            const previousAt = wheelLastEventAtRef.current;
-            const previousMagnitude = wheelLastMagnitudeRef.current;
-            const previousDirection = wheelDirectionRef.current;
-            const gap = previousAt === 0 ? Number.POSITIVE_INFINITY : now - previousAt;
-            const startsAfterGap = gap > WHEEL_PULSE_GAP_MS;
-            const changesDirection = previousDirection !== 0 && direction !== previousDirection;
-            let startsNewPulse = startsAfterGap || changesDirection;
+            const result = advanceWheelPulse(
+                wheelPulseStateRef.current,
+                delta,
+                performance.now(),
+            );
+            wheelPulseStateRef.current = result.state;
 
-            if (!startsNewPulse) {
-                const isFalling = previousMagnitude > 0 && magnitude < previousMagnitude;
-                const risesEnough =
-                    previousMagnitude > 0 &&
-                    magnitude >= WHEEL_REBOUND_MIN_DELTA &&
-                    magnitude - previousMagnitude >= WHEEL_REBOUND_MIN_RISE &&
-                    magnitude >= previousMagnitude * WHEEL_REBOUND_RATIO;
-
-                wheelPeakMagnitudeRef.current = Math.max(
-                    wheelPeakMagnitudeRef.current,
-                    magnitude,
-                );
-
-                if (isFalling) {
-                    wheelFallingEventsRef.current += 1;
-                } else if (magnitude >= previousMagnitude) {
-                    wheelFallingEventsRef.current = 0;
-                }
-
-                if (
-                    wheelPeakMagnitudeRef.current >= WHEEL_REBOUND_MIN_DELTA &&
-                    magnitude <= wheelPeakMagnitudeRef.current * WHEEL_DEEP_TAIL_RATIO
-                ) {
-                    wheelDeepTailReadyRef.current = true;
-                }
-
-                if (
-                    wheelDeepTailReadyRef.current ||
-                    (
-                        wheelFallingEventsRef.current >= WHEEL_TAIL_FALL_EVENTS &&
-                        magnitude <= wheelPeakMagnitudeRef.current * WHEEL_TAIL_ARM_RATIO
-                    )
-                ) {
-                    wheelTailReadyRef.current = true;
-                }
-
-                if (wheelTailReadyRef.current && risesEnough) {
-                    wheelRisingEventsRef.current += 1;
-                } else if (isFalling) {
-                    wheelRisingEventsRef.current = 0;
-                }
-
-                startsNewPulse =
-                    wheelTailReadyRef.current &&
-                    risesEnough &&
-                    (
-                        wheelDeepTailReadyRef.current ||
-                        wheelRisingEventsRef.current >= WHEEL_REBOUND_RISE_EVENTS
-                    );
-            }
-
-            if (startsNewPulse) {
+            if (result.startsNewPulse) {
                 wheelGestureConsumedRef.current = false;
                 wheelGestureDeltaRef.current = 0;
-                wheelPeakMagnitudeRef.current = magnitude;
-                wheelTailReadyRef.current = false;
-                wheelDeepTailReadyRef.current = false;
-                wheelFallingEventsRef.current = 0;
-                wheelRisingEventsRef.current = 0;
             }
 
-            wheelLastEventAtRef.current = now;
-            wheelLastMagnitudeRef.current = magnitude;
-            wheelDirectionRef.current = direction;
+            return result.startsNewPulse;
         };
 
         const handleWheel = (e: WheelEvent) => {
@@ -674,15 +587,15 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 scrollRef.current >= PORTFOLIO_SCROLL_END - 1 ||
                 salesSnapIndexRef.current >= 0 ||
                 salesSnapInFlightRef.current;
-            if (inAnchoredFlow) observeWheelPulse(e.deltaY);
+            const startsNewPulse = inAnchoredFlow && observeWheelPulse(e.deltaY);
 
-            // Every new wheel pulse is one intent, even while an anchor tween is
-            // finishing. Queue that intent once so rapid notches stay responsive,
-            // while the rest of the same high-momentum pulse is discarded.
             if (salesSnapInFlightRef.current) {
                 e.preventDefault();
                 forceCirclePhase();
-                if (wheelGestureConsumedRef.current) return;
+                // A physical desktop swipe emits many wheel packets. Queue only
+                // the first packet of a genuinely new pulse while the current
+                // page is landing; discard the active pulse's momentum tail.
+                if (!startsNewPulse || wheelGestureConsumedRef.current) return;
                 wheelGestureConsumedRef.current = true;
                 queueSalesDirection(e.deltaY);
                 return;
