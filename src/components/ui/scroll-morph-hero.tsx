@@ -90,7 +90,7 @@ function FlipCard({
             b = Math.min(255, Math.round(b * boost));
             setGlowColor(`${r}, ${g}, ${b}`);
         } catch {
-            /* CORS or other – fallback to white */
+            /* CORS or other â€“ fallback to white */
         }
     }, []);
 
@@ -316,7 +316,7 @@ const MAX_SCROLL = SALES_STORY_SCROLL_END;
 const SCROLL_BREAK_DURATION = 650;
 const MOBILE_SCROLL_BOOST = 24;
 const TABLET_SCROLL_BOOST = 12;
-const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for ≥1024px touch screens
+const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for â‰¥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
 // Track the shape of each wheel pulse: accelerate, peak, then decay. A new
 // same-direction swipe is the next acceleration after that decay. WheelEvent
@@ -331,8 +331,8 @@ const WHEEL_REBOUND_MIN_RISE = 3;
 const WHEEL_TAIL_FALL_EVENTS = 2;
 const WHEEL_REBOUND_RISE_EVENTS = 2;
 
-// UI Template Images ordered around the colour wheel (red → orange → yellow →
-// green → blue → purple → magenta → back to red) so the rotating circle
+// UI Template Images ordered around the colour wheel (red â†’ orange â†’ yellow â†’
+// green â†’ blue â†’ purple â†’ magenta â†’ back to red) so the rotating circle
 // reads as a continuous rainbow spectrum. 16 unique + 4 repeated to fill 20 slots.
 const IMAGES = [
     ui16, ui3, ui4, ui5, ui6, ui7, ui8, ui1, ui9, ui10,
@@ -407,6 +407,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const salesSnapInFlightRef = useRef(false);
     const pendingSalesDirectionsRef = useRef<number[]>([]);
     const salesLandingFrameRef = useRef<number | null>(null);
+    const salesSurfaceSyncingRef = useRef(false);
+    const salesSurfaceSyncFrameRef = useRef<number | null>(null);
+    const salesPortfolioExitArmedRef = useRef(false);
     const wheelGestureConsumedRef = useRef(false);
     const wheelGestureDeltaRef = useRef(0);
     const wheelLastEventAtRef = useRef(0);
@@ -419,6 +422,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const wheelDirectionRef = useRef(0);
     const touchSnapTriggeredRef = useRef(false);
     const snapSalesByDirectionRef = useRef<(direction: number) => void>(() => undefined);
+    const setVirtualScrollDriverRef = useRef<(value: number) => void>(() => undefined);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -433,13 +437,42 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             introTimersRef.current = [];
         };
 
-        const setVirtualScrollValue = (value: number) => {
+        const setVirtualScrollValue = (value: number, syncSalesSurface = true) => {
             const bounded = Math.min(Math.max(value, 0), MAX_SCROLL);
             scrollRef.current = bounded;
             virtualScroll.set(bounded);
             onVirtualScrollChangeRef.current?.(bounded);
             recordScrollDepth((bounded / MAX_SCROLL) * 100);
+
+            if (syncSalesSurface && container.clientHeight > 0) {
+                const salesOffset = Math.min(
+                    SALES_SCENE_COUNT - 1,
+                    Math.max(
+                        0,
+                        (bounded - SALES_STORY_SCROLL_START) / SALES_SCENE_SCROLL_DISTANCE,
+                    ),
+                );
+                if (!salesSnapInFlightRef.current) {
+                    salesSnapIndexRef.current = bounded >= SALES_STORY_SCROLL_START
+                        ? Math.round(salesOffset)
+                        : -1;
+                }
+
+                const targetTop = salesOffset * container.clientHeight;
+                if (Math.abs(container.scrollTop - targetTop) > 0.5) {
+                    salesSurfaceSyncingRef.current = true;
+                    container.scrollTop = targetTop;
+                    if (salesSurfaceSyncFrameRef.current !== null) {
+                        window.cancelAnimationFrame(salesSurfaceSyncFrameRef.current);
+                    }
+                    salesSurfaceSyncFrameRef.current = window.requestAnimationFrame(() => {
+                        salesSurfaceSyncFrameRef.current = null;
+                        salesSurfaceSyncingRef.current = false;
+                    });
+                }
+            }
         };
+        setVirtualScrollDriverRef.current = setVirtualScrollValue;
 
         const queueSalesDirection = (direction: number) => {
             const queue = pendingSalesDirectionsRef.current;
@@ -464,10 +497,27 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 return;
             }
 
+            // Once the sales story is open, let the browser's native snap engine
+            // arbitrate each move. It has the device gesture boundaries that
+            // WheelEvent does not expose, and snap-stop: always guarantees that a
+            // forceful swipe cannot pass over an intermediate sales scene.
+            if (currentIndex >= 0 && nextIndex >= 0 && container.clientHeight > 0) {
+                salesSnapIndexRef.current = nextIndex;
+                salesPortfolioExitArmedRef.current = false;
+                container.scrollTo({
+                    top: nextIndex * container.clientHeight,
+                    behavior: "smooth",
+                });
+                return;
+            }
+
             const target = nextIndex < 0
                 ? PORTFOLIO_SCROLL_END
                 : SALES_STORY_SCROLL_START + nextIndex * SALES_SCENE_SCROLL_DISTANCE;
             const enteringSalesStory = currentIndex === -1 && nextIndex === 0;
+            if (enteringSalesStory || nextIndex < 0) {
+                pendingSalesDirectionsRef.current.length = 0;
+            }
             salesSnapIndexRef.current = nextIndex;
             salesSnapInFlightRef.current = true;
             const generation = ++salesSnapGenerationRef.current;
@@ -486,6 +536,8 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                         salesLandingFrameRef.current = null;
                         if (generation !== salesSnapGenerationRef.current) return;
                         salesSnapInFlightRef.current = false;
+                        salesPortfolioExitArmedRef.current =
+                            nextIndex === 0 && container.scrollTop <= 1;
                         const pendingDirection = pendingSalesDirectionsRef.current.shift();
                         if (pendingDirection) snapToSalesPage(pendingDirection);
                     });
@@ -633,6 +685,35 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         };
 
         const handleWheel = (e: WheelEvent) => {
+            const nativeSalesReady =
+                salesSnapIndexRef.current >= 0 &&
+                !salesSnapInFlightRef.current &&
+                scrollRef.current >= SALES_STORY_SCROLL_START - 1;
+
+            if (nativeSalesReady) {
+                forceCirclePhase();
+
+                // The first upward gesture at sales scene zero returns through the
+                // existing portfolio blend. Every internal sales gesture remains
+                // native and therefore never depends on pointer movement or a timer.
+                if (salesPortfolioExitArmedRef.current && container.scrollTop <= 1 && e.deltaY < 0) {
+                    e.preventDefault();
+                    finishWheelGesture();
+                    salesPortfolioExitArmedRef.current = false;
+                    snapToSalesPage(-1, -1);
+                }
+                return;
+            }
+
+            // Entry/exit uses the existing cinematic tween. Residual events from
+            // that same physical gesture must never be queued as future sales-page
+            // moves; internal sales navigation is native once the tween settles.
+            if (salesSnapInFlightRef.current) {
+                e.preventDefault();
+                forceCirclePhase();
+                return;
+            }
+
             e.preventDefault();
             forceCirclePhase();
 
@@ -718,7 +799,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             if (gestureAxis === "none") {
                 if (absX < 6 && absY < 6) return;
                 if (absX > absY) {
-                    // Horizontal swipe inside flipbook → let it handle natively
+                    // Horizontal swipe inside flipbook â†’ let it handle natively
                     if (isInsideHorizontalSwipeZone(e.target)) {
                         gestureAxis = "horizontal";
                     } else {
@@ -766,10 +847,37 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         const touchTarget = container;
 
         const touchListenerOptions: AddEventListenerOptions = { passive: false, capture: true };
+        const handleSalesSurfaceScroll = () => {
+            if (
+                salesSurfaceSyncingRef.current ||
+                salesSnapInFlightRef.current ||
+                salesSnapIndexRef.current < 0 ||
+                container.clientHeight <= 0
+            ) return;
 
+            salesPortfolioExitArmedRef.current = false;
+            const salesOffset = Math.min(
+                SALES_SCENE_COUNT - 1,
+                Math.max(0, container.scrollTop / container.clientHeight),
+            );
+            salesSnapIndexRef.current = Math.round(salesOffset);
+            setVirtualScrollValue(
+                SALES_STORY_SCROLL_START + salesOffset * SALES_SCENE_SCROLL_DISTANCE,
+                false,
+            );
+        };
+
+        const handleSalesSurfaceScrollEnd = () => {
+            salesPortfolioExitArmedRef.current =
+                !salesSnapInFlightRef.current &&
+                salesSnapIndexRef.current === 0 &&
+                container.scrollTop <= 1;
+        };
         container.addEventListener("wheel", handleWheel, { passive: false });
+        container.addEventListener("scroll", handleSalesSurfaceScroll, { passive: true });
         // Non-passive touchstart commits the gesture to JS immediately, so the
         // first swipe registers instead of being eaten by the scroll heuristic.
+        container.addEventListener("scrollend", handleSalesSurfaceScrollEnd);
         touchTarget.addEventListener("touchstart", handleTouchStart, touchListenerOptions);
         touchTarget.addEventListener("touchmove", handleTouchMove, touchListenerOptions);
         touchTarget.addEventListener("touchend", handleTouchEnd, touchListenerOptions);
@@ -847,14 +955,17 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
 
         return () => {
             container.removeEventListener("wheel", handleWheel);
+            container.removeEventListener("scroll", handleSalesSurfaceScroll);
             touchTarget.removeEventListener("touchstart", handleTouchStart, touchListenerOptions);
             touchTarget.removeEventListener("touchmove", handleTouchMove, touchListenerOptions);
             touchTarget.removeEventListener("touchend", handleTouchEnd, touchListenerOptions);
             touchTarget.removeEventListener("touchcancel", handleTouchEnd, touchListenerOptions);
+            container.removeEventListener("scrollend", handleSalesSurfaceScrollEnd);
             window.removeEventListener("keydown", handleKeyDown);
             salesSnapControlsRef.current?.stop();
             salesSnapControlsRef.current = null;
             snapSalesByDirectionRef.current = () => undefined;
+            setVirtualScrollDriverRef.current = () => undefined;
             salesSnapGenerationRef.current += 1;
             salesSnapInFlightRef.current = false;
             pendingSalesDirectionsRef.current.length = 0;
@@ -862,8 +973,14 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 window.cancelAnimationFrame(salesLandingFrameRef.current);
                 salesLandingFrameRef.current = null;
             }
+            if (salesSurfaceSyncFrameRef.current !== null) {
+                window.cancelAnimationFrame(salesSurfaceSyncFrameRef.current);
+                salesSurfaceSyncFrameRef.current = null;
+            }
+            salesSurfaceSyncingRef.current = false;
             finishWheelGesture();
             container.style.touchAction = previousTouchAction;
+            salesPortfolioExitArmedRef.current = false;
         };
     }, [virtualScroll]);
 
@@ -995,7 +1112,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     // reveals them instantly (matching the circle/cards behavior) instead of
     // running a separate 1s tween via animate={}.
     // A separate fade-in multiplier handles the initial intro entrance once the
-    // circle phase begins (0 → 1 over ~700ms), then scroll controls the rest.
+    // circle phase begins (0 â†’ 1 over ~700ms), then scroll controls the rest.
     const introFadeIn = useMotionValue(0);
     useEffect(() => {
         if (introPhase !== "circle") return;
@@ -1021,7 +1138,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         return () => unsub();
     }, [footerRevealProgress]);
 
-    // Background glow morph: wide horizontal → narrow vertical as portfolio loads
+    // Background glow morph: wide horizontal â†’ narrow vertical as portfolio loads
     const isMobileViewport = containerSize.width > 0 && containerSize.width < 768;
     const isTabletViewport = containerSize.width >= 768 && containerSize.width < 1024;
     const isSmallViewport = isMobileViewport || isTabletViewport;
@@ -1068,9 +1185,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             const t = Math.min((frameNow - t0) / duration, 1);
             const eased = 1 - Math.pow(1 - t, 3);
             const v = start + (end - start) * eased;
-            scrollRef.current = v;
-            virtualScroll.set(v);
-            onVirtualScrollChangeRef.current?.(v);
+            setVirtualScrollDriverRef.current(v);
             if (t < 1) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
@@ -1092,9 +1207,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             const t = Math.min((frameNow - t0) / duration, 1);
             const eased = 1 - Math.pow(1 - t, 3);
             const v = start + (end - start) * eased;
-            scrollRef.current = v;
-            virtualScroll.set(v);
-            onVirtualScrollChangeRef.current?.(v);
+            setVirtualScrollDriverRef.current(v);
             if (t < 1) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
@@ -1166,8 +1279,14 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     }, [virtualScroll]);
 
     return (
-        <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
-            {/* Subtle center stage light — smoothly morphs from wide horizontal to narrow vertical */}
+        <div
+            ref={containerRef}
+            data-sales-scroll-surface="true"
+            className="relative w-full h-full bg-black overflow-y-auto overscroll-y-contain snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+            <div className="relative h-[500%] w-full">
+            <div className="sticky top-0 z-0 h-[20%] w-full overflow-hidden">
+            {/* Subtle center stage light â€” smoothly morphs from wide horizontal to narrow vertical */}
             <motion.div className="absolute inset-0 pointer-events-none z-0" style={{ background: glowBg }} />
 
             <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
@@ -1194,7 +1313,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                         style={{ opacity: titleOpacity }}
                         className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground md:mt-[20px] lg:mt-[10px]"
                     >
-                        <img src={pixcellorWordmarkWhite} alt="Pixcellor™" width={1200} height={628} fetchPriority="high" decoding="async" className="h-[4.36rem] md:h-[6.804rem] lg:h-[7rem] w-auto md:mt-[2.5px] lg:mt-[8px]" />
+                        <img src={pixcellorWordmarkWhite} alt="Pixcellorâ„¢" width={1200} height={628} fetchPriority="high" decoding="async" className="h-[4.36rem] md:h-[6.804rem] lg:h-[7rem] w-auto md:mt-[2.5px] lg:mt-[8px]" />
                     </motion.h1>
                     <motion.p
                         style={{ opacity: subtitleOpacity }}
@@ -1309,7 +1428,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     </div>
                 </div>
 
-                {/* Mobile-only scroll arrow — bottom of screen, aligned with chat button */}
+                {/* Mobile-only scroll arrow â€” bottom of screen, aligned with chat button */}
                 <button
                     type="button"
                     data-hero-scroll-control="true"
@@ -1325,9 +1444,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                             const t = Math.min((now - t0) / duration, 1);
                             const eased = 1 - Math.pow(1 - t, 3);
                             const v = start + (end - start) * eased;
-                            scrollRef.current = v;
-                            virtualScroll.set(v);
-                            onVirtualScrollChangeRef.current?.(v);
+                            setVirtualScrollDriverRef.current(v);
                             if (t < 1) requestAnimationFrame(step);
                         };
                         requestAnimationFrame(step);
@@ -1371,7 +1488,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     />
                 </motion.div>
 
-                {/* Circular Portfolio Gallery — stays mounted so images remain cached while scrolling */}
+                {/* Circular Portfolio Gallery â€” stays mounted so images remain cached while scrolling */}
                 {galleryItems.length > 0 && (
                     <motion.div
                         style={{ opacity: portfolioOpacity, y: portfolioY, scale: portfolioScale, pointerEvents: portfolioInteractive ? "auto" : "none" }}
@@ -1503,7 +1620,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 <Footer />
             </motion.div>
 
-            {/* Up arrow above the footer — mirror of the hero down arrow */}
+            {/* Up arrow above the footer â€” mirror of the hero down arrow */}
             <motion.div
                 style={{
                     opacity: footerRevealProgress,
@@ -1566,9 +1683,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                         const t = Math.min((now - t0) / duration, 1);
                         const eased = 1 - Math.pow(1 - t, 3);
                         const v = start + (end - start) * eased;
-                        scrollRef.current = v;
-                        virtualScroll.set(v);
-                        onVirtualScrollChangeRef.current?.(v);
+                        setVirtualScrollDriverRef.current(v);
                         if (t < 1) requestAnimationFrame(step);
                     };
                     requestAnimationFrame(step);
@@ -1578,6 +1693,21 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             >
                 <X className="w-3.5 h-3.5" strokeWidth={2.25} />
             </motion.button>
+            </div>
+            <div
+                aria-hidden="true"
+                className="absolute inset-0 grid grid-rows-5 pointer-events-none"
+            >
+                {Array.from({ length: SALES_SCENE_COUNT }, (_, index) => (
+                    <div
+                        key={`sales-snap-${index}`}
+                        data-sales-snap-index={index}
+                        className="h-full w-full snap-start snap-always"
+                    />
+                ))}
+            </div>
+            </div>
         </div>
     );
 }
+
