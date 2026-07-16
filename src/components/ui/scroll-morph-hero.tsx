@@ -454,7 +454,917 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 );
                 if (!salesSnapInFlightRef.current) {
                     salesSnapIndexRef.current = bounded >= SALES_STORY_SCROLL_START
-                      …11271 tokens truncated…:bottom-[23px] w-full md:w-auto px-[1.5rem] md:px-0 ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
+                        ? Math.round(salesOffset)
+                        : -1;
+                }
+
+                const targetTop = salesOffset * container.clientHeight;
+                if (Math.abs(container.scrollTop - targetTop) > 0.5) {
+                    salesSurfaceSyncingRef.current = true;
+                    container.scrollTop = targetTop;
+                    if (salesSurfaceSyncFrameRef.current !== null) {
+                        window.cancelAnimationFrame(salesSurfaceSyncFrameRef.current);
+                    }
+                    salesSurfaceSyncFrameRef.current = window.requestAnimationFrame(() => {
+                        salesSurfaceSyncFrameRef.current = null;
+                        salesSurfaceSyncingRef.current = false;
+                    });
+                }
+            }
+        };
+        setVirtualScrollDriverRef.current = setVirtualScrollValue;
+
+        const queueSalesDirection = (direction: number) => {
+            const queue = pendingSalesDirectionsRef.current;
+            if (queue.length >= SALES_SCENE_COUNT) return;
+            queue.push(direction > 0 ? 1 : -1);
+        };
+
+        const snapToSalesPage = (direction: number, requestedIndex?: number) => {
+            if (salesSnapInFlightRef.current) {
+                queueSalesDirection(direction);
+                return;
+            }
+
+            const currentIndex = salesSnapIndexRef.current;
+            const nextIndex = requestedIndex ?? Math.min(
+                SALES_SCENE_COUNT - 1,
+                Math.max(-1, currentIndex + (direction > 0 ? 1 : -1)),
+            );
+            if (nextIndex === currentIndex) {
+                const queuedDirection = pendingSalesDirectionsRef.current.shift();
+                if (queuedDirection) snapToSalesPage(queuedDirection);
+                return;
+            }
+
+            // Once the sales story is open, let the browser's native snap engine
+            // arbitrate each move. It has the device gesture boundaries that
+            // WheelEvent does not expose, and snap-stop: always guarantees that a
+            // forceful swipe cannot pass over an intermediate sales scene.
+            if (currentIndex >= 0 && nextIndex >= 0 && container.clientHeight > 0) {
+                salesSnapIndexRef.current = nextIndex;
+                salesPortfolioExitArmedRef.current = false;
+                container.scrollTo({
+                    top: nextIndex * container.clientHeight,
+                    behavior: "smooth",
+                });
+                return;
+            }
+
+            const target = nextIndex < 0
+                ? PORTFOLIO_SCROLL_END
+                : SALES_STORY_SCROLL_START + nextIndex * SALES_SCENE_SCROLL_DISTANCE;
+            const enteringSalesStory = currentIndex === -1 && nextIndex === 0;
+            if (enteringSalesStory || nextIndex < 0) {
+                pendingSalesDirectionsRef.current.length = 0;
+            }
+            salesSnapIndexRef.current = nextIndex;
+            salesSnapInFlightRef.current = true;
+            const generation = ++salesSnapGenerationRef.current;
+            salesSnapControlsRef.current = animate(scrollRef.current, target, {
+                duration: enteringSalesStory ? 0.82 : nextIndex < 0 ? 0.42 : 0.26,
+                ease: enteringSalesStory ? [0.4, 0, 0.2, 1] : [0.16, 1, 0.3, 1],
+                onUpdate: setVirtualScrollValue,
+                onComplete: () => {
+                    if (generation !== salesSnapGenerationRef.current) return;
+                    setVirtualScrollValue(target);
+                    salesSnapControlsRef.current = null;
+                    // Paint the exact anchor once before honoring a fresh gesture
+                    // received during the tween. This preserves the stop without
+                    // making the user move the wheel a second time.
+                    salesLandingFrameRef.current = window.requestAnimationFrame(() => {
+                        salesLandingFrameRef.current = null;
+                        if (generation !== salesSnapGenerationRef.current) return;
+                        salesSnapInFlightRef.current = false;
+                        salesPortfolioExitArmedRef.current =
+                            nextIndex === 0 && container.scrollTop <= 1;
+                        const pendingDirection = pendingSalesDirectionsRef.current.shift();
+                        if (pendingDirection) snapToSalesPage(pendingDirection);
+                    });
+                },
+            });
+        };
+        snapSalesByDirectionRef.current = snapToSalesPage;
+
+        const applyVirtualScrollDelta = (delta: number, source: "wheel" | "touch") => {
+            if (!delta) return;
+            if (salesSnapInFlightRef.current) {
+                if (source === "touch") {
+                    if (touchSnapTriggeredRef.current) return;
+                    touchSnapTriggeredRef.current = true;
+                }
+                queueSalesDirection(delta);
+                return;
+            }
+            const currentScroll = scrollRef.current;
+            const now = performance.now();
+            const direction = delta > 0 ? 1 : -1;
+            const atAnchoredFlow = currentScroll >= PORTFOLIO_SCROLL_END - 1;
+            const leavingPortfolioUp = salesSnapIndexRef.current === -1 && direction < 0;
+
+            if (atAnchoredFlow && !leavingPortfolioUp) {
+                if (source === "touch") {
+                    if (touchSnapTriggeredRef.current) return;
+                    touchSnapTriggeredRef.current = true;
+                }
+                snapToSalesPage(direction);
+                return;
+            }
+
+            if (delta > 0) {
+                if (source === "touch" && touchNeedsReleaseRef.current) return;
+                if (currentScroll >= HERO_MORPH_END && currentScroll <= HERO_MORPH_END + 1 && now < scrollBreakUntilRef.current) return;
+                if (currentScroll < HERO_MORPH_END && currentScroll + delta > HERO_MORPH_END) {
+                    setVirtualScrollValue(HERO_MORPH_END);
+                    scrollBreakUntilRef.current = now + SCROLL_BREAK_DURATION;
+                    if (source === "touch") touchNeedsReleaseRef.current = true;
+                    return;
+                }
+                if (currentScroll < PORTFOLIO_SCROLL_END && currentScroll + delta >= PORTFOLIO_SCROLL_END) {
+                    setVirtualScrollValue(PORTFOLIO_SCROLL_END);
+                    salesSnapIndexRef.current = -1;
+                    return;
+                }
+            } else {
+                scrollBreakUntilRef.current = 0;
+                touchNeedsReleaseRef.current = false;
+            }
+
+            setVirtualScrollValue(currentScroll + delta);
+        };
+
+        const finishWheelGesture = () => {
+            wheelGestureConsumedRef.current = false;
+            wheelGestureDeltaRef.current = 0;
+            wheelLastEventAtRef.current = 0;
+            wheelLastMagnitudeRef.current = 0;
+            wheelPeakMagnitudeRef.current = 0;
+            wheelTailReadyRef.current = false;
+            wheelDeepTailReadyRef.current = false;
+            wheelFallingEventsRef.current = 0;
+            wheelRisingEventsRef.current = 0;
+            wheelDirectionRef.current = 0;
+        };
+
+        const observeWheelPulse = (delta: number) => {
+            const now = performance.now();
+            const magnitude = Math.abs(delta);
+            const direction = delta > 0 ? 1 : -1;
+            const previousAt = wheelLastEventAtRef.current;
+            const previousMagnitude = wheelLastMagnitudeRef.current;
+            const previousDirection = wheelDirectionRef.current;
+            const gap = previousAt === 0 ? Number.POSITIVE_INFINITY : now - previousAt;
+            const startsAfterGap = gap > WHEEL_PULSE_GAP_MS;
+            const changesDirection = previousDirection !== 0 && direction !== previousDirection;
+            let startsNewPulse = startsAfterGap || changesDirection;
+
+            if (!startsNewPulse) {
+                const isFalling = previousMagnitude > 0 && magnitude < previousMagnitude;
+                const risesEnough =
+                    previousMagnitude > 0 &&
+                    magnitude >= WHEEL_REBOUND_MIN_DELTA &&
+                    magnitude - previousMagnitude >= WHEEL_REBOUND_MIN_RISE &&
+                    magnitude >= previousMagnitude * WHEEL_REBOUND_RATIO;
+
+                wheelPeakMagnitudeRef.current = Math.max(
+                    wheelPeakMagnitudeRef.current,
+                    magnitude,
+                );
+
+                if (isFalling) {
+                    wheelFallingEventsRef.current += 1;
+                } else if (magnitude >= previousMagnitude) {
+                    wheelFallingEventsRef.current = 0;
+                }
+
+                if (
+                    wheelPeakMagnitudeRef.current >= WHEEL_REBOUND_MIN_DELTA &&
+                    magnitude <= wheelPeakMagnitudeRef.current * WHEEL_DEEP_TAIL_RATIO
+                ) {
+                    wheelDeepTailReadyRef.current = true;
+                }
+
+                if (
+                    wheelDeepTailReadyRef.current ||
+                    (
+                        wheelFallingEventsRef.current >= WHEEL_TAIL_FALL_EVENTS &&
+                        magnitude <= wheelPeakMagnitudeRef.current * WHEEL_TAIL_ARM_RATIO
+                    )
+                ) {
+                    wheelTailReadyRef.current = true;
+                }
+
+                if (wheelTailReadyRef.current && risesEnough) {
+                    wheelRisingEventsRef.current += 1;
+                } else if (isFalling) {
+                    wheelRisingEventsRef.current = 0;
+                }
+
+                startsNewPulse =
+                    wheelTailReadyRef.current &&
+                    risesEnough &&
+                    (
+                        wheelDeepTailReadyRef.current ||
+                        wheelRisingEventsRef.current >= WHEEL_REBOUND_RISE_EVENTS
+                    );
+            }
+
+            if (startsNewPulse) {
+                wheelGestureConsumedRef.current = false;
+                wheelGestureDeltaRef.current = 0;
+                wheelPeakMagnitudeRef.current = magnitude;
+                wheelTailReadyRef.current = false;
+                wheelDeepTailReadyRef.current = false;
+                wheelFallingEventsRef.current = 0;
+                wheelRisingEventsRef.current = 0;
+            }
+
+            wheelLastEventAtRef.current = now;
+            wheelLastMagnitudeRef.current = magnitude;
+            wheelDirectionRef.current = direction;
+        };
+
+        const handleWheel = (e: WheelEvent) => {
+            const nativeSalesReady =
+                salesSnapIndexRef.current >= 0 &&
+                !salesSnapInFlightRef.current &&
+                scrollRef.current >= SALES_STORY_SCROLL_START - 1;
+
+            if (nativeSalesReady) {
+                forceCirclePhase();
+
+                // The first upward gesture at sales scene zero returns through the
+                // existing portfolio blend. Every internal sales gesture remains
+                // native and therefore never depends on pointer movement or a timer.
+                if (salesPortfolioExitArmedRef.current && container.scrollTop <= 1 && e.deltaY < 0) {
+                    e.preventDefault();
+                    finishWheelGesture();
+                    salesPortfolioExitArmedRef.current = false;
+                    snapToSalesPage(-1, -1);
+                }
+                return;
+            }
+
+            // Entry/exit uses the existing cinematic tween. Residual events from
+            // that same physical gesture must never be queued as future sales-page
+            // moves; internal sales navigation is native once the tween settles.
+            if (salesSnapInFlightRef.current) {
+                e.preventDefault();
+                forceCirclePhase();
+                return;
+            }
+
+            e.preventDefault();
+            forceCirclePhase();
+
+            const w = window.innerWidth;
+            const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : 1;
+            const carouselMult = scrollRef.current >= HERO_MORPH_END ? CAROUSEL_SCROLL_SENSITIVITY : 1;
+            const scrollDelta = e.deltaY * boost * carouselMult;
+            if (scrollRef.current >= PORTFOLIO_SCROLL_END - 1) {
+                observeWheelPulse(e.deltaY);
+            }
+
+            const usesAnchors =
+                scrollRef.current >= PORTFOLIO_SCROLL_END - 1 &&
+                !(
+                    salesSnapIndexRef.current === -1 &&
+                    scrollDelta < 0 &&
+                    !wheelGestureConsumedRef.current
+                );
+            if (usesAnchors) {
+                wheelGestureDeltaRef.current += scrollDelta;
+
+                const isSalesPageSettled =
+                    scrollRef.current >= SALES_STORY_SCROLL_START - 1;
+                if (
+                    wheelGestureConsumedRef.current ||
+                    (!isSalesPageSettled && Math.abs(wheelGestureDeltaRef.current) < 8)
+                ) return;
+
+                wheelGestureConsumedRef.current = true;
+                const direction = wheelGestureDeltaRef.current > 0 ? 1 : -1;
+                wheelGestureDeltaRef.current = 0;
+                applyVirtualScrollDelta(direction, "wheel");
+                return;
+            }
+            applyVirtualScrollDelta(scrollDelta, "wheel");
+        };
+
+        let touchStartY = 0;
+        let touchStartX = 0;
+        let gestureAxis: "none" | "vertical" | "horizontal" = "none";
+        const getEventElement = (target: EventTarget | null) => {
+            if (target instanceof Element) return target;
+            if (target instanceof Node) return target.parentElement;
+            return null;
+        };
+        const isInteractive = (target: EventTarget | null) => {
+            const el = getEventElement(target);
+            const interactiveEl = el?.closest('button, a, [role="button"], input, textarea, select');
+            return !!interactiveEl && !interactiveEl.closest('[data-hero-scroll-control="true"]');
+        };
+        const isInsideOverlay = (event: TouchEvent) => {
+            const path = typeof event.composedPath === "function" ? event.composedPath() : [event.target];
+            return path.some((node) => {
+                if (!(node instanceof Element)) return false;
+                return !!node.closest('[data-pixcellor-mobile-drawer="true"], [role="dialog"], [role="alertdialog"], [data-radix-popper-content-wrapper], [data-radix-dialog-content], [data-radix-dialog-overlay], .stf__parent');
+            });
+        };
+        const isInsideHorizontalSwipeZone = (target: EventTarget | null) => {
+            const el = getEventElement(target);
+            return !!el?.closest('.stf__parent, [data-pixcellor-horizontal-swipe="true"]');
+        };
+        const handleTouchStart = (e: TouchEvent) => {
+            touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+            gestureAxis = "none";
+            touchSnapTriggeredRef.current = false;
+        };
+        const handleTouchMove = (e: TouchEvent) => {
+            if (isInsideOverlay(e)) return;
+
+            const touchY = e.touches[0].clientY;
+            const touchX = e.touches[0].clientX;
+            const deltaY = touchStartY - touchY;
+            const deltaX = touchX - touchStartX;
+            const absX = Math.abs(touchX - touchStartX);
+            const absY = Math.abs(touchY - touchStartY);
+
+            // For taps on buttons/links, allow short movement to register as a tap.
+            // Once vertical movement exceeds threshold, take over as a scroll gesture
+            // so users can swipe through (e.g. over footer buttons) without dead zones.
+            if (isInteractive(e.target) && absY < 12) return;
+
+            if (gestureAxis === "none") {
+                if (absX < 6 && absY < 6) return;
+                if (absX > absY) {
+                    // Horizontal swipe inside flipbook â†’ let it handle natively
+                    if (isInsideHorizontalSwipeZone(e.target)) {
+                        gestureAxis = "horizontal";
+                    } else {
+                        // Otherwise (e.g. on the carousel) treat as scroll input
+                        gestureAxis = "vertical";
+                    }
+                } else {
+                    gestureAxis = "vertical";
+                }
+            }
+
+            if (gestureAxis === "horizontal") {
+                // Let the flipbook handle horizontal swipes natively
+                return;
+            }
+
+            e.preventDefault();
+            forceCirclePhase();
+            touchStartY = touchY;
+            touchStartX = touchX;
+
+            // Once the gesture is locked to vertical, only use deltaY. On iOS Safari
+            // finger jitter can briefly make |deltaX| > |deltaY| with the opposite
+            // sign, which would otherwise lurch virtualScroll back and forth and make
+            // the carousel spin erratically until the spring catches up.
+            const inCarousel = scrollRef.current >= HERO_MORPH_END;
+            const gestureDelta = gestureAxis === "vertical" ? deltaY : deltaX;
+
+            const w = window.innerWidth;
+            const boost = w < 768 ? MOBILE_SCROLL_BOOST : w < 1024 ? TABLET_SCROLL_BOOST : DESKTOP_TOUCH_BOOST;
+            const carouselMult = inCarousel ? CAROUSEL_SCROLL_SENSITIVITY : 1;
+            const scrollDelta = gestureDelta * boost * carouselMult;
+            applyVirtualScrollDelta(scrollDelta, "touch");
+        };
+        const handleTouchEnd = () => {
+            touchNeedsReleaseRef.current = false;
+            touchSnapTriggeredRef.current = false;
+        };
+
+        // Lock native scroll/zoom on the hero so the browser doesn't waste the
+        // first swipe deciding between native scroll and our handler.
+        const previousTouchAction = container.style.touchAction;
+        container.style.touchAction = "none";
+
+        const touchTarget = container;
+
+        const touchListenerOptions: AddEventListenerOptions = { passive: false, capture: true };
+        const handleSalesSurfaceScroll = () => {
+            if (
+                salesSurfaceSyncingRef.current ||
+                salesSnapInFlightRef.current ||
+                salesSnapIndexRef.current < 0 ||
+                container.clientHeight <= 0
+            ) return;
+
+            salesPortfolioExitArmedRef.current = false;
+            const salesOffset = Math.min(
+                SALES_SCENE_COUNT - 1,
+                Math.max(0, container.scrollTop / container.clientHeight),
+            );
+            salesSnapIndexRef.current = Math.round(salesOffset);
+            setVirtualScrollValue(
+                SALES_STORY_SCROLL_START + salesOffset * SALES_SCENE_SCROLL_DISTANCE,
+                false,
+            );
+        };
+
+        const handleSalesSurfaceScrollEnd = () => {
+            salesPortfolioExitArmedRef.current =
+                !salesSnapInFlightRef.current &&
+                salesSnapIndexRef.current === 0 &&
+                container.scrollTop <= 1;
+        };
+        container.addEventListener("wheel", handleWheel, { passive: false });
+        container.addEventListener("scroll", handleSalesSurfaceScroll, { passive: true });
+        // Non-passive touchstart commits the gesture to JS immediately, so the
+        // first swipe registers instead of being eaten by the scroll heuristic.
+        container.addEventListener("scrollend", handleSalesSurfaceScrollEnd);
+        touchTarget.addEventListener("touchstart", handleTouchStart, touchListenerOptions);
+        touchTarget.addEventListener("touchmove", handleTouchMove, touchListenerOptions);
+        touchTarget.addEventListener("touchend", handleTouchEnd, touchListenerOptions);
+        touchTarget.addEventListener("touchcancel", handleTouchEnd, touchListenerOptions);
+
+        // Keyboard navigation: arrows / PageUp-Down / Space / Home / End drive
+        // the same virtual scroll as wheel + touch, so users can navigate the
+        // whole page from the keyboard.
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const active = document.activeElement as HTMLElement | null;
+            if (active) {
+                const tag = active.tagName;
+                if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || active.isContentEditable) return;
+            }
+            // Don't fight the browser when a modifier is held (e.g. Cmd+ArrowDown).
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            if (e.repeat && scrollRef.current >= PORTFOLIO_SCROLL_END - 1) return;
+
+            const ARROW_STEP = 220;
+            const PAGE_STEP = 900;
+            let delta = 0;
+            switch (e.key) {
+                case "ArrowDown":
+                case "ArrowRight":
+                    delta = ARROW_STEP; break;
+                case "ArrowUp":
+                case "ArrowLeft":
+                    delta = -ARROW_STEP; break;
+                case "PageDown":
+                    delta = PAGE_STEP; break;
+                case "PageUp":
+                    delta = -PAGE_STEP; break;
+                case " ":
+                case "Spacebar":
+                    delta = e.shiftKey ? -PAGE_STEP : PAGE_STEP; break;
+                case "Home":
+                    e.preventDefault();
+                    forceCirclePhase();
+                    salesSnapControlsRef.current?.stop();
+                    salesSnapControlsRef.current = null;
+                    salesSnapGenerationRef.current += 1;
+                    salesSnapInFlightRef.current = false;
+                    pendingSalesDirectionsRef.current.length = 0;
+                    finishWheelGesture();
+                    if (salesLandingFrameRef.current !== null) {
+                        window.cancelAnimationFrame(salesLandingFrameRef.current);
+                        salesLandingFrameRef.current = null;
+                    }
+                    salesSnapIndexRef.current = -1;
+                    setVirtualScrollValue(0);
+                    return;
+                case "End":
+                    e.preventDefault();
+                    forceCirclePhase();
+                    salesSnapControlsRef.current?.stop();
+                    salesSnapControlsRef.current = null;
+                    salesSnapGenerationRef.current += 1;
+                    salesSnapInFlightRef.current = false;
+                    pendingSalesDirectionsRef.current.length = 0;
+                    if (salesLandingFrameRef.current !== null) {
+                        window.cancelAnimationFrame(salesLandingFrameRef.current);
+                        salesLandingFrameRef.current = null;
+                    }
+                    salesSnapIndexRef.current = SALES_SCENE_COUNT - 1;
+                    setVirtualScrollValue(MAX_SCROLL);
+                    return;
+                default:
+                    return;
+            }
+            e.preventDefault();
+            forceCirclePhase();
+            applyVirtualScrollDelta(delta, "wheel");
+        };
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            container.removeEventListener("wheel", handleWheel);
+            container.removeEventListener("scroll", handleSalesSurfaceScroll);
+            touchTarget.removeEventListener("touchstart", handleTouchStart, touchListenerOptions);
+            touchTarget.removeEventListener("touchmove", handleTouchMove, touchListenerOptions);
+            touchTarget.removeEventListener("touchend", handleTouchEnd, touchListenerOptions);
+            touchTarget.removeEventListener("touchcancel", handleTouchEnd, touchListenerOptions);
+            container.removeEventListener("scrollend", handleSalesSurfaceScrollEnd);
+            window.removeEventListener("keydown", handleKeyDown);
+            salesSnapControlsRef.current?.stop();
+            salesSnapControlsRef.current = null;
+            snapSalesByDirectionRef.current = () => undefined;
+            setVirtualScrollDriverRef.current = () => undefined;
+            salesSnapGenerationRef.current += 1;
+            salesSnapInFlightRef.current = false;
+            pendingSalesDirectionsRef.current.length = 0;
+            if (salesLandingFrameRef.current !== null) {
+                window.cancelAnimationFrame(salesLandingFrameRef.current);
+                salesLandingFrameRef.current = null;
+            }
+            if (salesSurfaceSyncFrameRef.current !== null) {
+                window.cancelAnimationFrame(salesSurfaceSyncFrameRef.current);
+                salesSurfaceSyncFrameRef.current = null;
+            }
+            salesSurfaceSyncingRef.current = false;
+            finishWheelGesture();
+            container.style.touchAction = previousTouchAction;
+            salesPortfolioExitArmedRef.current = false;
+        };
+    }, [virtualScroll]);
+
+    const morphProgress = useTransform(virtualScroll, [0, 600], [0, 1]);
+    const smoothMorph = useSpring(morphProgress, { stiffness: 40, damping: 20 });
+
+    const scrollRotate = useTransform(virtualScroll, [HERO_MORPH_END, PORTFOLIO_SCROLL_END], [0, 24]);
+    const smoothScrollRotate = useSpring(scrollRotate, { stiffness: 40, damping: 20 });
+
+    // --- Mouse Parallax ---
+    const mouseX = useMotionValue(0);
+    const smoothMouseX = useSpring(mouseX, { stiffness: 30, damping: 20 });
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            const rect = container.getBoundingClientRect();
+            const relativeX = e.clientX - rect.left;
+
+            const normalizedX = (relativeX / rect.width) * 2 - 1;
+            mouseX.set(normalizedX * 100);
+        };
+        container.addEventListener("mousemove", handleMouseMove);
+        return () => container.removeEventListener("mousemove", handleMouseMove);
+    }, [mouseX]);
+
+    // --- Intro Sequence ---
+    useEffect(() => {
+        const setPhase = (phase: AnimationPhase) => {
+            introPhaseRef.current = phase;
+            setIntroPhase(phase);
+            if (phase === "circle") {
+                window.dispatchEvent(new CustomEvent("pixcellor:hero-circle"));
+            }
+        };
+        const timer1 = window.setTimeout(() => setPhase("line"), 500);
+        const timer2 = window.setTimeout(() => setPhase("circle"), 2500);
+        introTimersRef.current = [timer1, timer2];
+        return () => {
+            introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+            introTimersRef.current = [];
+        };
+    }, []);
+
+    // --- Random Scatter Positions ---
+    const scatterPositions = useMemo(() => {
+        return IMAGES.map(() => ({
+            x: (Math.random() - 0.5) * 1500,
+            y: (Math.random() - 0.5) * 1000,
+            rotation: (Math.random() - 0.5) * 180,
+            scale: 0.6,
+            opacity: 0,
+        }));
+    }, []);
+
+    // --- Render Loop ---
+    const [morphValue, setMorphValue] = useState(0);
+    const [rotateValue, setRotateValue] = useState(0);
+    const [parallaxValue, setParallaxValue] = useState(0);
+
+    useEffect(() => {
+        const unsubscribeMorph = smoothMorph.on("change", setMorphValue);
+        const unsubscribeRotate = smoothScrollRotate.on("change", setRotateValue);
+        const unsubscribeParallax = smoothMouseX.on("change", setParallaxValue);
+        return () => {
+            unsubscribeMorph();
+            unsubscribeRotate();
+            unsubscribeParallax();
+        };
+    }, [smoothMorph, smoothScrollRotate, smoothMouseX]);
+
+    // Dispatch a hero-visible event so the floating top buttons (AI, Chat, Login)
+    // can fade/blur out when the user scrolls past the hero, matching their entry.
+    const heroVisibleRef = useRef<boolean | null>(null);
+    useEffect(() => {
+        const visible = morphValue < 0.3;
+        if (heroVisibleRef.current === visible) return;
+        heroVisibleRef.current = visible;
+        window.dispatchEvent(new CustomEvent("pixcellor:hero-visible", { detail: { visible } }));
+    }, [morphValue]);
+
+    // --- Content Opacity ---
+    const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
+
+    // Portfolio exit and sales story entrance share an overlap so the next act
+    // grows out of the existing scene instead of appearing as a hard cut.
+    const portfolioExitProgress = useTransform(
+        virtualScroll,
+        [PORTFOLIO_SCROLL_END, SALES_STORY_SCROLL_START],
+        [0, 1]
+    );
+    // The anchored virtual-scroll tween already supplies the easing. Avoid a
+    // second spring here so each page lands exactly when input unlocks.
+    const smoothPortfolioExit = portfolioExitProgress;
+    const portfolioExitOpacity = useTransform(smoothPortfolioExit, [0, 1], [1, 0]);
+    const portfolioOpacity = useTransform(
+        [contentOpacity, portfolioExitOpacity],
+        ([enter, exit]: number[]) => enter * exit
+    );
+    const portfolioY = useTransform(smoothPortfolioExit, [0, 1], [0, -92]);
+    const portfolioScale = useTransform(smoothPortfolioExit, [0, 1], [1, 0.94]);
+    const heroCardsOpacity = useTransform(smoothPortfolioExit, [0, 0.82], [1, 0]);
+    const heroCardsY = useTransform(smoothPortfolioExit, [0, 1], [0, -125]);
+    const heroCardsScale = useTransform(smoothPortfolioExit, [0, 1], [1, 0.91]);
+
+    const salesStoryProgress = useTransform(
+        virtualScroll,
+        [SALES_STORY_SCROLL_START, SALES_STORY_SCROLL_END],
+        [0, 1]
+    );
+    const smoothSalesStoryProgress = salesStoryProgress;
+    const salesEntranceProgress = useTransform(
+        virtualScroll,
+        [PORTFOLIO_SCROLL_END, SALES_STORY_SCROLL_START],
+        [0, 1]
+    );
+    const smoothSalesEntrance = salesEntranceProgress;
+    const salesStoryOpacity = useTransform(smoothSalesEntrance, [0, 1], [0, 1]);
+    const salesStoryY = useTransform(smoothSalesEntrance, [0, 1], [64, 0]);
+    const salesStoryScale = useTransform(smoothSalesEntrance, [0, 1], [0.985, 1]);
+    const salesStoryPointerEvents = useTransform(
+        smoothSalesEntrance,
+        [0, 0.98, 0.981, 1],
+        ["none", "none", "auto", "auto"]
+    );
+    // Hero intro elements: opacity tracks the morph spring directly so scroll-up
+    // reveals them instantly (matching the circle/cards behavior) instead of
+    // running a separate 1s tween via animate={}.
+    // A separate fade-in multiplier handles the initial intro entrance once the
+    // circle phase begins (0 â†’ 1 over ~700ms), then scroll controls the rest.
+    const introFadeIn = useMotionValue(0);
+    useEffect(() => {
+        if (introPhase !== "circle") return;
+        const controls = animate(introFadeIn, 1, { duration: 0.7, ease: "easeOut" });
+        return () => controls.stop();
+    }, [introPhase, introFadeIn]);
+    const morphFade = useTransform(smoothMorph, [0, 0.5], [1, 0]);
+    const morphFadeFast = useTransform(smoothMorph, [0, 0.3], [1, 0]);
+    const titleOpacity = useTransform([introFadeIn, morphFade], ([f, m]: number[]) => f * m);
+    const subtitleOpacity = useTransform([introFadeIn, morphFade], ([f, m]: number[]) => f * m * 0.8);
+    const ctaFadeIn = useMotionValue(0);
+    useEffect(() => {
+        const controls = animate(ctaFadeIn, 1, { duration: 0.7, ease: "easeOut" });
+        return () => controls.stop();
+    }, [ctaFadeIn]);
+    const ctaOpacity = useTransform([ctaFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.95);
+    const arrowOpacity = useTransform([introFadeIn, morphFadeFast], ([f, m]: number[]) => f * m * 0.9);
+    // Footer fades in/out smoothly with the morph progress (matches other hero elements)
+    const footerRevealProgress = useTransform(smoothSalesStoryProgress, [0.94, 1], [0, 1]);
+    const [footerInteractive, setFooterInteractive] = useState(false);
+    useEffect(() => {
+        const unsub = footerRevealProgress.on("change", (v) => setFooterInteractive(v > 0.5));
+        return () => unsub();
+    }, [footerRevealProgress]);
+
+    // Background glow morph: wide horizontal â†’ narrow vertical as portfolio loads
+    const isMobileViewport = containerSize.width > 0 && containerSize.width < 768;
+    const isTabletViewport = containerSize.width >= 768 && containerSize.width < 1024;
+    const isSmallViewport = isMobileViewport || isTabletViewport;
+    const glowW = useTransform(
+        virtualScroll,
+        [0, 400, 800],
+        isSmallViewport ? [130, 110, 90] : [60, 45, 30]
+    );
+    const glowH = useTransform(virtualScroll, [0, 400, 800], [50, 60, 75]);
+    const smoothGlowW = useSpring(glowW, { stiffness: 60, damping: 22 });
+    const smoothGlowH = useSpring(glowH, { stiffness: 60, damping: 22 });
+    const glowFadeStop = isSmallViewport ? 95 : 70;
+    const glowBaseAlpha = isSmallViewport ? 0.13 : 0.16;
+    // Desktop: fade glow ~20% softer as second page loads
+    const glowAlphaScale = useTransform(virtualScroll, [0, 400, 800], isSmallViewport ? [1, 1, 1] : [1, 0.9, 0.8]);
+    const smoothGlowAlphaScale = useSpring(glowAlphaScale, { stiffness: 60, damping: 22 });
+    const glowBg = useTransform(
+        [smoothGlowW, smoothGlowH, smoothGlowAlphaScale, introFadeIn],
+        ([w, h, a, fadeIn]: number[]) => {
+            const center = glowBaseAlpha * a * fadeIn;
+            // Narrower ellipse + smooth multi-stop fade so it reads as a soft gradient, not a bubble.
+            const scaledW = w * 0.357;
+            const scaledH = h * 0.51;
+            return `radial-gradient(ellipse ${scaledW}% ${scaledH}% at 50% 50%, hsla(0,0%,100%,${center}) 0%, hsla(0,0%,100%,${center * 0.75}) 25%, hsla(0,0%,100%,${center * 0.4}) 55%, hsla(0,0%,100%,${center * 0.15}) 80%, transparent 100%)`;
+        }
+    );
+
+
+
+
+
+    // Portfolio gallery items pulled from DB; rotation driven by hero virtual scroll
+    const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+
+    const advanceHeroFromArrow = () => {
+        const now = performance.now();
+        if (now - arrowActivationRef.current < 250) return;
+        arrowActivationRef.current = now;
+        const start = scrollRef.current;
+        const end = Math.min(Math.max(start + 1500, 1500), MAX_SCROLL);
+        const duration = 1200;
+        const t0 = performance.now();
+        const step = (frameNow: number) => {
+            const t = Math.min((frameNow - t0) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const v = start + (end - start) * eased;
+            setVirtualScrollDriverRef.current(v);
+            if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    };
+
+    const reverseHeroFromArrow = () => {
+        const now = performance.now();
+        if (now - arrowActivationRef.current < 250) return;
+        arrowActivationRef.current = now;
+        if (scrollRef.current >= PORTFOLIO_SCROLL_END - 1) {
+            snapSalesByDirectionRef.current(-1);
+            return;
+        }
+        const start = scrollRef.current;
+        const end = 0;
+        const duration = 1200;
+        const t0 = performance.now();
+        const step = (frameNow: number) => {
+            const t = Math.min((frameNow - t0) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const v = start + (end - start) * eased;
+            setVirtualScrollDriverRef.current(v);
+            if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    };
+
+    useEffect(() => {
+        let disposed = false;
+        let loadStarted = false;
+        let idleId: number | undefined;
+        let timeoutId: number | undefined;
+
+        const loadPortfolio = async () => {
+            if (disposed || loadStarted) return;
+            loadStarted = true;
+            const { data } = await supabase
+                .from("portfolio_projects")
+                .select("name,url,category,description,image_url")
+                .order("display_order", { ascending: true });
+            if (!data || disposed) return;
+            setGalleryItems(
+                data.map((p: { name: string; url: string; category: string | null; description: string | null; image_url: string | null }) => ({
+                    common: p.name,
+                    binomial: p.category ?? "",
+                    photo: {
+                        url: p.image_url ?? `https://image.thum.io/get/width/900/crop/1200/https://${p.url}`,
+                        text: p.description ?? p.name,
+                        pos: "50% 0%",
+                        by: p.url,
+                    },
+                }))
+            );
+        };
+
+        const startWhenNeeded = virtualScroll.on("change", (value) => {
+            if (value > HERO_MORPH_END * 0.4) void loadPortfolio();
+        });
+        const idleWindow = window as typeof window & {
+            requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+            cancelIdleCallback?: (id: number) => void;
+        };
+        if (idleWindow.requestIdleCallback) {
+            idleId = idleWindow.requestIdleCallback(() => void loadPortfolio(), { timeout: 1800 });
+        } else {
+            timeoutId = window.setTimeout(() => void loadPortfolio(), 900);
+        }
+
+        return () => {
+            disposed = true;
+            startWhenNeeded();
+            if (idleId !== undefined) idleWindow.cancelIdleCallback?.(idleId);
+            if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+        };
+    }, [virtualScroll]);
+    const galleryRotation = useTransform(virtualScroll, [HERO_MORPH_END, PORTFOLIO_SCROLL_END], [0, 180]);
+    const smoothGalleryRotation = useSpring(galleryRotation, { stiffness: 40, damping: 20 });
+    const [galleryRotationValue, setGalleryRotationValue] = useState(0);
+    const [portfolioInteractive, setPortfolioInteractive] = useState(false);
+    useEffect(() => {
+        const unsub = smoothGalleryRotation.on("change", setGalleryRotationValue);
+        return () => unsub();
+    }, [smoothGalleryRotation]);
+    useEffect(() => {
+        const unsub = virtualScroll.on("change", (value) => {
+            setPortfolioInteractive(
+                value > HERO_MORPH_END + 120 && value < SALES_STORY_SCROLL_START,
+            );
+        });
+        return () => unsub();
+    }, [virtualScroll]);
+
+    return (
+        <div
+            ref={containerRef}
+            data-sales-scroll-surface="true"
+            className="relative w-full h-full bg-black overflow-y-auto overscroll-y-contain snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+            <div className="relative h-[500%] w-full">
+            <div className="sticky top-0 z-0 h-[20%] w-full overflow-hidden">
+            {/* Subtle center stage light â€” smoothly morphs from wide horizontal to narrow vertical */}
+            <motion.div className="absolute inset-0 pointer-events-none z-0" style={{ background: glowBg }} />
+
+            <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
+
+                <motion.button
+                    type="button"
+                    data-hero-scroll-control="true"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        advanceHeroFromArrow();
+                    }}
+                    aria-label="Scroll down"
+                    className={`absolute left-1/2 top-[calc(50%+6.8rem)] z-[120] hidden h-12 w-14 -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-manipulation border-0 bg-transparent pointer-events-auto md:block ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
+                    style={{ opacity: arrowOpacity }}
+                />
+
+                {/* Intro Text (Fades out) */}
+                <div className={`absolute z-[150] flex flex-col items-center justify-center text-center pointer-events-none top-[230px] md:top-1/2 md:translate-y-[calc(-50%+20px)] lg:translate-y-[calc(-50%+20px)] ${overlayOpen ? "!opacity-0" : ""}`}>
+                    <motion.h1
+                        initial={{ y: 20, filter: "blur(10px)" }}
+                        animate={introPhase === "circle" ? { y: 0, filter: "blur(0px)" } : { filter: "blur(10px)" }}
+                        transition={{ duration: 1 }}
+                        style={{ opacity: titleOpacity }}
+                        className="text-2xl md:text-[4.8rem] lg:text-6xl font-medium tracking-tight text-foreground md:mt-[20px] lg:mt-[10px]"
+                    >
+                        <img src={pixcellorWordmarkWhite} alt="Pixcellorâ„¢" width={1200} height={628} fetchPriority="high" decoding="async" className="h-[4.36rem] md:h-[6.804rem] lg:h-[7rem] w-auto md:mt-[2.5px] lg:mt-[8px]" />
+                    </motion.h1>
+                    <motion.p
+                        style={{ opacity: subtitleOpacity }}
+                        className="-mt-2 text-[0.825rem] md:text-sm lg:text-base font-normal tracking-[0.2em] text-foreground/90"
+                    >
+                        Digital Services
+                    </motion.p>
+                    {/* Mobile-only arrow inside circle, below subtitle */}
+                    <motion.button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            advanceHeroFromArrow();
+                        }}
+                        aria-label="Scroll down"
+                        data-hero-scroll-control="true"
+                        className={`md:hidden relative z-[110] mt-1 h-10 w-10 pointer-events-auto cursor-pointer text-foreground/80 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
+                        style={{ opacity: arrowOpacity, filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
+                    >
+                        <motion.div
+                            animate={{ y: [0, 4, 0] }}
+                            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            <ChevronDown className="w-[1.375rem] h-[1.375rem] md:w-5 md:h-5" strokeWidth={2.25} />
+                        </motion.div>
+                    </motion.button>
+                    <motion.button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            advanceHeroFromArrow();
+                        }}
+                        aria-label="Scroll down"
+                        data-hero-scroll-control="true"
+                        className={`hidden md:flex relative z-[200] mt-3 md:mt-7 md:-translate-y-[20px] -mx-12 px-12 py-6 pointer-events-auto cursor-pointer text-foreground/80 hover:text-white transition-[color,filter] duration-200 items-center justify-center touch-manipulation [filter:drop-shadow(0_0_6px_hsla(0,0%,100%,0.7))_drop-shadow(0_0_12px_hsla(0,0%,100%,0.4))] hover:[filter:drop-shadow(0_0_4px_hsla(0,0%,100%,1))_drop-shadow(0_0_12px_hsla(0,0%,100%,1))_drop-shadow(0_0_24px_hsla(0,0%,100%,0.95))_drop-shadow(0_0_44px_hsla(0,0%,100%,0.8))_drop-shadow(0_0_72px_hsla(0,0%,100%,0.55))] ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
+                        style={{ opacity: arrowOpacity }}
+                    >
+                        <motion.div
+                            animate={{ y: [0, 4, 0] }}
+                            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            <ChevronDown className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.25} />
+                        </motion.div>
+                    </motion.button>
+                </div>
+
+                {/* Hero CTA buttons anchored at bottom of hero viewport */}
+                <div
+                    className={`absolute left-1/2 -translate-x-1/2 z-[10500] pointer-events-auto bottom-[34px] md:bottom-[23px] w-full md:w-auto px-[1.5rem] md:px-0 ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                 >
                     {/* Mobile: stacked */}
                     <div className="md:hidden flex flex-col items-stretch gap-2 w-full">
@@ -800,5 +1710,4 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         </div>
     );
 }
-
 
