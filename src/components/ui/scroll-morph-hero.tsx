@@ -330,6 +330,7 @@ const WHEEL_REBOUND_MIN_DELTA = 8;
 const WHEEL_REBOUND_MIN_RISE = 3;
 const WHEEL_TAIL_FALL_EVENTS = 2;
 const WHEEL_REBOUND_RISE_EVENTS = 2;
+const SALES_ENTRY_WHEEL_RELEASE_MS = 140;
 
 // UI Template Images ordered around the colour wheel (red â†’ orange â†’ yellow â†’
 // green â†’ blue â†’ purple â†’ magenta â†’ back to red) so the rotating circle
@@ -410,6 +411,8 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const salesSurfaceSyncingRef = useRef(false);
     const salesSurfaceSyncFrameRef = useRef<number | null>(null);
     const salesPortfolioExitArmedRef = useRef(false);
+    const salesEntryWheelReleasedRef = useRef(true);
+    const salesEntryWheelReleaseTimerRef = useRef<number | null>(null);
     const wheelGestureConsumedRef = useRef(false);
     const wheelGestureDeltaRef = useRef(0);
     const wheelLastEventAtRef = useRef(0);
@@ -435,6 +438,26 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             window.dispatchEvent(new CustomEvent("pixcellor:hero-circle"));
             introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
             introTimersRef.current = [];
+        };
+
+        const finishSalesEntryWheelHold = () => {
+            if (salesEntryWheelReleaseTimerRef.current !== null) {
+                window.clearTimeout(salesEntryWheelReleaseTimerRef.current);
+                salesEntryWheelReleaseTimerRef.current = null;
+            }
+            salesEntryWheelReleasedRef.current = true;
+        };
+
+        const holdSalesEntryUntilWheelRelease = () => {
+            salesEntryWheelReleasedRef.current = false;
+            if (salesEntryWheelReleaseTimerRef.current !== null) {
+                window.clearTimeout(salesEntryWheelReleaseTimerRef.current);
+            }
+            salesEntryWheelReleaseTimerRef.current = window.setTimeout(() => {
+                salesEntryWheelReleaseTimerRef.current = null;
+                if (salesSnapInFlightRef.current) return;
+                salesEntryWheelReleasedRef.current = true;
+            }, SALES_ENTRY_WHEEL_RELEASE_MS);
         };
 
         const setVirtualScrollValue = (value: number, syncSalesSurface = true) => {
@@ -518,6 +541,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             if (enteringSalesStory || nextIndex < 0) {
                 pendingSalesDirectionsRef.current.length = 0;
             }
+            if (nextIndex < 0) {
+                finishSalesEntryWheelHold();
+            }
             salesSnapIndexRef.current = nextIndex;
             salesSnapInFlightRef.current = true;
             const generation = ++salesSnapGenerationRef.current;
@@ -536,6 +562,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                         salesLandingFrameRef.current = null;
                         if (generation !== salesSnapGenerationRef.current) return;
                         salesSnapInFlightRef.current = false;
+                        if (!salesEntryWheelReleasedRef.current && nextIndex === 0) {
+                            holdSalesEntryUntilWheelRelease();
+                        }
                         salesPortfolioExitArmedRef.current =
                             nextIndex === 0 && container.scrollTop <= 1;
                         const pendingDirection = pendingSalesDirectionsRef.current.shift();
@@ -566,6 +595,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 if (source === "touch") {
                     if (touchSnapTriggeredRef.current) return;
                     touchSnapTriggeredRef.current = true;
+                }
+                if (source === "wheel" && salesSnapIndexRef.current === -1 && direction > 0) {
+                    holdSalesEntryUntilWheelRelease();
                 }
                 snapToSalesPage(direction);
                 return;
@@ -688,6 +720,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             const nativeSalesReady =
                 salesSnapIndexRef.current >= 0 &&
                 !salesSnapInFlightRef.current &&
+                salesEntryWheelReleasedRef.current &&
                 scrollRef.current >= SALES_STORY_SCROLL_START - 1;
 
             if (nativeSalesReady) {
@@ -705,12 +738,29 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 return;
             }
 
+            // The portfolio handoff is longer than some high-momentum wheel tails.
+            // Keep only the first sales anchor closed until that initiating wheel
+            // stream has actually gone quiet; internal sales anchors stay native.
+            const waitingForSalesEntryWheelRelease =
+                salesSnapIndexRef.current === 0 &&
+                scrollRef.current >= SALES_STORY_SCROLL_START - 1 &&
+                !salesEntryWheelReleasedRef.current;
+            if (waitingForSalesEntryWheelRelease) {
+                e.preventDefault();
+                forceCirclePhase();
+                holdSalesEntryUntilWheelRelease();
+                return;
+            }
+
             // Entry/exit uses the existing cinematic tween. Residual events from
             // that same physical gesture must never be queued as future sales-page
             // moves; internal sales navigation is native once the tween settles.
             if (salesSnapInFlightRef.current) {
                 e.preventDefault();
                 forceCirclePhase();
+                if (!salesEntryWheelReleasedRef.current) {
+                    holdSalesEntryUntilWheelRelease();
+                }
                 return;
             }
 
@@ -978,6 +1028,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                 salesSurfaceSyncFrameRef.current = null;
             }
             salesSurfaceSyncingRef.current = false;
+            finishSalesEntryWheelHold();
             finishWheelGesture();
             container.style.touchAction = previousTouchAction;
             salesPortfolioExitArmedRef.current = false;
@@ -1624,7 +1675,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             <motion.div
                 style={{
                     opacity: footerRevealProgress,
-                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 3.25rem)",
+                    bottom: isSmallViewport
+                        ? "calc(env(safe-area-inset-bottom, 0px) + 5.75rem)"
+                        : "calc(env(safe-area-inset-bottom, 0px) + 5.5rem)",
                 }}
                 className={`absolute left-1/2 -translate-x-1/2 z-[130] pointer-events-none ${overlayOpen ? "!opacity-0" : ""}`}
             >
@@ -1658,7 +1711,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                     }}
                     aria-label="Scroll up"
                     data-hero-scroll-control="true"
-                    className={`hidden md:flex relative z-[140] -mx-12 px-12 py-6 translate-y-[24.3px] cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"} ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
+                    className={`hidden md:flex relative z-[140] -mx-12 px-12 py-6 cursor-pointer text-foreground/80 hover:text-foreground transition-colors items-center justify-center touch-manipulation ${footerInteractive ? "pointer-events-auto" : "pointer-events-none"} ${overlayOpen ? "!opacity-0 !pointer-events-none" : ""}`}
                     style={{ filter: "drop-shadow(0 0 6px hsla(0,0%,100%,0.7)) drop-shadow(0 0 12px hsla(0,0%,100%,0.4))" }}
                 >
                     <motion.div
