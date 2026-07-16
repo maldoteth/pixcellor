@@ -1697,9 +1697,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             <motion.div
                 style={{
                     opacity: footerRevealProgress,
-                    bottom: isSmallViewport
-                        ? "calc(env(safe-area-inset-bottom, 0px) + 5.75rem)"
-                        : "calc(env(safe-area-inset-bottom, 0px) + 5.5rem)",
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 5rem)",
                 }}
                 className={`absolute left-1/2 -translate-x-1/2 z-[130] pointer-events-none ${overlayOpen ? "!opacity-0" : ""}`}
             >

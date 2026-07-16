@@ -576,6 +576,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     return (
       <div
         ref={ref}
+        data-pixcellor-horizontal-swipe="true"
         className={cn('relative w-full h-full flex items-center justify-center', className)}
         style={{ perspective: isMobile ? '800px' : '1200px', pointerEvents: interactive ? 'auto' : 'none' }}
         onTouchStart={handleTouchStart}
