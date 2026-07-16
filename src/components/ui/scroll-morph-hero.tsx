@@ -318,13 +318,18 @@ const MOBILE_SCROLL_BOOST = 24;
 const TABLET_SCROLL_BOOST = 12;
 const DESKTOP_TOUCH_BOOST = 12; // matches tablet feel for ≥1024px touch screens
 const CAROUSEL_SCROLL_SENSITIVITY = 0.9;
-// A momentum stream emits events about once per frame. A new physical wheel
-// pulse has a wider gap or a clear acceleration rebound after the prior tail.
-// Detect that pulse on the event itself so pointer movement is never required.
+// Track the shape of each wheel pulse: accelerate, peak, then decay. A new
+// same-direction swipe is the next acceleration after that decay. WheelEvent
+// exposes no gesture-phase flag, so this valley detector is what lets a fresh
+// swipe react immediately without treating one swipe's momentum as four pages.
 const WHEEL_PULSE_GAP_MS = 20;
-const WHEEL_TAIL_ARM_RATIO = 0.35;
-const WHEEL_REBOUND_RATIO = 1.65;
+const WHEEL_TAIL_ARM_RATIO = 0.72;
+const WHEEL_DEEP_TAIL_RATIO = 0.5;
+const WHEEL_REBOUND_RATIO = 1.08;
 const WHEEL_REBOUND_MIN_DELTA = 8;
+const WHEEL_REBOUND_MIN_RISE = 3;
+const WHEEL_TAIL_FALL_EVENTS = 2;
+const WHEEL_REBOUND_RISE_EVENTS = 2;
 
 // UI Template Images ordered around the colour wheel (red → orange → yellow →
 // green → blue → purple → magenta → back to red) so the rotating circle
@@ -408,6 +413,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     const wheelLastMagnitudeRef = useRef(0);
     const wheelPeakMagnitudeRef = useRef(0);
     const wheelTailReadyRef = useRef(false);
+    const wheelDeepTailReadyRef = useRef(false);
+    const wheelFallingEventsRef = useRef(0);
+    const wheelRisingEventsRef = useRef(0);
     const wheelDirectionRef = useRef(0);
     const touchSnapTriggeredRef = useRef(false);
     const snapSalesByDirectionRef = useRef<(direction: number) => void>(() => undefined);
@@ -540,6 +548,9 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             wheelLastMagnitudeRef.current = 0;
             wheelPeakMagnitudeRef.current = 0;
             wheelTailReadyRef.current = false;
+            wheelDeepTailReadyRef.current = false;
+            wheelFallingEventsRef.current = 0;
+            wheelRisingEventsRef.current = 0;
             wheelDirectionRef.current = 0;
         };
 
@@ -553,24 +564,67 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
             const gap = previousAt === 0 ? Number.POSITIVE_INFINITY : now - previousAt;
             const startsAfterGap = gap > WHEEL_PULSE_GAP_MS;
             const changesDirection = previousDirection !== 0 && direction !== previousDirection;
-            const reboundsAfterTail =
-                wheelTailReadyRef.current &&
-                magnitude >= WHEEL_REBOUND_MIN_DELTA &&
-                magnitude >= previousMagnitude * WHEEL_REBOUND_RATIO;
+            let startsNewPulse = startsAfterGap || changesDirection;
 
-            if (startsAfterGap || changesDirection || reboundsAfterTail) {
+            if (!startsNewPulse) {
+                const isFalling = previousMagnitude > 0 && magnitude < previousMagnitude;
+                const risesEnough =
+                    previousMagnitude > 0 &&
+                    magnitude >= WHEEL_REBOUND_MIN_DELTA &&
+                    magnitude - previousMagnitude >= WHEEL_REBOUND_MIN_RISE &&
+                    magnitude >= previousMagnitude * WHEEL_REBOUND_RATIO;
+
+                wheelPeakMagnitudeRef.current = Math.max(
+                    wheelPeakMagnitudeRef.current,
+                    magnitude,
+                );
+
+                if (isFalling) {
+                    wheelFallingEventsRef.current += 1;
+                } else if (magnitude >= previousMagnitude) {
+                    wheelFallingEventsRef.current = 0;
+                }
+
+                if (
+                    wheelPeakMagnitudeRef.current >= WHEEL_REBOUND_MIN_DELTA &&
+                    magnitude <= wheelPeakMagnitudeRef.current * WHEEL_DEEP_TAIL_RATIO
+                ) {
+                    wheelDeepTailReadyRef.current = true;
+                }
+
+                if (
+                    wheelDeepTailReadyRef.current ||
+                    (
+                        wheelFallingEventsRef.current >= WHEEL_TAIL_FALL_EVENTS &&
+                        magnitude <= wheelPeakMagnitudeRef.current * WHEEL_TAIL_ARM_RATIO
+                    )
+                ) {
+                    wheelTailReadyRef.current = true;
+                }
+
+                if (wheelTailReadyRef.current && risesEnough) {
+                    wheelRisingEventsRef.current += 1;
+                } else if (isFalling) {
+                    wheelRisingEventsRef.current = 0;
+                }
+
+                startsNewPulse =
+                    wheelTailReadyRef.current &&
+                    risesEnough &&
+                    (
+                        wheelDeepTailReadyRef.current ||
+                        wheelRisingEventsRef.current >= WHEEL_REBOUND_RISE_EVENTS
+                    );
+            }
+
+            if (startsNewPulse) {
                 wheelGestureConsumedRef.current = false;
                 wheelGestureDeltaRef.current = 0;
                 wheelPeakMagnitudeRef.current = magnitude;
                 wheelTailReadyRef.current = false;
-            } else {
-                wheelPeakMagnitudeRef.current = Math.max(wheelPeakMagnitudeRef.current, magnitude);
-                if (
-                    wheelPeakMagnitudeRef.current >= WHEEL_REBOUND_MIN_DELTA &&
-                    magnitude <= wheelPeakMagnitudeRef.current * WHEEL_TAIL_ARM_RATIO
-                ) {
-                    wheelTailReadyRef.current = true;
-                }
+                wheelDeepTailReadyRef.current = false;
+                wheelFallingEventsRef.current = 0;
+                wheelRisingEventsRef.current = 0;
             }
 
             wheelLastEventAtRef.current = now;
