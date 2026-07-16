@@ -107,7 +107,7 @@ function useDominantColor(url: string) {
         r = Math.round(r / count);
         g = Math.round(g / count);
         b = Math.round(b / count);
-        // No artificial channel boosting — keep the true average so greyscale
+        // No artificial channel boosting â€” keep the true average so greyscale
         // images stay neutral instead of inventing a fake hue.
         const out = { r, g, b };
         colorCache.set(url, out);
@@ -211,7 +211,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
   };
 
   // Fallback to a neutral warm tone when extraction fails (CORS etc.) so every
-  // card glows with the same intensity — only the hue differs.
+  // card glows with the same intensity â€” only the hue differs.
   const r = color?.r ?? 200;
   const g = color?.g ?? 200;
   const b = color?.b ?? 200;
@@ -288,7 +288,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({
           background: `linear-gradient(to top, ${tintStrong} 0%, ${tintMid} 55%, transparent 100%)`,
         }}
       />
-      {/* Liquid-glass blur bubble — bottom 40%, faded out toward the top */}
+      {/* Liquid-glass blur bubble â€” bottom 40%, faded out toward the top */}
       <div
         className="absolute inset-x-0 bottom-0 pointer-events-none"
         style={{
@@ -507,7 +507,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     }, []);
 
     const SCROLL_THRESHOLD = 8; // px of vertical drift before we treat as scroll
-    const ARM_DELAY = 90; // ms to wait before lighting up — gives scroll a head start
+    const ARM_DELAY = 90; // ms to wait before lighting up â€” gives scroll a head start
 
     const handleTouchStart = (e: React.TouchEvent) => {
       if (!isMobile) return;
@@ -545,7 +545,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       const dx = t.clientX - s.startX;
       const dy = t.clientY - s.startY;
       // If the user is clearly scrolling vertically (more vertical than horizontal
-      // and past the threshold), abort any glow — scrolling takes precedence.
+      // and past the threshold), abort any glow â€” scrolling takes precedence.
       if (!s.scrolling && Math.abs(dy) > SCROLL_THRESHOLD && Math.abs(dy) > Math.abs(dx)) {
         s.scrolling = true;
         s.armed = false;
@@ -576,6 +576,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     return (
       <div
         ref={ref}
+        data-pixcellor-horizontal-swipe="true"
         className={cn('relative w-full h-full flex items-center justify-center', className)}
         style={{ perspective: isMobile ? '800px' : '1200px', pointerEvents: interactive ? 'auto' : 'none' }}
         onTouchStart={handleTouchStart}
