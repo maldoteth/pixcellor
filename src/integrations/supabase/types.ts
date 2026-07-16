@@ -3476,6 +3476,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_wallet_passkeys: {
+        Row: {
+          ciphertext: string
+          created_at: string
+          credential_id: string
+          iv: string
+          prf_salt: string
+          transports: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ciphertext: string
+          created_at?: string
+          credential_id: string
+          iv: string
+          prf_salt: string
+          transports?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ciphertext?: string
+          created_at?: string
+          credential_id?: string
+          iv?: string
+          prf_salt?: string
+          transports?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_wallet_recovery: {
         Row: {
           created_at: string
