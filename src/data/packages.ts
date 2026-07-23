@@ -621,7 +621,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       elite: "Full SEO + AEO",
       "retainer-growth": "Initial optimization",
       "retainer-scale": "Monthly rank targeting\u00a0",
-      "retainer-enterprise": "Maximum",
+      "retainer-enterprise": "Constant improvements",
     },
   },
   {
