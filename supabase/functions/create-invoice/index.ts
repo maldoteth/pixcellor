@@ -32,7 +32,7 @@ const PACKAGE_CATALOG: Record<string, { name: string; description: string; amoun
   "full-works": { name: "Full Works", description: "Full Works website build (one-time)", amount_pence: 16900 },
   elite: { name: "Elite Build", description: "Elite flagship build (one-time)", amount_pence: 47900 },
   "retainer-growth": { name: "Growth retainer", description: "Growth retainer — first month", amount_pence: 8900 },
-  "retainer-scale": { name: "Scale retainer", description: "Scale retainer — first month", amount_pence: 47900 },
+  "retainer-scale": { name: "Scale retainer", description: "Scale retainer — first month", amount_pence: 36900 },
   "retainer-enterprise": { name: "Enterprise retainer", description: "Enterprise retainer — first month", amount_pence: 246900 },
 };
 

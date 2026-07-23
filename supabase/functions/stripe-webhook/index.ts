@@ -24,6 +24,8 @@ const PRICE_TO_TIER: Record<string, { tier: "growth" | "scale" | "enterprise"; d
   // Scale
   "price_1Tcg07BtUjwejeUwfGGDhftV": { tier: "scale", displayName: "Scale", interval: "monthly" },
   "price_1Tcg0ABtUjwejeUwLc5nw8nX": { tier: "scale", displayName: "Scale", interval: "yearly" },
+  "price_1TwRfYBtUjwejeUwPbdGfsPk": { tier: "scale", displayName: "Scale", interval: "monthly" },
+  "price_1TwRfdBtUjwejeUwIeiTES4W": { tier: "scale", displayName: "Scale", interval: "yearly" },
   // Enterprise (also the legacy Custom retainer)
   "price_1TSmB8BtUjwejeUw8UXRTbBQ": { tier: "enterprise", displayName: "Enterprise", interval: "monthly" },
   "price_1TSmBtBtUjwejeUwb8xPSvvf": { tier: "enterprise", displayName: "Enterprise", interval: "yearly" },

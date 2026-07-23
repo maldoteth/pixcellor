@@ -68,7 +68,7 @@ export const template = {
   previewData: {
     customerEmail: 'client@example.com',
     tierName: 'Scale',
-    amount: '£479.00',
+    amount: '£369.00',
     billingInterval: 'Monthly',
     invoiceNumber: 'PXC-INV-1234',
     invoiceHostedUrl: 'https://invoice.stripe.com/i/example',

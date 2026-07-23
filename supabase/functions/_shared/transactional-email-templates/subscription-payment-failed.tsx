@@ -71,7 +71,7 @@ export const template = {
   previewData: {
     customerEmail: 'client@example.com',
     tierName: 'Scale',
-    amount: '£479.00',
+    amount: '£369.00',
     invoiceHostedUrl: 'https://invoice.stripe.com/i/example',
     nextAttemptDate: '8 June 2026',
     portalUrl: 'https://pixcellor.com/portal',

@@ -47,8 +47,8 @@ const ALLOWED_PRICE_IDS = new Set<string>([
   // Growth / Scale / Enterprise (monthly + yearly)
   "price_1Tkw9ZBtUjwejeUwzikiU5cp",
   "price_1Tkw9ZBtUjwejeUw6PkwTVs8",
-  "price_1Tkw9bBtUjwejeUwFNkRNrjx",
-  "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
+  "price_1TwRfYBtUjwejeUwPbdGfsPk",
+  "price_1TwRfdBtUjwejeUwIeiTES4W",
   "price_1Tkw9cBtUjwejeUwitF4y9sg",
   "price_1Tkw9dBtUjwejeUwOG2jdnoV",
   // BYOW subscription tiers

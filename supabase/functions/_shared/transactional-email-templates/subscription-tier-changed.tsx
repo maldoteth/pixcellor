@@ -75,7 +75,7 @@ export const template = {
     customerEmail: 'client@example.com',
     previousTier: 'Growth',
     newTier: 'Scale',
-    newAmount: '£479.00',
+    newAmount: '£369.00',
     billingInterval: 'Monthly',
     effectiveDate: '1 June 2026',
     portalUrl: 'https://pixcellor.com/portal',
