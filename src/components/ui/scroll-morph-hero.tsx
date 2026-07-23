@@ -332,6 +332,7 @@ const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * 
 
 export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: IntroAnimationProps) {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
+    const [packagesOpen, setPackagesOpen] = useState(false);
     const introPhaseRef = useRef<AnimationPhase>("scatter");
     const introTimersRef = useRef<number[]>([]);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
