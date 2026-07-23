@@ -94,7 +94,7 @@ export const RETAINER_TIERS = {
       "Unlimited edits & revisions",
       "Priority support 24/7 - 365",
       "Monthly strategy calls",
-      "Higher usage limits",
+      "SEO",
     ],
   },
   enterprise: {
