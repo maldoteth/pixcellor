@@ -343,6 +343,20 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
         onVirtualScrollChangeRef.current = onVirtualScrollChange;
     }, [onVirtualScrollChange]);
 
+    useEffect(() => {
+        const handler = () => {
+            setPackagesOpen(true);
+            window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: true } }));
+        };
+        window.addEventListener("pixcellor:open-packages", handler);
+        return () => window.removeEventListener("pixcellor:open-packages", handler);
+    }, []);
+
+    const handlePackagesOpenChange = (open: boolean) => {
+        setPackagesOpen(open);
+        window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open } }));
+    };
+
     // --- Container Size ---
     useEffect(() => {
         if (!containerRef.current) return;
