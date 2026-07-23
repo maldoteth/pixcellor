@@ -83,12 +83,12 @@ export const RETAINER_TIERS = {
   scale: {
     key: "scale" as const,
     name: "Scale",
-    monthly: 479,
-    yearly: 4790,
-    monthlyLabel: "£479/mo",
-    yearlyLabel: "£4,790/yr",
-    monthlyPriceId: "price_1Tkw9bBtUjwejeUwFNkRNrjx",
-    yearlyPriceId: "price_1Tkw9bBtUjwejeUw2Mv7pJR8",
+    monthly: 369,
+    yearly: 3690,
+    monthlyLabel: "£369/mo",
+    yearlyLabel: "£3,690/yr",
+    monthlyPriceId: "price_1TwRfYBtUjwejeUwPbdGfsPk",
+    yearlyPriceId: "price_1TwRfdBtUjwejeUwIeiTES4W",
     features: [
       "Unlimited seats & users",
       "Unlimited edits & revisions",
