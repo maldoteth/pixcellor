@@ -5,6 +5,7 @@ import { motion, useTransform, useSpring, useMotionValue, animate } from "framer
 import { ChevronDown, ChevronUp, X, BookOpen, ShoppingCart, Phone, Tag } from "lucide-react";
 
 import Footer from "@/components/Footer";
+import PackagesDialog from "@/components/PackagesDialog";
 import { recordScrollDepth } from "@/lib/checkoutTracking";
 import { CircularGallery, type GalleryItem } from "@/components/ui/circular-gallery";
 import { supabase } from "@/integrations/supabase/client";
@@ -331,6 +332,7 @@ const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * 
 
 export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: IntroAnimationProps) {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
+    const [packagesOpen, setPackagesOpen] = useState(false);
     const introPhaseRef = useRef<AnimationPhase>("scatter");
     const introTimersRef = useRef<number[]>([]);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -340,6 +342,20 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
     useEffect(() => {
         onVirtualScrollChangeRef.current = onVirtualScrollChange;
     }, [onVirtualScrollChange]);
+
+    useEffect(() => {
+        const handler = () => {
+            setPackagesOpen(true);
+            window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open: true } }));
+        };
+        window.addEventListener("pixcellor:open-packages", handler);
+        return () => window.removeEventListener("pixcellor:open-packages", handler);
+    }, []);
+
+    const handlePackagesOpenChange = (open: boolean) => {
+        setPackagesOpen(open);
+        window.dispatchEvent(new CustomEvent("pixcellor:packages-open-change", { detail: { open } }));
+    };
 
     // --- Container Size ---
     useEffect(() => {
@@ -1106,6 +1122,7 @@ export default function IntroAnimation({ onVirtualScrollChange, overlayOpen }: I
                         text="AI-powered business solutions from a team that's driven $500M+ in market cap across multiple 7-figure launches."
                         className="text-[17.2px] md:text-[19.4px] lg:text-[19.2px] text-muted-foreground max-w-lg md:max-w-3xl lg:max-w-2xl leading-relaxed mb-8"
                     />
+                    <PackagesDialog open={packagesOpen} onOpenChange={handlePackagesOpenChange} hidden />
                 </motion.div>
 
                 {/* Circular Portfolio Gallery — stays mounted so images remain cached while scrolling */}
