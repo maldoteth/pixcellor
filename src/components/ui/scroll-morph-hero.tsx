@@ -5,6 +5,7 @@ import { motion, useTransform, useSpring, useMotionValue, animate } from "framer
 import { ChevronDown, ChevronUp, X, BookOpen, ShoppingCart, Phone, Tag } from "lucide-react";
 
 import Footer from "@/components/Footer";
+import PackagesDialog from "@/components/PackagesDialog";
 import { recordScrollDepth } from "@/lib/checkoutTracking";
 import { CircularGallery, type GalleryItem } from "@/components/ui/circular-gallery";
 import { supabase } from "@/integrations/supabase/client";
