@@ -570,7 +570,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       "full-works": "£169 one-off",
       elite: "£479 one-off",
       "retainer-growth": "£89/mo",
-      "retainer-scale": "£479/mo",
+      "retainer-scale": "£369/mo",
       "retainer-enterprise": "£2,469/mo",
     },
   },
