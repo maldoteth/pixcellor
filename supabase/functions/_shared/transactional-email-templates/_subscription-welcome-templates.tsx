@@ -162,7 +162,7 @@ const buildEmail = (tierKey: 'growth' | 'scale' | 'enterprise') => {
       customerEmail: 'client@example.com',
       subscriptionId: 'sub_1Test1234',
       tierName: cfg.displayTier,
-      amount: tierKey === 'growth' ? '£89.00' : tierKey === 'scale' ? '£479.00' : '£2,469.00',
+      amount: tierKey === 'growth' ? '£89.00' : tierKey === 'scale' ? '£369.00' : '£2,469.00',
       billingInterval: 'Monthly',
       nextRenewalDate: '1 July 2026',
       portalUrl: `${SITE}/portal`,
