@@ -399,7 +399,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
           "Unlimited edits & revisions",
           "Priority support 24/7 365",
           "Monthly strategy & roadmap call",
-          "SEO",
+          "SEO, AEO & GEO",
         ],
       },
       {
