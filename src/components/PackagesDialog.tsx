@@ -75,7 +75,7 @@ export const RETAINER_TIERS = {
     features: [
       "Bespoke CRM\u00a0",
       "Hosting, domain & cloud",
-      "AI chat bots and sales",
+      "AI chat bots",
       "Lead Generation",
       "Analytics & tracking",
     ],
