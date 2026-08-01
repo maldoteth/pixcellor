@@ -142,6 +142,7 @@ export const PACKAGE_DETAILS: Record<string, PackageDetail> = {
         items: [
           "Domain connection & DNS setup",
           "Hosting for first 25 leads",
+          "SSL certificate included",
           "Lifetime warranty on build defects",
           "Email support",
         ],
