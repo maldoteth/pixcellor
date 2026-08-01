@@ -2113,11 +2113,11 @@ async function devLookupVisitorActivity(supabase: DbClient, args: Record<string,
   const website = cleanWebsite(args.website);
   if (!email && !website) return { ok: false, error: "email_or_website_required" };
   let query = supabase.from("visitor_falloffs")
-    .select("visitor_id, customer_email, company_name, company_domain, last_seen_at, max_scroll_percent, first_page, last_page, portfolio_opened_at, pricing_opened_at, buy_clicked_at, checkout_started_at, package_name")
+    .select("visitor_id, customer_email, identified_email, identified_email_source, company_name, company_domain, last_seen_at, session_duration_seconds, active_duration_seconds, page_view_count, page_history, utm_source, utm_medium, utm_campaign, device_type, max_scroll_percent, first_page, last_page, portfolio_opened_at, pricing_opened_at, buy_clicked_at, checkout_started_at, package_name")
     .order("last_seen_at", { ascending: false })
     .limit(10);
-  if (email && website) query = query.or(`customer_email.ilike.${email},company_domain.ilike.%${website}%`);
-  else if (email) query = query.ilike("customer_email", email);
+  if (email && website) query = query.or(`customer_email.ilike.${email},identified_email.ilike.${email},company_domain.ilike.%${website}%`);
+  else if (email) query = query.or(`customer_email.ilike.${email},identified_email.ilike.${email}`);
   else query = query.ilike("company_domain", `%${website}%`);
   const { data, error } = await query;
   if (error) return { ok: false, error: error.message };
