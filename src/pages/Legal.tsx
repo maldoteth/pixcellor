@@ -366,10 +366,10 @@ const PRIVACY: Section[] = [
     heading: "2. What we collect",
     body: (
       <ul className="list-disc pl-5 space-y-2">
-        <li><strong>Identity & contact:</strong> name, email, phone, business name.</li>
+        <li><strong>Identity & contact:</strong> name, email, phone, business name. With analytics consent, this can include a validated email already stored in a first-party cookie or authenticated session.</li>
         <li><strong>Account & order data:</strong> login details, package, payment status, project requirements.</li>
         <li><strong>Communications:</strong> chat messages, support emails, call notes.</li>
-        <li><strong>Technical:</strong> IP address, device, browser, pages viewed, referrer (only with consent where required).</li>
+        <li><strong>Technical:</strong> IP address, approximate network/location data, device, browser, referrer, campaign attribution, pages viewed, scroll depth, and session/active duration (only with consent where required).</li>
         <li><strong>Marketing preferences:</strong> opt-ins and unsubscribes.</li>
       </ul>
     ),
@@ -435,9 +435,11 @@ const PRIVACY: Section[] = [
     heading: "8. Cookies & tracking",
     body: (
       <>
-        We use a minimal number of strictly necessary cookies and, with your consent, analytics. You can
-        manage your choice via the consent banner shown on first visit and change it any time by clearing
-        site storage.
+        We use a minimal number of strictly necessary cookies and, with your consent, analytics. Consented
+        analytics can measure session activity and recognise a validated email already present in a
+        first-party, JavaScript-readable cookie; we do not collect cookie values, authentication tokens,
+        or a cookie inventory. You can manage your choice via the consent banner shown on first visit and
+        change it any time by clearing site storage.
       </>
     ),
   },

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { FALL_OFF_CONSENT_KEY, recordFalloff, recordVisitFalloffOnce, setFalloffConsent } from "@/lib/checkoutTracking";
+import { FALL_OFF_CONSENT_KEY, isFalloffTrackablePath, recordFalloff, recordVisitFalloffOnce, setFalloffConsent } from "@/lib/checkoutTracking";
 
 const glassButtonStyle = {
   background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
@@ -19,18 +20,26 @@ const glassButtonStyle = {
 export default function FalloffConsentBanner() {
   const [visible, setVisible] = useState(false);
   const isMobile = useIsMobile();
+  const location = useLocation();
+  const trackable = isFalloffTrackablePath(location.pathname);
 
   useEffect(() => {
+    if (!trackable) {
+      setVisible(false);
+      return;
+    }
     const consent = localStorage.getItem(FALL_OFF_CONSENT_KEY);
     setVisible(!consent);
     if (consent === "granted") void recordVisitFalloffOnce();
-  }, []);
+  }, [trackable]);
 
   const choose = async (granted: boolean) => {
     setFalloffConsent(granted);
     setVisible(false);
     if (granted) await recordFalloff({ consented_at: new Date().toISOString(), event: "consent_granted" });
   };
+
+  if (!trackable) return null;
 
   return (
     <AnimatePresence>
@@ -62,7 +71,7 @@ export default function FalloffConsentBanner() {
               <div className="mx-auto mt-3 mb-4 h-1 w-[60px] rounded-full bg-muted" />
               <div className="px-5 pb-2 flex flex-col gap-4">
                 <p className="text-sm text-muted-foreground">
-                  Can Pixcellor remember your visit, device basics, and checkout progress so we can improve follow-up if you leave before ordering?
+                  Can Pixcellor measure your visit, session activity, device basics, and checkout progress, and recognise an email already saved in a first-party cookie, so we can improve follow-up if you leave before ordering?
                 </p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => choose(false)} className="h-11 flex-1">No</Button>
@@ -89,7 +98,7 @@ export default function FalloffConsentBanner() {
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-muted-foreground">
-                Can Pixcellor remember your visit, device basics, and checkout progress so we can improve follow-up if you leave before ordering?
+                Can Pixcellor measure your visit, session activity, device basics, and checkout progress, and recognise an email already saved in a first-party cookie, so we can improve follow-up if you leave before ordering?
               </p>
               <div className="flex shrink-0 gap-2">
                 <Button variant="outline" size="sm" onClick={() => choose(false)} className="h-9 min-w-20 px-4">No</Button>

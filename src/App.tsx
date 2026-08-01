@@ -10,6 +10,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import RoutePrefetcher from "@/components/RoutePrefetcher";
+import FalloffSessionTracker from "@/components/FalloffSessionTracker";
 
 
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -44,6 +45,7 @@ const Work = lazy(() => import("./pages/Work"));
 const InvoiceView = lazy(() => import("./pages/InvoiceView"));
 const InvoicesAdmin = lazy(() => import("./pages/InvoicesAdmin"));
 const ReferralLanding = lazy(() => import("./pages/ReferralLanding"));
+const FalloffConsentBanner = lazy(() => import("@/components/FalloffConsentBanner"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -104,6 +106,7 @@ const App = () => (
         <BrowserRouter>
           <AuthRedirectHandler />
           <RoutePrefetcher />
+          <FalloffSessionTracker />
           <Suspense fallback={<RouteFallback />}>
 
             <Routes>
@@ -146,6 +149,9 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+          </Suspense>
+          <Suspense fallback={null}>
+            <FalloffConsentBanner />
           </Suspense>
         </BrowserRouter>
         </ThemedDialogsProvider>
