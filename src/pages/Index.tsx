@@ -11,7 +11,6 @@ const ChatBot = lazy(() => import("@/components/ChatBot"));
 const PackagesDialog = lazy(() => import("@/components/PackagesDialog"));
 const VisionGenerator = lazy(() => import("@/components/VisionGenerator"));
 const CustomerAccess = lazy(() => import("@/components/CustomerAccess"));
-const FalloffConsentBanner = lazy(() => import("@/components/FalloffConsentBanner"));
 const RotateDevicePrompt = lazy(() => import("@/components/RotateDevicePrompt"));
 const TryBeforeBuyDrawer = lazy(() => import("@/components/TryBeforeBuyDrawer"));
 const LetsTalkPrompt = lazy(() => import("@/components/LetsTalkPrompt"));
@@ -168,7 +167,6 @@ const Index = () => {
           <TryBeforeBuyDrawer />
           <LetsTalkPrompt />
           <VisionPurchaseFlow />
-          <FalloffConsentBanner />
         </Suspense>
       </div>
       <Suspense fallback={null}>

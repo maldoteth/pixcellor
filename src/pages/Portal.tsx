@@ -142,11 +142,43 @@ type VisitorFalloff = {
   portfolio_project_opened: string | null;
   pricing_opened_at: string | null;
   buy_clicked_at: string | null;
+  session_started_at: string | null;
+  session_ended_at: string | null;
+  session_duration_seconds: number;
+  active_duration_seconds: number;
+  page_view_count: number;
+  visibility_change_count: number;
+  identified_email: string | null;
+  identified_email_source: string | null;
+  page_history: unknown;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_term: string | null;
+  utm_content: string | null;
+  device_type: string | null;
+  platform: string | null;
+  connection_type: string | null;
+  touch_points: number | null;
   last_seen_at: string;
   event_count: number;
   metadata: Record<string, unknown> | null;
   created_at: string;
 };
+
+const formatTrackedDuration = (seconds: number | null | undefined) => {
+  const total = Math.max(0, Math.round(seconds ?? 0));
+  if (total < 60) return `${total}s`;
+  const minutes = Math.floor(total / 60);
+  const remainingSeconds = total % 60;
+  if (minutes < 60) return remainingSeconds ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return remainingMinutes ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+};
+
+const trackedPageHistory = (value: unknown) =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.length > 0) : [];
 
 // ONLY include orders explicitly stamped by this website's checkout.
 // All legacy/external Stripe activity is excluded.
@@ -1221,16 +1253,32 @@ export default function Portal() {
       const totalEvents = rows.reduce((sum, r) => sum + (r.event_count ?? 0), 0);
       const maxScroll = rows.reduce((m, r) => Math.max(m, r.max_scroll_percent ?? 0), 0);
       const portfolioPages = rows.reduce((m, r) => Math.max(m, r.portfolio_pages_viewed ?? 0), 0);
+      const totalSessionDuration = rows.reduce((sum, r) => sum + (r.session_duration_seconds ?? 0), 0);
+      const totalActiveDuration = rows.reduce((sum, r) => sum + (r.active_duration_seconds ?? 0), 0);
+      const totalPageViews = rows.reduce((sum, r) => sum + (r.page_view_count ?? 0), 0);
+      const totalVisibilityChanges = rows.reduce((sum, r) => sum + (r.visibility_change_count ?? 0), 0);
       return {
         ...latest,
         event_count: totalEvents,
         max_scroll_percent: maxScroll,
         portfolio_pages_viewed: portfolioPages,
+        session_duration_seconds: totalSessionDuration,
+        active_duration_seconds: totalActiveDuration,
+        page_view_count: totalPageViews,
+        visibility_change_count: totalVisibilityChanges,
+        session_started_at: earliest(rows, "session_started_at") ?? latest.session_started_at,
+        identified_email: firstNonNull<string>(sorted, "identified_email") ?? latest.identified_email,
+        identified_email_source: firstNonNull<string>(sorted, "identified_email_source") ?? latest.identified_email_source,
         customer_email: firstNonNull<string>(sorted, "customer_email") ?? latest.customer_email,
         company_name: firstNonNull<string>(sorted, "company_name") ?? latest.company_name,
         company_domain: firstNonNull<string>(sorted, "company_domain") ?? latest.company_domain,
         package_name: firstNonNull<string>(sorted, "package_name") ?? latest.package_name,
         checkout_session_id: firstNonNull<string>(sorted, "checkout_session_id") ?? latest.checkout_session_id,
+        utm_source: firstNonNull<string>(sorted, "utm_source") ?? latest.utm_source,
+        utm_medium: firstNonNull<string>(sorted, "utm_medium") ?? latest.utm_medium,
+        utm_campaign: firstNonNull<string>(sorted, "utm_campaign") ?? latest.utm_campaign,
+        utm_term: firstNonNull<string>(sorted, "utm_term") ?? latest.utm_term,
+        utm_content: firstNonNull<string>(sorted, "utm_content") ?? latest.utm_content,
         pricing_opened_at: earliest(rows, "pricing_opened_at") ?? latest.pricing_opened_at,
         buy_clicked_at: earliest(rows, "buy_clicked_at") ?? latest.buy_clicked_at,
         portfolio_opened_at: earliest(rows, "portfolio_opened_at") ?? latest.portfolio_opened_at,
@@ -1243,7 +1291,8 @@ export default function Portal() {
 
     if (!falloffsQ) return merged;
     return merged.filter(f =>
-      matchesQuery(falloffsQ, f.customer_email) || matchesQuery(falloffsQ, f.checkout_session_id) ||
+      matchesQuery(falloffsQ, f.customer_email) || matchesQuery(falloffsQ, f.identified_email) ||
+      matchesQuery(falloffsQ, f.identified_email_source) || matchesQuery(falloffsQ, f.checkout_session_id) ||
       matchesQuery(falloffsQ, f.package_name) || matchesQuery(falloffsQ, f.billing) ||
       matchesQuery(falloffsQ, f.referrer) || matchesQuery(falloffsQ, f.user_agent) ||
       matchesQuery(falloffsQ, f.timezone) || matchesQuery(falloffsQ, f.company_name) ||
@@ -1255,6 +1304,10 @@ export default function Portal() {
       matchesQuery(falloffsQ, f.as_name) || matchesQuery(falloffsQ, f.as_domain) ||
       matchesQuery(falloffsQ, f.as_route) || matchesQuery(falloffsQ, f.carrier_name) ||
       matchesQuery(falloffsQ, f.enrichment_source) || matchesQuery(falloffsQ, f.enrichment_status) ||
+      matchesQuery(falloffsQ, f.utm_source) || matchesQuery(falloffsQ, f.utm_medium) ||
+      matchesQuery(falloffsQ, f.utm_campaign) || matchesQuery(falloffsQ, f.device_type) ||
+      matchesQuery(falloffsQ, f.platform) || matchesQuery(falloffsQ, f.connection_type) ||
+      matchesQuery(falloffsQ, JSON.stringify(f.page_history)) ||
       matchesQuery(falloffsQ, f.visitor_id) || matchesQuery(falloffsQ, JSON.stringify(f.metadata))
     );
   }, [falloffs, orders, falloffsQ]);
@@ -3139,7 +3192,7 @@ export default function Portal() {
                     <CardContent className="p-4 space-y-3">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 flex-1 space-y-1">
-                          <div className="break-words font-medium">{f.company_name ?? f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
+                          <div className="break-words font-medium">{f.company_name ?? f.identified_email ?? f.customer_email ?? f.package_name ?? "Anonymous visitor"}</div>
                           <div className="text-muted-foreground text-slate-50 bg-white/0 text-xs">{[f.company_domain, f.company_type, f.ip_city, f.ip_region, f.ip_country].filter(Boolean).join(" · ") || "Company/location unknown"}</div>
                           <div className="break-words text-muted-foreground text-slate-50 bg-white/0 text-xs">Last seen {new Date(f.last_seen_at).toLocaleString()} · {f.timezone ?? f.ip_timezone ?? "timezone unknown"}</div>
                           <div className="break-all text-muted-foreground text-slate-50 bg-white/0 text-xs">Visitor {f.visitor_id} · Session {f.session_id}</div>
@@ -3153,7 +3206,28 @@ export default function Portal() {
                           {f.pricing_opened_at && <Badge variant="outline">Pricing opened</Badge>}
                           {f.portfolio_opened_at && <Badge variant="outline">Portfolio read</Badge>}
                           {f.package_name && <Badge variant="outline">{f.package_name}</Badge>}
+                          {f.session_duration_seconds > 0 && <Badge variant="outline">{formatTrackedDuration(f.session_duration_seconds)} session</Badge>}
                           {f.enrichment_status && <Badge variant={f.enrichment_status === "enriched" ? "secondary" : "outline"}>{f.enrichment_status}</Badge>}
+                        </div>
+                      </div>
+                      <div className="grid gap-2 text-xs md:grid-cols-3">
+                        <div className="rounded-none border border-border p-2">
+                          <div className="font-medium">Engagement</div>
+                          <div className="text-muted-foreground">Session: {formatTrackedDuration(f.session_duration_seconds)}</div>
+                          <div className="text-muted-foreground">Active: {formatTrackedDuration(f.active_duration_seconds)}</div>
+                          <div className="text-muted-foreground">Pages: {f.page_view_count ?? 0} · Events: {f.event_count ?? 0}</div>
+                          <div className="text-muted-foreground">Started: {f.session_started_at ? new Date(f.session_started_at).toLocaleString() : "—"}</div>
+                        </div>
+                        <div className="rounded-none border border-border p-2">
+                          <div className="font-medium">Identity</div>
+                          <div className="text-muted-foreground break-all">Email: {f.identified_email ?? f.customer_email ?? "—"}</div>
+                          <div className="text-muted-foreground break-all">Source: {f.identified_email_source ?? (f.customer_email ? "checkout" : "—")}</div>
+                        </div>
+                        <div className="rounded-none border border-border p-2">
+                          <div className="font-medium">Attribution</div>
+                          <div className="text-muted-foreground">Source / medium: {[f.utm_source, f.utm_medium].filter(Boolean).join(" / ") || "Direct / unknown"}</div>
+                          <div className="text-muted-foreground break-words">Campaign: {f.utm_campaign ?? "—"}</div>
+                          <div className="text-muted-foreground break-words">Term / content: {[f.utm_term, f.utm_content].filter(Boolean).join(" / ") || "—"}</div>
                         </div>
                       </div>
                       <div className="grid gap-2 text-xs md:grid-cols-3">
@@ -3211,8 +3285,13 @@ export default function Portal() {
                         <div className="md:col-span-2">Portfolio project: {f.portfolio_project_opened ?? "—"}</div>
                         <div>Page: {f.last_page ?? f.first_page ?? "—"}</div>
                         <div>Referrer: {f.referrer ?? "Direct"}</div>
-                        <div>Device: {f.viewport_size ?? "—"} viewport · {f.screen_size ?? "—"} screen</div>
+                        <div>Device: {f.device_type ?? "unknown"} · {f.viewport_size ?? "—"} viewport · {f.screen_size ?? "—"} screen</div>
                         <div>Language: {f.browser_language ?? "—"}</div>
+                        <div>Platform: {f.platform ?? "—"} · Connection: {f.connection_type ?? "—"}</div>
+                        <div>Touch points: {f.touch_points ?? "—"} · Visibility changes: {f.visibility_change_count ?? 0}</div>
+                        {trackedPageHistory(f.page_history).length > 0 && (
+                          <div className="md:col-span-2 break-words">Route path: {trackedPageHistory(f.page_history).join(" → ")}</div>
+                        )}
                         <div className="md:col-span-2 break-all">User agent: {f.user_agent ?? "—"}</div>
                       </div>
                     </CardContent>

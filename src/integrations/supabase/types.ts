@@ -4038,6 +4038,24 @@ export type Database = {
           ip_timezone: string | null
           last_page: string | null
           last_seen_at: string
+          active_duration_seconds: number
+          connection_type: string | null
+          device_type: string | null
+          identified_email: string | null
+          identified_email_source: string | null
+          page_history: Json
+          page_view_count: number
+          platform: string | null
+          session_duration_seconds: number
+          session_ended_at: string | null
+          session_started_at: string | null
+          touch_points: number | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          visibility_change_count: number
           max_scroll_percent: number
           metadata: Json
           package_name: string | null
@@ -4097,6 +4115,24 @@ export type Database = {
           ip_timezone?: string | null
           last_page?: string | null
           last_seen_at?: string
+          active_duration_seconds?: number
+          connection_type?: string | null
+          device_type?: string | null
+          identified_email?: string | null
+          identified_email_source?: string | null
+          page_history?: Json
+          page_view_count?: number
+          platform?: string | null
+          session_duration_seconds?: number
+          session_ended_at?: string | null
+          session_started_at?: string | null
+          touch_points?: number | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visibility_change_count?: number
           max_scroll_percent?: number
           metadata?: Json
           package_name?: string | null
@@ -4156,6 +4192,24 @@ export type Database = {
           ip_timezone?: string | null
           last_page?: string | null
           last_seen_at?: string
+          active_duration_seconds?: number
+          connection_type?: string | null
+          device_type?: string | null
+          identified_email?: string | null
+          identified_email_source?: string | null
+          page_history?: Json
+          page_view_count?: number
+          platform?: string | null
+          session_duration_seconds?: number
+          session_ended_at?: string | null
+          session_started_at?: string | null
+          touch_points?: number | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visibility_change_count?: number
           max_scroll_percent?: number
           metadata?: Json
           package_name?: string | null
