@@ -33,6 +33,10 @@ const corsHeaders = {
 };
 
 const clean = (value: unknown) => typeof value === "string" && value.trim() ? value.trim().slice(0, 500) : null;
+const cleanEmail = (value: unknown) => {
+  const email = clean(value)?.toLowerCase() ?? null;
+  return email && email.length <= 320 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
+};
 const getClientIp = (req: Request) => req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || null;
 
 // Server-side allowlist of public Stripe price IDs. Any priceId the client
@@ -298,6 +302,22 @@ serve(async (req) => {
         screen_size: typeof safeClientContext.screen === "string" ? safeClientContext.screen : null,
         viewport_size: typeof safeClientContext.viewport === "string" ? safeClientContext.viewport : null,
         max_scroll_percent: Number.isFinite(Number(safeClientContext.maxScrollPercent)) ? Math.max(0, Math.min(100, Math.round(Number(safeClientContext.maxScrollPercent)))) : 0,
+        session_started_at: typeof safeClientContext.sessionStartedAt === "string" ? safeClientContext.sessionStartedAt : null,
+        session_duration_seconds: Number.isFinite(Number(safeClientContext.sessionDurationSeconds)) ? Math.max(0, Math.min(604800, Math.round(Number(safeClientContext.sessionDurationSeconds)))) : 0,
+        active_duration_seconds: Number.isFinite(Number(safeClientContext.activeDurationSeconds)) ? Math.max(0, Math.min(604800, Math.round(Number(safeClientContext.activeDurationSeconds)))) : 0,
+        page_view_count: Number.isFinite(Number(safeClientContext.pageViewCount)) ? Math.max(0, Math.min(10000, Math.round(Number(safeClientContext.pageViewCount)))) : 0,
+        visibility_change_count: Number.isFinite(Number(safeClientContext.visibilityChangeCount)) ? Math.max(0, Math.min(10000, Math.round(Number(safeClientContext.visibilityChangeCount)))) : 0,
+        identified_email: cleanEmail(safeClientContext.identifiedEmail),
+        identified_email_source: typeof safeClientContext.identifiedEmailSource === "string" ? safeClientContext.identifiedEmailSource.slice(0, 100) : null,
+        page_history: typeof safeClientContext.pagePath === "string" ? [safeClientContext.pagePath.slice(0, 1000)] : [],
+        utm_source: clean(safeClientContext.utmSource),
+        utm_medium: clean(safeClientContext.utmMedium),
+        utm_campaign: clean(safeClientContext.utmCampaign),
+        utm_term: clean(safeClientContext.utmTerm),
+        utm_content: clean(safeClientContext.utmContent),
+        platform: clean(safeClientContext.platform),
+        connection_type: clean(safeClientContext.connectionType),
+        touch_points: Number.isFinite(Number(safeClientContext.touchPoints)) ? Math.max(0, Math.min(100, Math.round(Number(safeClientContext.touchPoints)))) : null,
         checkout_session_id: session.id,
         package_name: typeof packageName === "string" ? packageName : null,
         billing: typeof billing === "string" ? billing : mode || "payment",
