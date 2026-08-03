@@ -17,6 +17,12 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// This endpoint is public and writes to contacts/contact_events, and the URL is
+// discoverable — Supabase project refs ship in the frontend bundle. A short
+// secret is brute-forceable in minutes, so refuse to run behind one rather than
+// accept writes we can't attribute.
+const MIN_WEBHOOK_SECRET_LENGTH = 16;
+
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), {
     status,
@@ -40,6 +46,13 @@ Deno.serve(async (req) => {
   if (!secret) {
     console.error("CLOUDTALK_WEBHOOK_SECRET not configured — refusing webhook");
     return json(500, { ok: false, error: "webhook_secret_not_configured" });
+  }
+  if (secret.length < MIN_WEBHOOK_SECRET_LENGTH) {
+    console.error(
+      `CLOUDTALK_WEBHOOK_SECRET is ${secret.length} chars — refusing webhook. ` +
+        `Needs at least ${MIN_WEBHOOK_SECRET_LENGTH}.`,
+    );
+    return json(500, { ok: false, error: "webhook_secret_too_weak" });
   }
 
   const auth = req.headers.get("Authorization") ?? "";
