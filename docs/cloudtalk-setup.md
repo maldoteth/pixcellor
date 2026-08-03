@@ -1,0 +1,189 @@
+# CloudTalk → CRM call sync
+
+Every call CloudTalk handles is recorded against a contact, gets an automatic
+note written from the transcript, and schedules a callback when one was agreed
+on the call.
+
+```
+CloudTalk call ends
+  └─ Workflow: "Call ended"          ──▶ cloudtalk-webhook ──▶ phone_calls row + contact matched
+CloudTalk uploads the recording
+  └─ Workflow: "Recording uploaded"  ──▶ cloudtalk-webhook ──▶ recording_url stored
+     └─ Speech-to-Text action
+        └─ Workflow: "Transcription" ──▶ cloudtalk-webhook ──▶ transcript stored
+                                          └─ cloudtalk-process-call
+                                               ├─ audio mirrored into private storage
+                                               ├─ contact_events  (event_type 'call')     the note
+                                               └─ contact_events  (event_type 'callback') callback_at set
+```
+
+All three workflows post to the same endpoint with the same `call_id`, so they
+upsert onto one `phone_calls` row. Re-delivery is safe — nothing duplicates and
+no event blanks a field an earlier one set.
+
+## 1. Secrets
+
+Set these in Supabase → Project Settings → Edge Functions → Secrets.
+
+| Secret | Where it comes from |
+| --- | --- |
+| `CLOUDTALK_WEBHOOK_SECRET` | Invent a long random string. Also goes in the CloudTalk header below. |
+| `CLOUDTALK_API_KEY_ID` | CloudTalk → Account → Settings → API keys → Key ID |
+| `CLOUDTALK_API_KEY_SECRET` | Same screen → Key Secret (shown once at creation) |
+| `LOVABLE_API_KEY` | Already set — used for the note generation |
+
+CloudTalk's public API uses HTTP Basic auth with the **key ID and secret as a
+pair**. A key ID on its own will not authenticate. The key is account-scoped
+with full read/write, so treat it like a root credential.
+
+The pair is used to download call audio. CloudTalk's `recording_url` requires
+CloudTalk credentials to open, which nobody working in the CRM has — so the
+audio is pulled once and mirrored into a private Supabase bucket. Without the
+pair everything else still works; `phone_calls.recording_url` is stored but
+`recording_storage_path` stays empty and playback from the CRM won't work.
+
+Generate the webhook secret with:
+
+```bash
+openssl rand -hex 32
+```
+
+## 2. CloudTalk workflows
+
+CloudTalk → Settings → Workflow Automations. Create three, each ending in an
+**API Request** action pointed at:
+
+```
+POST https://<project-ref>.supabase.co/functions/v1/cloudtalk-webhook
+```
+
+with header:
+
+```
+Authorization: Bearer <CLOUDTALK_WEBHOOK_SECRET>
+```
+
+### Workflow A — "Call ended → CRM"
+
+Trigger: call ended. Body:
+
+```json
+{
+  "event": "call.ended",
+  "call_id": "{{event.properties.call_id}}",
+  "direction": "{{event.properties.direction}}",
+  "status": "{{event.properties.status}}",
+  "from": "{{event.properties.from_number}}",
+  "to": "{{event.properties.to_number}}",
+  "agent_name": "{{event.properties.agent.name}}",
+  "agent_email": "{{event.properties.agent.email}}",
+  "started_at": "{{event.properties.started_at}}",
+  "answered_at": "{{event.properties.answered_at}}",
+  "ended_at": "{{event.properties.ended_at}}",
+  "talk_time": "{{event.properties.talking_time}}",
+  "waiting_time": "{{event.properties.waiting_time}}",
+  "contact_name": "{{event.properties.contacts[0].name}}",
+  "contact_email": "{{event.properties.contacts[0].email}}"
+}
+```
+
+### Workflow B — "Recording uploaded → CRM"
+
+Trigger: recording uploaded. Add a **Speech to Text** action first (it is only
+available on this trigger), then the API Request:
+
+```json
+{
+  "event": "call.recording",
+  "call_id": "{{event.properties.call_id}}",
+  "recording_url": "{{event.properties.recording_url}}"
+}
+```
+
+### Workflow C — "Transcription ready → CRM"
+
+Trigger: transcription created. This is the one that produces the note.
+
+```json
+{
+  "event": "call.transcription",
+  "call_id": "{{event.properties.call_id}}",
+  "transcript": "{{event.properties.transcription}}"
+}
+```
+
+**The property names above are the documented shape, but CloudTalk's template
+variables vary by account and trigger version.** The handler accepts the common
+aliases (`callId`, `cdr_id`, `caller_number`, `transcription_text`, …) and
+stores the whole body in `phone_calls.raw_payload`. After the first live call,
+check that row — if a field came through empty, the raw payload shows the name
+CloudTalk actually used.
+
+## 3. Retry sweep
+
+If the inline note generation fails (AI gateway down, timeout), the call is
+saved with `ai_processed_at` null and picked up by the sweep. Schedule it:
+
+```sql
+select cron.schedule(
+  'cloudtalk-process-pending',
+  '*/15 * * * *',
+  $$
+  select net.http_post(
+    url     := 'https://<project-ref>.supabase.co/functions/v1/cloudtalk-process-call',
+    headers := '{"Content-Type":"application/json","Authorization":"Bearer <SERVICE_ROLE_KEY>"}'::jsonb,
+    body    := '{"sweep": true, "limit": 25}'::jsonb
+  );
+  $$
+);
+```
+
+## 4. What lands in the CRM
+
+`phone_calls` — one row per call: direction, numbers, agent, timings, status,
+recording URL, transcript, and the generated `ai_summary` / `ai_notes` /
+`ai_outcome` / `ai_sentiment`.
+
+Call audio — mirrored into the private `cloudtalk-recordings` bucket, path on
+`phone_calls.recording_storage_path`. The bucket is private and readable only
+by admins; serve it with a signed URL, never a public one:
+
+```ts
+const { data } = await supabase.storage
+  .from("cloudtalk-recordings")
+  .createSignedUrl(call.recording_storage_path, 60 * 10);
+```
+
+This is a new bucket rather than the existing `call-recordings` one, which was
+created outside migrations and holds the in-browser meeting recordings.
+
+`contact_events` — the timeline the team actually reads:
+
+- `event_type = 'call'` — the note. Summary, bullet points, outcome, sentiment,
+  talk time, agent.
+- `event_type = 'callback'` — only when a callback was actually agreed on the
+  call, with `callback_at` set. Existing CRM views that read `callback_at` pick
+  these up with no change.
+
+Contacts are matched on the last 9 digits of the number, so `+44 7700 900123`,
+`07700900123` and `447700900123` all reach the same record. An unrecognised
+number creates a contact with `source = 'cloudtalk'` rather than dropping the
+call.
+
+## 5. Call recording and consent
+
+This pipeline assumes calls are recorded and transcribed. Recording is
+configured in CloudTalk, not here — but before switching it on account-wide:
+
+- Recording consent rules vary by jurisdiction (all-party consent applies in
+  several US states; the UK and EU need a lawful basis and notice under
+  UK GDPR / GDPR).
+- CloudTalk supports per-country recording rules and an automatic consent
+  announcement at the start of a call. Turn these on for the territories you
+  dial rather than relying on a blanket setting.
+- Transcripts are personal data. They sit in `phone_calls.transcript` under the
+  same admin-only RLS as the rest of the CRM, and are covered by whatever
+  retention policy applies to contact records.
+
+Worth a look from whoever owns data protection before this goes live across the
+whole team.
