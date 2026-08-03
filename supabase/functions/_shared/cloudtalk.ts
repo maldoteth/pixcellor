@@ -195,8 +195,11 @@ export function safeEq(a: string, b: string): boolean {
  * Key ID and a separate Access Key Secret; both are required.
  */
 export function cloudtalkAuthHeader(): string | null {
-  const id = Deno.env.get("CLOUDTALK_API_KEY_ID");
-  const secret = Deno.env.get("CLOUDTALK_API_KEY_SECRET");
+  // Deno.env.get is case-sensitive. Uppercase matches the convention used by
+  // every other secret in this project; the lowercase pair is what is actually
+  // set on the Supabase project today, so accept either.
+  const id = Deno.env.get("CLOUDTALK_API_KEY_ID") ?? Deno.env.get("cloudtalk_id");
+  const secret = Deno.env.get("CLOUDTALK_API_KEY_SECRET") ?? Deno.env.get("cloudtalk_secret");
   if (!id || !secret) return null;
   return `Basic ${btoa(`${id}:${secret}`)}`;
 }

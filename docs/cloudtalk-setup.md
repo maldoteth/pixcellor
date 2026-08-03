@@ -32,6 +32,10 @@ Set these in Supabase → Project Settings → Edge Functions → Secrets.
 | `CLOUDTALK_API_KEY_SECRET` | Same screen → Key Secret (shown once at creation) |
 | `LOVABLE_API_KEY` | Already set — used for the note generation |
 
+The key pair is also read from `cloudtalk_id` / `cloudtalk_secret`, which is
+what the project has set today. `Deno.env.get` is case-sensitive, so if you
+rename them, use the uppercase names above and nothing else will need changing.
+
 CloudTalk's public API uses HTTP Basic auth with the **key ID and secret as a
 pair**. A key ID on its own will not authenticate. The key is account-scoped
 with full read/write, so treat it like a root credential.
