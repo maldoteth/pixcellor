@@ -60,11 +60,25 @@ Deno.serve(async (req) => {
     return json(401, { ok: false, error: "unauthorized" });
   }
 
+  // CloudTalk's API Request action builds the body from key/value rows, and
+  // does not document whether it sends them as JSON or form-encoded. Accept
+  // either rather than 400 on a content type we guessed wrong.
   let raw: unknown;
   try {
-    raw = await req.json();
+    const body = await req.text();
+    if (!body.trim()) {
+      return json(400, { ok: false, error: "empty_body" });
+    }
+    try {
+      raw = JSON.parse(body);
+    } catch {
+      const params = new URLSearchParams(body);
+      const obj: Record<string, string> = {};
+      params.forEach((v, k) => { obj[k] = v; });
+      raw = Object.keys(obj).length ? obj : null;
+    }
   } catch {
-    return json(400, { ok: false, error: "invalid_json" });
+    return json(400, { ok: false, error: "unreadable_body" });
   }
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     return json(400, { ok: false, error: "invalid_body" });

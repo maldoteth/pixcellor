@@ -72,66 +72,76 @@ in an **API Request** action pointed at:
 POST https://rkgjkvghejcmostuqkgw.supabase.co/functions/v1/cloudtalk-webhook
 ```
 
-with header:
+In the **Headers** section, `Authorization` is the Key. The word `Bearer` goes at
+the front of the Value — putting it in the Key sends a header called `Bearer`,
+which the handler ignores, and every event 401s.
 
-```
-Authorization: Bearer <CLOUDTALK_WEBHOOK_SECRET>
-```
+| Key | Value |
+| --- | --- |
+| `Authorization` | `Bearer <CLOUDTALK_WEBHOOK_SECRET>` |
 
 The trigger picker is grouped by object. The ones used here are **Call → Ended**,
 **Recording → Uploaded** and **Transcription**. (Call also offers Started,
 Ringing on Agent, Answered, Modified and Raised Hand — none of which are wanted:
 Ended is the one that fires after wrap-up time completes.)
 
+The request body is built in the **Values** section (`+ Add value`) as key/value
+rows. There is no raw JSON box, so add one row per field. The right-hand "Useful
+data for your Workflow" panel lists the properties the selected trigger exposes —
+insert them from there rather than typing the template syntax by hand.
+
+Key names below are what the handler reads; they do not have to match CloudTalk's
+property names, though keeping them the same is easiest to follow.
+
 ### Workflow A — "Call ended → CRM"
 
-Trigger: **Call → Ended**. Body:
+Trigger: **Call → Ended**.
 
-```json
-{
-  "event": "call.ended",
-  "call_id": "{{event.properties.call_id}}",
-  "direction": "{{event.properties.direction}}",
-  "status": "{{event.properties.status}}",
-  "from": "{{event.properties.from_number}}",
-  "to": "{{event.properties.to_number}}",
-  "agent_name": "{{event.properties.agent.name}}",
-  "agent_email": "{{event.properties.agent.email}}",
-  "started_at": "{{event.properties.started_at}}",
-  "answered_at": "{{event.properties.answered_at}}",
-  "ended_at": "{{event.properties.ended_at}}",
-  "talk_time": "{{event.properties.talking_time}}",
-  "waiting_time": "{{event.properties.waiting_time}}",
-  "contact_name": "{{event.properties.contacts[0].name}}",
-  "contact_email": "{{event.properties.contacts[0].email}}"
-}
-```
+| Key | Value |
+| --- | --- |
+| `event` | `call.ended` (literal text, not a variable) |
+| `call_id` | `call_id` |
+| `call_uuid` | `call_uuid` |
+| `direction` | `direction` |
+| `external_number` | `external_number` |
+| `internal_number` | `internal_number` |
+| `started_at` | `started_at` |
+| `talking_time` | `talking_time` |
+| `waiting_time` | `waiting_time` |
+| `recording_url` | `recording_url` |
+| `note` | `note` |
+
+This trigger exposes no `ended_at`, `answered_at` or `status`, so those columns
+stay null — nothing depends on them. `direction` arrives as `outgoing` /
+`incoming` and is normalised to outbound/inbound. `external_number` is the
+customer's leg and is what contact matching uses, so it is the one row that must
+be right.
 
 ### Workflow B — "Recording uploaded → CRM"
 
 Trigger: **Recording → Uploaded**. Add a **Speech to Text** action first (it is
-only available on this trigger), then the API Request:
+only available on this trigger), then the API Request.
 
-```json
-{
-  "event": "call.recording",
-  "call_id": "{{event.properties.call_id}}",
-  "recording_url": "{{event.properties.recording_url}}"
-}
-```
+| Key | Value |
+| --- | --- |
+| `event` | `call.recording` (literal text) |
+| `call_id` | `call_id` |
+| `recording_url` | `recording_url` |
 
 ### Workflow C — "Transcription ready → CRM"
 
 Trigger: **Transcription**, which fires once a transcription has been created
 for a recording. This is the one that produces the note.
 
-```json
-{
-  "event": "call.transcription",
-  "call_id": "{{event.properties.call_id}}",
-  "transcript": "{{event.properties.transcription}}"
-}
-```
+| Key | Value |
+| --- | --- |
+| `event` | `call.transcription` (literal text) |
+| `call_id` | `call_id` |
+| `transcript` | the transcription text property |
+
+Triggers B and C have their own data panels with their own property names —
+check each one rather than assuming they match Workflow A. Whatever they are,
+the whole body is stored under `raw_payload` so a mismatch is recoverable.
 
 **The property names above are the documented shape, but CloudTalk's template
 variables vary by account and trigger version.** The handler accepts the common

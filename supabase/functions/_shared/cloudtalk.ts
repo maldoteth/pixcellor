@@ -7,6 +7,13 @@
 // configuration, not contract — so everything here reads defensively and
 // accepts the aliases CloudTalk uses across its trigger types.
 //
+// The "Useful data for your Workflow" panel on the Call > Ended trigger lists:
+//   call_uuid, call_id, internal_number, external_number, direction ("outgoing"),
+//   started_at (ISO 8601 Z), waiting_time, talking_time, wrapup_time,
+//   recording_url, note, tags, contacts, agent, dialer_data
+// Note there is no ended_at, answered_at or status on that trigger — those
+// columns stay null unless a later trigger supplies them.
+//
 // See docs/cloudtalk-setup.md for the request bodies these expect.
 
 export type CloudTalkEventKind = "call" | "recording" | "transcript" | "unknown";
