@@ -52,6 +52,14 @@ Generate the webhook secret with:
 openssl rand -hex 32
 ```
 
+`cloudtalk-webhook` is a public endpoint that writes to `contacts` and
+`contact_events`, and its URL is discoverable — Supabase project refs ship in
+the frontend bundle. The function therefore **refuses to run if
+`CLOUDTALK_WEBHOOK_SECRET` is shorter than 16 characters** and returns
+`webhook_secret_too_weak`. A short secret is brute-forceable in minutes, and a
+successful guess writes fake contacts and callbacks that are indistinguishable
+from real ones.
+
 ## 2. CloudTalk workflows
 
 CloudTalk → Settings → Workflow Automations. Create three, each ending in an
