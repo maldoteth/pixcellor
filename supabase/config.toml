@@ -67,6 +67,16 @@ project_id = "rkgjkvghejcmostuqkgw"
   [functions.broadcast-track]
     verify_jwt = false
 
+  # CloudTalk sends its own shared secret as the bearer token, not a Supabase
+  # JWT, so platform verification has to be off — the function checks the secret
+  # itself and refuses anything under 16 chars.
+  [functions.cloudtalk-webhook]
+    verify_jwt = false
+  # Only ever called internally (from cloudtalk-webhook and the cron sweep) with
+  # the service role key, which is a valid JWT. Keep verification on.
+  [functions.cloudtalk-process-call]
+    verify_jwt = true
+
 
 
 
