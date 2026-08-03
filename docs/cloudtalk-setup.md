@@ -62,8 +62,11 @@ from real ones.
 
 ## 2. CloudTalk workflows
 
-CloudTalk → Settings → Workflow Automations. Create three, each ending in an
-**API Request** action pointed at:
+In the CloudTalk dashboard: **Account → Workflow Automations → + Add Workflow**.
+Requires an Admin-level CloudTalk user.
+
+A workflow is Trigger → (optional Condition) → Action. Create three, each ending
+in an **API Request** action pointed at:
 
 ```
 POST https://<project-ref>.supabase.co/functions/v1/cloudtalk-webhook
@@ -75,9 +78,14 @@ with header:
 Authorization: Bearer <CLOUDTALK_WEBHOOK_SECRET>
 ```
 
+The trigger picker is grouped by object. The ones used here are **Call → Ended**,
+**Recording → Uploaded** and **Transcription**. (Call also offers Started,
+Ringing on Agent, Answered, Modified and Raised Hand — none of which are wanted:
+Ended is the one that fires after wrap-up time completes.)
+
 ### Workflow A — "Call ended → CRM"
 
-Trigger: call ended. Body:
+Trigger: **Call → Ended**. Body:
 
 ```json
 {
@@ -101,8 +109,8 @@ Trigger: call ended. Body:
 
 ### Workflow B — "Recording uploaded → CRM"
 
-Trigger: recording uploaded. Add a **Speech to Text** action first (it is only
-available on this trigger), then the API Request:
+Trigger: **Recording → Uploaded**. Add a **Speech to Text** action first (it is
+only available on this trigger), then the API Request:
 
 ```json
 {
@@ -114,7 +122,8 @@ available on this trigger), then the API Request:
 
 ### Workflow C — "Transcription ready → CRM"
 
-Trigger: transcription created. This is the one that produces the note.
+Trigger: **Transcription**, which fires once a transcription has been created
+for a recording. This is the one that produces the note.
 
 ```json
 {
