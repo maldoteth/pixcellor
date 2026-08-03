@@ -69,7 +69,7 @@ A workflow is Trigger → (optional Condition) → Action. Create three, each en
 in an **API Request** action pointed at:
 
 ```
-POST https://<project-ref>.supabase.co/functions/v1/cloudtalk-webhook
+POST https://rkgjkvghejcmostuqkgw.supabase.co/functions/v1/cloudtalk-webhook
 ```
 
 with header:
@@ -151,7 +151,7 @@ select cron.schedule(
   '*/15 * * * *',
   $$
   select net.http_post(
-    url     := 'https://<project-ref>.supabase.co/functions/v1/cloudtalk-process-call',
+    url     := 'https://rkgjkvghejcmostuqkgw.supabase.co/functions/v1/cloudtalk-process-call',
     headers := '{"Content-Type":"application/json","Authorization":"Bearer <SERVICE_ROLE_KEY>"}'::jsonb,
     body    := '{"sweep": true, "limit": 25}'::jsonb
   );
