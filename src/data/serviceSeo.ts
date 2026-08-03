@@ -192,15 +192,17 @@ export const SERVICE_SEO: Record<string, ServiceSeo> = {
     ],
   },
   "payroll-hr-tooling": {
-    title: "Construction Payroll — HMRC Compliance, 1% Cashback & Cash Flow | Pixcellor",
+    title: "Fully Automated Payroll — Provider Brokerage & Payroll Automation | Pixcellor",
     description:
-      "Specialist construction payroll: full employment-status protection, pay your subcontractor wage bill by credit card, and earn 1% cashback every week. CIS and CITB handled.",
+      "We broker you onto one of the UK's biggest, longest-standing, FCA-regulated payroll providers, then rebuild your entire payroll flow so it runs on clicks and a conversational assistant.",
     keywords: [
+      "payroll automation",
+      "automated payroll UK",
+      "payroll provider brokerage",
+      "FCA regulated payroll provider",
+      "conversational payroll assistant",
       "construction payroll",
       "CIS payroll",
-      "subcontractor payroll",
-      "employment status protection",
-      "payroll cashback",
     ],
   },
   "ai-integrations-agents": {
