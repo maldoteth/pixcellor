@@ -115,9 +115,9 @@ Trigger: transcription created. This is the one that produces the note.
 **The property names above are the documented shape, but CloudTalk's template
 variables vary by account and trigger version.** The handler accepts the common
 aliases (`callId`, `cdr_id`, `caller_number`, `transcription_text`, …) and
-stores the whole body in `phone_calls.raw_payload`. After the first live call,
-check that row — if a field came through empty, the raw payload shows the name
-CloudTalk actually used.
+stores each event's body under its own key in `phone_calls.raw_payload`.
+
+Two ways to find the real names once a call exists — see §6 for the second.
 
 ## 3. Retry sweep
 
@@ -187,3 +187,36 @@ configured in CloudTalk, not here — but before switching it on account-wide:
 
 Worth a look from whoever owns data protection before this goes live across the
 whole team.
+
+## 6. Checking field names against the REST API
+
+The public API is a second, independent way to see what CloudTalk actually
+records for a call — useful because the workflow template variables in §2 are
+the part that can't be verified up front.
+
+Base URL is `https://my.cloudtalk.io/api/`, Basic auth with the key ID and
+secret. Responses come back CakePHP-style: wrapped in `responseData` and nested
+under a model name.
+
+```json
+{"responseData": {"itemsCount": 1, "pageCount": 1, "data": [{"Agent": {"id": "…"}}]}}
+```
+
+After making one test call, this shows the real call record and its field names:
+
+```bash
+curl -s -u "$CLOUDTALK_API_KEY_ID:$CLOUDTALK_API_KEY_SECRET" \
+  'https://my.cloudtalk.io/api/calls/index.json?limit=1' | jq .
+```
+
+Compare those keys against the aliases in
+`supabase/functions/_shared/cloudtalk.ts` and add any that are missing.
+
+Other endpoints worth knowing, all with the same envelope:
+`agents/index.json`, `numbers/index.json`, `campaigns/index.json`.
+
+### Account state when this was built
+
+Checked against the live account on 2026-08-03: one agent (ext 1001), one UK
+number (`+447830342069`), **zero calls and zero campaigns**. Nothing to backfill,
+and nothing to validate the payload shape against until the first call is made.
