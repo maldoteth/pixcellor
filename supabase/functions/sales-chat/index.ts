@@ -208,7 +208,8 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - **Bulk status update** with **bulk_update_status** ("mark these 5 as warm").
 - **Archive a contact** with **archive_contact** (non-destructive).
 - **Schedule a Let's Talk follow-up today** with **schedule_callback_today** (defaults 09:00 Europe/London if no time given — always use this for "today" requests so the time is correct).
-- **List call recordings** with **list_call_recordings** — every recording with its booking, linked client, notes and outcome. Supports unmatched_only (no client attached) and unlogged_only (no notes written up).
+- **See the phone log** with **list_phone_calls** — real CloudTalk calls with recording, transcript, AI summary, AI notes, outcome and sentiment. This is the main call surface.
+- **List call recordings** with **list_call_recordings** — in-app call room captures and CSV uploads only, with their booking, linked client, notes and outcome. Supports unmatched_only (no client attached) and unlogged_only (no notes written up).
 - **Write up a call** with **log_call** — saves notes against the recording and the client's timeline, links the recording and booking to the client, creates the client if nothing matches, and sets the callback and lead temperature in the same call.
 - **Tidy up unlinked calls** with **sync_call_records** — sweeps every booking with no client attached, matches or creates it, and pulls its recordings across.
 - **Check if a lead has visited the site** with **lookup_visitor_activity** (by email or company website).
@@ -252,8 +253,10 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - **You do not need an existing contact first.** log_call matches on email, then phone (last 9 digits, so formatting doesn't matter), then exact name, and creates the client from the booking or the details you pass when nothing matches. Never refuse to log a call because you can't find the client, and never invent a contact_id — pass the name/email/phone/company you were given and let it resolve.
 - Always include the **outcome** (short — "interested, sending pricing", "no answer", "not a fit", "booked follow-up") alongside the notes. Set **status** when the call clearly moved the lead's temperature.
 - **If a callback was agreed or is obviously needed, set it in the same log_call turn** — callback_in_days for relative asks (0 = later today, 1 = tomorrow, 7 = next week) or callback_at for an exact agreed time. Don't log the call and then leave the follow-up unbooked.
-- When the dev asks "what calls came in today?", "which calls still need writing up?", "have we called Acme back?" — use **list_call_recordings** (unlogged_only for the write-up backlog, unmatched_only for calls with no client attached).
-- When the dev says "tidy up the calls", "link up the unmatched calls", or after a batch upload — use **sync_call_records**. Report back how many were matched vs created, and name the ones it created so the dev can check them.
+- **There are two call surfaces and they are not the same.** **list_phone_calls** is the real phone log — CloudTalk calls, with recordings, transcripts and an AI summary/notes/outcome already written for most of them. **list_call_recordings** is only in-app call room captures and CSV uploads. For "what calls came in today?", "how did the call with Acme go?", "who rang us?" — use **list_phone_calls**. Reach for list_call_recordings only when the dev is clearly talking about a booked video call or an uploaded recording.
+- CloudTalk calls already carry an AI write-up. When the dev asks how a call went, read out ai_summary / ai_notes / ai_outcome rather than asking them to tell you. If ai_processed is false the analysis hasn't run yet — say so instead of guessing, and check ai_error.
+- log_call on a **phone_call_id** adds the dev's own write-up alongside the AI's without overwriting it. Use it when the dev adds context the AI couldn't know ("he's decided, chasing sign-off from his partner").
+- When the dev says "tidy up the calls", "link up the unmatched calls", or after a batch upload — use **sync_call_records**. It sweeps both surfaces, and it also posts the AI write-up for any CloudTalk call that was stranded without a client. Report back how many were matched vs created, and name the ones it created so the dev can check them.
 - After log_call, tell the dev plainly whether the client was **matched or newly created** (contact_created in the result), and confirm the callback time in London local terms. Never claim a callback was set if the result has no callback.
 
 ## Custom orders & payment links (CRITICAL)
@@ -986,6 +989,7 @@ const devTools = [
         required: ["notes"],
         properties: {
           notes: { type: "string", description: "What was said on the call. Required — this is the write-up." },
+          phone_call_id: { type: "string", description: "Phone call UUID from list_phone_calls, for a real phone call through CloudTalk. Leaves the AI write-up in place and adds yours alongside it." },
           recording_id: { type: "string", description: "Recording UUID from list_call_recordings, when the call was recorded." },
           booking_id: { type: "string", description: "Call booking UUID, when the call came from a booking." },
           contact_id: { type: "string", description: "Existing contact UUID, if the dev has already named the client." },
@@ -1006,8 +1010,28 @@ const devTools = [
   {
     type: "function" as const,
     function: {
+      name: "list_phone_calls",
+      description: "The real phone log — CloudTalk calls with their recording, transcript, AI summary, AI notes, outcome and sentiment, plus the linked client. This is where actual phone calls live; list_call_recordings only covers in-app call room captures and CSV uploads. Use for 'what calls came in today?', 'how did the call with Acme go?', 'which calls haven't been analysed?'.",
+      parameters: {
+        type: "object",
+        properties: {
+          days: { type: "number", description: "How far back to look. Defaults to 7, max 365." },
+          limit: { type: "number", description: "Max calls to return. Defaults to 20, max 50." },
+          direction: { type: "string", enum: ["inbound", "outbound"], description: "Restrict to one direction." },
+          unmatched_only: { type: "boolean", description: "Only calls with no client attached — these need sync_call_records." },
+          unprocessed_only: { type: "boolean", description: "Only calls the AI hasn't analysed yet (no summary/notes)." },
+          with_recording_only: { type: "boolean", description: "Only calls that actually have a recording." },
+          contact_id: { type: "string", description: "Restrict to one client's calls." },
+          number: { type: "string", description: "Restrict to a phone number — matched loosely, so formatting doesn't matter." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "sync_call_records",
-      description: "Sweep every call booking that isn't attached to a client yet, match it (by email, then phone, then exact name) or create the client from the booking details, and pull its recordings across. Use for 'tidy up the calls', 'link up any unmatched calls', or after a batch of recordings has been uploaded.",
+      description: "Sweep everything that isn't attached to a client yet — call bookings AND CloudTalk phone calls — matching each one (by email, then phone, then exact name) or creating the client, then pulling its recordings across. Stranded CloudTalk calls also get their AI write-up posted to the client's timeline, which cloudtalk-process-call skips when there's no client to hang it on. Use for 'tidy up the calls', 'link up any unmatched calls', or after a batch of recordings has been uploaded.",
       parameters: {
         type: "object",
         properties: {
@@ -2236,16 +2260,27 @@ async function resolveOrCreateCallContact(
 
   if (suffix) {
     // Stored phone formatting is inconsistent (+44 / leading 0 / spaces), so
-    // compare normalised suffixes over a bounded recent slice rather than
-    // trusting an exact string match.
-    const { data } = await supabase
-      .from("contacts")
-      .select(CALL_CONTACT_FIELDS)
-      .not("phone", "is", null)
-      .order("updated_at", { ascending: false })
-      .limit(500);
-    const match = (data ?? []).find((c: Record<string, unknown>) => phoneSuffix(c.phone) === suffix);
-    if (match) return { ok: true, contact: match, created: false, matched_on: "phone", error: null };
+    // match on the normalised suffix. find_contact_by_phone is the same
+    // last-9-digits rule the CloudTalk sync uses, backed by an index, and it
+    // pins repeat callers to their oldest record rather than a later duplicate.
+    const { data: matchedId, error: rpcErr } = await supabase.rpc("find_contact_by_phone", { _phone: phone });
+    if (!rpcErr && matchedId) {
+      const { data } = await supabase.from("contacts").select(CALL_CONTACT_FIELDS).eq("id", matchedId).maybeSingle();
+      if (data) return { ok: true, contact: data, created: false, matched_on: "phone", error: null };
+    }
+    if (rpcErr) {
+      // Fall back to a bounded client-side scan so a missing RPC degrades to
+      // "might miss a match" rather than "creates a duplicate every time".
+      console.warn("find_contact_by_phone failed:", rpcErr.message);
+      const { data } = await supabase
+        .from("contacts")
+        .select(CALL_CONTACT_FIELDS)
+        .not("phone", "is", null)
+        .order("updated_at", { ascending: false })
+        .limit(500);
+      const match = (data ?? []).find((c: Record<string, unknown>) => phoneSuffix(c.phone) === suffix);
+      if (match) return { ok: true, contact: match, created: false, matched_on: "phone", error: null };
+    }
   }
 
   // Exact (case-insensitive) name only — a fuzzy match here would attach a call
@@ -2281,7 +2316,7 @@ async function resolveOrCreateCallContact(
 
 /** Point a booking and all of its recordings at a contact. */
 async function linkCallRecords(supabase: DbClient, bookingId: string | null, contactId: string) {
-  const linked = { booking: false, recordings: 0 };
+  const linked = { booking: false, recordings: 0, phone_call: false };
   if (!bookingId) return linked;
 
   const { data: updatedBooking } = await supabase
@@ -2349,6 +2384,74 @@ async function devListCallRecordings(supabase: DbClient, args: Record<string, un
   };
 }
 
+const PHONE_CALL_FIELDS = "id, provider, provider_call_id, contact_id, direction, status, external_number, agent_name, started_at, talk_time_seconds, recording_url, recording_storage_path, transcript, ai_summary, ai_notes, ai_outcome, ai_sentiment, ai_processed_at, ai_error, note_event_id, callback_event_id";
+
+/**
+ * The real phone log — CloudTalk calls with their recordings, transcripts and
+ * AI write-ups. Separate from call_recordings, which only holds in-app call
+ * room captures and CSV uploads.
+ */
+async function devListPhoneCalls(supabase: DbClient, args: Record<string, unknown>) {
+  const days = Math.min(Math.max(Number(args.days) || 7, 1), 365);
+  const limit = Math.min(Math.max(Number(args.limit) || 20, 1), 50);
+  const since = new Date(Date.now() - days * 24 * 3600 * 1000).toISOString();
+
+  let query = supabase
+    .from("phone_calls")
+    .select(PHONE_CALL_FIELDS)
+    .gte("created_at", since)
+    .order("started_at", { ascending: false, nullsFirst: false })
+    .limit(limit);
+
+  if (args.unmatched_only === true) query = query.is("contact_id", null);
+  if (args.unprocessed_only === true) query = query.is("ai_processed_at", null);
+  if (args.with_recording_only === true) query = query.not("recording_url", "is", null);
+  const direction = cleanText(args.direction, 20).toLowerCase();
+  if (direction === "inbound" || direction === "outbound") query = query.eq("direction", direction);
+  const contactId = cleanText(args.contact_id, 80);
+  if (UUID_RE.test(contactId)) query = query.eq("contact_id", contactId);
+  const number = normalisePhoneDigits(args.number);
+  if (number) query = query.ilike("external_number", `%${number.replace(/^\+/, "")}%`);
+
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+  const calls = data ?? [];
+  if (calls.length === 0) return { ok: true, calls: [], unmatched: 0, unprocessed: 0 };
+
+  const contactIds = [...new Set(calls.map((c: Record<string, unknown>) => c.contact_id).filter(Boolean))];
+  const contactRes = contactIds.length
+    ? await supabase.from("contacts").select("id, name, status").in("id", contactIds)
+    : { data: [] };
+  const contactById = new Map((contactRes.data ?? []).map((c: Record<string, unknown>) => [c.id, c]));
+
+  return {
+    ok: true,
+    unmatched: calls.filter((c: Record<string, unknown>) => !c.contact_id).length,
+    unprocessed: calls.filter((c: Record<string, unknown>) => !c.ai_processed_at).length,
+    calls: calls.map((c: Record<string, unknown>) => ({
+      phone_call_id: c.id,
+      provider: c.provider,
+      direction: c.direction,
+      status: c.status,
+      number: c.external_number,
+      agent: c.agent_name,
+      started_at: c.started_at,
+      talk_time_seconds: c.talk_time_seconds,
+      has_recording: Boolean(c.recording_url || c.recording_storage_path),
+      has_transcript: Boolean(c.transcript),
+      ai_summary: c.ai_summary,
+      ai_notes: c.ai_notes,
+      ai_outcome: c.ai_outcome,
+      ai_sentiment: c.ai_sentiment,
+      ai_processed: Boolean(c.ai_processed_at),
+      ai_error: c.ai_error,
+      on_timeline: Boolean(c.note_event_id),
+      callback_set: Boolean(c.callback_event_id),
+      contact: c.contact_id ? contactById.get(c.contact_id) ?? null : null,
+    })),
+  };
+}
+
 /**
  * Log what happened on a call: attach the notes to the recording and the CRM
  * timeline, match (or create) the client, and set the callback in one pass.
@@ -2361,6 +2464,18 @@ async function devLogCall(supabase: DbClient, args: Record<string, unknown>) {
   const recordingId = UUID_RE.test(recordingIdRaw) ? recordingIdRaw : "";
   const bookingIdArg = cleanText(args.booking_id, 80);
   let bookingId = UUID_RE.test(bookingIdArg) ? bookingIdArg : "";
+  const phoneCallIdRaw = cleanText(args.phone_call_id, 80);
+  const phoneCallId = UUID_RE.test(phoneCallIdRaw) ? phoneCallIdRaw : "";
+
+  let phoneCall: Record<string, unknown> | null = null;
+  if (phoneCallId) {
+    const { data } = await supabase
+      .from("phone_calls")
+      .select("id, contact_id, external_number, direction, agent_name, started_at, ai_outcome, note_event_id")
+      .eq("id", phoneCallId).maybeSingle();
+    if (!data) return { ok: false, error: "phone_call_not_found" };
+    phoneCall = data;
+  }
 
   if (recordingId) {
     const { data } = await supabase.from("call_recordings").select("id, booking_id, contact_id").eq("id", recordingId).maybeSingle();
@@ -2389,6 +2504,12 @@ async function devLogCall(supabase: DbClient, args: Record<string, unknown>) {
     if (!data) return { ok: false, error: "contact_not_found" };
     contact = data;
     matchedOn = "contact_id";
+  } else if (phoneCall?.contact_id && UUID_RE.test(String(phoneCall.contact_id))) {
+    const { data } = await supabase.from("contacts").select(CALL_CONTACT_FIELDS).eq("id", phoneCall.contact_id).maybeSingle();
+    if (data) {
+      contact = data;
+      matchedOn = "phone_call";
+    }
   } else if (booking?.contact_id && UUID_RE.test(String(booking.contact_id))) {
     const { data } = await supabase.from("contacts").select(CALL_CONTACT_FIELDS).eq("id", booking.contact_id).maybeSingle();
     if (data) {
@@ -2401,10 +2522,10 @@ async function devLogCall(supabase: DbClient, args: Record<string, unknown>) {
     const resolved = await resolveOrCreateCallContact(supabase, {
       name: args.name ?? booking?.name,
       email: args.email ?? booking?.email,
-      phone: args.phone ?? booking?.phone,
+      phone: args.phone ?? booking?.phone ?? phoneCall?.external_number,
       company: args.company ?? booking?.company,
       brief: booking?.brief,
-      source: "call",
+      source: phoneCall ? "cloudtalk" : "call",
     });
     if (!resolved.ok || !resolved.contact) return { ok: false, error: resolved.error ?? "contact_unresolved" };
     contact = resolved.contact;
@@ -2433,9 +2554,20 @@ async function devLogCall(supabase: DbClient, args: Record<string, unknown>) {
       notes,
       recordingId ? `Recording: ${recordingId}` : "",
       bookingId ? `Booking: ${bookingId}` : "",
+      phoneCallId ? `Phone call: ${phoneCallId}` : "",
     ].filter(Boolean).join("\n\n"),
     event_type: "call",
   }).select("id, title").single();
+
+  // A CloudTalk call keeps its own AI write-up in ai_notes — don't clobber it.
+  // Pin the contact and, if the AI never got a timeline row on there (usually
+  // because the call had no contact to hang one off), point it at this one.
+  if (phoneCallId) {
+    const phonePatch: Record<string, unknown> = { contact_id: contactId };
+    if (!phoneCall?.note_event_id && event?.id) phonePatch.note_event_id = event.id;
+    await supabase.from("phone_calls").update(phonePatch).eq("id", phoneCallId);
+    linked.phone_call = true;
+  }
 
   const status = cleanText(args.status, 20).toLowerCase();
   if (CONTACT_STATUSES.includes(status)) {
@@ -2548,13 +2680,86 @@ async function devSyncCallRecords(supabase: DbClient, args: Record<string, unkno
     }
   }
 
+  // CloudTalk calls that never got a client. The webhook normally creates one,
+  // so these are the ones where that failed or the number was withheld — and
+  // cloudtalk-process-call skips the timeline write without a contact, so their
+  // AI write-up is stranded on the call row until we link them up here.
+  const { data: strandedCalls } = await supabase
+    .from("phone_calls")
+    .select("id, contact_id, external_number, direction, agent_name, started_at, ai_summary, ai_notes, ai_outcome, note_event_id")
+    .is("contact_id", null)
+    .gte("created_at", since)
+    .order("started_at", { ascending: false, nullsFirst: false })
+    .limit(limit);
+
+  let phoneCallsLinked = 0;
+  let phoneCallsSkipped = 0;
+  let strandedNotesPosted = 0;
+
+  for (const call of strandedCalls ?? []) {
+    if (!call.external_number) {
+      phoneCallsSkipped++;
+      results.push({ phone_call_id: call.id, linked: false, reason: "no_number" });
+      continue;
+    }
+
+    const resolved = await resolveOrCreateCallContact(supabase, {
+      name: call.external_number,
+      phone: call.external_number,
+      source: "cloudtalk",
+    }, { create });
+
+    if (!resolved.ok || !resolved.contact) {
+      phoneCallsSkipped++;
+      results.push({ phone_call_id: call.id, number: call.external_number, linked: false, reason: resolved.error });
+      continue;
+    }
+
+    const linkedContactId = String(resolved.contact.id);
+    const patch: Record<string, unknown> = { contact_id: linkedContactId };
+
+    // Post the AI write-up that had nowhere to go while the call was unlinked.
+    if (!call.note_event_id && (call.ai_summary || call.ai_notes)) {
+      const when = call.started_at
+        ? new Date(String(call.started_at)).toLocaleString("en-GB", { timeZone: "Europe/London" })
+        : "unknown time";
+      const { data: note } = await supabase.from("contact_events").insert({
+        contact_id: linkedContactId,
+        title: `${call.direction === "outbound" ? "Outbound" : "Inbound"} call — ${when}`,
+        description: [call.ai_summary, call.ai_notes, call.ai_outcome ? `Outcome: ${call.ai_outcome}` : ""].filter(Boolean).join("\n\n"),
+        event_type: "call",
+      }).select("id").single();
+      if (note?.id) {
+        patch.note_event_id = note.id;
+        strandedNotesPosted++;
+      }
+    }
+
+    await supabase.from("phone_calls").update(patch).eq("id", call.id);
+    if (resolved.created) contactsCreated++;
+    else contactsMatched++;
+    phoneCallsLinked++;
+    results.push({
+      phone_call_id: call.id,
+      number: call.external_number,
+      contact_id: linkedContactId,
+      contact_name: resolved.contact.name,
+      created: resolved.created,
+      matched_on: resolved.matched_on,
+      note_posted: Boolean(patch.note_event_id),
+    });
+  }
+
   return {
     ok: true,
     bookings_processed: (bookings ?? []).length,
+    phone_calls_processed: (strandedCalls ?? []).length,
+    phone_calls_linked: phoneCallsLinked,
     contacts_created: contactsCreated,
     contacts_matched: contactsMatched,
-    skipped,
+    skipped: skipped + phoneCallsSkipped,
     recordings_backfilled: recordingsBackfilled,
+    stranded_notes_posted: strandedNotesPosted,
     results,
   };
 }
@@ -3361,6 +3566,10 @@ Deno.serve(async (req) => {
           needsFollowUp = true; actionTaken = true;
           try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devLogCall(supabase, JSON.parse(toolCall.function.arguments))) }); }
           catch (e) { console.error("log_call:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "log_call_failed" }) }); }
+        } else if (toolCall.function.name === "list_phone_calls" && isDevMode) {
+          needsFollowUp = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devListPhoneCalls(supabase, JSON.parse(toolCall.function.arguments || "{}"))) }); }
+          catch (e) { console.error("list_phone_calls:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "list_phone_calls_failed" }) }); }
         } else if (toolCall.function.name === "sync_call_records" && isDevMode) {
           needsFollowUp = true; actionTaken = true;
           try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devSyncCallRecords(supabase, JSON.parse(toolCall.function.arguments || "{}"))) }); }
