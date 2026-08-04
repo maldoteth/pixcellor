@@ -580,30 +580,42 @@ export type Database = {
       call_recordings: {
         Row: {
           booking_id: string
+          contact_id: string | null
           created_at: string
           duration_seconds: number | null
           id: string
+          logged_at: string | null
           mime_type: string
+          notes: string | null
+          outcome: string | null
           recorded_by: string
           size_bytes: number | null
           storage_path: string
         }
         Insert: {
           booking_id: string
+          contact_id?: string | null
           created_at?: string
           duration_seconds?: number | null
           id?: string
+          logged_at?: string | null
           mime_type?: string
+          notes?: string | null
+          outcome?: string | null
           recorded_by?: string
           size_bytes?: number | null
           storage_path: string
         }
         Update: {
           booking_id?: string
+          contact_id?: string | null
           created_at?: string
           duration_seconds?: number | null
           id?: string
+          logged_at?: string | null
           mime_type?: string
+          notes?: string | null
+          outcome?: string | null
           recorded_by?: string
           size_bytes?: number | null
           storage_path?: string
@@ -614,6 +626,13 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "call_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_recordings_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
             referencedColumns: ["id"]
           },
         ]
