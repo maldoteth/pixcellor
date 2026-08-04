@@ -208,6 +208,9 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - **Bulk status update** with **bulk_update_status** ("mark these 5 as warm").
 - **Archive a contact** with **archive_contact** (non-destructive).
 - **Schedule a Let's Talk follow-up today** with **schedule_callback_today** (defaults 09:00 Europe/London if no time given — always use this for "today" requests so the time is correct).
+- **List call recordings** with **list_call_recordings** — every recording with its booking, linked client, notes and outcome. Supports unmatched_only (no client attached) and unlogged_only (no notes written up).
+- **Write up a call** with **log_call** — saves notes against the recording and the client's timeline, links the recording and booking to the client, creates the client if nothing matches, and sets the callback and lead temperature in the same call.
+- **Tidy up unlinked calls** with **sync_call_records** — sweeps every booking with no client attached, matches or creates it, and pulls its recordings across.
 - **Check if a lead has visited the site** with **lookup_visitor_activity** (by email or company website).
 - **Generate a paste-ready package recommendation** with **recommend_package**.
 - **Pull chat history** for a client_id or conversation_id with **fetch_chat_history** before replying via send_chat_reply.
@@ -243,6 +246,15 @@ const DEV_SYSTEM_PROMPT = `You are Pixcellor Dev Assistant inside the admin port
 - Never invent contact details. Save uncertainty in notes/description.
 - If create_contact returns existed: true (matched by email/phone), DO NOT try to create a duplicate. Treat the returned contact.id as the target and attach any callback/sales event to it via create_sales_event.
 - For callback/reminder times, treat relative dates like "tomorrow", "next week", and "in 1 week" as clear. If no time is given, default to 09:00 Europe/London and include callback_at as ISO.
+
+## Call tracking (CRITICAL — never lose a call)
+- When the dev tells you what happened on a call — "spoke to Dave at Acme", "just got off the phone with the roofer", "call went well, they want the Elite package", "no answer" — call **log_call** with the notes. Do NOT use create_sales_event or append_contact_note for calls; log_call does the note, the client link, the recording link and the callback in one pass, and those other tools don't.
+- **You do not need an existing contact first.** log_call matches on email, then phone (last 9 digits, so formatting doesn't matter), then exact name, and creates the client from the booking or the details you pass when nothing matches. Never refuse to log a call because you can't find the client, and never invent a contact_id — pass the name/email/phone/company you were given and let it resolve.
+- Always include the **outcome** (short — "interested, sending pricing", "no answer", "not a fit", "booked follow-up") alongside the notes. Set **status** when the call clearly moved the lead's temperature.
+- **If a callback was agreed or is obviously needed, set it in the same log_call turn** — callback_in_days for relative asks (0 = later today, 1 = tomorrow, 7 = next week) or callback_at for an exact agreed time. Don't log the call and then leave the follow-up unbooked.
+- When the dev asks "what calls came in today?", "which calls still need writing up?", "have we called Acme back?" — use **list_call_recordings** (unlogged_only for the write-up backlog, unmatched_only for calls with no client attached).
+- When the dev says "tidy up the calls", "link up the unmatched calls", or after a batch upload — use **sync_call_records**. Report back how many were matched vs created, and name the ones it created so the dev can check them.
+- After log_call, tell the dev plainly whether the client was **matched or newly created** (contact_created in the result), and confirm the callback time in London local terms. Never claim a callback was set if the result has no callback.
 
 ## Custom orders & payment links (CRITICAL)
 - When the dev says things like "create an order for X", "log a £750 order for jane@x.com", "draft order for Acme £500", "make a manual order" — call **create_custom_order**. **NEVER assume an order is paid.** Default to mark_paid=false (unpaid draft/quote). Only use mark_paid=true if the dev EXPLICITLY says it's already paid (e.g. "paid", "bank transfer received", "cash in hand", "invoice settled", "they've paid"). If it's ambiguous, ask "Is this already paid, or unpaid/awaiting payment?" before creating. amount_gbp is in pounds (e.g. 750 not 75000). Default billing is "one-time"; use "monthly" or "yearly" only if they explicitly say it's a subscription.
@@ -943,6 +955,65 @@ const devTools = [
           },
           package_slug: { type: "string", description: "Optional package slug ('full-works' | 'elite' | 'retainer-growth' | 'retainer-scale' | 'retainer-enterprise') — sets the line item automatically if provided alone." },
           internal_note: { type: "string", description: "Private note for our records — not shown to client." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "list_call_recordings",
+      description: "List call recordings with their booking, linked client, notes and outcome. Use for 'show me today's calls', 'which calls haven't been written up?', 'what calls do we have for Acme?'. Set unmatched_only to find recordings not yet attached to a client, or unlogged_only to find calls with no notes written up yet.",
+      parameters: {
+        type: "object",
+        properties: {
+          days: { type: "number", description: "How far back to look. Defaults to 30, max 365." },
+          limit: { type: "number", description: "Max recordings to return. Defaults to 20, max 50." },
+          unmatched_only: { type: "boolean", description: "Only recordings with no client attached yet." },
+          unlogged_only: { type: "boolean", description: "Only recordings with no notes written up yet." },
+          contact_id: { type: "string", description: "Restrict to one contact's calls." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "log_call",
+      description: "Write up a call: saves the notes against the recording AND the client's CRM timeline, attaches the recording and booking to the client, and optionally sets the callback and lead temperature — all in one call. If the caller's details don't match an existing client, a new one is created automatically from the booking details, so a call is never logged against nobody. Pass recording_id or booking_id when you have one; otherwise pass the caller's name/email/phone.",
+      parameters: {
+        type: "object",
+        required: ["notes"],
+        properties: {
+          notes: { type: "string", description: "What was said on the call. Required — this is the write-up." },
+          recording_id: { type: "string", description: "Recording UUID from list_call_recordings, when the call was recorded." },
+          booking_id: { type: "string", description: "Call booking UUID, when the call came from a booking." },
+          contact_id: { type: "string", description: "Existing contact UUID, if the dev has already named the client." },
+          name: { type: "string", description: "Caller name — used to match or create the client when there's no booking." },
+          email: { type: "string", description: "Caller email — the strongest matching signal." },
+          phone: { type: "string", description: "Caller phone — matched on the last 9 digits, so formatting doesn't matter." },
+          company: { type: "string", description: "Caller's company, used as the client name when creating." },
+          outcome: { type: "string", description: "Short outcome, e.g. 'interested — sending pricing', 'no answer', 'not a fit', 'booked follow-up'." },
+          status: { type: "string", enum: ["cold", "aware", "warm", "hot", "gold", "archived"], description: "Set the client's lead temperature off the back of the call." },
+          callback_at: { type: "string", description: "ISO date/time for the callback, when an exact time was agreed." },
+          callback_in_days: { type: "number", description: "Callback in N days at London local time — 0 for later today, 1 for tomorrow, 7 for next week. Use this for relative asks." },
+          callback_time: { type: "string", description: "London local time for callback_in_days, HH:MM. Defaults to 09:00." },
+          callback_title: { type: "string", description: "Short callback title. Defaults to 'Call back <client>'." },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "sync_call_records",
+      description: "Sweep every call booking that isn't attached to a client yet, match it (by email, then phone, then exact name) or create the client from the booking details, and pull its recordings across. Use for 'tidy up the calls', 'link up any unmatched calls', or after a batch of recordings has been uploaded.",
+      parameters: {
+        type: "object",
+        properties: {
+          days: { type: "number", description: "How far back to sweep. Defaults to 90, max 365." },
+          limit: { type: "number", description: "Max bookings to process in one pass. Defaults to 25, max 100." },
+          create_missing: { type: "boolean", description: "Create a client when nothing matches. Defaults to true — set false to report unmatched calls without creating anything." },
         },
       },
     },
@@ -2077,16 +2148,12 @@ async function devMergeContacts(supabase: DbClient, args: Record<string, unknown
   return { ok: true, result: data };
 }
 
-async function devScheduleCallbackToday(supabase: DbClient, args: Record<string, unknown>) {
-  const contactId = cleanText(args.contact_id, 80);
-  const title = cleanText(args.title, 160);
-  if (!UUID_RE.test(contactId)) return { ok: false, error: "invalid_contact" };
-  if (!title) return { ok: false, error: "missing_title" };
-  const time = /^\d{2}:\d{2}$/.test(String(args.time ?? "")) ? String(args.time) : "09:00";
-  // London local date today
-  const todayLondon = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" }); // YYYY-MM-DD
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(String(args.date ?? "")) ? String(args.date) : todayLondon;
-  // Build a London-local instant. Europe/London is +00:00 in winter, +01:00 in summer; resolve via Intl.
+// London local date today (YYYY-MM-DD).
+const londonToday = () => new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
+
+// Build the UTC instant for a London-local date + time. Europe/London is
+// +00:00 in winter and +01:00 in summer; resolve the offset via Intl.
+function londonInstantIso(date: string, time: string) {
   const naive = new Date(`${date}T${time}:00`);
   const londonOffsetMin = (() => {
     const utc = new Date(naive.toISOString().slice(0, 19) + "Z").getTime();
@@ -2096,7 +2163,17 @@ async function devScheduleCallbackToday(supabase: DbClient, args: Record<string,
     const asUtc = Date.UTC(+m[3], +m[2]-1, +m[1], +m[4], +m[5]);
     return (asUtc - utc) / 60000;
   })();
-  const callbackAt = new Date(naive.getTime() - londonOffsetMin * 60000).toISOString();
+  return new Date(naive.getTime() - londonOffsetMin * 60000).toISOString();
+}
+
+async function devScheduleCallbackToday(supabase: DbClient, args: Record<string, unknown>) {
+  const contactId = cleanText(args.contact_id, 80);
+  const title = cleanText(args.title, 160);
+  if (!UUID_RE.test(contactId)) return { ok: false, error: "invalid_contact" };
+  if (!title) return { ok: false, error: "missing_title" };
+  const time = /^\d{2}:\d{2}$/.test(String(args.time ?? "")) ? String(args.time) : "09:00";
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(String(args.date ?? "")) ? String(args.date) : londonToday();
+  const callbackAt = londonInstantIso(date, time);
   const { data, error } = await supabase.from("contact_events").insert({
     contact_id: contactId,
     title,
@@ -2106,6 +2183,380 @@ async function devScheduleCallbackToday(supabase: DbClient, args: Record<string,
   }).select("id, callback_at").single();
   if (error) return { ok: false, error: error.message };
   return { ok: true, event: data, scheduled_for_local: `${date} ${time} Europe/London` };
+}
+
+// ── Call tracking ───────────────────────────────────────────────────────────
+// Every call we run should end up against a CRM contact with its notes and
+// recording attached — including the ones whose caller details match nobody we
+// already know, which is where calls used to fall on the floor.
+
+const normalisePhoneDigits = (value: unknown) => cleanText(value, 40).replace(/[^0-9+]/g, "");
+
+// Last 9 digits, so "+447700900123", "07700 900123" and "7700900123" all agree.
+const phoneSuffix = (value: unknown) => {
+  const digits = normalisePhoneDigits(value).replace(/\D/g, "");
+  return digits.length >= 9 ? digits.slice(-9) : "";
+};
+
+const CONTACT_STATUSES = ["cold", "aware", "warm", "hot", "gold", "archived"];
+const CALL_CONTACT_FIELDS = "id, name, contact_name, email, phone, status, industry";
+
+type CallContactDetails = {
+  name?: unknown;
+  email?: unknown;
+  phone?: unknown;
+  company?: unknown;
+  brief?: unknown;
+  source?: unknown;
+};
+
+/**
+ * Resolve the contact a call belongs to — email, then phone, then an exact
+ * name match — and create one when nothing matches, so a call is never logged
+ * against nobody. Reports which signal matched so the agent can say.
+ */
+async function resolveOrCreateCallContact(
+  supabase: DbClient,
+  details: CallContactDetails,
+  opts: { create?: boolean } = {},
+) {
+  const create = opts.create !== false;
+  const emailRaw = cleanText(details.email, 255).toLowerCase();
+  const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw) ? emailRaw : "";
+  const phone = normalisePhoneDigits(details.phone);
+  const suffix = phoneSuffix(details.phone);
+  const person = cleanText(details.name, 100);
+  const company = cleanText(details.company, 160);
+  const name = company || person || email || phone;
+
+  if (email) {
+    const { data } = await supabase.from("contacts").select(CALL_CONTACT_FIELDS).ilike("email", email).limit(1).maybeSingle();
+    if (data) return { ok: true, contact: data, created: false, matched_on: "email", error: null };
+  }
+
+  if (suffix) {
+    // Stored phone formatting is inconsistent (+44 / leading 0 / spaces), so
+    // compare normalised suffixes over a bounded recent slice rather than
+    // trusting an exact string match.
+    const { data } = await supabase
+      .from("contacts")
+      .select(CALL_CONTACT_FIELDS)
+      .not("phone", "is", null)
+      .order("updated_at", { ascending: false })
+      .limit(500);
+    const match = (data ?? []).find((c: Record<string, unknown>) => phoneSuffix(c.phone) === suffix);
+    if (match) return { ok: true, contact: match, created: false, matched_on: "phone", error: null };
+  }
+
+  // Exact (case-insensitive) name only — a fuzzy match here would attach a call
+  // to the wrong client, which is worse than creating a duplicate.
+  for (const candidate of [company, person].filter(Boolean)) {
+    const safe = candidate.replace(/[%_,()]/g, "").trim();
+    if (!safe) continue;
+    const { data } = await supabase
+      .from("contacts")
+      .select(CALL_CONTACT_FIELDS)
+      .or(`name.ilike.${safe},contact_name.ilike.${safe}`)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) return { ok: true, contact: data, created: false, matched_on: "name", error: null };
+  }
+
+  if (!create) return { ok: false, contact: null, created: false, matched_on: null, error: "no_match" };
+  if (!name) return { ok: false, contact: null, created: false, matched_on: null, error: "insufficient_details" };
+
+  const { data, error } = await supabase.from("contacts").insert({
+    name,
+    contact_name: company && person ? person : null,
+    email: email || null,
+    phone: phone || null,
+    industry: inferIndustry(`${company} ${person} ${cleanText(details.brief, 500)}`),
+    status: "warm",
+    source: cleanText(details.source, 40) || "call",
+  }).select(CALL_CONTACT_FIELDS).single();
+  if (error) return { ok: false, contact: null, created: false, matched_on: null, error: error.message };
+  return { ok: true, contact: data, created: true, matched_on: "created", error: null };
+}
+
+/** Point a booking and all of its recordings at a contact. */
+async function linkCallRecords(supabase: DbClient, bookingId: string | null, contactId: string) {
+  const linked = { booking: false, recordings: 0 };
+  if (!bookingId) return linked;
+
+  const { data: updatedBooking } = await supabase
+    .from("call_bookings").update({ contact_id: contactId }).eq("id", bookingId).is("contact_id", null).select("id");
+  linked.booking = (updatedBooking ?? []).length > 0;
+
+  const { data } = await supabase
+    .from("call_recordings").update({ contact_id: contactId }).eq("booking_id", bookingId).is("contact_id", null).select("id");
+  linked.recordings = (data ?? []).length;
+  return linked;
+}
+
+async function devListCallRecordings(supabase: DbClient, args: Record<string, unknown>) {
+  const days = Math.min(Math.max(Number(args.days) || 30, 1), 365);
+  const limit = Math.min(Math.max(Number(args.limit) || 20, 1), 50);
+  const since = new Date(Date.now() - days * 24 * 3600 * 1000).toISOString();
+
+  let query = supabase
+    .from("call_recordings")
+    .select("id, booking_id, contact_id, created_at, duration_seconds, recorded_by, notes, outcome, logged_at")
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (args.unmatched_only === true) query = query.is("contact_id", null);
+  if (args.unlogged_only === true) query = query.is("logged_at", null);
+  const contactId = cleanText(args.contact_id, 80);
+  if (UUID_RE.test(contactId)) query = query.eq("contact_id", contactId);
+
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+  const recordings = data ?? [];
+  if (recordings.length === 0) return { ok: true, recordings: [], unmatched: 0 };
+
+  // Resolve bookings and contacts with follow-up queries rather than a PostgREST
+  // embed, so this keeps working if the schema cache hasn't picked up the new FK.
+  const bookingIds = [...new Set(recordings.map((r: Record<string, unknown>) => r.booking_id).filter(Boolean))];
+  const contactIds = [...new Set(recordings.map((r: Record<string, unknown>) => r.contact_id).filter(Boolean))];
+  const bookingRes = bookingIds.length
+    ? await supabase.from("call_bookings").select("id, name, email, phone, company, scheduled_at, status").in("id", bookingIds)
+    : { data: [] };
+  const contactRes = contactIds.length
+    ? await supabase.from("contacts").select("id, name, status").in("id", contactIds)
+    : { data: [] };
+  const bookingById = new Map((bookingRes.data ?? []).map((b: Record<string, unknown>) => [b.id, b]));
+  const contactById = new Map((contactRes.data ?? []).map((c: Record<string, unknown>) => [c.id, c]));
+
+  return {
+    ok: true,
+    unmatched: recordings.filter((r: Record<string, unknown>) => !r.contact_id).length,
+    recordings: recordings.map((r: Record<string, unknown>) => {
+      const booking = bookingById.get(r.booking_id) ?? null;
+      const contact = r.contact_id ? contactById.get(r.contact_id) ?? null : null;
+      return {
+        recording_id: r.id,
+        recorded_at: r.created_at,
+        duration_seconds: r.duration_seconds,
+        source: r.recorded_by,
+        notes: r.notes,
+        outcome: r.outcome,
+        logged: Boolean(r.logged_at),
+        booking,
+        contact,
+      };
+    }),
+  };
+}
+
+/**
+ * Log what happened on a call: attach the notes to the recording and the CRM
+ * timeline, match (or create) the client, and set the callback in one pass.
+ */
+async function devLogCall(supabase: DbClient, args: Record<string, unknown>) {
+  const notes = cleanText(args.notes, 4000);
+  if (!notes) return { ok: false, error: "missing_notes" };
+
+  const recordingIdRaw = cleanText(args.recording_id, 80);
+  const recordingId = UUID_RE.test(recordingIdRaw) ? recordingIdRaw : "";
+  const bookingIdArg = cleanText(args.booking_id, 80);
+  let bookingId = UUID_RE.test(bookingIdArg) ? bookingIdArg : "";
+
+  if (recordingId) {
+    const { data } = await supabase.from("call_recordings").select("id, booking_id, contact_id").eq("id", recordingId).maybeSingle();
+    if (!data) return { ok: false, error: "recording_not_found" };
+    if (!bookingId) bookingId = String(data.booking_id ?? "");
+  }
+
+  let booking: Record<string, unknown> | null = null;
+  if (bookingId) {
+    const { data } = await supabase
+      .from("call_bookings")
+      .select("id, name, email, phone, company, brief, contact_id, scheduled_at, source")
+      .eq("id", bookingId).maybeSingle();
+    if (!data) return { ok: false, error: "booking_not_found" };
+    booking = data;
+  }
+
+  // Who was this call with?
+  let contact: Record<string, unknown> | null = null;
+  let created = false;
+  let matchedOn: string | null = null;
+  const explicitContactId = cleanText(args.contact_id, 80);
+
+  if (UUID_RE.test(explicitContactId)) {
+    const { data } = await supabase.from("contacts").select(CALL_CONTACT_FIELDS).eq("id", explicitContactId).maybeSingle();
+    if (!data) return { ok: false, error: "contact_not_found" };
+    contact = data;
+    matchedOn = "contact_id";
+  } else if (booking?.contact_id && UUID_RE.test(String(booking.contact_id))) {
+    const { data } = await supabase.from("contacts").select(CALL_CONTACT_FIELDS).eq("id", booking.contact_id).maybeSingle();
+    if (data) {
+      contact = data;
+      matchedOn = "booking";
+    }
+  }
+
+  if (!contact) {
+    const resolved = await resolveOrCreateCallContact(supabase, {
+      name: args.name ?? booking?.name,
+      email: args.email ?? booking?.email,
+      phone: args.phone ?? booking?.phone,
+      company: args.company ?? booking?.company,
+      brief: booking?.brief,
+      source: "call",
+    });
+    if (!resolved.ok || !resolved.contact) return { ok: false, error: resolved.error ?? "contact_unresolved" };
+    contact = resolved.contact;
+    created = resolved.created;
+    matchedOn = resolved.matched_on;
+  }
+
+  const contactId = String(contact.id);
+  const outcome = cleanText(args.outcome, 80);
+  const loggedAt = new Date().toISOString();
+  const linked = await linkCallRecords(supabase, bookingId || null, contactId);
+
+  // Notes live on the recording (so the call carries them) and as a CRM event
+  // (so the contact's timeline shows them).
+  const recordingPatch = { contact_id: contactId, notes, outcome: outcome || null, logged_at: loggedAt };
+  if (recordingId) {
+    await supabase.from("call_recordings").update(recordingPatch).eq("id", recordingId);
+  } else if (bookingId) {
+    await supabase.from("call_recordings").update(recordingPatch).eq("booking_id", bookingId).is("logged_at", null);
+  }
+
+  const { data: event } = await supabase.from("contact_events").insert({
+    contact_id: contactId,
+    title: outcome ? `Call — ${outcome}` : "Call notes",
+    description: [
+      notes,
+      recordingId ? `Recording: ${recordingId}` : "",
+      bookingId ? `Booking: ${bookingId}` : "",
+    ].filter(Boolean).join("\n\n"),
+    event_type: "call",
+  }).select("id, title").single();
+
+  const status = cleanText(args.status, 20).toLowerCase();
+  if (CONTACT_STATUSES.includes(status)) {
+    await supabase.from("contacts").update({ status }).eq("id", contactId);
+  }
+
+  // Callback — either an explicit ISO instant or "in N days" at London local time.
+  let callbackAt = "";
+  const callbackAtRaw = cleanText(args.callback_at, 80);
+  const callbackInDays = Number(args.callback_in_days);
+  if (callbackAtRaw && !Number.isNaN(Date.parse(callbackAtRaw))) {
+    callbackAt = new Date(callbackAtRaw).toISOString();
+  } else if (Number.isFinite(callbackInDays) && callbackInDays >= 0) {
+    const time = /^\d{2}:\d{2}$/.test(String(args.callback_time ?? "")) ? String(args.callback_time) : "09:00";
+    const base = new Date(`${londonToday()}T00:00:00Z`);
+    base.setUTCDate(base.getUTCDate() + Math.round(callbackInDays));
+    callbackAt = londonInstantIso(base.toISOString().slice(0, 10), time);
+  }
+
+  let callback: Record<string, unknown> | null = null;
+  if (callbackAt) {
+    const { data } = await supabase.from("contact_events").insert({
+      contact_id: contactId,
+      title: cleanText(args.callback_title, 160) || `Call back ${contact.name ?? ""}`.trim(),
+      description: outcome ? `Follow-up from call — ${outcome}` : "Follow-up from logged call.",
+      event_type: "callback",
+      callback_at: callbackAt,
+    }).select("id, callback_at").single();
+    callback = data ?? null;
+  }
+
+  return {
+    ok: true,
+    contact: { id: contactId, name: contact.name, email: contact.email, phone: contact.phone },
+    contact_created: created,
+    matched_on: matchedOn,
+    linked,
+    event,
+    callback,
+    status_set: CONTACT_STATUSES.includes(status) ? status : null,
+  };
+}
+
+/**
+ * Sweep every call booking that isn't attached to a contact yet, match or
+ * create the client, and pull its recordings across with it.
+ */
+async function devSyncCallRecords(supabase: DbClient, args: Record<string, unknown>) {
+  const days = Math.min(Math.max(Number(args.days) || 90, 1), 365);
+  const limit = Math.min(Math.max(Number(args.limit) || 25, 1), 100);
+  const create = args.create_missing !== false;
+  const since = new Date(Date.now() - days * 24 * 3600 * 1000).toISOString();
+
+  const { data: bookings, error } = await supabase
+    .from("call_bookings")
+    .select("id, name, email, phone, company, brief, created_at, source")
+    .is("contact_id", null)
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) return { ok: false, error: error.message };
+
+  const results: Record<string, unknown>[] = [];
+  let contactsCreated = 0;
+  let contactsMatched = 0;
+  let skipped = 0;
+
+  for (const booking of bookings ?? []) {
+    const resolved = await resolveOrCreateCallContact(supabase, {
+      name: booking.name,
+      email: booking.email,
+      phone: booking.phone,
+      company: booking.company,
+      brief: booking.brief,
+      source: booking.source ?? "call",
+    }, { create });
+
+    if (!resolved.ok || !resolved.contact) {
+      skipped++;
+      results.push({ booking_id: booking.id, booking_name: booking.name, linked: false, reason: resolved.error });
+      continue;
+    }
+
+    const linked = await linkCallRecords(supabase, String(booking.id), String(resolved.contact.id));
+    if (resolved.created) contactsCreated++;
+    else contactsMatched++;
+    results.push({
+      booking_id: booking.id,
+      booking_name: booking.name,
+      contact_id: resolved.contact.id,
+      contact_name: resolved.contact.name,
+      created: resolved.created,
+      matched_on: resolved.matched_on,
+      recordings_linked: linked.recordings,
+    });
+  }
+
+  // Recordings uploaded before their booking was matched still need pulling across.
+  const { data: orphans } = await supabase
+    .from("call_recordings").select("id, booking_id").is("contact_id", null).limit(200);
+  const orphanBookingIds = [...new Set((orphans ?? []).map((r: Record<string, unknown>) => r.booking_id).filter(Boolean))];
+  let recordingsBackfilled = 0;
+  if (orphanBookingIds.length) {
+    const { data: linkedBookings } = await supabase
+      .from("call_bookings").select("id, contact_id").in("id", orphanBookingIds).not("contact_id", "is", null);
+    for (const b of linkedBookings ?? []) {
+      const { data } = await supabase
+        .from("call_recordings").update({ contact_id: b.contact_id }).eq("booking_id", b.id).is("contact_id", null).select("id");
+      recordingsBackfilled += (data ?? []).length;
+    }
+  }
+
+  return {
+    ok: true,
+    bookings_processed: (bookings ?? []).length,
+    contacts_created: contactsCreated,
+    contacts_matched: contactsMatched,
+    skipped,
+    recordings_backfilled: recordingsBackfilled,
+    results,
+  };
 }
 
 async function devLookupVisitorActivity(supabase: DbClient, args: Record<string, unknown>) {
@@ -2902,6 +3353,18 @@ Deno.serve(async (req) => {
           needsFollowUp = true; actionTaken = true;
           try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devScheduleCallbackToday(supabase, JSON.parse(toolCall.function.arguments))) }); }
           catch (e) { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "schedule_failed" }) }); }
+        } else if (toolCall.function.name === "list_call_recordings" && isDevMode) {
+          needsFollowUp = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devListCallRecordings(supabase, JSON.parse(toolCall.function.arguments || "{}"))) }); }
+          catch (e) { console.error("list_call_recordings:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "list_calls_failed" }) }); }
+        } else if (toolCall.function.name === "log_call" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devLogCall(supabase, JSON.parse(toolCall.function.arguments))) }); }
+          catch (e) { console.error("log_call:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "log_call_failed" }) }); }
+        } else if (toolCall.function.name === "sync_call_records" && isDevMode) {
+          needsFollowUp = true; actionTaken = true;
+          try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devSyncCallRecords(supabase, JSON.parse(toolCall.function.arguments || "{}"))) }); }
+          catch (e) { console.error("sync_call_records:", e); aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify({ ok: false, error: "sync_calls_failed" }) }); }
         } else if (toolCall.function.name === "lookup_visitor_activity" && isDevMode) {
           needsFollowUp = true;
           try { aiMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(await devLookupVisitorActivity(supabase, JSON.parse(toolCall.function.arguments))) }); }
