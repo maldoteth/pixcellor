@@ -8,7 +8,7 @@
 // Internal only: authorised with the service role key.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { cloudtalkAuthHeader, safeEq } from "../_shared/cloudtalk.ts";
+import { cloudtalkAuthHeader } from "../_shared/cloudtalk.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -346,8 +346,25 @@ Deno.serve(async (req) => {
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+  // Platform JWT verification (verify_jwt = true for this function) has
+  // already validated the bearer's signature before this code runs. The
+  // runtime's own service key and the vault copy the pg_cron sweep sends are
+  // different string representations of the same authority, so a string
+  // compare against SERVICE_KEY wrongly rejects the cron. Require the
+  // platform-verified token's role claim instead — anon tokens pass the
+  // gateway too, and this is what keeps them out.
   const auth = req.headers.get("Authorization") ?? "";
-  if (!auth.startsWith("Bearer ") || !safeEq(auth.slice(7).trim(), SERVICE_KEY)) {
+  const bearer = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  let role = "";
+  try {
+    const seg = bearer.split(".")[1] ?? "";
+    const pad = seg.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - seg.length % 4) % 4);
+    role = JSON.parse(atob(pad))?.role ?? "";
+  } catch {
+    role = "";
+  }
+  if (role !== "service_role") {
+    console.warn("cloudtalk-process-call: rejected caller with role", role || "(none)");
     return json(401, { ok: false, error: "unauthorized" });
   }
 
