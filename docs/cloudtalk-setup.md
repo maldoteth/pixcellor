@@ -30,7 +30,7 @@ Set these in Supabase → Project Settings → Edge Functions → Secrets.
 | `CLOUDTALK_WEBHOOK_SECRET` | Invent a long random string. Also goes in the CloudTalk header below. |
 | `CLOUDTALK_API_KEY_ID` | CloudTalk → Account → Settings → API keys → Key ID |
 | `CLOUDTALK_API_KEY_SECRET` | Same screen → Key Secret (shown once at creation) |
-| `LOVABLE_API_KEY` | Already set — used for the note generation |
+| `LOVABLE_API_KEY` | Already set (AI gateway key) — used for the note generation |
 
 The key pair is also read from `cloudtalk_id` / `cloudtalk_secret`, which is
 what the project has set today. `Deno.env.get` is case-sensitive, so if you
